@@ -199,18 +199,21 @@ class RecipeService extends ChangeNotifier {
     // Ingredienser
     if (recipe.ingredients.any(
       (ingredient) => ingredient.toLowerCase().contains(query),
-    ))
+    )) {
       return true;
+    }
 
     // Instruktioner
     if (recipe.instructions.any(
       (instruction) => instruction.toLowerCase().contains(query),
-    ))
+    )) {
       return true;
+    }
 
     // Taggar
-    if (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ?? false)
+    if (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ?? false) {
       return true;
+    }
 
     // Numeriska fält (portioner, tid, betyg)
     final queryAsNumber = double.tryParse(query);
