@@ -1,5 +1,5 @@
 // lib/main.dart
-
+import 'services/recipe_service.dart';
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
 import 'views/mina_recept_view.dart';
@@ -15,6 +15,9 @@ import 'views/photo_import_view.dart';
 import 'views/import_via_url_view.dart';
 
 void main() {
+  // Initialisera RecipeService
+  RecipeService().initialize();
+
   runApp(const ButleryApp());
 }
 
