@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "123359108218",
+    "project_id": "butlery-database",
+    "storage_bucket": "butlery-database.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123359108218:android:e425e2e2b79a4b7a016fc3",
+        "android_client_info": {
+          "package_name": "com.example.butlery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8vKil6agqVFqU1UfnAkVA3XPq9BPd8Yw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123359108218:android:bfcc6e933ba96667016fc3",
+        "android_client_info": {
+          "package_name": "com.example.butlery_mvp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8vKil6agqVFqU1UfnAkVA3XPq9BPd8Yw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
