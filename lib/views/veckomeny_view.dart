@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
 import '../widgets/recipe_card.dart';
+import '../widgets/main_layout_menu.dart';
 
 /// Vy för att generera en anpassad veckomeny baserat på användarens prompt
 class VeckomenyView extends StatefulWidget {
@@ -110,14 +111,9 @@ class _VeckomenyViewState extends State<VeckomenyView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Veckomeny'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return MainLayoutMenu(
+      currentIndex: 2, // Veckomeny är tredje fliken
+      title: 'Veckomeny',
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -138,7 +134,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
 
             const SizedBox(height: 16),
 
-            // ─── Visa den genererade menyn ─────────────────────
+            // ─── Visa den genererade menyn (scrollable) ─────────────────────
             Expanded(
               child: ListView(
                 children: [
@@ -170,28 +166,32 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                     const Divider(),
                   ],
 
-                  // ─── Om vi har en meny, visa knappen till inköpslistan ─
-                  if (_menu.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.shopping_cart),
-                      label: const Text('Till inköpslista'),
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/inkopslista',
-                          arguments: _menu,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                  // Extra padding längst ner för att undvika floating button
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
           ],
         ),
       ),
+
+      // Använd floatingActionButton för "Till inköpslista"
+      floatingActionButton:
+          _menu.isNotEmpty
+              ? FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/inkopslista',
+                    arguments: _menu,
+                  );
+                },
+                icon: const Icon(Icons.shopping_cart),
+                label: const Text('Till inköpslista'),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              )
+              : null,
     );
   }
 }

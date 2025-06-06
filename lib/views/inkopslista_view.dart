@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../models/recipe.dart';
 import '../services/shopping_list_service.dart';
 import '../utils/text_utils.dart';
+import '../widgets/main_layout_menu.dart';
 
 /// Vy för att visa inköpslista baserat på menyerna som skickats in.
 /// Förväntar sig att `arguments` är en `Map<String, List<Recipe>>` från VeckomenyView.
@@ -113,25 +114,24 @@ class _InkopslistaViewState extends State<InkopslistaView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inköpslista'),
-        actions: [
-          if (_shoppingList.isNotEmpty) ...[
-            if (_checkedCount > 0)
-              IconButton(
-                icon: const Icon(Icons.clear_all),
-                onPressed: _clearCheckedItems,
-                tooltip: 'Rensa alla checkade',
-              ),
+    return MainLayoutMenu(
+      currentIndex: 3, // Inköpslista är fjärde fliken
+      title: 'Inköpslista',
+      actions: [
+        if (_shoppingList.isNotEmpty) ...[
+          if (_checkedCount > 0)
             IconButton(
-              icon: const Icon(Icons.share),
-              onPressed: _shareShoppingList,
-              tooltip: 'Dela inköpslista',
+              icon: const Icon(Icons.clear_all),
+              onPressed: _clearCheckedItems,
+              tooltip: 'Rensa alla checkade',
             ),
-          ],
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: _shareShoppingList,
+            tooltip: 'Dela inköpslista',
+          ),
         ],
-      ),
+      ],
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
