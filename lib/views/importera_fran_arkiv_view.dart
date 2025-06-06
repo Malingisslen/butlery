@@ -7,6 +7,7 @@ import '../data/dummy_data.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/action_button.dart';
+import '../widgets/empty_state.dart';
 import '../services/search_service.dart';
 
 enum TimeFilter { all, under15, under30, under60 }
@@ -210,33 +211,11 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
             Expanded(
               child:
                   _filteredRecipes.isEmpty
-                      ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Inga recept matchade filtren',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Prova att justera sökning eller filter',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
+                      ? EmptyState(
+                        icon: Icons.search_off,
+                        title: 'Inga recept matchade filtren',
+                        subtitle: 'Prova att justera sökning eller filter',
+                        // ✅ Använder EmptyState widget istället för hardkodade färger
                       )
                       : ListView(
                         children:

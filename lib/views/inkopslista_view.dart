@@ -8,6 +8,7 @@ import '../utils/text_utils.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/action_button.dart';
+import '../theme/app_theme.dart';
 
 /// Vy för att visa inköpslista baserat på menyerna som skickats in.
 /// Förväntar sig att `arguments` är en `Map<String, List<Recipe>>` från VeckomenyView.
@@ -195,14 +196,18 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                               children: [
                                 Icon(
                                   Icons.check_circle,
-                                  color: Colors.green,
+                                  color:
+                                      AppTheme
+                                          .successColor, // ✅ Använder theme färg istället för Colors.green
                                   size: 16,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Alla artiklar checkade!',
                                   style: TextStyle(
-                                    color: Colors.green,
+                                    color:
+                                        AppTheme
+                                            .successColor, // ✅ Använder theme färg istället för Colors.green
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

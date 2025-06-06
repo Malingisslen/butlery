@@ -8,6 +8,7 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/action_button.dart';
 import '../widgets/empty_state.dart';
 import '../services/menu_service.dart';
+import '../theme/app_theme.dart';
 
 /// Vy för att generera en anpassad veckomeny baserat på användarens prompt
 class VeckomenyView extends StatefulWidget {
@@ -59,7 +60,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
       currentIndex: 2,
       title: 'Veckomeny',
       body: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(AppTheme.spacingSm), // ✅ 8px från theme
         child: Column(
           children: [
             // ─── Prompt-input ───────────────────────────────────
@@ -73,7 +74,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
               ),
               onSubmitted: (_) => _generateMenu(),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
             ActionButton.primary(
               label: 'Generera meny',
               icon: Icons.restaurant_menu,
@@ -83,8 +84,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
               isExpanded: true,
             ),
 
-            const SizedBox(height: 16),
-
+            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
             // ─── Visa den genererade menyn (scrollable) ─────────────────────
             Expanded(
               child:
@@ -94,19 +94,21 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                         children: [
                           for (final entry in _menu.entries) ...[
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: EdgeInsets.symmetric(
+                                vertical: AppTheme.spacingSm,
+                              ), // ✅ 8px från theme
                               child: Text(
                                 entry.key,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style:
+                                    AppTheme
+                                        .sectionHeaderStyle, // ✅ Använder theme style
                               ),
                             ),
                             for (final recipe in entry.value)
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4.0,
+                                padding: EdgeInsets.symmetric(
+                                  vertical:
+                                      AppTheme.spacingXs, // ✅ 4px från theme
                                 ),
                                 child: CompactRecipeCard(
                                   recipe: recipe,
@@ -123,7 +125,9 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                           ],
 
                           // Extra padding längst ner för att undvika floating button
-                          const SizedBox(height: 80),
+                          SizedBox(
+                            height: AppTheme.spacingXxl + AppTheme.spacingMd,
+                          ), // ✅ 48px + 16px från theme
                         ],
                       ),
             ),

@@ -8,6 +8,7 @@ import '../widgets/recipe_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/empty_state.dart';
 import '../services/search_service.dart';
+import '../theme/app_theme.dart';
 
 class MinaReceptView extends StatefulWidget {
   const MinaReceptView({super.key});
@@ -102,7 +103,9 @@ class _MinaReceptViewState extends State<MinaReceptView> {
         children: [
           // Sökfält
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(
+              AppTheme.spacingSm + 4,
+            ), // ✅ 12px från theme
             child: AppSearchBar(
               controller: _searchController,
               hintText: 'Sök recept...',
@@ -114,7 +117,9 @@ class _MinaReceptViewState extends State<MinaReceptView> {
           // Sökstatistik
           if (_searchQuery.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingSm + 4,
+              ), // ✅ 12px från theme
               child: Row(
                 children: [
                   Icon(
@@ -122,7 +127,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: AppTheme.spacingXs), // ✅ 4px från theme
                   Text(
                     '${_getFilteredAndSortedRecipes().length} recept hittades',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -154,15 +159,17 @@ class _MinaReceptViewState extends State<MinaReceptView> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppTheme.spacingSm,
+                  ), // ✅ 8px från theme
                   itemCount: filteredRecipes.length,
                   itemBuilder: (context, index) {
                     final recipe = filteredRecipes[index];
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingSm, // ✅ 8px från theme
+                        vertical: AppTheme.spacingXs, // ✅ 4px från theme
                       ),
                       child: RecipeCard(
                         recipe: recipe,
@@ -200,7 +207,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: AppTheme.spacingSm), // ✅ 8px från theme
           Text(label),
           const Spacer(),
           if (isSelected)

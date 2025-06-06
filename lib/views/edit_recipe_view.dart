@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
+import '../theme/app_theme.dart';
 
 class EditRecipeView extends StatefulWidget {
   final Recipe recipe;
@@ -164,13 +165,22 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            // ✅ Theme typography
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
         ...controllers.asMap().entries.map((entry) {
           final i = entry.key;
           final c = entry.value;
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(
+              bottom: AppTheme.spacingSm,
+            ), // ✅ 8px från theme
             child: Row(
               children: [
                 Expanded(
@@ -204,7 +214,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Redigera recept')),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
         child: ElevatedButton.icon(
           icon: const Icon(Icons.save),
           label: const Text('Spara ändringar'),
@@ -212,7 +222,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
         child: Form(
           key: _formKey,
           child: ListView(
@@ -229,12 +239,17 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                         .toList(),
                 onChanged: (v) => setState(() => _selectedMealType = v!),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+
               if (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.only(
+                    bottom: AppTheme.spacingMd,
+                  ), // ✅ 16px från theme
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(
+                      AppTheme.radiusLarge,
+                    ), // ✅ 12px från theme
                     child: Image.network(
                       _currentImageUrl!,
                       height: 200,
@@ -243,9 +258,20 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                       errorBuilder:
                           (ctx, err, stack) => Container(
                             height: 200,
-                            color: Colors.grey[300],
+                            color:
+                                Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest, // ✅ Theme color
                             alignment: Alignment.center,
-                            child: const Text('Ogiltig bild-URL'),
+                            child: Text(
+                              'Ogiltig bild-URL',
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
                           ),
                     ),
                   ),
@@ -259,37 +285,37 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                             ? 'Titel får inte vara tom'
                             : null,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 2,
                 decoration: const InputDecoration(labelText: 'Beskrivning'),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               TextFormField(
                 controller: _portionsController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Antal portioner'),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               TextFormField(
                 controller: _timeController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Tid (minuter)'),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               _buildDynamicList('Ingrediens', _ingredientControllers),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               _buildDynamicList('Instruktion', _instructionControllers),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               _buildDynamicList('Tagg', _tagControllers),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               TextFormField(
                 controller: _ratingController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               TextFormField(
                 controller: _imageUrlController,
                 decoration: const InputDecoration(labelText: 'Bild-URL'),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
+import '../theme/app_theme.dart';
 
 /// Vy för manuell inmatning eller redigering av recept.
 class SkrivSjalvReceptView extends StatefulWidget {
@@ -172,13 +173,21 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
         ...ctrls.asMap().entries.map((e) {
           final i = e.key;
           final c = e.value;
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(
+              bottom: AppTheme.spacingSm,
+            ), // ✅ 8px från theme
             child: Row(
               children: [
                 Expanded(
@@ -211,13 +220,15 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Skriv / Redigera recept')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
         child: Form(
           key: _formKey,
           child: ListView(
             // Lägger till extra padding längst ner så,
             // inget innehåll hamnar under knappen
-            padding: const EdgeInsets.only(bottom: 80),
+            padding: EdgeInsets.only(
+              bottom: AppTheme.spacingXxl + AppTheme.spacingMd,
+            ), // ✅ 48px + 16px från theme
             children: [
               // Måltidstyp
               DropdownButtonFormField<String>(
@@ -231,8 +242,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                         .toList(),
                 onChanged: (v) => setState(() => _selectedMealType = v!),
               ),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Titel
               TextFormField(
                 controller: _titleCtrl,
@@ -241,8 +251,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                 validator:
                     (v) => v == null || v.trim().isEmpty ? 'Ange titel' : null,
               ),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Beskrivning
               TextFormField(
                 controller: _descCtrl,
@@ -250,8 +259,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                 decoration: const InputDecoration(labelText: 'Beskrivning'),
                 textInputAction: TextInputAction.next,
               ),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Portioner & Tid
               Row(
                 children: [
@@ -263,7 +271,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                       textInputAction: TextInputAction.next,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: AppTheme.spacingMd), // ✅ 16px från theme
                   Expanded(
                     child: TextFormField(
                       controller: _timeCtrl,
@@ -274,20 +282,16 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Ingredienser
               _buildDynamicList('Ingrediens', _ingredientCtrls),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Instruktioner
               _buildDynamicList('Instruktion', _instructionCtrls),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Taggar
               _buildDynamicList('Tagg', _tagCtrls),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Betyg
               TextFormField(
                 controller: _ratingCtrl,
@@ -304,8 +308,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                       : null;
                 },
               ),
-              const SizedBox(height: 12),
-
+              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
               // Bild-URL
               TextFormField(
                 controller: _imageUrlCtrl,
@@ -320,7 +323,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
       // Spara-knappen ligger i bottomNavigationBar så att inget
       // klickbart innehåll täcker den.
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
         child: ElevatedButton.icon(
           icon: const Icon(Icons.save),
           label: const Text('Spara recept'),
