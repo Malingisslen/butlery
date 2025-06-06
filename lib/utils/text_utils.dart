@@ -200,10 +200,11 @@ class IngredientParser {
         final tokens = rest.split(RegExp(r'\s+'));
         if (tokens.isNotEmpty &&
             standaloneUnits.contains(tokens[0].toLowerCase())) {
+          final unitName = rest.substring(tokens[0].length).trim();
           return ParsedIngredient(
             quantity: quantity,
             unit: tokens[0].toLowerCase(),
-            name: rest.substring(tokens[0].length).trim(),
+            name: unitName,
           );
         } else {
           return ParsedIngredient(quantity: quantity, unit: '', name: rest);
@@ -313,6 +314,14 @@ class SwedishPluralization {
     'apelsin': 'apelsiner',
     'kiwi': 'kiwis',
     'avokado': 'avokados',
+
+    // Fler oregelbundna pluraler
+    'lasagneplatt': 'lasagneplattor',
+    'lasagneplattor': 'lasagneplattor', // Redan plural
+    'krossa': 'krossade',
+    'krossad': 'krossade',
+    'krossade': 'krossade', // Redan plural
+    'burk krossade tomater': 'burkar krossade tomater',
   };
 
   /// Normaliserar ett ingrediensnamn till sin grundform (singular)
@@ -397,15 +406,77 @@ class SwedishPluralization {
   static String _pluralizeWord(String word) {
     final lower = word.toLowerCase();
 
-    // Reguljära regler
-    if (lower.endsWith('ning')) {
+    // Specialfall för specifika ord
+    final specialCases = {
+      'lasagneplatt': 'lasagneplattor',
+      'krossade tomat': 'krossade tomater',
+      'krossad tomat': 'krossade tomater',
+      'lök': 'lökar',
+      'potatis': 'potatisar',
+      'tomat': 'tomater',
+      'morot': 'morötter',
+      'gurka': 'gurkor',
+      'paprika': 'paprikor',
+      'citron': 'citroner',
+      'vitlök': 'vitlökar',
+      'champinjon': 'champinjoner',
+      'svamp': 'svampar',
+      'äpple': 'äpplen',
+      'banan': 'bananer',
+      'apelsin': 'apelsiner',
+      'avokado': 'avokados',
+      'burk': 'burkar',
+      'påse': 'påsar',
+      'förpackning': 'förpackningar',
+      'flaska': 'flaskor',
+      'ask': 'askar',
+      'kött': 'kött', // Invariant
+      'fisk': 'fisk', // Invariant
+      'mjöl': 'mjöl', // Invariant
+      'socker': 'socker', // Invariant
+      'ris': 'ris', // Invariant
+      'pasta': 'pasta', // Invariant
+      'bröd': 'bröd', // Invariant
+      'smör': 'smör', // Invariant
+      'grädde': 'grädde', // Invariant
+      'mjölk': 'mjölk', // Invariant
+      'vatten': 'vatten', // Invariant
+    };
+
+    if (specialCases.containsKey(lower)) {
+      // Behåll ursprunglig case-struktur
+      final special = specialCases[lower]!;
+      if (word[0].toUpperCase() == word[0] && word.toLowerCase() == word) {
+        // Första bokstaven stor, resten små
+        return special[0].toUpperCase() + special.substring(1);
+      }
+      return special;
+    }
+
+    // Reguljära regler för pluralisering
+    if (lower.endsWith('ing')) {
       return '${word}ar';
     }
     if (lower.endsWith('ling')) {
       return '${word}ar';
     }
+    if (lower.endsWith('ning')) {
+      return '${word}ar';
+    }
     if (lower.endsWith('a')) {
       return '${word.substring(0, word.length - 1)}or';
+    }
+    if (lower.endsWith('e')) {
+      return '${word}r';
+    }
+    if (lower.endsWith('el')) {
+      return '${word.substring(0, word.length - 2)}lar';
+    }
+    if (lower.endsWith('er')) {
+      return '${word.substring(0, word.length - 2)}rar';
+    }
+    if (lower.endsWith('en')) {
+      return '${word.substring(0, word.length - 2)}nar';
     }
 
     // Standard: lägg till 'ar'
@@ -416,18 +487,27 @@ class SwedishPluralization {
   static String formatIngredient(String ingredientKey, double totalQuantity) {
     final qtyStr = toSwedishHalfFraction(totalQuantity);
 
+    // Om kvantitet är 1, visa singular
     if (totalQuantity == 1.0) {
       return '$qtyStr $ingredientKey';
     }
 
-    // Dela upp i enhet och namn om det finns mellanslag
+    // Dela upp i enhet och namn
     final parts = ingredientKey.split(' ');
     if (parts.length > 1 && _isMeasurementUnit(parts[0])) {
-      // T.ex. "dl mjölk" -> "2 dl mjölk" (invariant)
+      // T.ex. "dl mjölk" -> "2 dl mjölk" (invariant för måttenheter)
       return '$qtyStr $ingredientKey';
     } else {
-      // Pluralisera hela nyckeln
-      final pluralized = pluralize(ingredientKey, totalQuantity);
+      // För fristående ingredienser, pluralisera smart
+      String pluralized;
+      if (ingredientKey.toLowerCase().contains('platt')) {
+        pluralized = ingredientKey.replaceAll(
+          RegExp(r'platt$', caseSensitive: false),
+          'plattor',
+        );
+      } else {
+        pluralized = pluralize(ingredientKey, totalQuantity);
+      }
       return '$qtyStr $pluralized';
     }
   }

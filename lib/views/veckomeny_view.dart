@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
+import '../widgets/recipe_card.dart';
 
 /// Vy för att generera en anpassad veckomeny baserat på användarens prompt
 class VeckomenyView extends StatefulWidget {
@@ -110,7 +111,13 @@ class _VeckomenyViewState extends State<VeckomenyView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Veckomeny')),
+      appBar: AppBar(
+        title: const Text('Veckomeny'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -147,31 +154,18 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                       ),
                     ),
                     for (final recipe in entry.value)
-                      ListTile(
-                        leading:
-                            recipe.imageUrl != null
-                                ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.network(
-                                    recipe.imageUrl!,
-                                    width: 48,
-                                    height: 48,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                                : null,
-                        title: Text(recipe.title),
-                        subtitle: Text(
-                          '${recipe.portions?.toString() ?? '-'} port • '
-                          '${recipe.timeMinutes?.toString() ?? '-'} min',
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: CompactRecipeCard(
+                          recipe: recipe,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/receptDetalj',
+                              arguments: recipe,
+                            );
+                          },
                         ),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/receptDetalj',
-                            arguments: recipe,
-                          );
-                        },
                       ),
                     const Divider(),
                   ],
