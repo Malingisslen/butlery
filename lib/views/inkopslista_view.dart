@@ -6,6 +6,8 @@ import '../models/recipe.dart';
 import '../services/shopping_list_service.dart';
 import '../utils/text_utils.dart';
 import '../widgets/main_layout_menu.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/action_button.dart';
 
 /// Vy för att visa inköpslista baserat på menyerna som skickats in.
 /// Förväntar sig att `arguments` är en `Map<String, List<Recipe>>` från VeckomenyView.
@@ -17,9 +19,10 @@ class InkopslistaView extends StatefulWidget {
 }
 
 class _InkopslistaViewState extends State<InkopslistaView> {
-  List<String> _shoppingList = []; // Behåll för UI-kompatibilitet
+  List<String> _shoppingList = [];
   Map<int, bool> _checkedItems = {};
   bool _isLoading = true;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -29,7 +32,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
     });
   }
 
-  void _generateShoppingList() {
+  Future<void> _generateShoppingList() async {
     setState(() {
       _isLoading = true;
     });
@@ -45,6 +48,9 @@ class _InkopslistaViewState extends State<InkopslistaView> {
       });
       return;
     }
+
+    // Simulera lite latency
+    await Future.delayed(const Duration(milliseconds: 200));
 
     // Använd den nya ShoppingListService
     final service = ShoppingListService();
@@ -72,7 +78,15 @@ class _InkopslistaViewState extends State<InkopslistaView> {
       _shoppingList = displayList;
       _checkedItems = {}; // Återställ checkboxar
       _isLoading = false;
+      _isRefreshing = false;
     });
+  }
+
+  Future<void> _refreshShoppingList() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+    await _generateShoppingList();
   }
 
   void _shareShoppingList() {
@@ -115,7 +129,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
   @override
   Widget build(BuildContext context) {
     return MainLayoutMenu(
-      currentIndex: 3, // Inköpslista är fjärde fliken
+      currentIndex: 3,
       title: 'Inköpslista',
       actions: [
         if (_shoppingList.isNotEmpty) ...[
@@ -136,32 +150,9 @@ class _InkopslistaViewState extends State<InkopslistaView> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _shoppingList.isEmpty
-              ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 64,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Ingen meny att skapa inköpslista från',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Gå tillbaka och skapa en veckomeny först',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
+              ? EmptyState.noShoppingList(
+                onAction:
+                    () => Navigator.pushReplacementNamed(context, '/veckomeny'),
               )
               : Column(
                 children: [
@@ -239,12 +230,10 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                           elevation: 0,
                           color:
                               isChecked
-                                  ? Theme.of(
-                                    context,
-                                    // ignore: deprecated_member_use
-                                  ).colorScheme.surfaceContainerHighest
-                                  // ignore: deprecated_member_use
-                                  .withOpacity(0.5)
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest
+                                      .withValues(alpha: 0.5)
                                   : null,
                           child: ListTile(
                             leading: Checkbox(
@@ -297,18 +286,19 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _generateShoppingList,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Uppdatera'),
+                            child: ActionButton.outlined(
+                              label: 'Uppdatera',
+                              icon: Icons.refresh,
+                              onPressed: _refreshShoppingList,
+                              isLoading: _isRefreshing,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child: ActionButton.primary(
+                              label: 'Dela lista',
+                              icon: Icons.share,
                               onPressed: _shareShoppingList,
-                              icon: const Icon(Icons.share),
-                              label: const Text('Dela lista'),
                             ),
                           ),
                         ],

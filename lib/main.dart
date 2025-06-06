@@ -1,15 +1,18 @@
 // lib/main.dart
-import 'services/recipe_service.dart';
+
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
+import 'services/recipe_service.dart';
+
+// Import views med unika alias för att undvika konflikter
 import 'views/mina_recept_view.dart';
 import 'views/lagg_till_recept_view.dart';
 import 'views/skriv_sjalv_recept_view.dart';
 import 'views/fran_sociala_medier_view.dart';
 import 'views/recipe_detail_view.dart';
 import 'views/edit_recipe_view.dart';
-import 'views/veckomeny_view.dart';
-import 'views/inkopslista_view.dart';
+import 'views/veckomeny_view.dart' as vecko;
+import 'views/inkopslista_view.dart' as inkop;
 import 'views/importera_fran_arkiv_view.dart';
 import 'views/photo_import_view.dart';
 import 'views/import_via_url_view.dart';
@@ -34,13 +37,13 @@ class ButleryApp extends StatelessWidget {
         switch (settings.name) {
           case '/':
             return MaterialPageRoute(
-              settings: settings, // ← Lägg till det här
+              settings: settings,
               builder: (_) => const MinaReceptView(),
             );
 
           case '/laggTill':
             return MaterialPageRoute(
-              settings: settings, // ← Och här
+              settings: settings,
               builder: (_) => const LaggTillReceptView(),
             );
 
@@ -79,13 +82,13 @@ class ButleryApp extends StatelessWidget {
           case '/veckomeny':
             return MaterialPageRoute(
               settings: settings,
-              builder: (_) => const VeckomenyView(),
+              builder: (_) => const vecko.VeckomenyView(),
             );
 
           case '/inkopslista':
             return MaterialPageRoute(
-              settings: settings, // ← Viktigt här!
-              builder: (_) => const InkopslistaView(),
+              settings: settings,
+              builder: (_) => const inkop.InkopslistaView(),
             );
 
           case '/receptDetalj':

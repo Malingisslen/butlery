@@ -1,8 +1,13 @@
+// lib/views/importera_fran_arkiv_view.dart
+
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/archived_recipes.dart';
 import '../data/dummy_data.dart';
 import '../widgets/recipe_card.dart';
+import '../widgets/search_bar.dart';
+import '../widgets/action_button.dart';
+import '../services/search_service.dart';
 
 enum TimeFilter { all, under15, under30, under60 }
 
@@ -14,9 +19,11 @@ class ImporteraFranArkivView extends StatefulWidget {
 }
 
 class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
+  final SearchService _searchService = SearchService();
   final Set<String> _selectedTags = {};
   final Set<String> _selectedRecipeIds = {};
   TimeFilter _selectedTimeFilter = TimeFilter.all;
+  String _searchQuery = '';
   List<Recipe> _filteredRecipes = archivedRecipes;
 
   @override
@@ -28,24 +35,26 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
   void _applyFilters() {
     List<Recipe> results = archivedRecipes;
 
-    // Tagg-filter: AND-logik
-    if (_selectedTags.isNotEmpty) {
-      results =
-          results.where((r) {
-            return _selectedTags.every((t) => r.tags?.contains(t) ?? false);
-          }).toList();
+    // Sökfilter
+    if (_searchQuery.isNotEmpty) {
+      results = _searchService.searchRecipes(results, _searchQuery);
     }
 
-    // Tids-filter: <= logik
+    // Tagg-filter: AND-logik
+    if (_selectedTags.isNotEmpty) {
+      results = _searchService.filterByTags(results, _selectedTags.toList());
+    }
+
+    // Tids-filter
     switch (_selectedTimeFilter) {
       case TimeFilter.under15:
-        results = results.where((r) => (r.timeMinutes ?? 0) <= 15).toList();
+        results = _searchService.filterByMaxTime(results, 15);
         break;
       case TimeFilter.under30:
-        results = results.where((r) => (r.timeMinutes ?? 0) <= 30).toList();
+        results = _searchService.filterByMaxTime(results, 30);
         break;
       case TimeFilter.under60:
-        results = results.where((r) => (r.timeMinutes ?? 0) <= 60).toList();
+        results = _searchService.filterByMaxTime(results, 60);
         break;
       case TimeFilter.all:
         break;
@@ -59,17 +68,28 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
     });
   }
 
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+    _applyFilters();
+  }
+
   void _toggleTag(String tag) {
-    if (_selectedTags.contains(tag)) {
-      _selectedTags.remove(tag);
-    } else {
-      _selectedTags.add(tag);
-    }
+    setState(() {
+      if (_selectedTags.contains(tag)) {
+        _selectedTags.remove(tag);
+      } else {
+        _selectedTags.add(tag);
+      }
+    });
     _applyFilters();
   }
 
   void _toggleTimeFilter(TimeFilter filter) {
-    _selectedTimeFilter = filter;
+    setState(() {
+      _selectedTimeFilter = filter;
+    });
     _applyFilters();
   }
 
@@ -111,19 +131,28 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Tagg-filter
-            Wrap(
-              spacing: 8,
-              children:
-                  allTags.map((tag) {
-                    return FilterChip(
-                      label: Text(tag),
-                      selected: _selectedTags.contains(tag),
-                      onSelected: (_) => _toggleTag(tag),
-                    );
-                  }).toList(),
+            // Sökfält
+            AppSearchBar(
+              hintText: 'Sök i arkiv...',
+              onChanged: _onSearchChanged,
             ),
             const SizedBox(height: 16),
+
+            // Tagg-filter
+            if (allTags.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                children:
+                    allTags.map((tag) {
+                      return FilterChip(
+                        label: Text(tag),
+                        selected: _selectedTags.contains(tag),
+                        onSelected: (_) => _toggleTag(tag),
+                      );
+                    }).toList(),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Tids-filter
             Wrap(
@@ -135,17 +164,17 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                   onSelected: (_) => _toggleTimeFilter(TimeFilter.all),
                 ),
                 ChoiceChip(
-                  label: const Text('<= 15 min'),
+                  label: const Text('≤ 15 min'),
                   selected: _selectedTimeFilter == TimeFilter.under15,
                   onSelected: (_) => _toggleTimeFilter(TimeFilter.under15),
                 ),
                 ChoiceChip(
-                  label: const Text('<= 30 min'),
+                  label: const Text('≤ 30 min'),
                   selected: _selectedTimeFilter == TimeFilter.under30,
                   onSelected: (_) => _toggleTimeFilter(TimeFilter.under30),
                 ),
                 ChoiceChip(
-                  label: const Text('<= 60 min'),
+                  label: const Text('≤ 60 min'),
                   selected: _selectedTimeFilter == TimeFilter.under60,
                   onSelected: (_) => _toggleTimeFilter(TimeFilter.under60),
                 ),
@@ -153,42 +182,105 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
             ),
             const SizedBox(height: 16),
 
+            // Sökstatistik
+            if (_searchQuery.isNotEmpty ||
+                _selectedTags.isNotEmpty ||
+                _selectedTimeFilter != TimeFilter.all)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.filter_list,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${_filteredRecipes.length} av ${archivedRecipes.length} recept',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             // Recept-lista
             Expanded(
-              child: ListView(
-                children:
-                    _filteredRecipes.map((recipe) {
-                      final selected = _selectedRecipeIds.contains(recipe.id);
-                      return CompactRecipeCard(
-                        recipe: recipe,
-                        onTap:
-                            () => Navigator.pushNamed(
-                              context,
-                              '/receptDetalj',
-                              arguments: recipe,
+              child:
+                  _filteredRecipes.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: Colors.grey,
                             ),
-                        trailing: Checkbox(
-                          value: selected,
-                          onChanged: (_) => _toggleRecipeSelection(recipe.id),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Inga recept matchade filtren',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Prova att justera sökning eller filter',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    }).toList(),
-              ),
+                      )
+                      : ListView(
+                        children:
+                            _filteredRecipes.map((recipe) {
+                              final selected = _selectedRecipeIds.contains(
+                                recipe.id,
+                              );
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2,
+                                ),
+                                child: CompactRecipeCard(
+                                  recipe: recipe,
+                                  onTap:
+                                      () => Navigator.pushNamed(
+                                        context,
+                                        '/receptDetalj',
+                                        arguments: recipe,
+                                      ),
+                                  trailing: Checkbox(
+                                    value: selected,
+                                    onChanged:
+                                        (_) =>
+                                            _toggleRecipeSelection(recipe.id),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
             ),
             const SizedBox(height: 16),
 
             // Import-knapp
-            ElevatedButton.icon(
-              icon: const Icon(Icons.upload),
-              label: Text(
-                _selectedRecipeIds.isNotEmpty
-                    ? 'Lägg till de valda (${_selectedRecipeIds.length} st)'
-                    : 'Lägg till alla recept (${archivedRecipes.length} st)',
-              ),
+            ActionButton.primary(
+              label:
+                  _selectedRecipeIds.isNotEmpty
+                      ? 'Lägg till de valda (${_selectedRecipeIds.length} st)'
+                      : 'Lägg till alla recept (${archivedRecipes.length} st)',
+              icon: Icons.upload,
               onPressed:
                   _selectedRecipeIds.isNotEmpty
                       ? _importSelectedRecipes
                       : _importAllRecipes,
+              isExpanded: true,
             ),
           ],
         ),

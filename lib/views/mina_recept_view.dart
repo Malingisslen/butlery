@@ -5,6 +5,8 @@ import '../data/dummy_data.dart';
 import '../models/recipe.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/recipe_card.dart';
+import '../widgets/search_bar.dart';
+import '../widgets/empty_state.dart';
 import '../services/search_service.dart';
 
 class MinaReceptView extends StatefulWidget {
@@ -31,6 +33,12 @@ class _MinaReceptViewState extends State<MinaReceptView> {
   void _onSearchChanged(String value) {
     setState(() {
       _searchQuery = value;
+    });
+  }
+
+  void _onSearchCleared() {
+    setState(() {
+      _searchQuery = '';
     });
   }
 
@@ -79,101 +87,13 @@ class _MinaReceptViewState extends State<MinaReceptView> {
           onSelected: _onSortChanged,
           itemBuilder:
               (context) => [
-                PopupMenuItem(
-                  value: SortCriteria.title,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.title,
-                        color:
-                            _currentSort == SortCriteria.title
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text('Titel'),
-                      if (_currentSort == SortCriteria.title)
-                        Icon(
-                          _sortAscending
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortCriteria.time,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        color:
-                            _currentSort == SortCriteria.time
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text('Tid'),
-                      if (_currentSort == SortCriteria.time)
-                        Icon(
-                          _sortAscending
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortCriteria.rating,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        color:
-                            _currentSort == SortCriteria.rating
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text('Betyg'),
-                      if (_currentSort == SortCriteria.rating)
-                        Icon(
-                          _sortAscending
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortCriteria.mealType,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.restaurant,
-                        color:
-                            _currentSort == SortCriteria.mealType
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text('Måltidstyp'),
-                      if (_currentSort == SortCriteria.mealType)
-                        Icon(
-                          _sortAscending
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                    ],
-                  ),
+                _buildSortMenuItem(SortCriteria.title, 'Titel', Icons.title),
+                _buildSortMenuItem(SortCriteria.time, 'Tid', Icons.access_time),
+                _buildSortMenuItem(SortCriteria.rating, 'Betyg', Icons.star),
+                _buildSortMenuItem(
+                  SortCriteria.mealType,
+                  'Måltidstyp',
+                  Icons.restaurant,
                 ),
               ],
         ),
@@ -183,25 +103,11 @@ class _MinaReceptViewState extends State<MinaReceptView> {
           // Sökfält
           Padding(
             padding: const EdgeInsets.all(12),
-            child: TextField(
+            child: AppSearchBar(
               controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Sök recept',
-                hintText: 'Titel, ingredienser, taggar...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon:
-                    _searchQuery.isNotEmpty
-                        ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            _onSearchChanged('');
-                          },
-                        )
-                        : null,
-                border: const OutlineInputBorder(),
-              ),
+              hintText: 'Sök recept...',
               onChanged: _onSearchChanged,
+              onClear: _onSearchCleared,
             ),
           ),
 
@@ -235,42 +141,16 @@ class _MinaReceptViewState extends State<MinaReceptView> {
                 final filteredRecipes = _getFilteredAndSortedRecipes();
 
                 if (filteredRecipes.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _searchQuery.isEmpty
-                              ? Icons.restaurant_menu
-                              : Icons.search_off,
-                          size: 64,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchQuery.isEmpty
-                              ? 'Inga recept ännu'
-                              : 'Inga recept matchade din sökning',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (_searchQuery.isEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Lägg till ditt första recept genom att trycka på "Lägg till"',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
+                  if (_searchQuery.isEmpty) {
+                    return EmptyState.noRecipes(
+                      onAction: () => Navigator.pushNamed(context, '/laggTill'),
+                    );
+                  } else {
+                    return EmptyState.noSearchResults(
+                      onAction: _onSearchCleared,
+                      actionLabel: 'Rensa sökning',
+                    );
+                  }
                 }
 
                 return ListView.builder(
@@ -300,6 +180,35 @@ class _MinaReceptViewState extends State<MinaReceptView> {
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem<SortCriteria> _buildSortMenuItem(
+    SortCriteria criteria,
+    String label,
+    IconData icon,
+  ) {
+    final isSelected = _currentSort == criteria;
+
+    return PopupMenuItem(
+      value: criteria,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: isSelected ? Theme.of(context).colorScheme.primary : null,
+          ),
+          const SizedBox(width: 8),
+          Text(label),
+          const Spacer(),
+          if (isSelected)
+            Icon(
+              _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+              size: 16,
+              color: Theme.of(context).colorScheme.primary,
+            ),
         ],
       ),
     );
