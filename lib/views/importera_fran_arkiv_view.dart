@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/archived_recipes.dart';
 import '../data/dummy_data.dart';
+import '../widgets/recipe_card.dart';
 
 enum TimeFilter { all, under15, under30, under60 }
 
@@ -158,22 +159,17 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                 children:
                     _filteredRecipes.map((recipe) {
                       final selected = _selectedRecipeIds.contains(recipe.id);
-                      return InkWell(
+                      return CompactRecipeCard(
+                        recipe: recipe,
                         onTap:
                             () => Navigator.pushNamed(
                               context,
                               '/receptDetalj',
                               arguments: recipe,
                             ),
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: selected,
-                            onChanged: (_) => _toggleRecipeSelection(recipe.id),
-                          ),
-                          title: Text(recipe.title),
-                          subtitle: Text(
-                            '${recipe.timeMinutes ?? '?'} min, ${recipe.portions ?? '?'} port',
-                          ),
+                        trailing: Checkbox(
+                          value: selected,
+                          onChanged: (_) => _toggleRecipeSelection(recipe.id),
                         ),
                       );
                     }).toList(),
