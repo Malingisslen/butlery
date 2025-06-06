@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/dummy_data.dart';
 import '../models/recipe.dart';
 import '../widgets/main_layout_menu.dart';
+import '../widgets/recipe_card.dart';
 
 class MinaReceptView extends StatefulWidget {
   const MinaReceptView({super.key});
@@ -71,76 +72,8 @@ class _MinaReceptViewState extends State<MinaReceptView> {
                   itemBuilder: (context, index) {
                     final recept = filteredRecept[index];
 
-                    final portionsText =
-                        recept.portions != null
-                            ? '${recept.portions} portioner'
-                            : 'okänt antal portioner';
-                    final timeText =
-                        recept.timeMinutes != null
-                            ? '${recept.timeMinutes} min'
-                            : 'okänd tid';
-
-                    return ListTile(
-                      leading:
-                          recept.imageUrl != null
-                              ? ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.network(
-                                  recept.imageUrl!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                              : const Icon(Icons.restaurant_menu),
-                      title: Text(recept.title),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('$portionsText • $timeText'),
-                          if (recept.tags != null && recept.tags!.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Wrap(
-                                spacing: 6,
-                                children:
-                                    recept.tags!
-                                        .map(
-                                          (tag) => Chip(
-                                            label: Text(tag),
-                                            backgroundColor: Colors.grey[200],
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                              ),
-                            ),
-                          if (recept.rating != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Row(
-                                children: List.generate(5, (i) {
-                                  final rating = recept.rating ?? 0;
-                                  IconData icon;
-                                  if (i + 1 <= rating) {
-                                    icon = Icons.star;
-                                  } else if (i + 0.5 <= rating) {
-                                    icon = Icons.star_half;
-                                  } else {
-                                    icon = Icons.star_border;
-                                  }
-                                  return Icon(
-                                    icon,
-                                    size: 16,
-                                    color: Colors.amber,
-                                  );
-                                }),
-                              ),
-                            ),
-                        ],
-                      ),
+                    return RecipeCard(
+                      recipe: recept,
                       onTap: () {
                         Navigator.pushNamed(
                           context,
