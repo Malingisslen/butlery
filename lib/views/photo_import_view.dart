@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import '../theme/app_theme.dart';
 
 class PhotoImportView extends StatefulWidget {
   const PhotoImportView({super.key});
@@ -103,19 +104,91 @@ class _PhotoImportViewState extends State<PhotoImportView> {
 
   @override
   Widget build(BuildContext context) {
-    Widget imageWidget = const SizedBox();
+    Widget imageWidget = Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color:
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest, // ✅ Theme color
+        borderRadius: BorderRadius.circular(
+          AppTheme.radiusMedium,
+        ), // ✅ 8px från theme
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline, // ✅ Theme color
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.camera_alt,
+              size: 48,
+              color:
+                  Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant, // ✅ Theme color
+            ),
+            SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
+            Text(
+              'Ingen bild vald',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color:
+                    Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant, // ✅ Theme color
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
     if (_loading) {
-      imageWidget = const Center(child: CircularProgressIndicator());
+      imageWidget = Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color:
+              Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest, // ✅ Theme color
+          borderRadius: BorderRadius.circular(
+            AppTheme.radiusMedium,
+          ), // ✅ 8px från theme
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
     } else if (_imageBytes != null) {
-      imageWidget = Image.memory(_imageBytes!);
+      imageWidget = ClipRRect(
+        borderRadius: BorderRadius.circular(
+          AppTheme.radiusMedium,
+        ), // ✅ 8px från theme
+        child: Image.memory(
+          _imageBytes!,
+          height: 200,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+      );
     } else if (_imageFile != null) {
-      imageWidget = Image.file(_imageFile!);
+      imageWidget = ClipRRect(
+        borderRadius: BorderRadius.circular(
+          AppTheme.radiusMedium,
+        ), // ✅ 8px från theme
+        child: Image.file(
+          _imageFile!,
+          height: 200,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+      );
     }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Foto-OCR')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -123,26 +196,103 @@ class _PhotoImportViewState extends State<PhotoImportView> {
               icon: const Icon(Icons.camera_alt),
               label: const Text('Ta bild & tolka'),
               onPressed: _loading ? null : _pickAndRecognize,
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(
+                  double.infinity,
+                  56,
+                ), // ✅ Konsistent knapp-höjd
+                padding: EdgeInsets.symmetric(
+                  vertical: AppTheme.spacingMd,
+                ), // ✅ 16px från theme
+              ),
             ),
-            const SizedBox(height: 16),
-            Expanded(child: imageWidget),
-            const SizedBox(height: 16),
-
+            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            imageWidget,
+            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
             // Visa fel om nåt gick snett
             if (_error != null) ...[
-              Text(_error!, style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(
+                  AppTheme.spacingMd,
+                ), // ✅ 16px från theme
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor.withValues(
+                    alpha: 0.1,
+                  ), // ✅ Theme error color med transparens
+                  borderRadius: BorderRadius.circular(
+                    AppTheme.radiusMedium,
+                  ), // ✅ 8px från theme
+                  border: Border.all(
+                    color: AppTheme.errorColor,
+                  ), // ✅ Theme error color
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: AppTheme.errorColor, // ✅ Theme error color
+                    ),
+                    SizedBox(width: AppTheme.spacingSm), // ✅ 8px från theme
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: AppTheme.errorColor, // ✅ Theme error color
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
             ],
 
             // Om vi fick text tillbaka, visa förhandsgranskning + knappen
             if (_ocrText.isNotEmpty) ...[
+              Text(
+                'Tolkad text:',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  // ✅ Theme typography
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
               Expanded(
                 flex: 2,
-                child: SingleChildScrollView(child: Text(_ocrText)),
+                child: Container(
+                  padding: EdgeInsets.all(
+                    AppTheme.spacingMd,
+                  ), // ✅ 16px från theme
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest, // ✅ Theme color
+                    borderRadius: BorderRadius.circular(
+                      AppTheme.radiusMedium,
+                    ), // ✅ 8px från theme
+                    border: Border.all(
+                      color:
+                          Theme.of(
+                            context,
+                          ).colorScheme.outline, // ✅ Theme color
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _ocrText,
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.bodyMedium, // ✅ Theme typography
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
               ElevatedButton(
-                child: const Text('Gå vidare till redigera'),
                 onPressed: () {
                   // 3) Navigera till sociala-medier-vyn med OCR-texten
                   Navigator.pushNamed(
@@ -151,6 +301,16 @@ class _PhotoImportViewState extends State<PhotoImportView> {
                     arguments: _ocrText,
                   );
                 },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(
+                    double.infinity,
+                    56,
+                  ), // ✅ Konsistent knapp-höjd
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppTheme.spacingMd,
+                  ), // ✅ 16px från theme
+                ),
+                child: const Text('Gå vidare till redigera'),
               ),
             ],
           ],

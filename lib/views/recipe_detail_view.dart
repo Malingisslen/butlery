@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
 import '../widgets/main_layout_menu.dart';
+import '../theme/app_theme.dart';
 
 class RecipeDetailView extends StatefulWidget {
   final Recipe recipe;
@@ -46,9 +47,20 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                         errorBuilder:
                             (_, __, ___) => Container(
                               height: 200,
-                              color: Colors.grey[300],
+                              color:
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest, // ✅ Från theme
                               alignment: Alignment.center,
-                              child: const Text('Ogiltig bild-URL'),
+                              child: Text(
+                                'Ogiltig bild-URL',
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant, // ✅ Från theme
+                                ),
+                              ),
                             ),
                       ),
                     ),
@@ -59,18 +71,24 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                     style: TextStyle(
                       fontSize: 14,
                       fontStyle: FontStyle.italic,
-                      color: Colors.grey[700],
+                      color:
+                          Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant, // ✅ Från theme istället för Colors.grey[700]
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     recipeToShow.description,
-                    style: const TextStyle(fontSize: 16),
+                    style:
+                        Theme.of(
+                          context,
+                        ).textTheme.bodyLarge, // ✅ Använder theme typography
                   ),
                   const SizedBox(height: 16),
                   Text(
                     '${recipeToShow.portions ?? '?'} portioner • ${recipeToShow.timeMinutes ?? '?'} min',
-                    style: const TextStyle(color: Colors.grey),
+                    style: AppTheme.recipeMetaStyle, // ✅ Använder theme style
                   ),
                   const SizedBox(height: 16),
                   Wrap(
@@ -80,10 +98,18 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                             ?.map(
                               (t) => Chip(
                                 label: Text(t),
-                                backgroundColor: Colors.grey[200],
+                                backgroundColor:
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest, // ✅ Från theme
+                                labelStyle: TextStyle(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface, // ✅ Från theme
+                                ),
                               ),
                             )
-                            // Sprid direkt utan toList()
                             .toList() ??
                         [],
                   ),
@@ -93,34 +119,63 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                       children: List.generate(5, (i) {
                         final r = recipeToShow.rating!;
                         if (i + 1 <= r) {
-                          return const Icon(Icons.star, color: Colors.amber);
+                          return Icon(
+                            Icons.star,
+                            color: AppTheme.starColor,
+                          ); // ✅ Använder theme färg
                         } else if (i + 0.5 <= r) {
-                          return const Icon(
+                          return Icon(
                             Icons.star_half,
-                            color: Colors.amber,
-                          );
+                            color: AppTheme.starColor,
+                          ); // ✅ Använder theme färg
                         }
-                        return const Icon(
+                        return Icon(
                           Icons.star_border,
-                          color: Colors.amber,
-                        );
+                          color: AppTheme.starColor,
+                        ); // ✅ Använder theme färg
                       }),
                     ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Ingredienser',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style:
+                        Theme.of(context)
+                            .textTheme
+                            .headlineSmall, // ✅ Använder theme typography
                   ),
                   const SizedBox(height: 8),
-                  ...recipeToShow.ingredients.map((i) => Text('- $i')),
+                  ...recipeToShow.ingredients.map(
+                    (i) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(
+                        '- $i',
+                        style:
+                            Theme.of(context)
+                                .textTheme
+                                .bodyMedium, // ✅ Använder theme typography
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Instruktioner',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style:
+                        Theme.of(context)
+                            .textTheme
+                            .headlineSmall, // ✅ Använder theme typography
                   ),
                   const SizedBox(height: 8),
                   ...recipeToShow.instructions.mapIndexed(
-                    (idx, s) => Text('${idx + 1}. $s'),
+                    (idx, s) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        '${idx + 1}. $s',
+                        style:
+                            Theme.of(context)
+                                .textTheme
+                                .bodyMedium, // ✅ Använder theme typography
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton.icon(

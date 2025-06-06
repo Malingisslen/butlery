@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
 import 'services/recipe_service.dart';
+import 'theme/app_theme.dart';
 
 // Import views med unika alias för att undvika konflikter
 import 'views/mina_recept_view.dart';
@@ -31,6 +32,7 @@ class ButleryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Butlery',
+      theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       onGenerateRoute: (settings) {

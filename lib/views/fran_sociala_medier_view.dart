@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../views/skriv_sjalv_recept_view.dart';
+import '../theme/app_theme.dart';
 
 /// Vy för att klistra in text från sociala medier och parsa till recept.
 /// Tar emot initialText om du vill förifylla från t.ex. OCR eller URL-import.
@@ -73,7 +74,7 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
     ];
 
     String normalizeText(String txt) {
-      // Ta bort “fancy” unicode-bokstäver och flera mellanslag
+      // Ta bort "fancy" unicode-bokstäver och flera mellanslag
       final withoutFancy = txt.replaceAllMapped(
         RegExp(r'[\u{1D400}-\u{1D7FF}]', unicode: true),
         (m) => String.fromCharCode(m[0]!.codeUnitAt(0) - 0x1D400 + 0x41),
@@ -177,7 +178,7 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Klistra in recepttext')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
         child: Column(
           children: [
             Expanded(
@@ -192,11 +193,20 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
                 expands: true,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
             ElevatedButton.icon(
               icon: const Icon(Icons.preview),
               label: const Text('Förhandsgranska och redigera'),
               onPressed: _parseAndNavigate,
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(
+                  double.infinity,
+                  56,
+                ), // ✅ Konsistent knapp-höjd
+                padding: EdgeInsets.symmetric(
+                  vertical: AppTheme.spacingMd,
+                ), // ✅ 16px från theme
+              ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 // lib/widgets/main_layout_menu.dart
 
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class MainLayoutMenu extends StatelessWidget {
   final Widget body;
@@ -28,6 +29,8 @@ class MainLayoutMenu extends StatelessWidget {
                 actions: actions,
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
+                automaticallyImplyLeading:
+                    false, // ✅ Tar bort bakåtpilen för huvudvyer
               )
               : null,
       body: body,
@@ -37,12 +40,9 @@ class MainLayoutMenu extends StatelessWidget {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    return BottomNavigationBar(
+    return AppTheme.styledBottomNavBar(
       currentIndex: currentIndex ?? 0,
       onTap: (index) => _handleNavigation(context, index),
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Theme.of(context).colorScheme.primary,
-      unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.book_outlined),
