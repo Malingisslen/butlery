@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/recipe.dart';
+import '../services/shopping_list_service.dart';
 import '../utils/text_utils.dart';
 
 /// Vy för att visa inköpslista baserat på menyerna som skickats in.
@@ -15,7 +16,7 @@ class InkopslistaView extends StatefulWidget {
 }
 
 class _InkopslistaViewState extends State<InkopslistaView> {
-  List<String> _shoppingList = [];
+  List<String> _shoppingList = []; // Behåll för UI-kompatibilitet
   Map<int, bool> _checkedItems = {};
   bool _isLoading = true;
 
@@ -44,48 +45,27 @@ class _InkopslistaViewState extends State<InkopslistaView> {
       return;
     }
 
-    // Samla alla ingredienser från alla recept
-    final List<String> allIngredients = [];
-    for (final recipesInSection in menu.values) {
-      for (final recipe in recipesInSection) {
-        allIngredients.addAll(recipe.ingredients);
-      }
-    }
+    // Använd den nya ShoppingListService
+    final service = ShoppingListService();
+    final shoppingItems = service.createShoppingListFromMenu(menu);
 
-    // Gruppera och summera ingredienser
-    final Map<String, double> groupedIngredients = {};
-
-    for (final rawIngredient in allIngredients) {
-      if (rawIngredient.trim().isEmpty) continue;
-
-      final parsed = IngredientParser.parseIngredient(rawIngredient);
-
-      // Skapa en nyckel baserat på enhet + normaliserat namn
-      final normalizedName = SwedishPluralization.normalizeToSingular(
-        parsed.name,
-      );
-      final key =
-          parsed.unit.isEmpty
-              ? normalizedName
-              : '${parsed.unit} $normalizedName';
-
-      // Summera kvantiteter
-      groupedIngredients[key] =
-          (groupedIngredients[key] ?? 0.0) + parsed.quantity;
-    }
-
-    // Formatera för visning och sortera
-    final displayList = <String>[];
-    final sortedKeys = groupedIngredients.keys.toList()..sort();
-
-    for (final key in sortedKeys) {
-      final totalQuantity = groupedIngredients[key]!;
-      final formatted = SwedishPluralization.formatIngredient(
-        key,
-        totalQuantity,
-      );
-      displayList.add(formatted);
-    }
+    // Konvertera ShoppingItem till String för den befintliga UI:n
+    final displayList =
+        shoppingItems.map((item) {
+          if (item.unit.isNotEmpty) {
+            final amountStr =
+                item.amount == 1.0
+                    ? ''
+                    : '${toSwedishHalfFraction(item.amount)} ';
+            return '$amountStr${item.unit} ${item.name}';
+          } else {
+            final amountStr =
+                item.amount == 1.0
+                    ? ''
+                    : '${toSwedishHalfFraction(item.amount)} ';
+            return '$amountStr${item.name}';
+          }
+        }).toList();
 
     setState(() {
       _shoppingList = displayList;
