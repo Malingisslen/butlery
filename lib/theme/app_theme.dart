@@ -196,22 +196,21 @@ class AppTheme {
         filled: true,
         fillColor: _cardWhite,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: BorderRadius.all(Radius.circular(radiusMedium)),
           borderSide: BorderSide(color: _divider),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: BorderRadius.all(Radius.circular(radiusMedium)),
           borderSide: BorderSide(color: _divider),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: BorderRadius.all(Radius.circular(radiusMedium)),
           borderSide: BorderSide(color: _primaryBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: BorderRadius.all(Radius.circular(radiusMedium)),
           borderSide: BorderSide(color: _error),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         hintStyle: TextStyle(color: _textLight),
         labelStyle: TextStyle(color: _textMedium),
       );
@@ -230,7 +229,7 @@ class AppTheme {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: EdgeInsets.symmetric(horizontal: spacingSm, vertical: spacingXs),
     ),
     inputDecorationTheme: inputDecorationTheme,
 
@@ -321,6 +320,11 @@ class AppTheme {
     // För button padding
     vertical: spacingMd,
     horizontal: spacingLg,
+  );
+  static EdgeInsets get inputPadding => EdgeInsets.symmetric(
+    // För input content padding
+    horizontal: spacingMd,
+    vertical: spacingSmPlus,
   );
 
   // ===== STANDARDISERADE SIZED BOXES (GAPS) =====
@@ -523,6 +527,7 @@ class AppTheme {
   static const double radiusLarge = 12.0;
   static const double radiusXLarge = 16.0;
   static const double radiusRound = 35.0; // För runda bilder
+  static const double radiusChip = 6.0; // För chips och taggar
 
   // ===== STANDARDISERADE BORDER RADIUS =====
 
@@ -537,6 +542,8 @@ class AppTheme {
       BorderRadius.circular(radiusXLarge); // 16px
   static BorderRadius get roundRadius =>
       BorderRadius.circular(radiusRound); // 35px
+  static BorderRadius get chipRadius =>
+      BorderRadius.circular(radiusChip); // 6px
 
   // ===== SHADOWS (FÖRBÄTTRADE) =====
 
@@ -578,13 +585,13 @@ class AppTheme {
   /// Receptkort container decoration
   static BoxDecoration get recipeCardDecoration => BoxDecoration(
     color: cardColor,
-    borderRadius: BorderRadius.circular(16.0),
+    borderRadius: extraLargeRadius,
     boxShadow: cardShadow,
   );
 
   /// Runda receptbilder decoration
   static BoxDecoration get recipeImageDecoration => BoxDecoration(
-    borderRadius: BorderRadius.circular(35.0),
+    borderRadius: roundRadius,
     boxShadow: const [
       BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
     ],
@@ -616,7 +623,7 @@ class AppTheme {
 
   /// Meal type chip decoration
   static BoxDecoration mealTypeChipDecoration(Color color) =>
-      BoxDecoration(color: color, borderRadius: BorderRadius.circular(6.0));
+      BoxDecoration(color: color, borderRadius: chipRadius);
 
   /// Tag chip decoration
   static BoxDecoration get tagChipDecoration => BoxDecoration(

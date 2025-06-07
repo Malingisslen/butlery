@@ -198,7 +198,7 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                 child: Row(
                   children: [
                     AppTheme.filterIcon(context), // ✅ SEMANTISK widget
-                    const SizedBox(width: 4),
+                    SizedBox(width: AppTheme.spacingXs),
                     Text(
                       '${_filteredRecipes.length} av ${archivedRecipes.length} recept',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
