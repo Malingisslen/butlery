@@ -6,6 +6,7 @@ import '../data/dummy_data.dart';
 import '../widgets/main_layout_menu.dart';
 import '../theme/app_theme.dart';
 
+/// ✨ 100% THEME-CENTRALISERAD RECEPTDETALJ-VY
 class RecipeDetailView extends StatefulWidget {
   final Recipe recipe;
 
@@ -31,156 +32,161 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
           body: Scaffold(
             appBar: AppBar(title: Text(recipeToShow.title)),
             body: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Receptbild
                   if (recipeToShow.imageUrl != null &&
                       recipeToShow.imageUrl!.isNotEmpty)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppTheme.largeRadius, // ✅ SEMANTISK RADIUS
                       child: Image.network(
                         recipeToShow.imageUrl!,
-                        height: 200,
+                        height:
+                            AppTheme.imageHeightMedium, // ✅ 200px från theme
                         width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder:
                             (_, __, ___) => Container(
-                              height: 200,
+                              height:
+                                  AppTheme
+                                      .imageHeightMedium, // ✅ 200px från theme
                               color:
                                   Theme.of(context)
                                       .colorScheme
-                                      .surfaceContainerHighest, // ✅ Från theme
+                                      .surfaceContainerHighest, // ✅ Theme color
                               alignment: Alignment.center,
                               child: Text(
                                 'Ogiltig bild-URL',
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant, // ✅ Från theme
-                                ),
+                                style:
+                                    AppTheme.subtitleStyle, // ✅ SEMANTISK STYLE
                               ),
                             ),
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  // Visa måltidstyp
+                  AppTheme.mediumGap, // ✅ SEMANTISK GAP
+                  // Måltidstyp
                   Text(
                     recipeToShow.mealType,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontStyle: FontStyle.italic,
-                      color:
-                          Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant, // ✅ Från theme istället för Colors.grey[700]
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  AppTheme.smallGap, // ✅ SEMANTISK GAP
+                  // Beskrivning
                   Text(
                     recipeToShow.description,
                     style:
                         Theme.of(
                           context,
-                        ).textTheme.bodyLarge, // ✅ Använder theme typography
+                        ).textTheme.bodyLarge, // ✅ THEME TYPOGRAPHY
                   ),
-                  const SizedBox(height: 16),
+                  AppTheme.mediumGap, // ✅ SEMANTISK GAP
+                  // Portioner och tid
                   Text(
                     '${recipeToShow.portions ?? '?'} portioner • ${recipeToShow.timeMinutes ?? '?'} min',
-                    style: AppTheme.recipeMetaStyle, // ✅ Använder theme style
+                    style: AppTheme.metadataStyle, // ✅ SEMANTISK STYLE
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    children:
-                        recipeToShow.tags
-                            ?.map(
-                              (t) => Chip(
-                                label: Text(t),
-                                backgroundColor:
-                                    Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerHighest, // ✅ Från theme
-                                labelStyle: TextStyle(
-                                  color:
+                  AppTheme.mediumGap, // ✅ SEMANTISK GAP
+                  // Taggar
+                  if (recipeToShow.tags != null &&
+                      recipeToShow.tags!.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 8,
+                      children:
+                          recipeToShow.tags!
+                              .map(
+                                (t) => Chip(
+                                  label: Text(t),
+                                  backgroundColor:
                                       Theme.of(
                                         context,
-                                      ).colorScheme.onSurface, // ✅ Från theme
+                                      ).colorScheme.surfaceContainerHighest,
+                                  labelStyle:
+                                      AppTheme
+                                          .chipLabelStyle, // ✅ SEMANTISK STYLE
                                 ),
-                              ),
-                            )
-                            .toList() ??
-                        [],
-                  ),
-                  const SizedBox(height: 16),
-                  if (recipeToShow.rating != null)
+                              )
+                              .toList(),
+                    ),
+                    AppTheme.mediumGap, // ✅ SEMANTISK GAP
+                  ],
+
+                  // Betyg
+                  if (recipeToShow.rating != null) ...[
                     Row(
                       children: List.generate(5, (i) {
                         final r = recipeToShow.rating!;
                         if (i + 1 <= r) {
-                          return Icon(
-                            Icons.star,
-                            color: AppTheme.starColor,
-                          ); // ✅ Använder theme färg
+                          return Icon(Icons.star, color: AppTheme.starColor);
                         } else if (i + 0.5 <= r) {
                           return Icon(
                             Icons.star_half,
                             color: AppTheme.starColor,
-                          ); // ✅ Använder theme färg
+                          );
                         }
                         return Icon(
                           Icons.star_border,
                           color: AppTheme.starColor,
-                        ); // ✅ Använder theme färg
+                        );
                       }),
                     ),
-                  const SizedBox(height: 24),
+                    AppTheme.largeGap, // ✅ SEMANTISK GAP
+                  ],
+
+                  // Ingredienser
                   Text(
                     'Ingredienser',
                     style:
-                        Theme.of(context)
-                            .textTheme
-                            .headlineSmall, // ✅ Använder theme typography
+                        Theme.of(
+                          context,
+                        ).textTheme.headlineSmall, // ✅ THEME TYPOGRAPHY
                   ),
-                  const SizedBox(height: 8),
+                  AppTheme.smallGap, // ✅ SEMANTISK GAP
                   ...recipeToShow.ingredients.map(
                     (i) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppTheme.spacingXxs,
+                      ),
                       child: Text(
-                        '- $i',
-                        style:
-                            Theme.of(context)
-                                .textTheme
-                                .bodyMedium, // ✅ Använder theme typography
+                        '• $i', // Byte från '- ' till '• ' för bättre typografi
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  AppTheme.largeGap, // ✅ SEMANTISK GAP
+                  // Instruktioner
                   Text(
                     'Instruktioner',
                     style:
-                        Theme.of(context)
-                            .textTheme
-                            .headlineSmall, // ✅ Använder theme typography
+                        Theme.of(
+                          context,
+                        ).textTheme.headlineSmall, // ✅ THEME TYPOGRAPHY
                   ),
-                  const SizedBox(height: 8),
+                  AppTheme.smallGap, // ✅ SEMANTISK GAP
                   ...recipeToShow.instructions.mapIndexed(
                     (idx, s) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppTheme.spacingXs,
+                      ),
                       child: Text(
                         '${idx + 1}. $s',
-                        style:
-                            Theme.of(context)
-                                .textTheme
-                                .bodyMedium, // ✅ Använder theme typography
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  AppTheme.extraLargeGap, // ✅ SEMANTISK GAP
+                  // Redigera-knapp
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.edit),
+                    icon: AppTheme.actionIcon(
+                      context,
+                      Icons.edit,
+                    ), // ✅ SEMANTISK IKON
                     label: const Text('Redigera recept'),
+                    style:
+                        AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
                     onPressed: () async {
                       final nav = Navigator.of(context);
                       final updated = await nav.pushNamed<bool>(
@@ -203,6 +209,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
   }
 }
 
+// Extensions för att undvika externa dependencies
 extension<T> on Iterable<T> {
   Iterable<E> mapIndexed<E>(E Function(int index, T item) f) sync* {
     var i = 0;

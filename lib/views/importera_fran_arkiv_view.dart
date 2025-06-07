@@ -9,6 +9,7 @@ import '../widgets/search_bar.dart';
 import '../widgets/action_button.dart';
 import '../widgets/empty_state.dart';
 import '../services/search_service.dart';
+import '../theme/app_theme.dart';
 
 enum TimeFilter { all, under15, under30, under60 }
 
@@ -129,7 +130,7 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Importera från Butlerys arkiv')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMd),
         child: Column(
           children: [
             // Sökfält
@@ -137,65 +138,66 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
               hintText: 'Sök i arkiv...',
               onChanged: _onSearchChanged,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacingMd),
 
-            // Tagg-filter
+            // Tagg-filter med semantiska widgets ✨
             if (allTags.isNotEmpty) ...[
               Wrap(
                 spacing: 8,
                 children:
                     allTags.map((tag) {
-                      return FilterChip(
-                        label: Text(tag),
+                      return AppTheme.filterChip(
+                        // ✅ SEMANTISK widget
+                        label: tag,
                         selected: _selectedTags.contains(tag),
-                        onSelected: (_) => _toggleTag(tag),
+                        onSelected: () => _toggleTag(tag),
                       );
                     }).toList(),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacingMd),
             ],
 
-            // Tids-filter
+            // Tids-filter med semantiska widgets ✨
             Wrap(
               spacing: 8,
               children: [
-                ChoiceChip(
-                  label: const Text('Alla'),
+                AppTheme.choiceChip(
+                  // ✅ SEMANTISK widget
+                  label: 'Alla',
                   selected: _selectedTimeFilter == TimeFilter.all,
-                  onSelected: (_) => _toggleTimeFilter(TimeFilter.all),
+                  onSelected: () => _toggleTimeFilter(TimeFilter.all),
                 ),
-                ChoiceChip(
-                  label: const Text('≤ 15 min'),
+                AppTheme.choiceChip(
+                  // ✅ SEMANTISK widget
+                  label: '≤ 15 min',
                   selected: _selectedTimeFilter == TimeFilter.under15,
-                  onSelected: (_) => _toggleTimeFilter(TimeFilter.under15),
+                  onSelected: () => _toggleTimeFilter(TimeFilter.under15),
                 ),
-                ChoiceChip(
-                  label: const Text('≤ 30 min'),
+                AppTheme.choiceChip(
+                  // ✅ SEMANTISK widget
+                  label: '≤ 30 min',
                   selected: _selectedTimeFilter == TimeFilter.under30,
-                  onSelected: (_) => _toggleTimeFilter(TimeFilter.under30),
+                  onSelected: () => _toggleTimeFilter(TimeFilter.under30),
                 ),
-                ChoiceChip(
-                  label: const Text('≤ 60 min'),
+                AppTheme.choiceChip(
+                  // ✅ SEMANTISK widget
+                  label: '≤ 60 min',
                   selected: _selectedTimeFilter == TimeFilter.under60,
-                  onSelected: (_) => _toggleTimeFilter(TimeFilter.under60),
+                  onSelected: () => _toggleTimeFilter(TimeFilter.under60),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacingMd),
 
-            // Sökstatistik
+            // Sökstatistik med semantisk ikon ✨
             if (_searchQuery.isNotEmpty ||
                 _selectedTags.isNotEmpty ||
                 _selectedTimeFilter != TimeFilter.all)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.filter_list,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    AppTheme.filterIcon(context), // ✅ SEMANTISK widget
                     const SizedBox(width: 4),
                     Text(
                       '${_filteredRecipes.length} av ${archivedRecipes.length} recept',
@@ -215,7 +217,6 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                         icon: Icons.search_off,
                         title: 'Inga recept matchade filtren',
                         subtitle: 'Prova att justera sökning eller filter',
-                        // ✅ Använder EmptyState widget istället för hardkodade färger
                       )
                       : ListView(
                         children:
@@ -224,8 +225,8 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                                 recipe.id,
                               );
                               return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 2,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingXxs,
                                 ),
                                 child: CompactRecipeCard(
                                   recipe: recipe,
@@ -246,7 +247,7 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                             }).toList(),
                       ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacingMd),
 
             // Import-knapp
             ActionButton.primary(

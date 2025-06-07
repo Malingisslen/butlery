@@ -1,6 +1,7 @@
 // lib/widgets/search_bar.dart
 
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 /// Återanvändbar sökkomponent som kan användas i alla vyer
 class AppSearchBar extends StatefulWidget {
@@ -85,9 +86,10 @@ class _AppSearchBarState extends State<AppSearchBar> {
                 ? IconButton(icon: const Icon(Icons.clear), onPressed: _onClear)
                 : null,
         border: const OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        contentPadding: EdgeInsets.symmetric(
+          // ✅ Från theme
+          horizontal: AppTheme.spacingMd, // ✅ 16px från theme
+          vertical: AppTheme.spacingSm + 4, // ✅ 12px från theme
         ),
       ),
       onChanged: widget.onChanged,

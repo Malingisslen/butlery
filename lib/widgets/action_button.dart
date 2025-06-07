@@ -1,8 +1,9 @@
 // lib/widgets/action_button.dart
 
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
-/// Återanvändbar knappkomponent med konsistent styling
+/// ✨ 100% THEME-CENTRALISERAD ÅTERANVÄNDBAR KNAPPKOMPONENT
 class ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -65,14 +66,10 @@ class ActionButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (isLoading)
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+            AppTheme.smallLoadingIndicator(context) // ✅ SEMANTISK LOADING
           else if (icon != null)
-            Icon(icon),
-          if (icon != null || isLoading) const SizedBox(width: 8),
+            AppTheme.actionIcon(context, icon!), // ✅ SEMANTISK IKON
+          if (icon != null || isLoading) SizedBox(width: AppTheme.spacingSm),
           Text(effectiveLabel),
         ],
       );
@@ -85,18 +82,26 @@ class ActionButton extends StatelessWidget {
       case ActionButtonStyle.primary:
         button = ElevatedButton(
           onPressed: effectiveOnPressed,
+          style: AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
           child: buttonChild,
         );
         break;
       case ActionButtonStyle.secondary:
-        button = FilledButton.tonal(
+        button = ElevatedButton(
           onPressed: effectiveOnPressed,
+          style: AppTheme.primaryButtonStyle.copyWith(
+            // Baserad på primary men med egen styling om behövs
+            backgroundColor: WidgetStateProperty.all(
+              Theme.of(context).colorScheme.secondary,
+            ),
+          ),
           child: buttonChild,
         );
         break;
       case ActionButtonStyle.outlined:
         button = OutlinedButton(
           onPressed: effectiveOnPressed,
+          style: AppTheme.secondaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
           child: buttonChild,
         );
         break;

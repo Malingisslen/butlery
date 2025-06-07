@@ -201,8 +201,8 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(
                   double.infinity,
-                  56,
-                ), // ✅ Konsistent knapp-höjd
+                  AppTheme.buttonHeight,
+                ), // ✅ 56px från theme
                 padding: EdgeInsets.symmetric(
                   vertical: AppTheme.spacingMd,
                 ), // ✅ 16px från theme

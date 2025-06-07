@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class InstructionEditor extends StatefulWidget {
   final List<String> initialInstructions;
@@ -54,7 +55,9 @@ class _InstructionEditorState extends State<InstructionEditor> {
     return Column(
       children: List.generate(controllers.length, (i) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          padding: EdgeInsets.symmetric(
+            vertical: AppTheme.spacingXs,
+          ), // ✅ 4px från theme
           child: TextFormField(
             controller: controllers[i],
             decoration: const InputDecoration(
