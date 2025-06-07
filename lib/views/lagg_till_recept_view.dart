@@ -1,7 +1,11 @@
+// lib/views/lagg_till_recept_view.dart
+
 import 'package:flutter/material.dart';
 import '../widgets/main_layout_menu.dart';
+import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
+/// ✨ 100% THEME-CENTRALISERAD LÄGG TILL RECEPT VY
 class LaggTillReceptView extends StatelessWidget {
   const LaggTillReceptView({super.key});
 
@@ -9,90 +13,73 @@ class LaggTillReceptView extends StatelessWidget {
     Navigator.pushNamed(context, routeName);
   }
 
-  ButtonStyle _buttonStyle() {
-    return ElevatedButton.styleFrom(
-      padding: EdgeInsets.symmetric(
-        vertical: AppTheme.spacingMd,
-      ), // ✅ 16px från theme
-      textStyle: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600, // ✅ Standardiserad font weight
-      ),
-      minimumSize: Size(double.infinity, 56), // ✅ Konsistent knapp-höjd
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MainLayoutMenu(
       currentIndex: 1,
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingLg), // ✅ 24px från theme
+        padding: AppTheme.sectionPadding, // ✅ SEMANTISK PADDING (24px)
         child: ListView(
           children: [
             Text(
               'Hur vill du lägga till ditt recept?',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                // ✅ Theme typography
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
-              ),
+              style: AppTheme.sectionTitleStyle, // ✅ SEMANTISK STYLE
             ),
-            SizedBox(height: AppTheme.spacingXl), // ✅ 32px från theme
-
-            ElevatedButton.icon(
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('INSTAGRAM'),
+            AppTheme.extraLargeGap, // ✅ SEMANTISK GAP (32px)
+            // Använder ActionButton för konsistens
+            ActionButton.primary(
+              label: 'INSTAGRAM',
+              icon: Icons.camera_alt,
               onPressed: () => _navigate(context, '/franSocialaMedier'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.facebook),
-              label: const Text('FACEBOOK'),
+            ActionButton.primary(
+              label: 'FACEBOOK',
+              icon: Icons.facebook,
               onPressed: () => _navigate(context, '/franSocialaMedier'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.music_note),
-              label: const Text('TIKTOK'),
+            ActionButton.primary(
+              label: 'TIKTOK',
+              icon: Icons.music_note,
               onPressed: () => _navigate(context, '/franSocialaMedier'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.photo),
-              label: const Text('FOTO'),
+            ActionButton.primary(
+              label: 'FOTO',
+              icon: Icons.photo,
               onPressed: () => _navigate(context, '/photoImport'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.link),
-              label: const Text('LÄNK'),
+            ActionButton.primary(
+              label: 'LÄNK',
+              icon: Icons.link,
               onPressed: () => _navigate(context, '/importViaUrl'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.edit),
-              label: const Text('SKRIV SJÄLV'),
+            ActionButton.primary(
+              label: 'SKRIV SJÄLV',
+              icon: Icons.edit,
               onPressed: () => _navigate(context, '/skrivSjalv'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.archive),
-              label: const Text('FRÅN BUTLERYS ARKIV'),
+            ActionButton.primary(
+              label: 'FRÅN BUTLERYS ARKIV',
+              icon: Icons.archive,
               onPressed: () => _navigate(context, '/importFranArkiv'),
-              style: _buttonStyle(),
+              isExpanded: true,
             ),
           ],
         ),

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'action_button.dart';
+import '../theme/app_theme.dart';
 
 /// Återanvändbar komponent för att visa tomma tillstånd
 class EmptyState extends StatelessWidget {
@@ -60,12 +61,16 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(AppTheme.spacingXl), // ✅ 32px från theme
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 16),
+            Icon(
+              icon,
+              size: AppTheme.iconSizeXXLarge, // ✅ 64px från theme
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
             Text(
               title,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -74,7 +79,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
               Text(
                 subtitle!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -84,10 +89,10 @@ class EmptyState extends StatelessWidget {
               ),
             ],
             if (customAction != null) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: AppTheme.spacingLg), // ✅ 24px från theme
               customAction!,
             ] else if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: AppTheme.spacingLg), // ✅ 24px från theme
               ActionButton.primary(
                 label: actionLabel!,
                 onPressed: onAction,

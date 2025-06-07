@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 /// Återanvändbar widget för att visa receptkort
 /// Kan användas i listor, arkiv, sökresultat etc.
 ///
-/// Använder AppTheme för styling - centraliserat och skalbart!
+/// ✨ 100% THEME-CENTRALISERAD - INGA HÅRDKODADE TEXTSTYLES!
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
   final VoidCallback? onTap;
@@ -125,7 +125,7 @@ class RecipeCard extends StatelessWidget {
       ),
       child: Icon(
         Icons.restaurant_menu,
-        size: 32,
+        size: AppTheme.iconSizeLarge, // ✅ 32px från theme
         color: AppTheme.textTertiary,
       ),
     );
@@ -138,10 +138,7 @@ class RecipeCard extends StatelessWidget {
         Expanded(
           child: Text(
             recipe.title,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
+            style: AppTheme.cardTitleStyle, // ✅ SEMANTISK THEME STYLE
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -153,22 +150,7 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildMealTypeChip() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingSm,
-        vertical: 3,
-      ),
-      decoration: AppTheme.mealTypeChipDecoration(_getMealTypeColor()),
-      child: Text(
-        recipe.mealType,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-          letterSpacing: 0.2,
-        ),
-      ),
-    );
+    return AppTheme.mealTypeChip(recipe.mealType); // ✅ SEMANTISK WIDGET
   }
 
   Widget _buildMetadata() {
@@ -183,7 +165,7 @@ class RecipeCard extends StatelessWidget {
 
     return Text(
       '$portionsText | $timeText',
-      style: AppTheme.recipeMetaStyle, // 100% från theme!
+      style: AppTheme.metadataStyle, // ✅ SEMANTISK THEME STYLE
     );
   }
 
@@ -202,7 +184,7 @@ class RecipeCard extends StatelessWidget {
         }
         return Icon(
           icon,
-          size: 16,
+          size: AppTheme.iconSizeSmall, // ✅ 16px från theme
           color: AppTheme.starColor, // Från theme!
         );
       }),
@@ -216,45 +198,9 @@ class RecipeCard extends StatelessWidget {
       children:
           recipe.tags!
               .take(3)
-              .map(
-                (tag) => Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSm,
-                    vertical: 3,
-                  ),
-                  decoration: AppTheme.tagChipDecoration,
-                  child: Text(
-                    tag,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              )
+              .map((tag) => AppTheme.tagChip(tag)) // ✅ SEMANTISK WIDGET
               .toList(),
     );
-  }
-
-  /// ✅ NU ANVÄNDER DEN THEME-FÄRGER ISTÄLLET FÖR HARDKODADE!
-  Color _getMealTypeColor() {
-    switch (recipe.mealType.toLowerCase()) {
-      case 'frukost':
-        return AppTheme.frukostColor; // ✅ Från theme
-      case 'lunch':
-        return AppTheme.lunchColor; // ✅ Från theme
-      case 'middag':
-        return AppTheme.middagColor; // ✅ Från theme
-      case 'dessert':
-        return AppTheme.dessertColor; // ✅ Från theme
-      case 'mellanmål':
-        return AppTheme.mellanmalColor; // ✅ Från theme
-      case 'fika':
-        return AppTheme.fikaColor; // ✅ Från theme
-      default:
-        return AppTheme.defaultMealColor; // ✅ Från theme
-    }
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../utils/recipe_scraper.dart'; // Hjälparfil för JSON-LD-extraktion
 import '../theme/app_theme.dart';
 
-/// Vy för att hämta receptdata via URL och skicka vidare till klistra-in-vyn.
+/// ✨ 100% THEME-CENTRALISERAD IMPORT VIA URL VY
 class ImportViaUrlView extends StatefulWidget {
   const ImportViaUrlView({super.key});
 
@@ -115,7 +115,7 @@ class _ImportViaUrlViewState extends State<ImportViaUrlView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Import via URL')),
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
         child: Column(
           children: [
             TextFormField(
@@ -125,76 +125,45 @@ class _ImportViaUrlViewState extends State<ImportViaUrlView> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
             ElevatedButton(
               onPressed: _loading ? null : _fetchPage,
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(
-                  double.infinity,
-                  56,
-                ), // ✅ Konsistent knapp-höjd
-                padding: EdgeInsets.symmetric(
-                  vertical: AppTheme.spacingMd,
-                ), // ✅ 16px från theme
-              ),
+              style: AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
               child:
                   _loading
-                      ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color:
-                              Theme.of(
-                                context,
-                              ).colorScheme.onPrimary, // ✅ Theme color
-                        ),
-                      )
+                      ? AppTheme.smallLoadingIndicator(
+                        context,
+                      ) // ✅ SEMANTISK LOADING
                       : const Text('Hämta text'),
             ),
+
+            // Error med semantisk widget ✨
             if (_error != null) ...[
-              SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
-              Text(
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.errorContainer(
+                context,
                 _error!,
-                style: TextStyle(
-                  color: AppTheme.errorColor, // ✅ Theme error color
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              ), // ✅ SEMANTISK ERROR WIDGET
             ],
+
             if (_pageText.isNotEmpty) ...[
-              SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
               Text(
                 'Extraherad text:',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  // ✅ Theme typography
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
+                style: AppTheme.sectionTitleStyle, // ✅ SEMANTISK STYLE
               ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(
-                      AppTheme.spacingMd,
-                    ), // ✅ 16px från theme
-                    margin: EdgeInsets.symmetric(
-                      vertical: AppTheme.spacingSm,
-                    ), // ✅ 8px från theme
+                    padding: AppTheme.cardPadding, // ✅ SEMANTISK PADDING
+                    margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
                     decoration: BoxDecoration(
                       color:
-                          Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest, // ✅ Theme color
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
-                      ), // ✅ 8px från theme
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
                       border: Border.all(
-                        color:
-                            Theme.of(
-                              context,
-                            ).colorScheme.outline, // ✅ Theme color
+                        color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
                     child: Text(
@@ -202,23 +171,15 @@ class _ImportViaUrlViewState extends State<ImportViaUrlView> {
                       style:
                           Theme.of(
                             context,
-                          ).textTheme.bodyMedium, // ✅ Theme typography
+                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
               ElevatedButton(
                 onPressed: _goToPasteView,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(
-                    double.infinity,
-                    56,
-                  ), // ✅ Konsistent knapp-höjd
-                  padding: EdgeInsets.symmetric(
-                    vertical: AppTheme.spacingMd,
-                  ), // ✅ 16px från theme
-                ),
+                style: AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
                 child: const Text('Gå vidare till klistra-in'),
               ),
             ],

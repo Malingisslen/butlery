@@ -136,12 +136,18 @@ class _InkopslistaViewState extends State<InkopslistaView> {
         if (_shoppingList.isNotEmpty) ...[
           if (_checkedCount > 0)
             IconButton(
-              icon: const Icon(Icons.clear_all),
+              icon: AppTheme.actionIcon(
+                context,
+                Icons.clear_all,
+              ), // ✅ SEMANTISK widget
               onPressed: _clearCheckedItems,
               tooltip: 'Rensa alla checkade',
             ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: AppTheme.actionIcon(
+              context,
+              Icons.share,
+            ), // ✅ SEMANTISK widget
             onPressed: _shareShoppingList,
             tooltip: 'Dela inköpslista',
           ),
@@ -149,7 +155,9 @@ class _InkopslistaViewState extends State<InkopslistaView> {
       ],
       body:
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                child: AppTheme.mediumLoadingIndicator(),
+              ) // ✅ SEMANTISK loading
               : _shoppingList.isEmpty
               ? EmptyState.noShoppingList(
                 onAction:
@@ -160,7 +168,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                   // Header med statistik
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(AppTheme.spacingMd),
                     decoration: BoxDecoration(
                       color:
                           Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -179,7 +187,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: AppTheme.spacingXs),
                         Text(
                           '$_totalCount artiklar${_checkedCount > 0 ? ' • $_checkedCount checkade' : ''}',
                           style: Theme.of(
@@ -189,25 +197,21 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
+
+                        // Success indikator med semantisk widget ✨
                         if (_checkedCount > 0 && _checkedCount == _totalCount)
                           Padding(
-                            padding: const EdgeInsets.only(top: 8),
+                            padding: EdgeInsets.only(top: AppTheme.spacingSm),
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.check_circle,
-                                  color:
-                                      AppTheme
-                                          .successColor, // ✅ Använder theme färg istället för Colors.green
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
+                                AppTheme.successIcon(
+                                  context,
+                                ), // ✅ SEMANTISK widget
+                                SizedBox(width: AppTheme.spacingXs),
                                 Text(
                                   'Alla artiklar checkade!',
                                   style: TextStyle(
-                                    color:
-                                        AppTheme
-                                            .successColor, // ✅ Använder theme färg istället för Colors.green
+                                    color: AppTheme.successColor,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -221,16 +225,18 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                   // Lista med ingredienser
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppTheme.spacingSm,
+                      ),
                       itemCount: _shoppingList.length,
                       itemBuilder: (context, index) {
                         final item = _shoppingList[index];
                         final isChecked = _checkedItems[index] ?? false;
 
                         return Card(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 2,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingMd,
+                            vertical: AppTheme.spacingXxs,
                           ),
                           elevation: 0,
                           color:
@@ -265,9 +271,9 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                             ),
                             onTap: () => _toggleItem(index),
                             dense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingMd,
+                              vertical: AppTheme.spacingXs,
                             ),
                           ),
                         );
@@ -278,7 +284,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                   // Bottom action bar
                   if (_shoppingList.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(AppTheme.spacingMd),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surface,
                         border: Border(
@@ -298,7 +304,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                               isLoading: _isRefreshing,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: AppTheme.spacingSm + 4),
                           Expanded(
                             child: ActionButton.primary(
                               label: 'Dela lista',

@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
+import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
+/// ✨ 100% THEME-CENTRALISERAD REDIGERA RECEPT VY
 class EditRecipeView extends StatefulWidget {
   final Recipe recipe;
 
@@ -167,20 +169,14 @@ class _EditRecipeViewState extends State<EditRecipeView> {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            // ✅ Theme typography
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
-          ),
+          style: AppTheme.formLabelStyle, // ✅ SEMANTISK STYLE
         ),
-        SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
+        AppTheme.smallGap, // ✅ SEMANTISK GAP
         ...controllers.asMap().entries.map((entry) {
           final i = entry.key;
           final c = entry.value;
           return Padding(
-            padding: EdgeInsets.only(
-              bottom: AppTheme.spacingSm,
-            ), // ✅ 8px från theme
+            padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
             child: Row(
               children: [
                 Expanded(
@@ -194,7 +190,10 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                 ),
                 if (c.text.trim().isNotEmpty || i < controllers.length - 1)
                   IconButton(
-                    icon: const Icon(Icons.delete),
+                    icon: AppTheme.actionIcon(
+                      context,
+                      Icons.delete,
+                    ), // ✅ SEMANTISK IKON
                     onPressed: () {
                       setState(() {
                         controllers.removeAt(i).dispose();
@@ -214,15 +213,16 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Redigera recept')),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.save),
-          label: const Text('Spara ändringar'),
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
+        child: ActionButton.primary(
+          label: 'Spara ändringar',
+          icon: Icons.save,
           onPressed: _saveRecipe,
+          isExpanded: true,
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
         child: Form(
           key: _formKey,
           child: ListView(
@@ -239,43 +239,37 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                         .toList(),
                 onChanged: (v) => setState(() => _selectedMealType = v!),
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
-
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              // Bildförhandsvisning
               if (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
                 Padding(
-                  padding: EdgeInsets.only(
-                    bottom: AppTheme.spacingMd,
-                  ), // ✅ 16px från theme
+                  padding: EdgeInsets.only(bottom: AppTheme.spacingMd),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      AppTheme.radiusLarge,
-                    ), // ✅ 12px från theme
+                    borderRadius: AppTheme.largeRadius, // ✅ SEMANTISK RADIUS
                     child: Image.network(
                       _currentImageUrl!,
-                      height: 200,
+                      height: AppTheme.imageHeightMedium, // ✅ SEMANTISK HEIGHT
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder:
                           (ctx, err, stack) => Container(
-                            height: 200,
+                            height: AppTheme.imageHeightMedium,
                             color:
-                                Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest, // ✅ Theme color
+                                Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
                             alignment: Alignment.center,
                             child: Text(
                               'Ogiltig bild-URL',
-                              style: TextStyle(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                              ),
+                              style:
+                                  AppTheme.subtitleStyle, // ✅ SEMANTISK STYLE
                             ),
                           ),
                     ),
                   ),
                 ),
+
+              // Formulärfält
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Titel'),
@@ -285,37 +279,47 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                             ? 'Titel får inte vara tom'
                             : null,
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 2,
                 decoration: const InputDecoration(labelText: 'Beskrivning'),
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               TextFormField(
                 controller: _portionsController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Antal portioner'),
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               TextFormField(
                 controller: _timeController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Tid (minuter)'),
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               _buildDynamicList('Ingrediens', _ingredientControllers),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               _buildDynamicList('Instruktion', _instructionControllers),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               _buildDynamicList('Tagg', _tagControllers),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               TextFormField(
                 controller: _ratingController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+
               TextFormField(
                 controller: _imageUrlController,
                 decoration: const InputDecoration(labelText: 'Bild-URL'),
