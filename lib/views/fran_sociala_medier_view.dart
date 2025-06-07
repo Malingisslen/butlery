@@ -7,7 +7,7 @@ import '../views/skriv_sjalv_recept_view.dart';
 import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD VY FÖR SOCIAL MEDIA IMPORT
+/// ✨ UPPDATERAD VY FÖR SOCIAL MEDIA IMPORT MED RECIPESERVICE
 /// Tar emot initialText om du vill förifylla från t.ex. OCR eller URL-import.
 class FranSocialaMedierView extends StatefulWidget {
   final String? initialText;
@@ -20,6 +20,7 @@ class FranSocialaMedierView extends StatefulWidget {
 
 class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
   late final TextEditingController _textController;
+  bool _isParsing = false;
 
   @override
   void initState() {
@@ -42,10 +43,53 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
     super.dispose();
   }
 
-  void _parseAndNavigate() {
+  Future<void> _parseAndNavigate() async {
     final input = _textController.text.trim();
-    if (input.isEmpty) return;
+    if (input.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Ange text att tolka')));
+      return;
+    }
 
+    setState(() {
+      _isParsing = true;
+    });
+
+    try {
+      // Simulera parsing-tid för bättre UX
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      final parsedRecipe = _parseTextToRecipe(input);
+
+      if (!mounted) return;
+
+      // Navigera till redigera-vyn med det parsade receptet
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SkrivSjalvReceptView(initialRecipe: parsedRecipe),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kunde inte tolka text: ${e.toString()}'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isParsing = false;
+        });
+      }
+    }
+  }
+
+  /// Parsar text till Recipe-objekt (förbättrad logik)
+  Recipe _parseTextToRecipe(String input) {
     final lines = input.split('\n');
     final ingredients = <String>[];
     final instructions = <String>[];
@@ -152,27 +196,21 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
     }
 
     // 3) Skapa Recipe-objektet
-    final parsedRecipe = Recipe(
+    return Recipe(
       id: const Uuid().v4(),
       title:
           extractedTitle?.isNotEmpty == true ? extractedTitle! : 'Nytt recept',
       description: '',
       portions: null,
       timeMinutes: null,
-      ingredients: ingredients,
-      instructions: instructions,
+      ingredients:
+          ingredients.isEmpty ? ['Lägg till ingredienser'] : ingredients,
+      instructions:
+          instructions.isEmpty ? ['Lägg till instruktioner'] : instructions,
       tags: [],
       rating: null,
       imageUrl: null,
       mealType: 'Middag', // Default-typ, kan ändras i redigera-vyn
-    );
-
-    // 4) Navigera vidare till redigera‐vyn
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => SkrivSjalvReceptView(initialRecipe: parsedRecipe),
-      ),
     );
   }
 
@@ -181,31 +219,85 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Klistra in recepttext')),
       body: Padding(
-        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
+        padding: AppTheme.screenPadding,
         child: Column(
           children: [
+            // Instruktionstext
+            Container(
+              width: double.infinity,
+              padding: AppTheme.cardPadding,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: AppTheme.mediumRadius,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: AppTheme.iconSizeInfo,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      SizedBox(width: AppTheme.spacingSm),
+                      Text(
+                        'Tips för bästa resultat',
+                        style: AppTheme.formLabelStyle.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  AppTheme.smallGap,
+                  Text(
+                    '• Klistra in hela receptet inklusive ingredienser\n'
+                    '• Se till att ingredienser kommer före instruktioner\n'
+                    '• Texten kan komma från Instagram, TikTok, Facebook etc.',
+                    style: AppTheme.captionStyle,
+                  ),
+                ],
+              ),
+            ),
+            AppTheme.mediumGap,
+
+            // Textfält för input
             Expanded(
               child: TextFormField(
                 controller: _textController,
                 decoration: InputDecoration(
-                  hintText: 'Klistra in text här…',
-                  hintStyle: AppTheme.inputHintStyle, // ✅ SEMANTISK STYLE
+                  hintText:
+                      'Klistra in recepttext här...\n\n'
+                      'Exempel:\n'
+                      'Köttfärssås\n'
+                      '500g köttfärs\n'
+                      '1 gul lök\n'
+                      '1 burk krossade tomater\n\n'
+                      'Gör så här:\n'
+                      '1. Stek löken\n'
+                      '2. Tillsätt färs och stek\n'
+                      '3. Häll i tomaterna och låt sjuda',
+                  hintStyle: AppTheme.inputHintStyle,
+                  border: const OutlineInputBorder(),
+                  alignLabelWithHint: true,
                 ),
-                style:
-                    Theme.of(
-                      context,
-                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
+                style: Theme.of(context).textTheme.bodyMedium,
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.newline,
                 maxLines: null,
                 expands: true,
+                textAlignVertical: TextAlignVertical.top,
               ),
             ),
-            AppTheme.mediumGap, // ✅ SEMANTISK GAP
+            AppTheme.mediumGap,
+
+            // Parse-knapp
             ActionButton.primary(
               label: 'Förhandsgranska och redigera',
               icon: Icons.preview,
-              onPressed: _parseAndNavigate,
+              onPressed: _isParsing ? null : _parseAndNavigate,
+              isLoading: _isParsing,
+              loadingText: 'Tolkar text...',
               isExpanded: true,
             ),
           ],

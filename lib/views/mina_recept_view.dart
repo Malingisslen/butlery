@@ -1,16 +1,17 @@
 // lib/views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/recipe.dart';
+import '../services/recipe_service.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/recipe_service_widget.dart';
 import '../services/search_service.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD MINA RECEPT VY
+/// ✨ UPPDATERAD VY MED RECIPESERVICE INTEGRATION
 class MinaReceptView extends StatefulWidget {
   const MinaReceptView({super.key});
 
@@ -21,6 +22,7 @@ class MinaReceptView extends StatefulWidget {
 class _MinaReceptViewState extends State<MinaReceptView> {
   final TextEditingController _searchController = TextEditingController();
   final SearchService _searchService = SearchService();
+  final RecipeService _recipeService = RecipeService();
 
   String _searchQuery = '';
   SortCriteria _currentSort = SortCriteria.title;
@@ -57,9 +59,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
     }
   }
 
-  List<Recipe> _getFilteredAndSortedRecipes() {
-    final allRecipes = dummyRecipesNotifier.value;
-
+  List<Recipe> _getFilteredAndSortedRecipes(List<Recipe> allRecipes) {
     // Först sökning
     final searchResults = _searchService.searchRecipes(
       allRecipes,
@@ -80,6 +80,33 @@ class _MinaReceptViewState extends State<MinaReceptView> {
       currentIndex: 0,
       title: 'Mina recept',
       actions: [
+        // Error indicator (visar om RecipeService har fel)
+        RecipeServiceConsumer(
+          builder: (context, recipeService, child) {
+            if (recipeService.hasError) {
+              return IconButton(
+                icon: AppTheme.errorIcon(context),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(recipeService.lastError!),
+                      action: SnackBarAction(
+                        label: 'Försök igen',
+                        onPressed: () {
+                          recipeService.clearError();
+                        },
+                      ),
+                    ),
+                  );
+                },
+                tooltip: 'Visa fel',
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+
+        // Sort menu
         PopupMenuButton<SortCriteria>(
           icon: Icon(
             _sortAscending ? Icons.sort : Icons.sort,
@@ -104,9 +131,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
         children: [
           // Sökfält
           Padding(
-            padding: EdgeInsets.all(
-              AppTheme.spacingSmPlus,
-            ), // ✅ SEMANTISK PADDING
+            padding: EdgeInsets.all(AppTheme.spacingSmPlus),
             child: AppSearchBar(
               controller: _searchController,
               hintText: 'Sök recept...',
@@ -115,75 +140,123 @@ class _MinaReceptViewState extends State<MinaReceptView> {
             ),
           ),
 
-          // Sökstatistik
-          if (_searchQuery.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSmPlus, // ✅ SEMANTISK PADDING
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: AppTheme.iconSizeInfo, // ✅ SEMANTISK STORLEK
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  SizedBox(width: AppTheme.spacingXs), // ✅ SEMANTISK GAP
-                  Text(
-                    '${_getFilteredAndSortedRecipes().length} recept hittades',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Receptlista
+          // Huvudinnehåll med RecipeService integration
           Expanded(
-            child: ValueListenableBuilder<List<Recipe>>(
-              valueListenable: dummyRecipesNotifier,
-              builder: (context, recipeList, _) {
-                final filteredRecipes = _getFilteredAndSortedRecipes();
+            child: RecipeServiceWidget(
+              showLoadingOverlay:
+                  false, // Visa loading state istället för overlay
+              builder: (recipes) {
+                final filteredRecipes = _getFilteredAndSortedRecipes(recipes);
 
-                if (filteredRecipes.isEmpty) {
-                  if (_searchQuery.isEmpty) {
-                    return EmptyState.noRecipes(
-                      onAction: () => Navigator.pushNamed(context, '/laggTill'),
-                    );
-                  } else {
-                    return EmptyState.noSearchResults(
-                      onAction: _onSearchCleared,
-                      actionLabel: 'Rensa sökning',
-                    );
-                  }
+                // Sökstatistik
+                Widget searchStats = const SizedBox.shrink();
+                if (_searchQuery.isNotEmpty) {
+                  searchStats = Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingSmPlus,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: AppTheme.iconSizeInfo,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        SizedBox(width: AppTheme.spacingXs),
+                        Text(
+                          '${filteredRecipes.length} recept hittades',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(
-                    vertical: AppTheme.spacingSm, // ✅ SEMANTISK PADDING
-                  ),
-                  itemCount: filteredRecipes.length,
-                  itemBuilder: (context, index) {
-                    final recipe = filteredRecipes[index];
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingSm, // ✅ SEMANTISK PADDING
-                        vertical: AppTheme.spacingXs, // ✅ SEMANTISK PADDING
+                // Empty states
+                if (filteredRecipes.isEmpty) {
+                  return Column(
+                    children: [
+                      searchStats,
+                      Expanded(
+                        child:
+                            _searchQuery.isEmpty
+                                ? EmptyState.noRecipes(
+                                  onAction:
+                                      () => Navigator.pushNamed(
+                                        context,
+                                        '/laggTill',
+                                      ),
+                                )
+                                : EmptyState.noSearchResults(
+                                  onAction: _onSearchCleared,
+                                  actionLabel: 'Rensa sökning',
+                                ),
                       ),
-                      child: RecipeCard(
-                        recipe: recipe,
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/receptDetalj',
-                            arguments: recipe,
+                    ],
+                  );
+                }
+
+                // Receptlista
+                return Column(
+                  children: [
+                    searchStats,
+                    if (_searchQuery.isNotEmpty) AppTheme.smallGap,
+
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.symmetric(
+                          vertical: AppTheme.spacingSm,
+                        ),
+                        itemCount: filteredRecipes.length,
+                        itemBuilder: (context, index) {
+                          final recipe = filteredRecipes[index];
+
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingSm,
+                              vertical: AppTheme.spacingXs,
+                            ),
+                            child: RecipeCard(
+                              recipe: recipe,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/receptDetalj',
+                                  arguments: recipe,
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
-                    );
-                  },
+                    ),
+                  ],
+                );
+              },
+              errorBuilder: (error) {
+                return Center(
+                  child: Padding(
+                    padding: AppTheme.screenPadding,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AppTheme.errorContainer(context, error),
+                        AppTheme.mediumGap,
+                        ElevatedButton(
+                          onPressed: () {
+                            _recipeService.clearError();
+                            _recipeService.initialize();
+                          },
+                          child: const Text('Försök igen'),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
@@ -208,13 +281,13 @@ class _MinaReceptViewState extends State<MinaReceptView> {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
-          SizedBox(width: AppTheme.spacingSm), // ✅ SEMANTISK GAP
+          SizedBox(width: AppTheme.spacingSm),
           Text(label),
           const Spacer(),
           if (isSelected)
             Icon(
               _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-              size: AppTheme.iconSizeInfo, // ✅ SEMANTISK STORLEK
+              size: AppTheme.iconSizeInfo,
               color: Theme.of(context).colorScheme.primary,
             ),
         ],

@@ -2,11 +2,12 @@
 
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
-import '../data/dummy_data.dart';
+import '../services/recipe_service.dart';
 import '../widgets/action_button.dart';
+import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD REDIGERA RECEPT VY
+/// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPESERVICE
 class EditRecipeView extends StatefulWidget {
   final Recipe recipe;
 
@@ -18,6 +19,7 @@ class EditRecipeView extends StatefulWidget {
 
 class _EditRecipeViewState extends State<EditRecipeView> {
   final _formKey = GlobalKey<FormState>();
+  final RecipeService _recipeService = RecipeService();
 
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
@@ -31,6 +33,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
   final List<TextEditingController> _tagControllers = [];
 
   String? _currentImageUrl;
+  bool _isSaving = false;
 
   // Måltidstyper för redigering
   final List<String> _mealTypes = [
@@ -46,6 +49,10 @@ class _EditRecipeViewState extends State<EditRecipeView> {
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
     final r = widget.recipe;
     _titleController = TextEditingController(text: r.title);
     _descriptionController = TextEditingController(text: r.description);
@@ -58,7 +65,6 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     _ratingController = TextEditingController(text: r.rating?.toString() ?? '');
     _imageUrlController = TextEditingController(text: r.imageUrl ?? '');
     _currentImageUrl = r.imageUrl;
-
     _selectedMealType = r.mealType;
 
     _imageUrlController.addListener(() {
@@ -70,6 +76,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
       }
     });
 
+    // Initiera dynamiska listor
     for (var ing in r.ingredients) {
       _ingredientControllers.add(TextEditingController(text: ing));
     }
@@ -121,8 +128,14 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     });
   }
 
-  void _saveRecipe() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _saveRecipe() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
       final updated = widget.recipe.copyWith(
         mealType: _selectedMealType,
         title: _titleController.text.trim(),
@@ -151,12 +164,31 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                 : _imageUrlController.text.trim(),
       );
 
-      final recipes = dummyRecipesNotifier.value;
-      final idx = recipes.indexWhere((r) => r.id == updated.id);
-      if (idx != -1) recipes[idx] = updated;
-      dummyRecipesNotifier.value = List.from(recipes);
+      // Använd RecipeService för att uppdatera
+      final result = await _recipeService.updateRecipe(updated);
 
-      Navigator.pop(context, true);
+      if (!mounted) return;
+
+      if (result.isSuccess) {
+        // Visa framgångsmeddelande
+        RecipeServiceSnackbar.showSuccess(context, result.message);
+        Navigator.pop(context, true);
+      } else {
+        // Visa felmeddelande
+        RecipeServiceSnackbar.showError(context, result.message);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      RecipeServiceSnackbar.showError(
+        context,
+        'Kunde inte spara recept: ${e.toString()}',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
@@ -167,11 +199,8 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTheme.formLabelStyle, // ✅ SEMANTISK STYLE
-        ),
-        AppTheme.smallGap, // ✅ SEMANTISK GAP
+        Text(label, style: AppTheme.formLabelStyle),
+        AppTheme.smallGap,
         ...controllers.asMap().entries.map((entry) {
           final i = entry.key;
           final c = entry.value;
@@ -190,10 +219,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                 ),
                 if (c.text.trim().isNotEmpty || i < controllers.length - 1)
                   IconButton(
-                    icon: AppTheme.actionIcon(
-                      context,
-                      Icons.delete,
-                    ), // ✅ SEMANTISK IKON
+                    icon: AppTheme.actionIcon(context, Icons.delete),
                     onPressed: () {
                       setState(() {
                         controllers.removeAt(i).dispose();
@@ -213,120 +239,163 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Redigera recept')),
       bottomNavigationBar: Padding(
-        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
+        padding: AppTheme.screenPadding,
         child: ActionButton.primary(
           label: 'Spara ändringar',
           icon: Icons.save,
-          onPressed: _saveRecipe,
+          onPressed: _isSaving ? null : _saveRecipe,
+          isLoading: _isSaving,
+          loadingText: 'Sparar...',
           isExpanded: true,
         ),
       ),
-      body: Padding(
-        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              // Redigera mealType
-              DropdownButtonFormField<String>(
-                value: _selectedMealType,
-                decoration: const InputDecoration(labelText: 'Måltidstyp'),
-                items:
-                    _mealTypes
-                        .map(
-                          (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
-                        )
-                        .toList(),
-                onChanged: (v) => setState(() => _selectedMealType = v!),
-              ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-              // Bildförhandsvisning
-              if (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(bottom: AppTheme.spacingMd),
-                  child: ClipRRect(
-                    borderRadius: AppTheme.largeRadius, // ✅ SEMANTISK RADIUS
-                    child: Image.network(
-                      _currentImageUrl!,
-                      height: AppTheme.imageHeightMedium, // ✅ SEMANTISK HEIGHT
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (ctx, err, stack) => Container(
-                            height: AppTheme.imageHeightMedium,
-                            color:
-                                Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Ogiltig bild-URL',
-                              style:
-                                  AppTheme.subtitleStyle, // ✅ SEMANTISK STYLE
-                            ),
-                          ),
+      body: Stack(
+        children: [
+          Padding(
+            padding: AppTheme.screenPadding,
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  // Måltidstyp
+                  DropdownButtonFormField<String>(
+                    value: _selectedMealType,
+                    decoration: const InputDecoration(labelText: 'Måltidstyp'),
+                    items:
+                        _mealTypes
+                            .map(
+                              (mt) =>
+                                  DropdownMenuItem(value: mt, child: Text(mt)),
+                            )
+                            .toList(),
+                    onChanged: (v) => setState(() => _selectedMealType = v!),
+                  ),
+                  AppTheme.mediumGap,
+
+                  // Bildförhandsvisning
+                  if (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: AppTheme.spacingMd),
+                      child: ClipRRect(
+                        borderRadius: AppTheme.largeRadius,
+                        child: Image.network(
+                          _currentImageUrl!,
+                          height: AppTheme.imageHeightMedium,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (ctx, err, stack) => Container(
+                                height: AppTheme.imageHeightMedium,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHighest,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Ogiltig bild-URL',
+                                  style: AppTheme.subtitleStyle,
+                                ),
+                              ),
+                        ),
+                      ),
+                    ),
+
+                  // Formulärfält
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(labelText: 'Titel'),
+                    validator:
+                        (v) =>
+                            v == null || v.trim().isEmpty
+                                ? 'Titel får inte vara tom'
+                                : null,
+                  ),
+                  AppTheme.mediumGap,
+
+                  TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 2,
+                    decoration: const InputDecoration(labelText: 'Beskrivning'),
+                  ),
+                  AppTheme.mediumGap,
+
+                  TextFormField(
+                    controller: _portionsController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Antal portioner',
                     ),
                   ),
-                ),
+                  AppTheme.mediumGap,
 
-              // Formulärfält
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel'),
-                validator:
-                    (v) =>
-                        v == null || v.trim().isEmpty
-                            ? 'Titel får inte vara tom'
-                            : null,
+                  TextFormField(
+                    controller: _timeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Tid (minuter)',
+                    ),
+                  ),
+                  AppTheme.mediumGap,
+
+                  _buildDynamicList('Ingrediens', _ingredientControllers),
+                  AppTheme.mediumGap,
+
+                  _buildDynamicList('Instruktion', _instructionControllers),
+                  AppTheme.mediumGap,
+
+                  _buildDynamicList('Tagg', _tagControllers),
+                  AppTheme.mediumGap,
+
+                  TextFormField(
+                    controller: _ratingController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+                  ),
+                  AppTheme.mediumGap,
+
+                  TextFormField(
+                    controller: _imageUrlController,
+                    decoration: const InputDecoration(labelText: 'Bild-URL'),
+                  ),
+                ],
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Beskrivning'),
-              ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              TextFormField(
-                controller: _portionsController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Antal portioner'),
-              ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              TextFormField(
-                controller: _timeController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Tid (minuter)'),
-              ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              _buildDynamicList('Ingrediens', _ingredientControllers),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              _buildDynamicList('Instruktion', _instructionControllers),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              _buildDynamicList('Tagg', _tagControllers),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              TextFormField(
-                controller: _ratingController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
-              ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: const InputDecoration(labelText: 'Bild-URL'),
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // Loading overlay när RecipeService arbetar
+          RecipeServiceConsumer(
+            builder: (context, recipeService, child) {
+              if (recipeService.isLoading && !_isSaving) {
+                return Container(
+                  color: Colors.black26,
+                  child: Center(
+                    child: Container(
+                      padding: AppTheme.cardPadding,
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        borderRadius: AppTheme.largeRadius,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppTheme.mediumLoadingIndicator(),
+                          AppTheme.smallGap,
+                          Text(
+                            'Uppdaterar recept...',
+                            style: AppTheme.subtitleStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
       ),
     );
   }
