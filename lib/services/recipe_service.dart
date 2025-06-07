@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
+import '../data/dummy_data.dart';
 
 /// Resultat av en RecipeService operation
 class RecipeOperationResult {
@@ -76,18 +77,18 @@ class RecipeService extends ChangeNotifier {
     if (_isInitialized) return;
 
     _setLoading(true);
-    clearError(); // ✅ FIXAT: Utan underscore
+    clearError();
 
     try {
       // Simulera loading från database/storage
       await Future.delayed(const Duration(milliseconds: 300));
 
-      // För nu använder vi mock data - senare ersätts med Firebase
-      _recipes = _generateMockRecipes();
+      // ✅ ANVÄND DUMMY_RECIPES SOM STANDARDRECEPT
+      _recipes = List.from(dummyRecipesNotifier.value);
 
       _isInitialized = true;
       debugPrint(
-        '✅ RecipeService: Initialiserad med ${_recipes.length} recept',
+        '✅ RecipeService: Initialiserad med ${_recipes.length} standardrecept',
       );
     } catch (e) {
       _setError('Kunde inte initialisera RecipeService: $e');
@@ -102,7 +103,7 @@ class RecipeService extends ChangeNotifier {
   /// Lägg till ett nytt recept
   Future<RecipeOperationResult> addRecipe(Recipe recipe) async {
     _setLoading(true);
-    clearError(); // ✅ FIXAT: Utan underscore
+    clearError();
 
     try {
       // Kontrollera att receptet inte redan finns
@@ -129,10 +130,10 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
-  /// Lägg till flera recept samtidigt
+  /// Lägg till flera recept samtidigt (för arkiv-import)
   Future<RecipeOperationResult> addMultipleRecipes(List<Recipe> recipes) async {
     _setLoading(true);
-    clearError(); // ✅ FIXAT: Utan underscore
+    clearError();
 
     try {
       await Future.delayed(const Duration(milliseconds: 500));
@@ -154,8 +155,8 @@ class RecipeService extends ChangeNotifier {
 
       final message =
           addedCount == recipes.length
-              ? 'Alla $addedCount recept importerade'
-              : '$addedCount av ${recipes.length} recept importerade';
+              ? 'Alla $addedCount recept importerade från arkiv'
+              : '$addedCount av ${recipes.length} recept importerade från arkiv';
 
       debugPrint('✅ RecipeService: $message');
       return RecipeOperationResult.success(
@@ -163,7 +164,7 @@ class RecipeService extends ChangeNotifier {
         warnings: warnings.isNotEmpty ? warnings : null,
       );
     } catch (e) {
-      final error = 'Kunde inte importera recept: $e';
+      final error = 'Kunde inte importera recept från arkiv: $e';
       _setError(error);
       return RecipeOperationResult.error(error);
     } finally {
@@ -174,7 +175,7 @@ class RecipeService extends ChangeNotifier {
   /// Uppdatera ett befintligt recept
   Future<RecipeOperationResult> updateRecipe(Recipe updatedRecipe) async {
     _setLoading(true);
-    clearError(); // ✅ FIXAT: Utan underscore
+    clearError();
 
     try {
       final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
@@ -207,7 +208,7 @@ class RecipeService extends ChangeNotifier {
   /// Ta bort ett recept
   Future<RecipeOperationResult> deleteRecipe(String recipeId) async {
     _setLoading(true);
-    clearError(); // ✅ FIXAT: Utan underscore
+    clearError();
 
     try {
       final recipe = _recipes.firstWhere(
@@ -296,7 +297,7 @@ class RecipeService extends ChangeNotifier {
   /// Refresh data (för pull-to-refresh)
   Future<void> refresh() async {
     _setLoading(true);
-    clearError(); // ✅ FIXAT: Utan underscore
+    clearError();
 
     try {
       // Simulera refresh från server
@@ -308,92 +309,6 @@ class RecipeService extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
-  }
-
-  // ===== MOCK DATA (TEMPORARY) =====
-
-  /// Generera mock recept för development
-  List<Recipe> _generateMockRecipes() {
-    return [
-      Recipe(
-        id: 'mock-1',
-        title: 'Krämig Kyckling Pasta',
-        description: 'En läcker pasta med kycklingfilé i krämig sås',
-        portions: 4,
-        timeMinutes: 30,
-        ingredients: [
-          '400g pasta',
-          '500g kycklingfilé',
-          '2 dl vispgrädde',
-          '1 gul lök',
-          '2 vitlöksklyftor',
-          'Salt och peppar',
-        ],
-        instructions: [
-          'Koka pastan enligt förpackningen',
-          'Stek kycklingen i bitar',
-          'Fräs löken och vitlöken',
-          'Tillsätt grädde och låt sjuda',
-          'Blanda med pastan och servera',
-        ],
-        tags: ['pasta', 'kyckling', 'middag'],
-        rating: 4.5,
-        imageUrl: null,
-        mealType: 'Middag',
-      ),
-      Recipe(
-        id: 'mock-2',
-        title: 'Klassisk Caesar Sallad',
-        description: 'Crispy sallad med hemgjord dressing',
-        portions: 2,
-        timeMinutes: 15,
-        ingredients: [
-          '1 isbergssallad',
-          '100g parmesan',
-          '2 dl krutonger',
-          '3 msk majonnäs',
-          '1 msk dijonsenap',
-          '1 vitlöksklyfta',
-        ],
-        instructions: [
-          'Skölj och hacka salladen',
-          'Gör dressing av majonnäs, senap och vitlök',
-          'Blanda alla ingredienser',
-          'Toppa med parmesan och krutonger',
-        ],
-        tags: ['sallad', 'lunch', 'vegetarisk'],
-        rating: 4.0,
-        imageUrl: null,
-        mealType: 'Lunch',
-      ),
-      Recipe(
-        id: 'mock-3',
-        title: 'Chokladmuffins',
-        description: 'Saftiga muffins med chokladbitar',
-        portions: 12,
-        timeMinutes: 25,
-        ingredients: [
-          '3 dl mjöl',
-          '2 dl socker',
-          '1 dl kakao',
-          '2 ägg',
-          '1 dl mjölk',
-          '100g smör',
-          '100g chokladbitar',
-        ],
-        instructions: [
-          'Sätt ugnen på 200°C',
-          'Blanda torra ingredienser',
-          'Vispa ihop ägg, mjölk och smält smör',
-          'Blanda allt och tillsätt chokladbitar',
-          'Grädda i 15-20 minuter',
-        ],
-        tags: ['bakning', 'dessert', 'choklad'],
-        rating: 4.8,
-        imageUrl: null,
-        mealType: 'Dessert',
-      ),
-    ];
   }
 
   @override
