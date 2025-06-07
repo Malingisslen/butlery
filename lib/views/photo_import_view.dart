@@ -6,8 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
+/// ✨ 100% THEME-CENTRALISERAD FOTO-OCR VY
 class PhotoImportView extends StatefulWidget {
   const PhotoImportView({super.key});
 
@@ -108,7 +110,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
       height: AppTheme.imageHeightMedium,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
         border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Center(
@@ -117,15 +119,13 @@ class _PhotoImportViewState extends State<PhotoImportView> {
           children: [
             Icon(
               Icons.camera_alt,
-              size: AppTheme.iconSizeHero, // ✅ SEMANTISK storlek
+              size: AppTheme.iconSizeHero, // ✅ SEMANTISK STORLEK
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            SizedBox(height: AppTheme.spacingSm),
+            AppTheme.smallGap, // ✅ SEMANTISK GAP
             Text(
               'Ingen bild vald',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: AppTheme.subtitleStyle, // ✅ SEMANTISK STYLE
             ),
           ],
         ),
@@ -137,15 +137,15 @@ class _PhotoImportViewState extends State<PhotoImportView> {
         height: AppTheme.imageHeightMedium,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
         ),
         child: Center(
-          child: AppTheme.mediumLoadingIndicator(),
-        ), // ✅ SEMANTISK loading
+          child: AppTheme.mediumLoadingIndicator(), // ✅ SEMANTISK LOADING
+        ),
       );
     } else if (_imageBytes != null) {
       imageWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
         child: Image.memory(
           _imageBytes!,
           height: AppTheme.imageHeightMedium,
@@ -155,7 +155,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
       );
     } else if (_imageFile != null) {
       imageWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
         child: Image.file(
           _imageFile!,
           height: AppTheme.imageHeightMedium,
@@ -168,50 +168,40 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Foto-OCR')),
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd),
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton.icon(
-              icon: Icon(
-                Icons.camera_alt,
-                size: AppTheme.iconSizeAction,
-              ), // ✅ SEMANTISK storlek
-              label: const Text('Ta bild & tolka'),
+            ActionButton.primary(
+              label: 'Ta bild & tolka',
+              icon: Icons.camera_alt,
               onPressed: _loading ? null : _pickAndRecognize,
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, AppTheme.buttonHeight),
-                padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
-              ),
+              isExpanded: true,
             ),
-            SizedBox(height: AppTheme.spacingMd),
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
             imageWidget,
-            SizedBox(height: AppTheme.spacingMd),
-
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
             // Error container med semantisk widget ✨
             if (_error != null) ...[
-              AppTheme.errorContainer(context, _error!), // ✅ SEMANTISK widget
-              SizedBox(height: AppTheme.spacingMd),
+              AppTheme.errorContainer(context, _error!), // ✅ SEMANTISK WIDGET
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
             ],
 
             // Om vi fick text tillbaka, visa förhandsgranskning + knappen
             if (_ocrText.isNotEmpty) ...[
               Text(
                 'Tolkad text:',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
+                style: AppTheme.sectionTitleStyle, // ✅ SEMANTISK STYLE
               ),
-              SizedBox(height: AppTheme.spacingSm),
+              AppTheme.smallGap, // ✅ SEMANTISK GAP
               Expanded(
                 flex: 2,
                 child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingMd),
+                  padding: AppTheme.cardPadding, // ✅ SEMANTISK PADDING
                   decoration: BoxDecoration(
                     color:
                         Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outline,
                     ),
@@ -219,13 +209,17 @@ class _PhotoImportViewState extends State<PhotoImportView> {
                   child: SingleChildScrollView(
                     child: Text(
                       _ocrText,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: AppTheme.spacingMd),
-              ElevatedButton(
+              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              ActionButton.primary(
+                label: 'Gå vidare till redigera',
                 onPressed: () {
                   // 3) Navigera till sociala-medier-vyn med OCR-texten
                   Navigator.pushNamed(
@@ -234,11 +228,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
                     arguments: _ocrText,
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, AppTheme.buttonHeight),
-                  padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
-                ),
-                child: const Text('Gå vidare till redigera'),
+                isExpanded: true,
               ),
             ],
           ],

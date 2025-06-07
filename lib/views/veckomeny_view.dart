@@ -10,7 +10,7 @@ import '../widgets/empty_state.dart';
 import '../services/menu_service.dart';
 import '../theme/app_theme.dart';
 
-/// Vy för att generera en anpassad veckomeny baserat på användarens prompt
+/// ✨ 100% THEME-CENTRALISERAD VY FÖR VECKOMENY-GENERERING
 class VeckomenyView extends StatefulWidget {
   const VeckomenyView({super.key});
 
@@ -60,21 +60,24 @@ class _VeckomenyViewState extends State<VeckomenyView> {
       currentIndex: 2,
       title: 'Veckomeny',
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingSm), // ✅ 8px från theme
+        padding: EdgeInsets.all(AppTheme.spacingSm), // ✅ SEMANTISK PADDING
         child: Column(
           children: [
             // ─── Prompt-input ───────────────────────────────────
             TextField(
               controller: _promptController,
               enabled: !_isGenerating,
-              decoration: const InputDecoration(
+              style:
+                  Theme.of(context).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
+              decoration: InputDecoration(
                 hintText: 'Ex: 3 middagar, 2 luncher och 1 frukost',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.edit),
+                hintStyle: AppTheme.inputHintStyle, // ✅ SEMANTISK STYLE
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.edit),
               ),
               onSubmitted: (_) => _generateMenu(),
             ),
-            SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+            SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
             ActionButton.primary(
               label: 'Generera meny',
               icon: Icons.restaurant_menu,
@@ -84,7 +87,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
               isExpanded: true,
             ),
 
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
             // ─── Visa den genererade menyn (scrollable) ─────────────────────
             Expanded(
               child:
@@ -96,19 +99,19 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: AppTheme.spacingSm,
-                              ), // ✅ 8px från theme
+                              ), // ✅ SEMANTISK PADDING
                               child: Text(
                                 entry.key,
                                 style:
                                     AppTheme
-                                        .sectionHeaderStyle, // ✅ Använder theme style
+                                        .sectionHeaderStyle, // ✅ SEMANTISK STYLE
                               ),
                             ),
                             for (final recipe in entry.value)
                               Padding(
                                 padding: EdgeInsets.symmetric(
                                   vertical:
-                                      AppTheme.spacingXs, // ✅ 4px från theme
+                                      AppTheme.spacingXs, // ✅ SEMANTISK PADDING
                                 ),
                                 child: CompactRecipeCard(
                                   recipe: recipe,
@@ -126,8 +129,10 @@ class _VeckomenyViewState extends State<VeckomenyView> {
 
                           // Extra padding längst ner för att undvika floating button
                           SizedBox(
-                            height: AppTheme.spacingXxl + AppTheme.spacingMd,
-                          ), // ✅ 48px + 16px från theme
+                            height:
+                                AppTheme.spacingXxl +
+                                AppTheme.spacingMd, // ✅ SEMANTISK GAP
+                          ),
                         ],
                       ),
             ),
@@ -135,7 +140,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
         ),
       ),
 
-      // Använd floatingActionButton för "Till inköpslista"
+      // Använd floatingActionButton för "Till inköpslista" med semantiska färger ✨
       floatingActionButton:
           _menu.isNotEmpty
               ? FloatingActionButton.extended(
@@ -148,8 +153,9 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                 },
                 icon: const Icon(Icons.shopping_cart),
                 label: const Text('Till inköpslista'),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: AppTheme.primaryColor, // ✅ SEMANTISK FÄRG
+                foregroundColor:
+                    Theme.of(context).colorScheme.onPrimary, // ✅ THEME FÄRG
               )
               : null,
     );

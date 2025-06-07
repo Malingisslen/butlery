@@ -298,6 +298,11 @@ class AppTheme {
   static const double spacingXxs = 2.0; // För mycket små mellanrum
   static const double spacingHuge = 64.0; // För stora section-separatorer
 
+  // ===== SEMANTISKA SPACING KOMBINATIONER =====
+
+  /// Ofta använd kombination: spacingSm + 4 = 12px
+  static const double spacingSmPlus = 12.0; // För input padding och liknande
+
   // ===== STANDARDISERADE EDGE INSETS =====
 
   /// Standardiserade EdgeInsets för vanliga användningsfall
