@@ -198,7 +198,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                                 if (currentRecipe.rating != null)
                                   _buildMetadataItem(
                                     Icons.star,
-                                    '${currentRecipe.rating!.toStringAsFixed(1)}',
+                                    currentRecipe.rating!.toStringAsFixed(1),
                                   ),
                               ],
                             ),
@@ -367,7 +367,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
                       AppTheme.extraLargeGap,
 
                       // Redigera-knapp
