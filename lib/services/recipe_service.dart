@@ -2,259 +2,403 @@
 
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
-import '../data/dummy_data.dart';
 
-/// Centraliserad service för hantering av recept
-/// Kapslar in all logik för CRUD-operationer och sökfunktioner
+/// Resultat av en RecipeService operation
+class RecipeOperationResult {
+  final bool isSuccess;
+  final String message;
+  final List<String>? warnings;
+
+  const RecipeOperationResult({
+    required this.isSuccess,
+    required this.message,
+    this.warnings,
+  });
+
+  factory RecipeOperationResult.success(
+    String message, {
+    List<String>? warnings,
+  }) {
+    return RecipeOperationResult(
+      isSuccess: true,
+      message: message,
+      warnings: warnings,
+    );
+  }
+
+  factory RecipeOperationResult.error(String message) {
+    return RecipeOperationResult(isSuccess: false, message: message);
+  }
+}
+
+/// Singleton service för att hantera recept
+/// Använder ChangeNotifier för reaktiv UI
 class RecipeService extends ChangeNotifier {
-  // Singleton pattern för global åtkomst
-  static final RecipeService _instance = RecipeService._internal();
-  factory RecipeService() => _instance;
+  static RecipeService? _instance;
+
+  // Private constructor för singleton
   RecipeService._internal();
 
-  // Privat lista som håller alla recept
-  List<Recipe> _recipes = [];
+  // Factory constructor som returnerar samma instans
+  factory RecipeService() {
+    _instance ??= RecipeService._internal();
+    return _instance!;
+  }
 
-  // Getter för att komma åt recepten (read-only)
+  // ===== STATE MANAGEMENT =====
+
+  List<Recipe> _recipes = [];
+  bool _isLoading = false;
+  String? _lastError;
+  bool _isInitialized = false;
+
+  // ===== GETTERS =====
+
+  /// Alla recept (read-only kopia)
   List<Recipe> get recipes => List.unmodifiable(_recipes);
 
-  // Laddar initial data (anropa från main.dart)
-  void initialize() {
-    _recipes = List.from(dummyRecipesNotifier.value);
-    notifyListeners();
+  /// Om service laddar just nu
+  bool get isLoading => _isLoading;
+
+  /// Senaste fel (null om inget fel)
+  String? get lastError => _lastError;
+
+  /// Om service har ett aktivt fel
+  bool get hasError => _lastError != null;
+
+  /// Om service är initialiserad
+  bool get isInitialized => _isInitialized;
+
+  // ===== INITIALIZATION =====
+
+  /// Initialisera service - ladda data från storage
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    _setLoading(true);
+    clearError(); // ✅ FIXAT: Utan underscore
+
+    try {
+      // Simulera loading från database/storage
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // För nu använder vi mock data - senare ersätts med Firebase
+      _recipes = _generateMockRecipes();
+
+      _isInitialized = true;
+      debugPrint(
+        '✅ RecipeService: Initialiserad med ${_recipes.length} recept',
+      );
+    } catch (e) {
+      _setError('Kunde inte initialisera RecipeService: $e');
+      debugPrint('❌ RecipeService: Initialiseringsfel: $e');
+    } finally {
+      _setLoading(false);
+    }
   }
 
-  // ===== CRUD OPERATIONER =====
+  // ===== CRUD OPERATIONS =====
 
-  /// Lägger till ett nytt recept
-  void addRecipe(Recipe recipe) {
-    _recipes.add(recipe);
-    _updateNotifier();
-    notifyListeners();
+  /// Lägg till ett nytt recept
+  Future<RecipeOperationResult> addRecipe(Recipe recipe) async {
+    _setLoading(true);
+    clearError(); // ✅ FIXAT: Utan underscore
+
+    try {
+      // Kontrollera att receptet inte redan finns
+      if (_recipes.any((r) => r.id == recipe.id)) {
+        return RecipeOperationResult.error(
+          'Recept med ID ${recipe.id} finns redan',
+        );
+      }
+
+      // Simulera async operation (Firebase senare)
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      _recipes.add(recipe);
+      notifyListeners();
+
+      debugPrint('✅ RecipeService: Lade till recept "${recipe.title}"');
+      return RecipeOperationResult.success('Recept "${recipe.title}" sparat');
+    } catch (e) {
+      final error = 'Kunde inte spara recept: $e';
+      _setError(error);
+      return RecipeOperationResult.error(error);
+    } finally {
+      _setLoading(false);
+    }
   }
 
-  /// Uppdaterar ett befintligt recept
-  void updateRecipe(Recipe updatedRecipe) {
-    final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
-    if (index != -1) {
+  /// Lägg till flera recept samtidigt
+  Future<RecipeOperationResult> addMultipleRecipes(List<Recipe> recipes) async {
+    _setLoading(true);
+    clearError(); // ✅ FIXAT: Utan underscore
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final warnings = <String>[];
+      int addedCount = 0;
+
+      for (final recipe in recipes) {
+        if (_recipes.any((r) => r.id == recipe.id)) {
+          warnings.add('Recept "${recipe.title}" finns redan');
+          continue;
+        }
+
+        _recipes.add(recipe);
+        addedCount++;
+      }
+
+      notifyListeners();
+
+      final message =
+          addedCount == recipes.length
+              ? 'Alla $addedCount recept importerade'
+              : '$addedCount av ${recipes.length} recept importerade';
+
+      debugPrint('✅ RecipeService: $message');
+      return RecipeOperationResult.success(
+        message,
+        warnings: warnings.isNotEmpty ? warnings : null,
+      );
+    } catch (e) {
+      final error = 'Kunde inte importera recept: $e';
+      _setError(error);
+      return RecipeOperationResult.error(error);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Uppdatera ett befintligt recept
+  Future<RecipeOperationResult> updateRecipe(Recipe updatedRecipe) async {
+    _setLoading(true);
+    clearError(); // ✅ FIXAT: Utan underscore
+
+    try {
+      final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
+      if (index == -1) {
+        return RecipeOperationResult.error(
+          'Recept med ID ${updatedRecipe.id} hittades inte',
+        );
+      }
+
+      await Future.delayed(const Duration(milliseconds: 200));
+
       _recipes[index] = updatedRecipe;
-      _updateNotifier();
+      notifyListeners();
+
+      debugPrint(
+        '✅ RecipeService: Uppdaterade recept "${updatedRecipe.title}"',
+      );
+      return RecipeOperationResult.success(
+        'Recept "${updatedRecipe.title}" uppdaterat',
+      );
+    } catch (e) {
+      final error = 'Kunde inte uppdatera recept: $e';
+      _setError(error);
+      return RecipeOperationResult.error(error);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Ta bort ett recept
+  Future<RecipeOperationResult> deleteRecipe(String recipeId) async {
+    _setLoading(true);
+    clearError(); // ✅ FIXAT: Utan underscore
+
+    try {
+      final recipe = _recipes.firstWhere(
+        (r) => r.id == recipeId,
+        orElse: () => throw Exception('Recept hittades inte'),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      _recipes.removeWhere((r) => r.id == recipeId);
+      notifyListeners();
+
+      debugPrint('✅ RecipeService: Tog bort recept "${recipe.title}"');
+      return RecipeOperationResult.success(
+        'Recept "${recipe.title}" borttaget',
+      );
+    } catch (e) {
+      final error = 'Kunde inte ta bort recept: $e';
+      _setError(error);
+      return RecipeOperationResult.error(error);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Hämta recept by ID
+  Recipe? getRecipeById(String id) {
+    try {
+      return _recipes.firstWhere((r) => r.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Sök recept
+  List<Recipe> searchRecipes(String query) {
+    if (query.isEmpty) return recipes;
+
+    final lowerQuery = query.toLowerCase();
+    return _recipes.where((recipe) {
+      return recipe.title.toLowerCase().contains(lowerQuery) ||
+          recipe.description.toLowerCase().contains(lowerQuery) ||
+          recipe.ingredients.any(
+            (ing) => ing.toLowerCase().contains(lowerQuery),
+          ) ||
+          (recipe.tags?.any((tag) => tag.toLowerCase().contains(lowerQuery)) ??
+              false);
+    }).toList();
+  }
+
+  // ===== ERROR HANDLING =====
+
+  /// Rensa fel
+  void clearError() {
+    if (_lastError != null) {
+      _lastError = null;
       notifyListeners();
     }
   }
 
-  /// Tar bort ett recept
-  void deleteRecipe(String recipeId) {
-    _recipes.removeWhere((r) => r.id == recipeId);
-    _updateNotifier();
+  /// Sätt fel
+  void _setError(String error) {
+    _lastError = error;
     notifyListeners();
   }
 
-  /// Lägger till flera recept (t.ex. från arkiv)
-  void addMultipleRecipes(List<Recipe> newRecipes) {
-    _recipes.addAll(newRecipes);
-    _updateNotifier();
+  /// Sätt loading state
+  void _setLoading(bool loading) {
+    if (_isLoading != loading) {
+      _isLoading = loading;
+      notifyListeners();
+    }
+  }
+
+  // ===== UTILITY METHODS =====
+
+  /// Återställ service (för testing)
+  void reset() {
+    _recipes.clear();
+    _isLoading = false;
+    _lastError = null;
+    _isInitialized = false;
     notifyListeners();
   }
 
-  // ===== SÖKFUNKTIONER =====
+  /// Refresh data (för pull-to-refresh)
+  Future<void> refresh() async {
+    _setLoading(true);
+    clearError(); // ✅ FIXAT: Utan underscore
 
-  /// Söker recept baserat på query-sträng
-  List<Recipe> searchRecipes(String query) {
-    if (query.trim().isEmpty) return recipes;
-
-    final lowerQuery = query.toLowerCase().trim();
-
-    return _recipes.where((recipe) {
-      return _matchesSearchQuery(recipe, lowerQuery);
-    }).toList();
-  }
-
-  /// Filtrerar recept baserat på måltidstyp
-  List<Recipe> getRecipesByMealType(String mealType) {
-    return _recipes.where((recipe) => recipe.mealType == mealType).toList();
-  }
-
-  /// Filtrerar recept baserat på taggar (AND-logik)
-  List<Recipe> getRecipesByTags(List<String> tags) {
-    if (tags.isEmpty) return recipes;
-
-    return _recipes.where((recipe) {
-      return tags.every((tag) => recipe.tags?.contains(tag) ?? false);
-    }).toList();
-  }
-
-  /// Filtrerar recept baserat på tid
-  List<Recipe> getRecipesByMaxTime(int maxMinutes) {
-    return _recipes.where((recipe) {
-      return recipe.timeMinutes != null && recipe.timeMinutes! <= maxMinutes;
-    }).toList();
-  }
-
-  /// Avancerad filtrering med flera kriterier
-  List<Recipe> filterRecipes({
-    String? searchQuery,
-    String? mealType,
-    List<String>? tags,
-    int? maxTime,
-    double? minRating,
-  }) {
-    var filtered = List<Recipe>.from(_recipes);
-
-    // Sökquery
-    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
-      filtered =
-          filtered.where((recipe) {
-            return _matchesSearchQuery(recipe, searchQuery.toLowerCase());
-          }).toList();
+    try {
+      // Simulera refresh från server
+      await Future.delayed(const Duration(milliseconds: 500));
+      // I framtiden: ladda om från Firebase
+      notifyListeners();
+    } catch (e) {
+      _setError('Kunde inte uppdatera data: $e');
+    } finally {
+      _setLoading(false);
     }
-
-    // Måltidstyp
-    if (mealType != null) {
-      filtered =
-          filtered.where((recipe) => recipe.mealType == mealType).toList();
-    }
-
-    // Taggar (AND-logik)
-    if (tags != null && tags.isNotEmpty) {
-      filtered =
-          filtered.where((recipe) {
-            return tags.every((tag) => recipe.tags?.contains(tag) ?? false);
-          }).toList();
-    }
-
-    // Max tid
-    if (maxTime != null) {
-      filtered =
-          filtered.where((recipe) {
-            return recipe.timeMinutes != null && recipe.timeMinutes! <= maxTime;
-          }).toList();
-    }
-
-    // Min betyg
-    if (minRating != null) {
-      filtered =
-          filtered.where((recipe) {
-            return recipe.rating != null && recipe.rating! >= minRating;
-          }).toList();
-    }
-
-    return filtered;
   }
 
-  // ===== STATISTIK OCH HJÄLPFUNKTIONER =====
+  // ===== MOCK DATA (TEMPORARY) =====
 
-  /// Hämtar alla unika taggar från alla recept
-  List<String> getAllTags() {
-    final allTags = <String>{};
-    for (final recipe in _recipes) {
-      if (recipe.tags != null) {
-        allTags.addAll(recipe.tags!);
-      }
-    }
-    return allTags.toList()..sort();
+  /// Generera mock recept för development
+  List<Recipe> _generateMockRecipes() {
+    return [
+      Recipe(
+        id: 'mock-1',
+        title: 'Krämig Kyckling Pasta',
+        description: 'En läcker pasta med kycklingfilé i krämig sås',
+        portions: 4,
+        timeMinutes: 30,
+        ingredients: [
+          '400g pasta',
+          '500g kycklingfilé',
+          '2 dl vispgrädde',
+          '1 gul lök',
+          '2 vitlöksklyftor',
+          'Salt och peppar',
+        ],
+        instructions: [
+          'Koka pastan enligt förpackningen',
+          'Stek kycklingen i bitar',
+          'Fräs löken och vitlöken',
+          'Tillsätt grädde och låt sjuda',
+          'Blanda med pastan och servera',
+        ],
+        tags: ['pasta', 'kyckling', 'middag'],
+        rating: 4.5,
+        imageUrl: null,
+        mealType: 'Middag',
+      ),
+      Recipe(
+        id: 'mock-2',
+        title: 'Klassisk Caesar Sallad',
+        description: 'Crispy sallad med hemgjord dressing',
+        portions: 2,
+        timeMinutes: 15,
+        ingredients: [
+          '1 isbergssallad',
+          '100g parmesan',
+          '2 dl krutonger',
+          '3 msk majonnäs',
+          '1 msk dijonsenap',
+          '1 vitlöksklyfta',
+        ],
+        instructions: [
+          'Skölj och hacka salladen',
+          'Gör dressing av majonnäs, senap och vitlök',
+          'Blanda alla ingredienser',
+          'Toppa med parmesan och krutonger',
+        ],
+        tags: ['sallad', 'lunch', 'vegetarisk'],
+        rating: 4.0,
+        imageUrl: null,
+        mealType: 'Lunch',
+      ),
+      Recipe(
+        id: 'mock-3',
+        title: 'Chokladmuffins',
+        description: 'Saftiga muffins med chokladbitar',
+        portions: 12,
+        timeMinutes: 25,
+        ingredients: [
+          '3 dl mjöl',
+          '2 dl socker',
+          '1 dl kakao',
+          '2 ägg',
+          '1 dl mjölk',
+          '100g smör',
+          '100g chokladbitar',
+        ],
+        instructions: [
+          'Sätt ugnen på 200°C',
+          'Blanda torra ingredienser',
+          'Vispa ihop ägg, mjölk och smält smör',
+          'Blanda allt och tillsätt chokladbitar',
+          'Grädda i 15-20 minuter',
+        ],
+        tags: ['bakning', 'dessert', 'choklad'],
+        rating: 4.8,
+        imageUrl: null,
+        mealType: 'Dessert',
+      ),
+    ];
   }
 
-  /// Hämtar alla måltidstyper
-  List<String> getAllMealTypes() {
-    return _recipes.map((r) => r.mealType).toSet().toList()..sort();
-  }
-
-  /// Räknar recept per måltidstyp
-  Map<String, int> getRecipeCountByMealType() {
-    final counts = <String, int>{};
-    for (final recipe in _recipes) {
-      counts[recipe.mealType] = (counts[recipe.mealType] ?? 0) + 1;
-    }
-    return counts;
-  }
-
-  /// Hämtar slumpmässiga recept för förslag
-  List<Recipe> getRandomRecipes(int count) {
-    final shuffled = List<Recipe>.from(_recipes)..shuffle();
-    return shuffled.take(count).toList();
-  }
-
-  /// Hämtar högst betygsatta recept
-  List<Recipe> getTopRatedRecipes(int count) {
-    final sorted = List<Recipe>.from(_recipes);
-    sorted.sort((a, b) {
-      final ratingA = a.rating ?? 0;
-      final ratingB = b.rating ?? 0;
-      return ratingB.compareTo(ratingA);
-    });
-    return sorted.take(count).toList();
-  }
-
-  // ===== PRIVATA HJÄLPFUNKTIONER =====
-
-  /// Kontrollerar om ett recept matchar en sökfråga
-  bool _matchesSearchQuery(Recipe recipe, String query) {
-    // Titel
-    if (recipe.title.toLowerCase().contains(query)) return true;
-
-    // Beskrivning
-    if (recipe.description.toLowerCase().contains(query)) return true;
-
-    // Ingredienser
-    if (recipe.ingredients.any(
-      (ingredient) => ingredient.toLowerCase().contains(query),
-    )) {
-      return true;
-    }
-
-    // Instruktioner
-    if (recipe.instructions.any(
-      (instruction) => instruction.toLowerCase().contains(query),
-    )) {
-      return true;
-    }
-
-    // Taggar
-    if (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ?? false) {
-      return true;
-    }
-
-    // Numeriska fält (portioner, tid, betyg)
-    final queryAsNumber = double.tryParse(query);
-    if (queryAsNumber != null) {
-      if (recipe.portions?.toString().contains(query) ?? false) return true;
-      if (recipe.timeMinutes?.toString().contains(query) ?? false) return true;
-      if (recipe.rating?.toString().contains(query) ?? false) return true;
-    }
-
-    return false;
-  }
-
-  /// Uppdaterar den gamla ValueNotifier för bakåtkompatibilitet
-  void _updateNotifier() {
-    dummyRecipesNotifier.value = List.from(_recipes);
-  }
-
-  // ===== IMPORT/EXPORT =====
-
-  /// Exporterar alla recept som JSON (för framtida implementering)
-  Map<String, dynamic> exportRecipes() {
-    return {
-      'recipes':
-          _recipes
-              .map(
-                (recipe) => {
-                  'id': recipe.id,
-                  'title': recipe.title,
-                  'description': recipe.description,
-                  'portions': recipe.portions,
-                  'timeMinutes': recipe.timeMinutes,
-                  'ingredients': recipe.ingredients,
-                  'instructions': recipe.instructions,
-                  'tags': recipe.tags,
-                  'rating': recipe.rating,
-                  'imageUrl': recipe.imageUrl,
-                  'mealType': recipe.mealType,
-                },
-              )
-              .toList(),
-      'exportDate': DateTime.now().toIso8601String(),
-    };
+  @override
+  void dispose() {
+    // Cleanup om behövs
+    super.dispose();
   }
 }

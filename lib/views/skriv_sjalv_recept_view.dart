@@ -3,11 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
-import '../data/dummy_data.dart';
+import '../services/recipe_service.dart';
 import '../widgets/action_button.dart';
+import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD VY FÖR MANUELL RECEPTINMATNING
+/// ✨ UPPDATERAD VY MED RECIPESERVICE INTEGRATION
 class SkrivSjalvReceptView extends StatefulWidget {
   final Recipe? initialRecipe;
 
@@ -20,6 +21,7 @@ class SkrivSjalvReceptView extends StatefulWidget {
 class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
   final _formKey = GlobalKey<FormState>();
   final _uuid = const Uuid();
+  final RecipeService _recipeService = RecipeService();
 
   late TextEditingController _titleCtrl;
   late TextEditingController _descCtrl;
@@ -31,6 +33,8 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
   late List<TextEditingController> _ingredientCtrls;
   late List<TextEditingController> _instructionCtrls;
   late List<TextEditingController> _tagCtrls;
+
+  bool _isSaving = false;
 
   // Möjliga måltidstyper
   final List<String> _mealTypes = [
@@ -46,6 +50,10 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
     final r = widget.initialRecipe;
 
     // Initiera kontroller
@@ -119,66 +127,86 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     });
   }
 
-  void _saveRecipe() {
+  Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final ingredients =
-        _ingredientCtrls
-            .map((c) => c.text.trim())
-            .where((s) => s.isNotEmpty)
-            .toList();
-    final instructions =
-        _instructionCtrls
-            .map((c) => c.text.trim())
-            .where((s) => s.isNotEmpty)
-            .toList();
-    final tags =
-        _tagCtrls.map((c) => c.text.trim()).where((s) => s.isNotEmpty).toList();
+    setState(() {
+      _isSaving = true;
+    });
 
-    final newRecipe = Recipe(
-      id: widget.initialRecipe?.id ?? _uuid.v4(),
-      title: _titleCtrl.text.trim(),
-      description: _descCtrl.text.trim(),
-      portions: int.tryParse(_portionsCtrl.text.trim()),
-      timeMinutes: int.tryParse(_timeCtrl.text.trim()),
-      ingredients: ingredients,
-      instructions: instructions,
-      tags: tags,
-      rating: double.tryParse(_ratingCtrl.text.trim().replaceAll(',', '.')),
-      imageUrl:
-          _imageUrlCtrl.text.trim().isEmpty ? null : _imageUrlCtrl.text.trim(),
-      mealType: _selectedMealType,
-    );
+    try {
+      final ingredients =
+          _ingredientCtrls
+              .map((c) => c.text.trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
+      final instructions =
+          _instructionCtrls
+              .map((c) => c.text.trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
+      final tags =
+          _tagCtrls
+              .map((c) => c.text.trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
 
-    // Lägg till eller uppdatera i dummy-data, med fix för idx == -1
-    final list = dummyRecipesNotifier.value;
-    if (widget.initialRecipe == null) {
-      // Nytt recept
-      dummyRecipesNotifier.value = [...list, newRecipe];
-    } else {
-      final idx = list.indexWhere((r) => r.id == newRecipe.id);
-      if (idx >= 0) {
-        // Uppdatera befintligt
-        list[idx] = newRecipe;
-        dummyRecipesNotifier.value = List.from(list);
+      final newRecipe = Recipe(
+        id: widget.initialRecipe?.id ?? _uuid.v4(),
+        title: _titleCtrl.text.trim(),
+        description: _descCtrl.text.trim(),
+        portions: int.tryParse(_portionsCtrl.text.trim()),
+        timeMinutes: int.tryParse(_timeCtrl.text.trim()),
+        ingredients: ingredients,
+        instructions: instructions,
+        tags: tags,
+        rating: double.tryParse(_ratingCtrl.text.trim().replaceAll(',', '.')),
+        imageUrl:
+            _imageUrlCtrl.text.trim().isEmpty
+                ? null
+                : _imageUrlCtrl.text.trim(),
+        mealType: _selectedMealType,
+      );
+
+      RecipeOperationResult result;
+
+      if (widget.initialRecipe == null) {
+        // Nytt recept
+        result = await _recipeService.addRecipe(newRecipe);
       } else {
-        // Receptet fanns inte i listan (ex. hämtat via OCR/URL) → lägg till nytt
-        dummyRecipesNotifier.value = [...list, newRecipe];
+        // Uppdatera befintligt recept
+        result = await _recipeService.updateRecipe(newRecipe);
+      }
+
+      if (!mounted) return;
+
+      if (result.isSuccess) {
+        RecipeServiceSnackbar.showSuccess(context, result.message);
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+      } else {
+        RecipeServiceSnackbar.showError(context, result.message);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      RecipeServiceSnackbar.showError(
+        context,
+        'Kunde inte spara recept: ${e.toString()}',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
-
-    Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
   }
 
   Widget _buildDynamicList(String label, List<TextEditingController> ctrls) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTheme.formLabelStyle, // ✅ SEMANTISK STYLE
-        ),
-        AppTheme.smallGap, // ✅ SEMANTISK GAP
+        Text(label, style: AppTheme.formLabelStyle),
+        AppTheme.smallGap,
         ...ctrls.asMap().entries.map((e) {
           final i = e.key;
           final c = e.value;
@@ -190,20 +218,14 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                   child: TextFormField(
                     controller: c,
                     decoration: InputDecoration(hintText: '$label ${i + 1}'),
-                    style:
-                        Theme.of(
-                          context,
-                        ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
+                    style: Theme.of(context).textTheme.bodyMedium,
                     textInputAction: TextInputAction.next,
                     onChanged: (v) => _handleListChange(ctrls, i, v),
                   ),
                 ),
                 if (ctrls.length > 1)
                   IconButton(
-                    icon: AppTheme.actionIcon(
-                      context,
-                      Icons.delete,
-                    ), // ✅ SEMANTISK IKON
+                    icon: AppTheme.actionIcon(context, Icons.delete),
                     onPressed: () {
                       setState(() {
                         ctrls.removeAt(i).dispose();
@@ -222,143 +244,171 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Skriv / Redigera recept')),
-      body: Padding(
-        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            // Lägger till extra padding längst ner så inget innehåll hamnar under knappen
-            padding: EdgeInsets.only(
-              bottom: AppTheme.spacingXxl + AppTheme.spacingMd,
-            ), // ✅ SEMANTISK PADDING
-            children: [
-              // Måltidstyp
-              DropdownButtonFormField<String>(
-                value: _selectedMealType,
-                decoration: const InputDecoration(labelText: 'Måltidstyp'),
-                style:
-                    Theme.of(
-                      context,
-                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                items:
-                    _mealTypes
-                        .map(
-                          (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
-                        )
-                        .toList(),
-                onChanged: (v) => setState(() => _selectedMealType = v!),
-              ),
-              SizedBox(
-                height: AppTheme.spacingSmPlus,
-              ), // ✅ SEMANTISK GAP (12px)
-              // Titel
-              TextFormField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(labelText: 'Titel'),
-                style:
-                    Theme.of(
-                      context,
-                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                textInputAction: TextInputAction.next,
-                validator:
-                    (v) => v == null || v.trim().isEmpty ? 'Ange titel' : null,
-              ),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Beskrivning
-              TextFormField(
-                controller: _descCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Beskrivning'),
-                style:
-                    Theme.of(
-                      context,
-                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                textInputAction: TextInputAction.next,
-              ),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Portioner & Tid
-              Row(
+      body: Stack(
+        children: [
+          Padding(
+            padding: AppTheme.screenPadding,
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: EdgeInsets.only(
+                  bottom: AppTheme.spacingXxl + AppTheme.spacingMd,
+                ),
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _portionsCtrl,
-                      decoration: const InputDecoration(labelText: 'Portioner'),
-                      style:
-                          Theme.of(
-                            context,
-                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
-                    ),
+                  // Måltidstyp
+                  DropdownButtonFormField<String>(
+                    value: _selectedMealType,
+                    decoration: const InputDecoration(labelText: 'Måltidstyp'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    items:
+                        _mealTypes
+                            .map(
+                              (mt) =>
+                                  DropdownMenuItem(value: mt, child: Text(mt)),
+                            )
+                            .toList(),
+                    onChanged: (v) => setState(() => _selectedMealType = v!),
                   ),
-                  SizedBox(width: AppTheme.spacingMd), // ✅ SEMANTISK GAP
-                  Expanded(
-                    child: TextFormField(
-                      controller: _timeCtrl,
-                      decoration: const InputDecoration(labelText: 'Tid (min)'),
-                      style:
-                          Theme.of(
-                            context,
-                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Titel
+                  TextFormField(
+                    controller: _titleCtrl,
+                    decoration: const InputDecoration(labelText: 'Titel'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textInputAction: TextInputAction.next,
+                    validator:
+                        (v) =>
+                            v == null || v.trim().isEmpty ? 'Ange titel' : null,
+                  ),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Beskrivning
+                  TextFormField(
+                    controller: _descCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(labelText: 'Beskrivning'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Portioner & Tid
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _portionsCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Portioner',
+                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ),
+                      SizedBox(width: AppTheme.spacingMd),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _timeCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Tid (min)',
+                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Ingredienser
+                  _buildDynamicList('Ingrediens', _ingredientCtrls),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Instruktioner
+                  _buildDynamicList('Instruktion', _instructionCtrls),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Taggar
+                  _buildDynamicList('Tagg', _tagCtrls),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Betyg
+                  TextFormField(
+                    controller: _ratingCtrl,
+                    decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
+                    textInputAction: TextInputAction.next,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return null;
+                      final val = double.tryParse(v.replaceAll(',', '.'));
+                      return (val == null || val < 0 || val > 5)
+                          ? 'Betyg måste vara mellan 0 och 5'
+                          : null;
+                    },
+                  ),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Bild-URL
+                  TextFormField(
+                    controller: _imageUrlCtrl,
+                    decoration: const InputDecoration(labelText: 'Bild-URL'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    keyboardType: TextInputType.url,
                   ),
                 ],
               ),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Ingredienser
-              _buildDynamicList('Ingrediens', _ingredientCtrls),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Instruktioner
-              _buildDynamicList('Instruktion', _instructionCtrls),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Taggar
-              _buildDynamicList('Tagg', _tagCtrls),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Betyg
-              TextFormField(
-                controller: _ratingCtrl,
-                decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
-                style:
-                    Theme.of(
-                      context,
-                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                textInputAction: TextInputAction.next,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return null;
-                  final val = double.tryParse(v.replaceAll(',', '.'));
-                  return (val == null || val < 0 || val > 5)
-                      ? 'Betyg måste vara mellan 0 och 5'
-                      : null;
-                },
-              ),
-              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
-              // Bild-URL
-              TextFormField(
-                controller: _imageUrlCtrl,
-                decoration: const InputDecoration(labelText: 'Bild-URL'),
-                style:
-                    Theme.of(
-                      context,
-                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
-                keyboardType: TextInputType.url,
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // Loading overlay för RecipeService
+          RecipeServiceConsumer(
+            builder: (context, recipeService, child) {
+              if (recipeService.isLoading && !_isSaving) {
+                return Container(
+                  color: Colors.black26,
+                  child: Center(
+                    child: Container(
+                      padding: AppTheme.cardPadding,
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        borderRadius: AppTheme.largeRadius,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppTheme.mediumLoadingIndicator(),
+                          AppTheme.smallGap,
+                          Text(
+                            'Bearbetar recept...',
+                            style: AppTheme.subtitleStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
       ),
 
-      // Spara-knappen ligger i bottomNavigationBar så att inget klickbart innehåll täcker den.
+      // Spara-knappen
       bottomNavigationBar: Padding(
-        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
+        padding: AppTheme.screenPadding,
         child: ActionButton.primary(
           label: 'Spara recept',
           icon: Icons.save,
-          onPressed: _saveRecipe,
+          onPressed: _isSaving ? null : _saveRecipe,
+          isLoading: _isSaving,
+          loadingText: 'Sparar...',
           isExpanded: true,
         ),
       ),
