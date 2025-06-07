@@ -1,6 +1,9 @@
+// lib/widgets/instruction_editor.dart
+
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// ✨ 100% THEME-CENTRALISERAD INSTRUKTIONS-EDITOR
 class InstructionEditor extends StatefulWidget {
   final List<String> initialInstructions;
 
@@ -56,14 +59,15 @@ class _InstructionEditorState extends State<InstructionEditor> {
       children: List.generate(controllers.length, (i) {
         return Padding(
           padding: EdgeInsets.symmetric(
-            vertical: AppTheme.spacingXs,
-          ), // ✅ 4px från theme
+            vertical: AppTheme.spacingXs, // ✅ SEMANTISK PADDING
+          ),
           child: TextFormField(
             controller: controllers[i],
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               labelText: 'Instruktion',
             ),
+            style: Theme.of(context).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
             onFieldSubmitted: (_) => _handleEnterPressed(i, controllers[i]),
             textInputAction: TextInputAction.newline,
             keyboardType: TextInputType.multiline,

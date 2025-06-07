@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
+import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
-/// Vy för manuell inmatning eller redigering av recept.
+/// ✨ 100% THEME-CENTRALISERAD VY FÖR MANUELL RECEPTINMATNING
 class SkrivSjalvReceptView extends StatefulWidget {
   final Recipe? initialRecipe;
 
@@ -175,32 +176,34 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
-          ),
+          style: AppTheme.formLabelStyle, // ✅ SEMANTISK STYLE
         ),
-        SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
+        AppTheme.smallGap, // ✅ SEMANTISK GAP
         ...ctrls.asMap().entries.map((e) {
           final i = e.key;
           final c = e.value;
           return Padding(
-            padding: EdgeInsets.only(
-              bottom: AppTheme.spacingSm,
-            ), // ✅ 8px från theme
+            padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
             child: Row(
               children: [
                 Expanded(
                   child: TextFormField(
                     controller: c,
                     decoration: InputDecoration(hintText: '$label ${i + 1}'),
+                    style:
+                        Theme.of(
+                          context,
+                        ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                     textInputAction: TextInputAction.next,
                     onChanged: (v) => _handleListChange(ctrls, i, v),
                   ),
                 ),
                 if (ctrls.length > 1)
                   IconButton(
-                    icon: const Icon(Icons.delete),
+                    icon: AppTheme.actionIcon(
+                      context,
+                      Icons.delete,
+                    ), // ✅ SEMANTISK IKON
                     onPressed: () {
                       setState(() {
                         ctrls.removeAt(i).dispose();
@@ -220,20 +223,23 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Skriv / Redigera recept')),
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
         child: Form(
           key: _formKey,
           child: ListView(
-            // Lägger till extra padding längst ner så,
-            // inget innehåll hamnar under knappen
+            // Lägger till extra padding längst ner så inget innehåll hamnar under knappen
             padding: EdgeInsets.only(
               bottom: AppTheme.spacingXxl + AppTheme.spacingMd,
-            ), // ✅ 48px + 16px från theme
+            ), // ✅ SEMANTISK PADDING
             children: [
               // Måltidstyp
               DropdownButtonFormField<String>(
                 value: _selectedMealType,
                 decoration: const InputDecoration(labelText: 'Måltidstyp'),
+                style:
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                 items:
                     _mealTypes
                         .map(
@@ -242,24 +248,34 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                         .toList(),
                 onChanged: (v) => setState(() => _selectedMealType = v!),
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(
+                height: AppTheme.spacingSmPlus,
+              ), // ✅ SEMANTISK GAP (12px)
               // Titel
               TextFormField(
                 controller: _titleCtrl,
                 decoration: const InputDecoration(labelText: 'Titel'),
+                style:
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                 textInputAction: TextInputAction.next,
                 validator:
                     (v) => v == null || v.trim().isEmpty ? 'Ange titel' : null,
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Beskrivning
               TextFormField(
                 controller: _descCtrl,
                 maxLines: 2,
                 decoration: const InputDecoration(labelText: 'Beskrivning'),
+                style:
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                 textInputAction: TextInputAction.next,
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Portioner & Tid
               Row(
                 children: [
@@ -267,35 +283,47 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                     child: TextFormField(
                       controller: _portionsCtrl,
                       decoration: const InputDecoration(labelText: 'Portioner'),
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
                     ),
                   ),
-                  SizedBox(width: AppTheme.spacingMd), // ✅ 16px från theme
+                  SizedBox(width: AppTheme.spacingMd), // ✅ SEMANTISK GAP
                   Expanded(
                     child: TextFormField(
                       controller: _timeCtrl,
                       decoration: const InputDecoration(labelText: 'Tid (min)'),
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Ingredienser
               _buildDynamicList('Ingrediens', _ingredientCtrls),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Instruktioner
               _buildDynamicList('Instruktion', _instructionCtrls),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Taggar
               _buildDynamicList('Tagg', _tagCtrls),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Betyg
               TextFormField(
                 controller: _ratingCtrl,
                 decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+                style:
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -308,11 +336,15 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                       : null;
                 },
               ),
-              SizedBox(height: AppTheme.spacingSm + 4), // ✅ 12px från theme
+              SizedBox(height: AppTheme.spacingSmPlus), // ✅ SEMANTISK GAP
               // Bild-URL
               TextFormField(
                 controller: _imageUrlCtrl,
                 decoration: const InputDecoration(labelText: 'Bild-URL'),
+                style:
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                 keyboardType: TextInputType.url,
               ),
             ],
@@ -320,14 +352,14 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
         ),
       ),
 
-      // Spara-knappen ligger i bottomNavigationBar så att inget
-      // klickbart innehåll täcker den.
+      // Spara-knappen ligger i bottomNavigationBar så att inget klickbart innehåll täcker den.
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.save),
-          label: const Text('Spara recept'),
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
+        child: ActionButton.primary(
+          label: 'Spara recept',
+          icon: Icons.save,
           onPressed: _saveRecipe,
+          isExpanded: true,
         ),
       ),
     );

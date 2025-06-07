@@ -1,10 +1,13 @@
+// lib/views/fran_sociala_medier_view.dart
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../views/skriv_sjalv_recept_view.dart';
+import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
-/// Vy för att klistra in text från sociala medier och parsa till recept.
+/// ✨ 100% THEME-CENTRALISERAD VY FÖR SOCIAL MEDIA IMPORT
 /// Tar emot initialText om du vill förifylla från t.ex. OCR eller URL-import.
 class FranSocialaMedierView extends StatefulWidget {
   final String? initialText;
@@ -178,35 +181,32 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Klistra in recepttext')),
       body: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd), // ✅ 16px från theme
+        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
         child: Column(
           children: [
             Expanded(
               child: TextFormField(
                 controller: _textController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Klistra in text här…',
+                  hintStyle: AppTheme.inputHintStyle, // ✅ SEMANTISK STYLE
                 ),
+                style:
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.newline,
                 maxLines: null,
                 expands: true,
               ),
             ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
-            ElevatedButton.icon(
-              icon: const Icon(Icons.preview),
-              label: const Text('Förhandsgranska och redigera'),
+            AppTheme.mediumGap, // ✅ SEMANTISK GAP
+            ActionButton.primary(
+              label: 'Förhandsgranska och redigera',
+              icon: Icons.preview,
               onPressed: _parseAndNavigate,
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(
-                  double.infinity,
-                  AppTheme.buttonHeight,
-                ), // ✅ 56px från theme
-                padding: EdgeInsets.symmetric(
-                  vertical: AppTheme.spacingMd,
-                ), // ✅ 16px från theme
-              ),
+              isExpanded: true,
             ),
           ],
         ),
