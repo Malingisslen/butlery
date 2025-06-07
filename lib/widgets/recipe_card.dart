@@ -31,7 +31,7 @@ class RecipeCard extends StatelessWidget {
       decoration: AppTheme.recipeCardDecoration,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: AppTheme.extraLargeRadius, // ✅ SEMANTISK RADIUS
         child: Padding(
           padding: AppTheme.recipeCardPadding,
           child: Row(
@@ -100,7 +100,7 @@ class RecipeCard extends StatelessWidget {
       height: AppTheme.recipeImageSize,
       decoration: AppTheme.recipeImageDecoration,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(35.0),
+        borderRadius: AppTheme.roundRadius, // ✅ SEMANTISK RADIUS
         child:
             recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
                 ? Image.network(
@@ -121,7 +121,7 @@ class RecipeCard extends StatelessWidget {
       height: AppTheme.recipeImageSize,
       decoration: BoxDecoration(
         color: AppTheme.dividerColor,
-        borderRadius: BorderRadius.circular(35.0),
+        borderRadius: AppTheme.roundRadius, // ✅ SEMANTISK RADIUS
       ),
       child: Icon(
         Icons.restaurant_menu,

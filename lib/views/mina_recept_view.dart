@@ -10,6 +10,7 @@ import '../widgets/empty_state.dart';
 import '../services/search_service.dart';
 import '../theme/app_theme.dart';
 
+/// ✨ 100% THEME-CENTRALISERAD MINA RECEPT VY
 class MinaReceptView extends StatefulWidget {
   const MinaReceptView({super.key});
 
@@ -104,8 +105,8 @@ class _MinaReceptViewState extends State<MinaReceptView> {
           // Sökfält
           Padding(
             padding: EdgeInsets.all(
-              AppTheme.spacingSm + 4,
-            ), // ✅ 12px från theme
+              AppTheme.spacingSmPlus,
+            ), // ✅ SEMANTISK PADDING
             child: AppSearchBar(
               controller: _searchController,
               hintText: 'Sök recept...',
@@ -118,16 +119,16 @@ class _MinaReceptViewState extends State<MinaReceptView> {
           if (_searchQuery.isNotEmpty)
             Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSm + 4,
-              ), // ✅ 12px från theme
+                horizontal: AppTheme.spacingSmPlus, // ✅ SEMANTISK PADDING
+              ),
               child: Row(
                 children: [
                   Icon(
                     Icons.info_outline,
-                    size: 16,
+                    size: AppTheme.iconSizeInfo, // ✅ SEMANTISK STORLEK
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(width: AppTheme.spacingXs), // ✅ 4px från theme
+                  SizedBox(width: AppTheme.spacingXs), // ✅ SEMANTISK GAP
                   Text(
                     '${_getFilteredAndSortedRecipes().length} recept hittades',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -160,16 +161,16 @@ class _MinaReceptViewState extends State<MinaReceptView> {
 
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(
-                    vertical: AppTheme.spacingSm,
-                  ), // ✅ 8px från theme
+                    vertical: AppTheme.spacingSm, // ✅ SEMANTISK PADDING
+                  ),
                   itemCount: filteredRecipes.length,
                   itemBuilder: (context, index) {
                     final recipe = filteredRecipes[index];
 
                     return Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingSm, // ✅ 8px från theme
-                        vertical: AppTheme.spacingXs, // ✅ 4px från theme
+                        horizontal: AppTheme.spacingSm, // ✅ SEMANTISK PADDING
+                        vertical: AppTheme.spacingXs, // ✅ SEMANTISK PADDING
                       ),
                       child: RecipeCard(
                         recipe: recipe,
@@ -207,13 +208,13 @@ class _MinaReceptViewState extends State<MinaReceptView> {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
-          SizedBox(width: AppTheme.spacingSm), // ✅ 8px från theme
+          SizedBox(width: AppTheme.spacingSm), // ✅ SEMANTISK GAP
           Text(label),
           const Spacer(),
           if (isSelected)
             Icon(
               _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-              size: 16,
+              size: AppTheme.iconSizeInfo, // ✅ SEMANTISK STORLEK
               color: Theme.of(context).colorScheme.primary,
             ),
         ],
