@@ -28,6 +28,11 @@ class _MinaReceptViewState extends State<MinaReceptView> {
   SortCriteria _currentSort = SortCriteria.title;
   bool _sortAscending = true;
 
+  List<Recipe>? _cachedFilteredRecipes;
+  String? _lastSearchQuery;
+  SortCriteria? _lastSortCriteria;
+  bool? _lastSortAscending;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -37,6 +42,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
   void _onSearchChanged(String value) {
     setState(() {
       _searchQuery = value;
+      _cachedFilteredRecipes = null;
     });
   }
 
@@ -55,11 +61,20 @@ class _MinaReceptViewState extends State<MinaReceptView> {
           _currentSort = criteria;
           _sortAscending = true;
         }
+        _cachedFilteredRecipes = null;
       });
     }
   }
 
   List<Recipe> _getFilteredAndSortedRecipes(List<Recipe> allRecipes) {
+    // ✅ Kontrollera om vi kan använda cached resultat
+    if (_cachedFilteredRecipes != null &&
+        _lastSearchQuery == _searchQuery &&
+        _lastSortCriteria == _currentSort &&
+        _lastSortAscending == _sortAscending) {
+      return _cachedFilteredRecipes!;
+    }
+
     // Först sökning
     final searchResults = _searchService.searchRecipes(
       allRecipes,
@@ -67,11 +82,19 @@ class _MinaReceptViewState extends State<MinaReceptView> {
     );
 
     // Sedan sortering
-    return _searchService.sortRecipes(
+    final sorted = _searchService.sortRecipes(
       searchResults,
       _currentSort,
       ascending: _sortAscending,
     );
+
+    // ✅ Cacha resultatet
+    _cachedFilteredRecipes = sorted;
+    _lastSearchQuery = _searchQuery;
+    _lastSortCriteria = _currentSort;
+    _lastSortAscending = _sortAscending;
+
+    return sorted;
   }
 
   @override
