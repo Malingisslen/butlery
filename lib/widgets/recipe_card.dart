@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../theme/app_theme.dart';
+import 'optimized_card.dart';
 
 /// Återanvändbar widget för att visa receptkort
 /// Kan användas i listor, arkiv, sökresultat etc.
@@ -26,68 +27,71 @@ class RecipeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      margin: AppTheme.recipeCardMargin,
-      decoration: AppTheme.recipeCardDecoration,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppTheme.extraLargeRadius, // ✅ SEMANTISK RADIUS
-        child: Padding(
-          padding: AppTheme.recipeCardPadding,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Receptbild eller ikon (100% theme-styrd)
-              _buildRecipeImage(),
-              SizedBox(width: AppTheme.spacingMd),
+    return OptimizedCard(
+      // ✅ LÄGG TILL WRAPPER
+      child: Container(
+        margin: AppTheme.recipeCardMargin,
+        decoration: AppTheme.recipeCardDecoration,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppTheme.extraLargeRadius, // ✅ SEMANTISK RADIUS
+          child: Padding(
+            padding: AppTheme.recipeCardPadding,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Receptbild eller ikon (100% theme-styrd)
+                _buildRecipeImage(),
+                SizedBox(width: AppTheme.spacingMd),
 
-              // Receptinformation
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Titel och måltidstyp
-                    _buildTitle(theme),
-                    SizedBox(height: AppTheme.spacingSm - 2), // 6px
-                    // Portioner och tid (använder theme-style)
-                    _buildMetadata(),
-                    SizedBox(height: AppTheme.spacingSm),
-
-                    // Betyg (theme-färger)
-                    if (recipe.rating != null) ...[
-                      _buildRating(),
-                      SizedBox(height: AppTheme.spacingSm - 2),
-                    ],
-
-                    // Beskrivning (om showFullDetails)
-                    if (showFullDetails && recipe.description.isNotEmpty) ...[
-                      Text(
-                        recipe.description,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textSecondary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                // Receptinformation
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Titel och måltidstyp
+                      _buildTitle(theme),
+                      SizedBox(height: AppTheme.spacingSm - 2), // 6px
+                      // Portioner och tid (använder theme-style)
+                      _buildMetadata(),
                       SizedBox(height: AppTheme.spacingSm),
-                    ],
 
-                    // Taggar (theme-styling)
-                    if (showFullDetails &&
-                        recipe.tags != null &&
-                        recipe.tags!.isNotEmpty) ...[
-                      _buildTags(),
+                      // Betyg (theme-färger)
+                      if (recipe.rating != null) ...[
+                        _buildRating(),
+                        SizedBox(height: AppTheme.spacingSm - 2),
+                      ],
+
+                      // Beskrivning (om showFullDetails)
+                      if (showFullDetails && recipe.description.isNotEmpty) ...[
+                        Text(
+                          recipe.description,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.textSecondary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: AppTheme.spacingSm),
+                      ],
+
+                      // Taggar (theme-styling)
+                      if (showFullDetails &&
+                          recipe.tags != null &&
+                          recipe.tags!.isNotEmpty) ...[
+                        _buildTags(),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
 
-              // Trailing widget (t.ex. checkbox)
-              if (trailing != null) ...[
-                SizedBox(width: AppTheme.spacingSm),
-                trailing!,
+                // Trailing widget (t.ex. checkbox)
+                if (trailing != null) ...[
+                  SizedBox(width: AppTheme.spacingSm),
+                  trailing!,
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
