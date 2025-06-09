@@ -51,32 +51,6 @@ class _VeckomenyViewState extends State<VeckomenyView> {
     });
   }
 
-  /// Spara meny för persistence
-  Future<void> _saveMenu() async {
-    // TODO: Implementera faktisk persistence med SharedPreferences
-    // För nu är detta en placeholder
-    try {
-      // Simulera save operation
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Meny sparad'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        RecipeServiceSnackbar.showError(
-          context,
-          'Kunde inte spara meny: ${e.toString()}',
-        );
-      }
-    }
-  }
-
   /// Genererar meny utifrån prompt med bättre error handling
   Future<void> _generateMenu() async {
     final input = _promptController.text.trim();
@@ -118,15 +92,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
         _hasGeneratedMenu = true;
       });
 
-      // Auto-spara menyn
-      await _saveMenu();
-
-      if (mounted) {
-        RecipeServiceSnackbar.showSuccess(
-          context,
-          'Meny genererad med ${_getTotalRecipeCount()} recept!',
-        );
-      }
+      // ✅ GRÖN SNACKBAR BORTTAGEN - ONÖDIG NOTIFICATION
     } catch (e) {
       if (mounted) {
         RecipeServiceSnackbar.showError(
@@ -167,8 +133,6 @@ class _VeckomenyViewState extends State<VeckomenyView> {
         setState(() {
           _menu[section] = newRecipes[section]!;
         });
-
-        await _saveMenu();
 
         if (mounted) {
           RecipeServiceSnackbar.showSuccess(context, '$section uppdaterad!');
@@ -309,32 +273,25 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                 ),
                 SizedBox(height: AppTheme.spacingSmPlus),
 
-                // Generate button med RecipeService integration
-                RecipeServiceWidget(
-                  builder: (recipes) {
-                    final hasRecipes = recipes.isNotEmpty;
-
-                    return ActionButton.primary(
-                      label:
-                          _hasGeneratedMenu
+                // ✅ GENERERA MENY KNAPP TILLBAKA
+                SizedBox(
+                  width: double.infinity,
+                  height: AppTheme.buttonHeight,
+                  child: ElevatedButton.icon(
+                    onPressed: !_isGenerating ? _generateMenu : null,
+                    icon:
+                        _isGenerating
+                            ? AppTheme.smallLoadingIndicator(context)
+                            : Icon(Icons.restaurant_menu),
+                    label: Text(
+                      _isGenerating
+                          ? 'Genererar...'
+                          : (_hasGeneratedMenu
                               ? 'Generera ny meny'
-                              : 'Generera meny',
-                      icon: Icons.restaurant_menu,
-                      onPressed:
-                          hasRecipes && !_isGenerating ? _generateMenu : null,
-                      isLoading: _isGenerating,
-                      loadingText: 'Genererar...',
-                      isExpanded: true,
-                    );
-                  },
-                  errorBuilder: (error) {
-                    return ActionButton.primary(
-                      label: 'Fel: Kunde inte hämta recept',
-                      icon: Icons.error,
-                      onPressed: null,
-                      isExpanded: true,
-                    );
-                  },
+                              : 'Generera meny'),
+                    ),
+                    style: AppTheme.primaryButtonStyle,
+                  ),
                 ),
 
                 AppTheme.mediumGap,
@@ -345,12 +302,11 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                     showLoadingOverlay: _isGenerating,
                     builder: (recipes) {
                       if (_menu.isEmpty) {
-                        return EmptyState.noMenu(
-                          onAction: recipes.isNotEmpty ? _generateMenu : null,
-                          actionLabel:
-                              recipes.isEmpty
-                                  ? 'Lägg till recept först'
-                                  : 'Generera meny',
+                        return EmptyState(
+                          icon: Icons.restaurant_menu,
+                          title: 'Ingen meny genererad ännu',
+                          subtitle:
+                              'Skriv vad du vill ha och tryck på knappen ovan',
                         );
                       }
 
@@ -408,11 +364,7 @@ class _VeckomenyViewState extends State<VeckomenyView> {
                                     ],
                                   ),
                                 ),
-                                ActionButton.outlined(
-                                  label: 'Spara',
-                                  icon: Icons.save,
-                                  onPressed: _saveMenu,
-                                ),
+                                // ✅ SPARA-KNAPPEN BORTTAGEN
                               ],
                             ),
                           ),
