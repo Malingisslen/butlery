@@ -170,11 +170,14 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
 
       RecipeOperationResult result;
 
-      if (widget.initialRecipe == null) {
-        // Nytt recept
+      if (widget.initialRecipe == null ||
+          !_recipeService.recipes.any(
+            (r) => r.id == widget.initialRecipe!.id,
+          )) {
+        // Nytt recept ELLER recept som inte finns i service än
         result = await _recipeService.addRecipe(newRecipe);
       } else {
-        // Uppdatera befintligt recept
+        // Uppdatera befintligt recept som redan finns
         result = await _recipeService.updateRecipe(newRecipe);
       }
 
