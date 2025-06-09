@@ -67,7 +67,7 @@ class EmptyState extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: AppTheme.iconSizeXXLarge, // ✅ 64px från theme
+              size: AppTheme.iconSizeXXLarge,
               color: Theme.of(context).colorScheme.outline,
             ),
             SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
