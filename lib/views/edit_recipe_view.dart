@@ -21,6 +21,9 @@ class _EditRecipeViewState extends State<EditRecipeView> {
   final _formKey = GlobalKey<FormState>();
   final RecipeService _recipeService = RecipeService();
 
+  // ✅ TILLAGT: Lista för att hålla borttagna controllers
+  final List<TextEditingController> _disposedControllers = [];
+
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _portionsController;
@@ -101,6 +104,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     _timeController.dispose();
     _ratingController.dispose();
     _imageUrlController.dispose();
+
     for (final c in _ingredientControllers) {
       c.dispose();
     }
@@ -110,6 +114,13 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     for (final c in _tagControllers) {
       c.dispose();
     }
+
+    // ✅ TILLAGT: Dispose även borttagna controllers
+    for (final c in _disposedControllers) {
+      c.dispose();
+    }
+    _disposedControllers.clear();
+
     super.dispose();
   }
 
@@ -121,7 +132,9 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     final trimmed = value.trim();
     setState(() {
       if (trimmed.isEmpty && index < list.length - 1) {
-        list.removeAt(index).dispose();
+        // ✅ UPPDATERAT: Spara borttagen controller istället för direkt dispose
+        final removedController = list.removeAt(index);
+        _disposedControllers.add(removedController);
       } else if (index == list.length - 1 && trimmed.isNotEmpty) {
         list.add(TextEditingController());
       }
@@ -222,7 +235,9 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                     icon: AppTheme.actionIcon(context, Icons.delete),
                     onPressed: () {
                       setState(() {
-                        controllers.removeAt(i).dispose();
+                        // ✅ UPPDATERAT: Spara borttagen controller
+                        final removedController = controllers.removeAt(i);
+                        _disposedControllers.add(removedController);
                       });
                     },
                   ),

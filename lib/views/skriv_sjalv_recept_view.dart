@@ -23,6 +23,9 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
   final _uuid = const Uuid();
   final RecipeService _recipeService = RecipeService();
 
+  // ✅ TILLAGT: Lista för att hålla borttagna controllers
+  final List<TextEditingController> _disposedControllers = [];
+
   late TextEditingController _titleCtrl;
   late TextEditingController _descCtrl;
   late TextEditingController _portionsCtrl;
@@ -97,6 +100,13 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     for (var c in [..._ingredientCtrls, ..._instructionCtrls, ..._tagCtrls]) {
       c.dispose();
     }
+
+    // ✅ TILLAGT: Dispose även borttagna controllers
+    for (final c in _disposedControllers) {
+      c.dispose();
+    }
+    _disposedControllers.clear();
+
     super.dispose();
   }
 
@@ -117,10 +127,13 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
       });
       return;
     }
+
     final trimmed = value.trim();
     setState(() {
       if (trimmed.isEmpty && index < list.length - 1) {
-        list.removeAt(index).dispose();
+        // ✅ UPPDATERAT: Spara borttagen controller istället för direkt dispose
+        final removedController = list.removeAt(index);
+        _disposedControllers.add(removedController);
       } else if (index == list.length - 1 && trimmed.isNotEmpty) {
         list.add(TextEditingController());
       }
@@ -231,7 +244,9 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                     icon: AppTheme.actionIcon(context, Icons.delete),
                     onPressed: () {
                       setState(() {
-                        ctrls.removeAt(i).dispose();
+                        // ✅ UPPDATERAT: Spara borttagen controller
+                        final removedController = ctrls.removeAt(i);
+                        _disposedControllers.add(removedController);
                       });
                     },
                   ),
