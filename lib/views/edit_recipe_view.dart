@@ -21,6 +21,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
   final _formKey = GlobalKey<FormState>();
   final RecipeService _recipeService = RecipeService();
 
+  final List<TextEditingController> _disposedControllers = [];
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _portionsController;
@@ -111,6 +112,12 @@ class _EditRecipeViewState extends State<EditRecipeView> {
       c.dispose();
     }
     super.dispose();
+    for (final c in _disposedControllers) {
+      c.dispose();
+    }
+    _disposedControllers.clear();
+
+    super.dispose();
   }
 
   void _handleDynamicChange(
@@ -121,7 +128,8 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     final trimmed = value.trim();
     setState(() {
       if (trimmed.isEmpty && index < list.length - 1) {
-        list.removeAt(index).dispose();
+        final removedController = list.removeAt(index);
+        _disposedControllers.add(removedController);
       } else if (index == list.length - 1 && trimmed.isNotEmpty) {
         list.add(TextEditingController());
       }

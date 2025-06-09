@@ -22,6 +22,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
   final _formKey = GlobalKey<FormState>();
   final _uuid = const Uuid();
   final RecipeService _recipeService = RecipeService();
+  final List<TextEditingController> _disposedControllers = [];
 
   late TextEditingController _titleCtrl;
   late TextEditingController _descCtrl;
@@ -97,6 +98,11 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     for (var c in [..._ingredientCtrls, ..._instructionCtrls, ..._tagCtrls]) {
       c.dispose();
     }
+    for (final c in _disposedControllers) {
+      c.dispose();
+    }
+    _disposedControllers.clear();
+
     super.dispose();
   }
 
@@ -120,7 +126,8 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
     final trimmed = value.trim();
     setState(() {
       if (trimmed.isEmpty && index < list.length - 1) {
-        list.removeAt(index).dispose();
+        final removedController = list.removeAt(index);
+        _disposedControllers.add(removedController);
       } else if (index == list.length - 1 && trimmed.isNotEmpty) {
         list.add(TextEditingController());
       }
