@@ -1,314 +1,280 @@
 // lib/services/shopping_list_service.dart
 
-import '../models/shopping_item.dart';
 import '../models/recipe.dart';
+import '../models/shopping_item.dart';
 import '../utils/text_utils.dart';
 
-/// Service som från en veckomeny (måltidstyp → lista recept)
-/// bygger en samman­slagen inköpslista (ShoppingItem per ingrediens).
+/// Service för att hantera inköpslistor
 class ShoppingListService {
-  /// Tar en meny där nyckeln är måltidstyp och värdet är listor av recept,
-  /// och returnerar en summerad lista av ShoppingItem.
+  /// Skapa inköpslista från en veckomeny
   List<ShoppingItem> createShoppingListFromMenu(
-    Map<String, List<Recipe>> menuMap,
+    Map<String, List<Recipe>> menu,
   ) {
-    final Map<String, ShoppingItem> aggregated = {};
+    final Map<String, ShoppingItem> aggregatedItems = {};
 
-    for (var recipes in menuMap.values) {
-      for (var recipe in recipes) {
-        for (var raw in recipe.ingredients) {
-          final parsed = IngredientParser.parseIngredient(raw);
+    // Gå igenom alla recept i menyn
+    for (final recipes in menu.values) {
+      for (final recipe in recipes) {
+        for (final ingredient in recipe.ingredients) {
+          final parsed = parseIngredient(ingredient);
+          final key = '${parsed.name}-${parsed.unit}';
 
-          // Normalisera ingrediensnamnet till singular för bättre gruppering
-          final normalizedName = SwedishPluralization.normalizeToSingular(
-            parsed.name,
-          );
-
-          // Skapa smart nyckel som slår ihop samma ingredienser
-          final key = _createSmartKey(parsed.unit, normalizedName);
-
-          if (aggregated.containsKey(key)) {
-            // Summera mängden och välj den mest specifika enheten
-            final existing = aggregated[key]!;
-            existing.amount += parsed.quantity;
-
-            // Föredra specifika enheter (burk, påse) framför generiska
-            if (parsed.unit.isNotEmpty && _isCountableUnit(parsed.unit)) {
-              existing.unit = parsed.unit;
-            }
-          } else {
-            // Skapa ny ShoppingItem
-            aggregated[key] = ShoppingItem(
-              name: normalizedName,
-              amount: parsed.quantity,
-              unit: parsed.unit,
+          if (aggregatedItems.containsKey(key)) {
+            // Uppdatera befintlig artikel
+            final existing = aggregatedItems[key]!;
+            aggregatedItems[key] = ShoppingItem(
+              name: existing.name,
+              amount: existing.amount + parsed.amount,
+              unit: existing.unit,
+              category: existing.category,
+              bought: false, // Nya items är alltid oköpta
             );
+          } else {
+            // Lägg till ny artikel
+            aggregatedItems[key] = parsed;
           }
         }
       }
     }
 
-    // Konvertera ShoppingItem till String för visning med smart formatering
-    final displayList = <String>[];
+    // Sortera efter kategori och namn
     final sortedItems =
-        aggregated.values.toList()..sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
+        aggregatedItems.values.toList()..sort((a, b) {
+          final categoryCompare = a.category.compareTo(b.category);
+          if (categoryCompare != 0) return categoryCompare;
+          return a.name.compareTo(b.name);
+        });
 
-    for (var item in sortedItems) {
-      final amountStr = toSwedishHalfFraction(item.amount);
+    return sortedItems;
+  }
 
-      String formattedItem;
-      if (item.unit.isNotEmpty) {
-        // Med enhet: "2 dl mjölk", "1 msk salt", "1 burk krossade tomater"
-        if (item.amount == 1.0 && _isCountableUnit(item.unit)) {
-          // För räknebara enheter som "burk", visa alltid kvantiteten
-          formattedItem = '$amountStr ${item.unit} ${item.name}';
-        } else if (_isCountableUnit(item.unit)) {
-          // Pluralisera enheten för räknebara enheter
-          final pluralUnit = _pluralizeUnit(item.unit, item.amount);
-          formattedItem = '$amountStr $pluralUnit ${item.name}';
-        } else {
-          // För måttenheter som "dl", "g" etc.
-          formattedItem = '$amountStr ${item.unit} ${item.name}';
-        }
+  /// Parsa en ingrediensrad till strukturerad data
+  ShoppingItem parseIngredient(String ingredient) {
+    final trimmed = ingredient.trim();
+
+    // Matcha mönster som "2 dl mjölk", "1 kg potatis", "salt", etc.
+    final pattern = RegExp(
+      r'^(\d+(?:[,\.]\d+)?(?:\s*-\s*\d+(?:[,\.]\d+)?)?)\s*([a-zA-ZåäöÅÄÖ]+)?\s+(.+)$',
+    );
+
+    final match = pattern.firstMatch(trimmed);
+
+    if (match != null) {
+      // Har mängd och eventuell enhet
+      final amountStr = match.group(1)!;
+      final unit = match.group(2) ?? '';
+      final name = match.group(3)!;
+
+      // Hantera intervall (t.ex. "1-2 dl")
+      double amount;
+      if (amountStr.contains('-')) {
+        final parts = amountStr.split('-');
+        final min = parseSwedishNumber(parts[0]);
+        final max = parseSwedishNumber(parts[1]);
+        amount = (min + max) / 2; // Ta medelvärdet
       } else {
-        // Utan enhet - kolla om det är räknebart
-        if (_isCountable(item.name)) {
-          // Räknebara: hantera specialfall först
-          if (item.name.toLowerCase().contains('platt')) {
-            // Speciellt för lasagneplattor - visa alltid plural
-            final pluralName = item.name.replaceAll(
-              RegExp(r'platt$', caseSensitive: false),
-              'plattor',
-            );
-            formattedItem = '$amountStr $pluralName';
-          } else if (item.amount == 1.0) {
-            formattedItem = '$amountStr ${item.name}';
-          } else {
-            final pluralName = SwedishPluralization.pluralize(
-              item.name,
-              item.amount,
-            );
-            formattedItem = '$amountStr $pluralName';
-          }
-        } else {
-          // Orräknebara: bara "salt", "mjöl" etc.
-          if (item.amount == 1.0) {
-            formattedItem = item.name;
-          } else {
-            // Om mer än 1 av något orräknebart, visa ändå mängden
-            formattedItem = '$amountStr ${item.name}';
-          }
-        }
+        amount = parseSwedishNumber(amountStr);
       }
 
-      displayList.add(formattedItem);
-    }
-
-    // Konvertera tillbaka till ShoppingItem för kompatibilitet
-    final result = <ShoppingItem>[];
-    for (int i = 0; i < displayList.length; i++) {
-      result.add(
-        ShoppingItem(
-          name: displayList[i],
-          amount: 1.0, // Dummy värde eftersom vi använder formaterad sträng
-          unit: '',
-          bought: false,
-        ),
+      return ShoppingItem(
+        name: _normalizeIngredientName(name),
+        amount: amount,
+        unit: _normalizeUnit(unit),
+        category: _categorizeIngredient(name),
+        bought: false,
+      );
+    } else {
+      // Ingen mängd angiven (t.ex. "salt", "peppar")
+      return ShoppingItem(
+        name: _normalizeIngredientName(trimmed),
+        amount: 1,
+        unit: '',
+        category: _categorizeIngredient(trimmed),
+        bought: false,
       );
     }
-
-    return result;
   }
 
-  /// Kontrollerar om en enhet är räknebart (burk, påse) eller ett mått (dl, g)
-  bool _isCountableUnit(String unit) {
-    final countableUnits = {
-      'burk',
-      'burkar',
-      'påse',
-      'påsar',
-      'förpackning',
-      'förpackningar',
-      'flaska',
-      'flaskor',
-      'ask',
-      'askar',
-      'paket',
-      'st',
-      'bit',
-      'bitar',
-      'skiva',
-      'skivor',
-      'knippe',
-      'blad',
-      'kvist',
-      'tube',
-      'tub',
-    };
-    return countableUnits.contains(unit.toLowerCase());
-  }
+  /// Normalisera ingrediensnamn
+  String _normalizeIngredientName(String name) {
+    // Ta bort onödiga ord och standardisera
+    String normalized = name.toLowerCase().trim();
 
-  /// Pluraliserar enheter
-  String _pluralizeUnit(String unit, double amount) {
-    if (amount == 1.0) return unit;
+    // Ta bort vanliga suffix
+    normalized = normalized
+        .replaceAll(
+          RegExp(
+            r',?\s*(färsk|färska|fryst|frysta|hackad|hackade|riven|rivna|strimlad|strimlade)$',
+          ),
+          '',
+        )
+        .replaceAll(RegExp(r',?\s*(gärna|helst|ev\.?|eventuellt).*$'), '');
 
-    final unitPlurals = {
-      'burk': 'burkar',
-      'påse': 'påsar',
-      'förpackning': 'förpackningar',
-      'flaska': 'flaskor',
-      'ask': 'askar',
-      'bit': 'bitar',
-      'skiva': 'skivor',
-      'tube': 'tuber',
-      'tub': 'tuber',
+    // Standardisera vissa ingredienser
+    final replacements = {
+      'mjölk': 'mjölk',
+      'mellanmjölk': 'mjölk',
+      'standardmjölk': 'mjölk',
+      'lättmjölk': 'mjölk',
+      'vetemjöl': 'mjöl',
+      'mjöl': 'mjöl',
+      'strösocker': 'socker',
+      'socker': 'socker',
     };
 
-    return unitPlurals[unit.toLowerCase()] ?? '${unit}ar';
-  }
-
-  /// Kontrollerar om en ingrediens är räknebart (diskret) eller orräknebart (kontinuerligt)
-  bool _isCountable(String name) {
-    // Specialfall för sammansatta namn som alltid ska ha plural
-    final lowerName = name.toLowerCase();
-    if (lowerName.contains('krossade') ||
-        lowerName.contains('hackade') ||
-        lowerName.contains('skivade') ||
-        lowerName.contains('platt')) {
-      return true; // Dessa ska ha plural: "krossade tomater", "lasagneplattor"
-    }
-
-    final uncountable = {
-      // Kryddor och smaker
-      'salt', 'peppar', 'socker', 'vaniljsocker', 'bakpulver', 'natron',
-      'kanel', 'kardemumma', 'ingefära', 'vitlökspulver', 'paprikapulver',
-      'curry', 'oregano', 'basilika', 'timjan', 'rosmarin', 'dill', 'persilja',
-      'chili', 'chilipulver', 'cayennepeppar', 'svartpeppar', 'vitpeppar',
-
-      // Vätskor (när de inte har enhet)
-      'olja', 'olivolja', 'rapsolja', 'kokosolja', 'smör', 'margarin',
-      'grädde', 'mjölk', 'vatten', 'buljong', 'fond', 'vin', 'vinäger',
-      'balsamvinäger', 'äppelcidervinäger', 'soja', 'sojasås', 'fiskesås',
-      'worcestershiresås', 'tabasco', 'sriracha',
-
-      // Torrvaror
-      'mjöl', 'vetemjöl', 'rågmjöl', 'mandelmjöl', 'kokosmjöl', 'majsmjöl',
-      'ris', 'jasminris', 'basmataris', 'risotto', 'pasta', 'couscous',
-      'bulgur', 'quinoa', 'havregryn', 'müsli', 'cornflakes', 'granola',
-
-      // Kött och fisk (när de inte har enhet)
-      'kött', 'fläsk', 'nötkött', 'kalvkött', 'lamm', 'kyckling', 'kalkonfärs',
-      'fisk', 'lax', 'torsk', 'makrill', 'tonfisk', 'räkor', 'musslor',
-      'köttfärs', 'nötfärs', 'blandfärs', 'fläskfärs', 'kycklingfärs',
-
-      // Mejeriprodukter
-      'ost', 'parmesan', 'mozzarella', 'fetaost', 'ricotta', 'mascarpone',
-      'crème fraiche', 'yoghurt', 'filmjölk', 'kefir',
-
-      // Sötningsmedel och sylt
-      'honung', 'sirap', 'lönnsirap', 'agavesirap', 'strösocker', 'florsocker',
-      'muscovadosocker', 'kokossocker', 'stevia', 'sylt', 'marmelad', 'gelé',
-
-      // Bröd och bakverk
-      'bröd', 'knäckebröd', 'tunnbröd', 'pitabröd', 'tortilla', 'bagel',
-
-      // Nötter och frön (när de inte räknas styckvis)
-      'mandel', 'hasselnöt', 'valnöt', 'cashew', 'pistasch', 'pinje',
-      'sesam', 'solrosfrön', 'pumpafrön', 'chiafrön', 'linfrö',
-
-      // Bönor och linser (när de inte räknas styckvis)
-      'linser', 'röda linser', 'gröna linser', 'belugalinser',
-      'kidneybönor', 'svarta bönor', 'vita bönor', 'kikärtor',
-
-      // Övrigt
-      'kakao', 'kaffe', 'te', 'matcha', 'vanilj', 'vaniljextrakt',
-      'kokosmjölk', 'mandelmjölk', 'havremjölk', 'sojamjölk',
-    };
-
-    return !uncountable.contains(name.toLowerCase().trim());
-  }
-
-  /// Hjälpmetod för att generera en textrepresentation av inköpslistan
-  String generateShoppingListText(List<ShoppingItem> items) {
-    final buffer = StringBuffer();
-    buffer.writeln('Inköpslista:');
-    buffer.writeln();
-
-    for (int i = 0; i < items.length; i++) {
-      final item = items[i];
-      final checkbox = item.bought ? '☑' : '☐';
-      buffer.writeln('$checkbox ${item.name}');
-    }
-
-    return buffer.toString();
-  }
-
-  /// Hjälpmetod för att räkna statistik över inköpslistan
-  Map<String, int> getShoppingListStats(List<ShoppingItem> items) {
-    final total = items.length;
-    final bought = items.where((item) => item.bought).length;
-    final remaining = total - bought;
-
-    return {
-      'total': total,
-      'bought': bought,
-      'remaining': remaining,
-      'completionPercentage': total > 0 ? (bought / total * 100).round() : 0,
-    };
-  }
-
-  /// Markerar en vara som köpt/ej köpt
-  void toggleItemBought(List<ShoppingItem> items, int index) {
-    if (index >= 0 && index < items.length) {
-      items[index].bought = !items[index].bought;
-    }
-  }
-
-  /// Rensar alla checkade artiklar från listan
-  List<ShoppingItem> clearBoughtItems(List<ShoppingItem> items) {
-    return items.where((item) => !item.bought).toList();
-  }
-
-  /// Sorterar listan - köpta sist
-  List<ShoppingItem> sortShoppingList(List<ShoppingItem> items) {
-    items.sort((a, b) {
-      // Först sorterar vi på köpt-status (false först)
-      if (a.bought != b.bought) {
-        return a.bought.toString().compareTo(b.bought.toString());
+    for (final entry in replacements.entries) {
+      if (normalized.contains(entry.key)) {
+        normalized = normalized.replaceAll(entry.key, entry.value);
+        break;
       }
-      // Sedan alfabetiskt på namn
-      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-    });
-    return items;
-  }
-
-  /// Skapar smart nyckel som slår ihop samma ingredienser
-  String _createSmartKey(String unit, String name) {
-    // Specialfall för ingredienser som ofta förekommer både med och utan enhet
-    final commonIngredients = {
-      'tomatsås': 'tomatsås',
-      'krossade tomater': 'krossade tomater',
-      'tomatpuré': 'tomatpuré',
-      'kokosmjölk': 'kokosmjölk',
-      'bönor': 'bönor',
-      'linser': 'linser',
-      'majs': 'majs',
-      'ärtor': 'ärtor',
-      'champinjoner': 'champinjoner',
-      'oliver': 'oliver',
-      'kapris': 'kapris',
-    };
-
-    // Om ingrediensen är vanlig och enheten är räknebart (burk, påse)
-    // använd bara ingrediensnamnet som nyckel
-    if (commonIngredients.containsKey(name.toLowerCase()) &&
-        (unit.isEmpty || _isCountableUnit(unit))) {
-      return name.toLowerCase();
     }
 
-    // För andra fall, använd standard nyckel
-    return unit.isEmpty ? name : '$unit|$name';
+    // Första bokstaven versal
+    if (normalized.isNotEmpty) {
+      normalized = normalized[0].toUpperCase() + normalized.substring(1);
+    }
+
+    return normalized;
+  }
+
+  /// Normalisera enhet
+  String _normalizeUnit(String unit) {
+    final lower = unit.toLowerCase();
+
+    final unitMap = {
+      'dl': 'dl',
+      'deciliter': 'dl',
+      'l': 'l',
+      'liter': 'l',
+      'ml': 'ml',
+      'milliliter': 'ml',
+      'g': 'g',
+      'gram': 'g',
+      'kg': 'kg',
+      'kilogram': 'kg',
+      'hg': 'hg',
+      'hekto': 'hg',
+      'tsk': 'tsk',
+      'tesked': 'tsk',
+      'msk': 'msk',
+      'matsked': 'msk',
+      'krm': 'krm',
+      'kryddmått': 'krm',
+      'st': 'st',
+      'styck': 'st',
+      'stycken': 'st',
+      'port': 'port',
+      'portioner': 'port',
+      'påse': 'påse',
+      'påsar': 'påse',
+      'burk': 'burk',
+      'burkar': 'burk',
+      'paket': 'paket',
+      'förp': 'förp',
+      'förpackning': 'förp',
+      'klyftor': 'klyftor',
+      'klyfta': 'klyftor',
+    };
+
+    return unitMap[lower] ?? unit;
+  }
+
+  /// Kategorisera ingrediens
+  String _categorizeIngredient(String ingredient) {
+    final lower = ingredient.toLowerCase();
+
+    // Mejeri
+    if (RegExp(r'(mjölk|grädde|yoghurt|fil|ost|smör|ägg)').hasMatch(lower)) {
+      return 'Mejeri';
+    }
+
+    // Kött & Fisk
+    if (RegExp(
+      r'(kött|fläsk|nöt|kyckling|fisk|lax|torsk|räkor|bacon|korv|skinka)',
+    ).hasMatch(lower)) {
+      return 'Kött & Fisk';
+    }
+
+    // Frukt & Grönt
+    if (RegExp(
+      r'(tomat|gurka|sallad|paprika|lök|vitlök|potatis|morot|broccoli|äpple|banan|citron|lime)',
+    ).hasMatch(lower)) {
+      return 'Frukt & Grönt';
+    }
+
+    // Skafferi
+    if (RegExp(
+      r'(mjöl|socker|salt|peppar|olja|pasta|ris|buljong|krydd)',
+    ).hasMatch(lower)) {
+      return 'Skafferi';
+    }
+
+    // Bröd
+    if (RegExp(r'(bröd|toast|knäcke)').hasMatch(lower)) {
+      return 'Bröd';
+    }
+
+    // Frys
+    if (RegExp(r'(fryst|frys)').hasMatch(lower)) {
+      return 'Frys';
+    }
+
+    // Konserver
+    if (RegExp(
+      r'(krossade tomater|tomat på burk|bönor|burk)',
+    ).hasMatch(lower)) {
+      return 'Konserver';
+    }
+
+    return 'Övrigt';
+  }
+
+  /// Gruppera inköpslista efter kategori
+  Map<String, List<ShoppingItem>> groupByCategory(List<ShoppingItem> items) {
+    final Map<String, List<ShoppingItem>> grouped = {};
+
+    for (final item in items) {
+      grouped.putIfAbsent(item.category, () => []).add(item);
+    }
+
+    return grouped;
+  }
+
+  /// Markera artikel som köpt/oköpt
+  List<ShoppingItem> toggleBought(List<ShoppingItem> items, int index) {
+    if (index < 0 || index >= items.length) return items;
+
+    final updatedItems = List<ShoppingItem>.from(items);
+    final item = updatedItems[index];
+
+    updatedItems[index] = ShoppingItem(
+      name: item.name,
+      amount: item.amount,
+      unit: item.unit,
+      category: item.category,
+      bought: !item.bought,
+    );
+
+    return updatedItems;
+  }
+
+  /// Få antal köpta artiklar
+  int getBoughtCount(List<ShoppingItem> items) {
+    return items.where((item) => item.bought).length;
+  }
+
+  /// Rensa alla köpta markeringar
+  List<ShoppingItem> clearAllBought(List<ShoppingItem> items) {
+    return items
+        .map(
+          (item) => ShoppingItem(
+            name: item.name,
+            amount: item.amount,
+            unit: item.unit,
+            category: item.category,
+            bought: false,
+          ),
+        )
+        .toList();
   }
 }

@@ -46,6 +46,20 @@ String formatFractional(double value) {
   return s;
 }
 
+/// Parsa svenska nummer (hanterar både . och , som decimaltecken)
+/// TILLAGD FUNKTION för ShoppingListService
+double parseSwedishNumber(String number) {
+  // Ta bort mellanslag och ersätt komma med punkt
+  final normalized = number.trim().replaceAll(',', '.');
+
+  try {
+    return double.parse(normalized);
+  } catch (e) {
+    // Om parsing misslyckas, returnera 1 som default
+    return 1.0;
+  }
+}
+
 /// Konverterar decimaler med halva delar till en "½"-notation med svensk formatering.
 String toSwedishHalfFraction(double value) {
   final integerPart = value.truncate();
