@@ -240,6 +240,7 @@ class _MinaReceptViewState extends State<MinaReceptView> {
                           final recipe = filteredRecipes[index];
 
                           return Padding(
+                            key: ValueKey(recipe.id),
                             padding: EdgeInsets.symmetric(
                               horizontal: AppTheme.spacingSm,
                               vertical: AppTheme.spacingXs,

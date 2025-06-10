@@ -112,7 +112,6 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     for (final c in _tagControllers) {
       c.dispose();
     }
-    super.dispose();
     for (final c in _disposedControllers) {
       c.dispose();
     }
@@ -129,9 +128,6 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     final trimmed = value.trim();
     setState(() {
       if (trimmed.isEmpty && index < list.length - 1) {
-        final removedController = list.removeAt(index);
-        _disposedControllers.add(removedController);
-        // ✅ UPPDATERAT: Spara borttagen controller istället för direkt dispose
         final removedController = list.removeAt(index);
         _disposedControllers.add(removedController);
       } else if (index == list.length - 1 && trimmed.isNotEmpty) {

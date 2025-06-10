@@ -234,6 +234,7 @@ class _InkopslistaViewState extends State<InkopslistaView> {
                         final isChecked = _checkedItems[index] ?? false;
 
                         return Card(
+                          key: ValueKey('shopping_item_$index'),
                           margin: EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingMd,
                             vertical: AppTheme.spacingXxs,
