@@ -7,6 +7,9 @@ import '../data/dummy_data.dart';
 import '../core/error/failures.dart';
 import '../core/error/error_handler.dart';
 import '../core/extensions/future_extensions.dart';
+import '../core/injection.dart';
+import '../core/utils/logger.dart';
+import 'persistence_service.dart';
 
 /// Resultat av en RecipeService operation
 class RecipeOperationResult {
@@ -38,11 +41,19 @@ class RecipeOperationResult {
 
 /// Singleton service för att hantera recept
 /// Använder ChangeNotifier för reaktiv UI
+/// Integrerar PersistenceService för permanent datalagring
 class RecipeService extends ChangeNotifier {
   static RecipeService? _instance;
 
+  // Reference till PersistenceService
+  late final PersistenceService _persistenceService;
+
   // Private constructor för singleton
-  RecipeService._internal();
+  RecipeService._internal() {
+    // Hämta PersistenceService från dependency injection
+    _persistenceService = sl<PersistenceService>();
+    AppLogger.info('RecipeService initialiserad med PersistenceService');
+  }
 
   // Factory constructor som returnerar samma instans
   factory RecipeService() {
@@ -78,31 +89,81 @@ class RecipeService extends ChangeNotifier {
 
   /// Initialisera service - ladda data från storage
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      AppLogger.debug('RecipeService redan initialiserad, skippar...');
+      return;
+    }
 
     _setLoading(true);
     clearError();
 
     try {
-      // Simulera loading från database/storage med timeout
-      await Future.delayed(
-        const Duration(milliseconds: 300),
-      ).withShortTimeout();
+      // Försök ladda sparade recept från lokal storage
+      final savedRecipes = await _loadRecipesFromStorage();
 
-      // ✅ ANVÄND DUMMY_RECIPES SOM STANDARDRECEPT
-      _recipes = List.from(dummyRecipesNotifier.value);
+      if (savedRecipes.isNotEmpty) {
+        // Vi har sparade recept! Använd dem
+        _recipes = savedRecipes;
+        AppLogger.info(
+          'Laddade ${_recipes.length} sparade recept från lokal storage',
+        );
+      } else {
+        // Ingen sparad data, använd dummy data som standard
+        _recipes = List.from(dummyRecipesNotifier.value);
+        AppLogger.info(
+          'Ingen sparad data hittades, använder ${_recipes.length} standardrecept',
+        );
+
+        // Spara dummy data direkt så användaren har något nästa gång
+        await _saveRecipesToStorage();
+      }
 
       _isInitialized = true;
-      debugPrint(
-        '✅ RecipeService: Initialiserad med ${_recipes.length} standardrecept',
-      );
+      AppLogger.success('RecipeService initialisering klar!');
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
       ErrorHandler.logError(e, StackTrace.current);
       _setError(failure.message);
-      debugPrint('❌ RecipeService: Initialiseringsfel: ${failure.message}');
+      AppLogger.error('RecipeService initialiseringsfel: ${failure.message}');
+
+      // Fallback till dummy data om något går fel
+      _recipes = List.from(dummyRecipesNotifier.value);
+      _isInitialized = true;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  // ===== PERSISTENCE HELPERS =====
+
+  /// Ladda recept från lokal storage
+  Future<List<Recipe>> _loadRecipesFromStorage() async {
+    try {
+      // Använd loadRecipes() istället för getList()
+      final recipes = await _persistenceService.loadRecipes();
+      return recipes;
+    } catch (e) {
+      AppLogger.error('Fel vid laddning från storage: $e');
+      return [];
+    }
+  }
+
+  /// Spara alla recept till lokal storage
+  Future<bool> _saveRecipesToStorage() async {
+    try {
+      // Använd saveRecipes() istället för saveList()
+      final success = await _persistenceService.saveRecipes(_recipes);
+
+      if (success) {
+        AppLogger.debug('Sparade ${_recipes.length} recept till storage');
+      } else {
+        AppLogger.warning('Kunde inte spara recept till storage');
+      }
+
+      return success;
+    } catch (e) {
+      AppLogger.error('Fel vid sparning till storage: $e');
+      return false;
     }
   }
 
@@ -121,15 +182,29 @@ class RecipeService extends ChangeNotifier {
         );
       }
 
-      // Simulera async operation (Firebase senare) med timeout
+      // Simulera async operation (Firebase senare)
       await Future.delayed(
         const Duration(milliseconds: 200),
       ).withShortTimeout();
 
+      // Lägg till receptet
       _recipes.add(recipe);
+
+      // Spara till persistent storage
+      final saved = await _saveRecipesToStorage();
+
       notifyListeners();
 
-      debugPrint('✅ RecipeService: Lade till recept "${recipe.title}"');
+      AppLogger.success('Lade till recept "${recipe.title}"');
+
+      if (!saved) {
+        // Receptet lades till men kunde inte sparas permanent
+        return RecipeOperationResult.success(
+          'Recept "${recipe.title}" tillagt (varning: kunde inte spara permanent)',
+          warnings: ['Receptet kunde inte sparas permanent'],
+        );
+      }
+
       return RecipeOperationResult.success('Recept "${recipe.title}" sparat');
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
@@ -165,6 +240,9 @@ class RecipeService extends ChangeNotifier {
         addedCount++;
       }
 
+      // Spara alla nya recept till storage
+      final saved = await _saveRecipesToStorage();
+
       notifyListeners();
 
       final message =
@@ -172,7 +250,11 @@ class RecipeService extends ChangeNotifier {
               ? 'Alla $addedCount recept importerade från arkiv'
               : '$addedCount av ${recipes.length} recept importerade från arkiv';
 
-      debugPrint('✅ RecipeService: $message');
+      if (!saved) {
+        warnings.add('Recepten kunde inte sparas permanent');
+      }
+
+      AppLogger.info(message);
       return RecipeOperationResult.success(
         message,
         warnings: warnings.isNotEmpty ? warnings : null,
@@ -204,12 +286,27 @@ class RecipeService extends ChangeNotifier {
         const Duration(milliseconds: 200),
       ).withShortTimeout();
 
+      // Spara originalet för rollback om sparning misslyckas
+      final originalRecipe = _recipes[index];
+
+      // Uppdatera receptet
       _recipes[index] = updatedRecipe;
+
+      // Försök spara till storage
+      final saved = await _saveRecipesToStorage();
+
+      if (!saved) {
+        // Rollback om sparning misslyckades
+        _recipes[index] = originalRecipe;
+        AppLogger.error('Kunde inte spara uppdaterat recept, rollback utförd');
+        return RecipeOperationResult.error(
+          'Kunde inte spara uppdateringen permanent',
+        );
+      }
+
       notifyListeners();
 
-      debugPrint(
-        '✅ RecipeService: Uppdaterade recept "${updatedRecipe.title}"',
-      );
+      AppLogger.success('Uppdaterade recept "${updatedRecipe.title}"');
       return RecipeOperationResult.success(
         'Recept "${updatedRecipe.title}" uppdaterat',
       );
@@ -229,25 +326,40 @@ class RecipeService extends ChangeNotifier {
     clearError();
 
     try {
-      final recipe = _recipes.firstWhere(
-        (r) => r.id == recipeId,
-        orElse:
-            () =>
-                throw ValidationFailure(
-                  message: 'Recept med ID $recipeId hittades inte',
-                ),
-      );
+      final recipeIndex = _recipes.indexWhere((r) => r.id == recipeId);
+      if (recipeIndex == -1) {
+        throw ValidationFailure(
+          message: 'Recept med ID $recipeId hittades inte',
+        );
+      }
 
       await Future.delayed(
         const Duration(milliseconds: 200),
       ).withShortTimeout();
 
-      _recipes.removeWhere((r) => r.id == recipeId);
+      // Spara originalet för rollback
+      final deletedRecipe = _recipes[recipeIndex];
+
+      // Ta bort receptet
+      _recipes.removeAt(recipeIndex);
+
+      // Försök spara till storage
+      final saved = await _saveRecipesToStorage();
+
+      if (!saved) {
+        // Rollback om sparning misslyckades
+        _recipes.insert(recipeIndex, deletedRecipe);
+        AppLogger.error('Kunde inte spara borttagning, rollback utförd');
+        return RecipeOperationResult.error(
+          'Kunde inte ta bort receptet permanent',
+        );
+      }
+
       notifyListeners();
 
-      debugPrint('✅ RecipeService: Tog bort recept "${recipe.title}"');
+      AppLogger.success('Tog bort recept "${deletedRecipe.title}"');
       return RecipeOperationResult.success(
-        'Recept "${recipe.title}" borttaget',
+        'Recept "${deletedRecipe.title}" borttaget',
       );
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
@@ -317,6 +429,10 @@ class RecipeService extends ChangeNotifier {
     _lastError = null;
     _isInitialized = false;
     notifyListeners();
+
+    // Rensa även persistent storage
+    _persistenceService.clearRecipes();
+    AppLogger.debug('RecipeService återställd och storage rensad');
   }
 
   /// Refresh data (för pull-to-refresh)
@@ -325,12 +441,18 @@ class RecipeService extends ChangeNotifier {
     clearError();
 
     try {
-      // Simulera refresh från server med timeout
+      // Simulera refresh från server
       await Future.delayed(
         const Duration(milliseconds: 500),
       ).withShortTimeout();
 
-      // I framtiden: ladda om från Firebase
+      // Ladda om från storage för att säkerställa synk
+      final savedRecipes = await _loadRecipesFromStorage();
+      if (savedRecipes.isNotEmpty) {
+        _recipes = savedRecipes;
+        AppLogger.debug('Refreshade ${_recipes.length} recept från storage');
+      }
+
       notifyListeners();
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
@@ -343,7 +465,8 @@ class RecipeService extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Cleanup om behövs
+    // Spara en sista gång innan service stängs ner
+    _saveRecipesToStorage();
     super.dispose();
   }
 }
