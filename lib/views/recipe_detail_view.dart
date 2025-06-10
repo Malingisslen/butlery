@@ -181,12 +181,12 @@ class _RecipeDetailViewContent extends StatelessWidget {
                       label: const Text('Redigera recept'),
                       style: AppTheme.primaryButtonStyle,
                       onPressed: () async {
-                        final updated = await Navigator.pushNamed<bool>(
+                        // Navigera till redigering - ViewModel lyssnar automatiskt på RecipeService för uppdateringar
+                        await Navigator.pushNamed(
                           context,
                           '/redigeraRecept',
                           arguments: viewModel.recipe,
                         );
-                        // ViewModel lyssnar på RecipeService för uppdateringar
                       },
                     ),
                   ),
