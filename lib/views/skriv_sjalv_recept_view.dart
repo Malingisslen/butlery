@@ -7,6 +7,7 @@ import '../services/recipe_service.dart';
 import '../widgets/action_button.dart';
 import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
+import '../core/validators/form_validators.dart';
 
 /// ✨ UPPDATERAD VY MED RECIPESERVICE INTEGRATION
 class SkrivSjalvReceptView extends StatefulWidget {
@@ -295,9 +296,10 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                     decoration: const InputDecoration(labelText: 'Titel'),
                     style: Theme.of(context).textTheme.bodyMedium,
                     textInputAction: TextInputAction.next,
-                    validator:
-                        (v) =>
-                            v == null || v.trim().isEmpty ? 'Ange titel' : null,
+                    validator: FormValidators.combine([
+                      FormValidators.required('Titel'),
+                      FormValidators.maxLength(100, 'Titel'),
+                    ]),
                   ),
                   SizedBox(height: AppTheme.spacingSmPlus),
 
@@ -308,37 +310,31 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                     decoration: const InputDecoration(labelText: 'Beskrivning'),
                     style: Theme.of(context).textTheme.bodyMedium,
                     textInputAction: TextInputAction.next,
+                    validator: FormValidators.maxLength(500, 'Beskrivning'),
                   ),
+
                   SizedBox(height: AppTheme.spacingSmPlus),
 
-                  // Portioner & Tid
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _portionsCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Portioner',
-                          ),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                      SizedBox(width: AppTheme.spacingMd),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _timeCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Tid (min)',
-                          ),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                    ],
+                  // Portioner
+                  TextFormField(
+                    controller: _portionsCtrl,
+                    decoration: const InputDecoration(labelText: 'Portioner'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    validator: FormValidators.portions(),
                   ),
+
+                  // Tid
+                  TextFormField(
+                    controller: _timeCtrl,
+                    decoration: const InputDecoration(labelText: 'Tid (min)'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    validator: FormValidators.cookingTime(),
+                  ),
+
                   SizedBox(height: AppTheme.spacingSmPlus),
 
                   // Ingredienser
@@ -362,13 +358,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                       decimal: true,
                     ),
                     textInputAction: TextInputAction.next,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return null;
-                      final val = double.tryParse(v.replaceAll(',', '.'));
-                      return (val == null || val < 0 || val > 5)
-                          ? 'Betyg måste vara mellan 0 och 5'
-                          : null;
-                    },
+                    validator: FormValidators.rating(),
                   ),
                   SizedBox(height: AppTheme.spacingSmPlus),
 
@@ -378,6 +368,7 @@ class _SkrivSjalvReceptViewState extends State<SkrivSjalvReceptView> {
                     decoration: const InputDecoration(labelText: 'Bild-URL'),
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.url,
+                    validator: FormValidators.url(),
                   ),
                 ],
               ),
