@@ -5,7 +5,8 @@ import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/shopping_list_service.dart';
-import '../services/persistence_service.dart'; // NY IMPORT för lokal datalagring
+import '../services/persistence_service.dart';
+import '../services/auth_service.dart'; // NY IMPORT för Firebase Auth
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -15,6 +16,7 @@ import '../viewmodels/archive_import_viewmodel.dart';
 import '../viewmodels/photo_import_viewmodel.dart';
 import '../viewmodels/url_import_viewmodel.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
+import '../viewmodels/auth_viewmodel.dart'; // NY IMPORT för AuthViewModel
 import '../models/recipe.dart';
 
 /// Service Locator instance
@@ -24,7 +26,10 @@ final GetIt sl = GetIt.instance;
 Future<void> initializeDependencies() async {
   // ==================== SERVICES ====================
 
-  // PersistenceService - REGISTRERAS FÖRST (andra services kan använda den)
+  // AuthService - REGISTRERAS FÖRST (behövs för användarspecifik data)
+  sl.registerSingleton<AuthService>(AuthService());
+
+  // PersistenceService - för lokal datalagring
   sl.registerSingleton<PersistenceService>(PersistenceService());
 
   // Befintliga services - Singletons (samma instans överallt)
@@ -78,6 +83,9 @@ Future<void> initializeDependencies() async {
       recipeService: sl<RecipeService>(),
     ),
   );
+
+  // AuthViewModel för login/register UI
+  sl.registerFactory<AuthViewModel>(() => AuthViewModel());
 
   // ==================== INITIALIZATION ====================
 
