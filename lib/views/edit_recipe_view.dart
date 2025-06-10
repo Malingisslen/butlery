@@ -7,6 +7,7 @@ import '../widgets/action_button.dart';
 import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cached_recipe_image.dart';
+import '../core/validators/form_validators.dart';
 
 /// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPESERVICE
 class EditRecipeView extends StatefulWidget {
@@ -300,11 +301,10 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                   TextFormField(
                     controller: _titleController,
                     decoration: const InputDecoration(labelText: 'Titel'),
-                    validator:
-                        (v) =>
-                            v == null || v.trim().isEmpty
-                                ? 'Titel får inte vara tom'
-                                : null,
+                    validator: FormValidators.combine([
+                      FormValidators.required('Titel'),
+                      FormValidators.maxLength(100, 'Titel'),
+                    ]),
                   ),
                   AppTheme.mediumGap,
 
@@ -312,6 +312,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                     controller: _descriptionController,
                     maxLines: 2,
                     decoration: const InputDecoration(labelText: 'Beskrivning'),
+                    validator: FormValidators.maxLength(500, 'Beskrivning'),
                   ),
                   AppTheme.mediumGap,
 
@@ -321,6 +322,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                     decoration: const InputDecoration(
                       labelText: 'Antal portioner',
                     ),
+                    validator: FormValidators.portions(),
                   ),
                   AppTheme.mediumGap,
 
@@ -330,6 +332,7 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                     decoration: const InputDecoration(
                       labelText: 'Tid (minuter)',
                     ),
+                    validator: FormValidators.cookingTime(),
                   ),
                   AppTheme.mediumGap,
 
@@ -348,12 +351,14 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                       decimal: true,
                     ),
                     decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+                    validator: FormValidators.rating(),
                   ),
                   AppTheme.mediumGap,
 
                   TextFormField(
                     controller: _imageUrlController,
                     decoration: const InputDecoration(labelText: 'Bild-URL'),
+                    validator: FormValidators.url(),
                   ),
                 ],
               ),

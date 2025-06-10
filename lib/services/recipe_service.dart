@@ -1,8 +1,12 @@
 // lib/services/recipe_service.dart
 
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 import '../models/recipe.dart';
 import '../data/dummy_data.dart';
+import '../core/error/failures.dart';
+import '../core/error/error_handler.dart';
+import '../core/extensions/future_extensions.dart';
 
 /// Resultat av en RecipeService operation
 class RecipeOperationResult {
@@ -80,8 +84,10 @@ class RecipeService extends ChangeNotifier {
     clearError();
 
     try {
-      // Simulera loading från database/storage
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Simulera loading från database/storage med timeout
+      await Future.delayed(
+        const Duration(milliseconds: 300),
+      ).withShortTimeout();
 
       // ✅ ANVÄND DUMMY_RECIPES SOM STANDARDRECEPT
       _recipes = List.from(dummyRecipesNotifier.value);
@@ -91,8 +97,10 @@ class RecipeService extends ChangeNotifier {
         '✅ RecipeService: Initialiserad med ${_recipes.length} standardrecept',
       );
     } catch (e) {
-      _setError('Kunde inte initialisera RecipeService: $e');
-      debugPrint('❌ RecipeService: Initialiseringsfel: $e');
+      final failure = ErrorHandler.handleError(e);
+      ErrorHandler.logError(e, StackTrace.current);
+      _setError(failure.message);
+      debugPrint('❌ RecipeService: Initialiseringsfel: ${failure.message}');
     } finally {
       _setLoading(false);
     }
@@ -113,8 +121,10 @@ class RecipeService extends ChangeNotifier {
         );
       }
 
-      // Simulera async operation (Firebase senare)
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Simulera async operation (Firebase senare) med timeout
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      ).withShortTimeout();
 
       _recipes.add(recipe);
       notifyListeners();
@@ -122,9 +132,10 @@ class RecipeService extends ChangeNotifier {
       debugPrint('✅ RecipeService: Lade till recept "${recipe.title}"');
       return RecipeOperationResult.success('Recept "${recipe.title}" sparat');
     } catch (e) {
-      final error = 'Kunde inte spara recept: $e';
-      _setError(error);
-      return RecipeOperationResult.error(error);
+      final failure = ErrorHandler.handleError(e);
+      ErrorHandler.logError(e, StackTrace.current);
+      _setError(failure.message);
+      return RecipeOperationResult.error(failure.message);
     } finally {
       _setLoading(false);
     }
@@ -136,7 +147,10 @@ class RecipeService extends ChangeNotifier {
     clearError();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Längre timeout för bulk operations
+      await Future.delayed(
+        const Duration(milliseconds: 500),
+      ).withTimeout(duration: const Duration(seconds: 10));
 
       final warnings = <String>[];
       int addedCount = 0;
@@ -164,9 +178,10 @@ class RecipeService extends ChangeNotifier {
         warnings: warnings.isNotEmpty ? warnings : null,
       );
     } catch (e) {
-      final error = 'Kunde inte importera recept från arkiv: $e';
-      _setError(error);
-      return RecipeOperationResult.error(error);
+      final failure = ErrorHandler.handleError(e);
+      ErrorHandler.logError(e, StackTrace.current);
+      _setError(failure.message);
+      return RecipeOperationResult.error(failure.message);
     } finally {
       _setLoading(false);
     }
@@ -180,12 +195,14 @@ class RecipeService extends ChangeNotifier {
     try {
       final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
       if (index == -1) {
-        return RecipeOperationResult.error(
-          'Recept med ID ${updatedRecipe.id} hittades inte',
+        throw ValidationFailure(
+          message: 'Recept med ID ${updatedRecipe.id} hittades inte',
         );
       }
 
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      ).withShortTimeout();
 
       _recipes[index] = updatedRecipe;
       notifyListeners();
@@ -197,9 +214,10 @@ class RecipeService extends ChangeNotifier {
         'Recept "${updatedRecipe.title}" uppdaterat',
       );
     } catch (e) {
-      final error = 'Kunde inte uppdatera recept: $e';
-      _setError(error);
-      return RecipeOperationResult.error(error);
+      final failure = ErrorHandler.handleError(e);
+      ErrorHandler.logError(e, StackTrace.current);
+      _setError(failure.message);
+      return RecipeOperationResult.error(failure.message);
     } finally {
       _setLoading(false);
     }
@@ -213,10 +231,16 @@ class RecipeService extends ChangeNotifier {
     try {
       final recipe = _recipes.firstWhere(
         (r) => r.id == recipeId,
-        orElse: () => throw Exception('Recept hittades inte'),
+        orElse:
+            () =>
+                throw ValidationFailure(
+                  message: 'Recept med ID $recipeId hittades inte',
+                ),
       );
 
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      ).withShortTimeout();
 
       _recipes.removeWhere((r) => r.id == recipeId);
       notifyListeners();
@@ -226,9 +250,10 @@ class RecipeService extends ChangeNotifier {
         'Recept "${recipe.title}" borttaget',
       );
     } catch (e) {
-      final error = 'Kunde inte ta bort recept: $e';
-      _setError(error);
-      return RecipeOperationResult.error(error);
+      final failure = ErrorHandler.handleError(e);
+      ErrorHandler.logError(e, StackTrace.current);
+      _setError(failure.message);
+      return RecipeOperationResult.error(failure.message);
     } finally {
       _setLoading(false);
     }
@@ -300,12 +325,17 @@ class RecipeService extends ChangeNotifier {
     clearError();
 
     try {
-      // Simulera refresh från server
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Simulera refresh från server med timeout
+      await Future.delayed(
+        const Duration(milliseconds: 500),
+      ).withShortTimeout();
+
       // I framtiden: ladda om från Firebase
       notifyListeners();
     } catch (e) {
-      _setError('Kunde inte uppdatera data: $e');
+      final failure = ErrorHandler.handleError(e);
+      ErrorHandler.logError(e, StackTrace.current);
+      _setError(failure.message);
     } finally {
       _setLoading(false);
     }
