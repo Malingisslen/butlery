@@ -6,6 +6,7 @@ import '../services/recipe_service.dart';
 import '../widgets/action_button.dart';
 import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
+import '../widgets/cached_recipe_image.dart';
 
 /// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPESERVICE
 class EditRecipeView extends StatefulWidget {
@@ -288,24 +289,9 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                       padding: EdgeInsets.only(bottom: AppTheme.spacingMd),
                       child: ClipRRect(
                         borderRadius: AppTheme.largeRadius,
-                        child: Image.network(
-                          _currentImageUrl!,
+                        child: CachedRecipeHeroImage(
+                          imageUrl: _currentImageUrl,
                           height: AppTheme.imageHeightMedium,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (ctx, err, stack) => Container(
-                                height: AppTheme.imageHeightMedium,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHighest,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Ogiltig bild-URL',
-                                  style: AppTheme.subtitleStyle,
-                                ),
-                              ),
                         ),
                       ),
                     ),

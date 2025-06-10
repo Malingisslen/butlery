@@ -34,7 +34,9 @@ dependencies:
   image_picker: ^0.8.7
   http: ^0.13.6
   html: ^0.15.0
-
+  cached_network_image: ^3.3.0
+  flutter_cache_manager: ^3.3.1
+  
   # Firebase core
   firebase_core: ^2.32.0
 

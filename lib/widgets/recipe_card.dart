@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../theme/app_theme.dart';
 import 'optimized_card.dart';
+import 'cached_recipe_image.dart';
 
 /// Återanvändbar widget för att visa receptkort
 /// Kan användas i listor, arkiv, sökresultat etc.
@@ -99,39 +100,10 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildRecipeImage() {
-    return Container(
-      width: AppTheme.recipeImageSize,
-      height: AppTheme.recipeImageSize,
-      decoration: AppTheme.recipeImageDecoration,
-      child: ClipRRect(
-        borderRadius: AppTheme.roundRadius, // ✅ SEMANTISK RADIUS
-        child:
-            recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
-                ? Image.network(
-                  recipe.imageUrl!,
-                  width: AppTheme.recipeImageSize,
-                  height: AppTheme.recipeImageSize,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-                )
-                : _buildImagePlaceholder(),
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Container(
-      width: AppTheme.recipeImageSize,
-      height: AppTheme.recipeImageSize,
-      decoration: BoxDecoration(
-        color: AppTheme.dividerColor,
-        borderRadius: AppTheme.roundRadius, // ✅ SEMANTISK RADIUS
-      ),
-      child: Icon(
-        Icons.restaurant_menu,
-        size: AppTheme.iconSizeLarge, // ✅ 32px från theme
-        color: AppTheme.textTertiary,
-      ),
+    return CachedRecipeImage(
+      imageUrl: recipe.imageUrl,
+      size: AppTheme.recipeImageSize,
+      borderRadius: AppTheme.roundRadius,
     );
   }
 
