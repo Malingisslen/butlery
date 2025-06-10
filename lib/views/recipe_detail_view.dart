@@ -6,6 +6,7 @@ import '../services/recipe_service.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
+import '../widgets/cached_recipe_image.dart';
 
 /// ✨ UPPDATERAD RECEPTDETALJ-VY MED RECIPESERVICE
 class RecipeDetailView extends StatefulWidget {
@@ -115,24 +116,9 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
                           currentRecipe.imageUrl!.isNotEmpty)
                         ClipRRect(
                           borderRadius: AppTheme.largeRadius,
-                          child: Image.network(
-                            currentRecipe.imageUrl!,
+                          child: CachedRecipeHeroImage(
+                            imageUrl: currentRecipe.imageUrl,
                             height: AppTheme.imageHeightMedium,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder:
-                                (_, __, ___) => Container(
-                                  height: AppTheme.imageHeightMedium,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.surfaceContainerHighest,
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    'Ogiltig bild-URL',
-                                    style: AppTheme.subtitleStyle,
-                                  ),
-                                ),
                           ),
                         ),
                       AppTheme.mediumGap,
