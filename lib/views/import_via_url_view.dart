@@ -1,185 +1,142 @@
 // lib/views/import_via_url_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../utils/recipe_scraper.dart'; // Hjälparfil för JSON-LD-extraktion
+import 'package:provider/provider.dart';
+import '../viewmodels/url_import_viewmodel.dart';
 import '../theme/app_theme.dart';
+import '../core/injection.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD IMPORT VIA URL VY
-class ImportViaUrlView extends StatefulWidget {
+/// ✨ UPPDATERAD IMPORT VIA URL VY MED URLIMPORTVIEWMODEL
+class ImportViaUrlView extends StatelessWidget {
   const ImportViaUrlView({super.key});
 
   @override
-  State<ImportViaUrlView> createState() => _ImportViaUrlViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => sl<UrlImportViewModel>(),
+      child: const _ImportViaUrlViewContent(),
+    );
+  }
 }
 
-class _ImportViaUrlViewState extends State<ImportViaUrlView> {
-  final _urlController = TextEditingController();
-  bool _loading = false;
-  String? _error;
-  String _pageText = '';
+class _ImportViaUrlViewContent extends StatefulWidget {
+  const _ImportViaUrlViewContent();
+
+  @override
+  State<_ImportViaUrlViewContent> createState() =>
+      _ImportViaUrlViewContentState();
+}
+
+class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
+  final TextEditingController _urlController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController.addListener(_onUrlChanged);
+  }
 
   @override
   void dispose() {
+    _urlController.removeListener(_onUrlChanged);
     _urlController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchPage() async {
-    final rawUrl = _urlController.text.trim();
-    if (rawUrl.isEmpty) return;
-
-    setState(() {
-      _loading = true;
-      _error = null;
-      _pageText = '';
-    });
-
-    try {
-      final encodedUrl = Uri.encodeComponent(rawUrl);
-      // Använder public proxy för att slippa CORS-strul
-      final proxyUrl = 'https://api.allorigins.win/raw?url=$encodedUrl';
-      final response = await http.get(Uri.parse(proxyUrl));
-
-      if (response.statusCode != 200) {
-        _error = 'Hämtning misslyckades (kod ${response.statusCode})';
-      } else {
-        final html = response.body;
-        final recipeJson = extractRecipeFromHtml(html);
-
-        if (recipeJson == null) {
-          _error = 'Kunde inte hitta receptdata på sidan.';
-        } else {
-          // ───── Bygg text med ingredienser + instruktioner ─────
-
-          final ingredients = <String>[];
-          if (recipeJson['recipeIngredient'] is List) {
-            ingredients.addAll(
-              (recipeJson['recipeIngredient'] as List).cast<String>(),
-            );
-          }
-
-          final instructions = <String>[];
-          if (recipeJson['recipeInstructions'] is List) {
-            for (final step in recipeJson['recipeInstructions'] as List) {
-              if (step is Map<String, dynamic>) {
-                // Platta ut HowToSection → itemListElement
-                if (step.containsKey('itemListElement') &&
-                    step['itemListElement'] is List) {
-                  for (final subStep in step['itemListElement'] as List) {
-                    if (subStep is Map<String, dynamic> &&
-                        subStep['text'] != null) {
-                      instructions.add(subStep['text'].toString());
-                    }
-                  }
-                }
-                // Om det bara är ett vanligt "text"-fält
-                else if (step['text'] != null) {
-                  instructions.add(step['text'].toString());
-                }
-              } else if (step is String) {
-                instructions.add(step);
-              }
-            }
-          }
-
-          final buffer = StringBuffer();
-          // Ingredienser
-          buffer.writeln('Ingredienser:');
-          for (var ingred in ingredients) {
-            buffer.writeln('- $ingred');
-          }
-          // Instruktioner
-          buffer.writeln('\nInstruktioner:');
-          for (var i = 0; i < instructions.length; i++) {
-            buffer.writeln('${i + 1}. ${instructions[i]}');
-          }
-
-          _pageText = buffer.toString();
-        }
-      }
-    } catch (e) {
-      _error = 'Fel vid uppkoppling: $e';
-    } finally {
-      setState(() => _loading = false);
-    }
+  void _onUrlChanged() {
+    final viewModel = context.read<UrlImportViewModel>();
+    viewModel.updateUrl(_urlController.text);
   }
 
-  void _goToPasteView() {
-    if (_pageText.isEmpty) return;
-    Navigator.pushNamed(context, '/franSocialaMedier', arguments: _pageText);
+  void _fetchPage() {
+    final viewModel = context.read<UrlImportViewModel>();
+    viewModel.fetchFromUrl();
+  }
+
+  void _navigateToTextImport() {
+    final viewModel = context.read<UrlImportViewModel>();
+    if (viewModel.hasExtractedText) {
+      Navigator.pushNamed(
+        context,
+        '/franSocialaMedier',
+        arguments: viewModel.extractedText,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<UrlImportViewModel>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Import via URL')),
       body: Padding(
-        padding: AppTheme.screenPadding, // ✅ SEMANTISK PADDING
+        padding: AppTheme.screenPadding,
         child: Column(
           children: [
+            // URL input
             TextFormField(
               controller: _urlController,
+              enabled: !viewModel.isLoading,
               decoration: const InputDecoration(
                 labelText: 'Klistra in recept-URL',
                 border: OutlineInputBorder(),
+                hintText: 'https://example.com/recept',
               ),
+              keyboardType: TextInputType.url,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _fetchPage(),
             ),
-            AppTheme.mediumGap, // ✅ SEMANTISK GAP
+            AppTheme.mediumGap,
+
+            // Hämta-knapp
             ElevatedButton(
-              onPressed: _loading ? null : _fetchPage,
-              style: AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
+              onPressed:
+                  viewModel.canFetch && !viewModel.isLoading
+                      ? _fetchPage
+                      : null,
+              style: AppTheme.primaryButtonStyle,
               child:
-                  _loading
-                      ? AppTheme.smallLoadingIndicator(
-                        context,
-                      ) // ✅ SEMANTISK LOADING
+                  viewModel.isLoading
+                      ? AppTheme.smallLoadingIndicator(context)
                       : const Text('Hämta text'),
             ),
 
-            // Error med semantisk widget ✨
-            if (_error != null) ...[
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-              AppTheme.errorContainer(
-                context,
-                _error!,
-              ), // ✅ SEMANTISK ERROR WIDGET
+            // Error visning
+            if (viewModel.hasError) ...[
+              AppTheme.mediumGap,
+              AppTheme.errorContainer(context, viewModel.error!),
             ],
 
-            if (_pageText.isNotEmpty) ...[
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
-              Text(
-                'Extraherad text:',
-                style: AppTheme.sectionTitleStyle, // ✅ SEMANTISK STYLE
-              ),
+            // Extraherad text
+            if (viewModel.hasExtractedText) ...[
+              AppTheme.mediumGap,
+              Text('Extraherad text:', style: AppTheme.sectionTitleStyle),
               Expanded(
                 child: SingleChildScrollView(
                   child: Container(
                     width: double.infinity,
-                    padding: AppTheme.cardPadding, // ✅ SEMANTISK PADDING
+                    padding: AppTheme.cardPadding,
                     margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
                     decoration: BoxDecoration(
                       color:
                           Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: AppTheme.mediumRadius, // ✅ SEMANTISK RADIUS
+                      borderRadius: AppTheme.mediumRadius,
                       border: Border.all(
                         color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
                     child: Text(
-                      _pageText,
-                      style:
-                          Theme.of(
-                            context,
-                          ).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
+                      viewModel.extractedText,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                 ),
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
               ElevatedButton(
-                onPressed: _goToPasteView,
-                style: AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
+                onPressed: _navigateToTextImport,
+                style: AppTheme.primaryButtonStyle,
                 child: const Text('Gå vidare till klistra-in'),
               ),
             ],

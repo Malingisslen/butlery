@@ -1,0 +1,145 @@
+// lib/viewmodels/photo_import_viewmodel.dart
+
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+
+/// ViewModel för foto-OCR import
+class PhotoImportViewModel extends ChangeNotifier {
+  // State
+  Uint8List? _imageBytes;
+  String _ocrText = '';
+  bool _isProcessing = false;
+  String? _error;
+
+  // API-konfiguration
+  static const String _ocrApiKey = 'K86932882588957';
+  static const String _ocrApiUrl = 'https://api.ocr.space/parse/image';
+
+  // Getters
+  Uint8List? get imageBytes => _imageBytes;
+  String get ocrText => _ocrText;
+  bool get isProcessing => _isProcessing;
+  String? get error => _error;
+  bool get hasError => _error != null;
+  bool get hasImage => _imageBytes != null;
+  bool get hasOcrResult => _ocrText.isNotEmpty;
+
+  /// Ta bild och kör OCR
+  Future<void> pickImageAndProcess() async {
+    _clearState();
+    _setProcessing(true);
+
+    try {
+      // Välj bild
+      final picker = ImagePicker();
+      final XFile? picked = await picker.pickImage(source: ImageSource.camera);
+
+      if (picked == null) {
+        _setProcessing(false);
+        return;
+      }
+
+      // Läs bilden
+      final bytes = await picked.readAsBytes();
+      _imageBytes = bytes;
+      notifyListeners();
+
+      // Kör OCR
+      final base64Image = base64Encode(bytes);
+      String text = await _callOcrApi(base64Image, engine: '2');
+
+      // Om engine 2 misslyckas, prova engine 1
+      if (text.isEmpty) {
+        text = await _callOcrApi(
+          base64Image,
+          engine: '1',
+          extras: {'detectOrientation': 'true'},
+        );
+      }
+
+      if (text.isEmpty) {
+        throw Exception(
+          'Inga resultat tolkades. Kontrollera ljus, fokus eller vinkel.',
+        );
+      }
+
+      _ocrText = text;
+      _error = null;
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setProcessing(false);
+    }
+  }
+
+  /// Anropa OCR API
+  Future<String> _callOcrApi(
+    String base64Image, {
+    required String engine,
+    Map<String, String>? extras,
+  }) async {
+    final body = <String, String>{
+      'base64Image': 'data:image/png;base64,$base64Image',
+      'language': 'swe',
+      'isOverlayRequired': 'false',
+      'OCREngine': engine,
+    };
+
+    if (extras != null) {
+      body.addAll(extras);
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(_ocrApiUrl),
+        headers: {
+          'apikey': _ocrApiKey,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body,
+      );
+
+      final decoded = jsonDecode(response.body);
+      final List<dynamic>? parsed = decoded['ParsedResults'];
+
+      if (parsed != null && parsed.isNotEmpty) {
+        return parsed[0]['ParsedText'] as String? ?? '';
+      }
+    } catch (e) {
+      debugPrint('OCR API error: $e');
+    }
+
+    return '';
+  }
+
+  /// Rensa all state
+  void clearAll() {
+    _clearState();
+    notifyListeners();
+  }
+
+  /// Rensa fel
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  // Private methods
+  void _clearState() {
+    _imageBytes = null;
+    _ocrText = '';
+    _error = null;
+  }
+
+  void _setProcessing(bool value) {
+    _isProcessing = value;
+    notifyListeners();
+  }
+
+  void _setError(String message) {
+    _error = message;
+    notifyListeners();
+  }
+}

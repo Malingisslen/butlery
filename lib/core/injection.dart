@@ -9,6 +9,12 @@ import '../viewmodels/recipe_list_viewmodel.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
+import '../viewmodels/text_import_viewmodel.dart';
+import '../viewmodels/archive_import_viewmodel.dart';
+import '../viewmodels/photo_import_viewmodel.dart';
+import '../viewmodels/url_import_viewmodel.dart';
+import '../viewmodels/recipe_detail_viewmodel.dart';
+import '../models/recipe.dart';
 
 /// Service Locator instance
 final GetIt sl = GetIt.instance;
@@ -42,6 +48,27 @@ Future<void> initializeDependencies() async {
 
   sl.registerFactory<RecipeFormViewModel>(
     () => RecipeFormViewModel(recipeService: sl<RecipeService>()),
+  );
+
+  sl.registerFactory<TextImportViewModel>(() => TextImportViewModel());
+
+  sl.registerFactory<ArchiveImportViewModel>(
+    () => ArchiveImportViewModel(
+      recipeService: sl<RecipeService>(),
+      searchService: sl<SearchService>(),
+    ),
+  );
+
+  sl.registerFactory<PhotoImportViewModel>(() => PhotoImportViewModel());
+
+  sl.registerFactory<UrlImportViewModel>(() => UrlImportViewModel());
+
+  // RecipeDetailViewModel behöver recipe som parameter
+  sl.registerFactoryParam<RecipeDetailViewModel, Recipe, void>(
+    (recipe, _) => RecipeDetailViewModel(
+      recipe: recipe,
+      recipeService: sl<RecipeService>(),
+    ),
   );
 
   // Initiera RecipeService direkt
