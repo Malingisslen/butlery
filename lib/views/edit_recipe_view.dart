@@ -1,253 +1,72 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/recipe.dart';
-import '../services/recipe_service.dart';
+import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/action_button.dart';
-import '../widgets/recipe_service_widget.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cached_recipe_image.dart';
 import '../core/validators/form_validators.dart';
+import '../core/injection.dart';
 
-/// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPESERVICE
-class EditRecipeView extends StatefulWidget {
+/// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPEFORMVIEWMODEL
+class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
   const EditRecipeView({super.key, required this.recipe});
 
   @override
-  State<EditRecipeView> createState() => _EditRecipeViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create:
+          (_) =>
+              RecipeFormViewModel(recipeService: sl(), initialRecipe: recipe),
+      child: const _EditRecipeViewContent(),
+    );
+  }
 }
 
-class _EditRecipeViewState extends State<EditRecipeView> {
+class _EditRecipeViewContent extends StatefulWidget {
+  const _EditRecipeViewContent();
+
+  @override
+  State<_EditRecipeViewContent> createState() => _EditRecipeViewContentState();
+}
+
+class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   final _formKey = GlobalKey<FormState>();
-  final RecipeService _recipeService = RecipeService();
-
-  final List<TextEditingController> _disposedControllers = [];
-  late final TextEditingController _titleController;
-  late final TextEditingController _descriptionController;
-  late final TextEditingController _portionsController;
-  late final TextEditingController _timeController;
-  late final TextEditingController _ratingController;
-  late final TextEditingController _imageUrlController;
-
-  final List<TextEditingController> _ingredientControllers = [];
-  final List<TextEditingController> _instructionControllers = [];
-  final List<TextEditingController> _tagControllers = [];
-
-  String? _currentImageUrl;
-  bool _isSaving = false;
-
-  // Måltidstyper för redigering
-  final List<String> _mealTypes = [
-    'Frukost',
-    'Lunch',
-    'Middag',
-    'Dessert',
-    'Mellanmål',
-    'Fika',
-  ];
-  late String _selectedMealType;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeControllers();
-  }
-
-  void _initializeControllers() {
-    final r = widget.recipe;
-    _titleController = TextEditingController(text: r.title);
-    _descriptionController = TextEditingController(text: r.description);
-    _portionsController = TextEditingController(
-      text: r.portions?.toString() ?? '',
-    );
-    _timeController = TextEditingController(
-      text: r.timeMinutes?.toString() ?? '',
-    );
-    _ratingController = TextEditingController(text: r.rating?.toString() ?? '');
-    _imageUrlController = TextEditingController(text: r.imageUrl ?? '');
-    _currentImageUrl = r.imageUrl;
-    _selectedMealType = r.mealType;
-
-    _imageUrlController.addListener(() {
-      final url = _imageUrlController.text.trim();
-      if (url != _currentImageUrl) {
-        setState(() {
-          _currentImageUrl = url.isEmpty ? null : url;
-        });
-      }
-    });
-
-    // Initiera dynamiska listor
-    for (var ing in r.ingredients) {
-      _ingredientControllers.add(TextEditingController(text: ing));
-    }
-    _ingredientControllers.add(TextEditingController());
-
-    for (var ins in r.instructions) {
-      _instructionControllers.add(TextEditingController(text: ins));
-    }
-    _instructionControllers.add(TextEditingController());
-
-    for (var tag in (r.tags ?? [])) {
-      _tagControllers.add(TextEditingController(text: tag));
-    }
-    _tagControllers.add(TextEditingController());
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _portionsController.dispose();
-    _timeController.dispose();
-    _ratingController.dispose();
-    _imageUrlController.dispose();
-
-    for (final c in _ingredientControllers) {
-      c.dispose();
-    }
-    for (final c in _instructionControllers) {
-      c.dispose();
-    }
-    for (final c in _tagControllers) {
-      c.dispose();
-    }
-    for (final c in _disposedControllers) {
-      c.dispose();
-    }
-    _disposedControllers.clear();
-
-    super.dispose();
-  }
-
-  void _handleDynamicChange(
-    List<TextEditingController> list,
-    int index,
-    String value,
-  ) {
-    final trimmed = value.trim();
-    setState(() {
-      if (trimmed.isEmpty && index < list.length - 1) {
-        final removedController = list.removeAt(index);
-        _disposedControllers.add(removedController);
-      } else if (index == list.length - 1 && trimmed.isNotEmpty) {
-        list.add(TextEditingController());
-      }
-    });
-  }
 
   Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isSaving = true;
-    });
+    final viewModel = context.read<RecipeFormViewModel>();
+    final success = await viewModel.saveRecipe();
 
-    try {
-      final updated = widget.recipe.copyWith(
-        mealType: _selectedMealType,
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        portions: int.tryParse(_portionsController.text.trim()),
-        timeMinutes: int.tryParse(_timeController.text.trim()),
-        ingredients:
-            _ingredientControllers
-                .map((c) => c.text.trim())
-                .where((t) => t.isNotEmpty)
-                .toList(),
-        instructions:
-            _instructionControllers
-                .map((c) => c.text.trim())
-                .where((t) => t.isNotEmpty)
-                .toList(),
-        tags:
-            _tagControllers
-                .map((c) => c.text.trim())
-                .where((t) => t.isNotEmpty)
-                .toList(),
-        rating: double.tryParse(_ratingController.text.replaceAll(',', '.')),
-        imageUrl:
-            _imageUrlController.text.trim().isEmpty
-                ? null
-                : _imageUrlController.text.trim(),
-      );
-
-      // Använd RecipeService för att uppdatera
-      final result = await _recipeService.updateRecipe(updated);
-
-      if (!mounted) return;
-
-      if (result.isSuccess) {
-        // Visa framgångsmeddelande
-        RecipeServiceSnackbar.showSuccess(context, result.message);
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ändringar sparade!'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
         Navigator.pop(context, true);
       } else {
-        // Visa felmeddelande
-        RecipeServiceSnackbar.showError(context, result.message);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      RecipeServiceSnackbar.showError(
-        context,
-        'Kunde inte spara recept: ${e.toString()}',
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.error ?? 'Kunde inte spara ändringar'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
       }
     }
   }
 
-  Widget _buildDynamicList(
-    String label,
-    List<TextEditingController> controllers,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTheme.formLabelStyle),
-        AppTheme.smallGap,
-        ...controllers.asMap().entries.map((entry) {
-          final i = entry.key;
-          final c = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: c,
-                    decoration: InputDecoration(hintText: '$label ${i + 1}'),
-                    onChanged: (v) => _handleDynamicChange(controllers, i, v),
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                  ),
-                ),
-                if (c.text.trim().isNotEmpty || i < controllers.length - 1)
-                  IconButton(
-                    icon: AppTheme.actionIcon(context, Icons.delete),
-                    onPressed: () {
-                      setState(() {
-                        // ✅ UPPDATERAT: Spara borttagen controller
-                        final removedController = controllers.removeAt(i);
-                        _disposedControllers.add(removedController);
-                      });
-                    },
-                  ),
-              ],
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<RecipeFormViewModel>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Redigera recept')),
       bottomNavigationBar: Padding(
@@ -255,8 +74,9 @@ class _EditRecipeViewState extends State<EditRecipeView> {
         child: ActionButton.primary(
           label: 'Spara ändringar',
           icon: Icons.save,
-          onPressed: _isSaving ? null : _saveRecipe,
-          isLoading: _isSaving,
+          onPressed:
+              viewModel.isSaving || !viewModel.isValid ? null : _saveRecipe,
+          isLoading: viewModel.isSaving,
           loadingText: 'Sparar...',
           isExpanded: true,
         ),
@@ -271,36 +91,40 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                 children: [
                   // Måltidstyp
                   DropdownButtonFormField<String>(
-                    value: _selectedMealType,
+                    value: viewModel.mealType,
                     decoration: const InputDecoration(labelText: 'Måltidstyp'),
                     items:
-                        _mealTypes
+                        RecipeFormViewModel.mealTypes
                             .map(
                               (mt) =>
                                   DropdownMenuItem(value: mt, child: Text(mt)),
                             )
                             .toList(),
-                    onChanged: (v) => setState(() => _selectedMealType = v!),
+                    onChanged: (value) {
+                      if (value != null) viewModel.setMealType(value);
+                    },
                   ),
                   AppTheme.mediumGap,
 
                   // Bildförhandsvisning
-                  if (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
+                  if (viewModel.imageUrl != null &&
+                      viewModel.imageUrl!.isNotEmpty)
                     Padding(
                       padding: EdgeInsets.only(bottom: AppTheme.spacingMd),
                       child: ClipRRect(
                         borderRadius: AppTheme.largeRadius,
                         child: CachedRecipeHeroImage(
-                          imageUrl: _currentImageUrl,
+                          imageUrl: viewModel.imageUrl,
                           height: AppTheme.imageHeightMedium,
                         ),
                       ),
                     ),
 
-                  // Formulärfält
+                  // Titel
                   TextFormField(
-                    controller: _titleController,
+                    initialValue: viewModel.title,
                     decoration: const InputDecoration(labelText: 'Titel'),
+                    onChanged: viewModel.setTitle,
                     validator: FormValidators.combine([
                       FormValidators.required('Titel'),
                       FormValidators.maxLength(100, 'Titel'),
@@ -308,96 +132,176 @@ class _EditRecipeViewState extends State<EditRecipeView> {
                   ),
                   AppTheme.mediumGap,
 
+                  // Beskrivning
                   TextFormField(
-                    controller: _descriptionController,
+                    initialValue: viewModel.description,
                     maxLines: 2,
                     decoration: const InputDecoration(labelText: 'Beskrivning'),
+                    onChanged: viewModel.setDescription,
                     validator: FormValidators.maxLength(500, 'Beskrivning'),
                   ),
                   AppTheme.mediumGap,
 
+                  // Portioner
                   TextFormField(
-                    controller: _portionsController,
+                    initialValue: viewModel.portions?.toString() ?? '',
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Antal portioner',
                     ),
+                    onChanged: viewModel.setPortions,
                     validator: FormValidators.portions(),
                   ),
                   AppTheme.mediumGap,
 
+                  // Tid
                   TextFormField(
-                    controller: _timeController,
+                    initialValue: viewModel.timeMinutes?.toString() ?? '',
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Tid (minuter)',
                     ),
+                    onChanged: viewModel.setTimeMinutes,
                     validator: FormValidators.cookingTime(),
                   ),
                   AppTheme.mediumGap,
 
-                  _buildDynamicList('Ingrediens', _ingredientControllers),
+                  // Ingredienser
+                  _buildDynamicList(
+                    'Ingrediens',
+                    viewModel.ingredients,
+                    viewModel.updateIngredient,
+                    viewModel.addIngredient,
+                    viewModel.removeIngredient,
+                  ),
                   AppTheme.mediumGap,
 
-                  _buildDynamicList('Instruktion', _instructionControllers),
+                  // Instruktioner
+                  _buildDynamicList(
+                    'Instruktion',
+                    viewModel.instructions,
+                    viewModel.updateInstruction,
+                    viewModel.addInstruction,
+                    viewModel.removeInstruction,
+                  ),
                   AppTheme.mediumGap,
 
-                  _buildDynamicList('Tagg', _tagControllers),
+                  // Taggar
+                  _buildDynamicList(
+                    'Tagg',
+                    viewModel.tags,
+                    viewModel.updateTag,
+                    viewModel.addTag,
+                    viewModel.removeTag,
+                  ),
                   AppTheme.mediumGap,
 
+                  // Betyg
                   TextFormField(
-                    controller: _ratingController,
+                    initialValue: viewModel.rating?.toString() ?? '',
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                     decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+                    onChanged: viewModel.setRating,
                     validator: FormValidators.rating(),
                   ),
                   AppTheme.mediumGap,
 
+                  // Bild-URL
                   TextFormField(
-                    controller: _imageUrlController,
+                    initialValue: viewModel.imageUrl ?? '',
                     decoration: const InputDecoration(labelText: 'Bild-URL'),
+                    onChanged: viewModel.setImageUrl,
                     validator: FormValidators.url(),
+                    onFieldSubmitted: (_) {
+                      // Trigger rebuild för att uppdatera bildförhandsvisning
+                      setState(() {});
+                    },
                   ),
                 ],
               ),
             ),
           ),
 
-          // Loading overlay när RecipeService arbetar
-          RecipeServiceConsumer(
-            builder: (context, recipeService, child) {
-              if (recipeService.isLoading && !_isSaving) {
-                return Container(
-                  color: Colors.black26,
-                  child: Center(
-                    child: Container(
-                      padding: AppTheme.cardPadding,
-                      decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: AppTheme.largeRadius,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AppTheme.mediumLoadingIndicator(),
-                          AppTheme.smallGap,
-                          Text(
-                            'Uppdaterar recept...',
-                            style: AppTheme.subtitleStyle,
-                          ),
-                        ],
-                      ),
-                    ),
+          // Loading overlay
+          if (viewModel.isSaving)
+            Container(
+              color: Colors.black26,
+              child: Center(
+                child: Container(
+                  padding: AppTheme.cardPadding,
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardColor,
+                    borderRadius: AppTheme.largeRadius,
                   ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppTheme.mediumLoadingIndicator(),
+                      AppTheme.smallGap,
+                      Text(
+                        'Uppdaterar recept...',
+                        style: AppTheme.subtitleStyle,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDynamicList(
+    String label,
+    List<String> items,
+    Function(int, String) onUpdate,
+    VoidCallback onAdd,
+    Function(int) onRemove,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTheme.formLabelStyle),
+        AppTheme.smallGap,
+        ...items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final value = entry.value;
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    key: ValueKey('${label}_$index'),
+                    initialValue: value,
+                    decoration: InputDecoration(
+                      hintText: '$label ${index + 1}',
+                    ),
+                    onChanged: (newValue) => onUpdate(index, newValue),
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                  ),
+                ),
+                if (value.trim().isNotEmpty || index < items.length - 1)
+                  IconButton(
+                    icon: AppTheme.actionIcon(context, Icons.delete),
+                    onPressed: () => onRemove(index),
+                  ),
+              ],
+            ),
+          );
+        }),
+        if (items.isEmpty || items.last.isNotEmpty)
+          TextButton.icon(
+            icon: const Icon(Icons.add),
+            label: Text('Lägg till $label'),
+            onPressed: onAdd,
+          ),
+      ],
     );
   }
 }

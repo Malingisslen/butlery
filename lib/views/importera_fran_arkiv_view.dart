@@ -1,236 +1,90 @@
 // lib/views/importera_fran_arkiv_view.dart
 
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
-import '../data/archived_recipes.dart';
-import '../services/recipe_service.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/archive_import_viewmodel.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/action_button.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/recipe_service_widget.dart';
-import '../services/search_service.dart';
 import '../theme/app_theme.dart';
+import '../core/injection.dart';
 
-enum TimeFilter { all, under15, under30, under60 }
-
-/// ✨ UPPDATERAD ARKIV IMPORT VY MED RECIPESERVICE
-class ImporteraFranArkivView extends StatefulWidget {
+/// ✨ UPPDATERAD ARKIV IMPORT VY MED ARCHIVEIMPORTVIEWMODEL
+class ImporteraFranArkivView extends StatelessWidget {
   const ImporteraFranArkivView({super.key});
 
   @override
-  State<ImporteraFranArkivView> createState() => _ImporteraFranArkivViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => sl<ArchiveImportViewModel>(),
+      child: const _ImporteraFranArkivViewContent(),
+    );
+  }
 }
 
-class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
-  final SearchService _searchService = SearchService();
-  final RecipeService _recipeService = RecipeService();
-  final Set<String> _selectedTags = {};
-  final Set<String> _selectedRecipeIds = {};
+class _ImporteraFranArkivViewContent extends StatelessWidget {
+  const _ImporteraFranArkivViewContent();
 
-  TimeFilter _selectedTimeFilter = TimeFilter.all;
-  String _searchQuery = '';
-  List<Recipe> _filteredRecipes = archivedRecipes;
-  bool _isImporting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _applyFilters();
-  }
-
-  void _applyFilters() {
-    List<Recipe> results = archivedRecipes;
-
-    // Sökfilter
-    if (_searchQuery.isNotEmpty) {
-      results = _searchService.searchRecipes(results, _searchQuery);
+  void _handleImport(
+    BuildContext context,
+    ArchiveImportViewModel viewModel,
+  ) async {
+    if (viewModel.hasSelection) {
+      await viewModel.importSelectedRecipes();
+    } else {
+      await viewModel.importAllRecipes();
     }
 
-    // Tagg-filter: AND-logik
-    if (_selectedTags.isNotEmpty) {
-      results = _searchService.filterByTags(results, _selectedTags.toList());
-    }
-
-    // Tids-filter
-    switch (_selectedTimeFilter) {
-      case TimeFilter.under15:
-        results = _searchService.filterByMaxTime(results, 15);
-        break;
-      case TimeFilter.under30:
-        results = _searchService.filterByMaxTime(results, 30);
-        break;
-      case TimeFilter.under60:
-        results = _searchService.filterByMaxTime(results, 60);
-        break;
-      case TimeFilter.all:
-        break;
-    }
-
-    setState(() {
-      _filteredRecipes = results;
-      _selectedRecipeIds
-        ..clear()
-        ..addAll(_filteredRecipes.map((r) => r.id));
-    });
-  }
-
-  void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query;
-    });
-    _applyFilters();
-  }
-
-  void _toggleTag(String tag) {
-    setState(() {
-      if (_selectedTags.contains(tag)) {
-        _selectedTags.remove(tag);
-      } else {
-        _selectedTags.add(tag);
-      }
-    });
-    _applyFilters();
-  }
-
-  void _toggleTimeFilter(TimeFilter filter) {
-    setState(() {
-      _selectedTimeFilter = filter;
-    });
-    _applyFilters();
-  }
-
-  void _toggleRecipeSelection(String id) {
-    setState(() {
-      if (_selectedRecipeIds.contains(id)) {
-        _selectedRecipeIds.remove(id);
-      } else {
-        _selectedRecipeIds.add(id);
-      }
-    });
-  }
-
-  Future<void> _importSelectedRecipes() async {
-    if (_selectedRecipeIds.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Inga recept valda')));
-      return;
-    }
-
-    setState(() {
-      _isImporting = true;
-    });
-
-    try {
-      final toImport =
-          archivedRecipes
-              .where((r) => _selectedRecipeIds.contains(r.id))
-              .toList();
-
-      final result = await _recipeService.addMultipleRecipes(toImport);
-
-      if (!mounted) return;
-
-      if (result.isSuccess) {
-        RecipeServiceSnackbar.showSuccess(context, result.message);
-        if (result.warnings != null && result.warnings!.isNotEmpty) {
-          // Visa varningar om några recept inte kunde läggas till
-          RecipeServiceSnackbar.showWarning(
-            context,
-            'Några recept kunde inte läggas till: ${result.warnings!.length} fel',
-          );
-        }
+    if (context.mounted) {
+      if (viewModel.error == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Recept importerade!'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
         Navigator.pop(context);
       } else {
-        RecipeServiceSnackbar.showError(context, result.message);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      RecipeServiceSnackbar.showError(
-        context,
-        'Import misslyckades: ${e.toString()}',
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isImporting = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _importAllRecipes() async {
-    setState(() {
-      _isImporting = true;
-    });
-
-    try {
-      final result = await _recipeService.addMultipleRecipes(archivedRecipes);
-
-      if (!mounted) return;
-
-      if (result.isSuccess) {
-        RecipeServiceSnackbar.showSuccess(context, result.message);
-        if (result.warnings != null && result.warnings!.isNotEmpty) {
-          RecipeServiceSnackbar.showWarning(
-            context,
-            'Några recept kunde inte läggas till: ${result.warnings!.length} fel',
-          );
-        }
-        Navigator.pop(context);
-      } else {
-        RecipeServiceSnackbar.showError(context, result.message);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      RecipeServiceSnackbar.showError(
-        context,
-        'Import misslyckades: ${e.toString()}',
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isImporting = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.error!),
+            backgroundColor: AppTheme.errorColor,
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: viewModel.clearError,
+            ),
+          ),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final allTags =
-        archivedRecipes.expand((r) => r.tags ?? []).toSet().toList()..sort();
+    final viewModel = context.watch<ArchiveImportViewModel>();
+    final allTags = viewModel.availableTags.toList()..sort();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Importera från Butlerys arkiv'),
         actions: [
-          // Visa RecipeService errors
-          RecipeServiceConsumer(
-            builder: (context, recipeService, child) {
-              if (recipeService.hasError) {
-                return IconButton(
-                  icon: AppTheme.errorIcon(context),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(recipeService.lastError!),
-                        action: SnackBarAction(
-                          label: 'Stäng',
-                          onPressed: () {
-                            recipeService.clearError();
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                  tooltip: 'Visa fel',
+          if (viewModel.hasError)
+            IconButton(
+              icon: AppTheme.errorIcon(context),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(viewModel.error!),
+                    action: SnackBarAction(
+                      label: 'Stäng',
+                      onPressed: viewModel.clearError,
+                    ),
+                  ),
                 );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+              },
+              tooltip: 'Visa fel',
+            ),
         ],
       ),
       body: Stack(
@@ -242,7 +96,7 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                 // Sökfält
                 AppSearchBar(
                   hintText: 'Sök i arkiv...',
-                  onChanged: _onSearchChanged,
+                  onChanged: viewModel.updateSearch,
                 ),
                 SizedBox(height: AppTheme.spacingMd),
 
@@ -254,8 +108,8 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                         allTags.map((tag) {
                           return AppTheme.filterChip(
                             label: tag,
-                            selected: _selectedTags.contains(tag),
-                            onSelected: () => _toggleTag(tag),
+                            selected: viewModel.selectedTags.contains(tag),
+                            onSelected: () => viewModel.toggleTag(tag),
                           );
                         }).toList(),
                   ),
@@ -263,196 +117,189 @@ class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
                 ],
 
                 // Tids-filter
-                Wrap(
-                  spacing: AppTheme.spacingSm,
-                  children: [
-                    AppTheme.choiceChip(
-                      label: 'Alla',
-                      selected: _selectedTimeFilter == TimeFilter.all,
-                      onSelected: () => _toggleTimeFilter(TimeFilter.all),
-                    ),
-                    AppTheme.choiceChip(
-                      label: '≤ 15 min',
-                      selected: _selectedTimeFilter == TimeFilter.under15,
-                      onSelected: () => _toggleTimeFilter(TimeFilter.under15),
-                    ),
-                    AppTheme.choiceChip(
-                      label: '≤ 30 min',
-                      selected: _selectedTimeFilter == TimeFilter.under30,
-                      onSelected: () => _toggleTimeFilter(TimeFilter.under30),
-                    ),
-                    AppTheme.choiceChip(
-                      label: '≤ 60 min',
-                      selected: _selectedTimeFilter == TimeFilter.under60,
-                      onSelected: () => _toggleTimeFilter(TimeFilter.under60),
-                    ),
-                  ],
-                ),
+                _buildTimeFilters(context, viewModel),
                 SizedBox(height: AppTheme.spacingMd),
 
                 // Sökstatistik
-                if (_searchQuery.isNotEmpty ||
-                    _selectedTags.isNotEmpty ||
-                    _selectedTimeFilter != TimeFilter.all)
-                  Padding(
-                    padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
-                    child: Row(
-                      children: [
-                        AppTheme.filterIcon(context),
-                        SizedBox(width: AppTheme.spacingXs),
-                        Text(
-                          '${_filteredRecipes.length} av ${archivedRecipes.length} recept',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${_selectedRecipeIds.length} valda',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                if (viewModel.searchQuery.isNotEmpty ||
+                    viewModel.selectedTags.isNotEmpty ||
+                    viewModel.timeFilter != TimeFilter.all)
+                  _buildSearchStats(context, viewModel),
 
                 // Recept-lista
-                Expanded(
-                  child:
-                      _filteredRecipes.isEmpty
-                          ? EmptyState(
-                            icon: Icons.search_off,
-                            title: 'Inga recept matchade filtren',
-                            subtitle: 'Prova att justera sökning eller filter',
-                          )
-                          : ListView(
-                            children:
-                                _filteredRecipes.map((recipe) {
-                                  final selected = _selectedRecipeIds.contains(
-                                    recipe.id,
-                                  );
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: AppTheme.spacingXxs,
-                                    ),
-                                    child: CompactRecipeCard(
-                                      recipe: recipe,
-                                      onTap:
-                                          () => Navigator.pushNamed(
-                                            context,
-                                            '/receptDetalj',
-                                            arguments: recipe,
-                                          ),
-                                      trailing: Checkbox(
-                                        value: selected,
-                                        onChanged:
-                                            (_) => _toggleRecipeSelection(
-                                              recipe.id,
-                                            ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                          ),
-                ),
+                Expanded(child: _buildRecipeList(context, viewModel)),
                 SizedBox(height: AppTheme.spacingMd),
 
                 // Import-knappar
-                Row(
-                  children: [
-                    Expanded(
-                      child: ActionButton.outlined(
-                        label: 'Markera alla',
-                        icon: Icons.select_all,
-                        onPressed:
-                            _isImporting
-                                ? null
-                                : () {
-                                  setState(() {
-                                    if (_selectedRecipeIds.length ==
-                                        _filteredRecipes.length) {
-                                      _selectedRecipeIds.clear();
-                                    } else {
-                                      _selectedRecipeIds
-                                        ..clear()
-                                        ..addAll(
-                                          _filteredRecipes.map((r) => r.id),
-                                        );
-                                    }
-                                  });
-                                },
-                      ),
-                    ),
-                    SizedBox(width: AppTheme.spacingSm),
-                    Expanded(
-                      flex: 2,
-                      child: ActionButton.primary(
-                        label:
-                            _selectedRecipeIds.isNotEmpty
-                                ? 'Importera valda (${_selectedRecipeIds.length})'
-                                : 'Importera alla (${archivedRecipes.length})',
-                        icon: Icons.upload,
-                        onPressed:
-                            _isImporting
-                                ? null
-                                : (_selectedRecipeIds.isNotEmpty
-                                    ? _importSelectedRecipes
-                                    : _importAllRecipes),
-                        isLoading: _isImporting,
-                        loadingText: 'Importerar...',
-                      ),
-                    ),
-                  ],
-                ),
+                _buildImportButtons(context, viewModel),
               ],
             ),
           ),
 
-          // Loading overlay för RecipeService
-          RecipeServiceConsumer(
-            builder: (context, recipeService, child) {
-              if (recipeService.isLoading && !_isImporting) {
-                return Container(
-                  color: Colors.black26,
-                  child: Center(
-                    child: Container(
-                      padding: AppTheme.cardPadding,
-                      decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: AppTheme.largeRadius,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AppTheme.mediumLoadingIndicator(),
-                          AppTheme.smallGap,
-                          Text(
-                            'Bearbetar recept...',
-                            style: AppTheme.subtitleStyle,
-                          ),
-                        ],
-                      ),
-                    ),
+          // Loading overlay
+          if (viewModel.isImporting)
+            Container(
+              color: Colors.black26,
+              child: Center(
+                child: Container(
+                  padding: AppTheme.cardPadding,
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardColor,
+                    borderRadius: AppTheme.largeRadius,
                   ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppTheme.mediumLoadingIndicator(),
+                      AppTheme.smallGap,
+                      Text(
+                        'Importerar recept...',
+                        style: AppTheme.subtitleStyle,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeFilters(
+    BuildContext context,
+    ArchiveImportViewModel viewModel,
+  ) {
+    return Wrap(
+      spacing: AppTheme.spacingSm,
+      children: [
+        AppTheme.choiceChip(
+          label: 'Alla',
+          selected: viewModel.timeFilter == TimeFilter.all,
+          onSelected: () => viewModel.setTimeFilter(TimeFilter.all),
+        ),
+        AppTheme.choiceChip(
+          label: '≤ 15 min',
+          selected: viewModel.timeFilter == TimeFilter.under15,
+          onSelected: () => viewModel.setTimeFilter(TimeFilter.under15),
+        ),
+        AppTheme.choiceChip(
+          label: '≤ 30 min',
+          selected: viewModel.timeFilter == TimeFilter.under30,
+          onSelected: () => viewModel.setTimeFilter(TimeFilter.under30),
+        ),
+        AppTheme.choiceChip(
+          label: '≤ 60 min',
+          selected: viewModel.timeFilter == TimeFilter.under60,
+          onSelected: () => viewModel.setTimeFilter(TimeFilter.under60),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchStats(
+    BuildContext context,
+    ArchiveImportViewModel viewModel,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
+      child: Row(
+        children: [
+          AppTheme.filterIcon(context),
+          SizedBox(width: AppTheme.spacingXs),
+          Text(
+            '${viewModel.filteredRecipes.length} av ${viewModel.archivedRecipes.length} recept',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '${viewModel.selectedCount} valda',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRecipeList(
+    BuildContext context,
+    ArchiveImportViewModel viewModel,
+  ) {
+    final recipes = viewModel.filteredRecipes;
+
+    if (recipes.isEmpty) {
+      return EmptyState(
+        icon: Icons.search_off,
+        title: 'Inga recept matchade filtren',
+        subtitle: 'Prova att justera sökning eller filter',
+      );
+    }
+
+    return ListView.builder(
+      itemCount: recipes.length,
+      itemBuilder: (context, index) {
+        final recipe = recipes[index];
+        final selected = viewModel.selectedRecipeIds.contains(recipe.id);
+
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: AppTheme.spacingXxs),
+          child: CompactRecipeCard(
+            recipe: recipe,
+            onTap:
+                () => Navigator.pushNamed(
+                  context,
+                  '/receptDetalj',
+                  arguments: recipe,
+                ),
+            trailing: Checkbox(
+              value: selected,
+              onChanged: (_) => viewModel.toggleRecipeSelection(recipe.id),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImportButtons(
+    BuildContext context,
+    ArchiveImportViewModel viewModel,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: ActionButton.outlined(
+            label: 'Markera alla',
+            icon: Icons.select_all,
+            onPressed: viewModel.isImporting ? null : viewModel.toggleSelectAll,
+          ),
+        ),
+        SizedBox(width: AppTheme.spacingSm),
+        Expanded(
+          flex: 2,
+          child: ActionButton.primary(
+            label:
+                viewModel.hasSelection
+                    ? 'Importera valda (${viewModel.selectedCount})'
+                    : 'Importera alla (${viewModel.archivedRecipes.length})',
+            icon: Icons.upload,
+            onPressed:
+                viewModel.isImporting
+                    ? null
+                    : () => _handleImport(context, viewModel),
+            isLoading: viewModel.isImporting,
+            loadingText: 'Importerar...',
+          ),
+        ),
+      ],
     );
   }
 }

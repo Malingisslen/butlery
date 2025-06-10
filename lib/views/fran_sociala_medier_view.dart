@@ -1,221 +1,81 @@
 // lib/views/fran_sociala_medier_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-import '../models/recipe.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/text_import_viewmodel.dart';
 import '../views/skriv_sjalv_recept_view.dart';
 import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
+import '../core/injection.dart';
 
-/// ✨ UPPDATERAD VY FÖR SOCIAL MEDIA IMPORT MED RECIPESERVICE
-/// Tar emot initialText om du vill förifylla från t.ex. OCR eller URL-import.
-class FranSocialaMedierView extends StatefulWidget {
+/// ✨ UPPDATERAD VY MED TEXTIMPORTVIEWMODEL
+class FranSocialaMedierView extends StatelessWidget {
   final String? initialText;
 
   const FranSocialaMedierView({super.key, this.initialText});
 
   @override
-  State<FranSocialaMedierView> createState() => _FranSocialaMedierViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) {
+        final viewModel = sl<TextImportViewModel>();
+        // Om vi har initial text, sätt den direkt
+        if (initialText != null && initialText!.isNotEmpty) {
+          viewModel.updateInputText(initialText!);
+          // Parse automatiskt efter att widgeten byggts
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            viewModel.parseText().then((success) {
+              if (success && context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => SkrivSjalvReceptView(
+                          initialRecipe: viewModel.parsedRecipe,
+                        ),
+                  ),
+                );
+              }
+            });
+          });
+        }
+        return viewModel;
+      },
+      child: const _FranSocialaMedierViewContent(),
+    );
+  }
 }
 
-class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
-  late final TextEditingController _textController;
-  bool _isParsing = false;
+class _FranSocialaMedierViewContent extends StatelessWidget {
+  const _FranSocialaMedierViewContent();
 
-  @override
-  void initState() {
-    super.initState();
+  void _parseAndNavigate(BuildContext context) async {
+    final viewModel = context.read<TextImportViewModel>();
+    final success = await viewModel.parseText();
 
-    // 1) Förifyll textfältet om initialText finns
-    _textController = TextEditingController(text: widget.initialText ?? '');
-
-    // 2) Om initialText finns, kör parsern automatiskt så snart vyn är uppbyggd
-    if ((widget.initialText ?? '').trim().isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _parseAndNavigate();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _parseAndNavigate() async {
-    final input = _textController.text.trim();
-    if (input.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Ange text att tolka')));
-      return;
-    }
-
-    setState(() {
-      _isParsing = true;
-    });
-
-    try {
-      // Simulera parsing-tid för bättre UX
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      final parsedRecipe = _parseTextToRecipe(input);
-
-      if (!mounted) return;
-
-      // Navigera till redigera-vyn med det parsade receptet
+    if (success && context.mounted) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => SkrivSjalvReceptView(initialRecipe: parsedRecipe),
+          builder:
+              (_) =>
+                  SkrivSjalvReceptView(initialRecipe: viewModel.parsedRecipe),
         ),
       );
-    } catch (e) {
-      if (!mounted) return;
+    } else if (context.mounted && viewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Kunde inte tolka text: ${e.toString()}'),
+          content: Text(viewModel.error!),
           backgroundColor: AppTheme.errorColor,
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isParsing = false;
-        });
-      }
     }
-  }
-
-  /// Parsar text till Recipe-objekt (förbättrad logik)
-  Recipe _parseTextToRecipe(String input) {
-    final lines = input.split('\n');
-    final ingredients = <String>[];
-    final instructions = <String>[];
-
-    bool foundStart = false;
-    bool foundInstructions = false;
-
-    // Triggers för att hitta start/stop i texten
-    final lowerTriggers = [
-      'gör så här',
-      'gör såhär',
-      'så här gör du',
-      'stek',
-      'koka',
-      'ugnen',
-      'blanda',
-    ];
-    final ingredientStartTriggers = ['recept', 'ingredienser'];
-    final rubrikord = ['instruktion', 'tillbehör', 'sås', 'servera', 'annat'];
-    final skipWords = ['spara', 'testa', 'följ', 'likea'];
-    final dishIndicators = [
-      'kyckling',
-      'fläsk',
-      'pasta',
-      'gryta',
-      'tacos',
-      'lax',
-      'sallad',
-    ];
-
-    String normalizeText(String txt) {
-      // Ta bort "fancy" unicode-bokstäver och flera mellanslag
-      final withoutFancy = txt.replaceAllMapped(
-        RegExp(r'[\u{1D400}-\u{1D7FF}]', unicode: true),
-        (m) => String.fromCharCode(m[0]!.codeUnitAt(0) - 0x1D400 + 0x41),
-      );
-      return withoutFancy.replaceAll(RegExp(r'\s+'), ' ').trim();
-    }
-
-    // 1) Extrahera titel ur de första raderna
-    String? extractedTitle;
-    for (final line in lines.take(6)) {
-      final t = line.trim();
-      if (t.isEmpty) continue;
-      final norm = normalizeText(t);
-      final lower = norm.toLowerCase();
-
-      if (skipWords.any((w) => lower.contains(w))) continue;
-      if (dishIndicators.any((w) => lower.contains(w)) || norm.length < 40) {
-        // Rensa specialtecken och korta av till max 6 ord
-        final cleaned = norm.replaceAll(
-          RegExp(r'[^\p{L}\p{N} ,.-]', unicode: true),
-          '',
-        );
-        extractedTitle = cleaned.split(' ').take(6).join(' ');
-        break;
-      }
-    }
-
-    // 2) Loopa igenom alla rader och dela in i ingredienser / instruktioner
-    for (var i = 0; i < lines.length; i++) {
-      final raw = lines[i].trim();
-      if (raw.isEmpty) continue;
-      final norm = normalizeText(raw);
-      final lower = norm.toLowerCase();
-
-      // Hoppa över rubriker, korta versaler etc
-      if (rubrikord.any((r) => lower.startsWith(r)) ||
-          (norm == norm.toUpperCase() && norm.split(' ').length <= 3)) {
-        continue;
-      }
-
-      // Leta efter start på ingrediens‐avsnitt
-      if (!foundStart) {
-        final isTrigger = ingredientStartTriggers.any(
-          (tr) => lower.contains(tr) || lower.startsWith(tr),
-        );
-        final looksLikeQty = RegExp(r'^\d').hasMatch(norm);
-        if (isTrigger || looksLikeQty) {
-          foundStart = true;
-          if (isTrigger) continue;
-        } else {
-          continue;
-        }
-      }
-
-      // När vi ser en matlagnings-trigger börjar vi samla instruktioner
-      if (!foundInstructions && lowerTriggers.any((tr) => lower.contains(tr))) {
-        foundInstructions = true;
-      }
-
-      if (!foundInstructions) {
-        ingredients.add(norm);
-      } else {
-        // Dela instruktion med sats-boundary
-        final parts =
-            norm
-                .split(RegExp(r'(?<=[.!?])\s+(?=[A-ZÅÄÖ])'))
-                .map((s) => s.trim())
-                .where((s) => s.isNotEmpty)
-                .toList();
-        instructions.addAll(parts);
-      }
-    }
-
-    // 3) Skapa Recipe-objektet
-    return Recipe(
-      id: const Uuid().v4(),
-      title:
-          extractedTitle?.isNotEmpty == true ? extractedTitle! : 'Nytt recept',
-      description: '',
-      portions: null,
-      timeMinutes: null,
-      ingredients:
-          ingredients.isEmpty ? ['Lägg till ingredienser'] : ingredients,
-      instructions:
-          instructions.isEmpty ? ['Lägg till instruktioner'] : instructions,
-      tags: [],
-      rating: null,
-      imageUrl: null,
-      mealType: 'Middag', // Default-typ, kan ändras i redigera-vyn
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<TextImportViewModel>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Klistra in recepttext')),
       body: Padding(
@@ -223,48 +83,15 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
         child: Column(
           children: [
             // Instruktionstext
-            Container(
-              width: double.infinity,
-              padding: AppTheme.cardPadding,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: AppTheme.mediumRadius,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: AppTheme.iconSizeInfo,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      SizedBox(width: AppTheme.spacingSm),
-                      Text(
-                        'Tips för bästa resultat',
-                        style: AppTheme.formLabelStyle.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  AppTheme.smallGap,
-                  Text(
-                    '• Klistra in hela receptet inklusive ingredienser\n'
-                    '• Se till att ingredienser kommer före instruktioner\n'
-                    '• Texten kan komma från Instagram, TikTok, Facebook etc.',
-                    style: AppTheme.captionStyle,
-                  ),
-                ],
-              ),
-            ),
+            _buildInstructions(context),
             AppTheme.mediumGap,
 
             // Textfält för input
             Expanded(
               child: TextFormField(
-                controller: _textController,
+                initialValue: viewModel.inputText,
+                onChanged: viewModel.updateInputText,
+                enabled: !viewModel.isParsing,
                 decoration: InputDecoration(
                   hintText:
                       'Klistra in recepttext här...\n\n'
@@ -280,6 +107,13 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
                   hintStyle: AppTheme.inputHintStyle,
                   border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
+                  suffixIcon:
+                      viewModel.inputText.isNotEmpty
+                          ? IconButton(
+                            icon: AppTheme.actionIcon(context, Icons.clear),
+                            onPressed: viewModel.clearInput,
+                          )
+                          : null,
                 ),
                 style: Theme.of(context).textTheme.bodyMedium,
                 keyboardType: TextInputType.multiline,
@@ -295,13 +129,61 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
             ActionButton.primary(
               label: 'Förhandsgranska och redigera',
               icon: Icons.preview,
-              onPressed: _isParsing ? null : _parseAndNavigate,
-              isLoading: _isParsing,
+              onPressed:
+                  viewModel.isParsing || !viewModel.canParse
+                      ? null
+                      : () => _parseAndNavigate(context),
+              isLoading: viewModel.isParsing,
               loadingText: 'Tolkar text...',
               isExpanded: true,
             ),
+
+            // Error message
+            if (viewModel.hasError) ...[
+              AppTheme.smallGap,
+              AppTheme.errorContainer(context, viewModel.error!),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInstructions(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: AppTheme.cardPadding,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: AppTheme.mediumRadius,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: AppTheme.iconSizeInfo,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              SizedBox(width: AppTheme.spacingSm),
+              Text(
+                'Tips för bästa resultat',
+                style: AppTheme.formLabelStyle.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          AppTheme.smallGap,
+          Text(
+            '• Klistra in hela receptet inklusive ingredienser\n'
+            '• Se till att ingredienser kommer före instruktioner\n'
+            '• Texten kan komma från Instagram, TikTok, Facebook etc.',
+            style: AppTheme.captionStyle,
+          ),
+        ],
       ),
     );
   }
