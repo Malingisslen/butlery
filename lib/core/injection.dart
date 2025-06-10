@@ -5,6 +5,7 @@ import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/shopping_list_service.dart';
+import '../services/persistence_service.dart'; // NY IMPORT för lokal datalagring
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -21,11 +22,18 @@ final GetIt sl = GetIt.instance;
 
 /// Initialiserar alla dependencies
 Future<void> initializeDependencies() async {
-  // Services - Singletons (samma instans överallt)
+  // ==================== SERVICES ====================
+
+  // PersistenceService - REGISTRERAS FÖRST (andra services kan använda den)
+  sl.registerSingleton<PersistenceService>(PersistenceService());
+
+  // Befintliga services - Singletons (samma instans överallt)
   sl.registerSingleton<RecipeService>(RecipeService());
   sl.registerSingleton<MenuService>(MenuService());
   sl.registerSingleton<SearchService>(SearchService());
   sl.registerSingleton<ShoppingListService>(ShoppingListService());
+
+  // ==================== VIEWMODELS ====================
 
   // ViewModels - Factory (ny instans för varje view)
   sl.registerFactory<RecipeListViewModel>(
@@ -71,7 +79,9 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // Initiera RecipeService direkt
+  // ==================== INITIALIZATION ====================
+
+  // Initiera RecipeService direkt (kommer nu att använda PersistenceService)
   await sl<RecipeService>().initialize();
 }
 
