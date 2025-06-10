@@ -36,6 +36,8 @@ dependencies:
   html: ^0.15.0
   cached_network_image: ^3.3.0
   flutter_cache_manager: ^3.3.1
+  get_it: ^7.6.4
+  provider: ^6.1.1
   
   # Firebase core
   firebase_core: ^2.32.0
