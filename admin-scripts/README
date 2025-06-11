@@ -1,0 +1,58 @@
+# Butlery Admin Scripts
+
+Detta är admin-verktyg för att hantera Butlery-appens arkiv i Firestore.
+
+## Installation
+
+1. Installera dependencies:
+```bash
+npm install
+```
+
+2. Hämta service account key från Firebase Console och spara som `service-account-key.json`
+
+## Användning
+
+### Uppdatera arkiv från Dart-filen
+```bash
+node archive-updater.js update-from-dart
+```
+
+### Exportera arkiv till backup
+```bash
+node archive-updater.js export backup-2025-06-11.json
+```
+
+### Importera arkiv från fil
+```bash
+node archive-updater.js import updated-recipes.json
+```
+
+### Rensa arkivet (VARNING!)
+```bash
+node archive-updater.js clear
+```
+
+## Säkerhet
+
+- **ALDRIG** committa `service-account-key.json` till Git!
+- Denna fil ger full access till Firebase-projektet
+- Håll den säker och dela inte med andra
+
+## Workflow för arkivuppdateringar
+
+1. Exportera befintligt arkiv som backup:
+   ```bash
+   node archive-updater.js export backup-$(date +%Y-%m-%d).json
+   ```
+
+2. Gör ändringar i `archived_recipes.dart`
+
+3. Uppdatera Firestore från Dart-filen:
+   ```bash
+   node archive-updater.js update-from-dart
+   ```
+
+4. Verifiera i Firebase Console att arkivet uppdaterats
+
+5. Ta bort debug-knappen från appen när allt fungerar
