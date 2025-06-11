@@ -1,12 +1,12 @@
 // lib/core/injection.dart
 
 import 'package:get_it/get_it.dart';
-import '../services/recipe_service.dart';
+import '../services/recipe_service.dart'; // Använd Firestore-versionen men med namnet RecipeService
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/shopping_list_service.dart';
 import '../services/persistence_service.dart';
-import '../services/auth_service.dart'; // NY IMPORT för Firebase Auth
+import '../services/auth_service.dart';
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -16,7 +16,7 @@ import '../viewmodels/archive_import_viewmodel.dart';
 import '../viewmodels/photo_import_viewmodel.dart';
 import '../viewmodels/url_import_viewmodel.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
-import '../viewmodels/auth_viewmodel.dart'; // NY IMPORT för AuthViewModel
+import '../viewmodels/auth_viewmodel.dart';
 import '../models/recipe.dart';
 
 /// Service Locator instance
@@ -32,8 +32,10 @@ Future<void> initializeDependencies() async {
   // PersistenceService - för lokal datalagring
   sl.registerSingleton<PersistenceService>(PersistenceService());
 
-  // Befintliga services - Singletons (samma instans överallt)
+  // RecipeService - NY FIRESTORE VERSION!
   sl.registerSingleton<RecipeService>(RecipeService());
+
+  // Andra services
   sl.registerSingleton<MenuService>(MenuService());
   sl.registerSingleton<SearchService>(SearchService());
   sl.registerSingleton<ShoppingListService>(ShoppingListService());
@@ -89,7 +91,7 @@ Future<void> initializeDependencies() async {
 
   // ==================== INITIALIZATION ====================
 
-  // Initiera RecipeService direkt (kommer nu att använda PersistenceService)
+  // Initiera RecipeService (kommer nu att använda Firestore)
   await sl<RecipeService>().initialize();
 }
 
