@@ -99,32 +99,47 @@ SharedPreferences kommer användas som offline-cache när Firebase är implement
 
 ---
 
-## 🎯 **Fas 6 Fortsättning: Komplettera Persistence**
+## 🚧 **AKUT: Firebase Bugfixar (PÅGÅENDE)**
 
-### **⏸️ SKIPPAD - Firebase kommer hantera all persistence!**
+### **🔥 Kritiska fixar som behövs NU:**
 
-Vi hoppar direkt till Firebase-implementation istället för att bygga mer lokal persistence.
-SharedPreferences blir offline-cache för Firebase-data.
+1. **❌ Android NDK Version Mismatch**
+   - Lägg till `ndkVersion = "27.0.12077973"` i android/app/build.gradle.kts
+   - Alla Firebase-plugins kräver denna version
+
+2. **✅ Firebase Dubbel-initiering (FIXAD)**
+   - main.dart uppdaterad med kontroll för existerande Firebase-app
+   - Hot reload fungerar nu utan fel
+
+3. **❌ Firestore Security Rules**
+   - Gå till Firebase Console
+   - Sätt upp korrekta security rules (se ovan)
+   - Testa med en inloggad användare
+
+4. **❌ Google Services konfiguration**
+   - Verifiera att google-services.json är korrekt placerad
+   - Kontrollera package name matchar Firebase-projektet
 
 ---
 
-## 🚀 **Fas 7: Firebase Backend Integration (NÄSTA PRIORITET!)**
+## 🚀 **Fas 7: Firebase Backend Integration (NÄSTA EFTER BUGFIXAR!)**
 
 ### **🎯 Mål: Modern molnbaserad arkitektur från start**
 
 #### **Session 1: Firebase Project Setup (1 timme)**
-1. Skapa Firebase-projekt i Firebase Console
-2. Konfigurera Android-appen
-3. Ladda ner `google-services.json`
-4. Verifiera Firebase-anslutning
+1. ✅ Skapa Firebase-projekt i Firebase Console (DELVIS KLAR)
+2. ✅ Konfigurera Android-appen (DELVIS KLAR)
+3. ❌ Ladda ner och verifiera `google-services.json`
+4. ❌ Sätt upp Firestore Security Rules
+5. ❌ Verifiera Firebase-anslutning fungerar
 
 #### **Session 2: Firebase Auth Implementation (3-4 timmar)**
-1. Skapa `AuthService` med Firebase Auth
-2. Implementera AuthViewModel
-3. Skapa Login/Register UI
-4. Email/password authentication
-5. Auth state management med Provider
-6. Auto-login och logout
+1. ❌ Skapa `AuthService` med Firebase Auth
+2. ❌ Implementera AuthViewModel
+3. ⚠️ Skapa Login/Register UI (AuthView finns men ej komplett)
+4. ❌ Email/password authentication
+5. ❌ Auth state management med Provider
+6. ❌ Auto-login och logout
 
 #### **Session 3: Firestore Database Design (2 timmar)**
 1. **Databas-struktur:**
@@ -140,23 +155,23 @@ SharedPreferences blir offline-cache för Firebase-data.
          {listId}
        settings/
    ```
-2. Skapa Firestore collections
-3. Sätt upp Security Rules
-4. Test med Firebase Emulator
+2. ❌ Skapa Firestore collections
+3. ❌ Sätt upp Security Rules
+4. ❌ Test med Firebase Emulator
 
 #### **Session 4: RecipeService Firebase Migration (3-4 timmar)**
-1. Uppdatera RecipeService för Firestore
-2. Real-time updates med StreamBuilder
-3. Offline persistence med Firestore cache
-4. Konflikthantering
-5. Batch operations
+1. ❌ Uppdatera RecipeService för Firestore
+2. ❌ Real-time updates med StreamBuilder
+3. ❌ Offline persistence med Firestore cache
+4. ❌ Konflikthantering
+5. ❌ Batch operations
 
 #### **Session 5: Complete Firebase Integration (2-3 timmar)**
-1. MenuService med Firestore
-2. ShoppingListService med Firestore
-3. SettingsService med Firestore
-4. Error handling och retry logic
-5. Performance optimering
+1. ❌ MenuService med Firestore
+2. ❌ ShoppingListService med Firestore
+3. ❌ SettingsService med Firestore
+4. ❌ Error handling och retry logic
+5. ❌ Performance optimering
 
 **Total tid: ~13 timmar för komplett Firebase-implementation**
 
@@ -166,6 +181,16 @@ SharedPreferences blir offline-cache för Firebase-data.
 - ✅ Automatisk backup
 - ✅ Skalbart från dag 1
 - ✅ Offline-first med Firestore cache
+
+---
+
+## 🔗 **Source URL Implementation (NY FEATURE)**
+
+### **🎯 Lägg till källhänvisningar för recept:**
+- [ ] Visa sourceUrl som klickbar länk i RecipeDetailView
+- [ ] Auto-fyll sourceUrl vid URL-import i UrlImportViewModel
+- [ ] Lägg till valfritt sourceUrl-fält i RecipeFormView
+- [ ] Visa ikon (🔗) i RecipeCard om recept har sourceUrl
 
 ---
 
@@ -197,20 +222,6 @@ SharedPreferences blir offline-cache för Firebase-data.
 ---
 
 ## 🔥 **Fas 9: Externa Integrationer (LÅNGSIKTIG)**
-
-### **🔐 Firebase User Database Setup**
-- 🔄 Firebase Authentication implementation
-  - Email/password login
-  - Google Sign-In (optional)
-  - Anonymous auth för att testa
-- 🔄 Firestore databas-struktur:
-  - `users/{userId}/recipes`
-  - `users/{userId}/menus`
-  - `users/{userId}/settings`
-- 🔄 Security Rules för användardata
-- 🔄 Migration från SharedPreferences till Firestore
-- 🔄 Offline support med Firestore cache
-- 🔄 Auth state management med Provider
 
 ### **🛒 Butiks-integrationer**
 - 🔄 ICA/Coop API integration
@@ -245,36 +256,47 @@ SharedPreferences blir offline-cache för Firebase-data.
 - ⚠️ Web delvis fungerande (persistence-begränsningar)
 
 ### **⚠️ Firebase-status:**
-- Core är initierad men INTE konfigurerad för användardata
-- Dependencies finns men implementation saknas
-- Behöver fullständig auth och database setup
+- ⚠️ Core är initierad men har buggar
+- ❌ Authentication ej implementerad
+- ❌ Firestore databas ej konfigurerad
+- ❌ Security rules saknas
 
 ---
 
-## 💡 **Nästa utvecklingssession: Firebase Project Setup**
+## 💡 **Nästa steg: Fixa Firebase-buggar!**
 
 ### **Start här! 🚀**
-1. **Skapa ny branch:**
+
+1. **Fixa NDK version:**
    ```bash
-   git checkout -b feature/firebase-auth
+   # Öppna android/app/build.gradle.kts
+   # Lägg till: ndkVersion = "27.0.12077973"
    ```
 
-2. **Firebase Console Setup:**
+2. **Firebase Console fixar:**
    - Gå till https://console.firebase.google.com
-   - Skapa nytt projekt "Butlery"
-   - Aktivera Authentication
-   - Aktivera Firestore Database
-   - Lägg till Android-app
+   - Välj ditt projekt
+   - Firestore Database → Rules → Uppdatera
+   - Authentication → Sign-in methods → Enable Email/Password
 
-3. **Första implementation:**
-   - AuthService
-   - Login UI
-   - Firebase connection test
+3. **Testa igen:**
+   ```bash
+   flutter clean
+   flutter pub get
+   flutter run
+   ```
+
+4. **Git commit när klart:**
+   ```bash
+   git add .
+   git commit -m "fix: Firebase initialization and NDK version issues"
+   ```
 
 ### **Git branch strategi:**
-- `feature/firebase-auth` för auth-implementation
+- Stanna på `efficiency-fixes` för dessa bugfixar
+- `feature/firebase-auth` för auth-implementation senare
 - `feature/firestore-db` för database-delen
-- Merge till `main` när klart
+- Merge till `main` när stabil
 
 ---
 
@@ -284,39 +306,28 @@ SharedPreferences blir offline-cache för Firebase-data.
 2. **Fungerande recipe persistence** ⭐
 3. **Redo för produktion** (grundfunktionalitet)
 4. **Skalbar kodbas** för framtida features
+5. **Firebase Core integrerad** (med buggar att fixa)
 
 ---
 
-## 📈 **Projektets hälsa: UTMÄRKT**
+## 📈 **Projektets hälsa: BRA (med Firebase-buggar)**
 
-Du har byggt en solid grund som kan konkurrera med kommersiella appar. Koden är:
-- ✅ Välstrukturerad
-- ✅ Underhållbar
-- ✅ Testbar
-- ✅ Skalbar
-- ✅ Professionell
-
-**Nästa steg:** Slutför lokal persistence ELLER börja med Firebase Auth för framtidssäker arkitektur!
-
----
-
-## 🎯 **Rekommenderad prioritering (UPPDATERAD):**
-
-1. **Firebase Backend** (Fas 7) → 13 timmar ⭐⭐⭐ NÄSTA!
-2. **Quick UX wins** (Pull-to-refresh, Swipe-to-delete) → 2 timmar
-3. **Favoriter & Taggar** → 3 timmar
-4. **Export/Import** → 2 timmar
-5. **Butiks-integrationer** → 5+ timmar
-
-**Total tid till "cloud-enabled" MVP: ~25 timmar**
-
-### **🚀 Strategiskt beslut: FIREBASE FIRST!**
-
-Vi bygger en modern, skalbar app från start med:
-- ✅ Riktiga användarkonton
-- ✅ Multi-device synkronisering
-- ✅ Automatisk backup
+Du har byggt en solid grund men Firebase-integrationen behöver fixas innan vi kan gå vidare. När buggarna är lösta har du:
+- ✅ Välstrukturerad kodbas
+- ✅ Fungerande lokal persistence
+- ✅ Firebase redo för full implementation
 - ✅ Professionell arkitektur
-- ✅ Offline-support via Firestore cache
 
-SharedPreferences blir en del av offline-strategin istället för huvudlösningen!
+**Nästa steg:** Fixa Firebase-buggarna → Implementera Auth → Migrera till Firestore!
+
+---
+
+## 🎯 **Prioritering just nu:**
+
+1. **Fixa NDK version** → 5 minuter ⚡
+2. **Uppdatera Firestore Rules** → 10 minuter ⚡
+3. **Testa Firebase-anslutning** → 15 minuter
+4. **Börja med AuthService** → 2 timmar
+5. **Source URL feature** → 1 timme (enkel win!)
+
+**Total tid till fungerande Firebase Auth: ~3 timmar**

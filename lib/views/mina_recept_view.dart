@@ -7,6 +7,7 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/profile_dialog.dart'; // NY IMPORT för profil-dialog
 import '../services/search_service.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
@@ -78,6 +79,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       currentIndex: 0,
       title: 'Mina recept',
       actions: [
+        // NY PROFIL-KNAPP - alltid först i actions-listan
+        IconButton(
+          icon: Icon(
+            Icons.account_circle,
+            color: Theme.of(context).colorScheme.primary,
+            size: AppTheme.iconSizeNavigation,
+          ),
+          onPressed: () => showProfileDialog(context),
+          tooltip: 'Min profil',
+        ),
+
         // Error indicator
         if (viewModel.hasError)
           IconButton(
