@@ -8,17 +8,28 @@ import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD VY MED TEXTIMPORTVIEWMODEL
+/// ✨ UPPDATERAD VY MED SOURCEURL-STÖD
 class FranSocialaMedierView extends StatelessWidget {
   final String? initialText;
+  final String? sourceUrl; // NY! URL från import
 
-  const FranSocialaMedierView({super.key, this.initialText});
+  const FranSocialaMedierView({
+    super.key,
+    this.initialText,
+    this.sourceUrl, // NY parameter
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) {
         final viewModel = sl<TextImportViewModel>();
+
+        // Sätt sourceUrl om den finns
+        if (sourceUrl != null) {
+          viewModel.setSourceUrl(sourceUrl!);
+        }
+
         // Om vi har initial text, sätt den direkt
         if (initialText != null && initialText!.isNotEmpty) {
           viewModel.updateInputText(initialText!);
@@ -32,6 +43,7 @@ class FranSocialaMedierView extends StatelessWidget {
                     builder:
                         (_) => SkrivSjalvReceptView(
                           initialRecipe: viewModel.parsedRecipe,
+                          isTemplate: true, // VIKTIGT! Detta är en import
                         ),
                   ),
                 );
@@ -58,8 +70,11 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder:
-              (_) =>
-                  SkrivSjalvReceptView(initialRecipe: viewModel.parsedRecipe),
+              (_) => SkrivSjalvReceptView(
+                initialRecipe: viewModel.parsedRecipe,
+                isTemplate:
+                    true, // VIKTIGT! Detta är en import, inte redigering
+              ),
         ),
       );
     } else if (context.mounted && viewModel.hasError) {
@@ -85,6 +100,36 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
             // Instruktionstext
             _buildInstructions(context),
             AppTheme.mediumGap,
+
+            // Visa om receptet kommer från URL
+            if (viewModel.sourceUrl != null) ...[
+              Container(
+                width: double.infinity,
+                padding: AppTheme.cardPadding,
+                decoration: AppTheme.infoBoxDecoration(context),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.link,
+                      size: AppTheme.iconSizeInfo,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    SizedBox(width: AppTheme.spacingSm),
+                    Expanded(
+                      child: Text(
+                        'Importerat från: ${viewModel.sourceUrl}',
+                        style: AppTheme.captionStyle.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AppTheme.smallGap,
+            ],
 
             // Textfält för input
             Expanded(
@@ -153,10 +198,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: AppTheme.cardPadding,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: AppTheme.mediumRadius,
-      ),
+      decoration: AppTheme.infoBoxDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../utils/recipe_scraper.dart';
 
 /// ViewModel för URL-baserad receptimport
+/// Nu med stöd för att spara sourceUrl
 class UrlImportViewModel extends ChangeNotifier {
   // State
   String _url = '';
@@ -20,6 +21,9 @@ class UrlImportViewModel extends ChangeNotifier {
   bool get hasError => _error != null;
   bool get hasExtractedText => _extractedText.isNotEmpty;
   bool get canFetch => _url.trim().isNotEmpty && _isValidUrl(_url);
+
+  // NY! Getter för att få den rensade URL:en som sourceUrl
+  String? get sourceUrl => _url.trim().isNotEmpty ? _url.trim() : null;
 
   /// Uppdatera URL
   void updateUrl(String url) {

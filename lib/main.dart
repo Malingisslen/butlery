@@ -131,8 +131,24 @@ class ButleryApp extends StatelessWidget {
               );
 
             case '/franSocialaMedier':
-              final text = settings.arguments as String?;
-              return _route(FranSocialaMedierView(initialText: text), settings);
+              // UPPDATERAD! Hantera både gammal (String) och ny (Map) argumentstruktur
+              String? text;
+              String? sourceUrl;
+
+              if (settings.arguments is String?) {
+                // Gammal struktur - bara text
+                text = settings.arguments as String?;
+              } else if (settings.arguments is Map<String, dynamic>) {
+                // Ny struktur - Map med text och sourceUrl
+                final args = settings.arguments as Map<String, dynamic>;
+                text = args['text'] as String?;
+                sourceUrl = args['sourceUrl'] as String?;
+              }
+
+              return _route(
+                FranSocialaMedierView(initialText: text, sourceUrl: sourceUrl),
+                settings,
+              );
 
             case '/importFranArkiv':
               return _route(const ImporteraFranArkivView(), settings);

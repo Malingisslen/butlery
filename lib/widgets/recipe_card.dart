@@ -112,11 +112,26 @@ class RecipeCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(
-            recipe.title,
-            style: AppTheme.cardTitleStyle, // ✅ SEMANTISK THEME STYLE
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  recipe.title,
+                  style: AppTheme.cardTitleStyle, // ✅ SEMANTISK THEME STYLE
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // NY! Visa länk-ikon om sourceUrl finns
+              if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) ...[
+                SizedBox(width: AppTheme.spacingXs),
+                Icon(
+                  Icons.link,
+                  size: AppTheme.iconSizeInfo, // 18px
+                  color: theme.colorScheme.primary,
+                ),
+              ],
+            ],
           ),
         ),
         SizedBox(width: AppTheme.spacingSm),

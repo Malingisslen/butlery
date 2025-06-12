@@ -125,6 +125,9 @@ class ArchiveImportViewModel extends ChangeNotifier {
       final toImport =
           archivedRecipes
               .where((r) => _selectedRecipeIds.contains(r.id))
+              .map(
+                (r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'),
+              ) // NY! Sätt sourceUrl
               .toList();
 
       final result = await _recipeService.addMultipleRecipes(toImport);
@@ -149,7 +152,11 @@ class ArchiveImportViewModel extends ChangeNotifier {
 
     try {
       final toImport =
-          filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes;
+          (filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes)
+              .map(
+                (r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'),
+              ) // HÄR är ändringen!
+              .toList();
       final result = await _recipeService.addMultipleRecipes(toImport);
 
       if (result.isSuccess) {

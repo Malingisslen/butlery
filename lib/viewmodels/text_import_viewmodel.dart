@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 
 /// ViewModel för text-baserad receptimport (sociala medier, OCR, etc)
+/// Nu med stöd för sourceUrl och korrekt Unicode-hantering
 class TextImportViewModel extends ChangeNotifier {
   final _uuid = const Uuid();
 
@@ -13,6 +14,7 @@ class TextImportViewModel extends ChangeNotifier {
   bool _isParsing = false;
   String? _error;
   Recipe? _parsedRecipe;
+  String? _sourceUrl; // NY! URL från import
 
   // Getters
   String get inputText => _inputText;
@@ -22,6 +24,13 @@ class TextImportViewModel extends ChangeNotifier {
   Recipe? get parsedRecipe => _parsedRecipe;
   bool get hasParsedRecipe => _parsedRecipe != null;
   bool get canParse => _inputText.trim().isNotEmpty;
+  String? get sourceUrl => _sourceUrl; // NY getter
+
+  /// Sätt sourceUrl (används när recept importeras från URL)
+  void setSourceUrl(String url) {
+    _sourceUrl = url;
+    notifyListeners();
+  }
 
   /// Uppdatera input-text
   void updateInputText(String text) {
@@ -35,6 +44,7 @@ class TextImportViewModel extends ChangeNotifier {
     _inputText = '';
     _error = null;
     _parsedRecipe = null;
+    _sourceUrl = null; // Rensa även sourceUrl
     notifyListeners();
   }
 
@@ -101,12 +111,75 @@ class TextImportViewModel extends ChangeNotifier {
     ];
 
     String normalizeText(String txt) {
-      // Ta bort "fancy" unicode-bokstäver och flera mellanslag
-      final withoutFancy = txt.replaceAllMapped(
-        RegExp(r'[\u{1D400}-\u{1D7FF}]', unicode: true),
-        (m) => String.fromCharCode(m[0]!.codeUnitAt(0) - 0x1D400 + 0x41),
-      );
-      return withoutFancy.replaceAll(RegExp(r'\s+'), ' ').trim();
+      // Säker normalisering av text med korrekt Unicode-hantering
+      try {
+        String normalized = txt;
+
+        // Ta bort emojis
+        normalized = normalized.replaceAll(
+          RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true),
+          '',
+        );
+
+        // Konvertera matematiska Unicode-stilar till vanliga bokstäver
+        final runes = normalized.runes.toList();
+        final result = StringBuffer();
+
+        for (final rune in runes) {
+          // Matematiska fetstilta versaler (𝐀-𝐙)
+          if (rune >= 0x1D400 && rune <= 0x1D419) {
+            result.write(String.fromCharCode((rune - 0x1D400) + 0x41)); // A-Z
+          }
+          // Matematiska fetstilta gemener (𝐚-𝐳)
+          else if (rune >= 0x1D41A && rune <= 0x1D433) {
+            result.write(String.fromCharCode((rune - 0x1D41A) + 0x61)); // a-z
+          }
+          // Matematiska fetstilta siffror (𝟎-𝟗)
+          else if (rune >= 0x1D7CE && rune <= 0x1D7D7) {
+            result.write(String.fromCharCode((rune - 0x1D7CE) + 0x30)); // 0-9
+          }
+          // Matematiska kursiva versaler (𝑨-𝒁)
+          else if (rune >= 0x1D434 && rune <= 0x1D44D) {
+            result.write(String.fromCharCode((rune - 0x1D434) + 0x41)); // A-Z
+          }
+          // Matematiska kursiva gemener (𝒂-𝒛)
+          else if (rune >= 0x1D44E && rune <= 0x1D467) {
+            result.write(String.fromCharCode((rune - 0x1D44E) + 0x61)); // a-z
+          }
+          // Sans-serif fetstilta versaler (𝗔-𝗭)
+          else if (rune >= 0x1D5D4 && rune <= 0x1D5ED) {
+            result.write(String.fromCharCode((rune - 0x1D5D4) + 0x41)); // A-Z
+          }
+          // Sans-serif fetstilta gemener (𝗮-𝘇)
+          else if (rune >= 0x1D5EE && rune <= 0x1D607) {
+            result.write(String.fromCharCode((rune - 0x1D5EE) + 0x61)); // a-z
+          }
+          // Specialtecken som pilar
+          else if (rune == 0x2B07 || rune == 0xFE0F) {
+            // Hoppa över pilar och variationsväljare
+            continue;
+          }
+          // Behåll vanliga tecken (inklusive svenska åäö)
+          else if ((rune >= 0x20 && rune <= 0x7E) || // Grundläggande ASCII
+              (rune >= 0xA0 &&
+                  rune <= 0xFF) || // Latin-1 supplement (inkl. åäö)
+              rune == 0x2013 ||
+              rune == 0x2014) {
+            // Tankstreck
+            result.write(String.fromCharCode(rune));
+          }
+          // Annars hoppa över tecknet
+        }
+
+        // Normalisera whitespace
+        normalized = result.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
+
+        return normalized;
+      } catch (e) {
+        debugPrint('Error normalizing text: $e');
+        // Om något går fel, returnera originaltexten med grundläggande rensning
+        return txt.replaceAll(RegExp(r'\s+'), ' ').trim();
+      }
     }
 
     // 1) Extrahera titel ur de första raderna
@@ -133,7 +206,15 @@ class TextImportViewModel extends ChangeNotifier {
     for (var i = 0; i < lines.length; i++) {
       final raw = lines[i].trim();
       if (raw.isEmpty) continue;
-      final norm = normalizeText(raw);
+
+      String norm;
+      try {
+        norm = normalizeText(raw);
+      } catch (e) {
+        debugPrint('Skipping line due to normalization error: $e');
+        continue; // Hoppa över problematiska rader
+      }
+
       final lower = norm.toLowerCase();
 
       // Hoppa över rubriker, korta versaler etc
@@ -156,7 +237,7 @@ class TextImportViewModel extends ChangeNotifier {
         }
       }
 
-      // När vi ser en matlagnings-trigger börjar vi samla instruktioner
+      // när vi ser en matlagnings-trigger börjar vi samla instruktioner
       if (!foundInstructions && lowerTriggers.any((tr) => lower.contains(tr))) {
         foundInstructions = true;
       }
@@ -180,7 +261,7 @@ class TextImportViewModel extends ChangeNotifier {
       return null;
     }
 
-    // 3) Skapa Recipe-objektet
+    // 3) Skapa Recipe-objektet med sourceUrl om den finns
     return Recipe(
       id: _uuid.v4(),
       title:
@@ -193,9 +274,11 @@ class TextImportViewModel extends ChangeNotifier {
       instructions:
           instructions.isEmpty ? ['Lägg till instruktioner'] : instructions,
       tags: [],
-      rating: null,
+      rating:
+          null, // Sätt alltid till null vid import - användaren får sätta betyg senare
       imageUrl: null,
       mealType: 'Middag', // Default-typ, kan ändras i redigera-vyn
+      sourceUrl: _sourceUrl, // NY! Inkludera sourceUrl om den finns
     );
   }
 

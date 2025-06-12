@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
@@ -9,7 +10,7 @@ import '../theme/app_theme.dart';
 import '../widgets/cached_recipe_image.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED RECIPEDETAILVIEWMODEL
+/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOURCEURL-STÖD
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -147,6 +148,13 @@ class _RecipeDetailViewContent extends StatelessWidget {
                   _buildMetadata(context, viewModel),
                   AppTheme.largeGap,
 
+                  // NY! Source URL om den finns
+                  if (viewModel.recipe.sourceUrl != null &&
+                      viewModel.recipe.sourceUrl!.isNotEmpty) ...[
+                    _buildSourceUrl(context, viewModel),
+                    AppTheme.largeGap,
+                  ],
+
                   // Taggar
                   if (viewModel.hasTags) ...[
                     Text(
@@ -230,10 +238,7 @@ class _RecipeDetailViewContent extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: AppTheme.cardPadding,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: AppTheme.mediumRadius,
-      ),
+      decoration: AppTheme.infoBoxDecoration(context),
       child: Column(
         children: [
           Row(
@@ -302,6 +307,84 @@ class _RecipeDetailViewContent extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
       ],
+    );
+  }
+
+  // NY! Widget för att visa sourceUrl
+  Widget _buildSourceUrl(
+    BuildContext context,
+    RecipeDetailViewModel viewModel,
+  ) {
+    final sourceUrl = viewModel.recipe.sourceUrl!;
+    final isFromArchive = sourceUrl == 'Från Butlerys arkiv';
+
+    return InkWell(
+      onTap:
+          isFromArchive
+              ? null
+              : () async {
+                final uri = Uri.parse(sourceUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Kunde inte öppna länken: $sourceUrl'),
+                        backgroundColor: AppTheme.errorColor,
+                      ),
+                    );
+                  }
+                }
+              },
+      borderRadius: AppTheme.mediumRadius,
+      child: Container(
+        width: double.infinity,
+        padding: AppTheme.cardPadding,
+        decoration: AppTheme.infoBoxDecoration(context),
+        child: Row(
+          children: [
+            Icon(
+              isFromArchive ? Icons.archive : Icons.link,
+              size: AppTheme.iconSizeAction,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Källa',
+                    style: AppTheme.captionStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  Text(
+                    sourceUrl,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color:
+                          isFromArchive
+                              ? Theme.of(context).colorScheme.onSurface
+                              : Theme.of(context).colorScheme.primary,
+                      decoration:
+                          isFromArchive ? null : TextDecoration.underline,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (!isFromArchive)
+              Icon(
+                Icons.open_in_new,
+                size: AppTheme.iconSizeInfo,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+          ],
+        ),
+      ),
     );
   }
 
