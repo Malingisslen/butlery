@@ -8,6 +8,7 @@ import '../core/injection.dart';
 
 /// ViewModel för recept-formulär (skapa/redigera)
 /// Hanterar all formulärlogik och validering
+/// NU MED SOURCEURL-STÖD OCH TEMPLATE-FUNKTIONALITET!
 class RecipeFormViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
   final _uuid = const Uuid();
@@ -25,6 +26,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   int? _timeMinutes;
   double? _rating;
   String? _imageUrl;
+  String? _sourceUrl; // NY! Käll-URL för receptet
   List<String> _ingredients = [''];
   List<String> _instructions = [''];
   List<String> _tags = [''];
@@ -39,10 +41,17 @@ class RecipeFormViewModel extends ChangeNotifier {
     'Fika',
   ];
 
-  RecipeFormViewModel({RecipeService? recipeService, Recipe? initialRecipe})
-    : _recipeService = recipeService ?? sl<RecipeService>() {
+  RecipeFormViewModel({
+    RecipeService? recipeService,
+    Recipe? initialRecipe,
+    bool isTemplate = false, // NY parameter!
+  }) : _recipeService = recipeService ?? sl<RecipeService>() {
     if (initialRecipe != null) {
-      loadRecipe(initialRecipe);
+      if (isTemplate) {
+        loadRecipeAsTemplate(initialRecipe);
+      } else {
+        loadRecipe(initialRecipe);
+      }
     }
   }
 
@@ -60,6 +69,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   int? get timeMinutes => _timeMinutes;
   double? get rating => _rating;
   String? get imageUrl => _imageUrl;
+  String? get sourceUrl => _sourceUrl; // NY getter!
   List<String> get ingredients => _ingredients;
   List<String> get instructions => _instructions;
   List<String> get tags => _tags;
@@ -106,6 +116,12 @@ class RecipeFormViewModel extends ChangeNotifier {
 
   void setImageUrl(String value) {
     _imageUrl = value.trim().isEmpty ? null : value.trim();
+    notifyListeners();
+  }
+
+  // NY! Setter för sourceUrl
+  void setSourceUrl(String value) {
+    _sourceUrl = value.trim().isEmpty ? null : value.trim();
     notifyListeners();
   }
 
@@ -212,6 +228,25 @@ class RecipeFormViewModel extends ChangeNotifier {
     _timeMinutes = recipe.timeMinutes;
     _rating = recipe.rating;
     _imageUrl = recipe.imageUrl;
+    _sourceUrl = recipe.sourceUrl; // NY! Ladda sourceUrl
+    _ingredients = [...recipe.ingredients, ''];
+    _instructions = [...recipe.instructions, ''];
+    _tags = [...(recipe.tags ?? []), ''];
+    notifyListeners();
+  }
+
+  /// Ladda recept som template (för import/parse)
+  /// Skillnaden är att _originalRecipe INTE sätts, så det blir ett nytt recept
+  void loadRecipeAsTemplate(Recipe recipe) {
+    // Sätt INTE _originalRecipe - detta håller isEditMode = false
+    _title = recipe.title;
+    _description = recipe.description;
+    _mealType = recipe.mealType;
+    _portions = recipe.portions;
+    _timeMinutes = recipe.timeMinutes;
+    _rating = recipe.rating;
+    _imageUrl = recipe.imageUrl;
+    _sourceUrl = recipe.sourceUrl;
     _ingredients = [...recipe.ingredients, ''];
     _instructions = [...recipe.instructions, ''];
     _tags = [...(recipe.tags ?? []), ''];
@@ -248,12 +283,20 @@ class RecipeFormViewModel extends ChangeNotifier {
         tags: _tags.map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
         rating: _rating,
         imageUrl: _imageUrl,
+        sourceUrl: _sourceUrl, // NY! Inkludera sourceUrl när vi sparar
       );
 
       RecipeOperationResult result;
 
       if (isEditMode) {
+        // Försök först uppdatera
         result = await _recipeService.updateRecipe(recipe);
+
+        // Om receptet inte finns, skapa det istället
+        if (!result.isSuccess && result.message.contains('not-found')) {
+          debugPrint('Recipe not found in Firestore, creating new one instead');
+          result = await _recipeService.addRecipe(recipe);
+        }
       } else {
         result = await _recipeService.addRecipe(recipe);
       }
@@ -289,6 +332,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     _timeMinutes = null;
     _rating = null;
     _imageUrl = null;
+    _sourceUrl = null; // NY! Rensa sourceUrl också
     _ingredients = [''];
     _instructions = [''];
     _tags = [''];

@@ -7,7 +7,7 @@ import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD FOTO-OCR VY MED PHOTOIMPORTVIEWMODEL
+/// ✨ UPPDATERAD FOTO-OCR VY MED BÅDE KAMERA OCH GALLERI
 class PhotoImportView extends StatelessWidget {
   const PhotoImportView({super.key});
 
@@ -22,6 +22,63 @@ class PhotoImportView extends StatelessWidget {
 
 class _PhotoImportViewContent extends StatelessWidget {
   const _PhotoImportViewContent();
+
+  void _showImageSourceDialog(BuildContext context) {
+    final viewModel = context.read<PhotoImportViewModel>();
+
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: AppTheme.largeRadius.topLeft),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Padding(
+            padding: AppTheme.screenPadding,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Välj bildkälla', style: AppTheme.sectionTitleStyle),
+                AppTheme.mediumGap,
+
+                // Kamera-alternativ
+                ListTile(
+                  leading: Icon(
+                    Icons.camera_alt,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: AppTheme.iconSizeNavigation,
+                  ),
+                  title: const Text('Ta ett foto'),
+                  subtitle: const Text('Använd kameran för att fota receptet'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    viewModel.pickImageFromCamera();
+                  },
+                ),
+
+                // Galleri-alternativ
+                ListTile(
+                  leading: Icon(
+                    Icons.photo_library,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: AppTheme.iconSizeNavigation,
+                  ),
+                  title: const Text('Välj från galleri'),
+                  subtitle: const Text('Välj en befintlig bild från telefonen'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    viewModel.pickImageFromGallery();
+                  },
+                ),
+
+                AppTheme.mediumGap,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _navigateToTextImport(
     BuildContext context,
@@ -41,18 +98,43 @@ class _PhotoImportViewContent extends StatelessWidget {
     final viewModel = context.watch<PhotoImportViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Foto-OCR')),
+      appBar: AppBar(title: const Text('Importera från foto')),
       body: Padding(
         padding: AppTheme.screenPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Ta bild-knapp
+            // Information om funktionen
+            Container(
+              padding: AppTheme.cardPadding,
+              decoration: AppTheme.infoBoxDecoration(context),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: AppTheme.iconSizeInfo,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  SizedBox(width: AppTheme.spacingSm),
+                  Expanded(
+                    child: Text(
+                      'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt',
+                      style: AppTheme.captionStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AppTheme.mediumGap,
+
+            // Välj bild-knapp
             ActionButton.primary(
-              label: 'Ta bild & tolka',
-              icon: Icons.camera_alt,
+              label: viewModel.hasImage ? 'Välj ny bild' : 'Välj bild',
+              icon: Icons.add_photo_alternate,
               onPressed:
-                  viewModel.isProcessing ? null : viewModel.pickImageAndProcess,
+                  viewModel.isProcessing
+                      ? null
+                      : () => _showImageSourceDialog(context),
               isExpanded: true,
             ),
             AppTheme.mediumGap,
@@ -75,14 +157,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                 flex: 2,
                 child: Container(
                   padding: AppTheme.cardPadding,
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: AppTheme.mediumRadius,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
+                  decoration: AppTheme.infoBoxDecoration(context),
                   child: SingleChildScrollView(
                     child: Text(
                       viewModel.ocrText,
@@ -94,6 +169,7 @@ class _PhotoImportViewContent extends StatelessWidget {
               AppTheme.mediumGap,
               ActionButton.primary(
                 label: 'Gå vidare till redigera',
+                icon: Icons.arrow_forward,
                 onPressed: () => _navigateToTextImport(context, viewModel),
                 isExpanded: true,
               ),
@@ -111,10 +187,7 @@ class _PhotoImportViewContent extends StatelessWidget {
     if (viewModel.isProcessing) {
       return Container(
         height: AppTheme.imageHeightMedium,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: AppTheme.mediumRadius,
-        ),
+        decoration: AppTheme.cardDecoration,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -129,13 +202,39 @@ class _PhotoImportViewContent extends StatelessWidget {
     }
 
     if (viewModel.hasImage) {
-      return ClipRRect(
-        borderRadius: AppTheme.mediumRadius,
-        child: Image.memory(
-          viewModel.imageBytes!,
-          height: AppTheme.imageHeightMedium,
-          width: double.infinity,
-          fit: BoxFit.cover,
+      return Container(
+        height: AppTheme.imageHeightLarge,
+        decoration: BoxDecoration(
+          borderRadius: AppTheme.largeRadius,
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: ClipRRect(
+          borderRadius: AppTheme.largeRadius,
+          child: Stack(
+            children: [
+              Image.memory(
+                viewModel.imageBytes!,
+                height: AppTheme.imageHeightLarge,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+              Positioned(
+                top: AppTheme.spacingSm,
+                right: AppTheme.spacingSm,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: AppTheme.mediumRadius,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.white),
+                    onPressed: viewModel.clearAll,
+                    tooltip: 'Ta bort bild',
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -144,20 +243,29 @@ class _PhotoImportViewContent extends StatelessWidget {
       height: AppTheme.imageHeightMedium,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: AppTheme.mediumRadius,
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
+        borderRadius: AppTheme.largeRadius,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 2,
+          style: BorderStyle.solid,
+        ),
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.camera_alt,
+              Icons.add_photo_alternate,
               size: AppTheme.iconSizeHero,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             AppTheme.smallGap,
             Text('Ingen bild vald', style: AppTheme.subtitleStyle),
+            AppTheme.tinyGap,
+            Text(
+              'Tryck på knappen ovan för att välja',
+              style: AppTheme.captionStyle,
+            ),
           ],
         ),
       ),

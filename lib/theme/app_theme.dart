@@ -820,4 +820,11 @@ class AppTheme {
     borderRadius: mediumRadius,
     border: Border.all(color: dividerColor),
   );
+
+  /// Information box decoration (för sourceUrl, metadata etc.)
+  static BoxDecoration infoBoxDecoration(BuildContext context) => BoxDecoration(
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    borderRadius: mediumRadius,
+    border: Border.all(color: Theme.of(context).colorScheme.outline),
+  );
 }

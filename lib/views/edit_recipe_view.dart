@@ -10,7 +10,7 @@ import '../widgets/cached_recipe_image.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPEFORMVIEWMODEL
+/// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPEFORMVIEWMODEL OCH SOURCEURL
 class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
@@ -219,6 +219,25 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                       setState(() {});
                     },
                   ),
+                  AppTheme.mediumGap,
+
+                  // NY! Source URL-fält
+                  TextFormField(
+                    initialValue: viewModel.sourceUrl ?? '',
+                    decoration: InputDecoration(
+                      labelText: 'Källa (URL)',
+                      hintText: 'https://exempel.com/recept',
+                      helperText: 'Länk till originalreceptet',
+                      prefixIcon: Icon(
+                        Icons.link,
+                        size: AppTheme.iconSizeAction,
+                      ),
+                    ),
+                    keyboardType: TextInputType.url,
+                    onChanged: viewModel.setSourceUrl,
+                    validator:
+                        FormValidators.url(), // Validerar URL-format om något anges
+                  ),
                 ],
               ),
             ),
@@ -231,10 +250,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               child: Center(
                 child: Container(
                   padding: AppTheme.cardPadding,
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
-                    borderRadius: AppTheme.largeRadius,
-                  ),
+                  decoration: AppTheme.cardDecoration,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

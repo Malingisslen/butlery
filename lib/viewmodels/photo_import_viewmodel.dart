@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 /// ViewModel för foto-OCR import
+/// Stödjer både kamera och galleri
 class PhotoImportViewModel extends ChangeNotifier {
   // State
   Uint8List? _imageBytes;
@@ -26,15 +27,25 @@ class PhotoImportViewModel extends ChangeNotifier {
   bool get hasImage => _imageBytes != null;
   bool get hasOcrResult => _ocrText.isNotEmpty;
 
-  /// Ta bild och kör OCR
-  Future<void> pickImageAndProcess() async {
+  /// Ta bild från kamera och kör OCR
+  Future<void> pickImageFromCamera() async {
+    await _pickImageAndProcess(ImageSource.camera);
+  }
+
+  /// Välj bild från galleri och kör OCR
+  Future<void> pickImageFromGallery() async {
+    await _pickImageAndProcess(ImageSource.gallery);
+  }
+
+  /// Gemensam metod för att välja bild och köra OCR
+  Future<void> _pickImageAndProcess(ImageSource source) async {
     _clearState();
     _setProcessing(true);
 
     try {
       // Välj bild
       final picker = ImagePicker();
-      final XFile? picked = await picker.pickImage(source: ImageSource.camera);
+      final XFile? picked = await picker.pickImage(source: source);
 
       if (picked == null) {
         _setProcessing(false);
@@ -61,7 +72,7 @@ class PhotoImportViewModel extends ChangeNotifier {
 
       if (text.isEmpty) {
         throw Exception(
-          'Inga resultat tolkades. Kontrollera ljus, fokus eller vinkel.',
+          'Inga resultat tolkades. Kontrollera att bilden innehåller tydlig text.',
         );
       }
 
@@ -72,6 +83,11 @@ class PhotoImportViewModel extends ChangeNotifier {
     } finally {
       _setProcessing(false);
     }
+  }
+
+  /// @deprecated Använd pickImageFromCamera() istället
+  Future<void> pickImageAndProcess() async {
+    await pickImageFromCamera();
   }
 
   /// Anropa OCR API

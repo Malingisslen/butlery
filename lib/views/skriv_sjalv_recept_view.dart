@@ -12,8 +12,13 @@ import '../core/injection.dart';
 /// ✨ UPPDATERAD VY MED RECIPEFORMVIEWMODEL
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
+  final bool isTemplate; // NY parameter för att indikera om det är en import
 
-  const SkrivSjalvReceptView({super.key, this.initialRecipe});
+  const SkrivSjalvReceptView({
+    super.key,
+    this.initialRecipe,
+    this.isTemplate = false, // Default false för vanliga fall
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +27,7 @@ class SkrivSjalvReceptView extends StatelessWidget {
           (_) => RecipeFormViewModel(
             recipeService: sl(),
             initialRecipe: initialRecipe,
+            isTemplate: isTemplate, // Skicka vidare isTemplate
           ),
       child: const _SkrivSjalvReceptViewContent(),
     );
@@ -103,7 +109,7 @@ class _SkrivSjalvReceptViewContentState
                       if (value != null) viewModel.setMealType(value);
                     },
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Titel
                   TextFormField(
@@ -117,7 +123,7 @@ class _SkrivSjalvReceptViewContentState
                       FormValidators.maxLength(100, 'Titel'),
                     ]),
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Beskrivning
                   TextFormField(
@@ -129,7 +135,7 @@ class _SkrivSjalvReceptViewContentState
                     onChanged: viewModel.setDescription,
                     validator: FormValidators.maxLength(500, 'Beskrivning'),
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Portioner
                   TextFormField(
@@ -141,6 +147,7 @@ class _SkrivSjalvReceptViewContentState
                     onChanged: viewModel.setPortions,
                     validator: FormValidators.portions(),
                   ),
+                  AppTheme.mediumGap,
 
                   // Tid
                   TextFormField(
@@ -152,7 +159,7 @@ class _SkrivSjalvReceptViewContentState
                     onChanged: viewModel.setTimeMinutes,
                     validator: FormValidators.cookingTime(),
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Ingredienser
                   _buildDynamicList(
@@ -162,7 +169,7 @@ class _SkrivSjalvReceptViewContentState
                     viewModel.addIngredient,
                     viewModel.removeIngredient,
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Instruktioner
                   _buildDynamicList(
@@ -172,7 +179,7 @@ class _SkrivSjalvReceptViewContentState
                     viewModel.addInstruction,
                     viewModel.removeInstruction,
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Taggar
                   _buildDynamicList(
@@ -182,7 +189,7 @@ class _SkrivSjalvReceptViewContentState
                     viewModel.addTag,
                     viewModel.removeTag,
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Betyg
                   TextFormField(
@@ -196,7 +203,7 @@ class _SkrivSjalvReceptViewContentState
                     onChanged: viewModel.setRating,
                     validator: FormValidators.rating(),
                   ),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+                  AppTheme.mediumGap,
 
                   // Bild-URL
                   TextFormField(
@@ -206,6 +213,26 @@ class _SkrivSjalvReceptViewContentState
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setImageUrl,
                     validator: FormValidators.url(),
+                  ),
+                  AppTheme.mediumGap,
+
+                  // NY! Source URL-fält
+                  TextFormField(
+                    initialValue: viewModel.sourceUrl ?? '',
+                    decoration: InputDecoration(
+                      labelText: 'Källa (URL)',
+                      hintText: 'https://exempel.com/recept',
+                      helperText: 'Länk till originalreceptet',
+                      prefixIcon: Icon(
+                        Icons.link,
+                        size: AppTheme.iconSizeAction,
+                      ),
+                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    keyboardType: TextInputType.url,
+                    onChanged: viewModel.setSourceUrl,
+                    validator:
+                        FormValidators.url(), // Validerar URL-format om något anges
                   ),
                 ],
               ),
@@ -219,10 +246,7 @@ class _SkrivSjalvReceptViewContentState
               child: Center(
                 child: Container(
                   padding: AppTheme.cardPadding,
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
-                    borderRadius: AppTheme.largeRadius,
-                  ),
+                  decoration: AppTheme.cardDecoration,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
