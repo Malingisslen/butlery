@@ -6,7 +6,7 @@ import '../viewmodels/url_import_viewmodel.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD IMPORT VIA URL VY MED URLIMPORTVIEWMODEL
+/// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
 class ImportViaUrlView extends StatelessWidget {
   const ImportViaUrlView({super.key});
 
@@ -56,10 +56,14 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   void _navigateToTextImport() {
     final viewModel = context.read<UrlImportViewModel>();
     if (viewModel.hasExtractedText) {
+      // NY! Skicka med både text OCH sourceUrl som en Map
       Navigator.pushNamed(
         context,
         '/franSocialaMedier',
-        arguments: viewModel.extractedText,
+        arguments: {
+          'text': viewModel.extractedText,
+          'sourceUrl': viewModel.sourceUrl,
+        },
       );
     }
   }
@@ -118,14 +122,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                     width: double.infinity,
                     padding: AppTheme.cardPadding,
                     margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-                    decoration: BoxDecoration(
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: AppTheme.mediumRadius,
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                    ),
+                    decoration: AppTheme.infoBoxDecoration(context),
                     child: Text(
                       viewModel.extractedText,
                       style: Theme.of(context).textTheme.bodyMedium,
