@@ -11,6 +11,7 @@ import '../widgets/profile_dialog.dart'; // NY IMPORT för profil-dialog
 import '../services/search_service.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
+import '../widgets/skeleton_loader.dart';
 
 /// ✨ UPPDATERAD VY MED VIEWMODEL PATTERN
 /// Nu använder vi Provider och RecipeListViewModel istället för setState
@@ -173,17 +174,34 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   Widget _buildContent(RecipeListViewModel viewModel) {
-    // Loading state
+    // Loading state - UPPDATERAD MED SKELETON
     if (viewModel.isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppTheme.mediumLoadingIndicator(),
-            AppTheme.smallGap,
-            Text('Laddar recept...', style: AppTheme.subtitleStyle),
-          ],
-        ),
+      return Column(
+        children: [
+          // Behåll sökfältet synligt om det finns söktext
+          if (_searchController.text.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmPlus),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: AppTheme.iconSizeInfo,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  SizedBox(width: AppTheme.spacingXs),
+                  Text(
+                    'Söker...',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          // Skeleton loader istället för spinner
+          const Expanded(child: RecipeListSkeleton(itemCount: 5)),
+        ],
       );
     }
 

@@ -408,11 +408,15 @@ class _AuthViewState extends State<AuthView> {
     );
 
     if (result == true && mounted) {
+      // Spara messenger referensen FÖRE async operation
+      // ignore: use_build_context_synchronously
+      final messenger = ScaffoldMessenger.of(context);
+
       final success = await viewModel.sendPasswordReset(emailController.text);
 
-      if (!mounted) return; // Extra check efter async operation
+      if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             success

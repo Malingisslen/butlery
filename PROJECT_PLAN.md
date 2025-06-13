@@ -1,4 +1,4 @@
-# 🚀 Butlery Projektplan - Uppdaterad Status (Juni 2025)
+# 🚀 Butlery Projektplan - Status Juni 2025
 
 ## 🏗️ **Projektarkitektur**
 
@@ -26,6 +26,7 @@ butlery/
 │   │
 │   ├── models/                  # Datamodeller
 │   │   ├── recipe.dart          # Recipe-modell med sourceUrl
+│   │   ├── recipe_summary.dart # Lätt modell för listor
 │   │   └── shopping_item.dart  # Shopping item-modell
 │   │
 │   ├── services/                # Affärslogik & Firebase
@@ -94,8 +95,11 @@ butlery/
 ├── ios/                        # iOS-konfiguration
 ├── assets/                     # Bilder och resurser
 ├── test/                       # Tester
+├── .github/                    # GitHub Actions
+│   └── workflows/
+│       ├── analyze.yml         # Kodkvalitet
+│       └── build.yml          # Build pipeline
 └── pubspec.yaml               # Dependencies
-
 ```
 
 ### **Arkitekturmönster:**
@@ -104,65 +108,45 @@ butlery/
 - **Dependency Injection** - get_it för att hantera dependencies
 - **Provider** - State management mellan ViewModels och Views
 - **Singleton Services** - För app-wide state (Auth, Recipes)
+- **Service-princip:** Varje service har MAX ett ansvarsområde
 
 ### **Firebase-struktur:**
 ```
 Firestore Database:
 ├── users/
 │   └── {userId}/
-│       └── recipes/
-│           └── {recipeId}
+│       ├── recipes/              # Fullständiga recept
+│       │   └── {recipeId}
+│       └── recipe_summaries/     # Lätta dokument för listor
+│           └── {recipeId}        # Bara titel, bild, datum
 └── butlery_archive/
-    └── recipes/
+    ├── recipes/
+    │   └── {recipeId}
+    └── recipe_summaries/         # Arkiv-summaries
         └── {recipeId}
 ```
 
-## 🎥 **Fas 9.5: Video-import (4-5 timmar)**
-
-### **🎯 Implementation:**
-- [ ] YouTube URL-import i ImportViaUrlView
-- [ ] Extrahera videobeskrivning och kommentarer
-- [ ] Parser för att hitta recept i beskrivningstext
-- [ ] Skicka till FranSocialaMedierView för manuell justering
-- [ ] Spara video-URL som sourceUrl
-- [ ] Visa "Importerat från video" med länk i RecipeDetailView
-
-## 🧪 **Fas 20.5: Beta-teststruktur (2-3 timmar)**
-
-### **🎯 8-veckors beta-plan:**
-- [ ] **Vecka 1-2:** Intern test med 5-10 nära vänner
-- [ ] **Vecka 3-6:** Utökad beta med 40-60 användare
-- [ ] **Vecka 7-8:** Iteration baserat på feedback
-
-### **🎯 Distribution:**
-- [ ] TestFlight setup för iOS
-- [ ] Firebase App Distribution för Android
-- [ ] Separata Firebase-projekt för beta vs produktion
-- [ ] Instruktioner för beta-testare
-
-### **🎯 Feedback-struktur:**
-- [ ] Veckovis feedback-enkät
-- [ ] In-app feedback-knapp
-- [ ] NPS-mätning vecka 4 och 8
-- [ ] Strukturerad bug-rapportering
+### **Kostnadsoptimering:**
+- **Pagination:** Ladda max 20 recept åt gången
+- **Summary documents:** Lätta dokument för listvyer
+- **Select fields:** Hämta bara nödvändiga fält
+- **Offline cache:** Minska upprepade reads
 
 ---
 
-## ✅ **Fas 1-8: KLARA!** 
-
-### **✅ Fas 1: Grundläggande Setup (KLAR)**
+## ✅ **Fas 1: Grundläggande Setup (KLAR)**
 - ✅ Flutter projekt initialiserat
 - ✅ Mappstruktur etablerad  
 - ✅ Navigation mellan views
 - ✅ Grundläggande UI-komponenter
 
-### **✅ Fas 2: Theme-system (KLAR)**
+## ✅ **Fas 2: Theme-system (KLAR)**
 - ✅ AppTheme centraliserat designsystem
 - ✅ Konsistenta färger, typografi, spacing
 - ✅ Semantiska widgets och styles
 - ✅ Material 3 integration
 
-### **✅ Fas 3: RecipeService Integration (KLAR)**
+## ✅ **Fas 3: RecipeService Integration (KLAR)**
 - ✅ Singleton RecipeService med ChangeNotifier
 - ✅ CRUD operationer (Create, Read, Update, Delete)
 - ✅ Reaktiv UI med loading states
@@ -171,23 +155,23 @@ Firestore Database:
 - ✅ 10 förbättrade standardrecept (dummy_data.dart)
 - ✅ 20 detaljerade arkivrecept för import
 
-### **✅ Fas 4: Grundfunktionalitet (KLAR)**
+## ✅ **Fas 4: Grundfunktionalitet (KLAR)**
 - ✅ Menygeneration från prompt
 - ✅ Komplett recepthantering
 - ✅ Inköpslista med checkboxar
 - ✅ Flera import-metoder
 
-### **✅ Fas 5: Förbättringar & Stabilitet (KLAR)**
-- ✅ **Dependency Injection med get_it** 
-- ✅ **ViewModel Pattern implementerat**
-- ✅ **Provider integration komplett**
-- ✅ **Centraliserad error handling**
-- ✅ **Form validators**
-- ✅ **Connectivity check**
-- ✅ **Optimerade widgets**
-- ✅ **Empty states**
+## ✅ **Fas 5: Förbättringar & Stabilitet (KLAR)**
+- ✅ Dependency Injection med get_it
+- ✅ ViewModel Pattern implementerat
+- ✅ Provider integration komplett
+- ✅ Centraliserad error handling
+- ✅ Form validators
+- ✅ Connectivity check
+- ✅ Optimerade widgets
+- ✅ Empty states
 
-### **✅ Fas 6: Firebase Integration (KLAR!)**
+## ✅ **Fas 6: Firebase Integration (KLAR)**
 - ✅ Firebase Core initierad med duplicate-check
 - ✅ Email/Password authentication aktiverad
 - ✅ AuthService implementerad
@@ -198,7 +182,7 @@ Firestore Database:
 - ✅ Delat arkiv (`butlery_archive`)
 - ✅ Test-användare skapad (test@example.com)
 
-### **✅ Fas 7: Admin Tools & Arkivhantering (KLAR!)**
+## ✅ **Fas 7: Admin Tools & Arkivhantering (KLAR)**
 - ✅ `admin-scripts/` mapp skapad
 - ✅ firebase-admin installerad
 - ✅ Service account key konfigurerad
@@ -208,7 +192,7 @@ Firestore Database:
 - ✅ .gitignore för admin-scripts
 - ✅ README.md för dokumentation
 
-### **✅ Fas 8: Source URL Implementation (KLAR!)**
+## ✅ **Fas 8: Source URL Implementation (KLAR)**
 - ✅ sourceUrl fält i Recipe-modellen
 - ✅ UrlImportViewModel sparar sourceUrl
 - ✅ ImportViaUrlView skickar med sourceUrl
@@ -225,13 +209,51 @@ Firestore Database:
 
 ---
 
-## 🎨 **Fas 9: Core UX (NÄSTA STEG - 2-3 timmar)**
+## 🔧 **Fas 8.5: CI/CD Setup (3-4 timmar)**
+
+### **🎯 GitHub Actions implementation:**
+- [ ] **Basic pipeline (.github/workflows/analyze.yml):**
+  ```yaml
+  - flutter analyze
+  - flutter format --set-exit-if-changed
+  - flutter test (när tester finns)
+  ```
+- [ ] **Build pipeline (.github/workflows/build.yml):**
+  ```yaml
+  - Bygg APK på tags
+  - Spara artifacts
+  ```
+- [ ] **Branch-strategi:**
+  - `main` = produktion
+  - `develop` = nästa release  
+  - `feature/*` = aktiv utveckling
+
+---
+
+## 🎨 **Fas 9: Core UX (4-6 timmar)**
 
 ### **🎯 Essentiella UX-förbättringar:**
 - [ ] Pull-to-refresh i receptlistan
 - [ ] Swipe-to-delete på recept (med undo)
 - [ ] Smooth animations mellan views
 - [ ] Loading skeletons istället för spinners
+- [ ] Grundläggande accessibility-check
+
+---
+
+## 🎥 **Fas 9.5: Video-import (6-8 timmar)**
+
+### **🎯 Implementation:**
+- [ ] YouTube URL-import i ImportViaUrlView
+- [ ] **Smart API-användning:**
+  - Hämta bara snippet först
+  - "Ladda fullständig beskrivning" on-demand
+  - Hantera rate limits gracefully
+- [ ] Parser för att hitta recept i beskrivningstext
+- [ ] Skicka till FranSocialaMedierView för manuell justering
+- [ ] Spara video-URL som sourceUrl
+- [ ] Visa "Importerat från video" med länk i RecipeDetailView
+- [ ] **Copyright disclaimer:** "Spara endast recept du har rätt att använda privat"
 
 ---
 
@@ -241,39 +263,34 @@ Firestore Database:
 - [ ] Sortera efter: Nyast, A-Ö, Senast använd
 - [ ] Förbättra textsökning med realtidsfiltrering
 - [ ] Responsiv sökning medan användaren skriver
+- [ ] Implementera med recipe_summaries för prestanda
 
 ---
 
 ## 📤 **Fas 11: Delning & Export (3-4 timmar)**
 
-### **🎯 Steg 1: Analysera alternativ (1 timme)**
-- [ ] **Text-delning:** Formaterad text för kopiering (enklast)
-- [ ] **Bild-export:** Veckomeny som bild för sociala medier
-- [ ] **PDF-export:** För utskrift (mer komplex)
-- [ ] **Länkdelning:** Kräver public API endpoints
-- [ ] **QR-kod:** Modern men krånglig implementation
-
-### **🎯 Steg 2: Beslutskriterier**
-- [ ] Användarvänlighet och värde
-- [ ] Teknisk komplexitet vs nytta
-- [ ] Fungerar offline?
-
-### **🎯 Steg 3: Implementation (2-3 timmar)**
-**Rekommendation: Börja med:**
-- [ ] Text-export - kopiera som formaterad text
-- [ ] Bild-export - för veckomeny (Instagram/SMS-vänlig)
+### **🎯 Implementation:**
+- [ ] **Text-export** - kopiera som formaterad text
+- [ ] **Bild-export** - för veckomeny (Instagram/SMS-vänlig)
+- [ ] **Backup/Export JSON** - återanvänd för delning
+- [ ] PDF kan vänta till senare version
 
 ---
 
-## 💾 **Fas 12: Offline-stöd (3-4 timmar)**
+## 💾 **Fas 12: Offline-stöd (4-5 timmar)**
 
-### **🎯 Implementation:**
+### **🎯 Implementation med tydlig synk-strategi:**
 - [ ] **Hive implementation:**
   - Lokal cache för användarens recept
   - Separata boxes för recept, bilder, inställningar
   - TTL (Time To Live) per box-typ
+- [ ] **Synk-flöde:**
+  ```
+  Offline: Ändring → Hive → Flag: "pending_sync"
+  Online: Check pending → Firebase → Clear flag
+  Conflict: Server wins, visa varning
+  ```
 - [ ] Fungera utan internetuppkoppling
-- [ ] Synka ändringar när online
 - [ ] Tydlig offline/online-indikator
 - [ ] flutter_cache_manager för bildcache
 
@@ -288,7 +305,7 @@ Firestore Database:
 
 ---
 
-## 📸 **Fas 14: Flera bilder per recept (4-5 timmar)**
+## 📸 **Fas 14: Flera bilder per recept (8-10 timmar)**
 
 ### **🎯 Implementation:**
 - [ ] Uppdatera Recipe-modellen för array av bilder
@@ -296,7 +313,10 @@ Firestore Database:
 - [ ] Kamera-integration för direktfotografering
 - [ ] Filväljare för att ladda upp från galleri
 - [ ] Bildkarusell i RecipeDetailView
-- [ ] Thumbnail-hantering för snabb laddning
+- [ ] **Optimering:**
+  - Thumbnail-generering
+  - Progressiv uppladdning
+  - Bandbreddshantering
 - [ ] Firebase Storage för flera bilder per recept
 - [ ] Möjlighet att ta bort/ordna om bilder
 
@@ -317,155 +337,108 @@ Firestore Database:
 
 ---
 
-## 🔐 **Fas 16: Säkerhet & Analytics (8-9 timmar)**
+## 📊 **Fas 16: Analytics & Monitoring (3-4 timmar)**
 
-### **🎯 Implementation:**
-- [ ] **Firebase Analytics:**
-  - Spåra mest använda features
-  - Förstå användarbeteende
-  - Konvertering från import till sparade recept
-- [ ] **Specifika receptapp-KPIs:**
-  - DAU/MAU ratio (mål: 20%+)
-  - Dag 1/7/30 retention (mål: 40%/20%/10%)
-  - Receptfullförandegrad (mål: 60%+)
-  - Söksuccégrad
-  - Video-import succégrad
-- [ ] **Beta-specifika events:**
-  - video_import_started/success/fail
-  - recipe_cooked
-  - menu_generated
-  - shopping_list_completed
+### **🎯 Grundläggande implementation för solo-utvecklare:**
+- [ ] **Firebase Analytics (basics):**
+  - Screen views automatiskt
+  - Key events: recipe_created, menu_generated, recipe_imported
+  - Enkel funnel: Import → Save → Use
 - [ ] **Firebase Crashlytics:**
   - Automatisk kraschrapportering
-  - Detaljerad fellogging
-- [ ] **Remote Config:**
-  - Feature flags för beta-features
-  - videoImportEnabled toggle
-  - maxRecipesPerUser limit
-  - API-rate limits
-- [ ] **Secrets-hantering:**
-  - Flytta service-account.json från repo
-  - Använd GitHub Secrets eller git-crypt
-  - Environment-variabler för API-nycklar
-- [ ] **Firebase Budget:**
-  - Sätt budget-varning på $30/månad
+  - Basic error logging
+- [ ] **Performance Monitoring:**
+  - Firestore query performance
+  - Bilduppladdningstider
+- [ ] **Budget-varning:**
+  - Firebase alert vid $20/månad
   - Monitoring dashboard
-- [ ] **Backup/Export funktionalitet:**
-  - Exportera alla recept som JSON
-  - Ladda ner som fil
-  - Importera från backup med konflikthantering
-- [ ] **Receptvalidering:**
-  - Kräv minst titel
-  - Minst en instruktion eller ingrediens
-  - Varna för ovanliga värden
-- [ ] **GDPR Compliance:**
-  - "Radera mitt konto"-funktion
-  - Ta bort all användardata från Firestore
-  - Ta bort alla bilder från Storage
-  - Implementera i AuthService
 
 ---
 
-## 🥄 **Fas 17: Portionshantering & Enhetskonvertering (3-4 timmar)**
+## 🥄 **Fas 17: Portionshantering & Enhetskonvertering (4-5 timmar)**
 
-### **🎯 Portionsskalning:**
-- [ ] UI-element för att ändra antal portioner
-- [ ] Automatisk omskalning av alla ingredienser
-- [ ] Spara originalmängder
-- [ ] Tydlig indikation när recept är skalat
-
-### **🎯 Enhetskonvertering:**
-- [ ] Vanliga konverteringar:
-  - dl ↔ ml ↔ l
-  - tsk ↔ msk ↔ dl
-  - g ↔ kg
-  - °C ↔ °F
-- [ ] Konverteringsknapp vid varje ingrediens
-- [ ] Hjälptext med konverteringstabeller
-- [ ] Spara användarens enhetsval
+### **🎯 Implementation:**
+- [ ] **Portionsskalning:** UI för antal portioner
+- [ ] **Smart parsing:** Använd `super_measurement` package
+- [ ] **Enhetskonvertering:** dl ↔ ml, tsk ↔ msk, etc.
+- [ ] **Robust hantering av "1½ dl" format**
 
 ---
 
-## 🔍 **Fas 18: Dark Mode (2-3 timmar)**
+## 🔍 **Fas 18: Dark Mode (4-5 timmar)**
 
 ### **🎯 Implementation:**
 - [ ] Utöka AppTheme med dark mode-palett
 - [ ] ThemeMode.system för att följa enhetsinställningar
 - [ ] Manuell toggle i profil/inställningar
-- [ ] Testa alla vyer i både ljust och mörkt tema
-- [ ] Anpassa färger för god kontrast i båda lägena
+- [ ] Testa alla vyer i båda teman
 - [ ] Särskild hänsyn till bilder och ikoner
+- [ ] Regression-test för färgändringar
 
 ---
 
-## ♿ **Fas 19: Accessibility / Tillgänglighet (3-4 timmar)**
+## ♿ **Fas 19: Accessibility / Tillgänglighet (Löpande)**
 
-### **🎯 Implementation:**
-- [ ] **Skärmläsarstöd:**
-  - semanticsLabel på alla ikoner
-  - Meningsfulla beskrivningar för interaktiva element
-- [ ] **Visuell tillgänglighet:**
-  - Kontrasttest med flutter_a11y
-  - Minst WCAG AA-standard
-  - Tydliga fokusindikatorer
-- [ ] **Interaktion:**
-  - Större touch-targets (minst 48x48)
-  - Tangentbordsnavigering där relevant
-- [ ] **Extra features:**
-  - "Läs upp recept"-knapp med TTS
-  - Textstorlek följer systeminställningar
+### **🎯 Implementation integrerad i varje fas:**
+- [ ] Automatisk kontroll efter varje UI-ändring
+- [ ] semanticsLabel på alla ikoner
+- [ ] Kontrasttest med flutter_a11y
+- [ ] Minst WCAG AA-standard
+- [ ] Touch targets minst 48x48
 
 ---
 
-## 🔍 **Fas 20: Design-Genomgång**
+## 🔍 **Fas 20: Kostnadsoptimering & Performance (3-4 timmar)**
 
-### **Innan release, genomför omfattande design-check:**
-- [ ] Sök igenom ALLA .dart filer efter hårdkodade värden
-- [ ] Kontrollera att inga Colors.* används direkt (förutom Colors.black26 för overlays)
-- [ ] Verifiera att alla padding/margin använder AppTheme
-- [ ] Säkerställ att alla text styles kommer från AppTheme
-- [ ] Kontrollera att alla BorderRadius använder AppTheme
-- [ ] Granska att alla ikonstorlekar använder AppTheme.iconSize*
-- [ ] Validera att alla decorations använder AppTheme-metoder
-
-**Verktyg för genomgång:**
-```bash
-# Sök efter potentiella hårdkodade värden
-grep -r "EdgeInsets\." lib/ --include="*.dart" | grep -v "AppTheme"
-grep -r "Color(0x" lib/ --include="*.dart" | grep -v "app_theme.dart"
-grep -r "BorderRadius\." lib/ --include="*.dart" | grep -v "AppTheme"
-grep -r "TextStyle(" lib/ --include="*.dart" | grep -v "app_theme.dart"
-```
+### **🎯 Firestore-optimeringar:**
+- [ ] **Recipe summaries implementation:**
+  - Skapa `recipe_summaries` collection
+  - Migration script för befintliga recept
+  - Uppdatera RecipeService
+- [ ] **Pagination i alla listvyer:**
+  - 20 recept per "sida"
+  - Infinite scroll
+- [ ] **Selektiva queries:**
+  - `.select(['field1', 'field2'])`
+- [ ] **Kostnadskalkyl:**
+  - Beräkna reads per användarsession
+  - Optimera de dyraste queries
 
 ---
 
 ## 🏗️ **Fas 21: Kodkvalitet & Refaktorering (6-8 timmar)**
 
-### **🎯 Professionell kodgranskning:**
+### **🎯 Implementation:**
+- [ ] **Linter-regler (analysis_options.yaml):**
+  ```yaml
+  - prefer_const_constructors
+  - avoid_print
+  - prefer_single_quotes
+  ```
+- [ ] **Service-uppdelning:** Max ett ansvarsområde per service
+- [ ] **Branch cleanup:** Ta bort gamla feature branches
+- [ ] **TODO-genomgång:** Fixa eller ta bort
 - [ ] **Performance-optimering:**
   - Widget rebuilds minimering
   - Lazy loading implementation
   - Memory leaks kontroll
   - Build context användning
-
 - [ ] **Modularitet:**
   - Bryt ut stora widgets till mindre komponenter
   - Skapa återanvändbara utility-funktioner
   - Implementera barrel exports för enklare imports
   - Separera business logic från UI ännu mer
-
 - [ ] **Framtidssäkring:**
   - Abstrakta externa dependencies
   - Skapa interfaces för services
   - Förbereda för testning (unit/widget tests)
   - Dokumentera komplexa funktioner
-
 - [ ] **Kodstandarder:**
   - Dart analyzer striktare regler
   - Konsekvent namngivning
   - Remove alla TODOs och FIXMEs
   - Uppdatera deprecated metoder
-
 - [ ] **Error handling:**
   - Konsekvent error-hantering överallt
   - Användaravänliga felmeddelanden
@@ -489,31 +462,28 @@ grep -r "TODO\|FIXME\|XXX" lib/
 
 ---
 
-## 🧪 **Fas 22: Unit Tests (4-5 timmar)**
+## 🧪 **Fas 22: Unit Tests för kärnfunktionalitet (2-3 timmar)**
 
-### **🎯 Testa kärnfunktionalitet:**
-- [ ] **Service-tester:**
-  - MenuService (generering, validering)
-  - ShoppingListService (merge, sortering)
-  - RecipeService (CRUD-operationer)
-- [ ] **Validator-tester:**
-  - Form validators (email, recept)
-  - URL validation för import
-- [ ] **Model-tester:**
-  - Recipe serialization/deserialization
-  - ShoppingItem aggregering
-- [ ] **Utilities-tester:**
-  - Text parsing funktioner
-  - Enhetskonvertering
-- [ ] **Setup:**
-  - Minst 70% code coverage
-  - CI körs automatiskt vid push
+### **🎯 Fokus på kritiska delar:**
+- [ ] **Validators:** Email, URL, recept-validering
+- [ ] **Text parsing:** Recipe scraper grundtest
+- [ ] **Model serialization:** Recipe to/from JSON
+- [ ] Mål: 50% coverage på services
 
 ---
 
-## 📱 **Fas 24: Store Listings & Release Prep (5-6 timmar)**
+## 📱 **Fas 23: Store Listings & Release Prep (5-6 timmar)**
 
-### **🎯 App Store/Google Play förberedelser:**
+### **🎯 Implementation (inkl. 2025-krav):**
+- [ ] **iOS Privacy Manifest:**
+  - PrivacyInfo.xcprivacy
+  - Deklarera all dataanvändning
+- [ ] **Play Integrity API:**
+  - Implementation med fallback
+- [ ] **Legal:**
+  - Terms of Service
+  - Privacy Policy  
+  - Copyright disclaimer
 - [ ] **Grafiskt material:**
   - App-ikon 1024x1024
   - 5 skärmdumpar per enhet (telefon/surfplatta)
@@ -533,19 +503,10 @@ grep -r "TODO\|FIXME\|XXX" lib/
   - App signing konfiguration
   - ProGuard rules (Android)
   - iOS entitlements
-- [ ] **iOS Privacy Manifest (NYTT KRAV!):**
-  - Skapa PrivacyInfo.xcprivacy
-  - Deklarera kamera-användning
-  - Deklarera fotobibliotek-access
-  - Deklarera nätverksanvändning
-- [ ] **Play Integrity API (NYTT KRAV!):**
-  - Implementera com.google.android.play:integrity
-  - Server-side token verifiering
-  - Fallback för äldre enheter
 
 ---
 
-## 🤝 **Fas 25: Grundläggande social (4-5 timmar)**
+## 🤝 **Fas 24: Grundläggande social (4-5 timmar)**
 
 ### **🎯 Implementation:**
 - [ ] Offentliga receptlänkar (read-only webb-vy)
@@ -557,18 +518,7 @@ grep -r "TODO\|FIXME\|XXX" lib/
 
 ---
 
-## 🚀 **Fas 26: CI/CD Setup (3-4 timmar)**
-
-### **🎯 Implementation:**
-- [ ] GitHub Actions workflow
-- [ ] Automatisk Flutter analyze
-- [ ] Test-körning vid varje push
-- [ ] Build APK/IPA automatiskt
-- [ ] Deploy till Firebase App Distribution
-
----
-
-## 🤖 **Fas 27: AI-Integration (FRAMTIDA)**
+## 🤖 **Fas 25: AI-Integration (5-8 timmar)**
 
 ### **När all grundfunktionalitet är perfekt:**
 - [ ] Auto-kategorisering av recept
@@ -619,7 +569,7 @@ grep -r "TODO\|FIXME\|XXX" lib/
 4. **Redo för produktion** (grundfunktionalitet) ⭐
 5. **Multi-device sync** via Firestore ⭐
 6. **Professionell development workflow** ⭐
-7. **Source URL komplett** ⭐ ✅
+7. **Source URL komplett** ⭐
 8. **Komplett MVVM-arkitektur** ⭐
 
 ---
@@ -631,54 +581,93 @@ Appen är nu i mycket bra skick:
 - ✅ Professionell arkitektur fullt dokumenterad
 - ✅ Admin-verktyg för innehållshantering
 - ✅ Säker med Firebase Auth
-- ✅ Source URL-implementation KLAR
+- ✅ Source URL-implementation klar
 - ✅ Skalbar och underhållbar kodbas
 - ✅ Redo för UX-förbättringar och power-features
 
-**Nästa fokus:** UX-förbättringar för en fantastisk användarupplevelse!
+---
+
+## 📊 **Realistiska tidsestimat**
+
+### **Till MVP (solo-testning):**
+- Fas 8.5 (CI/CD): 3-4 timmar ⭐
+- Fas 9 (Core UX): 4-6 timmar
+- Fas 9.5 (Video): 6-8 timmar
+- Fas 10-15: ~28 timmar
+- Fas 16 (Analytics basic): 3-4 timmar
+- Fas 17-19: ~12 timmar
+- Fas 20 (Optimering): 3-4 timmar ⭐
+- Fas 21-22: ~9 timmar
+- Fas 23: 5-6 timmar
+
+**Total realistisk tid: ~80-95 timmar**
 
 ---
 
 ## 🎯 **Prioritering framåt:**
 
-### **Essentiella features (Fas 9-17):**
-1. **Core UX** → 2-3 timmar ⭐
-2. **Video-import (utökad)** → 5-6 timmar ⭐ 
-3. **Sortering & Filter** → 2-3 timmar
-4. **Delning & Export** → 3-4 timmar ⭐
-5. **Offline-stöd (med Hive)** → 3-4 timmar
-6. **"Senast tillagad"** → 1 timme
-7. **Flera bilder per recept** → 4-5 timmar ⭐
-8. **Onboarding** → 2-3 timmar
-9. **Säkerhet & Analytics (utökad)** → 8-9 timmar ⭐
-10. **Portions & Enhetshantering** → 3-4 timmar ⭐
+### **Essentiella features:**
+1. **CI/CD Setup** → 3-4 timmar ⭐
+2. **Core UX** → 4-6 timmar ⭐
+3. **Video-import** → 6-8 timmar ⭐ 
+4. **Sortering & Filter** → 2-3 timmar
+5. **Delning & Export** → 3-4 timmar ⭐
+6. **Offline-stöd** → 4-5 timmar
+7. **"Senast tillagad"** → 1 timme
+8. **Flera bilder per recept** → 8-10 timmar ⭐
+9. **Onboarding** → 2-3 timmar
+10. **Analytics & Monitoring** → 3-4 timmar ⭐
+11. **Portions & Enhetshantering** → 4-5 timmar ⭐
 
-**Total tid för essentiella features: ~36-43 timmar**
+**Total tid för essentiella features: ~40-50 timmar**
 
 ### **Kvalitetssäkring & Release:**
-11. **Dark Mode** → 2-3 timmar ⭐
-12. **Accessibility** → 3-4 timmar ⭐
-13. **Design-genomgång** → 1 timme
-14. **Kodkvalitet & Refaktorering** → 6-8 timmar ⭐⭐
-15. **Beta-teststruktur** → 2-3 timmar ⭐ 
-16. **Unit Tests** → 4-5 timmar ⭐
-17. **Store Listings (utökad)** → 5-6 timmar ⭐
+12. **Dark Mode** → 4-5 timmar ⭐
+13. **Accessibility** → Löpande ⭐
+14. **Kostnadsoptimering** → 3-4 timmar ⭐⭐
+15. **Kodkvalitet & Refaktorering** → 6-8 timmar ⭐⭐
+16. **Unit Tests** → 2-3 timmar ⭐
+17. **Store Listings** → 5-6 timmar ⭐
 
-**Total tid för kvalitet & release: ~23-30 timmar**
+**Total tid för kvalitet & release: ~20-26 timmar**
 
 ### **Framtida utveckling:**
 18. **Grundläggande social** → 4-5 timmar
-19. **CI/CD Setup** → 3-4 timmar
-20. **AI-Integration** → 5-8 timmar (inkl. avancerad video-import)
-
-**Total tid till komplett app: ~70-87 timmar**
+19. **AI-Integration** → 5-8 timmar
 
 ---
 
-## 📝 **Uppdateringar i denna version:**
-- Utökat Fas 9.5: YouTube API kvothantering + upphovsrätts-disclaimer (+1 timme)
-- Specificerat Fas 12: Hive cache implementation
-- Utökat Fas 16: Remote Config, Secrets-hantering, Beta-events, Budget (+3 timmar)
-- Utökat Fas 24: iOS Privacy Manifest + Play Integrity API (+2 timmar)
-- Säkerhetskritiska tillägg för 2025-krav
-- Total ökning: ~8 timmar för kritiska säkerhetskrav
+## 🚦 **Branch-strategi:**
+
+```bash
+git checkout -b develop  # Från main
+git checkout -b feature/core-ux  # Från develop
+
+# Efter varje feature:
+git checkout develop
+git merge feature/core-ux
+git branch -d feature/core-ux
+
+# När redo för release:
+git checkout main
+git merge develop
+git tag v1.0.0
+```
+
+---
+
+## ⚖️ **Legal & Säkerhet:**
+
+- **Copyright disclaimer** i alla import-flöden
+- **"Fair use" policy** i användarvillkor
+- **Source URL** alltid synlig
+- **Backup/Export** för användarkontroll
+- **GDPR-compliance** från start
+
+---
+
+## 🎯 **Nästa konkreta steg:**
+
+1. **Sätt upp GitHub Actions** (30 min)
+2. **Implementera Pull-to-refresh** (1-2 timmar)
+3. **Lägg till recipe_summaries struktur** (2 timmar)
