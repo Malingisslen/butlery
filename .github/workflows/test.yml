@@ -20,7 +20,11 @@ jobs:
       
       - run: flutter pub get
       
-      # Kommer köra tester när du har några
+      # Kör tester endast om test-mappen innehåller .dart filer
       - name: Run tests
-        run: flutter test
-        continue-on-error: true  # Failar inte om inga tester finns
+        run: |
+          if [ -n "$(find test -name '*.dart' -type f 2>/dev/null)" ]; then
+            flutter test
+          else
+            echo "No tests found, skipping test step"
+          fi
