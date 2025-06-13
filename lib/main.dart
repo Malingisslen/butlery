@@ -35,9 +35,8 @@ Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2️⃣ Initiera Firebase - MED KONTROLL för dubbel-initiering
+  // 2️⃣ Initiera Firebase
   try {
-    // Kontrollera om Firebase redan är initierad
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
@@ -48,7 +47,6 @@ Future<void> main() async {
     }
 
     // 3️⃣ Firestore ping - bara om vi har en autentiserad användare
-    // Detta förhindrar permission errors vid start
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       try {
@@ -75,7 +73,7 @@ Future<void> main() async {
     // Fortsätt ändå - låt appen köra med begränsad funktionalitet
   }
 
-  // 4️⃣ ✅ Initiera Dependency Injection
+  // 4️⃣ Initiera Dependency Injection
   try {
     await initializeDependencies();
     debugPrint('✅ Dependency Injection initierad');
@@ -187,14 +185,75 @@ class ButleryApp extends StatelessWidget {
     );
   }
 
-  MaterialPageRoute _route(Widget page, RouteSettings settings) {
-    return MaterialPageRoute(settings: settings, builder: (_) => page);
+  /// Helper för att skapa routes med smooth animations
+  Route<dynamic> _route(Widget page, RouteSettings settings) {
+    final routeName = settings.name ?? '';
+
+    // Auth-relaterade screens får fade animation
+    if (routeName == '/' || routeName == '/auth') {
+      return PageRouteBuilder(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 100),
+      );
+    }
+
+    // Import/Create screens får slide från botten
+    if (routeName.contains('import') ||
+        routeName.contains('Import') ||
+        routeName == '/skrivSjalv' ||
+        routeName == '/franSocialaMedier' ||
+        routeName == '/photoImport') {
+      return PageRouteBuilder(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 150),
+      );
+    }
+
+    // Standard navigation får slide från höger (iOS-style)
+    return PageRouteBuilder(
+      settings: settings,
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOutCubic;
+
+        var tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
+      transitionDuration: const Duration(milliseconds: 150),
+    );
   }
 
+  /// Error route med scale + fade animation
   Route _errorRoute([String? msg]) {
-    return MaterialPageRoute(
-      builder:
-          (ctx) => Scaffold(
+    return PageRouteBuilder(
+      pageBuilder:
+          (context, animation, secondaryAnimation) => Scaffold(
             appBar: AppBar(
               title: const Text('Fel'),
               backgroundColor: AppTheme.errorColor,
@@ -225,7 +284,7 @@ class ButleryApp extends StatelessWidget {
                     ElevatedButton(
                       onPressed:
                           () => Navigator.pushNamedAndRemoveUntil(
-                            ctx,
+                            context,
                             '/',
                             (_) => false,
                           ),
@@ -236,6 +295,21 @@ class ButleryApp extends StatelessWidget {
               ),
             ),
           ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Scale + fade för error screens
+        var scaleTween = Tween(begin: 0.8, end: 1.0);
+        var fadeTween = Tween(begin: 0.0, end: 1.0);
+        var curve = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+
+        return ScaleTransition(
+          scale: scaleTween.animate(curve),
+          child: FadeTransition(
+            opacity: fadeTween.animate(curve),
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 100),
     );
   }
 }
