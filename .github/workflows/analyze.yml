@@ -1,0 +1,43 @@
+name: Flutter Analyze & Format Check
+
+# När ska detta köras?
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  analyze:
+    # Kör på Ubuntu (gratis och snabbt)
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Steg 1: Hämta koden
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Steg 2: Installera Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2'  # Matcha din lokala version
+          channel: 'stable'
+      
+      # Steg 3: Hämta dependencies
+      - name: Get dependencies
+        run: flutter pub get
+      
+      # Steg 4: Kör analyze (hittar fel och varningar)
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+      
+      # Steg 5: Kontrollera formatering
+      - name: Check formatting
+        run: dart format --set-exit-if-changed lib test
+      
+      # Steg 6: (Frivillig) Visa vilken Dart/Flutter version som används
+      - name: Show Flutter version
+        run: |
+          flutter --version
+          dart --version
