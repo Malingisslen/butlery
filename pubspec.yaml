@@ -39,13 +39,13 @@ dependencies:
   flutter_cache_manager: ^3.3.1       # Avancerad cache-hantering
   
   # Network & Web parsing
-  http: ^0.13.6                        # HTTP-förfrågningar för API-calls
-  html: ^0.15.0                        # HTML-parsing för receptimport från webbsidor
+  http: ^0.13.6                       # HTTP-förfrågningar för API-calls
+  html: ^0.15.0                       # HTML-parsing för receptimport från webbsidor
   
   # ==================== UI & ICONS ====================
   
   cupertino_icons: ^1.0.8             # iOS-stil ikoner för Flutter
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.1                # Öppna externa länkar
 
 dev_dependencies:
   flutter_test:
