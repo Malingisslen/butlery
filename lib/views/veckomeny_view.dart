@@ -74,16 +74,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final viewModel = context.read<MenuViewModel>();
 
     // Konvertera menu format för ShareService
-    final menuMap = <String, Recipe?>{};
-    for (final entry in viewModel.menu.entries) {
-      // Ta första receptet i varje kategori för enkelhets skull
-      // Du kan anpassa detta baserat på dina behov
-      if (entry.value.isNotEmpty) {
-        menuMap[entry.key] = entry.value.first;
-      }
-    }
-
-    final result = await _shareService.shareWeekMenu(menuMap);
+    // MenuViewModel har: Map<String, List<Recipe>> menu
+    final result = await _shareService.shareWeekMenuFromCategories(
+      viewModel.menu,
+    );
 
     if (result.status == ShareResultStatus.success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
