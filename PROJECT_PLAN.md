@@ -252,31 +252,33 @@ Firestore Database:
 
 📤 Fas 11: Delning & Export (3-4 timmar)
 Delfaser:
-11.1 Text-export för enskilt recept (1 timme)
+✅ 11.1 Text-export för enskilt recept (KLAR)
 
- Dela-knapp i RecipeDetailView
- Formatering av recepttext
- Kopiera till urklipp och/eller dela via share sheet
- Feedback till användaren
+✅ Dela-knapp i RecipeDetailView
+✅ Formatering av recepttext
+✅ ShareService implementerad
+✅ Native share sheet integration
+✅ Feedback till användaren
 
-11.2 Bild-export för veckomeny (1-1.5 timmar)
+✅ 11.2 Text-export för inköpslista (KLAR)
+
+✅ Uppdaterad ShoppingListViewModel
+✅ Smart gruppering av items
+✅ Native share sheet
+✅ Formatering med checkboxar
+
+✅ 11.3 Text-export för veckomeny (KLAR)
+
+✅ Dela-knapp i VeckomenyView
+✅ Formatering med emojis
+✅ Metadata för varje rätt
+✅ Native share sheet
+
+11.4 Bild-export för veckomeny (1-1.5 timmar)
 
  Generera bild från VeckomenyView
  Instagram-vänligt format (1:1)
  Inkludera Butlery-branding
- Dela via share sheet
-
-11.3 Text-export för veckomeny (30 min)
-
- Enkel textlista av veckans recept
- WhatsApp/SMS-vänligt format
- Dela via share sheet
-
-11.4 Inköpslista-delning (30 min)
-
- Formatera inköpslista som text
- Checkboxar som punktlista
- Gruppering (valfritt)
  Dela via share sheet
 
 11.5 JSON Backup/Export (30-45 min)
@@ -291,9 +293,53 @@ Delfaser:
  Snabbdelning från RecipeCard
  Long-press eller swipe-action
  Använd samma format som 11.1
-
 ---
+📥 Fas 12: Ta emot delningar från andra appar (4-5 timmar)
+Implementation:
+12.1 Android Intent Filter (1 timme)
 
+ Konfigurera AndroidManifest.xml
+ Hantera text/plain intents
+ Hantera text/html intents
+ URL-hantering
+
+12.2 iOS Share Extension (1.5 timmar)
+
+ Skapa Share Extension target
+ Info.plist konfiguration
+ Hantera olika content types
+
+12.3 ReceiveShareView (1.5 timmar)
+
+ Ny view för att hantera inkommande data
+ Identifiera innehållstyp (text/URL/bild)
+ Preview av innehåll
+ Routing till rätt import-flow
+
+12.4 Deep linking setup (30 min)
+
+ App links för Android
+ Universal links för iOS
+ Route hantering i main.dart
+
+12.5 Smart content detection (30 min)
+
+ Identifiera recept i text
+ Extrahera URLs från delningar
+ Hantera Instagram/TikTok captions
+ Felhantering för okänt innehåll
+
+Designöverväganden för ReceiveShareView:
+
+Loading state medan innehåll processas
+Preview av identifierat innehåll
+Val av import-metod om osäkert
+Snabb-actions för vanliga källor
+
+Exempel på flow:
+Instagram delning → ReceiveShareView → Identifiera recept-text → FranSocialaMedierView
+URL delning → ReceiveShareView → Identifiera URL-typ → ImportViaUrlView
+Ren text → ReceiveShareView → TextImportViewModel
 ## 💾 **Fas 12: Offline-stöd (4-5 timmar)**
 
 ### **🎯 Implementation med tydlig synk-strategi:**
