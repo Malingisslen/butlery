@@ -250,13 +250,47 @@ Firestore Database:
 
 ---
 
-## 📤 **Fas 11: Delning & Export (3-4 timmar)**
+📤 Fas 11: Delning & Export (3-4 timmar)
+Delfaser:
+11.1 Text-export för enskilt recept (1 timme)
 
-### **🎯 Implementation:**
-- [ ] **Text-export** - kopiera som formaterad text
-- [ ] **Bild-export** - för veckomeny (Instagram/SMS-vänlig)
-- [ ] **Backup/Export JSON** - återanvänd för delning
-- [ ] PDF kan vänta till senare version
+ Dela-knapp i RecipeDetailView
+ Formatering av recepttext
+ Kopiera till urklipp och/eller dela via share sheet
+ Feedback till användaren
+
+11.2 Bild-export för veckomeny (1-1.5 timmar)
+
+ Generera bild från VeckomenyView
+ Instagram-vänligt format (1:1)
+ Inkludera Butlery-branding
+ Dela via share sheet
+
+11.3 Text-export för veckomeny (30 min)
+
+ Enkel textlista av veckans recept
+ WhatsApp/SMS-vänligt format
+ Dela via share sheet
+
+11.4 Inköpslista-delning (30 min)
+
+ Formatera inköpslista som text
+ Checkboxar som punktlista
+ Gruppering (valfritt)
+ Dela via share sheet
+
+11.5 JSON Backup/Export (30-45 min)
+
+ Exportera alla recept som JSON
+ Importfunktion för backup
+ Placering i profil-menyn
+ Filhantering och feedback
+
+11.6 Delning från receptlistan (30 min)
+
+ Snabbdelning från RecipeCard
+ Long-press eller swipe-action
+ Använd samma format som 11.1
 
 ---
 

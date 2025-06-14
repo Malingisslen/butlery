@@ -284,6 +284,17 @@ class AppTheme {
   static const Color dividerColor = _divider;
   static const Color navBarColor = _darkNavy;
 
+  // ===== FORMATERINGS-SYMBOLER (för ShareService etc.) =====
+
+  /// Punkt-symbol för listor
+  static const String bulletPoint = '•';
+
+  /// Horisontell linje-symbol
+  static const String dividerChar = '─';
+
+  /// Nummer-avdelare för numrerade listor
+  static const String numberDivider = '. ';
+
   // ===== SPACING CONSTANTS (UTÖKADE) =====
 
   static const double spacingXs = 4.0;

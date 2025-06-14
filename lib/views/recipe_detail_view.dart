@@ -3,12 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart'; // NY IMPORT för ShareResultStatus
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cached_recipe_image.dart';
 import '../core/injection.dart';
+import '../services/share_service.dart'; // NY IMPORT
 
 /// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOURCEURL-STÖD
 class RecipeDetailView extends StatelessWidget {
@@ -25,8 +27,18 @@ class RecipeDetailView extends StatelessWidget {
   }
 }
 
-class _RecipeDetailViewContent extends StatelessWidget {
+class _RecipeDetailViewContent extends StatefulWidget {
+  // ÄNDRAT FRÅN StatelessWidget
   const _RecipeDetailViewContent();
+
+  @override
+  State<_RecipeDetailViewContent> createState() =>
+      _RecipeDetailViewContentState();
+}
+
+class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
+  // NY STATE CLASS
+  final ShareService _shareService = sl<ShareService>(); // NY SERVICE
 
   Future<void> _deleteRecipe(BuildContext context) async {
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -79,6 +91,22 @@ class _RecipeDetailViewContent extends StatelessWidget {
     }
   }
 
+  // NY METOD för att dela recept
+  Future<void> _shareRecipe(BuildContext context) async {
+    final viewModel = context.read<RecipeDetailViewModel>();
+    final result = await _shareService.shareRecipe(viewModel.recipe);
+
+    if (result.status == ShareResultStatus.success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Recept delat!'),
+          backgroundColor: AppTheme.successColor,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeDetailViewModel>();
@@ -89,6 +117,12 @@ class _RecipeDetailViewContent extends StatelessWidget {
         appBar: AppBar(
           title: Text(viewModel.recipe.title),
           actions: [
+            // NY DELA-KNAPP
+            IconButton(
+              icon: AppTheme.actionIcon(context, Icons.share),
+              onPressed: () => _shareRecipe(context),
+              tooltip: 'Dela recept',
+            ),
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.delete),
               onPressed:

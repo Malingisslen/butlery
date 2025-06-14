@@ -7,6 +7,7 @@ import '../services/search_service.dart';
 import '../services/shopping_list_service.dart';
 import '../services/persistence_service.dart';
 import '../services/auth_service.dart';
+import '../services/share_service.dart'; // NY IMPORT
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -39,6 +40,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<MenuService>(MenuService());
   sl.registerSingleton<SearchService>(SearchService());
   sl.registerSingleton<ShoppingListService>(ShoppingListService());
+  sl.registerSingleton<ShareService>(ShareService()); // NY SERVICE
 
   // ==================== VIEWMODELS ====================
 
