@@ -343,6 +343,38 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
+  /// Hämta alla recept för export
+  /// Returnerar alla användarens recept från Firestore
+  Future<List<Recipe>> getAllRecipes() async {
+    if (_userRecipesRef == null) {
+      AppLogger.warning('Ingen användare inloggad vid getAllRecipes');
+      return [];
+    }
+
+    try {
+      AppLogger.info('📦 Hämtar alla recept för export...');
+
+      // Hämta alla recept direkt från Firestore för att säkerställa att vi får allt
+      final snapshot =
+          await _userRecipesRef!.orderBy('updatedAt', descending: true).get();
+
+      final recipes =
+          snapshot.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
+
+      AppLogger.success('✅ ${recipes.length} recept hämtade för export');
+      return recipes;
+    } catch (e) {
+      AppLogger.error('Kunde inte hämta alla recept för export', e);
+      throw 'Kunde inte hämta recept: $e';
+    }
+  }
+
+  /// Skapa nytt recept (används av ShareService vid import)
+  Future<RecipeOperationResult> createRecipe(Recipe recipe) async {
+    // Använder samma logik som addRecipe
+    return addRecipe(recipe);
+  }
+
   /// Sätt loading state
   void _setLoading(bool value) {
     _isLoading = value;
