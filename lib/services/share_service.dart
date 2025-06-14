@@ -346,10 +346,59 @@ class ShareService {
     return Share.shareWithResult(text, subject: 'Inköpslista');
   }
 
-  /// Dela veckomeny
-  Future<ShareResult> shareWeekMenu(Map<String, Recipe?> weekMenu) async {
-    final text = formatWeekMenu(weekMenu);
+  /// Dela veckomeny från kategorier (den faktiska strukturen från MenuViewModel)
+  Future<ShareResult> shareWeekMenuFromCategories(
+    Map<String, List<Recipe>> menu,
+  ) async {
+    final text = formatWeekMenuFromCategories(menu);
     return Share.shareWithResult(text, subject: 'Veckomeny');
+  }
+
+  /// Formattera veckomeny från kategorier
+  String formatWeekMenuFromCategories(Map<String, List<Recipe>> menu) {
+    final buffer = StringBuffer();
+
+    buffer.writeln('🍽 VECKOMENY');
+    buffer.writeln('===========');
+    buffer.writeln();
+
+    // Gå igenom varje kategori
+    for (final entry in menu.entries) {
+      if (entry.value.isNotEmpty) {
+        buffer.writeln('【${entry.key.toUpperCase()}】');
+
+        for (final recipe in entry.value) {
+          buffer.writeln('• ${recipe.title}');
+
+          // Lägg till metadata
+          final meta = <String>[];
+          if (recipe.timeMinutes != null) {
+            meta.add('⏱ ${recipe.timeMinutes} min');
+          }
+          if (recipe.portions != null) {
+            meta.add('🍴 ${recipe.portions} port');
+          }
+          if (recipe.rating != null && recipe.rating! > 0) {
+            meta.add('⭐' * recipe.rating!.round());
+          }
+
+          if (meta.isNotEmpty) {
+            buffer.writeln('  ${meta.join(' | ')}');
+          }
+        }
+        buffer.writeln();
+      }
+    }
+
+    // Sammanfattning
+    final totalRecipes = menu.values.fold(0, (sum, list) => sum + list.length);
+    final totalCategories =
+        menu.keys.where((key) => menu[key]!.isNotEmpty).length;
+
+    buffer.writeln('📊 Sammanfattning:');
+    buffer.writeln('$totalRecipes recept i $totalCategories kategorier');
+
+    return buffer.toString();
   }
 
   // ===== CLIPBOARD METHODS =====
