@@ -7,14 +7,15 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/profile_dialog.dart'; // NY IMPORT för profil-dialog
+import '../widgets/profile_dialog.dart';
+import '../widgets/filter_chips.dart'; // NY IMPORT för filter chips
 import '../services/search_service.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../widgets/skeleton_loader.dart';
 
-/// ✨ UPPDATERAD VY MED VIEWMODEL PATTERN
-/// Nu använder vi Provider och RecipeListViewModel istället för setState
+/// ✨ UPPDATERAD VY MED FILTER CHIPS
+/// Nu har vi integrerat filtreringsfunktionalitet med filter chips UI
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
 
@@ -38,6 +39,7 @@ class _MinaReceptViewContent extends StatefulWidget {
 
 class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   final TextEditingController _searchController = TextEditingController();
+  bool _showFilters = false; // NY STATE för att visa/dölja filter
 
   @override
   void initState() {
@@ -71,6 +73,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
+  // NY METOD för att återställa alla filter
+  void _clearAllFilters() {
+    final viewModel = context.read<RecipeListViewModel>();
+    viewModel
+        .clearAllFilters(); // Ändrat från clearFilters till clearAllFilters
+    setState(() {
+      _showFilters = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch för att lyssna på ViewModel-ändringar
@@ -80,7 +92,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       currentIndex: 0,
       title: 'Mina recept',
       actions: [
-        // NY PROFIL-KNAPP - alltid först i actions-listan
+        // Profil-knapp - alltid först i actions-listan
         IconButton(
           icon: Icon(
             Icons.account_circle,
@@ -89,6 +101,41 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           ),
           onPressed: () => showProfileDialog(context),
           tooltip: 'Min profil',
+        ),
+
+        // NY FILTER-KNAPP med indikator för aktiva filter
+        IconButton(
+          icon: Stack(
+            children: [
+              Icon(
+                Icons.filter_list,
+                color:
+                    _showFilters
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurface,
+              ),
+              // Visa en prick om det finns aktiva filter
+              if (viewModel.hasActiveFilters)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          onPressed: () {
+            setState(() {
+              _showFilters = !_showFilters;
+            });
+          },
+          tooltip: 'Filtrera',
         ),
 
         // Error indicator
@@ -166,6 +213,84 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
           ),
 
+          // FILTER CHIPS SEKTION - animerad visning
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child:
+                _showFilters
+                    ? Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Tidsfilter
+                          FilterChips(
+                            title: 'Tillagningstid',
+                            options: RecipeFilters.timeFilters,
+                            selectedIds:
+                                viewModel
+                                    .activeTimeFilters, // Ändrat från selectedTimeFilters
+                            onToggle: viewModel.toggleTimeFilter,
+                            scrollable: false,
+                          ),
+
+                          SizedBox(height: AppTheme.spacingSm),
+
+                          // Måltidstyp-filter
+                          FilterChips(
+                            title: 'Måltidstyp',
+                            options: RecipeFilters.mealTypeFilters,
+                            selectedIds:
+                                viewModel
+                                    .activeMealTypeFilters, // Ändrat från selectedMealTypeFilters
+                            onToggle: viewModel.toggleMealTypeFilter,
+                            scrollable:
+                                false, // Ändrat till false för att visa alla chips i wrap
+                          ),
+
+                          SizedBox(height: AppTheme.spacingSm),
+
+                          // Betygsfilter
+                          FilterChips(
+                            title: 'Betyg',
+                            options: RecipeFilters.ratingFilters,
+                            selectedIds:
+                                viewModel
+                                    .activeRatingFilters, // Ändrat från selectedRatingFilters
+                            onToggle: viewModel.toggleRatingFilter,
+                            scrollable: false,
+                          ),
+
+                          // Rensa filter-knapp om det finns aktiva filter
+                          if (viewModel.hasActiveFilters)
+                            Padding(
+                              padding: EdgeInsets.all(AppTheme.spacingSmPlus),
+                              child: Center(
+                                child: TextButton.icon(
+                                  onPressed: _clearAllFilters,
+                                  icon: const Icon(Icons.clear),
+                                  label: const Text('Rensa alla filter'),
+                                ),
+                              ),
+                            ),
+
+                          SizedBox(height: AppTheme.spacingSm),
+                        ],
+                      ),
+                    )
+                    : const SizedBox.shrink(),
+          ),
+
           // Huvudinnehåll
           Expanded(child: _buildContent(viewModel)),
         ],
@@ -174,7 +299,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   Widget _buildContent(RecipeListViewModel viewModel) {
-    // Loading state - UPPDATERAD MED SKELETON
+    // Loading state
     if (viewModel.isLoading) {
       return Column(
         children: [
@@ -231,23 +356,47 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     // Hämta filtrerade och sorterade recept från ViewModel
     final recipes = viewModel.recipes;
 
-    // Sökstatistik
-    Widget searchStats = const SizedBox.shrink();
-    if (viewModel.searchQuery.isNotEmpty) {
-      searchStats = Padding(
-        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmPlus),
+    // Sök- och filterstatistik
+    Widget statsWidget = const SizedBox.shrink();
+    if (viewModel.searchQuery.isNotEmpty || viewModel.hasActiveFilters) {
+      final statsText = <String>[];
+
+      if (viewModel.searchQuery.isNotEmpty) {
+        statsText.add('Sökning: "${viewModel.searchQuery}"');
+      }
+
+      if (viewModel.hasActiveFilters) {
+        final filterCount =
+            viewModel.activeTimeFilters.length +
+            viewModel.activeMealTypeFilters.length +
+            viewModel.activeRatingFilters.length;
+        statsText.add('$filterCount filter aktiva');
+      }
+
+      statsText.add('${recipes.length} recept hittades');
+
+      statsWidget = Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingSmPlus,
+          vertical: AppTheme.spacingXs,
+        ),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         child: Row(
           children: [
             Icon(
               Icons.info_outline,
               size: AppTheme.iconSizeInfo,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
             SizedBox(width: AppTheme.spacingXs),
-            Text(
-              '${recipes.length} recept hittades',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Expanded(
+              child: Text(
+                statsText.join(' • '),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
               ),
             ),
           ],
@@ -259,16 +408,22 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (recipes.isEmpty) {
       return Column(
         children: [
-          searchStats,
+          statsWidget,
           Expanded(
             child:
-                viewModel.searchQuery.isEmpty
+                viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
                     ? EmptyState.noRecipes(
                       onAction: () => Navigator.pushNamed(context, '/laggTill'),
                     )
                     : EmptyState.noSearchResults(
-                      onAction: _onSearchCleared,
-                      actionLabel: 'Rensa sökning',
+                      onAction:
+                          viewModel.searchQuery.isNotEmpty
+                              ? _onSearchCleared
+                              : _clearAllFilters,
+                      actionLabel:
+                          viewModel.searchQuery.isNotEmpty
+                              ? 'Rensa sökning'
+                              : 'Rensa filter',
                     ),
           ),
         ],
@@ -278,8 +433,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     // Receptlista
     return Column(
       children: [
-        searchStats,
-        if (viewModel.searchQuery.isNotEmpty) AppTheme.smallGap,
+        statsWidget,
         Expanded(
           child: RefreshIndicator(
             onRefresh: viewModel.refresh,

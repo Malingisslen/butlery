@@ -58,15 +58,16 @@ class FilterChips extends StatelessWidget {
               selected: isSelected,
               onSelected: (_) => onToggle(option.id),
               backgroundColor: Theme.of(context).colorScheme.surface,
-              selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+              // FIXAT: Använder Color.withValues istället för withOpacity
+              selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
               checkmarkColor: AppTheme.primaryColor,
               side: BorderSide(
                 color:
                     isSelected
                         ? AppTheme.primaryColor
-                        : Theme.of(
-                          context,
-                        ).colorScheme.outline.withOpacity(0.3),
+                        : Theme.of(context).colorScheme.outline.withValues(
+                          alpha: 0.3,
+                        ), // FIXAT: Använder withValues
                 width: isSelected ? 2 : 1,
               ),
             );
