@@ -6,13 +6,20 @@ import '../models/recipe.dart';
 import '../models/shopping_item.dart';
 import '../theme/app_theme.dart';
 
+/// Format-alternativ för receptdelning
+enum RecipeShareFormat {
+  complete, // Fullständigt format med alla detaljer
+  compact, // Kompakt format för SMS/chat
+  markdown, // Markdown-format för export
+}
+
 /// Service som hanterar all delningsfunktionalitet i appen
 /// Modulär design för enkel utbyggnad och testning
 class ShareService {
   // ===== FORMATERINGS-KONSTANTER =====
   // Använder nu AppTheme för formaterings-symboler
 
-  // Lokaliseringar - TODO: Flytta till l10n när flerspråksstöd implementeras
+  // Lokaliseringar - kommer flyttas till l10n när flerspråksstöd implementeras
   static const String _ingredientsTitle = 'Ingredienser:';
   static const String _instructionsTitle = 'Gör så här:';
   static const String _sourceLabel = 'Källa:';
@@ -379,7 +386,8 @@ class ShareService {
             meta.add('🍴 ${recipe.portions} port');
           }
           if (recipe.rating != null && recipe.rating! > 0) {
-            meta.add('⭐' * recipe.rating!.round());
+            final stars = List.filled(recipe.rating!.round(), '⭐').join();
+            meta.add(stars);
           }
 
           if (meta.isNotEmpty) {
@@ -412,11 +420,8 @@ class ShareService {
   Future<void> copyRecipe(Recipe recipe, {RecipeShareFormat? format}) async {
     final text =
         format != null
-            ? shareRecipeWithFormat(recipe, format)
+            ? await shareRecipeWithFormat(recipe, format)
             : getSmartFormat(recipe);
     await copyToClipboard(text.toString());
   }
 }
-
-/// Format-alternativ för receptdelning
-enum RecipeShareFormat { complete, compact, markdown }
