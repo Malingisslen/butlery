@@ -1,10 +1,10 @@
 // lib/viewmodels/shopping_list_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import '../models/recipe.dart';
 import '../models/shopping_item.dart';
 import '../services/shopping_list_service.dart';
+import '../services/share_service.dart'; // NY IMPORT
 import '../utils/text_utils.dart';
 import '../core/injection.dart';
 
@@ -12,6 +12,7 @@ import '../core/injection.dart';
 /// Hanterar inköpslista state och operationer
 class ShoppingListViewModel extends ChangeNotifier {
   final ShoppingListService _shoppingListService;
+  final ShareService _shareService; // NY SERVICE
 
   // State
   List<ShoppingItem> _shoppingItems = [];
@@ -20,8 +21,11 @@ class ShoppingListViewModel extends ChangeNotifier {
   String? _error;
   Map<String, List<Recipe>>? _currentMenu;
 
-  ShoppingListViewModel({ShoppingListService? shoppingListService})
-    : _shoppingListService = shoppingListService ?? sl<ShoppingListService>();
+  ShoppingListViewModel({
+    ShoppingListService? shoppingListService,
+    ShareService? shareService, // NY PARAMETER
+  }) : _shoppingListService = shoppingListService ?? sl<ShoppingListService>(),
+       _shareService = shareService ?? sl<ShareService>(); // NY INITIALISERING
 
   // ===== GETTERS =====
 
@@ -101,19 +105,32 @@ class ShoppingListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Dela inköpslista
+  /// Dela inköpslista - UPPDATERAD MED SHARESERVICE
   Future<void> shareShoppingList() async {
     if (!hasItems) return;
 
-    final text =
-        'Inköpslista:\n\n${formattedItems.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-          final isChecked = _checkedItems[index] ?? false;
-          return '${isChecked ? '✓' : '•'} $item';
-        }).join('\n')}';
+    try {
+      // Uppdatera bought-status baserat på checkade items
+      final itemsWithStatus =
+          _shoppingItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final isChecked = _checkedItems[index] ?? false;
 
-    await Clipboard.setData(ClipboardData(text: text));
+            return ShoppingItem(
+              name: item.name,
+              amount: item.amount,
+              unit: item.unit,
+              category: item.category,
+              bought: isChecked,
+            );
+          }).toList();
+
+      // Använd ShareService för att dela
+      await _shareService.shareShoppingList(itemsWithStatus);
+    } catch (e) {
+      _setError('Kunde inte dela inköpslista: ${e.toString()}');
+    }
   }
 
   /// Exportera till olika format (för framtida features)

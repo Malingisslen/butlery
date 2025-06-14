@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart'; // NY IMPORT för ShareResultStatus
 import '../models/recipe.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../widgets/recipe_card.dart';
@@ -9,6 +10,7 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
+import '../services/share_service.dart'; // NY IMPORT
 
 /// ✨ UPPDATERAD VY MED MENUVIEWMODEL
 class VeckomenyView extends StatelessWidget {
@@ -32,6 +34,7 @@ class _VeckomenyViewContent extends StatefulWidget {
 
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
+  final ShareService _shareService = sl<ShareService>(); // NY SERVICE
 
   @override
   void initState() {
@@ -66,6 +69,33 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
+  // NY METOD för att dela veckomeny
+  Future<void> _shareMenu() async {
+    final viewModel = context.read<MenuViewModel>();
+
+    // Konvertera menu format för ShareService
+    final menuMap = <String, Recipe?>{};
+    for (final entry in viewModel.menu.entries) {
+      // Ta första receptet i varje kategori för enkelhets skull
+      // Du kan anpassa detta baserat på dina behov
+      if (entry.value.isNotEmpty) {
+        menuMap[entry.key] = entry.value.first;
+      }
+    }
+
+    final result = await _shareService.shareWeekMenu(menuMap);
+
+    if (result.status == ShareResultStatus.success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veckomeny delad!'),
+          backgroundColor: AppTheme.successColor,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
@@ -74,6 +104,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       currentIndex: 2,
       title: 'Veckomeny',
       actions: [
+        // NY DELA-KNAPP
+        if (viewModel.hasMenu)
+          IconButton(
+            icon: AppTheme.actionIcon(context, Icons.share),
+            onPressed: _shareMenu,
+            tooltip: 'Dela veckomeny',
+          ),
+
         // Clear menu button
         if (viewModel.hasMenu)
           IconButton(
