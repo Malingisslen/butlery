@@ -4,24 +4,9 @@
 ```
 Välkommen tillbaka! Snabbstart-check:
 ✅ Mappstruktur mottagen
-✅ Projektplan-status: Fas 11.5 - JSON Backup/Export implementation väntar
-✅ Git status: On branch main
-Your branch is up to date with 'origin/main'.
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-        modified:   PROJECT_PLAN.md
-        modified:   linux/flutter/generated_plugin_registrant.cc
-        modified:   linux/flutter/generated_plugin_registrant.h
-        modified:   linux/flutter/generated_plugins.cmake
-        modified:   macos/Flutter/GeneratedPluginRegistrant.swift
-        modified:   windows/flutter/generated_plugin_registrant.cc
-        modified:   windows/flutter/generated_plugin_registrant.h
-        modified:   windows/flutter/generated_plugins.cmake
-
-no changes added to commit (use "git add" and/or "git commit -a")
-✅ Nästa steg: Bugfix
+✅ Projektplan-status: Fas 12 - Ta emot delningar från andra appar
+✅ Git status: Check needed
+✅ Redo att börja!
 ```
 
 ## 🏗️ **Projektarkitektur**
@@ -59,7 +44,7 @@ butlery/
 │   │   ├── persistence_service.dart
 │   │   ├── recipe_service.dart # Firebase Firestore CRUD
 │   │   ├── search_service.dart # Sökfunktionalitet
-│   │   ├── share_service.dart # Delningsfunktionalitet (✅ Uppdaterad med JSON export/import)
+│   │   ├── share_service.dart # Delningsfunktionalitet (✅ Komplett med JSON export/import)
 │   │   └── shopping_list_service.dart
 │   │
 │   ├── theme/                   # Design-system
@@ -87,24 +72,25 @@ butlery/
 │   │   ├── edit_recipe_view.dart
 │   │   ├── fran_sociala_medier_view.dart
 │   │   ├── import_via_url_view.dart
-│   │   ├── importera_fran_arkiv_view.dart
-│   │   ├── inkopslista_view.dart
-│   │   ├── lagg_till_recept_view.dart
-│   │   ├── mina_recept_view.dart       # ✅ Filter chips UI implementerat
+│   │   ├── importera_fran_arkiv_view.dart # ✅ Overflow-problem fixat
+│   │   ├── inkopslista_view.dart # ✅ PopScope uppdaterat
+│   │   ├── lagg_till_recept_view.dart # ✅ PopScope uppdaterat
+│   │   ├── main_views/
+│   │   │   └── mina_recept_view.dart # ✅ PopScope uppdaterat
 │   │   ├── photo_import_view.dart
 │   │   ├── recipe_detail_view.dart
 │   │   ├── skriv_sjalv_recept_view.dart
-│   │   └── veckomeny_view.dart
+│   │   └── veckomeny_view.dart # ✅ PopScope uppdaterat, overflow fixat
 │   │
 │   ├── widgets/                 # Återanvändbara komponenter
-│   │   ├── action_button.dart
+│   │   ├── action_button.dart # ✅ Overflow-problem fixat
 │   │   ├── cached_recipe_image.dart
-│   │   ├── empty_state.dart
+│   │   ├── empty_state.dart # ✅ Keyboard overflow fixat
 │   │   ├── filter_chips.dart   # ✅ Filter widget implementerad och integrerad
 │   │   ├── instruction_editor.dart
 │   │   ├── main_layout_menu.dart
 │   │   ├── optimized_card.dart
-│   │   ├── profile_dialog.dart # ✅ Uppdaterad med JSON export/import
+│   │   ├── profile_dialog.dart # ✅ Komplett med JSON export/import
 │   │   ├── recipe_card.dart
 │   │   ├── recipe_service_widget.dart
 │   │   ├── search_bar.dart
@@ -154,9 +140,6 @@ Firestore Database:
     └── recipe_summaries/         # Arkiv-summaries
         └── {recipeId}
 ```
-
-### **Kostnadsoptimering:**
-TODO
 
 ---
 
@@ -253,247 +236,94 @@ TODO
 - ✅ Filter chips UI integrerat i MinaReceptView
 - ✅ Filter-funktionalitet testad och fungerar
 
+## ✅ **Fas 11: Delning & Export (KLAR)**
+### **11.1 Text-export för enskilt recept (KLAR)**
+- ✅ Dela-knapp i RecipeDetailView
+- ✅ Formatering av recepttext
+- ✅ ShareService implementerad
+- ✅ Native share sheet integration
+- ✅ Feedback till användaren
+
+### **11.2 Text-export för inköpslista (KLAR)**
+- ✅ Uppdaterad ShoppingListViewModel
+- ✅ Smart gruppering av items
+- ✅ Native share sheet
+- ✅ Formatering med checkboxar
+
+### **11.3 Text-export för veckomeny (KLAR)**
+- ✅ Dela-knapp i VeckomenyView
+- ✅ Formatering med emojis
+- ✅ Metadata för varje rätt
+- ✅ Native share sheet
+
+### **11.4 Bild-export för veckomeny (SKIPPAD)**
+- ⏭️ Skjuts upp till senare version
+
+### **11.5 JSON Backup/Export (KLAR)**
+- ✅ ShareService uppdaterad med JSON export/import-logik
+- ✅ ProfileDialog använder ShareService för all delning
+- ✅ Modularitet bevarad
+- ✅ RecipeService har getAllRecipes() metod
+- ✅ Komplett flöde implementerat
+
+### **11.6 Delning från receptlistan (SKIPPAD)**
+- ⏭️ Snabbdelning från RecipeCard
+- ⏭️ Long-press eller swipe-action
+- ⏭️ Använd samma format som 11.1
+
 ---
 
-✅ Fas 11: Delning & Export (KLAR)
-✅ Implementerat:
-11.1 Text-export för enskilt recept (KLAR)
+## 🚧 **Fas 12: Ta emot delningar från andra appar (NÄSTA!)**
 
-✅ Dela-knapp i RecipeDetailView
-✅ Formatering av recepttext
-✅ ShareService implementerad
-✅ Native share sheet integration
-✅ Feedback till användaren
-
-11.2 Text-export för inköpslista (KLAR)
-
-✅ Uppdaterad ShoppingListViewModel
-✅ Smart gruppering av items
-✅ Native share sheet
-✅ Formatering med checkboxar
-
-11.3 Text-export för veckomeny (KLAR)
-
-✅ Dela-knapp i VeckomenyView
-✅ Formatering med emojis
-✅ Metadata för varje rätt
-✅ Native share sheet
-
-11.4 Bild-export för veckomeny (SKIPPAD)
-
-⏭️ Skjuts upp till senare version
-
-11.5 JSON Backup/Export (KLAR)
-
-✅ ShareService uppdaterad med JSON export/import-logik
-✅ ProfileDialog använder ShareService för all delning
-✅ Modularitet bevarad
-✅ RecipeService har getAllRecipes() metod
-✅ Komplett flöde implementerat
-
-11.6 Delning från receptlistan (SKIPPAD)
-
-⏭️ Snabbdelning från RecipeCard
-⏭️ Long-press eller swipe-action
-⏭️ Använd samma format som 11.1
----
-
-## 🐛 **EXTRA: Åtgärda befintliga kända buggar**
-
-### **Information:**
-Innan vi fortsätter med nya funktioner ska vi se över och åtgärda alla kända buggar som finns dokumenterade i projektet. Detta inkluderar:
-- Genomgång av BUGS_TO_FIX.md
-- Kontroll av GitHub Issues
-- Användarrapporterade problem
-- Prestandaproblem eller kraschrapporter
-
-Detta är en viktig kvalitetssäkringsåtgärd för att säkerställa en stabil grund innan vi lägger till mer funktionalitet.
----
-
-# 📥 Fas 12: Ta emot delningar från andra appar (4-5 timmar)
-
-## 🎯 **Mål**
+### **🎯 Mål**
 Användare ska kunna dela recept från sociala medier (Instagram, TikTok, Facebook) direkt till Butlery. Appen tar emot URL, extraherar recepttext via headless WebView, och använder befintlig TextImportViewModel för parsing.
 
-## 🏗️ **Arkitektur - Modulär design**
+### **📋 Implementation steg-för-steg**
 
-```
-1. ShareReceiver (main.dart) → Tar emot delning
-2. ContentDetectorService → Identifierar typ av innehåll  
-3. SocialMediaExtractor → Platform-specifik textextraktion
-4. ReceiveShareView → Preview och användarval
-5. Befintliga import-flöden → Återanvändning av all parsing-logik
-```
-
-## 📋 **Implementation steg-för-steg**
-
-### **12.1 Android Intent Filter & Share Handler (45 min)**
+#### **12.1 Android Intent Filter & Share Handler (45 min)**
 - [ ] Uppdatera AndroidManifest.xml med intent filters
-- [ ] Installera share_handler package (ersätter receive_sharing_intent)
+- [ ] Installera share_handler package
 - [ ] Konfigurera för text/plain och text/html
 - [ ] Test med olika appar
 
-### **12.2 ContentDetectorService (30 min)**
-```dart
-// lib/services/content_detector_service.dart
-// Modulär service för innehållsidentifiering
-class ContentDetectorService {
-  static ContentType detectType(String content);
-  static String? extractUrl(String content);
-  static SourcePlatform? identifyPlatform(String url);
-}
-```
+#### **12.2 ContentDetectorService (30 min)**
 - [ ] Återanvänd recipe detection-logik från TextImportViewModel
 - [ ] URL-pattern matching
 - [ ] Platform-identifiering (Instagram/TikTok/Facebook)
 
-### **12.3 SocialMediaExtractor Service (1.5 timmar)**
-```dart
-// lib/services/social_media_extractor.dart
-// Modulär WebView-baserad extraktion
-class SocialMediaExtractor {
-  // Platform-agnostisk interface
-  Future<ExtractionResult> extractFromUrl(String url);
-  
-  // Platform-specifika implementationer (privata)
-  Future<String?> _extractInstagram(controller);
-  Future<String?> _extractTikTok(controller);
-  Future<String?> _extractFacebook(controller);
-}
-
-// Selector-konfiguration i separat fil för enkel uppdatering
-// lib/config/social_media_selectors.dart
-class SocialMediaSelectors {
-  static const instagramSelectors = [...];
-  static const tiktokSelectors = [...];
-}
-```
+#### **12.3 SocialMediaExtractor Service (1.5 timmar)**
 - [ ] HeadlessInAppWebView implementation
-- [ ] Platform-specifika selektorer (lätt att uppdatera)
+- [ ] Platform-specifika selektorer
 - [ ] Retry-logik och error handling
 - [ ] Timeout-hantering (max 5 sekunder)
 
-### **12.4 ReceiveShareView (45 min)**
+#### **12.4 ReceiveShareView (45 min)**
 - [ ] Använd befintliga AppTheme styles
 - [ ] Loading state med SkeletonLoader
 - [ ] Content preview
 - [ ] Routing till rätt import-flow
-- [ ] Error handling med fallback till manuell kopiering
+- [ ] Error handling med fallback
 
-### **12.5 Integration i main.dart (30 min)**
+#### **12.5 Integration i main.dart (30 min)**
 - [ ] ShareHandler setup
 - [ ] Navigation till ReceiveShareView
 - [ ] Hantera app i bakgrund vs förgrund
 
-### **12.6 Error Tracking & Monitoring (30 min)**
-```dart
-// Automatisk rapportering för underhåll
-class ExtractionAnalytics {
-  static void logSuccess(platform, selectors);
-  static void logFailure(platform, selectors, error);
-  static void generateMonthlyReport();
-}
-```
+#### **12.6 Error Tracking & Monitoring (30 min)**
 - [ ] Logga misslyckade extraktioner
-- [ ] Spara vilka selektorer som användes
 - [ ] Firebase Analytics integration
 
-## 🛡️ **Strategier för minimal underhåll**
-
-### **1. Selector Configuration**
-```dart
-// Enkelt att uppdatera utan att ändra logik
-const platformSelectors = {
-  'instagram': {
-    'primary': ['span[dir="auto"]'],
-    'fallback': ['article div span', '[role="main"] span'],
-    'updated': '2025-06-15' // Spåra när vi senast verifierade
-  }
-};
-```
-
-### **2. Graceful Degradation**
-```dart
-// Alltid ha en plan B
-if (extractedText == null) {
-  return ManualCopyGuide(); // Aldrig lämna användaren stuck
-}
-```
-
-### **3. A/B Testing av selektorer**
-```dart
-// Testa nya selektorer på subset av användare
-if (FeatureFlags.testNewSelectors) {
-  tryExperimentalSelectors();
-}
-```
-
-## 📱 **User Experience**
-
-### **Lyckad extraktion (80% av fallen)**
-1. Dela från Instagram → Butlery
-2. "Hämtar recept..." (2-3 sek)
-3. Preview av extraherat recept
-4. "Fortsätt" → SkrivSjalvReceptView
-
-### **Misslyckad extraktion (20% av fallen)**
-1. Dela från Instagram → Butlery
-2. "Hämtar recept..." (2-3 sek)
-3. "Kunde inte hämta automatiskt"
-4. Guide: "Kopiera recepttexten från inlägget"
-5. Manuell inklistring → TextImportViewModel
-
-## 🔧 **Underhållsplan**
-
-### **Månatlig rutin (2 timmar)**
-1. Kör ExtractionAnalytics rapport
-2. Identifiera trasiga selektorer
-3. Uppdatera selector-konfiguration
-4. Pusha fix (ingen app-uppdatering krävs om vi gör selektorer server-driven)
-
-### **Kvartalsvis (4 timmar)**
-1. Större genomgång av alla plattformar
-2. Uppdatera WebView strategier om nödvändigt
-3. Evaluera om backend-lösning behövs
-
-## ✅ **Definition of Done**
-- [ ] Användare kan dela från Instagram/TikTok/Facebook
-- [ ] 80%+ success rate för publika inlägg
-- [ ] Graceful fallback för misslyckanden
-- [ ] Analytics för framtida underhåll
-- [ ] Modulär kod som är lätt att uppdatera
-- [ ] Använder AppTheme för all styling
-- [ ] Återanvänder befintlig parsing-logik
-
-## 🚀 **Framtida förbättringar**
-- Server-driven selectors (uppdatera utan app release)
-- Backend fallback för svåra fall
-- AI-powered text extraction
-- Caching av extraherade recept
-
-## ⏱️ **Tidsuppskattning**
-- Implementation: 4-5 timmar
-- Testing: 1 timme
-- Totalt: 5-6 timmar för komplett implementation
+**⏱️ Tidsuppskattning: 4-5 timmar**
 
 ---
 
 ## 💾 **Fas 13: Offline-stöd (4-5 timmar)**
 
-### **🎯 Implementation med tydlig synk-strategi:**
-- [ ] **Hive implementation:**
-  - Lokal cache för användarens recept
-  - Separata boxes för recept, bilder, inställningar
-  - TTL (Time To Live) per box-typ
-- [ ] **Synk-flöde:**
-  ```
-  Offline: Ändring → Hive → Flag: "pending_sync"
-  Online: Check pending → Firebase → Clear flag
-  Conflict: Server wins, visa varning
-  ```
-- [ ] Fungera utan internetuppkoppling
-- [ ] Tydlig offline/online-indikator
-- [ ] flutter_cache_manager för bildcache
+### **🎯 Implementation:**
+- [ ] Hive implementation för lokal cache
+- [ ] Synk-strategi mellan Hive och Firebase
+- [ ] Offline/online-indikator
+- [ ] flutter_cache_manager för bilder
 
 ---
 
@@ -511,75 +341,57 @@ if (FeatureFlags.testNewSelectors) {
 ### **🎯 Implementation:**
 - [ ] Uppdatera Recipe-modellen för array av bilder
 - [ ] UI för att lägga till flera bilder
-- [ ] Kamera-integration för direktfotografering
-- [ ] Filväljare för att ladda upp från galleri
+- [ ] Kamera-integration
 - [ ] Bildkarusell i RecipeDetailView
-- [ ] **Optimering:**
-  - Thumbnail-generering
-  - Progressiv uppladdning
-  - Bandbreddshantering
-- [ ] Firebase Storage för flera bilder per recept
-- [ ] Möjlighet att ta bort/ordna om bilder
+- [ ] Optimering och Firebase Storage
 
 ---
 
 ## 🥄 **Fas 16: Portionshantering & Enhetskonvertering (4-5 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] **Portionsskalning:** UI för antal portioner
-- [ ] **Smart parsing:** Använd `super_measurement` package
-- [ ] **Enhetskonvertering:** dl ↔ ml, tsk ↔ msk, etc.
-- [ ] **Robust hantering av "1½ dl" format**
+- [ ] Portionsskalning UI
+- [ ] Smart parsing med super_measurement
+- [ ] Enhetskonvertering (dl ↔ ml, etc.)
 
 ---
 
 ## 🎥 **Fas 17: Video-import (6-8 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] YouTube URL-import i ImportViaUrlView
-- [ ] **Smart API-användning:**
-  - Hämta bara snippet först
-  - "Ladda fullständig beskrivning" on-demand
-  - Hantera rate limits gracefully
-- [ ] Parser för att hitta recept i beskrivningstext
-- [ ] Skicka till FranSocialaMedierView för manuell justering
-- [ ] Spara video-URL som sourceUrl
-- [ ] Visa "Importerat från video" med länk i RecipeDetailView
-- [ ] **Copyright disclaimer:** "Spara endast recept du har rätt att använda privat"
+- [ ] YouTube URL-import
+- [ ] Smart API-användning
+- [ ] Parser för beskrivningstext
+- [ ] Copyright disclaimer
 
 ---
 
 ## 🤝 **Fas 18: Grundläggande social (4-5 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] Offentliga receptlänkar (read-only webb-vy)
-- [ ] "Kopiera recept" från delad länk till egen samling
-- [ ] Grundläggande betygsystem (1-5 stjärnor)
-- [ ] Visa genomsnittsbetyg på recept
-- [ ] Förbered datastruktur för framtida community-features
-- [ ] Delningsstatistik i Analytics
+- [ ] Offentliga receptlänkar
+- [ ] "Kopiera recept" funktion
+- [ ] Betygsystem (1-5 stjärnor)
+- [ ] Delningsstatistik
 
 ---
 
 ## 🔍 **Fas 19: Dark Mode (4-5 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] Utöka AppTheme med dark mode-palett
-- [ ] ThemeMode.system för att följa enhetsinställningar
-- [ ] Manuell toggle i profil/inställningar
-- [ ] Testa alla vyer i båda teman
-- [ ] Särskild hänsyn till bilder och ikoner
-- [ ] Regression-test för färgändringar
+- [ ] Utöka AppTheme med dark mode
+- [ ] ThemeMode.system
+- [ ] Manuell toggle
+- [ ] Testa alla vyer
 
 ---
 
-## ♿ **Fas 20: Accessibility / Tillgänglighet (Löpande)**
+## ♿ **Fas 20: Accessibility (Löpande)**
 
-### **🎯 Implementation integrerad i varje fas:**
-- [ ] Automatisk kontroll efter varje UI-ändring
+### **🎯 Implementation:**
 - [ ] semanticsLabel på alla ikoner
-- [ ] Kontrasttest med flutter_a11y
-- [ ] Minst WCAG AA-standard
+- [ ] Kontrasttest
+- [ ] WCAG AA-standard
 - [ ] Touch targets minst 48x48
 
 ---
@@ -587,152 +399,72 @@ if (FeatureFlags.testNewSelectors) {
 ## 🚀 **Fas 21: Onboarding & Tutorial (2-3 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] Välkomstskärm vid första start
-- [ ] 3-4 slides som visar kärnfunktioner:
-  - Importera recept enkelt
-  - Generera veckomeny smart
-  - Automatisk inköpslista
-- [ ] "Skip" möjlighet
-- [ ] Visa endast första gången (SharedPreferences)
-- [ ] Enkel och visuell design
-- [ ] Ev. mini-tutorial för svårare funktioner
+- [ ] Välkomstskärm
+- [ ] 3-4 slides med kärnfunktioner
+- [ ] Skip-möjlighet
+- [ ] SharedPreferences
 
 ---
 
 ## 📊 **Fas 22: Analytics & Monitoring (3-4 timmar)**
 
-### **🎯 Grundläggande implementation för solo-utvecklare:**
-- [ ] **Firebase Analytics (basics):**
-  - Screen views automatiskt
-  - Key events: recipe_created, menu_generated, recipe_imported
-  - Enkel funnel: Import → Save → Use
-- [ ] **Firebase Crashlytics:**
-  - Automatisk kraschrapportering
-  - Basic error logging
-- [ ] **Performance Monitoring:**
-  - Firestore query performance
-  - Bilduppladdningstider
-- [ ] **Budget-varning:**
-  - Firebase alert vid $20/månad
-  - Monitoring dashboard
+### **🎯 Implementation:**
+- [ ] Firebase Analytics
+- [ ] Crashlytics
+- [ ] Performance Monitoring
+- [ ] Budget-varningar
 
 ---
 
 ## 🔍 **Fas 23: Kostnadsoptimering & Performance (3-4 timmar)**
 
-### **🎯 Firestore-optimeringar:**
-- [ ] **Recipe summaries implementation:**
-  - Skapa `recipe_summaries` collection
-  - Migration script för befintliga recept
-  - Uppdatera RecipeService
-- [ ] **Pagination i alla listvyer:**
-  - 20 recept per "sida"
-  - Infinite scroll
-- [ ] **Selektiva queries:**
-  - `.select(['field1', 'field2'])`
-- [ ] **Kostnadskalkyl:**
-  - Beräkna reads per användarsession
-  - Optimera de dyraste queries
+### **🎯 Implementation:**
+- [ ] Recipe summaries
+- [ ] Pagination
+- [ ] Selektiva queries
+- [ ] Kostnadskalkyl
 
 ---
 
 ## 🏗️ **Fas 24: Kodkvalitet & Refaktorering (6-8 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] **Linter-regler (analysis_options.yaml):**
-  ```yaml
-  - prefer_const_constructors
-  - avoid_print
-  - prefer_single_quotes
-  ```
-- [ ] **Service-uppdelning:** Max ett ansvarsområde per service
-- [ ] **Branch cleanup:** Ta bort gamla feature branches
-- [ ] **TODO-genomgång:** Fixa eller ta bort
-- [ ] **Performance-optimering:**
-  - Widget rebuilds minimering
-  - Lazy loading implementation
-  - Memory leaks kontroll
-  - Build context användning
-- [ ] **Modularitet:**
-  - Bryt ut stora widgets till mindre komponenter
-  - Skapa återanvändbara utility-funktioner
-  - Implementera barrel exports för enklare imports
-  - Separera business logic från UI ännu mer
-- [ ] **Framtidssäkring:**
-  - Abstrakta externa dependencies
-  - Skapa interfaces för services
-  - Förbereda för testning (unit/widget tests)
-  - Dokumentera komplexa funktioner
-- [ ] **Kodstandarder:**
-  - Dart analyzer striktare regler
-  - Konsekvent namngivning
-  - Remove alla TODOs och FIXMEs
-  - Uppdatera deprecated metoder
-- [ ] **Error handling:**
-  - Konsekvent error-hantering överallt
-  - Användaravänliga felmeddelanden
-  - Crash-säker kod
-  - Logging för debugging
+- [ ] Linter-regler
+- [ ] Service-uppdelning
+- [ ] Performance-optimering
+- [ ] Modularitet
+- [ ] Error handling
 
 ---
 
-## 🧪 **Fas 25: Unit Tests för kärnfunktionalitet (2-3 timmar)**
+## 🧪 **Fas 25: Unit Tests (2-3 timmar)**
 
-### **🎯 Fokus på kritiska delar:**
-- [ ] **Validators:** Email, URL, recept-validering
-- [ ] **Text parsing:** Recipe scraper grundtest
-- [ ] **Model serialization:** Recipe to/from JSON
-- [ ] Mål: 50% coverage på services
+### **🎯 Implementation:**
+- [ ] Validators
+- [ ] Text parsing
+- [ ] Model serialization
+- [ ] 50% coverage
 
 ---
 
 ## 📱 **Fas 26: Store Listings & Release Prep (5-6 timmar)**
 
-### **🎯 Implementation (inkl. 2025-krav):**
-- [ ] **iOS Privacy Manifest:**
-  - PrivacyInfo.xcprivacy
-  - Deklarera all dataanvändning
-- [ ] **Play Integrity API:**
-  - Implementation med fallback
-- [ ] **Legal:**
-  - Terms of Service
-  - Privacy Policy  
-  - Copyright disclaimer
-- [ ] **Grafiskt material:**
-  - App-ikon 1024x1024
-  - 5 skärmdumpar per enhet (telefon/surfplatta)
-  - Feature graphic för Play Store
-  - Eventuell promo-video (30 sek)
-- [ ] **Texter:**
-  - Kort beskrivning (80 tecken)
-  - Lång beskrivning (4000 tecken)
-  - Nyckelord för sökning
-  - Versionsinformation
-- [ ] **Metadata:**
-  - Kategori och underkategori
-  - Innehållsklassificering
-  - Sekretess-policy URL
-  - Support-kontakt
-- [ ] **Tekniskt:**
-  - App signing konfiguration
-  - ProGuard rules (Android)
-  - iOS entitlements
+### **🎯 Implementation:**
+- [ ] iOS Privacy Manifest
+- [ ] Play Integrity API
+- [ ] Legal dokument
+- [ ] Grafiskt material
+- [ ] Store metadata
 
 ---
 
 ## 🤖 **Fas 27: AI-Integration (5-8 timmar)**
 
-### **När all grundfunktionalitet är perfekt:**
-- [ ] Auto-kategorisering av recept
-- [ ] Smart menygeneration med AI
-- [ ] Intelligent parsing av recepttext från olika källor
-- [ ] Förslag baserat på användarhistorik
-- [ ] För- och nackdelar med olika AI-lösningar:
-  - **OpenAI API:** Kraftfull men kostar per anrop
-  - **Gemini/Claude API:** Alternativ med olika prissättning
-  - **Lokal AI:** Gratis men kräver mer utveckling
-- [ ] Implementation i TextImportViewModel och FranSocialaMedierView
-- [ ] Fallback om AI-parsing misslyckas
+### **🎯 Implementation:**
+- [ ] Auto-kategorisering
+- [ ] Smart menygeneration
+- [ ] Intelligent parsing
+- [ ] Användarförslag
 
 ---
 
@@ -750,6 +482,7 @@ if (FeatureFlags.testNewSelectors) {
 - ✅ Smooth animations genom hela appen
 - ✅ Skeleton loaders för bättre perceived performance
 - ✅ Avancerad sök- och filterfunktionalitet
+- ✅ Komplett delningsfunktionalitet
 
 ### **📱 Plattformar:**
 - ✅ Android fullt fungerande
@@ -780,7 +513,7 @@ if (FeatureFlags.testNewSelectors) {
 9. **CI/CD pipeline med GitHub Actions** ⭐
 10. **Modern UX med animations och skeletons** ⭐
 11. **Avancerad sök- och filterfunktionalitet** ⭐
-12. **Delningsfunktioner för recept, menyer och listor** ⭐
+12. **Komplett delningsfunktionalitet** ⭐ **(NY!)**
 
 ---
 
@@ -796,49 +529,47 @@ Appen är nu i mycket bra skick:
 - ✅ CI/CD för kvalitetssäkring
 - ✅ Modern UX med smooth animations
 - ✅ Avancerad sök- och filterfunktionalitet
-- ✅ Delningsfunktioner nästan kompletta (90%)
+- ✅ **Komplett delningsfunktionalitet (100%)** **(UPPDATERAT!)**
 
 ---
 
 ## 📊 **Realistiska tidsestimat**
 
 ### **Till MVP (solo-testning):**
-- Fas 11.5 (Slutföra JSON Export): 30-45 min ⏳
-- Fas 11.6 (Delning från receptlistan): 30 min
-- Fas 12 (Ta emot delningar): 4-5 timmar
-- Fas 13 (Offline-stöd): 4-5 timmar
+- Fas 12 (Ta emot delningar): 4-5 timmar ⭐ **(NÄSTA!)**
+- Fas 13 (Offline-stöd): 4-5 timmar ⭐
 - Fas 14 ("Senast tillagad"): 1 timme
 - Fas 15 (Flera bilder): 8-10 timmar
 - Fas 16 (Portions/Enheter): 4-5 timmar
 - Fas 17 (Video-import): 6-8 timmar
 - Fas 18 (Grundläggande social): 4-5 timmar
 
-**Återstående tid till grundläggande MVP: ~37-48 timmar**
+**Återstående tid till grundläggande MVP: ~32-38 timmar**
 
 ### **Kvalitetssäkring & Release:**
 - Fas 19-26: ~30-35 timmar
 
-**Total återstående tid till release-ready: ~67-83 timmar**
+**Total återstående tid till release-ready: ~62-73 timmar**
 
 ---
 
 ## 🎯 **Prioritering framåt:**
 
 ### **Kritiska för MVP:**
-1. **Slutföra Fas 11.5** → 30-45 min ⭐ (NÄSTA!)
-2. **Offline-stöd** → 4-5 timmar ⭐
-3. **Ta emot delningar** → 4-5 timmar
+1. **Ta emot delningar (Fas 12)** → 4-5 timmar ⭐ **(NÄSTA!)**
+2. **Offline-stöd (Fas 13)** → 4-5 timmar ⭐
+3. **"Senast tillagad" (Fas 14)** → 1 timme
 
 ### **Nice-to-have för v1.0:**
-4. **Flera bilder** → 8-10 timmar
-5. **Dark Mode** → 4-5 timmar
-6. **Portions/Enheter** → 4-5 timmar
+4. **Flera bilder (Fas 15)** → 8-10 timmar
+5. **Dark Mode (Fas 19)** → 4-5 timmar
+6. **Portions/Enheter (Fas 16)** → 4-5 timmar
 
 ### **Post-launch:**
-7. **Video-import** → 6-8 timmar
-8. **AI-integration** → 5-8 timmar
-9. **Onboarding** → 2-3 timmar
-10. **Analytics** → 3-4 timmar
+7. **Video-import (Fas 17)** → 6-8 timmar
+8. **AI-integration (Fas 27)** → 5-8 timmar
+9. **Onboarding (Fas 21)** → 2-3 timmar
+10. **Analytics (Fas 22)** → 3-4 timmar
 
 ---
 
@@ -846,7 +577,7 @@ Appen är nu i mycket bra skick:
 
 **Aktiva branches:**
 - `main` - Senaste stabila version
-- Ostadgade ändringar: share_service.dart, pubspec.lock, pubspec.yaml
+- Rekommendation: Gör en git commit för alla overflow-fixar!
 
 ---
 
@@ -859,3 +590,8 @@ Appen är nu i mycket bra skick:
 - **GDPR-compliance** från start
 
 ---
+
+## 🎯 **Nästa session börjar med:**
+1. Git commit för overflow-fixar
+2. Påbörja Fas 12 - Ta emot delningar från andra appar
+3. Fokus på Android Intent Filter implementation först
