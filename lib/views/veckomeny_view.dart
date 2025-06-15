@@ -1,6 +1,7 @@
 // lib/views/veckomeny_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // För SystemNavigator
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart'; // NY IMPORT för ShareResultStatus
 import '../models/recipe.dart';
@@ -90,110 +91,150 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
+  // NY METOD för exit-dialog
+  Future<void> _showExitDialog(BuildContext context) async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Avsluta Butlery?'),
+            content: const Text('Vill du verkligen avsluta appen?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Avbryt'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.errorColor,
+                ),
+                child: const Text('Avsluta'),
+              ),
+            ],
+          ),
+    );
+
+    if (shouldExit == true && context.mounted) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
 
-    return MainLayoutMenu(
-      currentIndex: 2,
-      title: 'Veckomeny',
-      actions: [
-        // NY DELA-KNAPP
-        if (viewModel.hasMenu)
-          IconButton(
-            icon: AppTheme.actionIcon(context, Icons.share),
-            onPressed: _shareMenu,
-            tooltip: 'Dela veckomeny',
-          ),
-
-        // Clear menu button
-        if (viewModel.hasMenu)
-          IconButton(
-            icon: AppTheme.actionIcon(context, Icons.clear),
-            onPressed: _clearMenu,
-            tooltip: 'Rensa meny',
-          ),
-
-        // Error indicator
-        if (viewModel.hasError)
-          IconButton(
-            icon: AppTheme.errorIcon(context),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(viewModel.error!),
-                  action: SnackBarAction(
-                    label: 'Stäng',
-                    onPressed: viewModel.clearError,
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Visa fel',
-          ),
-      ],
-      body: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppTheme.spacingSm),
-            child: Column(
-              children: [
-                // Prompt-input
-                _buildPromptInput(viewModel),
-                SizedBox(height: AppTheme.spacingSmPlus),
-
-                // Generera-knapp
-                _buildGenerateButton(viewModel),
-                AppTheme.mediumGap,
-
-                // Meny-innehåll
-                Expanded(child: _buildMenuContent(viewModel)),
-              ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          _showExitDialog(context);
+        }
+      },
+      child: MainLayoutMenu(
+        currentIndex: 2,
+        title: 'Veckomeny',
+        actions: [
+          // NY DELA-KNAPP
+          if (viewModel.hasMenu)
+            IconButton(
+              icon: AppTheme.actionIcon(context, Icons.share),
+              onPressed: _shareMenu,
+              tooltip: 'Dela veckomeny',
             ),
-          ),
 
-          // Loading overlay
-          if (viewModel.isGenerating)
-            Container(
-              color: Colors.black26,
-              child: Center(
-                child: Container(
-                  padding: AppTheme.cardPadding,
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
-                    borderRadius: AppTheme.largeRadius,
+          // Clear menu button
+          if (viewModel.hasMenu)
+            IconButton(
+              icon: AppTheme.actionIcon(context, Icons.clear),
+              onPressed: _clearMenu,
+              tooltip: 'Rensa meny',
+            ),
+
+          // Error indicator
+          if (viewModel.hasError)
+            IconButton(
+              icon: AppTheme.errorIcon(context),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(viewModel.error!),
+                    action: SnackBarAction(
+                      label: 'Stäng',
+                      onPressed: viewModel.clearError,
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppTheme.mediumLoadingIndicator(),
-                      AppTheme.smallGap,
-                      Text('Genererar meny...', style: AppTheme.subtitleStyle),
-                    ],
+                );
+              },
+              tooltip: 'Visa fel',
+            ),
+        ],
+        body: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(AppTheme.spacingSm),
+              child: Column(
+                children: [
+                  // Prompt-input
+                  _buildPromptInput(viewModel),
+                  SizedBox(height: AppTheme.spacingSmPlus),
+
+                  // Generera-knapp
+                  _buildGenerateButton(viewModel),
+                  AppTheme.mediumGap,
+
+                  // Meny-innehåll
+                  Expanded(child: _buildMenuContent(viewModel)),
+                ],
+              ),
+            ),
+
+            // Loading overlay
+            if (viewModel.isGenerating)
+              Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Container(
+                    padding: AppTheme.cardPadding,
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: AppTheme.largeRadius,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppTheme.mediumLoadingIndicator(),
+                        AppTheme.smallGap,
+                        Text(
+                          'Genererar meny...',
+                          style: AppTheme.subtitleStyle,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
 
-      // Floating action button för inköpslista
-      floatingActionButton:
-          viewModel.hasMenu
-              ? FloatingActionButton.extended(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/inkopslista',
-                    arguments: viewModel.menu,
-                  );
-                },
-                icon: const Icon(Icons.shopping_cart),
-                label: const Text('Till inköpslista'),
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              )
-              : null,
+        // Floating action button för inköpslista
+        floatingActionButton:
+            viewModel.hasMenu
+                ? FloatingActionButton.extended(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/inkopslista',
+                      arguments: viewModel.menu,
+                    );
+                  },
+                  icon: const Icon(Icons.shopping_cart),
+                  label: const Text('Till inköpslista'),
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                )
+                : null,
+      ),
     );
   }
 
