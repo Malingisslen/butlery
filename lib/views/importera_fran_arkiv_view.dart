@@ -89,51 +89,89 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          Padding(
-            padding: EdgeInsets.all(AppTheme.spacingMd),
-            child: Column(
-              children: [
-                // Sökfält
-                AppSearchBar(
-                  hintText: 'Sök i arkiv...',
-                  onChanged: viewModel.updateSearch,
+          Column(
+            children: [
+              // Filter-sektion i en scrollbar container
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight:
+                      MediaQuery.of(context).size.height *
+                      0.35, // Max 35% av skärmhöjden
                 ),
-                SizedBox(height: AppTheme.spacingMd),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(AppTheme.spacingMd),
+                  child: Column(
+                    children: [
+                      // Sökfält
+                      AppSearchBar(
+                        hintText: 'Sök i arkiv...',
+                        onChanged: viewModel.updateSearch,
+                      ),
+                      SizedBox(height: AppTheme.spacingMd),
 
-                // Tagg-filter
-                if (allTags.isNotEmpty) ...[
-                  Wrap(
-                    spacing: AppTheme.spacingSm,
-                    children:
-                        allTags.map((tag) {
-                          return AppTheme.filterChip(
-                            label: tag,
-                            selected: viewModel.selectedTags.contains(tag),
-                            onSelected: () => viewModel.toggleTag(tag),
-                          );
-                        }).toList(),
+                      // Tagg-filter
+                      if (allTags.isNotEmpty) ...[
+                        Wrap(
+                          spacing: AppTheme.spacingSm,
+                          children:
+                              allTags.map((tag) {
+                                return AppTheme.filterChip(
+                                  label: tag,
+                                  selected: viewModel.selectedTags.contains(
+                                    tag,
+                                  ),
+                                  onSelected: () => viewModel.toggleTag(tag),
+                                );
+                              }).toList(),
+                        ),
+                        SizedBox(height: AppTheme.spacingMd),
+                      ],
+
+                      // Tids-filter
+                      _buildTimeFilters(context, viewModel),
+                    ],
                   ),
-                  SizedBox(height: AppTheme.spacingMd),
-                ],
+                ),
+              ),
 
-                // Tids-filter
-                _buildTimeFilters(context, viewModel),
-                SizedBox(height: AppTheme.spacingMd),
+              // Divider mellan filter och innehåll
+              const Divider(height: 1),
 
-                // Sökstatistik
-                if (viewModel.searchQuery.isNotEmpty ||
-                    viewModel.selectedTags.isNotEmpty ||
-                    viewModel.timeFilter != TimeFilter.all)
-                  _buildSearchStats(context, viewModel),
+              // Sökstatistik
+              if (viewModel.searchQuery.isNotEmpty ||
+                  viewModel.selectedTags.isNotEmpty ||
+                  viewModel.timeFilter != TimeFilter.all)
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingMd,
+                    vertical: AppTheme.spacingSm,
+                  ),
+                  child: _buildSearchStats(context, viewModel),
+                ),
 
-                // Recept-lista
-                Expanded(child: _buildRecipeList(context, viewModel)),
-                SizedBox(height: AppTheme.spacingMd),
+              // Recept-lista
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+                  child: _buildRecipeList(context, viewModel),
+                ),
+              ),
 
-                // Import-knappar
-                _buildImportButtons(context, viewModel),
-              ],
-            ),
+              // Import-knappar
+              Container(
+                padding: EdgeInsets.all(AppTheme.spacingMd),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  border: Border(
+                    top: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: _buildImportButtons(context, viewModel),
+              ),
+            ],
           ),
 
           // Loading overlay
@@ -144,7 +182,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                 child: Container(
                   padding: AppTheme.cardPadding,
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: AppTheme.largeRadius,
                   ),
                   child: Column(
@@ -201,28 +239,25 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
-      child: Row(
-        children: [
-          AppTheme.filterIcon(context),
-          SizedBox(width: AppTheme.spacingXs),
-          Text(
-            '${viewModel.filteredRecipes.length} av ${viewModel.archivedRecipes.length} recept',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+    return Row(
+      children: [
+        AppTheme.filterIcon(context),
+        SizedBox(width: AppTheme.spacingXs),
+        Text(
+          '${viewModel.filteredRecipes.length} av ${viewModel.archivedRecipes.length} recept',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const Spacer(),
-          Text(
-            '${viewModel.selectedCount} valda',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w500,
-            ),
+        ),
+        const Spacer(),
+        Text(
+          '${viewModel.selectedCount} valda',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w500,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -273,33 +308,37 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) {
-    return Row(
-      children: [
-        Expanded(
-          child: ActionButton.outlined(
-            label: 'Markera alla',
-            icon: Icons.select_all,
-            onPressed: viewModel.isImporting ? null : viewModel.toggleSelectAll,
+    return SafeArea(
+      top: false,
+      child: Row(
+        children: [
+          Expanded(
+            child: ActionButton.outlined(
+              label: 'Markera alla',
+              icon: Icons.select_all,
+              onPressed:
+                  viewModel.isImporting ? null : viewModel.toggleSelectAll,
+            ),
           ),
-        ),
-        SizedBox(width: AppTheme.spacingSm),
-        Expanded(
-          flex: 2,
-          child: ActionButton.primary(
-            label:
-                viewModel.hasSelection
-                    ? 'Importera valda (${viewModel.selectedCount})'
-                    : 'Importera alla (${viewModel.archivedRecipes.length})',
-            icon: Icons.upload,
-            onPressed:
-                viewModel.isImporting
-                    ? null
-                    : () => _handleImport(context, viewModel),
-            isLoading: viewModel.isImporting,
-            loadingText: 'Importerar...',
+          SizedBox(width: AppTheme.spacingSm),
+          Expanded(
+            flex: 2,
+            child: ActionButton.primary(
+              label:
+                  viewModel.hasSelection
+                      ? 'Importera valda (${viewModel.selectedCount})'
+                      : 'Importera alla (${viewModel.archivedRecipes.length})',
+              icon: Icons.upload,
+              onPressed:
+                  viewModel.isImporting
+                      ? null
+                      : () => _handleImport(context, viewModel),
+              isLoading: viewModel.isImporting,
+              loadingText: 'Importerar...',
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -59,33 +59,42 @@ class ActionButton extends StatelessWidget {
     final effectiveOnPressed = isLoading ? null : onPressed;
     final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
 
-    Widget buttonChild;
-    if (icon != null || isLoading) {
-      buttonChild = Row(
+    // Bygg knappens innehåll med bättre flex-hantering
+    Widget buttonChild = Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal:
+            AppTheme.spacingXs, // Liten padding för att undvika overflow
+      ),
+      child: Row(
         mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Ikon eller loading indicator
           if (isLoading)
-            AppTheme.smallLoadingIndicator(context) // ✅ SEMANTISK LOADING
+            Padding(
+              padding: EdgeInsets.only(right: AppTheme.spacingSm),
+              child: AppTheme.smallLoadingIndicator(context),
+            )
           else if (icon != null)
-            AppTheme.actionIcon(context, icon!), // ✅ SEMANTISK IKON
-          if (icon != null || isLoading) SizedBox(width: AppTheme.spacingSm),
+            Padding(
+              padding: EdgeInsets.only(right: AppTheme.spacingSm),
+              child: AppTheme.actionIcon(context, icon!),
+            ),
+
+          // Text med Flexible för att hantera overflow
           Flexible(
+            fit: isExpanded ? FlexFit.tight : FlexFit.loose,
             child: Text(
               effectiveLabel,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
+              textAlign: isExpanded ? TextAlign.center : TextAlign.start,
             ),
           ),
         ],
-      );
-    } else {
-      buttonChild = Text(
-        effectiveLabel,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-      );
-    }
+      ),
+    );
+
     Widget button;
     switch (style) {
       case ActionButtonStyle.primary:
