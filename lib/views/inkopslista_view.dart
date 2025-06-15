@@ -1,6 +1,7 @@
 // lib/views/inkopslista_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // För SystemNavigator
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -54,29 +55,66 @@ class _InkopslistaViewContent extends StatelessWidget {
     }
   }
 
+  // NY METOD för exit-dialog
+  Future<void> _showExitDialog(BuildContext context) async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Avsluta Butlery?'),
+            content: const Text('Vill du verkligen avsluta appen?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Avbryt'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.errorColor,
+                ),
+                child: const Text('Avsluta'),
+              ),
+            ],
+          ),
+    );
+
+    if (shouldExit == true && context.mounted) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ShoppingListViewModel>();
 
-    return MainLayoutMenu(
-      currentIndex: 3,
-      title: 'Inköpslista',
-      actions: [
-        if (viewModel.hasItems) ...[
-          if (viewModel.checkedCount > 0)
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          _showExitDialog(context);
+        }
+      },
+      child: MainLayoutMenu(
+        currentIndex: 3,
+        title: 'Inköpslista',
+        actions: [
+          if (viewModel.hasItems) ...[
+            if (viewModel.checkedCount > 0)
+              IconButton(
+                icon: AppTheme.actionIcon(context, Icons.clear_all),
+                onPressed: viewModel.clearCheckedItems,
+                tooltip: 'Rensa alla checkade',
+              ),
             IconButton(
-              icon: AppTheme.actionIcon(context, Icons.clear_all),
-              onPressed: viewModel.clearCheckedItems,
-              tooltip: 'Rensa alla checkade',
+              icon: AppTheme.actionIcon(context, Icons.share),
+              onPressed: () => _shareShoppingList(context),
+              tooltip: 'Dela inköpslista',
             ),
-          IconButton(
-            icon: AppTheme.actionIcon(context, Icons.share),
-            onPressed: () => _shareShoppingList(context),
-            tooltip: 'Dela inköpslista',
-          ),
+          ],
         ],
-      ],
-      body: _buildBody(context, viewModel),
+        body: _buildBody(context, viewModel),
+      ),
     );
   }
 

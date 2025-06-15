@@ -1,6 +1,7 @@
 // lib/views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // NY IMPORT för SystemNavigator
 import 'package:provider/provider.dart';
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
@@ -83,217 +84,255 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     });
   }
 
+  // NY METOD för exit-dialog
+  Future<void> _showExitDialog(BuildContext context) async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Avsluta Butlery?'),
+            content: const Text('Vill du verkligen avsluta appen?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Avbryt'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.errorColor,
+                ),
+                child: const Text('Avsluta'),
+              ),
+            ],
+          ),
+    );
+
+    if (shouldExit == true && context.mounted) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch för att lyssna på ViewModel-ändringar
     final viewModel = context.watch<RecipeListViewModel>();
 
-    return MainLayoutMenu(
-      currentIndex: 0,
-      title: 'Mina recept',
-      actions: [
-        // Profil-knapp - alltid först i actions-listan
-        IconButton(
-          icon: Icon(
-            Icons.account_circle,
-            color: Theme.of(context).colorScheme.primary,
-            size: AppTheme.iconSizeNavigation,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          _showExitDialog(context);
+        }
+      },
+      child: MainLayoutMenu(
+        currentIndex: 0,
+        title: 'Mina recept',
+        actions: [
+          // Profil-knapp - alltid först i actions-listan
+          IconButton(
+            icon: Icon(
+              Icons.account_circle,
+              color: Theme.of(context).colorScheme.primary,
+              size: AppTheme.iconSizeNavigation,
+            ),
+            onPressed: () => showProfileDialog(context),
+            tooltip: 'Min profil',
           ),
-          onPressed: () => showProfileDialog(context),
-          tooltip: 'Min profil',
-        ),
 
-        // NY FILTER-KNAPP med indikator för aktiva filter
-        IconButton(
-          icon: Stack(
-            children: [
-              Icon(
-                Icons.filter_list,
-                color:
-                    _showFilters
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurface,
-              ),
-              // Visa en prick om det finns aktiva filter
-              if (viewModel.hasActiveFilters)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
-                      shape: BoxShape.circle,
+          // NY FILTER-KNAPP med indikator för aktiva filter
+          IconButton(
+            icon: Stack(
+              children: [
+                Icon(
+                  Icons.filter_list,
+                  color:
+                      _showFilters
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
+                ),
+                // Visa en prick om det finns aktiva filter
+                if (viewModel.hasActiveFilters)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.error,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
-                ),
-            ],
-          ),
-          onPressed: () {
-            setState(() {
-              _showFilters = !_showFilters;
-            });
-          },
-          tooltip: 'Filtrera',
-        ),
-
-        // Error indicator
-        if (viewModel.hasError)
-          IconButton(
-            icon: AppTheme.errorIcon(context),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(viewModel.error!),
-                  action: SnackBarAction(
-                    label: 'Försök igen',
-                    onPressed: () {
-                      viewModel.clearError();
-                      viewModel.refresh();
-                    },
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Visa fel',
-          ),
-
-        // Sort menu
-        PopupMenuButton<SortCriteria>(
-          icon: Icon(
-            Icons.sort,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          tooltip: 'Sortera',
-          onSelected: _onSortChanged,
-          itemBuilder:
-              (context) => [
-                _buildSortMenuItem(
-                  SortCriteria.title,
-                  'Titel',
-                  Icons.title,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-                _buildSortMenuItem(
-                  SortCriteria.time,
-                  'Tid',
-                  Icons.access_time,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-                _buildSortMenuItem(
-                  SortCriteria.rating,
-                  'Betyg',
-                  Icons.star,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-                _buildSortMenuItem(
-                  SortCriteria.mealType,
-                  'Måltidstyp',
-                  Icons.restaurant,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
               ],
-        ),
-      ],
-      body: Column(
-        children: [
-          // Sökfält
-          Padding(
-            padding: EdgeInsets.all(AppTheme.spacingSmPlus),
-            child: AppSearchBar(
-              controller: _searchController,
-              hintText: 'Sök recept...',
-              onChanged: (_) {}, // ViewModel uppdateras via controller listener
-              onClear: _onSearchCleared,
             ),
+            onPressed: () {
+              setState(() {
+                _showFilters = !_showFilters;
+              });
+            },
+            tooltip: 'Filtrera',
           ),
 
-          // FILTER CHIPS SEKTION - animerad visning
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child:
-                _showFilters
-                    ? Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Tidsfilter
-                          FilterChips(
-                            title: 'Tillagningstid',
-                            options: RecipeFilters.timeFilters,
-                            selectedIds:
-                                viewModel
-                                    .activeTimeFilters, // Ändrat från selectedTimeFilters
-                            onToggle: viewModel.toggleTimeFilter,
-                            scrollable: false,
-                          ),
+          // Error indicator
+          if (viewModel.hasError)
+            IconButton(
+              icon: AppTheme.errorIcon(context),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(viewModel.error!),
+                    action: SnackBarAction(
+                      label: 'Försök igen',
+                      onPressed: () {
+                        viewModel.clearError();
+                        viewModel.refresh();
+                      },
+                    ),
+                  ),
+                );
+              },
+              tooltip: 'Visa fel',
+            ),
 
-                          SizedBox(height: AppTheme.spacingSm),
+          // Sort menu
+          PopupMenuButton<SortCriteria>(
+            icon: Icon(
+              Icons.sort,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            tooltip: 'Sortera',
+            onSelected: _onSortChanged,
+            itemBuilder:
+                (context) => [
+                  _buildSortMenuItem(
+                    SortCriteria.title,
+                    'Titel',
+                    Icons.title,
+                    viewModel.sortCriteria,
+                    viewModel.sortAscending,
+                  ),
+                  _buildSortMenuItem(
+                    SortCriteria.time,
+                    'Tid',
+                    Icons.access_time,
+                    viewModel.sortCriteria,
+                    viewModel.sortAscending,
+                  ),
+                  _buildSortMenuItem(
+                    SortCriteria.rating,
+                    'Betyg',
+                    Icons.star,
+                    viewModel.sortCriteria,
+                    viewModel.sortAscending,
+                  ),
+                  _buildSortMenuItem(
+                    SortCriteria.mealType,
+                    'Måltidstyp',
+                    Icons.restaurant,
+                    viewModel.sortCriteria,
+                    viewModel.sortAscending,
+                  ),
+                ],
+          ),
+        ],
+        body: Column(
+          children: [
+            // Sökfält
+            Padding(
+              padding: EdgeInsets.all(AppTheme.spacingSmPlus),
+              child: AppSearchBar(
+                controller: _searchController,
+                hintText: 'Sök recept...',
+                onChanged:
+                    (_) {}, // ViewModel uppdateras via controller listener
+                onClear: _onSearchCleared,
+              ),
+            ),
 
-                          // Måltidstyp-filter
-                          FilterChips(
-                            title: 'Måltidstyp',
-                            options: RecipeFilters.mealTypeFilters,
-                            selectedIds:
-                                viewModel
-                                    .activeMealTypeFilters, // Ändrat från selectedMealTypeFilters
-                            onToggle: viewModel.toggleMealTypeFilter,
-                            scrollable:
-                                false, // Ändrat till false för att visa alla chips i wrap
-                          ),
-
-                          SizedBox(height: AppTheme.spacingSm),
-
-                          // Betygsfilter
-                          FilterChips(
-                            title: 'Betyg',
-                            options: RecipeFilters.ratingFilters,
-                            selectedIds:
-                                viewModel
-                                    .activeRatingFilters, // Ändrat från selectedRatingFilters
-                            onToggle: viewModel.toggleRatingFilter,
-                            scrollable: false,
-                          ),
-
-                          // Rensa filter-knapp om det finns aktiva filter
-                          if (viewModel.hasActiveFilters)
-                            Padding(
-                              padding: EdgeInsets.all(AppTheme.spacingSmPlus),
-                              child: Center(
-                                child: TextButton.icon(
-                                  onPressed: _clearAllFilters,
-                                  icon: const Icon(Icons.clear),
-                                  label: const Text('Rensa alla filter'),
-                                ),
-                              ),
+            // FILTER CHIPS SEKTION - animerad visning
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child:
+                  _showFilters
+                      ? Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Tidsfilter
+                            FilterChips(
+                              title: 'Tillagningstid',
+                              options: RecipeFilters.timeFilters,
+                              selectedIds:
+                                  viewModel
+                                      .activeTimeFilters, // Ändrat från selectedTimeFilters
+                              onToggle: viewModel.toggleTimeFilter,
+                              scrollable: false,
                             ),
 
-                          SizedBox(height: AppTheme.spacingSm),
-                        ],
-                      ),
-                    )
-                    : const SizedBox.shrink(),
-          ),
+                            SizedBox(height: AppTheme.spacingSm),
 
-          // Huvudinnehåll
-          Expanded(child: _buildContent(viewModel)),
-        ],
+                            // Måltidstyp-filter
+                            FilterChips(
+                              title: 'Måltidstyp',
+                              options: RecipeFilters.mealTypeFilters,
+                              selectedIds:
+                                  viewModel
+                                      .activeMealTypeFilters, // Ändrat från selectedMealTypeFilters
+                              onToggle: viewModel.toggleMealTypeFilter,
+                              scrollable:
+                                  false, // Ändrat till false för att visa alla chips i wrap
+                            ),
+
+                            SizedBox(height: AppTheme.spacingSm),
+
+                            // Betygsfilter
+                            FilterChips(
+                              title: 'Betyg',
+                              options: RecipeFilters.ratingFilters,
+                              selectedIds:
+                                  viewModel
+                                      .activeRatingFilters, // Ändrat från selectedRatingFilters
+                              onToggle: viewModel.toggleRatingFilter,
+                              scrollable: false,
+                            ),
+
+                            // Rensa filter-knapp om det finns aktiva filter
+                            if (viewModel.hasActiveFilters)
+                              Padding(
+                                padding: EdgeInsets.all(AppTheme.spacingSmPlus),
+                                child: Center(
+                                  child: TextButton.icon(
+                                    onPressed: _clearAllFilters,
+                                    icon: const Icon(Icons.clear),
+                                    label: const Text('Rensa alla filter'),
+                                  ),
+                                ),
+                              ),
+
+                            SizedBox(height: AppTheme.spacingSm),
+                          ],
+                        ),
+                      )
+                      : const SizedBox.shrink(),
+            ),
+
+            // Huvudinnehåll
+            Expanded(child: _buildContent(viewModel)),
+          ],
+        ),
       ),
     );
   }
