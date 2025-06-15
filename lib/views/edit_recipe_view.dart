@@ -1,4 +1,5 @@
 // lib/views/edit_recipe_view.dart
+// REFAKTORERAD: Nu följer strikt MVVM - alla controllers hanteras av ViewModel
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +11,7 @@ import '../widgets/cached_recipe_image.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD REDIGERA RECEPT VY MED RECIPEFORMVIEWMODEL OCH SOURCEURL
+/// Redigera recept view - nu med ren MVVM implementation
 class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
@@ -166,33 +167,33 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   ),
                   AppTheme.mediumGap,
 
-                  // Ingredienser
+                  // Ingredienser - REFAKTORERAD!
                   _buildDynamicList(
-                    'Ingrediens',
-                    viewModel.ingredients,
-                    viewModel.updateIngredient,
-                    viewModel.addIngredient,
-                    viewModel.removeIngredient,
+                    label: 'Ingrediens',
+                    controllers: viewModel.ingredientControllers,
+                    onUpdate: viewModel.updateIngredient,
+                    onAdd: viewModel.addIngredient,
+                    onRemove: viewModel.removeIngredient,
                   ),
                   AppTheme.mediumGap,
 
-                  // Instruktioner
+                  // Instruktioner - REFAKTORERAD!
                   _buildDynamicList(
-                    'Instruktion',
-                    viewModel.instructions,
-                    viewModel.updateInstruction,
-                    viewModel.addInstruction,
-                    viewModel.removeInstruction,
+                    label: 'Instruktion',
+                    controllers: viewModel.instructionControllers,
+                    onUpdate: viewModel.updateInstruction,
+                    onAdd: viewModel.addInstruction,
+                    onRemove: viewModel.removeInstruction,
                   ),
                   AppTheme.mediumGap,
 
-                  // Taggar
+                  // Taggar - REFAKTORERAD!
                   _buildDynamicList(
-                    'Tagg',
-                    viewModel.tags,
-                    viewModel.updateTag,
-                    viewModel.addTag,
-                    viewModel.removeTag,
+                    label: 'Tagg',
+                    controllers: viewModel.tagControllers,
+                    onUpdate: viewModel.updateTag,
+                    onAdd: viewModel.addTag,
+                    onRemove: viewModel.removeTag,
                   ),
                   AppTheme.mediumGap,
 
@@ -221,7 +222,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   ),
                   AppTheme.mediumGap,
 
-                  // NY! Source URL-fält
+                  // Source URL-fält
                   TextFormField(
                     initialValue: viewModel.sourceUrl ?? '',
                     decoration: InputDecoration(
@@ -235,8 +236,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     ),
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
-                    validator:
-                        FormValidators.url(), // Validerar URL-format om något anges
+                    validator: FormValidators.url(),
                   ),
                 ],
               ),
@@ -270,21 +270,24 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  Widget _buildDynamicList(
-    String label,
-    List<String> items,
-    Function(int, String) onUpdate,
-    VoidCallback onAdd,
-    Function(int) onRemove,
-  ) {
+  // REFAKTORERAD METOD - Nu helt ren från controller-hantering!
+  Widget _buildDynamicList({
+    required String label,
+    required List<TextEditingController> controllers,
+    required Function(int, String) onUpdate,
+    required VoidCallback onAdd,
+    required Function(int) onRemove,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTheme.formLabelStyle),
         AppTheme.smallGap,
-        ...items.asMap().entries.map((entry) {
+
+        // Bygg fält från controllers som ViewModel tillhandahåller
+        ...controllers.asMap().entries.map((entry) {
           final index = entry.key;
-          final value = entry.value;
+          final controller = entry.value;
 
           return Padding(
             padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
@@ -292,17 +295,17 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               children: [
                 Expanded(
                   child: TextFormField(
-                    key: ValueKey('${label}_$index'),
-                    initialValue: value,
+                    controller: controller,
                     decoration: InputDecoration(
                       hintText: '$label ${index + 1}',
                     ),
-                    onChanged: (newValue) => onUpdate(index, newValue),
                     maxLines: null,
                     keyboardType: TextInputType.multiline,
+                    onChanged: (value) => onUpdate(index, value),
                   ),
                 ),
-                if (value.trim().isNotEmpty || index < items.length - 1)
+                // Visa delete-knapp om det finns mer än ett fält
+                if (controllers.length > 1)
                   IconButton(
                     icon: AppTheme.actionIcon(context, Icons.delete),
                     onPressed: () => onRemove(index),
@@ -311,7 +314,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ),
           );
         }),
-        if (items.isEmpty || items.last.isNotEmpty)
+
+        // Lägg till-knapp om sista fältet inte är tomt eller om listan är tom
+        if (controllers.isEmpty ||
+            (controllers.isNotEmpty && controllers.last.text.isNotEmpty))
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: Text('Lägg till $label'),
