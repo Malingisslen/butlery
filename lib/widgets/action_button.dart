@@ -70,13 +70,22 @@ class ActionButton extends StatelessWidget {
           else if (icon != null)
             AppTheme.actionIcon(context, icon!), // ✅ SEMANTISK IKON
           if (icon != null || isLoading) SizedBox(width: AppTheme.spacingSm),
-          Text(effectiveLabel),
+          Flexible(
+            child: Text(
+              effectiveLabel,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
         ],
       );
     } else {
-      buttonChild = Text(effectiveLabel);
+      buttonChild = Text(
+        effectiveLabel,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      );
     }
-
     Widget button;
     switch (style) {
       case ActionButtonStyle.primary:
