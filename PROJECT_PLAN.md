@@ -5,8 +5,23 @@
 Välkommen tillbaka! Snabbstart-check:
 ✅ Mappstruktur mottagen
 ✅ Projektplan-status: Fas 11.5 - JSON Backup/Export implementation väntar
-✅ Git status: Kör 'git status' i terminalen för att kontrollera
-✅ Nästa steg: Implementera getAllRecipes() i RecipeService för export-funktionen
+✅ Git status: On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   PROJECT_PLAN.md
+        modified:   linux/flutter/generated_plugin_registrant.cc
+        modified:   linux/flutter/generated_plugin_registrant.h
+        modified:   linux/flutter/generated_plugins.cmake
+        modified:   macos/Flutter/GeneratedPluginRegistrant.swift
+        modified:   windows/flutter/generated_plugin_registrant.cc
+        modified:   windows/flutter/generated_plugin_registrant.h
+        modified:   windows/flutter/generated_plugins.cmake
+
+no changes added to commit (use "git add" and/or "git commit -a")
+✅ Nästa steg: Bugfix
 ```
 
 ## 🏗️ **Projektarkitektur**
@@ -240,88 +255,47 @@ TODO
 
 ---
 
-## 🔄 **Fas 11: Delning & Export (PÅGÅENDE - 90% klart)**
+✅ Fas 11: Delning & Export (KLAR)
+✅ Implementerat:
+11.1 Text-export för enskilt recept (KLAR)
 
-### **✅ Implementerat:**
+✅ Dela-knapp i RecipeDetailView
+✅ Formatering av recepttext
+✅ ShareService implementerad
+✅ Native share sheet integration
+✅ Feedback till användaren
 
-**11.1 Text-export för enskilt recept (KLAR)**
-- ✅ Dela-knapp i RecipeDetailView
-- ✅ Formatering av recepttext
-- ✅ ShareService implementerad
-- ✅ Native share sheet integration
-- ✅ Feedback till användaren
+11.2 Text-export för inköpslista (KLAR)
 
-**11.2 Text-export för inköpslista (KLAR)**
-- ✅ Uppdaterad ShoppingListViewModel
-- ✅ Smart gruppering av items
-- ✅ Native share sheet
-- ✅ Formatering med checkboxar
+✅ Uppdaterad ShoppingListViewModel
+✅ Smart gruppering av items
+✅ Native share sheet
+✅ Formatering med checkboxar
 
-**11.3 Text-export för veckomeny (KLAR)**
-- ✅ Dela-knapp i VeckomenyView
-- ✅ Formatering med emojis
-- ✅ Metadata för varje rätt
-- ✅ Native share sheet
+11.3 Text-export för veckomeny (KLAR)
 
-**11.4 Bild-export för veckomeny (SKIPPAD)**
-- ⏭️ Skjuts upp till senare version
+✅ Dela-knapp i VeckomenyView
+✅ Formatering med emojis
+✅ Metadata för varje rätt
+✅ Native share sheet
 
-### **⏳ 11.5 JSON Backup/Export (PÅGÅENDE)**
-- ✅ ShareService uppdaterad med JSON export/import-logik
-- ✅ ProfileDialog använder ShareService för all delning
-- ✅ Modularitet bevarad
-- ⏳ RecipeService behöver getAllRecipes() metod
-- ⏳ Testa komplett flöde
+11.4 Bild-export för veckomeny (SKIPPAD)
 
-**11.6 Delning från receptlistan (PLANERAD)**
-- [ ] Snabbdelning från RecipeCard
-- [ ] Long-press eller swipe-action
-- [ ] Använd samma format som 11.1
+⏭️ Skjuts upp till senare version
 
----
+11.5 JSON Backup/Export (KLAR)
 
-## 📥 **Fas 12: Ta emot delningar från andra appar (4-5 timmar)**
+✅ ShareService uppdaterad med JSON export/import-logik
+✅ ProfileDialog använder ShareService för all delning
+✅ Modularitet bevarad
+✅ RecipeService har getAllRecipes() metod
+✅ Komplett flöde implementerat
 
-### **Implementation:**
-**12.1 Android Intent Filter (1 timme)**
-- [ ] Konfigurera AndroidManifest.xml
-- [ ] Hantera text/plain intents
-- [ ] Hantera text/html intents
-- [ ] URL-hantering
+11.6 Delning från receptlistan (SKIPPAD)
 
-**12.2 iOS Share Extension (1.5 timmar)**
-- [ ] Skapa Share Extension target
-- [ ] Info.plist konfiguration
-- [ ] Hantera olika content types
-
-**12.3 ReceiveShareView (1.5 timmar)**
-- [ ] Ny view för att hantera inkommande data
-- [ ] Identifiera innehållstyp (text/URL/bild)
-- [ ] Preview av innehåll
-- [ ] Routing till rätt import-flow
-
-**12.4 Deep linking setup (30 min)**
-- [ ] App links för Android
-- [ ] Universal links för iOS
-- [ ] Route hantering i main.dart
-
-**12.5 Smart content detection (30 min)**
-- [ ] Identifiera recept i text
-- [ ] Extrahera URLs från delningar
-- [ ] Hantera Instagram/TikTok captions
-- [ ] Felhantering för okänt innehåll
-
-### **Designöverväganden för ReceiveShareView:**
-- Loading state medan innehåll processas
-- Preview av identifierat innehåll
-- Val av import-metod om osäkert
-- Snabb-actions för vanliga källor
-
-### **Exempel på flow:**
-- Instagram delning → ReceiveShareView → Identifiera recept-text → FranSocialaMedierView
-- URL delning → ReceiveShareView → Identifiera URL-typ → ImportViaUrlView
-- Ren text → ReceiveShareView → TextImportViewModel
-
+⏭️ Snabbdelning från RecipeCard
+⏭️ Long-press eller swipe-action
+⏭️ Använd samma format som 11.1
 ---
 
 ## 🐛 **EXTRA: Åtgärda befintliga kända buggar**
@@ -334,6 +308,173 @@ Innan vi fortsätter med nya funktioner ska vi se över och åtgärda alla känd
 - Prestandaproblem eller kraschrapporter
 
 Detta är en viktig kvalitetssäkringsåtgärd för att säkerställa en stabil grund innan vi lägger till mer funktionalitet.
+---
+
+# 📥 Fas 12: Ta emot delningar från andra appar (4-5 timmar)
+
+## 🎯 **Mål**
+Användare ska kunna dela recept från sociala medier (Instagram, TikTok, Facebook) direkt till Butlery. Appen tar emot URL, extraherar recepttext via headless WebView, och använder befintlig TextImportViewModel för parsing.
+
+## 🏗️ **Arkitektur - Modulär design**
+
+```
+1. ShareReceiver (main.dart) → Tar emot delning
+2. ContentDetectorService → Identifierar typ av innehåll  
+3. SocialMediaExtractor → Platform-specifik textextraktion
+4. ReceiveShareView → Preview och användarval
+5. Befintliga import-flöden → Återanvändning av all parsing-logik
+```
+
+## 📋 **Implementation steg-för-steg**
+
+### **12.1 Android Intent Filter & Share Handler (45 min)**
+- [ ] Uppdatera AndroidManifest.xml med intent filters
+- [ ] Installera share_handler package (ersätter receive_sharing_intent)
+- [ ] Konfigurera för text/plain och text/html
+- [ ] Test med olika appar
+
+### **12.2 ContentDetectorService (30 min)**
+```dart
+// lib/services/content_detector_service.dart
+// Modulär service för innehållsidentifiering
+class ContentDetectorService {
+  static ContentType detectType(String content);
+  static String? extractUrl(String content);
+  static SourcePlatform? identifyPlatform(String url);
+}
+```
+- [ ] Återanvänd recipe detection-logik från TextImportViewModel
+- [ ] URL-pattern matching
+- [ ] Platform-identifiering (Instagram/TikTok/Facebook)
+
+### **12.3 SocialMediaExtractor Service (1.5 timmar)**
+```dart
+// lib/services/social_media_extractor.dart
+// Modulär WebView-baserad extraktion
+class SocialMediaExtractor {
+  // Platform-agnostisk interface
+  Future<ExtractionResult> extractFromUrl(String url);
+  
+  // Platform-specifika implementationer (privata)
+  Future<String?> _extractInstagram(controller);
+  Future<String?> _extractTikTok(controller);
+  Future<String?> _extractFacebook(controller);
+}
+
+// Selector-konfiguration i separat fil för enkel uppdatering
+// lib/config/social_media_selectors.dart
+class SocialMediaSelectors {
+  static const instagramSelectors = [...];
+  static const tiktokSelectors = [...];
+}
+```
+- [ ] HeadlessInAppWebView implementation
+- [ ] Platform-specifika selektorer (lätt att uppdatera)
+- [ ] Retry-logik och error handling
+- [ ] Timeout-hantering (max 5 sekunder)
+
+### **12.4 ReceiveShareView (45 min)**
+- [ ] Använd befintliga AppTheme styles
+- [ ] Loading state med SkeletonLoader
+- [ ] Content preview
+- [ ] Routing till rätt import-flow
+- [ ] Error handling med fallback till manuell kopiering
+
+### **12.5 Integration i main.dart (30 min)**
+- [ ] ShareHandler setup
+- [ ] Navigation till ReceiveShareView
+- [ ] Hantera app i bakgrund vs förgrund
+
+### **12.6 Error Tracking & Monitoring (30 min)**
+```dart
+// Automatisk rapportering för underhåll
+class ExtractionAnalytics {
+  static void logSuccess(platform, selectors);
+  static void logFailure(platform, selectors, error);
+  static void generateMonthlyReport();
+}
+```
+- [ ] Logga misslyckade extraktioner
+- [ ] Spara vilka selektorer som användes
+- [ ] Firebase Analytics integration
+
+## 🛡️ **Strategier för minimal underhåll**
+
+### **1. Selector Configuration**
+```dart
+// Enkelt att uppdatera utan att ändra logik
+const platformSelectors = {
+  'instagram': {
+    'primary': ['span[dir="auto"]'],
+    'fallback': ['article div span', '[role="main"] span'],
+    'updated': '2025-06-15' // Spåra när vi senast verifierade
+  }
+};
+```
+
+### **2. Graceful Degradation**
+```dart
+// Alltid ha en plan B
+if (extractedText == null) {
+  return ManualCopyGuide(); // Aldrig lämna användaren stuck
+}
+```
+
+### **3. A/B Testing av selektorer**
+```dart
+// Testa nya selektorer på subset av användare
+if (FeatureFlags.testNewSelectors) {
+  tryExperimentalSelectors();
+}
+```
+
+## 📱 **User Experience**
+
+### **Lyckad extraktion (80% av fallen)**
+1. Dela från Instagram → Butlery
+2. "Hämtar recept..." (2-3 sek)
+3. Preview av extraherat recept
+4. "Fortsätt" → SkrivSjalvReceptView
+
+### **Misslyckad extraktion (20% av fallen)**
+1. Dela från Instagram → Butlery
+2. "Hämtar recept..." (2-3 sek)
+3. "Kunde inte hämta automatiskt"
+4. Guide: "Kopiera recepttexten från inlägget"
+5. Manuell inklistring → TextImportViewModel
+
+## 🔧 **Underhållsplan**
+
+### **Månatlig rutin (2 timmar)**
+1. Kör ExtractionAnalytics rapport
+2. Identifiera trasiga selektorer
+3. Uppdatera selector-konfiguration
+4. Pusha fix (ingen app-uppdatering krävs om vi gör selektorer server-driven)
+
+### **Kvartalsvis (4 timmar)**
+1. Större genomgång av alla plattformar
+2. Uppdatera WebView strategier om nödvändigt
+3. Evaluera om backend-lösning behövs
+
+## ✅ **Definition of Done**
+- [ ] Användare kan dela från Instagram/TikTok/Facebook
+- [ ] 80%+ success rate för publika inlägg
+- [ ] Graceful fallback för misslyckanden
+- [ ] Analytics för framtida underhåll
+- [ ] Modulär kod som är lätt att uppdatera
+- [ ] Använder AppTheme för all styling
+- [ ] Återanvänder befintlig parsing-logik
+
+## 🚀 **Framtida förbättringar**
+- Server-driven selectors (uppdatera utan app release)
+- Backend fallback för svåra fall
+- AI-powered text extraction
+- Caching av extraherade recept
+
+## ⏱️ **Tidsuppskattning**
+- Implementation: 4-5 timmar
+- Testing: 1 timme
+- Totalt: 5-6 timmar för komplett implementation
 
 ---
 
