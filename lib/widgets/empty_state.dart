@@ -62,44 +62,60 @@ class EmptyState extends StatelessWidget {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppTheme.spacingXl), // ✅ 32px från theme
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: AppTheme.iconSizeXXLarge,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
-            Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (subtitle != null) ...[
-              SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
-              Text(
-                subtitle!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // Viktigt för SingleChildScrollView
+            children: [
+              // Flexible wrapping för ikon när det är trångt
+              Flexible(
+                flex: 0,
+                child: Icon(
+                  icon,
+                  size: AppTheme.iconSizeXXLarge,
+                  color: Theme.of(context).colorScheme.outline,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ],
-            if (customAction != null) ...[
-              SizedBox(height: AppTheme.spacingLg), // ✅ 24px från theme
-              customAction!,
-            ] else if (actionLabel != null && onAction != null) ...[
-              SizedBox(height: AppTheme.spacingLg), // ✅ 24px från theme
-              ActionButton.primary(
-                label: actionLabel!,
-                onPressed: onAction,
-                icon: _getActionIcon(),
+              SizedBox(height: AppTheme.spacingMd), // ✅ 16px från theme
+              // Flexible text för att kunna krympa vid behov
+              Flexible(
+                flex: 0,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
+
+              if (subtitle != null) ...[
+                SizedBox(height: AppTheme.spacingSm), // ✅ 8px från theme
+                Flexible(
+                  flex: 0,
+                  child: Text(
+                    subtitle!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+
+              if (customAction != null) ...[
+                SizedBox(height: AppTheme.spacingLg), // ✅ 24px från theme
+                customAction!,
+              ] else if (actionLabel != null && onAction != null) ...[
+                SizedBox(height: AppTheme.spacingLg), // ✅ 24px från theme
+                ActionButton.primary(
+                  label: actionLabel!,
+                  onPressed: onAction,
+                  icon: _getActionIcon(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

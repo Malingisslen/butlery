@@ -171,22 +171,32 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ],
         body: Stack(
           children: [
-            Padding(
-              padding: EdgeInsets.all(AppTheme.spacingSm),
-              child: Column(
-                children: [
-                  // Prompt-input
-                  _buildPromptInput(viewModel),
-                  SizedBox(height: AppTheme.spacingSmPlus),
+            Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(AppTheme.spacingSm),
+                  child: Column(
+                    children: [
+                      // Prompt-input
+                      _buildPromptInput(viewModel),
+                      SizedBox(height: AppTheme.spacingSmPlus),
 
-                  // Generera-knapp
-                  _buildGenerateButton(viewModel),
-                  AppTheme.mediumGap,
-
-                  // Meny-innehåll
-                  Expanded(child: _buildMenuContent(viewModel)),
-                ],
-              ),
+                      // Generera-knapp
+                      _buildGenerateButton(viewModel),
+                      AppTheme.mediumGap,
+                    ],
+                  ),
+                ),
+                // Meny-innehåll
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingSm,
+                    ),
+                    child: _buildMenuContent(viewModel),
+                  ),
+                ),
+              ],
             ),
 
             // Loading overlay
