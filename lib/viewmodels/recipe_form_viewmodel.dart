@@ -1,17 +1,23 @@
 // lib/viewmodels/recipe_form_viewmodel.dart
+// REFAKTORERAD: Nu hanterar ViewModel alla TextEditingControllers via FormFieldsManager
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart'; // För TextEditingController
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
 import '../core/injection.dart';
+import '../core/form/form_fields_manager.dart';
 
 /// ViewModel för recept-formulär (skapa/redigera)
-/// Hanterar all formulärlogik och validering
-/// NU MED SOURCEURL-STÖD OCH TEMPLATE-FUNKTIONALITET!
+/// Nu med fullständig controller-hantering enligt MVVM
 class RecipeFormViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
   final _uuid = const Uuid();
+
+  // FormFieldsManagers för dynamiska fält
+  late final FormFieldsManager _ingredientsManager;
+  late final FormFieldsManager _instructionsManager;
+  late final FormFieldsManager _tagsManager;
 
   // State
   Recipe? _originalRecipe;
@@ -26,7 +32,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   int? _timeMinutes;
   double? _rating;
   String? _imageUrl;
-  String? _sourceUrl; // NY! Käll-URL för receptet
+  String? _sourceUrl;
   List<String> _ingredients = [''];
   List<String> _instructions = [''];
   List<String> _tags = [''];
@@ -44,8 +50,14 @@ class RecipeFormViewModel extends ChangeNotifier {
   RecipeFormViewModel({
     RecipeService? recipeService,
     Recipe? initialRecipe,
-    bool isTemplate = false, // NY parameter!
+    bool isTemplate = false,
   }) : _recipeService = recipeService ?? sl<RecipeService>() {
+    // Initiera FormFieldsManagers UTAN callbacks - håll det enkelt!
+    _ingredientsManager = FormFieldsManager();
+    _instructionsManager = FormFieldsManager();
+    _tagsManager = FormFieldsManager();
+
+    // Ladda initial data om det finns
     if (initialRecipe != null) {
       if (isTemplate) {
         loadRecipeAsTemplate(initialRecipe);
@@ -69,10 +81,20 @@ class RecipeFormViewModel extends ChangeNotifier {
   int? get timeMinutes => _timeMinutes;
   double? get rating => _rating;
   String? get imageUrl => _imageUrl;
-  String? get sourceUrl => _sourceUrl; // NY getter!
+  String? get sourceUrl => _sourceUrl;
   List<String> get ingredients => _ingredients;
   List<String> get instructions => _instructions;
   List<String> get tags => _tags;
+
+  // NY! Controller getters för Views
+  List<TextEditingController> get ingredientControllers =>
+      _ingredientsManager.getControllers(_ingredients);
+
+  List<TextEditingController> get instructionControllers =>
+      _instructionsManager.getControllers(_instructions);
+
+  List<TextEditingController> get tagControllers =>
+      _tagsManager.getControllers(_tags);
 
   // Validation
   bool get isValid =>
@@ -119,13 +141,12 @@ class RecipeFormViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // NY! Setter för sourceUrl
   void setSourceUrl(String value) {
     _sourceUrl = value.trim().isEmpty ? null : value.trim();
     notifyListeners();
   }
 
-  // ===== LIST OPERATIONS =====
+  // ===== LIST OPERATIONS - REFAKTORERADE =====
 
   void updateIngredient(int index, String value) {
     if (index >= 0 && index < _ingredients.length) {
@@ -138,6 +159,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       // Ta bort tomma rader (utom sista)
       else if (value.trim().isEmpty && index < _ingredients.length - 1) {
         _ingredients.removeAt(index);
+        _ingredientsManager.removeController(index);
       }
 
       notifyListeners();
@@ -146,12 +168,18 @@ class RecipeFormViewModel extends ChangeNotifier {
 
   void addIngredient() {
     _ingredients.add('');
+    _ingredientsManager.addController();
     notifyListeners();
   }
 
   void removeIngredient(int index) {
     if (_ingredients.length > 1 && index >= 0 && index < _ingredients.length) {
       _ingredients.removeAt(index);
+      _ingredientsManager.removeController(index);
+      // Säkerställ att vi alltid har minst ett tomt fält
+      if (_ingredients.isEmpty) {
+        _ingredients.add('');
+      }
       notifyListeners();
     }
   }
@@ -159,17 +187,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   void updateInstruction(int index, String value) {
     if (index >= 0 && index < _instructions.length) {
       _instructions[index] = value;
-
-      // Auto-add ny rad om sista fältet fylls i
-      if (index == _instructions.length - 1 && value.trim().isNotEmpty) {
-        _instructions.add('');
-      }
-      // Ta bort tomma rader (utom sista)
-      else if (value.trim().isEmpty && index < _instructions.length - 1) {
-        _instructions.removeAt(index);
-      }
-
-      notifyListeners();
+      // Behövs inte här eftersom FormFieldsManager hanterar detta via callback
     }
   }
 
@@ -183,6 +201,11 @@ class RecipeFormViewModel extends ChangeNotifier {
         index >= 0 &&
         index < _instructions.length) {
       _instructions.removeAt(index);
+      _instructionsManager.removeController(index);
+      // Säkerställ att vi alltid har minst ett tomt fält
+      if (_instructions.isEmpty) {
+        _instructions.add('');
+      }
       notifyListeners();
     }
   }
@@ -190,17 +213,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   void updateTag(int index, String value) {
     if (index >= 0 && index < _tags.length) {
       _tags[index] = value;
-
-      // Auto-add ny rad om sista fältet fylls i
-      if (index == _tags.length - 1 && value.trim().isNotEmpty) {
-        _tags.add('');
-      }
-      // Ta bort tomma rader (utom sista)
-      else if (value.trim().isEmpty && index < _tags.length - 1) {
-        _tags.removeAt(index);
-      }
-
-      notifyListeners();
+      // Behövs inte här eftersom FormFieldsManager hanterar detta via callback
     }
   }
 
@@ -212,6 +225,11 @@ class RecipeFormViewModel extends ChangeNotifier {
   void removeTag(int index) {
     if (_tags.length > 1 && index >= 0 && index < _tags.length) {
       _tags.removeAt(index);
+      _tagsManager.removeController(index);
+      // Säkerställ att vi alltid har minst ett tomt fält
+      if (_tags.isEmpty) {
+        _tags.add('');
+      }
       notifyListeners();
     }
   }
@@ -228,7 +246,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     _timeMinutes = recipe.timeMinutes;
     _rating = recipe.rating;
     _imageUrl = recipe.imageUrl;
-    _sourceUrl = recipe.sourceUrl; // NY! Ladda sourceUrl
+    _sourceUrl = recipe.sourceUrl;
     _ingredients = [...recipe.ingredients, ''];
     _instructions = [...recipe.instructions, ''];
     _tags = [...(recipe.tags ?? []), ''];
@@ -236,7 +254,6 @@ class RecipeFormViewModel extends ChangeNotifier {
   }
 
   /// Ladda recept som template (för import/parse)
-  /// Skillnaden är att _originalRecipe INTE sätts, så det blir ett nytt recept
   void loadRecipeAsTemplate(Recipe recipe) {
     // Sätt INTE _originalRecipe - detta håller isEditMode = false
     _title = recipe.title;
@@ -283,7 +300,7 @@ class RecipeFormViewModel extends ChangeNotifier {
         tags: _tags.map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
         rating: _rating,
         imageUrl: _imageUrl,
-        sourceUrl: _sourceUrl, // NY! Inkludera sourceUrl när vi sparar
+        sourceUrl: _sourceUrl,
       );
 
       RecipeOperationResult result;
@@ -332,11 +349,17 @@ class RecipeFormViewModel extends ChangeNotifier {
     _timeMinutes = null;
     _rating = null;
     _imageUrl = null;
-    _sourceUrl = null; // NY! Rensa sourceUrl också
+    _sourceUrl = null;
     _ingredients = [''];
     _instructions = [''];
     _tags = [''];
     _error = null;
+
+    // Återställ managers
+    _ingredientsManager.reset();
+    _instructionsManager.reset();
+    _tagsManager.reset();
+
     notifyListeners();
   }
 
@@ -350,5 +373,14 @@ class RecipeFormViewModel extends ChangeNotifier {
   void _setError(String message) {
     _error = message;
     notifyListeners();
+  }
+
+  // NY! Dispose-metod för att rensa upp FormFieldsManagers
+  @override
+  void dispose() {
+    _ingredientsManager.dispose();
+    _instructionsManager.dispose();
+    _tagsManager.dispose();
+    super.dispose();
   }
 }

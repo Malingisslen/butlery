@@ -1,4 +1,5 @@
 // lib/views/skriv_sjalv_recept_view.dart
+// REFAKTORERAD: Nu följer strikt MVVM - alla controllers hanteras av ViewModel
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,15 +10,15 @@ import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD VY MED RECIPEFORMVIEWMODEL
+/// Skapa nytt recept view - nu med ren MVVM implementation
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
-  final bool isTemplate; // NY parameter för att indikera om det är en import
+  final bool isTemplate;
 
   const SkrivSjalvReceptView({
     super.key,
     this.initialRecipe,
-    this.isTemplate = false, // Default false för vanliga fall
+    this.isTemplate = false,
   });
 
   @override
@@ -27,7 +28,7 @@ class SkrivSjalvReceptView extends StatelessWidget {
           (_) => RecipeFormViewModel(
             recipeService: sl(),
             initialRecipe: initialRecipe,
-            isTemplate: isTemplate, // Skicka vidare isTemplate
+            isTemplate: isTemplate,
           ),
       child: const _SkrivSjalvReceptViewContent(),
     );
@@ -161,33 +162,33 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // Ingredienser
+                  // Ingredienser - REFAKTORERAD!
                   _buildDynamicList(
-                    'Ingrediens',
-                    viewModel.ingredients,
-                    viewModel.updateIngredient,
-                    viewModel.addIngredient,
-                    viewModel.removeIngredient,
+                    label: 'Ingrediens',
+                    controllers: viewModel.ingredientControllers,
+                    onUpdate: viewModel.updateIngredient,
+                    onAdd: viewModel.addIngredient,
+                    onRemove: viewModel.removeIngredient,
                   ),
                   AppTheme.mediumGap,
 
-                  // Instruktioner
+                  // Instruktioner - REFAKTORERAD!
                   _buildDynamicList(
-                    'Instruktion',
-                    viewModel.instructions,
-                    viewModel.updateInstruction,
-                    viewModel.addInstruction,
-                    viewModel.removeInstruction,
+                    label: 'Instruktion',
+                    controllers: viewModel.instructionControllers,
+                    onUpdate: viewModel.updateInstruction,
+                    onAdd: viewModel.addInstruction,
+                    onRemove: viewModel.removeInstruction,
                   ),
                   AppTheme.mediumGap,
 
-                  // Taggar
+                  // Taggar - REFAKTORERAD!
                   _buildDynamicList(
-                    'Tagg',
-                    viewModel.tags,
-                    viewModel.updateTag,
-                    viewModel.addTag,
-                    viewModel.removeTag,
+                    label: 'Tagg',
+                    controllers: viewModel.tagControllers,
+                    onUpdate: viewModel.updateTag,
+                    onAdd: viewModel.addTag,
+                    onRemove: viewModel.removeTag,
                   ),
                   AppTheme.mediumGap,
 
@@ -216,7 +217,7 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // NY! Source URL-fält
+                  // Source URL-fält
                   TextFormField(
                     initialValue: viewModel.sourceUrl ?? '',
                     decoration: InputDecoration(
@@ -231,8 +232,7 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
-                    validator:
-                        FormValidators.url(), // Validerar URL-format om något anges
+                    validator: FormValidators.url(),
                   ),
                 ],
               ),
@@ -277,21 +277,24 @@ class _SkrivSjalvReceptViewContentState
     );
   }
 
-  Widget _buildDynamicList(
-    String label,
-    List<String> items,
-    Function(int, String) onUpdate,
-    VoidCallback onAdd,
-    Function(int) onRemove,
-  ) {
+  // REFAKTORERAD METOD - Nu helt ren från controller-hantering!
+  Widget _buildDynamicList({
+    required String label,
+    required List<TextEditingController> controllers,
+    required Function(int, String) onUpdate,
+    required VoidCallback onAdd,
+    required Function(int) onRemove,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTheme.formLabelStyle),
         AppTheme.smallGap,
-        ...items.asMap().entries.map((entry) {
+
+        // Bygg fält från controllers som ViewModel tillhandahåller
+        ...controllers.asMap().entries.map((entry) {
           final index = entry.key;
-          final value = entry.value;
+          final controller = entry.value;
 
           return Padding(
             padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
@@ -299,16 +302,20 @@ class _SkrivSjalvReceptViewContentState
               children: [
                 Expanded(
                   child: TextFormField(
-                    initialValue: value,
+                    controller: controller,
                     decoration: InputDecoration(
                       hintText: '$label ${index + 1}',
                     ),
                     style: Theme.of(context).textTheme.bodyMedium,
                     textInputAction: TextInputAction.next,
-                    onChanged: (newValue) => onUpdate(index, newValue),
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    // VIKTIGT: onChanged som i originalet!
+                    onChanged: (value) => onUpdate(index, value),
                   ),
                 ),
-                if (items.length > 1)
+                // Visa delete-knapp om det finns mer än ett fält
+                if (controllers.length > 1)
                   IconButton(
                     icon: AppTheme.actionIcon(context, Icons.delete),
                     onPressed: () => onRemove(index),
@@ -317,7 +324,10 @@ class _SkrivSjalvReceptViewContentState
             ),
           );
         }),
-        if (items.isEmpty || items.last.isNotEmpty)
+
+        // Lägg till-knapp om sista fältet inte är tomt eller om listan är tom
+        if (controllers.isEmpty ||
+            (controllers.isNotEmpty && controllers.last.text.isNotEmpty))
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: Text('Lägg till $label'),
