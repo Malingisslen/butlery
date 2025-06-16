@@ -1,12 +1,16 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 // Firebase-kärna + Firestore + Auth
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
+
+// Share handling
+import 'package:share_handler/share_handler.dart';
 
 // Dependency Injection
 import 'core/injection.dart';
@@ -30,6 +34,7 @@ import 'views/inkopslista_view.dart' as inkop;
 import 'views/importera_fran_arkiv_view.dart';
 import 'views/photo_import_view.dart';
 import 'views/import_via_url_view.dart';
+import 'views/receive_share_view.dart'; // NY IMPORT
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
@@ -88,12 +93,95 @@ Future<void> main() async {
   runApp(const ButleryApp());
 }
 
-class ButleryApp extends StatelessWidget {
+class ButleryApp extends StatefulWidget {
   const ButleryApp({super.key});
+
+  @override
+  State<ButleryApp> createState() => _ButleryAppState();
+}
+
+class _ButleryAppState extends State<ButleryApp> {
+  // Global key för navigation
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  // Stream subscription för delningar
+  late StreamSubscription<SharedMedia> _shareSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initShareHandler();
+  }
+
+  /// Initierar share handler för att ta emot delningar från andra appar
+  Future<void> _initShareHandler() async {
+    debugPrint('🔄 Initierar share handler...');
+
+    // Lyssna på delningar när appen är öppen
+    _shareSubscription = ShareHandler.instance.sharedMediaStream.listen(
+      (SharedMedia media) {
+        debugPrint('📥 Mottog delning (app öppen): ${media.content}');
+        _handleSharedMedia(media);
+      },
+      onError: (error) {
+        debugPrint('❌ Share handler stream error: $error');
+      },
+    );
+
+    // Hantera delning som startade appen
+    try {
+      final initialMedia = await ShareHandler.instance.getInitialSharedMedia();
+      if (initialMedia != null) {
+        debugPrint('📥 Mottog delning (app startad): ${initialMedia.content}');
+        // Vänta lite så navigation är redo
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _handleSharedMedia(initialMedia);
+        });
+      }
+    } catch (e) {
+      debugPrint('⚠️ Kunde inte hämta initial shared media: $e');
+    }
+  }
+
+  /// Hanterar mottagen delning
+  void _handleSharedMedia(SharedMedia media) {
+    // Kontrollera om vi har innehåll
+    if (media.content == null || media.content!.isEmpty) {
+      debugPrint('⚠️ Tom delning mottagen');
+      return;
+    }
+
+    // Kontrollera om användaren är inloggad
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('⚠️ Användare ej inloggad - kan inte hantera delning');
+      // TODO: Visa meddelande till användaren
+      return;
+    }
+
+    // Navigera till ReceiveShareView
+    debugPrint(
+      '🚀 Navigerar till /receiveShare med innehåll: ${media.content}',
+    );
+    _navigatorKey.currentState?.pushNamed(
+      '/receiveShare',
+      arguments: {
+        'content': media.content,
+        'type': 'text', // Ändrat från SharedMediaType
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _shareSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey, // Viktigt för global navigation
       title: 'Butlery',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
@@ -174,6 +262,20 @@ class ButleryApp extends StatelessWidget {
                 builder: (_) => EditRecipeView(recipe: recipe),
               );
 
+            // NY ROUTE för att ta emot delningar
+            case '/receiveShare':
+              final args = settings.arguments as Map<String, dynamic>?;
+              if (args == null) {
+                return _errorRoute('Delningsdata saknas');
+              }
+              return _route(
+                ReceiveShareView(
+                  content: args['content'] as String,
+                  type: args['type'] as String,
+                ),
+                settings,
+              );
+
             default:
               return _errorRoute('Okänd rutt: ${settings.name}');
           }
@@ -206,7 +308,9 @@ class ButleryApp extends StatelessWidget {
         routeName.contains('Import') ||
         routeName == '/skrivSjalv' ||
         routeName == '/franSocialaMedier' ||
-        routeName == '/photoImport') {
+        routeName == '/photoImport' ||
+        routeName == '/receiveShare') {
+      // Lagt till receiveShare här
       return PageRouteBuilder(
         settings: settings,
         pageBuilder: (context, animation, secondaryAnimation) => page,
