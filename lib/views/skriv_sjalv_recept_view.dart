@@ -209,11 +209,18 @@ class _SkrivSjalvReceptViewContentState
                   // Bild-URL
                   TextFormField(
                     initialValue: viewModel.imageUrl ?? '',
-                    decoration: const InputDecoration(labelText: 'Bild-URL'),
+                    decoration: const InputDecoration(
+                      labelText: 'Bild-URL',
+                      hintText: 'Valfritt: länk till bild',
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setImageUrl,
-                    validator: FormValidators.url(),
+                    validator: (value) {
+                      // Gör URL-validering valfri - bara validera om fältet har innehåll
+                      if (value == null || value.isEmpty) return null;
+                      return FormValidators.url()(value);
+                    },
                   ),
                   AppTheme.mediumGap,
 
@@ -222,8 +229,11 @@ class _SkrivSjalvReceptViewContentState
                     initialValue: viewModel.sourceUrl ?? '',
                     decoration: InputDecoration(
                       labelText: 'Källa (URL)',
-                      hintText: 'https://exempel.com/recept',
-                      helperText: 'Länk till originalreceptet',
+                      hintText: 'Valfritt: länk till originalreceptet',
+                      helperText:
+                          viewModel.sourceUrl == 'Delad från annan app'
+                              ? 'Importerat från delning'
+                              : 'Länk till originalreceptet',
                       prefixIcon: Icon(
                         Icons.link,
                         size: AppTheme.iconSizeAction,
@@ -232,7 +242,16 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
-                    validator: FormValidators.url(),
+                    validator: (value) {
+                      // Gör URL-validering valfri - bara validera om fältet har innehåll
+                      if (value == null || value.isEmpty) return null;
+                      // Tillåt även "Delad från annan app" och liknande texter
+                      if (value.startsWith('Delad från') ||
+                          value.startsWith('Importerad från')) {
+                        return null;
+                      }
+                      return FormValidators.url()(value);
+                    },
                   ),
                 ],
               ),
