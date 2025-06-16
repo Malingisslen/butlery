@@ -52,7 +52,12 @@ dependencies:
   share_plus: ^7.2.2                  # Native delning via share sheet
   file_picker: ^8.0.0                 # Välj filer för import
   path_provider: ^2.1.2               # Hitta temp-mapp för export
+  share_handler: ^0.0.19              # Ta emot delningar från andra appar (NY!)
   
+  # ==================== WEB EXTRACTION ====================
+  
+  flutter_inappwebview: ^6.0.0        # Headless WebView för social media extraktion (NY!)
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
