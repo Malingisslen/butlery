@@ -34,6 +34,9 @@ class SocialMediaExtractor {
   // WebView controller
   HeadlessInAppWebView? _headlessWebView;
 
+  // Flag för att förhindra dubbel cleanup
+  bool _isDisposed = false;
+
   // Timeout för extraktion
   static const Duration _extractionTimeout = Duration(seconds: 10);
 
@@ -61,6 +64,9 @@ class SocialMediaExtractor {
   /// Extraherar text från URL
   Future<ExtractionResult> extractFromUrl(String url) async {
     debugPrint('🌐 Startar extraktion från: $url');
+
+    // Återställ disposed flag för ny extraktion
+    _isDisposed = false;
 
     // Konvertera Instagram-länkar till webb-URL:er
     String webUrl = url;
@@ -102,9 +108,9 @@ class SocialMediaExtractor {
     int loadCount = 0; // Räkna antal laddningar
 
     // Sätt timeout
-    Timer? timeoutTimer;
+    late final Timer timeoutTimer;
     timeoutTimer = Timer(_extractionTimeout, () {
-      if (!completer.isCompleted) {
+      if (!completer.isCompleted && !_isDisposed) {
         completer.complete(
           ExtractionResult(
             success: false,
@@ -112,7 +118,7 @@ class SocialMediaExtractor {
                 'Timeout: Kunde inte ladda sidan inom ${_extractionTimeout.inSeconds} sekunder',
           ),
         );
-        _cleanup();
+        _safeCleanup();
       }
     });
 
@@ -125,8 +131,14 @@ class SocialMediaExtractor {
           javaScriptEnabled: true,
           // Blockera redirects till app-länkar
           useShouldOverrideUrlLoading: true,
+          // Säkerhetsinställningar för att undvika krascher
+          domStorageEnabled: true,
+          databaseEnabled: false,
+          clearCache: true,
         ),
         onProgressChanged: (controller, progress) {
+          if (_isDisposed) return;
+
           debugPrint('📊 Laddning: $progress%');
 
           // När sidan är helt laddad och vi inte har extraherat ännu
@@ -134,8 +146,10 @@ class SocialMediaExtractor {
             hasExtracted = true;
 
             // Extrahera efter kort fördröjning
-            Future.delayed(const Duration(seconds: 3), () async {
-              if (!completer.isCompleted && _headlessWebView != null) {
+            Future.delayed(const Duration(seconds: 2), () async {
+              if (!completer.isCompleted &&
+                  !_isDisposed &&
+                  _headlessWebView != null) {
                 try {
                   debugPrint('🔍 Extraherar innehåll...');
 
@@ -146,9 +160,9 @@ class SocialMediaExtractor {
                   );
 
                   // Avbryt timeout
-                  timeoutTimer?.cancel();
+                  timeoutTimer.cancel();
 
-                  if (!completer.isCompleted) {
+                  if (!completer.isCompleted && !_isDisposed) {
                     if (extractedText != null && extractedText.isNotEmpty) {
                       completer.complete(
                         ExtractionResult(
@@ -171,7 +185,9 @@ class SocialMediaExtractor {
                     }
                   }
 
-                  _cleanup();
+                  // Vänta lite innan cleanup för att undvika krasch
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  _safeCleanup();
                 } catch (e) {
                   debugPrint('❌ Fel vid extraktion: $e');
                   if (!completer.isCompleted) {
@@ -182,7 +198,7 @@ class SocialMediaExtractor {
                       ),
                     );
                   }
-                  _cleanup();
+                  _safeCleanup();
                 }
               }
             });
@@ -214,19 +230,23 @@ class SocialMediaExtractor {
           return NavigationActionPolicy.ALLOW;
         },
         onLoadStop: (controller, url) async {
+          if (_isDisposed) return;
+
           loadCount++;
           debugPrint('✅ Sida laddad (gång $loadCount): $url');
 
           // Ignorera instagram:// URL:er
-          if (url.toString().startsWith('instagram://')) {
+          if (url != null && url.toString().startsWith('instagram://')) {
             debugPrint('⚠️ Ignorerar Instagram app URL');
             return;
           }
         },
         onReceivedError: (controller, request, error) {
+          if (_isDisposed) return;
+
           debugPrint('❌ Laddningsfel: ${error.description}');
 
-          timeoutTimer?.cancel();
+          timeoutTimer.cancel();
 
           if (!completer.isCompleted) {
             completer.complete(
@@ -237,7 +257,11 @@ class SocialMediaExtractor {
             );
           }
 
-          _cleanup();
+          _safeCleanup();
+        },
+        onConsoleMessage: (controller, consoleMessage) {
+          // Log JavaScript console messages för debugging
+          debugPrint('CONSOLE: ${consoleMessage.message}');
         },
       );
 
@@ -256,7 +280,7 @@ class SocialMediaExtractor {
         );
       }
 
-      _cleanup();
+      _safeCleanup();
     }
 
     return completer.future;
@@ -267,6 +291,8 @@ class SocialMediaExtractor {
     InAppWebViewController controller,
     SourcePlatform platform,
   ) async {
+    if (_isDisposed) return null;
+
     switch (platform) {
       case SourcePlatform.instagram:
         return _extractInstagram(controller);
@@ -281,6 +307,8 @@ class SocialMediaExtractor {
 
   /// Instagram-specifik extraktion
   Future<String?> _extractInstagram(InAppWebViewController controller) async {
+    if (_isDisposed) return null;
+
     debugPrint('📸 Extraherar från Instagram...');
 
     // Steg 1: Klicka på "mer" knappen för att expandera all text
@@ -307,25 +335,8 @@ class SocialMediaExtractor {
             }
             
             if (merButton) {
-              // Simulera ett riktigt klick med mouse events
-              const clickEvent = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-              });
-              merButton.dispatchEvent(clickEvent);
-              
-              // Försök också med touch event (för mobil)
-              const touchEvent = new TouchEvent('touchstart', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-              });
-              merButton.dispatchEvent(touchEvent);
-              
-              // Och direkt click
+              // Simulera ett riktigt klick
               merButton.click();
-              
               console.log('Klickade på mer-knappen');
               return true;
             }
@@ -342,11 +353,13 @@ class SocialMediaExtractor {
 
       debugPrint('Klick resultat: $clickResult');
 
-      // Vänta längre för att texten ska expandera helt
-      await Future.delayed(const Duration(seconds: 3));
+      // Vänta för att texten ska expandera
+      await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
       debugPrint('⚠️ Kunde inte klicka på mer-knappen: $e');
     }
+
+    if (_isDisposed) return null;
 
     // Steg 2: Extrahera all text efter expansion
     try {
@@ -360,9 +373,9 @@ class SocialMediaExtractor {
               const text = h1.textContent || '';
               // Kolla om det är recepttext (innehåller ingredienser)
               if (text.length > 200 && 
-                  (text.includes('jäst') || 
-                   text.includes('mjöl') || 
-                   text.includes('Recept') ||
+                  (text.toLowerCase().includes('jäst') || 
+                   text.toLowerCase().includes('mjöl') || 
+                   text.toLowerCase().includes('recept') ||
                    text.includes('dl ') ||
                    text.includes('msk '))) {
                 console.log('Hittade recept i h1:', text.substring(0, 100) + '...');
@@ -401,7 +414,9 @@ class SocialMediaExtractor {
             
             for (const line of lines) {
               // Börja när vi hittar receptets början
-              if (line.includes('Här kommer') || inCaption) {
+              if (line.includes('Här kommer') || 
+                  line.toLowerCase().includes('recept') || 
+                  inCaption) {
                 inCaption = true;
                 captionText += line + ' ';
                 
@@ -431,7 +446,7 @@ class SocialMediaExtractor {
         final extractedText = result.toString();
         debugPrint('✅ Instagram-text hittad!');
         debugPrint('📝 Extraherad text (${extractedText.length} tecken):');
-        debugPrint(extractedText);
+        debugPrint('${extractedText.substring(0, 200)}...');
 
         return extractedText;
       }
@@ -444,11 +459,15 @@ class SocialMediaExtractor {
 
   /// Facebook-specifik extraktion
   Future<String?> _extractFacebook(InAppWebViewController controller) async {
+    if (_isDisposed) return null;
+
     debugPrint('📘 Extraherar från Facebook...');
 
     final selectors = _platformSelectors[SourcePlatform.facebook] ?? [];
 
     for (final selector in selectors) {
+      if (_isDisposed) break;
+
       final result = await controller.evaluateJavascript(
         source: '''
         (function() {
@@ -471,11 +490,15 @@ class SocialMediaExtractor {
 
   /// TikTok-specifik extraktion
   Future<String?> _extractTikTok(InAppWebViewController controller) async {
+    if (_isDisposed) return null;
+
     debugPrint('🎵 Extraherar från TikTok...');
 
     final selectors = _platformSelectors[SourcePlatform.tiktok] ?? [];
 
     for (final selector in selectors) {
+      if (_isDisposed) break;
+
       final result = await controller.evaluateJavascript(
         source: '''
         (function() {
@@ -498,6 +521,8 @@ class SocialMediaExtractor {
 
   /// Generisk extraktion för andra sidor
   Future<String?> _extractGeneric(InAppWebViewController controller) async {
+    if (_isDisposed) return null;
+
     debugPrint('🌐 Generisk textextraktion...');
 
     // Försök hitta recept-liknande innehåll
@@ -533,14 +558,24 @@ class SocialMediaExtractor {
         'Chrome/120.0.0.0 Safari/537.36';
   }
 
-  /// Städa upp WebView
-  void _cleanup() {
-    _headlessWebView?.dispose();
-    _headlessWebView = null;
+  /// Säker cleanup av WebView
+  void _safeCleanup() {
+    if (!_isDisposed) {
+      _isDisposed = true;
+
+      // Stoppa WebView först
+      _headlessWebView?.webViewController?.stopLoading();
+
+      // Vänta lite innan dispose
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _headlessWebView?.dispose();
+        _headlessWebView = null;
+      });
+    }
   }
 
   /// Dispose metod för att städa upp resurser
   void dispose() {
-    _cleanup();
+    _safeCleanup();
   }
 }
