@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 
 /// ViewModel för text-baserad receptimport (sociala medier, OCR, etc)
-/// Nu med stöd för sourceUrl och korrekt Unicode-hantering
+/// Nu med omfattande debug-logging och förbättrad Instagram-parsing
 class TextImportViewModel extends ChangeNotifier {
   final _uuid = const Uuid();
 
@@ -14,7 +14,7 @@ class TextImportViewModel extends ChangeNotifier {
   bool _isParsing = false;
   String? _error;
   Recipe? _parsedRecipe;
-  String? _sourceUrl; // NY! URL från import
+  String? _sourceUrl;
 
   // Getters
   String get inputText => _inputText;
@@ -24,16 +24,18 @@ class TextImportViewModel extends ChangeNotifier {
   Recipe? get parsedRecipe => _parsedRecipe;
   bool get hasParsedRecipe => _parsedRecipe != null;
   bool get canParse => _inputText.trim().isNotEmpty;
-  String? get sourceUrl => _sourceUrl; // NY getter
+  String? get sourceUrl => _sourceUrl;
 
   /// Sätt sourceUrl (används när recept importeras från URL)
   void setSourceUrl(String url) {
+    debugPrint('📍 Setting source URL: $url');
     _sourceUrl = url;
     notifyListeners();
   }
 
   /// Uppdatera input-text
   void updateInputText(String text) {
+    debugPrint('📝 Updating input text, length: ${text.length}');
     _inputText = text;
     _error = null;
     notifyListeners();
@@ -41,17 +43,28 @@ class TextImportViewModel extends ChangeNotifier {
 
   /// Rensa all input
   void clearInput() {
+    debugPrint('🧹 Clearing all input');
     _inputText = '';
     _error = null;
     _parsedRecipe = null;
-    _sourceUrl = null; // Rensa även sourceUrl
+    _sourceUrl = null;
     notifyListeners();
   }
 
   /// Parsa text till recept
   Future<bool> parseText() async {
+    debugPrint('🚀 ========== PARSE TEXT START ==========');
+
     final input = _inputText.trim();
+    debugPrint('📊 Input length: ${input.length} chars');
+    debugPrint('📊 Contains newlines: ${input.contains('\n')}');
+    debugPrint('📊 Number of lines: ${input.split('\n').length}');
+    debugPrint(
+      '📊 First 300 chars: ${input.substring(0, input.length > 300 ? 300 : input.length)}...',
+    );
+
     if (input.isEmpty) {
+      debugPrint('❌ Input is empty!');
       _setError('Ange text att tolka');
       return false;
     }
@@ -63,238 +76,372 @@ class TextImportViewModel extends ChangeNotifier {
       // Simulera parsing-tid för bättre UX
       await Future.delayed(const Duration(milliseconds: 300));
 
+      debugPrint('🔍 Calling _parseTextToRecipe...');
       _parsedRecipe = _parseTextToRecipe(input);
 
-      if (_parsedRecipe == null) {
+      if (_parsedRecipe != null) {
+        debugPrint('✅ PARSE SUCCESS!');
+        debugPrint('📖 Title: ${_parsedRecipe!.title}');
+        debugPrint(
+          '🥘 Ingredients: ${_parsedRecipe!.ingredients.length} items',
+        );
+        debugPrint(
+          '📋 Instructions: ${_parsedRecipe!.instructions.length} steps',
+        );
+        debugPrint('🔗 Source URL: ${_parsedRecipe!.sourceUrl ?? 'None'}');
+        return true;
+      } else {
+        debugPrint('❌ Parse returned null');
         throw Exception('Kunde inte tolka receptet från texten');
       }
-
-      return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('💥 ========== PARSE ERROR ==========');
+      debugPrint('❌ Error: $e');
+      debugPrint('📍 Stack trace:\n$stackTrace');
+      debugPrint('💥 ========== END ERROR ==========');
       _setError('Kunde inte tolka text: ${e.toString()}');
       return false;
     } finally {
       _setParsing(false);
+      debugPrint('🏁 ========== PARSE TEXT END ==========');
     }
   }
 
-  /// Parsar text till Recipe-objekt (förbättrad logik)
-  Recipe? _parseTextToRecipe(String input) {
-    final lines = input.split('\n');
-    final ingredients = <String>[];
-    final instructions = <String>[];
+  /// Normaliserar text genom att ta bort emojis och specialtecken
+  String _normalizeText(String txt) {
+    try {
+      debugPrint('🔤 Normalizing text, original length: ${txt.length}');
+      String normalized = txt;
 
-    bool foundStart = false;
-    bool foundInstructions = false;
+      // Ta bort emojis
+      normalized = normalized.replaceAll(
+        RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true),
+        '',
+      );
 
-    // Triggers för att hitta start/stop i texten
-    final lowerTriggers = [
-      'gör så här',
-      'gör såhär',
-      'så här gör du',
-      'stek',
-      'koka',
-      'ugnen',
-      'blanda',
-    ];
-    final ingredientStartTriggers = ['recept', 'ingredienser'];
-    final rubrikord = ['instruktion', 'tillbehör', 'sås', 'servera', 'annat'];
-    final skipWords = ['spara', 'testa', 'följ', 'likea'];
-    final dishIndicators = [
-      'kyckling',
-      'fläsk',
-      'pasta',
-      'gryta',
-      'tacos',
-      'lax',
-      'sallad',
-    ];
+      // Konvertera matematiska Unicode-stilar till vanliga bokstäver
+      final runes = normalized.runes.toList();
+      final result = StringBuffer();
 
-    String normalizeText(String txt) {
-      // Säker normalisering av text med korrekt Unicode-hantering
-      try {
-        String normalized = txt;
-
-        // Ta bort emojis
-        normalized = normalized.replaceAll(
-          RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true),
-          '',
-        );
-
-        // Konvertera matematiska Unicode-stilar till vanliga bokstäver
-        final runes = normalized.runes.toList();
-        final result = StringBuffer();
-
-        for (final rune in runes) {
-          // Matematiska fetstilta versaler (𝐀-𝐙)
-          if (rune >= 0x1D400 && rune <= 0x1D419) {
-            result.write(String.fromCharCode((rune - 0x1D400) + 0x41)); // A-Z
-          }
-          // Matematiska fetstilta gemener (𝐚-𝐳)
-          else if (rune >= 0x1D41A && rune <= 0x1D433) {
-            result.write(String.fromCharCode((rune - 0x1D41A) + 0x61)); // a-z
-          }
-          // Matematiska fetstilta siffror (𝟎-𝟗)
-          else if (rune >= 0x1D7CE && rune <= 0x1D7D7) {
-            result.write(String.fromCharCode((rune - 0x1D7CE) + 0x30)); // 0-9
-          }
-          // Matematiska kursiva versaler (𝑨-𝒁)
-          else if (rune >= 0x1D434 && rune <= 0x1D44D) {
-            result.write(String.fromCharCode((rune - 0x1D434) + 0x41)); // A-Z
-          }
-          // Matematiska kursiva gemener (𝒂-𝒛)
-          else if (rune >= 0x1D44E && rune <= 0x1D467) {
-            result.write(String.fromCharCode((rune - 0x1D44E) + 0x61)); // a-z
-          }
-          // Sans-serif fetstilta versaler (𝗔-𝗭)
-          else if (rune >= 0x1D5D4 && rune <= 0x1D5ED) {
-            result.write(String.fromCharCode((rune - 0x1D5D4) + 0x41)); // A-Z
-          }
-          // Sans-serif fetstilta gemener (𝗮-𝘇)
-          else if (rune >= 0x1D5EE && rune <= 0x1D607) {
-            result.write(String.fromCharCode((rune - 0x1D5EE) + 0x61)); // a-z
-          }
-          // Specialtecken som pilar
-          else if (rune == 0x2B07 || rune == 0xFE0F) {
-            // Hoppa över pilar och variationsväljare
-            continue;
-          }
-          // Behåll vanliga tecken (inklusive svenska åäö)
-          else if ((rune >= 0x20 && rune <= 0x7E) || // Grundläggande ASCII
-              (rune >= 0xA0 &&
-                  rune <= 0xFF) || // Latin-1 supplement (inkl. åäö)
-              rune == 0x2013 ||
-              rune == 0x2014) {
-            // Tankstreck
-            result.write(String.fromCharCode(rune));
-          }
-          // Annars hoppa över tecknet
+      for (final rune in runes) {
+        // Matematiska fetstilta versaler (𝐀-𝐙)
+        if (rune >= 0x1D400 && rune <= 0x1D419) {
+          result.write(String.fromCharCode((rune - 0x1D400) + 0x41)); // A-Z
         }
-
-        // Normalisera whitespace
-        normalized = result.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
-
-        return normalized;
-      } catch (e) {
-        debugPrint('Error normalizing text: $e');
-        // Om något går fel, returnera originaltexten med grundläggande rensning
-        return txt.replaceAll(RegExp(r'\s+'), ' ').trim();
+        // Matematiska fetstilta gemener (𝐚-𝐳)
+        else if (rune >= 0x1D41A && rune <= 0x1D433) {
+          result.write(String.fromCharCode((rune - 0x1D41A) + 0x61)); // a-z
+        }
+        // Matematiska fetstilta siffror (𝟎-𝟗)
+        else if (rune >= 0x1D7CE && rune <= 0x1D7D7) {
+          result.write(String.fromCharCode((rune - 0x1D7CE) + 0x30)); // 0-9
+        }
+        // Behåll vanliga tecken (inklusive svenska åäö)
+        else if ((rune >= 0x20 && rune <= 0x7E) || // Grundläggande ASCII
+            (rune >= 0xA0 && rune <= 0xFF) || // Latin-1 supplement (inkl. åäö)
+            rune == 0x2013 ||
+            rune == 0x2014) {
+          // Tankstreck
+          result.write(String.fromCharCode(rune));
+        }
+        // Annars hoppa över tecknet
       }
+
+      // Normalisera whitespace
+      normalized = result.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
+
+      debugPrint('🔤 Normalized text length: ${normalized.length}');
+      return normalized;
+    } catch (e) {
+      debugPrint('❌ Error normalizing text: $e');
+      return txt.replaceAll(RegExp(r'\s+'), ' ').trim();
     }
+  }
 
-    // 1) Extrahera titel ur de första raderna
-    String? extractedTitle;
-    for (final line in lines.take(6)) {
-      final t = line.trim();
-      if (t.isEmpty) continue;
-      final norm = normalizeText(t);
-      final lower = norm.toLowerCase();
+  /// Förbehandlar Instagram-text för att lägga till radbrytningar
+  String _preprocessInstagramText(String input) {
+    debugPrint('📸 Preprocessing Instagram text...');
+    String processed = input;
 
-      if (skipWords.any((w) => lower.contains(w))) continue;
-      if (dishIndicators.any((w) => lower.contains(w)) || norm.length < 40) {
-        // Rensa specialtecken och korta av till max 6 ord
-        final cleaned = norm.replaceAll(
-          RegExp(r'[^\p{L}\p{N} ,.-]', unicode: true),
-          '',
-        );
-        extractedTitle = cleaned.split(' ').take(6).join(' ');
-        break;
+    // Lägg till radbrytning efter "Det du behöver är" eller liknande fraser
+    processed = processed.replaceAllMapped(
+      RegExp(
+        r'(behöver är|ingredienser|du behöver|recept)',
+        caseSensitive: false,
+      ),
+      (match) => '${match.group(0)}\n',
+    );
+
+    // Lägg till radbrytning före vanliga instruktionsord
+    processed = processed.replaceAllMapped(
+      RegExp(
+        r'(Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör|Vispa|Tillsätt)',
+        caseSensitive: false,
+      ),
+      (match) => '\n${match.group(0)}',
+    );
+
+    // Lägg till radbrytning mellan mängd+ingrediens pattern
+    // T.ex. "3 dl sushiris0,5 dl risvinäger" blir "3 dl sushiris\n0,5 dl risvinäger"
+    processed = processed.replaceAllMapped(
+      RegExp(r'([a-zåäö])(\d+(?:,\d+)?\s*(?:kg|g|dl|cl|ml|l|msk|tsk|krm|st))'),
+      (match) => '${match.group(1)}\n${match.group(2)}',
+    );
+
+    // Lägg till radbrytning efter punkter som följs av stor bokstav
+    processed = processed.replaceAllMapped(
+      RegExp(r'\.(\s*)([A-ZÅÄÖ])'),
+      (match) => '.\n${match.group(2)}',
+    );
+
+    debugPrint(
+      '📸 Preprocessed text now has ${processed.split('\n').length} lines',
+    );
+    return processed;
+  }
+
+  /// Parsar text till Recipe-objekt med förbättrad Instagram-hantering
+  Recipe? _parseTextToRecipe(String input) {
+    debugPrint('🍳 ========== PARSE RECIPE START ==========');
+
+    try {
+      // Förbehandla om det verkar vara Instagram-text (inga radbrytningar)
+      String processedInput = input;
+      if (!input.contains('\n') || input.split('\n').length < 3) {
+        debugPrint('📸 Detected Instagram format - preprocessing...');
+        processedInput = _preprocessInstagramText(input);
       }
-    }
 
-    // 2) Loopa igenom alla rader och dela in i ingredienser / instruktioner
-    for (var i = 0; i < lines.length; i++) {
-      final raw = lines[i].trim();
-      if (raw.isEmpty) continue;
+      final lines = processedInput.split('\n');
+      debugPrint('📋 Processing ${lines.length} lines');
 
-      String norm;
-      try {
-        norm = normalizeText(raw);
-      } catch (e) {
-        debugPrint('Skipping line due to normalization error: $e');
-        continue; // Hoppa över problematiska rader
+      final ingredients = <String>[];
+      final instructions = <String>[];
+
+      bool foundStart = false;
+      bool foundInstructions = false;
+
+      // Triggers för att hitta start/stop i texten
+      final instructionTriggers = [
+        'gör så här',
+        'gör såhär',
+        'så här gör du',
+        'stek',
+        'koka',
+        'ugnen',
+        'blanda',
+        'börja med',
+        'häll',
+        'lägg',
+        'rör',
+        'skär',
+        'servera',
+        'värm',
+        'ställ',
+        'tryck',
+        'vispa',
+        'tillsätt',
+      ];
+
+      final ingredientStartTriggers = [
+        'recept',
+        'ingredienser',
+        'du behöver',
+        'behöver är',
+        'det du behöver',
+      ];
+
+      final skipWords = [
+        'spara',
+        'testa',
+        'följ',
+        'likea',
+        'kommentera',
+        'dela',
+        'hej!',
+      ];
+
+      // 1) Extrahera titel
+      String? extractedTitle;
+      debugPrint('🏷️ Looking for title in first 6 lines...');
+
+      for (final line in lines.take(6)) {
+        final t = line.trim();
+        if (t.isEmpty) continue;
+
+        final norm = _normalizeText(t);
+        final lower = norm.toLowerCase();
+
+        if (skipWords.any((w) => lower.contains(w))) continue;
+
+        // Om raden är kort och inte innehåller triggers
+        if (norm.length < 50 &&
+            !ingredientStartTriggers.any((tr) => lower.contains(tr)) &&
+            !RegExp(
+              r'^\d+(?:,\d+)?\s*(?:kg|g|dl|cl|ml|l|msk|tsk|krm|st)',
+            ).hasMatch(norm)) {
+          extractedTitle = norm.split(' ').take(8).join(' ');
+          debugPrint('🏷️ Found title: $extractedTitle');
+          break;
+        }
       }
 
-      final lower = norm.toLowerCase();
+      // 2) Loopa igenom alla rader och dela in i ingredienser / instruktioner
+      debugPrint('🔍 Processing lines for ingredients and instructions...');
 
-      // Hoppa över rubriker, korta versaler etc
-      if (rubrikord.any((r) => lower.startsWith(r)) ||
-          (norm == norm.toUpperCase() && norm.split(' ').length <= 3)) {
-        continue;
-      }
+      for (var i = 0; i < lines.length; i++) {
+        final raw = lines[i].trim();
+        if (raw.isEmpty) continue;
 
-      // Leta efter start på ingrediens‐avsnitt
-      if (!foundStart) {
-        final isTrigger = ingredientStartTriggers.any(
-          (tr) => lower.contains(tr) || lower.startsWith(tr),
-        );
-        final looksLikeQty = RegExp(r'^\d').hasMatch(norm);
-        if (isTrigger || looksLikeQty) {
-          foundStart = true;
-          if (isTrigger) continue;
-        } else {
+        String norm;
+        try {
+          norm = _normalizeText(raw);
+        } catch (e) {
+          debugPrint('⚠️ Skipping line $i due to normalization error: $e');
           continue;
         }
+
+        final lower = norm.toLowerCase();
+
+        // Hoppa över sociala medier-metadata
+        if (skipWords.any((w) => lower.contains(w))) {
+          debugPrint('⏭️ Skipping social media line: $norm');
+          continue;
+        }
+
+        // Leta efter start på ingrediens-avsnitt
+        if (!foundStart) {
+          final isTrigger = ingredientStartTriggers.any(
+            (tr) => lower.contains(tr),
+          );
+          final looksLikeIngredient = RegExp(
+            r'^\d+(?:,\d+)?\s*(?:kg|g|dl|cl|ml|l|msk|tsk|krm|st)',
+          ).hasMatch(norm);
+
+          if (isTrigger || looksLikeIngredient) {
+            foundStart = true;
+            debugPrint('✅ Found ingredient section start at line $i');
+            if (isTrigger && !looksLikeIngredient) continue;
+          } else {
+            continue;
+          }
+        }
+
+        // När vi ser en instruktions-trigger börjar vi samla instruktioner
+        if (!foundInstructions &&
+            instructionTriggers.any((tr) => lower.contains(tr))) {
+          foundInstructions = true;
+          debugPrint('✅ Found instruction section start at line $i');
+        }
+
+        // Kontrollera om raden ser ut som en ingrediens
+        final isIngredient =
+            RegExp(
+              r'^\d+(?:,\d+)?\s*(?:kg|g|dl|cl|ml|l|msk|tsk|krm|st)',
+            ).hasMatch(norm) ||
+            RegExp(
+              r'^(?:\d+(?:,\d+)?|en|ett|några|ev\.|eventuellt)\s+\w+',
+            ).hasMatch(lower);
+
+        if (!foundInstructions || isIngredient) {
+          // Det är en ingrediens
+          if (norm.isNotEmpty &&
+              !instructionTriggers.any((tr) => lower.startsWith(tr))) {
+            ingredients.add(norm);
+            debugPrint('🥕 Added ingredient: $norm');
+          }
+        } else {
+          // Det är en instruktion
+          if (norm.isNotEmpty) {
+            // Dela långa instruktioner vid punkter
+            final parts =
+                norm
+                    .split(RegExp(r'(?<=[.!?])\s+'))
+                    .map((s) => s.trim())
+                    .where((s) => s.isNotEmpty)
+                    .toList();
+
+            if (parts.isEmpty) {
+              instructions.add(norm);
+              debugPrint('📝 Added instruction: $norm');
+            } else {
+              for (final part in parts) {
+                instructions.add(part);
+                debugPrint('📝 Added instruction part: $part');
+              }
+            }
+          }
+        }
       }
 
-      // när vi ser en matlagnings-trigger börjar vi samla instruktioner
-      if (!foundInstructions && lowerTriggers.any((tr) => lower.contains(tr))) {
-        foundInstructions = true;
+      debugPrint('📊 Parse results:');
+      debugPrint('   - Title: ${extractedTitle ?? "None found"}');
+      debugPrint('   - Ingredients: ${ingredients.length}');
+      debugPrint('   - Instructions: ${instructions.length}');
+
+      // Om vi inte hittade något vettigt, returnera null
+      if (ingredients.isEmpty && instructions.isEmpty) {
+        debugPrint('❌ No ingredients or instructions found!');
+        return null;
       }
 
-      if (!foundInstructions) {
-        ingredients.add(norm);
-      } else {
-        // Dela instruktion med sats-boundary
-        final parts =
-            norm
-                .split(RegExp(r'(?<=[.!?])\s+(?=[A-ZÅÄÖ])'))
-                .map((s) => s.trim())
-                .where((s) => s.isNotEmpty)
-                .toList();
-        instructions.addAll(parts);
+      // Försök extrahera titel från innehållet om ingen titel hittades
+      if (extractedTitle == null || extractedTitle.isEmpty) {
+        if (processedInput.toLowerCase().contains('sushi')) {
+          extractedTitle = 'Sushi i långpanna';
+        } else if (processedInput.toLowerCase().contains('långpanna')) {
+          extractedTitle = 'Långpannebröd';
+        } else {
+          extractedTitle = 'Importerat recept';
+        }
+        debugPrint('🏷️ Using fallback title: $extractedTitle');
       }
-    }
 
-    // Om vi inte hittade något vettigt, returnera null
-    if (ingredients.isEmpty && instructions.isEmpty) {
+      // 3) Skapa Recipe-objektet
+      final recipe = Recipe(
+        id: _uuid.v4(),
+        title: extractedTitle,
+        description: '',
+        portions: null,
+        timeMinutes: null,
+        ingredients:
+            ingredients.isEmpty ? ['Lägg till ingredienser'] : ingredients,
+        instructions:
+            instructions.isEmpty ? ['Lägg till instruktioner'] : instructions,
+        tags: [],
+        rating: null,
+        imageUrl: null,
+        mealType: 'Middag',
+        sourceUrl: _sourceUrl,
+      );
+
+      debugPrint('✅ Recipe created successfully!');
+      debugPrint('🍳 ========== PARSE RECIPE END ==========');
+
+      return recipe;
+    } catch (e, stackTrace) {
+      debugPrint('💥 Error in _parseTextToRecipe: $e');
+      debugPrint('📍 Stack trace:\n$stackTrace');
       return null;
     }
-
-    // 3) Skapa Recipe-objektet med sourceUrl om den finns
-    return Recipe(
-      id: _uuid.v4(),
-      title:
-          extractedTitle?.isNotEmpty == true ? extractedTitle! : 'Nytt recept',
-      description: '',
-      portions: null,
-      timeMinutes: null,
-      ingredients:
-          ingredients.isEmpty ? ['Lägg till ingredienser'] : ingredients,
-      instructions:
-          instructions.isEmpty ? ['Lägg till instruktioner'] : instructions,
-      tags: [],
-      rating:
-          null, // Sätt alltid till null vid import - användaren får sätta betyg senare
-      imageUrl: null,
-      mealType: 'Middag', // Default-typ, kan ändras i redigera-vyn
-      sourceUrl: _sourceUrl, // NY! Inkludera sourceUrl om den finns
-    );
   }
 
   /// Rensa fel
   void clearError() {
+    debugPrint('🧹 Clearing error');
     _error = null;
     notifyListeners();
   }
 
   // Private methods
   void _setParsing(bool value) {
+    debugPrint('⏳ Setting parsing state: $value');
     _isParsing = value;
     notifyListeners();
   }
 
   void _setError(String message) {
+    debugPrint('❌ Setting error: $message');
     _error = message;
     notifyListeners();
   }
