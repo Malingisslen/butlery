@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../services/content_detector_service.dart';
+import '../services/social_media_extractor.dart';
 import '../theme/app_theme.dart';
 import '../widgets/skeleton_loader.dart';
 
@@ -22,13 +23,23 @@ class ReceiveShareView extends StatefulWidget {
 
 class _ReceiveShareViewState extends State<ReceiveShareView> {
   final ContentDetectorService _detector = ContentDetectorService();
+  final SocialMediaExtractor _extractor = SocialMediaExtractor();
+
   late ContentDetectionResult _detectionResult;
   bool _isProcessing = true;
+  bool _isExtracting = false;
+  String? _extractionError;
 
   @override
   void initState() {
     super.initState();
     _analyzeContent();
+  }
+
+  @override
+  void dispose() {
+    _extractor.dispose();
+    super.dispose();
   }
 
   Future<void> _analyzeContent() async {
@@ -41,20 +52,6 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       _detectionResult = _detector.detectContent(widget.content);
       _isProcessing = false;
     });
-
-    // Auto-navigera för vissa typer
-    _handleAutoNavigation();
-  }
-
-  void _handleAutoNavigation() {
-    // Om det är ren recepttext, gå direkt till text import
-    if (_detectionResult.type == ContentType.recipeText) {
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        if (mounted) {
-          _navigateToTextImport();
-        }
-      });
-    }
   }
 
   void _navigateToTextImport() {
@@ -63,9 +60,21 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       '/franSocialaMedier',
       arguments: {
         'text': widget.content,
-        'sourceUrl': _detectionResult.extractedUrl ?? 'Delad från annan app',
+        'sourceUrl':
+            _detectionResult.extractedUrl ??
+            'Importerad från ${_getSourceDescription()}',
       },
     );
+  }
+
+  String _getSourceDescription() {
+    if (_detectionResult.type == ContentType.recipeText) {
+      return 'delad text';
+    } else if (_detectionResult.platform != null) {
+      return _getPlatformName();
+    } else {
+      return 'annan app';
+    }
   }
 
   void _navigateToUrlImport() {
@@ -81,11 +90,58 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
     }
   }
 
+  /// Extrahera text från social media URL
+  Future<void> _extractFromSocialMedia() async {
+    if (_detectionResult.extractedUrl == null) return;
+
+    setState(() {
+      _isExtracting = true;
+      _extractionError = null;
+    });
+
+    try {
+      final result = await _extractor.extractFromUrl(
+        _detectionResult.extractedUrl!,
+      );
+
+      if (mounted) {
+        if (result.success && result.extractedText != null) {
+          // Navigera till text import med extraherad text
+          Navigator.pushReplacementNamed(
+            context,
+            '/franSocialaMedier',
+            arguments: {
+              'text': result.extractedText,
+              'sourceUrl': _detectionResult.extractedUrl,
+            },
+          );
+        } else {
+          setState(() {
+            _extractionError = result.error ?? 'Kunde inte extrahera text';
+            _isExtracting = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _extractionError = 'Ett fel uppstod: ${e.toString()}';
+          _isExtracting = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Importera recept')),
-      body: _isProcessing ? _buildLoadingView() : _buildContentView(),
+      body:
+          _isProcessing
+              ? _buildLoadingView()
+              : _isExtracting
+              ? _buildExtractingView()
+              : _buildContentView(),
     );
   }
 
@@ -98,6 +154,31 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
           const RecipeListSkeleton(itemCount: 1),
           SizedBox(height: AppTheme.spacingLg),
           Text('Analyserar innehåll...', style: AppTheme.subtitleStyle),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExtractingView() {
+    return Padding(
+      padding: EdgeInsets.all(AppTheme.spacingMd),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AppTheme.mediumLoadingIndicator(),
+          SizedBox(height: AppTheme.spacingLg),
+          Text(
+            'Hämtar recept från ${_getPlatformName()}...',
+            style: AppTheme.subtitleStyle,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: AppTheme.spacingSm),
+          Text(
+            'Detta kan ta några sekunder',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -204,63 +285,85 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
   Widget _buildActionButtons() {
     switch (_detectionResult.type) {
       case ContentType.socialMediaUrl:
-        // För sociala medier - vi behöver WebView för att hämta receptet
+        // För sociala medier - vi kan nu extrahera automatiskt!
         return Column(
           children: [
-            Container(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-                borderRadius: AppTheme.mediumRadius,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  SizedBox(width: AppTheme.spacingSm),
-                  Expanded(
-                    child: Text(
-                      'Vi kan snart hämta recept automatiskt från ${_getPlatformName()}!',
-                      style: Theme.of(context).textTheme.bodySmall,
+            if (_extractionError != null) ...[
+              Container(
+                padding: EdgeInsets.all(AppTheme.spacingMd),
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                  borderRadius: AppTheme.mediumRadius,
+                  border: Border.all(color: AppTheme.errorColor),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: AppTheme.errorColor),
+                    SizedBox(width: AppTheme.spacingSm),
+                    Expanded(
+                      child: Text(
+                        _extractionError!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.errorColor,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              SizedBox(height: AppTheme.spacingMd),
+            ],
+
+            ElevatedButton.icon(
+              onPressed: _extractFromSocialMedia,
+              icon: const Icon(Icons.download),
+              label: Text(
+                _extractionError != null
+                    ? 'Försök igen'
+                    : 'Hämta recept automatiskt',
+              ),
+              style: AppTheme.primaryButtonStyle,
             ),
+
             SizedBox(height: AppTheme.spacingMd),
-            Text(
-              'Tills dess kan du:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+
+            Text('eller', style: Theme.of(context).textTheme.bodySmall),
+
             SizedBox(height: AppTheme.spacingSm),
-            Text(
-              '1. Gå tillbaka till ${_getPlatformName()}\n'
-              '2. Kopiera recepttexten från inlägget\n'
-              '3. Kom tillbaka hit och klistra in',
-              style: Theme.of(context).textTheme.bodyMedium,
+
+            OutlinedButton.icon(
+              onPressed: () {
+                // Manuell kopiering som fallback
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('Manuell kopiering'),
+                        content: Text(
+                          '1. Gå tillbaka till ${_getPlatformName()}\n'
+                          '2. Kopiera recepttexten från inlägget\n'
+                          '3. Kom tillbaka hit och välj "Klistra in text"',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Avbryt'),
+                          ),
+                          FilledButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _navigateToTextImport();
+                            },
+                            child: const Text('Klistra in text'),
+                          ),
+                        ],
+                      ),
+                );
+              },
+              icon: const Icon(Icons.content_paste),
+              label: const Text('Kopiera manuellt'),
+              style: AppTheme.secondaryButtonStyle,
             ),
-            SizedBox(height: AppTheme.spacingLg),
-            if (_detectionResult.extractedUrl != null)
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Gå till URL import som fallback
-                  _navigateToUrlImport();
-                },
-                icon: const Icon(Icons.open_in_browser),
-                label: const Text('Öppna i webbläsare'),
-                style: AppTheme.secondaryButtonStyle,
-              )
-            else
-              OutlinedButton.icon(
-                onPressed: _navigateToTextImport,
-                icon: const Icon(Icons.content_paste),
-                label: const Text('Klistra in manuellt'),
-                style: AppTheme.secondaryButtonStyle,
-              ),
           ],
         );
 

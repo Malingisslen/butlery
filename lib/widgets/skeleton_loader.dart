@@ -158,6 +158,8 @@ class RecipeListSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
       itemCount: itemCount,
       itemBuilder: (context, index) => const RecipeCardSkeleton(),
