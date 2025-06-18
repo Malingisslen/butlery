@@ -132,18 +132,8 @@ class Recipe extends HiveObject {
   /// Kontrollera om receptet behöver synkas
   bool get needsSync => isModifiedOffline || lastSyncedAt == null;
 
-  /// Markera som modifierad offline
-  void markAsModifiedOffline() {
-    isModifiedOffline = true;
-    save(); // Hive's save method
-  }
-
-  /// Markera som synkad
-  void markAsSynced() {
-    isModifiedOffline = false;
-    lastSyncedAt = DateTime.now();
-    save(); // Hive's save method
-  }
+  // BORTTAGET: markAsModifiedOffline() och markAsSynced()
+  // Dessa hanteras nu direkt i OfflineService istället
 
   // ==================== JSON SERIALIZATION (SharedPreferences) ====================
 

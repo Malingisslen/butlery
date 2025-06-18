@@ -217,8 +217,8 @@ class RecipeService extends ChangeNotifier {
       _setLoading(true);
       clearError();
 
-      // Markera som modifierad offline
-      recipe.markAsModifiedOffline();
+      // Markera som modifierad offline direkt på objektet
+      recipe.isModifiedOffline = true;
 
       // Spara offline först
       await _offlineService.saveRecipeOffline(recipe);
@@ -234,7 +234,14 @@ class RecipeService extends ChangeNotifier {
       if (_offlineService.isOnline && _userRecipesRef != null) {
         try {
           await _userRecipesRef!.doc(recipe.id).update(recipe.toFirestore());
-          recipe.markAsSynced();
+
+          // Markera som synkad efter lyckad uppladdning
+          recipe.isModifiedOffline = false;
+          recipe.lastSyncedAt = DateTime.now();
+
+          // Spara uppdaterat recept offline igen
+          await _offlineService.saveRecipeOffline(recipe);
+
           AppLogger.success('✅ Recept "${recipe.title}" uppdaterat i molnet');
         } catch (e) {
           AppLogger.warning('⚠️ Kunde inte synka uppdatering, sparad lokalt');
@@ -512,7 +519,14 @@ class RecipeService extends ChangeNotifier {
           try {
             // Synka till Firestore
             await _userRecipesRef!.doc(recipe.id).set(recipe.toFirestore());
-            recipe.markAsSynced();
+
+            // Markera som synkad direkt på objektet
+            recipe.isModifiedOffline = false;
+            recipe.lastSyncedAt = DateTime.now();
+
+            // Spara uppdaterat recept offline
+            await _offlineService.saveRecipeOffline(recipe);
+
             syncedCount++;
           } catch (e) {
             AppLogger.error('Kunde inte synka recept ${recipe.id}', e);

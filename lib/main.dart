@@ -3,10 +3,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-// Firebase-kärna + Firestore + Auth
+// Firebase-kärna + Firestore + Auth + Analytics
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'firebase_options.dart';
 
 // Share handling
@@ -15,8 +16,9 @@ import 'package:share_handler/share_handler.dart';
 // State management
 import 'package:provider/provider.dart';
 
-// Offline support
+// Services
 import 'services/offline_service.dart';
+import 'services/analytics_service.dart';
 
 // Dependency Injection
 import 'core/injection.dart';
@@ -84,7 +86,16 @@ Future<void> main() async {
     // Fortsätt ändå - låt appen köra med begränsad funktionalitet
   }
 
-  // 4️⃣ Initiera Dependency Injection
+  // 4️⃣ Initiera Analytics
+  try {
+    await AnalyticsService().initialize();
+    debugPrint('✅ Analytics Service initierad');
+  } catch (e) {
+    debugPrint('❌ Fel vid Analytics init: $e');
+    // Fortsätt ändå - analytics är inte kritiskt
+  }
+
+  // 5️⃣ Initiera Dependency Injection
   try {
     await initializeDependencies();
     debugPrint('✅ Dependency Injection initierad');
@@ -96,7 +107,7 @@ Future<void> main() async {
     debugPrint('❌ Fel vid init av DI: $e');
   }
 
-  // 5️⃣ Initiera Offline Service (Hive)
+  // 6️⃣ Initiera Offline Service (Hive)
   try {
     await OfflineService().initialize();
     debugPrint('✅ Offline service initierad');
@@ -118,6 +129,11 @@ class ButleryApp extends StatefulWidget {
 class _ButleryAppState extends State<ButleryApp> {
   // Global key för navigation
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  // Analytics observer för route tracking
+  final FirebaseAnalyticsObserver _analyticsObserver =
+      AnalyticsService().observer ??
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
   // Stream subscription för delningar
   late StreamSubscription<SharedMedia> _shareSubscription;
@@ -199,6 +215,7 @@ class _ButleryAppState extends State<ButleryApp> {
       value: OfflineService(), // Singleton instance
       child: MaterialApp(
         navigatorKey: _navigatorKey, // Viktigt för global navigation
+        navigatorObservers: [_analyticsObserver], // Analytics tracking
         title: 'Butlery',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
