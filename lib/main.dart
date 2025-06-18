@@ -12,6 +12,12 @@ import 'firebase_options.dart';
 // Share handling
 import 'package:share_handler/share_handler.dart';
 
+// State management
+import 'package:provider/provider.dart';
+
+// Offline support
+import 'services/offline_service.dart';
+
 // Dependency Injection
 import 'core/injection.dart';
 import 'services/recipe_service.dart';
@@ -34,7 +40,7 @@ import 'views/inkopslista_view.dart' as inkop;
 import 'views/importera_fran_arkiv_view.dart';
 import 'views/photo_import_view.dart';
 import 'views/import_via_url_view.dart';
-import 'views/receive_share_view.dart'; // NY IMPORT
+import 'views/receive_share_view.dart';
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
@@ -88,6 +94,15 @@ Future<void> main() async {
     debugPrint('✅ RecipeService hämtad från DI');
   } catch (e) {
     debugPrint('❌ Fel vid init av DI: $e');
+  }
+
+  // 5️⃣ Initiera Offline Service (Hive)
+  try {
+    await OfflineService().initialize();
+    debugPrint('✅ Offline service initierad');
+  } catch (e) {
+    debugPrint('❌ Fel vid offline service init: $e');
+    // Fortsätt ändå - appen kan köra utan offline-stöd
   }
 
   runApp(const ButleryApp());
@@ -180,110 +195,116 @@ class _ButleryAppState extends State<ButleryApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: _navigatorKey, // Viktigt för global navigation
-      title: 'Butlery',
-      theme: AppTheme.lightTheme,
-      debugShowCheckedModeBanner: false,
-      // Använd inte initialRoute, vi hanterar detta med AuthWrapper
-      home: const AuthWrapper(),
-      onUnknownRoute: (settings) => _errorRoute(settings.name),
-      onGenerateRoute: (settings) {
-        try {
-          switch (settings.name) {
-            case '/':
-              return _route(const AuthWrapper(), settings);
+    return ChangeNotifierProvider<OfflineService>.value(
+      value: OfflineService(), // Singleton instance
+      child: MaterialApp(
+        navigatorKey: _navigatorKey, // Viktigt för global navigation
+        title: 'Butlery',
+        theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
+        // Använd inte initialRoute, vi hanterar detta med AuthWrapper
+        home: const AuthWrapper(),
+        onUnknownRoute: (settings) => _errorRoute(settings.name),
+        onGenerateRoute: (settings) {
+          try {
+            switch (settings.name) {
+              case '/':
+                return _route(const AuthWrapper(), settings);
 
-            case '/auth':
-              return _route(const AuthView(), settings);
+              case '/auth':
+                return _route(const AuthView(), settings);
 
-            case '/home':
-              return _route(const MinaReceptView(), settings);
+              case '/home':
+                return _route(const MinaReceptView(), settings);
 
-            case '/laggTill':
-              return _route(const LaggTillReceptView(), settings);
+              case '/laggTill':
+                return _route(const LaggTillReceptView(), settings);
 
-            case '/importViaUrl':
-              return _route(const ImportViaUrlView(), settings);
+              case '/importViaUrl':
+                return _route(const ImportViaUrlView(), settings);
 
-            case '/photoImport':
-              return _route(const PhotoImportView(), settings);
+              case '/photoImport':
+                return _route(const PhotoImportView(), settings);
 
-            case '/skrivSjalv':
-              final recipe = settings.arguments as Recipe?;
-              return _route(
-                SkrivSjalvReceptView(initialRecipe: recipe),
-                settings,
-              );
+              case '/skrivSjalv':
+                final recipe = settings.arguments as Recipe?;
+                return _route(
+                  SkrivSjalvReceptView(initialRecipe: recipe),
+                  settings,
+                );
 
-            case '/franSocialaMedier':
-              // UPPDATERAD! Hantera både gammal (String) och ny (Map) argumentstruktur
-              String? text;
-              String? sourceUrl;
+              case '/franSocialaMedier':
+                // UPPDATERAD! Hantera både gammal (String) och ny (Map) argumentstruktur
+                String? text;
+                String? sourceUrl;
 
-              if (settings.arguments is String?) {
-                // Gammal struktur - bara text
-                text = settings.arguments as String?;
-              } else if (settings.arguments is Map<String, dynamic>) {
-                // Ny struktur - Map med text och sourceUrl
-                final args = settings.arguments as Map<String, dynamic>;
-                text = args['text'] as String?;
-                sourceUrl = args['sourceUrl'] as String?;
-              }
+                if (settings.arguments is String?) {
+                  // Gammal struktur - bara text
+                  text = settings.arguments as String?;
+                } else if (settings.arguments is Map<String, dynamic>) {
+                  // Ny struktur - Map med text och sourceUrl
+                  final args = settings.arguments as Map<String, dynamic>;
+                  text = args['text'] as String?;
+                  sourceUrl = args['sourceUrl'] as String?;
+                }
 
-              return _route(
-                FranSocialaMedierView(initialText: text, sourceUrl: sourceUrl),
-                settings,
-              );
+                return _route(
+                  FranSocialaMedierView(
+                    initialText: text,
+                    sourceUrl: sourceUrl,
+                  ),
+                  settings,
+                );
 
-            case '/importFranArkiv':
-              return _route(const ImporteraFranArkivView(), settings);
+              case '/importFranArkiv':
+                return _route(const ImporteraFranArkivView(), settings);
 
-            case '/veckomeny':
-              return _route(const vecko.VeckomenyView(), settings);
+              case '/veckomeny':
+                return _route(const vecko.VeckomenyView(), settings);
 
-            case '/inkopslista':
-              return _route(const inkop.InkopslistaView(), settings);
+              case '/inkopslista':
+                return _route(const inkop.InkopslistaView(), settings);
 
-            case '/receptDetalj':
-              final recipe = settings.arguments as Recipe?;
-              if (recipe == null) {
-                return _errorRoute('Recept-argument saknas för detaljvy');
-              }
-              return _route(RecipeDetailView(recipe: recipe), settings);
+              case '/receptDetalj':
+                final recipe = settings.arguments as Recipe?;
+                if (recipe == null) {
+                  return _errorRoute('Recept-argument saknas för detaljvy');
+                }
+                return _route(RecipeDetailView(recipe: recipe), settings);
 
-            case '/redigeraRecept':
-              final recipe = settings.arguments as Recipe?;
-              if (recipe == null) {
-                return _errorRoute('Recept-argument saknas för redigering');
-              }
-              return MaterialPageRoute<bool>(
-                settings: settings,
-                builder: (_) => EditRecipeView(recipe: recipe),
-              );
+              case '/redigeraRecept':
+                final recipe = settings.arguments as Recipe?;
+                if (recipe == null) {
+                  return _errorRoute('Recept-argument saknas för redigering');
+                }
+                return MaterialPageRoute<bool>(
+                  settings: settings,
+                  builder: (_) => EditRecipeView(recipe: recipe),
+                );
 
-            // NY ROUTE för att ta emot delningar
-            case '/receiveShare':
-              final args = settings.arguments as Map<String, dynamic>?;
-              if (args == null) {
-                return _errorRoute('Delningsdata saknas');
-              }
-              return _route(
-                ReceiveShareView(
-                  content: args['content'] as String,
-                  type: args['type'] as String,
-                ),
-                settings,
-              );
+              // NY ROUTE för att ta emot delningar
+              case '/receiveShare':
+                final args = settings.arguments as Map<String, dynamic>?;
+                if (args == null) {
+                  return _errorRoute('Delningsdata saknas');
+                }
+                return _route(
+                  ReceiveShareView(
+                    content: args['content'] as String,
+                    type: args['type'] as String,
+                  ),
+                  settings,
+                );
 
-            default:
-              return _errorRoute('Okänd rutt: ${settings.name}');
+              default:
+                return _errorRoute('Okänd rutt: ${settings.name}');
+            }
+          } catch (e, st) {
+            debugPrint('❌ Navigation-fel för ${settings.name}: $e\n$st');
+            return _errorRoute('Fel vid navigation till ${settings.name}: $e');
           }
-        } catch (e, st) {
-          debugPrint('❌ Navigation-fel för ${settings.name}: $e\n$st');
-          return _errorRoute('Fel vid navigation till ${settings.name}: $e');
-        }
-      },
+        },
+      ),
     );
   }
 

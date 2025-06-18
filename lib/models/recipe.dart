@@ -2,6 +2,12 @@
 
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
+
+// VIKTIGT: Kör denna kommando efter att ha sparat filen:
+// flutter packages pub run build_runner build --delete-conflicting-outputs
+
+part 'recipe.g.dart'; // Genererad fil av Hive
 
 /// Recipe model som representerar ett recept i appen
 ///
@@ -9,21 +15,57 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// - sourceUrl för att spara ursprungskällan
 /// - Firestore serialization support
 /// - createdAt/updatedAt för tidsstämplar
-class Recipe {
+/// - Hive support för offline-lagring
+@HiveType(typeId: 0) // Unikt ID för denna model i Hive
+class Recipe extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   String title;
+
+  @HiveField(2)
   String description;
+
+  @HiveField(3)
   int? portions;
+
+  @HiveField(4)
   int? timeMinutes;
+
+  @HiveField(5)
   List<String> ingredients;
+
+  @HiveField(6)
   List<String> instructions;
+
+  @HiveField(7)
   List<String>? tags;
+
+  @HiveField(8)
   double? rating;
+
+  @HiveField(9)
   String? imageUrl;
+
+  @HiveField(10)
   String mealType;
-  String? sourceUrl; // NY! URL till receptets ursprung
-  final DateTime createdAt; // NY! När receptet skapades
-  final DateTime updatedAt; // NY! När receptet senast uppdaterades
+
+  @HiveField(11)
+  String? sourceUrl;
+
+  @HiveField(12)
+  final DateTime createdAt;
+
+  @HiveField(13)
+  final DateTime updatedAt;
+
+  // Nya fält för offline-synk
+  @HiveField(14)
+  DateTime? lastSyncedAt; // när receptet senast synkades med Firebase
+
+  @HiveField(15)
+  bool isModifiedOffline; // om receptet har ändrats offline
 
   Recipe({
     String? id,
@@ -37,9 +79,11 @@ class Recipe {
     this.rating,
     this.imageUrl,
     required this.mealType,
-    this.sourceUrl, // NY parameter
+    this.sourceUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
+    this.lastSyncedAt,
+    this.isModifiedOffline = false,
   }) : id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
@@ -58,6 +102,8 @@ class Recipe {
     String? mealType,
     String? sourceUrl,
     DateTime? updatedAt,
+    DateTime? lastSyncedAt,
+    bool? isModifiedOffline,
   }) {
     return Recipe(
       id: id, // behåll samma ID!
@@ -74,12 +120,30 @@ class Recipe {
       sourceUrl: sourceUrl ?? this.sourceUrl,
       createdAt: createdAt, // behåll original skapandetid
       updatedAt: updatedAt ?? DateTime.now(), // uppdatera till nu
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      isModifiedOffline: isModifiedOffline ?? this.isModifiedOffline,
     );
   }
 
   /// Hjälp-getter för snygg visning av tid
   String get cookTimeText =>
       timeMinutes != null ? '${timeMinutes!} minuter' : '–';
+
+  /// Kontrollera om receptet behöver synkas
+  bool get needsSync => isModifiedOffline || lastSyncedAt == null;
+
+  /// Markera som modifierad offline
+  void markAsModifiedOffline() {
+    isModifiedOffline = true;
+    save(); // Hive's save method
+  }
+
+  /// Markera som synkad
+  void markAsSynced() {
+    isModifiedOffline = false;
+    lastSyncedAt = DateTime.now();
+    save(); // Hive's save method
+  }
 
   // ==================== JSON SERIALIZATION (SharedPreferences) ====================
 
@@ -100,6 +164,8 @@ class Recipe {
       'sourceUrl': sourceUrl,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'lastSyncedAt': lastSyncedAt?.toIso8601String(),
+      'isModifiedOffline': isModifiedOffline,
     };
   }
 
@@ -127,6 +193,11 @@ class Recipe {
           json['updatedAt'] != null
               ? DateTime.parse(json['updatedAt'] as String)
               : DateTime.now(),
+      lastSyncedAt:
+          json['lastSyncedAt'] != null
+              ? DateTime.parse(json['lastSyncedAt'] as String)
+              : null,
+      isModifiedOffline: json['isModifiedOffline'] as bool? ?? false,
     );
   }
 
@@ -152,6 +223,8 @@ class Recipe {
       sourceUrl: data['sourceUrl'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastSyncedAt: DateTime.now(), // Markera som just synkad
+      isModifiedOffline: false,
     );
   }
 
@@ -181,7 +254,7 @@ class Recipe {
   /// För debugging - visar receptinfo som text
   @override
   String toString() {
-    return 'Recipe(id: $id, title: $title, mealType: $mealType, ingredients: ${ingredients.length}, sourceUrl: $sourceUrl)';
+    return 'Recipe(id: $id, title: $title, mealType: $mealType, ingredients: ${ingredients.length}, sourceUrl: $sourceUrl, needsSync: $needsSync)';
   }
 
   /// Jämför två recept baserat på ID
