@@ -5,9 +5,9 @@ Kopiera
 Redigera
 Välkommen tillbaka! Snabbstart-check:
 ✅ Mappstruktur mottagen
-✅ Projektplan-status: Fas 12 & 13 KLARA
-✅ Git status: Rekommenderas commit innan Fas 14
-✅ Redo att börja!
+✅ Projektplan-status: Fas 14 KLAR
+✅ Git status: Rekommenderas commit för Fas 14
+✅ Redo att börja med Fas 15!
 🏗️ Projektarkitektur
 Mappstruktur:
 pgsql
@@ -42,6 +42,7 @@ butlery/
 │   │   └── shopping_item.dart
 │
 │   ├── services/
+│   │   ├── analytics_service.dart
 │   │   ├── auth_service.dart
 │   │   ├── backup_service.dart
 │   │   ├── content_detector_service.dart
@@ -283,20 +284,18 @@ Firestore Database:
 
 ---
 
-## ✅ Fas 12: Ta emot delningar från andra appar (90% Klar)
+## ✅ **Fas 12: Ta emot delningar från andra appar (100% KLAR)**
 ✅ Android intent-filter konfigurerad
 ✅ ShareHandler installerad
 ✅ ReceiveShareView implementerad
 ✅ URL-detektion och plattformsbaserad extraktion
 ✅ Headless WebView för mobil
-
-#### **12.6 Error Tracking & Monitoring (30 min)**
-- [ ] Logga misslyckade extraktioner
-- [ ] Firebase Analytics integration
+✅ Error tracking & Analytics integration
+✅ Instagram-extraktion fungerar med "mer"-knapp
 
 ---
 
-#### Fas 13: Offline-stöd (KLAR)
+## ✅ **Fas 13: Offline-stöd (KLAR)**
 ✅ Hive-lagring av recept
 ✅ OfflineService som singleton
 ✅ Recipe-modellen uppdaterad med isModifiedOffline och lastSyncedAt
@@ -307,12 +306,13 @@ Firestore Database:
 
 ---
 
-## 📅 **Fas 14: "Senast tillagad" tracking (1 timme)**
-
-### **🎯 Implementation:**
-- [ ] Spara datum när recept använts
-- [ ] Visa "senast tillagad" i receptlistan
-- [ ] Använd för smart sortering
+## ✅ **Fas 14: "Senast tillagad" tracking (KLAR)** ⭐ **NY!**
+✅ lastCookedAt fält i Recipe-modellen
+✅ "Markera som tillagad" knapp i RecipeDetailView
+✅ Visar "Senast tillagad" i RecipeCard
+✅ Smart text: "Tillagad idag", "igår", "för X dagar sedan"
+✅ Analytics event: recipe_cooked
+✅ Grön färg för nyligen tillagade recept
 
 ---
 
@@ -389,7 +389,7 @@ Firestore Database:
 ## 📊 **Fas 22: Analytics & Monitoring (3-4 timmar)**
 
 ### **🎯 Implementation:**
-- [ ] Firebase Analytics
+- [ ] Firebase Analytics ✅ (redan delvis implementerat)
 - [ ] Crashlytics
 - [ ] Performance Monitoring
 - [ ] Budget-varningar
@@ -463,6 +463,7 @@ Firestore Database:
 - ✅ Skeleton loaders för bättre perceived performance
 - ✅ Avancerad sök- och filterfunktionalitet
 - ✅ Komplett delningsfunktionalitet
+- ✅ Full analytics integration
 
 ### **📱 Plattformar:**
 - ✅ Android fullt fungerande
@@ -477,6 +478,7 @@ Firestore Database:
 - ✅ Arkivhantering via admin-verktyg
 - ✅ 20 recept i delat arkiv
 - ✅ Realtids-synk mellan enheter
+- ✅ Analytics integrerad (events loggas)
 
 ---
 
@@ -493,7 +495,9 @@ Firestore Database:
 9. **CI/CD pipeline med GitHub Actions** ⭐
 10. **Modern UX med animations och skeletons** ⭐
 11. **Avancerad sök- och filterfunktionalitet** ⭐
-12. **Komplett delningsfunktionalitet** ⭐ **(NY!)**
+12. **Komplett delningsfunktionalitet** ⭐
+13. **Ta emot delningar från andra appar** ⭐
+14. **"Senast tillagad" tracking** ⭐ **(NY!)**
 
 ---
 
@@ -509,55 +513,52 @@ Appen är nu i mycket bra skick:
 - ✅ CI/CD för kvalitetssäkring
 - ✅ Modern UX med smooth animations
 - ✅ Avancerad sök- och filterfunktionalitet
-- ✅ **Komplett delningsfunktionalitet (100%)** **(UPPDATERAT!)**
+- ✅ Komplett delningsfunktionalitet
+- ✅ **"Senast tillagad" tracking med analytics** **(UPPDATERAT!)**
 
 ---
 
 ## 📊 **Realistiska tidsestimat**
 
 ### **Till MVP (solo-testning):**
-- Fas 12 (Ta emot delningar): 4-5 timmar ⭐ **(NÄSTA!)**
-- Fas 13 (Offline-stöd): 4-5 timmar ⭐
-- Fas 14 ("Senast tillagad"): 1 timme
-- Fas 15 (Flera bilder): 8-10 timmar
+- Fas 15 (Flera bilder): 8-10 timmar ⭐ **(NÄSTA!)**
 - Fas 16 (Portions/Enheter): 4-5 timmar
 - Fas 17 (Video-import): 6-8 timmar
 - Fas 18 (Grundläggande social): 4-5 timmar
 
-**Återstående tid till grundläggande MVP: ~32-38 timmar**
+**Återstående tid till grundläggande MVP: ~22-28 timmar**
 
 ### **Kvalitetssäkring & Release:**
 - Fas 19-26: ~30-35 timmar
 
-**Total återstående tid till release-ready: ~62-73 timmar**
+**Total återstående tid till release-ready: ~52-63 timmar**
 
 ---
 
 ## 🎯 **Prioritering framåt:**
 
 ### **Kritiska för MVP:**
-1. **Ta emot delningar (Fas 12)** → 4-5 timmar ⭐ **(NÄSTA!)**
-2. **Offline-stöd (Fas 13)** → 4-5 timmar ⭐
-3. **"Senast tillagad" (Fas 14)** → 1 timme
+1. **Flera bilder (Fas 15)** → 8-10 timmar ⭐ **(NÄSTA!)**
+2. **Portions/Enheter (Fas 16)** → 4-5 timmar
+3. **Dark Mode (Fas 19)** → 4-5 timmar
 
 ### **Nice-to-have för v1.0:**
-4. **Flera bilder (Fas 15)** → 8-10 timmar
-5. **Dark Mode (Fas 19)** → 4-5 timmar
-6. **Portions/Enheter (Fas 16)** → 4-5 timmar
+4. **Video-import (Fas 17)** → 6-8 timmar
+5. **Grundläggande social (Fas 18)** → 4-5 timmar
+6. **Onboarding (Fas 21)** → 2-3 timmar
 
 ### **Post-launch:**
-7. **Video-import (Fas 17)** → 6-8 timmar
-8. **AI-integration (Fas 27)** → 5-8 timmar
-9. **Onboarding (Fas 21)** → 2-3 timmar
-10. **Analytics (Fas 22)** → 3-4 timmar
+7. **AI-integration (Fas 27)** → 5-8 timmar
+8. **Analytics utbyggnad (Fas 22)** → 3-4 timmar
+9. **Performance optimering (Fas 23)** → 3-4 timmar
 
 ---
 
 ## 🚦 **Git Branch Status:**
 
 **Aktiva branches:**
-- `main` - Senaste stabila version
-- Rekommendation: Gör en git commit för alla overflow-fixar!
+- `main` - Senaste stabila version (inkl. Fas 14)
+- Rekommendation: Gör en feature branch för Fas 15!
 
 ---
 
@@ -572,6 +573,6 @@ Appen är nu i mycket bra skick:
 ---
 
 ## 🎯 **Nästa session börjar med:**
-1. Git commit för overflow-fixar
-2. Påbörja Fas 12 - Ta emot delningar från andra appar
-3. Fokus på Android Intent Filter implementation först
+1. Git commit för Fas 14
+2. Skapa feature branch för Fas 15
+3. Påbörja implementation av flera bilder per recept
