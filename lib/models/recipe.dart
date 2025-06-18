@@ -16,6 +16,7 @@ part 'recipe.g.dart'; // Genererad fil av Hive
 /// - Firestore serialization support
 /// - createdAt/updatedAt för tidsstämplar
 /// - Hive support för offline-lagring
+/// - lastCookedAt för "senast tillagad" tracking (NY!)
 @HiveType(typeId: 0) // Unikt ID för denna model i Hive
 class Recipe extends HiveObject {
   @HiveField(0)
@@ -67,6 +68,10 @@ class Recipe extends HiveObject {
   @HiveField(15)
   bool isModifiedOffline; // om receptet har ändrats offline
 
+  // NYT FÄLT för Fas 14
+  @HiveField(16)
+  DateTime? lastCookedAt; // när receptet senast tillagades
+
   Recipe({
     String? id,
     required this.title,
@@ -84,6 +89,7 @@ class Recipe extends HiveObject {
     DateTime? updatedAt,
     this.lastSyncedAt,
     this.isModifiedOffline = false,
+    this.lastCookedAt, // NY!
   }) : id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
@@ -104,6 +110,7 @@ class Recipe extends HiveObject {
     DateTime? updatedAt,
     DateTime? lastSyncedAt,
     bool? isModifiedOffline,
+    DateTime? lastCookedAt, // NY!
   }) {
     return Recipe(
       id: id, // behåll samma ID!
@@ -122,6 +129,7 @@ class Recipe extends HiveObject {
       updatedAt: updatedAt ?? DateTime.now(), // uppdatera till nu
       lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
       isModifiedOffline: isModifiedOffline ?? this.isModifiedOffline,
+      lastCookedAt: lastCookedAt ?? this.lastCookedAt, // NY!
     );
   }
 
@@ -132,8 +140,36 @@ class Recipe extends HiveObject {
   /// Kontrollera om receptet behöver synkas
   bool get needsSync => isModifiedOffline || lastSyncedAt == null;
 
-  // BORTTAGET: markAsModifiedOffline() och markAsSynced()
-  // Dessa hanteras nu direkt i OfflineService istället
+  /// NY! Hjälp-getter för "senast tillagad" text
+  String? get lastCookedText {
+    if (lastCookedAt == null) return null;
+
+    final now = DateTime.now();
+    final difference = now.difference(lastCookedAt!);
+
+    if (difference.inDays == 0) {
+      return 'Tillagad idag';
+    } else if (difference.inDays == 1) {
+      return 'Tillagad igår';
+    } else if (difference.inDays < 7) {
+      return 'Tillagad för ${difference.inDays} dagar sedan';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return 'Tillagad för $weeks ${weeks == 1 ? 'vecka' : 'veckor'} sedan';
+    } else if (difference.inDays < 365) {
+      final months = (difference.inDays / 30).floor();
+      return 'Tillagad för $months ${months == 1 ? 'månad' : 'månader'} sedan';
+    } else {
+      final years = (difference.inDays / 365).floor();
+      return 'Tillagad för $years ${years == 1 ? 'år' : 'år'} sedan';
+    }
+  }
+
+  /// NY! Kontrollera om receptet tillagats nyligen (senaste 7 dagarna)
+  bool get wasCookedRecently {
+    if (lastCookedAt == null) return false;
+    return DateTime.now().difference(lastCookedAt!).inDays < 7;
+  }
 
   // ==================== JSON SERIALIZATION (SharedPreferences) ====================
 
@@ -156,6 +192,7 @@ class Recipe extends HiveObject {
       'updatedAt': updatedAt.toIso8601String(),
       'lastSyncedAt': lastSyncedAt?.toIso8601String(),
       'isModifiedOffline': isModifiedOffline,
+      'lastCookedAt': lastCookedAt?.toIso8601String(), // NY!
     };
   }
 
@@ -188,6 +225,10 @@ class Recipe extends HiveObject {
               ? DateTime.parse(json['lastSyncedAt'] as String)
               : null,
       isModifiedOffline: json['isModifiedOffline'] as bool? ?? false,
+      lastCookedAt: // NY!
+          json['lastCookedAt'] != null
+              ? DateTime.parse(json['lastCookedAt'] as String)
+              : null,
     );
   }
 
@@ -215,6 +256,8 @@ class Recipe extends HiveObject {
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastSyncedAt: DateTime.now(), // Markera som just synkad
       isModifiedOffline: false,
+      lastCookedAt: // NY!
+          (data['lastCookedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -236,6 +279,8 @@ class Recipe extends HiveObject {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt':
           FieldValue.serverTimestamp(), // Använd server-tid för uppdatering
+      'lastCookedAt': // NY!
+          lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
     };
   }
 
@@ -244,7 +289,7 @@ class Recipe extends HiveObject {
   /// För debugging - visar receptinfo som text
   @override
   String toString() {
-    return 'Recipe(id: $id, title: $title, mealType: $mealType, ingredients: ${ingredients.length}, sourceUrl: $sourceUrl, needsSync: $needsSync)';
+    return 'Recipe(id: $id, title: $title, mealType: $mealType, ingredients: ${ingredients.length}, sourceUrl: $sourceUrl, needsSync: $needsSync, lastCooked: ${lastCookedText ?? "aldrig"})';
   }
 
   /// Jämför två recept baserat på ID

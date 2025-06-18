@@ -3,11 +3,13 @@
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
+import '../services/analytics_service.dart';
 import '../core/injection.dart';
 
 /// ViewModel för RecipeDetailView
 class RecipeDetailViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
+  final AnalyticsService _analytics = AnalyticsService(); // NY!
 
   // State
   Recipe _recipe;
@@ -57,6 +59,43 @@ class RecipeDetailViewModel extends ChangeNotifier {
       return false;
     } finally {
       _setDeleting(false);
+    }
+  }
+
+  /// NY! Markera receptet som tillagat idag
+  Future<bool> markAsCooked() async {
+    try {
+      // Uppdatera receptet med dagens datum
+      final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
+
+      final result = await _recipeService.updateRecipe(updatedRecipe);
+
+      if (result.isSuccess) {
+        // Logga analytics event
+        await _analytics.logRecipeCooked(
+          recipeId: _recipe.id,
+          recipeTitle: _recipe.title,
+          mealType: _recipe.mealType,
+          isFirstTime: _recipe.lastCookedAt == null,
+          daysSinceLastCooked:
+              _recipe.lastCookedAt != null
+                  ? DateTime.now().difference(_recipe.lastCookedAt!).inDays
+                  : null,
+        );
+
+        // Uppdatera lokalt recept
+        _recipe = updatedRecipe;
+        notifyListeners();
+
+        _error = null;
+        return true;
+      } else {
+        _setError(result.message);
+        return false;
+      }
+    } catch (e) {
+      _setError('Kunde inte uppdatera receptet: ${e.toString()}');
+      return false;
     }
   }
 
