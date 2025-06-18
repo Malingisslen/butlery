@@ -162,33 +162,36 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // Ingredienser - REFAKTORERAD!
+                  // Ingredienser - FIXAD!
                   _buildDynamicList(
                     label: 'Ingrediens',
                     controllers: viewModel.ingredientControllers,
                     onUpdate: viewModel.updateIngredient,
                     onAdd: viewModel.addIngredient,
                     onRemove: viewModel.removeIngredient,
+                    viewModel: viewModel,
                   ),
                   AppTheme.mediumGap,
 
-                  // Instruktioner - REFAKTORERAD!
+                  // Instruktioner - FIXAD!
                   _buildDynamicList(
                     label: 'Instruktion',
                     controllers: viewModel.instructionControllers,
                     onUpdate: viewModel.updateInstruction,
                     onAdd: viewModel.addInstruction,
                     onRemove: viewModel.removeInstruction,
+                    viewModel: viewModel,
                   ),
                   AppTheme.mediumGap,
 
-                  // Taggar - REFAKTORERAD!
+                  // Taggar
                   _buildDynamicList(
                     label: 'Tagg',
                     controllers: viewModel.tagControllers,
                     onUpdate: viewModel.updateTag,
                     onAdd: viewModel.addTag,
                     onRemove: viewModel.removeTag,
+                    viewModel: viewModel,
                   ),
                   AppTheme.mediumGap,
 
@@ -296,13 +299,14 @@ class _SkrivSjalvReceptViewContentState
     );
   }
 
-  // REFAKTORERAD METOD - Nu helt ren från controller-hantering!
+  // FIXAD METOD - Nu lägger till ny ruta automatiskt!
   Widget _buildDynamicList({
     required String label,
     required List<TextEditingController> controllers,
     required Function(int, String) onUpdate,
     required VoidCallback onAdd,
     required Function(int) onRemove,
+    required RecipeFormViewModel viewModel,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,8 +333,18 @@ class _SkrivSjalvReceptViewContentState
                     textInputAction: TextInputAction.next,
                     maxLines: null,
                     keyboardType: TextInputType.multiline,
-                    // VIKTIGT: onChanged som i originalet!
-                    onChanged: (value) => onUpdate(index, value),
+                    // KRITISK FIX: onChanged som både uppdaterar OCH lägger till ny ruta
+                    onChanged: (value) {
+                      onUpdate(index, value);
+
+                      // Om detta är sista fältet och det har text, lägg till nytt fält
+                      if (index == controllers.length - 1 && value.isNotEmpty) {
+                        // Kör efter frame för att undvika setState under build
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          onAdd();
+                        });
+                      }
+                    },
                   ),
                 ),
                 // Visa delete-knapp om det finns mer än ett fält
@@ -344,9 +358,8 @@ class _SkrivSjalvReceptViewContentState
           );
         }),
 
-        // Lägg till-knapp om sista fältet inte är tomt eller om listan är tom
-        if (controllers.isEmpty ||
-            (controllers.isNotEmpty && controllers.last.text.isNotEmpty))
+        // Lägg till-knapp endast om listan är tom
+        if (controllers.isEmpty)
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: Text('Lägg till $label'),

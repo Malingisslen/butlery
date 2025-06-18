@@ -1,7 +1,7 @@
 // lib/views/main_views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // NY IMPORT för SystemNavigator
+import 'package:flutter/services.dart'; // För SystemNavigator
 import 'package:provider/provider.dart';
 import '../../viewmodels/recipe_list_viewmodel.dart';
 import '../../widgets/main_layout_menu.dart';
@@ -9,14 +9,16 @@ import '../../widgets/recipe_card.dart';
 import '../../widgets/search_bar.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/profile_dialog.dart';
-import '../../widgets/filter_chips.dart'; // NY IMPORT för filter chips
+import '../../widgets/filter_chips.dart';
+import '../../widgets/offline_indicator.dart'; // NY IMPORT för offline indicator
 import '../../services/search_service.dart';
+import '../../services/offline_service.dart'; // NY IMPORT för offline service
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../widgets/skeleton_loader.dart';
 
-/// ✨ UPPDATERAD VY MED FILTER CHIPS
-/// Nu har vi integrerat filtreringsfunktionalitet med filter chips UI
+/// ✨ UPPDATERAD VY MED OFFLINE SUPPORT
+/// Nu visar vi offline-status och synkroniserar med pull-to-refresh
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
 
@@ -40,7 +42,7 @@ class _MinaReceptViewContent extends StatefulWidget {
 
 class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   final TextEditingController _searchController = TextEditingController();
-  bool _showFilters = false; // NY STATE för att visa/dölja filter
+  bool _showFilters = false;
 
   @override
   void initState() {
@@ -74,17 +76,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  // NY METOD för att återställa alla filter
+  // Återställ alla filter
   void _clearAllFilters() {
     final viewModel = context.read<RecipeListViewModel>();
-    viewModel
-        .clearAllFilters(); // Ändrat från clearFilters till clearAllFilters
+    viewModel.clearAllFilters();
     setState(() {
       _showFilters = false;
     });
   }
 
-  // NY METOD för exit-dialog
+  // Exit-dialog
   Future<void> _showExitDialog(BuildContext context) async {
     final shouldExit = await showDialog<bool>(
       context: context,
@@ -113,10 +114,72 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
+  // NY METOD: Synkronisera med online
+  Future<void> _syncWithOnline() async {
+    final offlineService = context.read<OfflineService>();
+    final viewModel = context.read<RecipeListViewModel>();
+
+    if (offlineService.isOnline) {
+      try {
+        // Visa loading indicator
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Text('Synkroniserar...'),
+                ],
+              ),
+              duration: Duration(seconds: 30),
+            ),
+          );
+        }
+
+        // Synka offline-ändringar
+        await offlineService.syncNow();
+
+        // Uppdatera receptlistan
+        await viewModel.refresh();
+
+        // Visa success
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Synkronisering klar!'),
+              backgroundColor: AppTheme.successColor,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Synkronisering misslyckades: $e'),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch för att lyssna på ViewModel-ändringar
     final viewModel = context.watch<RecipeListViewModel>();
+    final offlineService = context.watch<OfflineService>();
 
     return PopScope(
       canPop: false,
@@ -129,6 +192,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         currentIndex: 0,
         title: 'Mina recept',
         actions: [
+          // OFFLINE STATUS ICON - NY!
+          const OfflineStatusIcon(),
+
           // Profil-knapp - alltid först i actions-listan
           IconButton(
             icon: Icon(
@@ -140,7 +206,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             tooltip: 'Min profil',
           ),
 
-          // NY FILTER-KNAPP med indikator för aktiva filter
+          // Filter-knapp med indikator för aktiva filter
           IconButton(
             icon: Stack(
               children: [
@@ -295,6 +361,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         ),
         body: Column(
           children: [
+            // OFFLINE INDICATOR - NY!
+            const OfflineIndicator(),
+
             // Sökfält
             Padding(
               padding: EdgeInsets.all(AppTheme.spacingSmPlus),
@@ -331,9 +400,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                             FilterChips(
                               title: 'Tillagningstid',
                               options: RecipeFilters.timeFilters,
-                              selectedIds:
-                                  viewModel
-                                      .activeTimeFilters, // Ändrat från selectedTimeFilters
+                              selectedIds: viewModel.activeTimeFilters,
                               onToggle: viewModel.toggleTimeFilter,
                               scrollable: false,
                             ),
@@ -344,12 +411,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                             FilterChips(
                               title: 'Måltidstyp',
                               options: RecipeFilters.mealTypeFilters,
-                              selectedIds:
-                                  viewModel
-                                      .activeMealTypeFilters, // Ändrat från selectedMealTypeFilters
+                              selectedIds: viewModel.activeMealTypeFilters,
                               onToggle: viewModel.toggleMealTypeFilter,
-                              scrollable:
-                                  false, // Ändrat till false för att visa alla chips i wrap
+                              scrollable: false,
                             ),
 
                             SizedBox(height: AppTheme.spacingSm),
@@ -358,9 +422,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                             FilterChips(
                               title: 'Betyg',
                               options: RecipeFilters.ratingFilters,
-                              selectedIds:
-                                  viewModel
-                                      .activeRatingFilters, // Ändrat från selectedRatingFilters
+                              selectedIds: viewModel.activeRatingFilters,
                               onToggle: viewModel.toggleRatingFilter,
                               scrollable: false,
                             ),
@@ -386,14 +448,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
 
             // Huvudinnehåll
-            Expanded(child: _buildContent(viewModel)),
+            Expanded(child: _buildContent(viewModel, offlineService)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(RecipeListViewModel viewModel) {
+  Widget _buildContent(
+    RecipeListViewModel viewModel,
+    OfflineService offlineService,
+  ) {
     // Loading state
     if (viewModel.isLoading) {
       return Column(
@@ -525,13 +590,30 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       );
     }
 
-    // Receptlista
+    // Receptlista med RefreshIndicator som synkar om online
     return Column(
       children: [
         statsWidget,
         Expanded(
           child: RefreshIndicator(
-            onRefresh: viewModel.refresh,
+            onRefresh: () async {
+              // Om online, synka först
+              if (offlineService.isOnline) {
+                await _syncWithOnline();
+              } else {
+                // Om offline, bara refresh från lokal cache
+                await viewModel.refresh();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('📵 Offline-läge - visar lokala recept'),
+                      backgroundColor: AppTheme.warningColor,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              }
+            },
             child: ListView.builder(
               padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
               itemCount: recipes.length,
