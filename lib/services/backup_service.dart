@@ -82,7 +82,7 @@ class BackupService {
           // Byt ut allt efter "Android" med "Download"
           final androidIndex = path.indexOf('/Android');
           if (androidIndex != -1) {
-            path = path.substring(0, androidIndex) + '/Download';
+            path = '${path.substring(0, androidIndex)}/Download';
           }
           directory = Directory(path);
         }
