@@ -1,121 +1,130 @@
-# 🚀 Butlery Projektplan - Status Juni 2025
-
-## 📋 **Snabbstart för nästa session:**
-```
+🚀 Butlery Projektplan - Status Juni 2025
+📋 Snabbstart för nästa session:
+yaml
+Kopiera
+Redigera
 Välkommen tillbaka! Snabbstart-check:
 ✅ Mappstruktur mottagen
-✅ Projektplan-status: Fas 12 - Ta emot delningar från andra appar
-✅ Git status: Check needed
+✅ Projektplan-status: Fas 12 & 13 KLARA
+✅ Git status: Rekommenderas commit innan Fas 14
 ✅ Redo att börja!
-```
-
-## 🏗️ **Projektarkitektur**
-
-### **Mappstruktur:**
-```
+🏗️ Projektarkitektur
+Mappstruktur:
+pgsql
+Kopiera
+Redigera
 butlery/
 ├── lib/
-│   ├── core/                    # Kärnfunktionalitet
-│   │   ├── error/               # Centraliserad felhantering
+│   ├── core/
+│   │   ├── error/
 │   │   │   ├── error_handler.dart
 │   │   │   └── failures.dart
-│   │   ├── extensions/          # Dart extensions
+│   │   ├── extensions/
 │   │   │   └── future_extensions.dart
-│   │   ├── utils/               # Verktyg och hjälpfunktioner
-│   │   │   ├── connectivity_check.dart
-│   │   │   └── logger.dart
-│   │   ├── validators/          # Input-validering
+│   │   ├── form/
+│   │   │   ├── form_fields_manager.dart
 │   │   │   └── form_validators.dart
-│   │   ├── cache_config.dart   # Cache-konfiguration
-│   │   └── injection.dart      # Dependency injection (get_it)
-│   │
-│   ├── data/                    # Data-lager
-│   │   ├── archived_recipes.dart    # 20 arkivrecept
-│   │   └── dummy_data.dart         # 10 standardrecept
-│   │
-│   ├── models/                  # Datamodeller
-│   │   ├── recipe.dart          # Recipe-modell med sourceUrl
-│   │   └── shopping_item.dart  # Shopping item-modell
-│   │
-│   ├── services/                # Affärslogik & Firebase
-│   │   ├── auth_service.dart   # Firebase Authentication
-│   │   ├── backup_service.dart  
-│   │   ├── menu_service.dart   # Menygeneration
+│   │   ├── utils/
+│   │   │   ├── connectivity_check.dart
+│   │   │   ├── logger.dart
+│   │   └── validators/
+│   │       └── form_validators.dart
+│   │   ├── cache_config.dart
+│   │   └── injection.dart
+│
+│   ├── data/
+│   │   ├── archived_recipes.dart
+│   │   └── dummy_data.dart
+│
+│   ├── models/
+│   │   ├── recipe.dart
+│   │   ├── recipe.g.dart
+│   │   └── shopping_item.dart
+│
+│   ├── services/
+│   │   ├── auth_service.dart
+│   │   ├── backup_service.dart
+│   │   ├── content_detector_service.dart
+│   │   ├── menu_service.dart
+│   │   ├── offline_service.dart
 │   │   ├── persistence_service.dart
-│   │   ├── recipe_service.dart # Firebase Firestore CRUD
-│   │   ├── search_service.dart # Sökfunktionalitet
-│   │   ├── share_service.dart # Delningsfunktionalitet (✅ Komplett med JSON export/import)
-│   │   └── shopping_list_service.dart
-│   │
-│   ├── theme/                   # Design-system
-│   │   └── app_theme.dart      # Centraliserat tema
-│   │
-│   ├── utils/                   # Verktyg
-│   │   ├── recipe_scraper.dart # Web scraping
-│   │   └── route_animations.dart 
-│   │   └── text_utils.dart     # Textbearbetning
-│   │
-│   ├── viewmodels/              # MVVM ViewModels
+│   │   ├── recipe_service.dart
+│   │   ├── search_service.dart
+│   │   ├── share_service.dart
+│   │   ├── shopping_list_service.dart
+│   │   ├── social_media_extractor_interface.dart
+│   │   ├── social_media_extractor_mobile.dart
+│   │   ├── social_media_extractor_web.dart
+│   │   └── social_media_extractor.dart
+│
+│   ├── theme/
+│   │   └── app_theme.dart
+│
+│   ├── utils/
+│   │   ├── recipe_scraper.dart
+│   │   ├── route_animations.dart
+│   │   └── text_utils.dart
+│
+│   ├── viewmodels/
 │   │   ├── archive_import_viewmodel.dart
 │   │   ├── auth_viewmodel.dart
 │   │   ├── menu_viewmodel.dart
 │   │   ├── photo_import_viewmodel.dart
 │   │   ├── recipe_detail_viewmodel.dart
 │   │   ├── recipe_form_viewmodel.dart
-│   │   ├── recipe_list_viewmodel.dart  # ✅ Uppdaterad med filter-logik
+│   │   ├── recipe_list_viewmodel.dart
 │   │   ├── shopping_list_viewmodel.dart
 │   │   ├── text_import_viewmodel.dart
 │   │   └── url_import_viewmodel.dart
-│   │
-│   ├── views/                   # UI-vyer
-│   │   ├── auth_view.dart      # Inloggning
+│
+│   ├── views/
+│   │   ├── auth_view.dart
 │   │   ├── edit_recipe_view.dart
 │   │   ├── fran_sociala_medier_view.dart
 │   │   ├── import_via_url_view.dart
-│   │   ├── importera_fran_arkiv_view.dart # ✅ Overflow-problem fixat
-│   │   ├── inkopslista_view.dart # ✅ PopScope uppdaterat
-│   │   ├── lagg_till_recept_view.dart # ✅ PopScope uppdaterat
-│   │   ├── main_views/
-│   │   │   └── mina_recept_view.dart # ✅ PopScope uppdaterat
+│   │   ├── importera_fran_arkiv_view.dart
+│   │   ├── inkopslista_view.dart
+│   │   ├── lagg_till_recept_view.dart
+│   │   ├── mina_recept_view.dart
 │   │   ├── photo_import_view.dart
+│   │   ├── receive_share_view.dart
 │   │   ├── recipe_detail_view.dart
 │   │   ├── skriv_sjalv_recept_view.dart
-│   │   └── veckomeny_view.dart # ✅ PopScope uppdaterat, overflow fixat
-│   │
-│   ├── widgets/                 # Återanvändbara komponenter
-│   │   ├── action_button.dart # ✅ Overflow-problem fixat
+│   │   └── veckomeny_view.dart
+│
+│   ├── widgets/
+│   │   ├── action_button.dart
 │   │   ├── cached_recipe_image.dart
-│   │   ├── empty_state.dart # ✅ Keyboard overflow fixat
-│   │   ├── filter_chips.dart   # ✅ Filter widget implementerad och integrerad
+│   │   ├── empty_state.dart
+│   │   ├── filter_chips.dart
 │   │   ├── instruction_editor.dart
 │   │   ├── main_layout_menu.dart
+│   │   ├── offline_indicator.dart
 │   │   ├── optimized_card.dart
-│   │   ├── profile_dialog.dart # ✅ Komplett med JSON export/import
+│   │   ├── profile_dialog.dart
 │   │   ├── recipe_card.dart
 │   │   ├── recipe_service_widget.dart
 │   │   ├── search_bar.dart
-│   │   └── skeleton_loader.dart # ✅ Widget för loading states
-│   │
-│   ├── firebase_options.dart    # Firebase-konfiguration
-│   └── main.dart               # App entry point ✅ Med smooth animations
+│   │   └── skeleton_loader.dart
 │
-├── admin-scripts/               # Admin-verktyg
-│   ├── archive-updater.js      # Uppdatera Firebase-arkiv
+│   ├── firebase_options.dart
+│   └── main.dart
+│
+├── admin-scripts/
+│   ├── archive-updater.js
 │   ├── package.json
 │   ├── .gitignore
 │   └── README.md
-│   └── BUGS_TO_FIX.md
 │
-├── android/                     # Android-konfiguration
-├── ios/                        # iOS-konfiguration
-├── assets/                     # Bilder och resurser
-├── test/                       # Tester
-├── .github/                    # GitHub Actions
+├── android/
+├── ios/
+├── assets/
+├── test/
+├── .github/
 │   └── workflows/
-│       ├── analyze.yml         # ✅ Kodkvalitet (Flutter 3.32.0)
-│       └── test.yml           # Test workflow
-└── pubspec.yaml               # Dependencies
-```
+│       ├── analyze.yml
+│       └── test.yml
+├── pubspec.yaml
 
 ### **Arkitekturmönster:**
 - **MVVM (Model-View-ViewModel)** - Separation mellan UI och logik
@@ -124,7 +133,8 @@ butlery/
 - **Provider** - State management mellan ViewModels och Views
 - **Singleton Services** - För app-wide state (Auth, Recipes)
 - **Service-princip:** Varje service har MAX ett ansvarsområde
-
+- **Hive + Firebase:** Kombinerad lokal & molnbaserad persistens
+- **Animations & Responsivitet:** Smooth transitions, shimmer loaders och overflow fixes
 ### **Firebase-struktur:**
 ```
 Firestore Database:
@@ -273,56 +283,26 @@ Firestore Database:
 
 ---
 
-## 🚧 **Fas 12: Ta emot delningar från andra appar (NÄSTA!)**
-
-### **🎯 Mål**
-Användare ska kunna dela recept från sociala medier (Instagram, TikTok, Facebook) direkt till Butlery. Appen tar emot URL, extraherar recepttext via headless WebView, och använder befintlig TextImportViewModel för parsing.
-
-### **📋 Implementation steg-för-steg**
-
-#### **12.1 Android Intent Filter & Share Handler (45 min)**
-- [ ] Uppdatera AndroidManifest.xml med intent filters
-- [ ] Installera share_handler package
-- [ ] Konfigurera för text/plain och text/html
-- [ ] Test med olika appar
-
-#### **12.2 ContentDetectorService (30 min)**
-- [ ] Återanvänd recipe detection-logik från TextImportViewModel
-- [ ] URL-pattern matching
-- [ ] Platform-identifiering (Instagram/TikTok/Facebook)
-
-#### **12.3 SocialMediaExtractor Service (1.5 timmar)**
-- [ ] HeadlessInAppWebView implementation
-- [ ] Platform-specifika selektorer
-- [ ] Retry-logik och error handling
-- [ ] Timeout-hantering (max 5 sekunder)
-
-#### **12.4 ReceiveShareView (45 min)**
-- [ ] Använd befintliga AppTheme styles
-- [ ] Loading state med SkeletonLoader
-- [ ] Content preview
-- [ ] Routing till rätt import-flow
-- [ ] Error handling med fallback
-
-#### **12.5 Integration i main.dart (30 min)**
-- [ ] ShareHandler setup
-- [ ] Navigation till ReceiveShareView
-- [ ] Hantera app i bakgrund vs förgrund
+## ✅ Fas 12: Ta emot delningar från andra appar (90% Klar)
+✅ Android intent-filter konfigurerad
+✅ ShareHandler installerad
+✅ ReceiveShareView implementerad
+✅ URL-detektion och plattformsbaserad extraktion
+✅ Headless WebView för mobil
 
 #### **12.6 Error Tracking & Monitoring (30 min)**
 - [ ] Logga misslyckade extraktioner
 - [ ] Firebase Analytics integration
 
-**⏱️ Tidsuppskattning: 4-5 timmar**
-
 ---
 
-## 💾 **Fas 13: Offline-stöd (4-5 timmar)**
-
-### **🎯 Implementation:**
-- [ ] Hive implementation för lokal cache
-- [ ] Synk-strategi mellan Hive och Firebase
-- [ ] Offline/online-indikator
+#### Fas 13: Offline-stöd (KLAR)
+✅ Hive-lagring av recept
+✅ OfflineService som singleton
+✅ Recipe-modellen uppdaterad med isModifiedOffline och lastSyncedAt
+✅ Sync-kö via Hive (sync_queue)
+✅ Offline-indikator
+✅ Automatisk synk vid återanslutning
 - [ ] flutter_cache_manager för bilder
 
 ---
