@@ -12,7 +12,7 @@ import '../widgets/cached_recipe_image.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart'; // NY IMPORT
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOURCEURL-STÖD
+/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOURCEURL-STÖD OCH "TILLAGAD IDAG"
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -319,6 +319,50 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               }),
             ),
           ],
+
+          // NY! "Tillagad idag"-knapp
+          AppTheme.mediumGap,
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final success = await viewModel.markAsCooked();
+                if (success && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        viewModel.recipe.lastCookedText == null
+                            ? 'Markerad som tillagad för första gången! 🎉'
+                            : 'Uppdaterad som tillagad idag!',
+                      ),
+                      backgroundColor: AppTheme.successColor,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              icon: Icon(
+                viewModel.recipe.wasCookedRecently
+                    ? Icons.check_circle
+                    : Icons.restaurant,
+              ),
+              label: Text(
+                viewModel.recipe.lastCookedText ?? 'Markera som tillagad',
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor:
+                    viewModel.recipe.wasCookedRecently
+                        ? AppTheme.successColor
+                        : Theme.of(context).colorScheme.primary,
+                side: BorderSide(
+                  color:
+                      viewModel.recipe.wasCookedRecently
+                          ? AppTheme.successColor
+                          : Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

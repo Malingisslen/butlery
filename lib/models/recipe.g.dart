@@ -33,13 +33,14 @@ class RecipeAdapter extends TypeAdapter<Recipe> {
       updatedAt: fields[13] as DateTime?,
       lastSyncedAt: fields[14] as DateTime?,
       isModifiedOffline: fields[15] as bool,
+      lastCookedAt: fields[16] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Recipe obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -71,7 +72,9 @@ class RecipeAdapter extends TypeAdapter<Recipe> {
       ..writeByte(14)
       ..write(obj.lastSyncedAt)
       ..writeByte(15)
-      ..write(obj.isModifiedOffline);
+      ..write(obj.isModifiedOffline)
+      ..writeByte(16)
+      ..write(obj.lastCookedAt);
   }
 
   @override
