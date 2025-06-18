@@ -37,8 +37,8 @@ class SocialMediaExtractor {
   // Flag för att förhindra dubbel cleanup
   bool _isDisposed = false;
 
-  // Timeout för extraktion
-  static const Duration _extractionTimeout = Duration(seconds: 10);
+  // Timeout för extraktion - ÖKAD TILL 15 SEKUNDER
+  static const Duration _extractionTimeout = Duration(seconds: 15);
 
   /// Platform-specifika selektorer (lätt att uppdatera)
   static const Map<SourcePlatform, List<String>> _platformSelectors = {
@@ -111,6 +111,7 @@ class SocialMediaExtractor {
     late final Timer timeoutTimer;
     timeoutTimer = Timer(_extractionTimeout, () {
       if (!completer.isCompleted && !_isDisposed) {
+        debugPrint('⏱️ Timeout nådd, avslutar extraktion');
         completer.complete(
           ExtractionResult(
             success: false,
@@ -118,7 +119,10 @@ class SocialMediaExtractor {
                 'Timeout: Kunde inte ladda sidan inom ${_extractionTimeout.inSeconds} sekunder',
           ),
         );
-        _safeCleanup();
+        // Städa upp efter timeout
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _safeCleanup();
+        });
       }
     });
 
@@ -137,7 +141,7 @@ class SocialMediaExtractor {
           clearCache: true,
         ),
         onProgressChanged: (controller, progress) {
-          if (_isDisposed) return;
+          if (_isDisposed || completer.isCompleted) return;
 
           debugPrint('📊 Laddning: $progress%');
 
@@ -145,8 +149,13 @@ class SocialMediaExtractor {
           if (progress == 100 && !hasExtracted && !completer.isCompleted) {
             hasExtracted = true;
 
-            // Extrahera efter kort fördröjning
-            Future.delayed(const Duration(seconds: 2), () async {
+            // Extrahera efter kort fördröjning - ÖKAD TILL 3 SEKUNDER FÖR INSTAGRAM
+            final delay =
+                platform == SourcePlatform.instagram
+                    ? const Duration(seconds: 3)
+                    : const Duration(seconds: 2);
+
+            Future.delayed(delay, () async {
               if (!completer.isCompleted &&
                   !_isDisposed &&
                   _headlessWebView != null) {
@@ -186,10 +195,12 @@ class SocialMediaExtractor {
                   }
 
                   // Vänta lite innan cleanup för att undvika krasch
-                  await Future.delayed(const Duration(milliseconds: 500));
+                  await Future.delayed(const Duration(milliseconds: 1000));
                   _safeCleanup();
                 } catch (e) {
                   debugPrint('❌ Fel vid extraktion: $e');
+                  timeoutTimer.cancel();
+
                   if (!completer.isCompleted) {
                     completer.complete(
                       ExtractionResult(
@@ -198,6 +209,8 @@ class SocialMediaExtractor {
                       ),
                     );
                   }
+
+                  await Future.delayed(const Duration(milliseconds: 500));
                   _safeCleanup();
                 }
               }
@@ -242,7 +255,7 @@ class SocialMediaExtractor {
           }
         },
         onReceivedError: (controller, request, error) {
-          if (_isDisposed) return;
+          if (_isDisposed || completer.isCompleted) return;
 
           debugPrint('❌ Laddningsfel: ${error.description}');
 
@@ -257,7 +270,9 @@ class SocialMediaExtractor {
             );
           }
 
-          _safeCleanup();
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _safeCleanup();
+          });
         },
         onConsoleMessage: (controller, consoleMessage) {
           // Log JavaScript console messages för debugging
@@ -280,6 +295,7 @@ class SocialMediaExtractor {
         );
       }
 
+      await Future.delayed(const Duration(milliseconds: 500));
       _safeCleanup();
     }
 
@@ -353,8 +369,8 @@ class SocialMediaExtractor {
 
       debugPrint('Klick resultat: $clickResult');
 
-      // Vänta för att texten ska expandera
-      await Future.delayed(const Duration(seconds: 2));
+      // Vänta för att texten ska expandera - ÖKAD VÄNTETID
+      await Future.delayed(const Duration(seconds: 3));
     } catch (e) {
       debugPrint('⚠️ Kunde inte klicka på mer-knappen: $e');
     }
@@ -563,14 +579,27 @@ class SocialMediaExtractor {
     if (!_isDisposed) {
       _isDisposed = true;
 
-      // Stoppa WebView först
-      _headlessWebView?.webViewController?.stopLoading();
+      debugPrint('🧹 Städar upp WebView...');
 
-      // Vänta lite innan dispose
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _headlessWebView?.dispose();
-        _headlessWebView = null;
-      });
+      // Stoppa WebView först om den finns
+      if (_headlessWebView != null) {
+        try {
+          _headlessWebView?.webViewController?.stopLoading();
+        } catch (e) {
+          debugPrint('⚠️ Kunde inte stoppa WebView: $e');
+        }
+
+        // Vänta lite innan dispose
+        Future.delayed(const Duration(milliseconds: 500), () {
+          try {
+            _headlessWebView?.dispose();
+            _headlessWebView = null;
+            debugPrint('✅ WebView städad');
+          } catch (e) {
+            debugPrint('⚠️ Fel vid WebView dispose: $e');
+          }
+        });
+      }
     }
   }
 

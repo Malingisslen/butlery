@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../services/content_detector_service.dart';
 import '../services/social_media_extractor.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/skeleton_loader.dart';
 
@@ -24,6 +25,7 @@ class ReceiveShareView extends StatefulWidget {
 class _ReceiveShareViewState extends State<ReceiveShareView> {
   final ContentDetectorService _detector = ContentDetectorService();
   final SocialMediaExtractor _extractor = SocialMediaExtractor();
+  final AnalyticsService _analytics = AnalyticsService();
 
   late ContentDetectionResult _detectionResult;
   bool _isProcessing = true;
@@ -52,6 +54,12 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       _detectionResult = _detector.detectContent(widget.content);
       _isProcessing = false;
     });
+
+    // Logga att en delning mottagits
+    _analytics.logImportStarted(
+      source: 'share',
+      platform: _detectionResult.platform?.toString().split('.').last,
+    );
   }
 
   void _navigateToTextImport() {
@@ -106,6 +114,13 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
 
       if (mounted) {
         if (result.success && result.extractedText != null) {
+          // Logga lyckad extraktion
+          _analytics.logImportSuccess(
+            source: 'share_extraction',
+            platform: _detectionResult.platform?.toString().split('.').last,
+            recipeLength: result.extractedText!.length,
+          );
+
           // Navigera till text import med extraherad text
           Navigator.pushReplacementNamed(
             context,
@@ -116,20 +131,73 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
             },
           );
         } else {
+          // Logga misslyckad extraktion
+          final errorMessage = result.error ?? 'Kunde inte extrahera text';
+
+          _analytics.logExtractionError(
+            url: _detectionResult.extractedUrl!,
+            platform: _detectionResult.platform ?? SourcePlatform.unknown,
+            error: errorMessage,
+            errorType: result.metadata['reason'] as String?,
+          );
+
           setState(() {
-            _extractionError = result.error ?? 'Kunde inte extrahera text';
+            _extractionError = errorMessage;
             _isExtracting = false;
           });
         }
       }
     } catch (e) {
       if (mounted) {
+        // Logga oväntat fel
+        _analytics.logExtractionError(
+          url: _detectionResult.extractedUrl!,
+          platform: _detectionResult.platform ?? SourcePlatform.unknown,
+          error: e.toString(),
+          errorType: 'exception',
+        );
+
         setState(() {
           _extractionError = 'Ett fel uppstod: ${e.toString()}';
           _isExtracting = false;
         });
       }
     }
+  }
+
+  /// Hantera när användare väljer manuell kopiering
+  void _handleManualCopy() {
+    // Logga att användaren valde manuell kopiering
+    _analytics.logManualCopyFallback(
+      platform: _detectionResult.platform ?? SourcePlatform.unknown,
+      reason: _extractionError != null ? 'after_error' : 'user_choice',
+    );
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Manuell kopiering'),
+            content: Text(
+              '1. Gå tillbaka till ${_getPlatformName()}\n'
+              '2. Kopiera recepttexten från inlägget\n'
+              '3. Kom tillbaka hit och välj "Klistra in text"',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Avbryt'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _navigateToTextImport();
+                },
+                child: const Text('Klistra in text'),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -332,34 +400,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
             SizedBox(height: AppTheme.spacingSm),
 
             OutlinedButton.icon(
-              onPressed: () {
-                // Manuell kopiering som fallback
-                showDialog(
-                  context: context,
-                  builder:
-                      (context) => AlertDialog(
-                        title: const Text('Manuell kopiering'),
-                        content: Text(
-                          '1. Gå tillbaka till ${_getPlatformName()}\n'
-                          '2. Kopiera recepttexten från inlägget\n'
-                          '3. Kom tillbaka hit och välj "Klistra in text"',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Avbryt'),
-                          ),
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _navigateToTextImport();
-                            },
-                            child: const Text('Klistra in text'),
-                          ),
-                        ],
-                      ),
-                );
-              },
+              onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
               label: const Text('Kopiera manuellt'),
               style: AppTheme.secondaryButtonStyle,

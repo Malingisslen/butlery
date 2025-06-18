@@ -95,13 +95,14 @@ class OfflineService extends ChangeNotifier {
   /// Spara recept offline
   Future<void> saveRecipeOffline(Recipe recipe) async {
     try {
-      // Markera som modifierad om online
-      if (_isOnline) {
-        recipe.markAsModifiedOffline();
-      }
-
-      // Spara i Hive
+      // Spara i Hive FÖRST (så objektet är i en box)
       await _recipeBox.put(recipe.id, recipe);
+
+      // Nu kan vi säkert markera som modifierad
+      if (_isOnline && recipe.isInBox) {
+        recipe.isModifiedOffline = true;
+        await recipe.save(); // Nu fungerar save() eftersom objektet är i boxen
+      }
 
       // Lägg till i synk-kö om offline
       if (!_isOnline) {
@@ -154,7 +155,9 @@ class OfflineService extends ChangeNotifier {
       if (recipe != null && recipe.needsSync) {
         // TODO: Anropa RecipeService för att synka med Firebase
         // För nu, bara markera som synkad
-        recipe.markAsSynced();
+        recipe.isModifiedOffline = false;
+        recipe.lastSyncedAt = DateTime.now();
+        await recipe.save(); // Nu är det säkert eftersom objektet är i boxen
         await _syncQueueBox.delete(id);
         debugPrint('✅ Synkade recept: ${recipe.title}');
       }
