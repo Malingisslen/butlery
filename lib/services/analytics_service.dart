@@ -172,6 +172,36 @@ class AnalyticsService {
     }
   }
 
+  /// NY! Logga när ett recept markeras som tillagat
+  Future<void> logRecipeCooked({
+    required String recipeId,
+    required String recipeTitle,
+    required String mealType,
+    bool isFirstTime = true,
+    int? daysSinceLastCooked,
+  }) async {
+    try {
+      await _analytics.logEvent(
+        name: 'recipe_cooked',
+        parameters: {
+          'recipe_id': recipeId,
+          'recipe_title': recipeTitle,
+          'meal_type': mealType,
+          'is_first_time':
+              isFirstTime ? 'true' : 'false', // Konvertera bool till string
+          if (daysSinceLastCooked != null)
+            'days_since_last': daysSinceLastCooked,
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
+
+      // Logga också user property för att spåra aktiva användare
+      await setUserProperties(hasCooked: true);
+    } catch (e) {
+      debugPrint('Analytics fel: $e');
+    }
+  }
+
   /// Logga när veckomeny genereras
   Future<void> logMenuGenerated({
     required int recipeCount,
@@ -248,6 +278,7 @@ class AnalyticsService {
     int? recipeCount,
     bool? hasUsedImport,
     bool? hasSharedRecipe,
+    bool? hasCooked,
   }) async {
     try {
       if (recipeCount != null) {
@@ -280,6 +311,13 @@ class AnalyticsService {
         await _analytics.setUserProperty(
           name: 'has_shared_recipe',
           value: hasSharedRecipe.toString(),
+        );
+      }
+
+      if (hasCooked != null) {
+        await _analytics.setUserProperty(
+          name: 'has_marked_cooked',
+          value: hasCooked.toString(),
         );
       }
     } catch (e) {

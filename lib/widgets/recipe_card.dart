@@ -10,6 +10,7 @@ import 'cached_recipe_image.dart';
 /// Kan användas i listor, arkiv, sökresultat etc.
 ///
 /// ✨ 100% THEME-CENTRALISERAD - INGA HÅRDKODADE TEXTSTYLES!
+/// ✨ UPPDATERAD MED "SENAST TILLAGAD" VISNING
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
   final VoidCallback? onTap;
@@ -55,6 +56,38 @@ class RecipeCard extends StatelessWidget {
                       SizedBox(height: AppTheme.spacingSm - 2), // 6px
                       // Portioner och tid (använder theme-style)
                       _buildMetadata(),
+
+                      // NY! Visa "Senast tillagad" om det finns
+                      if (recipe.lastCookedText != null) ...[
+                        SizedBox(height: AppTheme.spacingXs),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.restaurant,
+                              size: AppTheme.iconSizeSmall,
+                              color:
+                                  recipe.wasCookedRecently
+                                      ? AppTheme.successColor
+                                      : AppTheme.textSecondary,
+                            ),
+                            SizedBox(width: AppTheme.spacingXs),
+                            Text(
+                              recipe.lastCookedText!,
+                              style: AppTheme.captionStyle.copyWith(
+                                color:
+                                    recipe.wasCookedRecently
+                                        ? AppTheme.successColor
+                                        : AppTheme.textSecondary,
+                                fontWeight:
+                                    recipe.wasCookedRecently
+                                        ? FontWeight.w500
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+
                       SizedBox(height: AppTheme.spacingSm),
 
                       // Betyg (theme-färger)
