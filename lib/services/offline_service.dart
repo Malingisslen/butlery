@@ -171,6 +171,7 @@ class OfflineService extends ChangeNotifier {
   }
 
   /// Städa upp resurser
+  @override
   void dispose() {
     _connectivitySubscription?.cancel();
     super.dispose();
