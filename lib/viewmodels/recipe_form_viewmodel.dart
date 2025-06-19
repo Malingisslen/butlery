@@ -1,17 +1,22 @@
 // lib/viewmodels/recipe_form_viewmodel.dart
 // REFAKTORERAD: Nu hanterar ViewModel alla TextEditingControllers via FormFieldsManager
+// UPPDATERAD: Stöd för flera bilder per recept
 
 import 'package:flutter/material.dart'; // För TextEditingController
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
+import '../services/analytics_service.dart'; // NY!
 import '../core/injection.dart';
 import '../core/form/form_fields_manager.dart';
+import '../core/utils/logger.dart'; // NY!
 
 /// ViewModel för recept-formulär (skapa/redigera)
 /// Nu med fullständig controller-hantering enligt MVVM
+/// OCH stöd för flera bilder!
 class RecipeFormViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
+  final AnalyticsService _analyticsService; // NY!
   final _uuid = const Uuid();
 
   // FormFieldsManagers för dynamiska fält
@@ -31,7 +36,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   int? _portions;
   int? _timeMinutes;
   double? _rating;
-  String? _imageUrl;
+  List<String> _imageUrls = []; // NY! Ersätter imageUrl
   String? _sourceUrl;
   List<String> _ingredients = [''];
   List<String> _instructions = [''];
@@ -47,11 +52,16 @@ class RecipeFormViewModel extends ChangeNotifier {
     'Fika',
   ];
 
+  // NY! Max antal bilder
+  static const int maxImages = 5;
+
   RecipeFormViewModel({
     RecipeService? recipeService,
+    AnalyticsService? analyticsService,
     Recipe? initialRecipe,
     bool isTemplate = false,
-  }) : _recipeService = recipeService ?? sl<RecipeService>() {
+  }) : _recipeService = recipeService ?? sl<RecipeService>(),
+       _analyticsService = analyticsService ?? sl<AnalyticsService>() {
     // Initiera FormFieldsManagers UTAN callbacks - håll det enkelt!
     _ingredientsManager = FormFieldsManager();
     _instructionsManager = FormFieldsManager();
@@ -80,13 +90,14 @@ class RecipeFormViewModel extends ChangeNotifier {
   int? get portions => _portions;
   int? get timeMinutes => _timeMinutes;
   double? get rating => _rating;
-  String? get imageUrl => _imageUrl;
+  List<String> get imageUrls => _imageUrls; // NY!
+  bool get canAddMoreImages => _imageUrls.length < maxImages; // NY!
   String? get sourceUrl => _sourceUrl;
   List<String> get ingredients => _ingredients;
   List<String> get instructions => _instructions;
   List<String> get tags => _tags;
 
-  // NY! Controller getters för Views
+  // Controller getters för Views
   List<TextEditingController> get ingredientControllers =>
       _ingredientsManager.getControllers(_ingredients);
 
@@ -136,14 +147,66 @@ class RecipeFormViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setImageUrl(String value) {
-    _imageUrl = value.trim().isEmpty ? null : value.trim();
-    notifyListeners();
-  }
-
   void setSourceUrl(String value) {
     _sourceUrl = value.trim().isEmpty ? null : value.trim();
     notifyListeners();
+  }
+
+  // ===== IMAGE OPERATIONS - NYA! =====
+
+  /// Lägg till ny bild-URL
+  void addImageUrl(String url) {
+    if (_imageUrls.length < maxImages && url.trim().isNotEmpty) {
+      _imageUrls.add(url.trim());
+      notifyListeners();
+
+      // Analytics - kommenterar bort tills vi lägger till rätt metoder
+      // _analyticsService.logEvent('recipe_image_added', {
+      //   'image_count': _imageUrls.length,
+      //   'is_edit_mode': isEditMode,
+      // });
+
+      AppLogger.info('Bild tillagd. Totalt ${_imageUrls.length} bilder.');
+    }
+  }
+
+  /// Ta bort bild vid index
+  void removeImageAt(int index) {
+    if (index >= 0 && index < _imageUrls.length) {
+      _imageUrls.removeAt(index);
+      notifyListeners();
+
+      // Analytics - kommenterar bort tills vi lägger till rätt metoder
+      // _analyticsService.logEvent('recipe_image_removed', {
+      //   'image_count': _imageUrls.length,
+      //   'removed_index': index,
+      // });
+
+      AppLogger.info('Bild borttagen. ${_imageUrls.length} bilder kvar.');
+    }
+  }
+
+  /// Flytta bild (för att ändra ordning)
+  void reorderImage(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final imageUrl = _imageUrls.removeAt(oldIndex);
+    _imageUrls.insert(newIndex, imageUrl);
+    notifyListeners();
+
+    AppLogger.info('Bild flyttad från position $oldIndex till $newIndex');
+  }
+
+  /// Sätt primärbild (flytta till första positionen)
+  void setPrimaryImage(int index) {
+    if (index > 0 && index < _imageUrls.length) {
+      final imageUrl = _imageUrls.removeAt(index);
+      _imageUrls.insert(0, imageUrl);
+      notifyListeners();
+
+      AppLogger.info('Bild vid index $index satt som primärbild');
+    }
   }
 
   // ===== LIST OPERATIONS - REFAKTORERADE =====
@@ -245,7 +308,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     _portions = recipe.portions;
     _timeMinutes = recipe.timeMinutes;
     _rating = recipe.rating;
-    _imageUrl = recipe.imageUrl;
+    _imageUrls = List.from(recipe.imageUrls); // NY! Kopia av bildlistan
     _sourceUrl = recipe.sourceUrl;
     _ingredients = [...recipe.ingredients, ''];
     _instructions = [...recipe.instructions, ''];
@@ -262,7 +325,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     _portions = recipe.portions;
     _timeMinutes = recipe.timeMinutes;
     _rating = recipe.rating;
-    _imageUrl = recipe.imageUrl;
+    _imageUrls = List.from(recipe.imageUrls); // NY!
     _sourceUrl = recipe.sourceUrl;
     _ingredients = [...recipe.ingredients, ''];
     _instructions = [...recipe.instructions, ''];
@@ -299,7 +362,7 @@ class RecipeFormViewModel extends ChangeNotifier {
                 .toList(),
         tags: _tags.map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
         rating: _rating,
-        imageUrl: _imageUrl,
+        imageUrls: _imageUrls, // NY!
         sourceUrl: _sourceUrl,
       );
 
@@ -319,6 +382,19 @@ class RecipeFormViewModel extends ChangeNotifier {
       }
 
       if (result.isSuccess) {
+        // Analytics för antal bilder
+        await _analyticsService.logRecipeCreated(
+          source: isEditMode ? 'edit' : 'manual',
+          hasImage: _imageUrls.isNotEmpty,
+        );
+
+        // Kommenterar bort tills vi lägger till rätt metoder
+        // if (_imageUrls.isNotEmpty) {
+        //   _analyticsService.logEvent('recipe_images_count', {
+        //     'count': _imageUrls.length,
+        //   });
+        // }
+
         _error = null;
         return true;
       } else {
@@ -348,7 +424,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     _portions = null;
     _timeMinutes = null;
     _rating = null;
-    _imageUrl = null;
+    _imageUrls = []; // NY!
     _sourceUrl = null;
     _ingredients = [''];
     _instructions = [''];
@@ -375,7 +451,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // NY! Dispose-metod för att rensa upp FormFieldsManagers
+  // Dispose-metod för att rensa upp FormFieldsManagers
   @override
   void dispose() {
     _ingredientsManager.dispose();

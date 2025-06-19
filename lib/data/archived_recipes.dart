@@ -34,7 +34,7 @@ final archivedRecipes = [
     ],
     tags: ['vegetariskt', 'middag', 'snabbt', 'italienskt', 'pasta'],
     rating: 4.5,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -70,7 +70,7 @@ final archivedRecipes = [
     ],
     tags: ['snabbt', 'middag', 'asiatiskt', 'kyckling', 'wok'],
     rating: 4.3,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -109,7 +109,7 @@ final archivedRecipes = [
     ],
     tags: ['vegetariskt', 'gryta', 'middag', 'laktosfritt', 'stark', 'bönor'],
     rating: 4.6,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -155,7 +155,7 @@ final archivedRecipes = [
       'linser',
     ],
     rating: 4.7,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -192,7 +192,7 @@ final archivedRecipes = [
     ],
     tags: ['snabbt', 'middag', 'barnvänligt', 'klassiker', 'svensk'],
     rating: 4.1,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -226,7 +226,7 @@ final archivedRecipes = [
     ],
     tags: ['fisk', 'middag', 'laktosfritt', 'hälsosamt', 'elegant'],
     rating: 4.8,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -265,7 +265,7 @@ final archivedRecipes = [
     ],
     tags: ['vegetariskt', 'middag', 'fest', 'italienskt', 'förrätt'],
     rating: 4.7,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -298,7 +298,7 @@ final archivedRecipes = [
     ],
     tags: ['frukost', 'snabbt', 'vegetariskt', 'hälsosamt', 'bär'],
     rating: 4.5,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Frukost',
   ),
 
@@ -336,7 +336,7 @@ final archivedRecipes = [
     ],
     tags: ['vegetariskt', 'lunch', 'snabbt', 'sommar', 'sallad'],
     rating: 4.4,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Lunch',
   ),
 
@@ -378,7 +378,7 @@ final archivedRecipes = [
     ],
     tags: ['middag', 'barnvänligt', 'klassiker', 'italienskt', 'pasta'],
     rating: 4.6,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -412,7 +412,7 @@ final archivedRecipes = [
     ],
     tags: ['snabbt', 'italienskt', 'middag', 'ägg', 'bacon'],
     rating: 4.8,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -450,7 +450,7 @@ final archivedRecipes = [
     ],
     tags: ['snabbt', 'mexikanskt', 'lunch', 'räkor', 'tacos'],
     rating: 4.6,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Lunch',
   ),
 
@@ -491,7 +491,7 @@ final archivedRecipes = [
     ],
     tags: ['vegetariskt', 'lunch', 'hälsosamt', 'quinoa', 'bowl'],
     rating: 4.7,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Lunch',
   ),
 
@@ -531,7 +531,7 @@ final archivedRecipes = [
     ],
     tags: ['asiatiskt', 'gryta', 'middag', 'thai', 'curry'],
     rating: 4.8,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -571,7 +571,7 @@ final archivedRecipes = [
     ],
     tags: ['klassiker', 'middag', 'barnvänligt', 'husmanskost', 'svensk'],
     rating: 4.9,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -607,7 +607,7 @@ final archivedRecipes = [
     ],
     tags: ['snabbt', 'fisk', 'engelskt', 'friterat', 'pub'],
     rating: 4.3,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -647,7 +647,7 @@ final archivedRecipes = [
     ],
     tags: ['soppa', 'middag', 'vegetariskt', 'höst', 'pumpa'],
     rating: 4.6,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Middag',
   ),
 
@@ -685,7 +685,7 @@ final archivedRecipes = [
     ],
     tags: ['frukost', 'snabbt', 'vegetariskt', 'trendig', 'avokado'],
     rating: 4.2,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Frukost',
   ),
 
@@ -727,7 +727,7 @@ final archivedRecipes = [
     ],
     tags: ['frukost', 'söt', 'barnvänligt', 'amerikanskt', 'brunch'],
     rating: 4.7,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Frukost',
   ),
 
@@ -765,7 +765,8 @@ final archivedRecipes = [
     ],
     tags: ['vegetariskt', 'lunch', 'sallad', 'medelhavet', 'grekiskt'],
     rating: 4.5,
-    imageUrl: null,
+    imageUrls: [],
     mealType: 'Lunch',
   ),
 ];
+

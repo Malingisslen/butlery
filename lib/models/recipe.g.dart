@@ -26,7 +26,7 @@ class RecipeAdapter extends TypeAdapter<Recipe> {
       instructions: (fields[6] as List).cast<String>(),
       tags: (fields[7] as List?)?.cast<String>(),
       rating: fields[8] as double?,
-      imageUrl: fields[9] as String?,
+      imageUrls: (fields[17] as List?)?.cast<String>(),
       mealType: fields[10] as String,
       sourceUrl: fields[11] as String?,
       createdAt: fields[12] as DateTime?,
@@ -59,8 +59,6 @@ class RecipeAdapter extends TypeAdapter<Recipe> {
       ..write(obj.tags)
       ..writeByte(8)
       ..write(obj.rating)
-      ..writeByte(9)
-      ..write(obj.imageUrl)
       ..writeByte(10)
       ..write(obj.mealType)
       ..writeByte(11)
@@ -74,7 +72,9 @@ class RecipeAdapter extends TypeAdapter<Recipe> {
       ..writeByte(15)
       ..write(obj.isModifiedOffline)
       ..writeByte(16)
-      ..write(obj.lastCookedAt);
+      ..write(obj.lastCookedAt)
+      ..writeByte(17)
+      ..write(obj.imageUrls);
   }
 
   @override
