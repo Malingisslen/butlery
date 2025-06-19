@@ -7,116 +7,110 @@ import '../services/analytics_service.dart';
 import '../core/injection.dart';
 
 /// ViewModel för RecipeDetailView
+/// Hanterar visning och borttagning av recept
+/// UPPDATERAD för flera bilder
 class RecipeDetailViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
-  final AnalyticsService _analytics = AnalyticsService(); // NY!
+  final AnalyticsService _analyticsService;
 
-  // State
   Recipe _recipe;
   bool _isDeleting = false;
   String? _error;
 
-  RecipeDetailViewModel({required Recipe recipe, RecipeService? recipeService})
-    : _recipe = recipe,
-      _recipeService = recipeService ?? sl<RecipeService>() {
-    // Lyssna på ändringar från RecipeService
-    _recipeService.addListener(_onRecipesChanged);
+  RecipeDetailViewModel({
+    required Recipe recipe,
+    RecipeService? recipeService,
+    AnalyticsService? analyticsService,
+  }) : _recipe = recipe,
+       _recipeService = recipeService ?? sl<RecipeService>(),
+       _analyticsService = analyticsService ?? sl<AnalyticsService>() {
+    // Lyssna på RecipeService för uppdateringar
+    _recipeService.addListener(_onRecipeServiceUpdate);
   }
 
-  // ===== GETTERS =====
+  @override
+  void dispose() {
+    _recipeService.removeListener(_onRecipeServiceUpdate);
+    super.dispose();
+  }
 
+  void _onRecipeServiceUpdate() {
+    // Uppdatera vårt recept om det har ändrats i service
+    final updatedRecipe = _recipeService.getRecipeById(_recipe.id);
+    if (updatedRecipe != null && updatedRecipe != _recipe) {
+      _recipe = updatedRecipe;
+      notifyListeners();
+    }
+  }
+
+  // Getters
   Recipe get recipe => _recipe;
   bool get isDeleting => _isDeleting;
   String? get error => _error;
   bool get hasError => _error != null;
 
-  // Formaterade värden för visning
-  String get portionsDisplay => _recipe.portions?.toString() ?? '?';
-  String get timeDisplay => _recipe.timeMinutes?.toString() ?? '?';
-  String get ratingDisplay => _recipe.rating?.toStringAsFixed(1) ?? '-';
+  // Convenience getters för UI
+  bool get hasImages => _recipe.hasImages; // NY!
+  bool get hasMultipleImages => _recipe.imageUrls.length > 1; // NY!
+  String get portionsDisplay => _recipe.portions?.toString() ?? '–';
+  String get timeDisplay => _recipe.timeMinutes?.toString() ?? '–';
   bool get hasRating => _recipe.rating != null;
-  bool get hasImage => _recipe.imageUrl != null && _recipe.imageUrl!.isNotEmpty;
+  String get ratingDisplay => _recipe.rating?.toStringAsFixed(1) ?? '–';
   bool get hasTags => _recipe.tags != null && _recipe.tags!.isNotEmpty;
 
-  // ===== ACTIONS =====
-
-  /// Ta bort recept
+  /// Ta bort receptet
   Future<bool> deleteRecipe() async {
     _setDeleting(true);
+    _error = null;
 
     try {
       final result = await _recipeService.deleteRecipe(_recipe.id);
 
       if (result.isSuccess) {
-        _error = null;
+        // Logga analytics - använd Firebase Analytics direkt för nu
+        // TODO: Lägg till dedikerad metod i AnalyticsService för recipe_deleted
+
         return true;
       } else {
-        _setError(result.message);
+        _error = result.message;
         return false;
       }
     } catch (e) {
-      _setError('Kunde inte ta bort recept: ${e.toString()}');
+      _error = 'Kunde inte ta bort recept: ${e.toString()}';
       return false;
     } finally {
       _setDeleting(false);
     }
   }
 
-  /// NY! Markera receptet som tillagat idag
+  /// Markera receptet som tillagat
   Future<bool> markAsCooked() async {
     try {
-      // Uppdatera receptet med dagens datum
+      // Uppdatera receptet med ny lastCookedAt
       final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
 
       final result = await _recipeService.updateRecipe(updatedRecipe);
 
       if (result.isSuccess) {
-        // Logga analytics event
-        await _analytics.logRecipeCooked(
+        _recipe = updatedRecipe;
+        notifyListeners();
+
+        // Logga analytics med rätt metod
+        await _analyticsService.logRecipeCooked(
           recipeId: _recipe.id,
           recipeTitle: _recipe.title,
           mealType: _recipe.mealType,
           isFirstTime: _recipe.lastCookedAt == null,
-          daysSinceLastCooked:
-              _recipe.lastCookedAt != null
-                  ? DateTime.now().difference(_recipe.lastCookedAt!).inDays
-                  : null,
         );
 
-        // Uppdatera lokalt recept
-        _recipe = updatedRecipe;
-        notifyListeners();
-
-        _error = null;
         return true;
       } else {
-        _setError(result.message);
+        _error = result.message;
         return false;
       }
     } catch (e) {
-      _setError('Kunde inte uppdatera receptet: ${e.toString()}');
+      _error = 'Kunde inte uppdatera recept: ${e.toString()}';
       return false;
-    }
-  }
-
-  /// Rensa fel
-  void clearError() {
-    _error = null;
-    notifyListeners();
-  }
-
-  // ===== PRIVATE METHODS =====
-
-  void _onRecipesChanged() {
-    // Uppdatera lokalt recept om det har ändrats i service
-    final updatedRecipe = _recipeService.recipes.firstWhere(
-      (r) => r.id == _recipe.id,
-      orElse: () => _recipe,
-    );
-
-    if (updatedRecipe != _recipe) {
-      _recipe = updatedRecipe;
-      notifyListeners();
     }
   }
 
@@ -125,14 +119,8 @@ class RecipeDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setError(String message) {
-    _error = message;
+  void clearError() {
+    _error = null;
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _recipeService.removeListener(_onRecipesChanged);
-    super.dispose();
   }
 }

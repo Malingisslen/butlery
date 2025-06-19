@@ -1,16 +1,18 @@
 // lib/views/skriv_sjalv_recept_view.dart
 // REFAKTORERAD: Nu följer strikt MVVM - alla controllers hanteras av ViewModel
+// UPPDATERAD: Stöd för flera bilder
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/action_button.dart';
+import '../widgets/recipe_image_carousel.dart'; // NY IMPORT!
 import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// Skapa nytt recept view - nu med ren MVVM implementation
+/// Skapa nytt recept view - nu med flera bilder support
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
   final bool isTemplate;
@@ -73,6 +75,42 @@ class _SkrivSjalvReceptViewContentState
     }
   }
 
+  // NY METOD för att hantera bildval
+  Future<void> _pickImage(RecipeFormViewModel viewModel) async {
+    // För nu, använd en enkel dialog för URL-input
+    // TODO: Implementera kamera/galleri senare
+    final controller = TextEditingController();
+    final url = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Lägg till bild'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Bild-URL',
+                hintText: 'https://exempel.com/bild.jpg',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Avbryt'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Lägg till'),
+              ),
+            ],
+          ),
+    );
+
+    if (url != null && url.isNotEmpty) {
+      viewModel.addImageUrl(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
@@ -111,6 +149,17 @@ class _SkrivSjalvReceptViewContentState
                     },
                   ),
                   AppTheme.mediumGap,
+
+                  // UPPDATERAD: Bildhantering med RecipeImageManager
+                  RecipeImageManager(
+                    imageUrls: viewModel.imageUrls,
+                    onAddImage: viewModel.addImageUrl,
+                    onRemoveImage: viewModel.removeImageAt,
+                    onSetPrimary: viewModel.setPrimaryImage,
+                    onPickImage: () => _pickImage(viewModel),
+                    canAddMore: viewModel.canAddMoreImages,
+                  ),
+                  AppTheme.largeGap,
 
                   // Titel
                   TextFormField(
@@ -162,7 +211,7 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // Ingredienser - FIXAD!
+                  // Ingredienser
                   _buildDynamicList(
                     label: 'Ingrediens',
                     controllers: viewModel.ingredientControllers,
@@ -173,7 +222,7 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // Instruktioner - FIXAD!
+                  // Instruktioner
                   _buildDynamicList(
                     label: 'Instruktion',
                     controllers: viewModel.instructionControllers,
@@ -209,24 +258,6 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // Bild-URL
-                  TextFormField(
-                    initialValue: viewModel.imageUrl ?? '',
-                    decoration: const InputDecoration(
-                      labelText: 'Bild-URL',
-                      hintText: 'Valfritt: länk till bild',
-                    ),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    keyboardType: TextInputType.url,
-                    onChanged: viewModel.setImageUrl,
-                    validator: (value) {
-                      // Gör URL-validering valfri - bara validera om fältet har innehåll
-                      if (value == null || value.isEmpty) return null;
-                      return FormValidators.url()(value);
-                    },
-                  ),
-                  AppTheme.mediumGap,
-
                   // Source URL-fält
                   TextFormField(
                     initialValue: viewModel.sourceUrl ?? '',
@@ -246,11 +277,12 @@ class _SkrivSjalvReceptViewContentState
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
                     validator: (value) {
-                      // Gör URL-validering valfri - bara validera om fältet har innehåll
+                      // Gör URL-validering valfri
                       if (value == null || value.isEmpty) return null;
                       // Tillåt även "Delad från annan app" och liknande texter
                       if (value.startsWith('Delad från') ||
-                          value.startsWith('Importerad från')) {
+                          value.startsWith('Importerad från') ||
+                          value.contains('Butlery')) {
                         return null;
                       }
                       return FormValidators.url()(value);
@@ -299,7 +331,6 @@ class _SkrivSjalvReceptViewContentState
     );
   }
 
-  // FIXAD METOD - Nu lägger till ny ruta automatiskt!
   Widget _buildDynamicList({
     required String label,
     required List<TextEditingController> controllers,
@@ -314,7 +345,6 @@ class _SkrivSjalvReceptViewContentState
         Text(label, style: AppTheme.formLabelStyle),
         AppTheme.smallGap,
 
-        // Bygg fält från controllers som ViewModel tillhandahåller
         ...controllers.asMap().entries.map((entry) {
           final index = entry.key;
           final controller = entry.value;
@@ -333,13 +363,11 @@ class _SkrivSjalvReceptViewContentState
                     textInputAction: TextInputAction.next,
                     maxLines: null,
                     keyboardType: TextInputType.multiline,
-                    // KRITISK FIX: onChanged som både uppdaterar OCH lägger till ny ruta
                     onChanged: (value) {
                       onUpdate(index, value);
 
                       // Om detta är sista fältet och det har text, lägg till nytt fält
                       if (index == controllers.length - 1 && value.isNotEmpty) {
-                        // Kör efter frame för att undvika setState under build
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           onAdd();
                         });
@@ -347,7 +375,6 @@ class _SkrivSjalvReceptViewContentState
                     },
                   ),
                 ),
-                // Visa delete-knapp om det finns mer än ett fält
                 if (controllers.length > 1)
                   IconButton(
                     icon: AppTheme.actionIcon(context, Icons.delete),
@@ -358,7 +385,6 @@ class _SkrivSjalvReceptViewContentState
           );
         }),
 
-        // Lägg till-knapp endast om listan är tom
         if (controllers.isEmpty)
           TextButton.icon(
             icon: const Icon(Icons.add),

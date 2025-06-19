@@ -3,16 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart'; // NY IMPORT för ShareResultStatus
+import 'package:share_plus/share_plus.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
 import '../theme/app_theme.dart';
-import '../widgets/cached_recipe_image.dart';
+import '../widgets/recipe_image_carousel.dart'; // NY IMPORT!
 import '../core/injection.dart';
-import '../services/share_service.dart'; // NY IMPORT
+import '../services/share_service.dart';
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOURCEURL-STÖD OCH "TILLAGAD IDAG"
+/// ✨ UPPDATERAD RECEPTDETALJ-VY MED BILDKARUSELL
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -28,7 +28,6 @@ class RecipeDetailView extends StatelessWidget {
 }
 
 class _RecipeDetailViewContent extends StatefulWidget {
-  // ÄNDRAT FRÅN StatelessWidget
   const _RecipeDetailViewContent();
 
   @override
@@ -37,8 +36,7 @@ class _RecipeDetailViewContent extends StatefulWidget {
 }
 
 class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
-  // NY STATE CLASS
-  final ShareService _shareService = sl<ShareService>(); // NY SERVICE
+  final ShareService _shareService = sl<ShareService>();
 
   Future<void> _deleteRecipe(BuildContext context) async {
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -91,7 +89,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     }
   }
 
-  // NY METOD för att dela recept
   Future<void> _shareRecipe(BuildContext context) async {
     final viewModel = context.read<RecipeDetailViewModel>();
     final result = await _shareService.shareRecipe(viewModel.recipe);
@@ -107,6 +104,24 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     }
   }
 
+  // NY METOD för att visa bilder i fullskärm
+  Future<void> _showFullscreenImages(
+    BuildContext context,
+    List<String> imageUrls,
+    int initialIndex,
+  ) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => _FullscreenImageViewer(
+              imageUrls: imageUrls,
+              initialIndex: initialIndex,
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeDetailViewModel>();
@@ -117,7 +132,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         appBar: AppBar(
           title: Text(viewModel.recipe.title),
           actions: [
-            // NY DELA-KNAPP
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.share),
               onPressed: () => _shareRecipe(context),
@@ -138,16 +152,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Receptbild
-                  if (viewModel.hasImage)
-                    ClipRRect(
-                      borderRadius: AppTheme.largeRadius,
-                      child: CachedRecipeHeroImage(
-                        imageUrl: viewModel.recipe.imageUrl,
-                        height: AppTheme.imageHeightMedium,
-                      ),
+                  // UPPDATERAD: Bildkarusell istället för enkel bild
+                  if (viewModel.hasImages)
+                    RecipeImageCarousel(
+                      imageUrls: viewModel.recipe.imageUrls,
+                      height: AppTheme.imageHeightMedium,
+                      onTap:
+                          () => _showFullscreenImages(
+                            context,
+                            viewModel.recipe.imageUrls,
+                            0,
+                          ),
                     ),
-                  if (viewModel.hasImage) AppTheme.mediumGap,
+                  if (viewModel.hasImages) AppTheme.mediumGap,
 
                   // Måltidstyp
                   Container(
@@ -182,7 +199,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   _buildMetadata(context, viewModel),
                   AppTheme.largeGap,
 
-                  // NY! Source URL om den finns
+                  // Source URL om den finns
                   if (viewModel.recipe.sourceUrl != null &&
                       viewModel.recipe.sourceUrl!.isNotEmpty) ...[
                     _buildSourceUrl(context, viewModel),
@@ -223,7 +240,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       label: const Text('Redigera recept'),
                       style: AppTheme.primaryButtonStyle,
                       onPressed: () async {
-                        // Navigera till redigering - ViewModel lyssnar automatiskt på RecipeService för uppdateringar
                         await Navigator.pushNamed(
                           context,
                           '/redigeraRecept',
@@ -320,7 +336,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             ),
           ],
 
-          // NY! "Tillagad idag"-knapp
+          // "Tillagad idag"-knapp
           AppTheme.mediumGap,
           SizedBox(
             width: double.infinity,
@@ -388,13 +404,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  // NY! Widget för att visa sourceUrl
   Widget _buildSourceUrl(
     BuildContext context,
     RecipeDetailViewModel viewModel,
   ) {
     final sourceUrl = viewModel.recipe.sourceUrl!;
-    final isFromArchive = sourceUrl == 'Från Butlerys arkiv';
+    final isFromArchive =
+        sourceUrl == 'Från Butlerys arkiv' ||
+        sourceUrl == 'Importerat från Butlery-arkivet';
 
     return InkWell(
       onTap:
@@ -574,6 +591,71 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           );
         }),
       ],
+    );
+  }
+}
+
+// NY KLASS för fullskärmsvisning av bilder
+class _FullscreenImageViewer extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
+
+  const _FullscreenImageViewer({
+    required this.imageUrls,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_FullscreenImageViewer> createState() => _FullscreenImageViewerState();
+}
+
+class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text('${_currentIndex + 1} / ${widget.imageUrls.length}'),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        itemCount: widget.imageUrls.length,
+        itemBuilder: (context, index) {
+          return InteractiveViewer(
+            minScale: 0.5,
+            maxScale: 4.0,
+            child: Center(
+              child: RecipeImageCarousel(
+                imageUrls: [widget.imageUrls[index]],
+                height: MediaQuery.of(context).size.height,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

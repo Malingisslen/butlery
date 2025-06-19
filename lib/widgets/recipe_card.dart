@@ -134,7 +134,7 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildRecipeImage() {
     return CachedRecipeImage(
-      imageUrl: recipe.imageUrl,
+      imageUrls: recipe.imageUrls,
       size: AppTheme.recipeImageSize,
       borderRadius: AppTheme.roundRadius,
     );

@@ -331,7 +331,7 @@ class TextImportViewModel extends ChangeNotifier {
           instructions.isEmpty ? ['Lägg till instruktioner'] : instructions,
       tags: [],
       rating: null,
-      imageUrl: null,
+      imageUrls: null,
       mealType: 'Middag',
       sourceUrl: _sourceUrl,
     );
