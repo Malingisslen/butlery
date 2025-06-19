@@ -427,7 +427,7 @@ class RecipeService extends ChangeNotifier {
         instructions: archiveRecipe.instructions,
         tags: archiveRecipe.tags,
         rating: archiveRecipe.rating,
-        imageUrl: archiveRecipe.imageUrl,
+        imageUrls: archiveRecipe.imageUrls, // UPPDATERAD till imageUrls
         mealType: archiveRecipe.mealType,
         sourceUrl: 'Importerat från Butlery-arkivet',
         createdAt: DateTime.now(),

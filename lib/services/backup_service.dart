@@ -218,7 +218,7 @@ class BackupService {
             instructions: recipe.instructions,
             tags: recipe.tags,
             rating: recipe.rating,
-            imageUrl: recipe.imageUrl,
+            imageUrls: recipe.imageUrls,
             mealType: recipe.mealType,
             sourceUrl: 'Importerat från backup ${_formatDate(DateTime.now())}',
           );

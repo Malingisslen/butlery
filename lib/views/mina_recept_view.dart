@@ -303,62 +303,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 ],
           ),
         ],
-        // Temporär testknapp för share-funktionen
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            // Testa med olika URLs
-            final testUrls = [
-              'https://www.instagram.com/p/DKxRZeTNlOt/',
-              'instagram://media/?shortcode=DK9D_QRsDvQ',
-              'https://www.facebook.com/share/p/1234567890/',
-              'https://www.tiktok.com/@user/video/1234567890',
-            ];
-
-            // Visa dialog för att välja test-URL
-            final selectedUrl = await showDialog<String>(
-              context: context,
-              builder:
-                  (context) => AlertDialog(
-                    title: const Text('Testa Share-funktion'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children:
-                          testUrls
-                              .map(
-                                (url) => ListTile(
-                                  title: Text(
-                                    url.length > 40
-                                        ? '${url.substring(0, 40)}...'
-                                        : url,
-                                  ),
-                                  subtitle: Text(_getUrlType(url)),
-                                  onTap: () => Navigator.pop(context, url),
-                                ),
-                              )
-                              .toList(),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Avbryt'),
-                      ),
-                    ],
-                  ),
-            );
-
-            if (selectedUrl != null) {
-              // Navigera till ReceiveShareView med test-URL
-              Navigator.pushNamed(
-                context,
-                '/receiveShare',
-                arguments: {'content': selectedUrl, 'type': 'text/plain'},
-              );
-            }
-          },
-          icon: const Icon(Icons.bug_report),
-          label: const Text('Test Share'),
-          backgroundColor: Colors.orange,
-        ),
         body: Column(
           children: [
             // OFFLINE INDICATOR - NY!
@@ -677,14 +621,5 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         ],
       ),
     );
-  }
-
-  // Hjälpfunktion för att identifiera URL-typ
-  String _getUrlType(String url) {
-    if (url.contains('instagram://')) return 'Instagram App Link';
-    if (url.contains('instagram.com')) return 'Instagram Web';
-    if (url.contains('facebook.com')) return 'Facebook';
-    if (url.contains('tiktok.com')) return 'TikTok';
-    return 'Annan';
   }
 }

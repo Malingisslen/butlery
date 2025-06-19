@@ -35,8 +35,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['snabb', 'barnvänlig', 'vegetarisk', 'klassiker', 'svensk'],
     rating: 4.8,
-    imageUrl:
-        'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Frukost',
   ),
 
@@ -74,8 +73,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['snabb', 'vegansk', 'soppa', 'middag', 'vegetarisk'],
     rating: 4.5,
-    imageUrl:
-        'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Middag',
   ),
 
@@ -117,8 +115,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['klassisk', 'middag', 'italienskt', 'kött', 'sås'],
     rating: 4.6,
-    imageUrl:
-        'https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Middag',
   ),
 
@@ -160,8 +157,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['vegetarisk', 'middag', 'fest', 'italienskt', 'ugnsrätt'],
     rating: 4.7,
-    imageUrl:
-        'https://images.pexels.com/photos/4106486/pexels-photo-4106486.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/4106486/pexels-photo-4106486.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Middag',
   ),
 
@@ -197,8 +193,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['frukost', 'snabb', 'hälsosam', 'vegetarisk', 'mättande'],
     rating: 4.2,
-    imageUrl:
-        'https://images.pexels.com/photos/1640775/pexels-photo-1640775.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/1640775/pexels-photo-1640775.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Frukost',
   ),
 
@@ -229,8 +224,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['frukost', 'mellanmål', 'snabb', 'hälsosam', 'protein'],
     rating: 4.4,
-    imageUrl:
-        'https://images.pexels.com/photos/1640776/pexels-photo-1640776.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/1640776/pexels-photo-1640776.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Frukost',
   ),
 
@@ -269,8 +263,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['lunch', 'sallad', 'kyckling', 'protein', 'klassiker'],
     rating: 4.6,
-    imageUrl:
-        'https://images.pexels.com/photos/1640773/pexels-photo-1640773.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/1640773/pexels-photo-1640773.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Lunch',
   ),
 
@@ -310,8 +303,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['middag', 'italienskt', 'hemgjort', 'vegetarisk', 'pizza'],
     rating: 4.8,
-    imageUrl:
-        'https://images.pexels.com/photos/2619967/pexels-photo-2619967.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/2619967/pexels-photo-2619967.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Middag',
   ),
 
@@ -343,8 +335,7 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['fika', 'söt', 'barnvänlig', 'svensk', 'choklad'],
     rating: 4.9,
-    imageUrl:
-        'https://images.pexels.com/photos/209540/pexels-photo-209540.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/209540/pexels-photo-209540.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Fika',
   ),
 
@@ -378,11 +369,11 @@ final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([
     ],
     tags: ['snabb', 'lunch', 'ägg', 'fransk', 'protein'],
     rating: 4.3,
-    imageUrl:
-        'https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&h=100',
+    imageUrls: ['https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&h=100'],
     mealType: 'Lunch',
   ),
 ]);
 
 /// Hjälpfunktion för att få dummy recipes som vanlig lista
 List<Recipe> get dummyRecipes => dummyRecipesNotifier.value;
+

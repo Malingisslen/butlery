@@ -302,7 +302,7 @@ Firestore Database:
 ✅ Sync-kö via Hive (sync_queue)
 ✅ Offline-indikator
 ✅ Automatisk synk vid återanslutning
-- [ ] flutter_cache_manager för bilder
+✅ flutter_cache_manager för bilder
 
 ---
 
