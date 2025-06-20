@@ -1,22 +1,28 @@
 // lib/viewmodels/recipe_form_viewmodel.dart
 // REFAKTORERAD: Nu hanterar ViewModel alla TextEditingControllers via FormFieldsManager
-// UPPDATERAD: Stöd för flera bilder per recept
+// UPPDATERAD: Stöd för flera bilder per recept med kamera/galleri
 
 import 'package:flutter/material.dart'; // För TextEditingController
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
-import '../services/analytics_service.dart'; // NY!
+import '../services/analytics_service.dart';
+import '../services/storage_service.dart';
+import '../services/image_picker_service.dart';
+import '../services/auth_service.dart';
 import '../core/injection.dart';
 import '../core/form/form_fields_manager.dart';
-import '../core/utils/logger.dart'; // NY!
+import '../core/utils/logger.dart';
 
 /// ViewModel för recept-formulär (skapa/redigera)
 /// Nu med fullständig controller-hantering enligt MVVM
-/// OCH stöd för flera bilder!
+/// OCH stöd för flera bilder med kamera/galleri!
 class RecipeFormViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
-  final AnalyticsService _analyticsService; // NY!
+  final AnalyticsService _analyticsService;
+  final StorageService _storageService;
+  final ImagePickerService _imagePickerService;
+  final AuthService _authService;
   final _uuid = const Uuid();
 
   // FormFieldsManagers för dynamiska fält
@@ -58,10 +64,16 @@ class RecipeFormViewModel extends ChangeNotifier {
   RecipeFormViewModel({
     RecipeService? recipeService,
     AnalyticsService? analyticsService,
+    StorageService? storageService,
+    ImagePickerService? imagePickerService,
+    AuthService? authService,
     Recipe? initialRecipe,
     bool isTemplate = false,
   }) : _recipeService = recipeService ?? sl<RecipeService>(),
-       _analyticsService = analyticsService ?? sl<AnalyticsService>() {
+       _analyticsService = analyticsService ?? sl<AnalyticsService>(),
+       _storageService = storageService ?? sl<StorageService>(),
+       _imagePickerService = imagePickerService ?? sl<ImagePickerService>(),
+       _authService = authService ?? sl<AuthService>() {
     // Initiera FormFieldsManagers UTAN callbacks - håll det enkelt!
     _ingredientsManager = FormFieldsManager();
     _instructionsManager = FormFieldsManager();
@@ -152,35 +164,147 @@ class RecipeFormViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== IMAGE OPERATIONS - NYA! =====
+  // ===== IMAGE OPERATIONS - UPPDATERADE! =====
 
-  /// Lägg till ny bild-URL
+  /// Välj och ladda upp bild från kamera eller galleri
+  Future<void> pickAndUploadImage(BuildContext context) async {
+    // Visa dialog för att välja källa
+    final source = await _imagePickerService.showImageSourceDialog(context);
+    if (source == null) return;
+
+    // Välj bild
+    final imageFile = await _imagePickerService.pickImage(source);
+    if (imageFile == null) return;
+
+    // Visa laddningsindikator
+    if (context.mounted) {
+      _imagePickerService.showUploadingDialog(context);
+    }
+
+    try {
+      // Hämta användar-ID
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('Ingen inloggad användare');
+      }
+
+      // Ladda upp bild till Firebase Storage
+      final imageUrl = await _storageService.uploadImageFile(imageFile, userId);
+
+      if (imageUrl != null) {
+        // Lägg till URL i listan
+        addImageUrl(imageUrl);
+
+        AppLogger.info('Bild uppladdad och tillagd till recept');
+      } else {
+        throw Exception('Kunde inte ladda upp bild');
+      }
+    } catch (e) {
+      AppLogger.error('Fel vid bilduppladdning: $e');
+      if (context.mounted) {
+        _imagePickerService.showImageError(
+          context,
+          'Kunde inte ladda upp bild: ${e.toString()}',
+        );
+      }
+    } finally {
+      // Stäng laddningsdialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  /// Välj flera bilder från galleri
+  Future<void> pickMultipleImages(BuildContext context) async {
+    // Beräkna hur många bilder som kan läggas till
+    final remainingSlots = maxImages - _imageUrls.length;
+    if (remainingSlots <= 0) {
+      _imagePickerService.showImageError(
+        context,
+        'Du kan max ha $maxImages bilder per recept',
+      );
+      return;
+    }
+
+    // Välj flera bilder
+    final imageFiles = await _imagePickerService.pickMultipleImages(
+      maxImages: remainingSlots,
+    );
+
+    if (imageFiles.isEmpty) return;
+
+    // Visa laddningsindikator
+    if (context.mounted) {
+      _imagePickerService.showUploadingDialog(
+        context,
+        message: 'Laddar upp ${imageFiles.length} bilder...',
+      );
+    }
+
+    try {
+      // Hämta användar-ID
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('Ingen inloggad användare');
+      }
+
+      // Ladda upp alla bilder
+      final uploadedUrls = await _storageService.uploadMultipleImages(
+        imageFiles,
+        userId,
+        onProgress: (completed, total) {
+          // TODO: Uppdatera progress i dialog om vi vill
+        },
+      );
+
+      // Lägg till alla URL:er
+      for (final url in uploadedUrls) {
+        if (_imageUrls.length < maxImages) {
+          addImageUrl(url);
+        }
+      }
+
+      AppLogger.info('${uploadedUrls.length} bilder uppladdade');
+    } catch (e) {
+      AppLogger.error('Fel vid uppladdning av flera bilder: $e');
+      if (context.mounted) {
+        _imagePickerService.showImageError(
+          context,
+          'Kunde inte ladda upp alla bilder',
+        );
+      }
+    } finally {
+      // Stäng laddningsdialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  /// Lägg till bild från URL (behåll för bakåtkompatibilitet)
   void addImageUrl(String url) {
     if (_imageUrls.length < maxImages && url.trim().isNotEmpty) {
       _imageUrls.add(url.trim());
       notifyListeners();
 
-      // Analytics - kommenterar bort tills vi lägger till rätt metoder
-      // _analyticsService.logEvent('recipe_image_added', {
-      //   'image_count': _imageUrls.length,
-      //   'is_edit_mode': isEditMode,
-      // });
-
       AppLogger.info('Bild tillagd. Totalt ${_imageUrls.length} bilder.');
     }
   }
 
-  /// Ta bort bild vid index
-  void removeImageAt(int index) {
+  /// Ta bort bild vid index (uppdaterad för att ta bort från Storage också)
+  void removeImageAt(int index) async {
     if (index >= 0 && index < _imageUrls.length) {
+      final imageUrl = _imageUrls[index];
+
+      // Ta bort från listan först
       _imageUrls.removeAt(index);
       notifyListeners();
 
-      // Analytics - kommenterar bort tills vi lägger till rätt metoder
-      // _analyticsService.logEvent('recipe_image_removed', {
-      //   'image_count': _imageUrls.length,
-      //   'removed_index': index,
-      // });
+      // Om det är en Firebase Storage URL, ta bort från Storage också
+      if (imageUrl.contains('firebasestorage.googleapis.com')) {
+        await _storageService.deleteImage(imageUrl);
+      }
 
       AppLogger.info('Bild borttagen. ${_imageUrls.length} bilder kvar.');
     }
@@ -387,13 +511,6 @@ class RecipeFormViewModel extends ChangeNotifier {
           source: isEditMode ? 'edit' : 'manual',
           hasImage: _imageUrls.isNotEmpty,
         );
-
-        // Kommenterar bort tills vi lägger till rätt metoder
-        // if (_imageUrls.isNotEmpty) {
-        //   _analyticsService.logEvent('recipe_images_count', {
-        //     'count': _imageUrls.length,
-        //   });
-        // }
 
         _error = null;
         return true;
