@@ -1,6 +1,7 @@
 // lib/core/injection.dart
 
 /// Dependency injection konfiguration för Butlery
+library;
 
 import 'package:get_it/get_it.dart';
 import '../services/recipe_service.dart';
