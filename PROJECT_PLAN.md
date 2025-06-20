@@ -306,7 +306,7 @@ Firestore Database:
 
 ---
 
-## ✅ **Fas 14: "Senast tillagad" tracking (KLAR)** ⭐ **NY!**
+## ✅ **Fas 14: "Senast tillagad" tracking (KLAR)** ⭐ (KLAR)
 ✅ lastCookedAt fält i Recipe-modellen
 ✅ "Markera som tillagad" knapp i RecipeDetailView
 ✅ Visar "Senast tillagad" i RecipeCard
@@ -316,7 +316,7 @@ Firestore Database:
 
 ---
 
-## 📸 **Fas 15: Flera bilder per recept (8-10 timmar)**
+## 📸 **Fas 15: Flera bilder per recept (8-10 timmar)** - PÅGÅR
 
 ### **🎯 Implementation:**
 - [ ] Uppdatera Recipe-modellen för array av bilder

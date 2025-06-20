@@ -1,17 +1,18 @@
 // lib/views/edit_recipe_view.dart
 // REFAKTORERAD: Nu följer strikt MVVM - alla controllers hanteras av ViewModel
+// UPPDATERAD: Stöd för flera bilder
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/action_button.dart';
+import '../widgets/recipe_image_carousel.dart'; // NY IMPORT!
 import '../theme/app_theme.dart';
-import '../widgets/cached_recipe_image.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// Redigera recept view - nu med ren MVVM implementation
+/// Redigera recept view - nu med flera bilder support
 class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
@@ -64,6 +65,42 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     }
   }
 
+  // NY METOD för att hantera bildval
+  Future<void> _pickImage(RecipeFormViewModel viewModel) async {
+    // För nu, använd en enkel dialog för URL-input
+    // TODO: Implementera kamera/galleri senare
+    final controller = TextEditingController();
+    final url = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Lägg till bild'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Bild-URL',
+                hintText: 'https://exempel.com/bild.jpg',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Avbryt'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Lägg till'),
+              ),
+            ],
+          ),
+    );
+
+    if (url != null && url.isNotEmpty) {
+      viewModel.addImageUrl(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
@@ -107,19 +144,16 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   ),
                   AppTheme.mediumGap,
 
-                  // Bildförhandsvisning
-                  if (viewModel.imageUrl != null &&
-                      viewModel.imageUrl!.isNotEmpty)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: AppTheme.spacingMd),
-                      child: ClipRRect(
-                        borderRadius: AppTheme.largeRadius,
-                        child: CachedRecipeHeroImage(
-                          imageUrl: viewModel.imageUrl,
-                          height: AppTheme.imageHeightMedium,
-                        ),
-                      ),
-                    ),
+                  // UPPDATERAD: Bildhantering med RecipeImageManager
+                  RecipeImageManager(
+                    imageUrls: viewModel.imageUrls,
+                    onAddImage: viewModel.addImageUrl,
+                    onRemoveImage: viewModel.removeImageAt,
+                    onSetPrimary: viewModel.setPrimaryImage,
+                    onPickImage: () => _pickImage(viewModel),
+                    canAddMore: viewModel.canAddMoreImages,
+                  ),
+                  AppTheme.largeGap,
 
                   // Titel
                   TextFormField(
@@ -167,7 +201,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   ),
                   AppTheme.mediumGap,
 
-                  // Ingredienser - REFAKTORERAD!
+                  // Ingredienser
                   _buildDynamicList(
                     label: 'Ingrediens',
                     controllers: viewModel.ingredientControllers,
@@ -177,7 +211,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   ),
                   AppTheme.mediumGap,
 
-                  // Instruktioner - REFAKTORERAD!
+                  // Instruktioner
                   _buildDynamicList(
                     label: 'Instruktion',
                     controllers: viewModel.instructionControllers,
@@ -187,7 +221,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   ),
                   AppTheme.mediumGap,
 
-                  // Taggar - REFAKTORERAD!
+                  // Taggar
                   _buildDynamicList(
                     label: 'Tagg',
                     controllers: viewModel.tagControllers,
@@ -206,19 +240,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
                     onChanged: viewModel.setRating,
                     validator: FormValidators.rating(),
-                  ),
-                  AppTheme.mediumGap,
-
-                  // Bild-URL
-                  TextFormField(
-                    initialValue: viewModel.imageUrl ?? '',
-                    decoration: const InputDecoration(labelText: 'Bild-URL'),
-                    onChanged: viewModel.setImageUrl,
-                    validator: FormValidators.url(),
-                    onFieldSubmitted: (_) {
-                      // Trigger rebuild för att uppdatera bildförhandsvisning
-                      setState(() {});
-                    },
                   ),
                   AppTheme.mediumGap,
 
@@ -270,7 +291,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  // REFAKTORERAD METOD - Nu helt ren från controller-hantering!
   Widget _buildDynamicList({
     required String label,
     required List<TextEditingController> controllers,
@@ -284,7 +304,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         Text(label, style: AppTheme.formLabelStyle),
         AppTheme.smallGap,
 
-        // Bygg fält från controllers som ViewModel tillhandahåller
         ...controllers.asMap().entries.map((entry) {
           final index = entry.key;
           final controller = entry.value;
@@ -304,7 +323,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     onChanged: (value) => onUpdate(index, value),
                   ),
                 ),
-                // Visa delete-knapp om det finns mer än ett fält
                 if (controllers.length > 1)
                   IconButton(
                     icon: AppTheme.actionIcon(context, Icons.delete),
@@ -315,7 +333,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           );
         }),
 
-        // Lägg till-knapp om sista fältet inte är tomt eller om listan är tom
         if (controllers.isEmpty ||
             (controllers.isNotEmpty && controllers.last.text.isNotEmpty))
           TextButton.icon(

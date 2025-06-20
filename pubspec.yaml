@@ -35,6 +35,7 @@ dependencies:
   cloud_firestore: ^4.15.9            # NoSQL-databas för strukturerad data
   firebase_storage: ^11.7.7           # Fil- och bildlagring i molnet
   firebase_messaging: ^14.9.3         # Push-notifikationer (framtida feature)
+  firebase_analytics: ^10.10.7        # Analytics för användarbeteende
   
   # ==================== MEDIA & NETWORK ====================
   
@@ -42,6 +43,7 @@ dependencies:
   image_picker: ^0.8.7                # Kamera och galleri-åtkomst
   cached_network_image: ^3.3.0        # Bildcaching för bättre performance
   flutter_cache_manager: ^3.3.1       # Avancerad cache-hantering
+  flutter_image_compress: ^2.1.0      # Bildkomprimering (NY!)
   
   # Network & Web parsing
   http: ^0.13.6                       # HTTP-förfrågningar för API-calls
@@ -57,12 +59,12 @@ dependencies:
   share_plus: ^7.2.2                  # Native delning via share sheet
   file_picker: ^8.0.0                 # Välj filer för import
   path_provider: ^2.1.2               # Hitta temp-mapp för export
-  share_handler: ^0.0.19              # Ta emot delningar från andra appar (NY!)
+  share_handler: ^0.0.19              # Ta emot delningar från andra appar
+  path: ^1.8.3                        # Filsökvägshantering (NY!)
   
   # ==================== WEB EXTRACTION ====================
   
-  flutter_inappwebview: ^6.0.0        # Headless WebView för social media extraktion (NY!)
-  firebase_analytics: ^10.10.7
+  flutter_inappwebview: ^6.0.0        # Headless WebView för social media extraktion
 
 dev_dependencies:
   flutter_test:

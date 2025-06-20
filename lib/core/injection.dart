@@ -1,13 +1,19 @@
 // lib/core/injection.dart
 
+/// Dependency injection konfiguration för Butlery
+
 import 'package:get_it/get_it.dart';
-import '../services/recipe_service.dart'; // Använd Firestore-versionen men med namnet RecipeService
+import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/shopping_list_service.dart';
 import '../services/persistence_service.dart';
 import '../services/auth_service.dart';
-import '../services/share_service.dart'; // NY IMPORT
+import '../services/share_service.dart';
+import '../services/storage_service.dart';
+import '../services/image_picker_service.dart';
+import '../services/offline_service.dart';
+import '../services/analytics_service.dart';
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -40,7 +46,11 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<MenuService>(MenuService());
   sl.registerSingleton<SearchService>(SearchService());
   sl.registerSingleton<ShoppingListService>(ShoppingListService());
-  sl.registerSingleton<ShareService>(ShareService()); // NY SERVICE
+  sl.registerSingleton<ShareService>(ShareService());
+  sl.registerSingleton<StorageService>(StorageService());
+  sl.registerSingleton<ImagePickerService>(ImagePickerService());
+  sl.registerSingleton<OfflineService>(OfflineService());
+  sl.registerSingleton<AnalyticsService>(AnalyticsService());
 
   // ==================== VIEWMODELS ====================
 
@@ -60,13 +70,24 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerFactory<ShoppingListViewModel>(
-    () => ShoppingListViewModel(shoppingListService: sl<ShoppingListService>()),
+    () => ShoppingListViewModel(
+      shoppingListService: sl<ShoppingListService>(),
+      shareService: sl<ShareService>(),
+    ),
   );
 
+  // RecipeFormViewModel använder named parameters i konstruktorn
   sl.registerFactory<RecipeFormViewModel>(
-    () => RecipeFormViewModel(recipeService: sl<RecipeService>()),
+    () => RecipeFormViewModel(
+      recipeService: sl<RecipeService>(),
+      analyticsService: sl<AnalyticsService>(),
+      storageService: sl<StorageService>(),
+      imagePickerService: sl<ImagePickerService>(),
+      authService: sl<AuthService>(),
+    ),
   );
 
+  // TextImportViewModel - ingen konstruktor, så använder default
   sl.registerFactory<TextImportViewModel>(() => TextImportViewModel());
 
   sl.registerFactory<ArchiveImportViewModel>(
@@ -76,29 +97,35 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+  // PhotoImportViewModel - ingen konstruktor, så använder default
   sl.registerFactory<PhotoImportViewModel>(() => PhotoImportViewModel());
 
+  // UrlImportViewModel - ingen konstruktor, så använder default
   sl.registerFactory<UrlImportViewModel>(() => UrlImportViewModel());
 
-  // RecipeDetailViewModel behöver recipe som parameter
+  // RecipeDetailViewModel - fixad med korrekta parameters
   sl.registerFactoryParam<RecipeDetailViewModel, Recipe, void>(
     (recipe, _) => RecipeDetailViewModel(
       recipe: recipe,
       recipeService: sl<RecipeService>(),
+      analyticsService: sl<AnalyticsService>(),
     ),
   );
 
-  // AuthViewModel för login/register UI
+  // AuthViewModel - ingen konstruktor, så använder default
   sl.registerFactory<AuthViewModel>(() => AuthViewModel());
 
   // ==================== INITIALIZATION ====================
 
   // Initiera RecipeService (kommer nu att använda Firestore)
   await sl<RecipeService>().initialize();
-}
 
-/// Återställ dependencies (för testing)
-Future<void> resetDependencies() async {
-  await sl.reset();
-  await initializeDependencies();
+  // Initiera OfflineService
+  try {
+    final offlineService = sl<OfflineService>();
+    await offlineService.initialize();
+  } catch (e) {
+    // Om OfflineService inte är implementerad än, ignorera
+    // print('OfflineService init skipped: $e');
+  }
 }
