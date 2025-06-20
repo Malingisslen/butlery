@@ -769,4 +769,3 @@ final archivedRecipes = [
     mealType: 'Lunch',
   ),
 ];
-
