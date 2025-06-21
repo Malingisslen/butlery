@@ -27,6 +27,7 @@ dependencies:
   
   # Utilities & ID Generation
   uuid: ^4.0.0                        # Generera unika ID:n för recept
+  super_measurement: ^2.0.0           # Enhetskonvertering (NY för Fas 16!)
   
   # ==================== FIREBASE BACKEND ====================
   

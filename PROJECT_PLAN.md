@@ -198,18 +198,17 @@ Firestore Database:
 - ✅ Snabb och responsiv bildhantering
 - ✅ Säker permission-hantering för alla plattformar
 
+### **Fas 16: Portionshantering & Enhetskonvertering (4-5 timmar)**
+- ✅ Portionsskalning UI med +/- knappar
+- ✅ Smart parsing av ingredienser med enheter
+- ✅ Enhetskonvertering (dl ↔ ml, kg ↔ g, etc.)
+- ✅ Enhetskonvertering (amerikanska enheter till svenska, cups -> dl etc)
+- ✅ super_measurement package integration
+- ✅ Intelligent ingrediens-parsing för svenska enheter
+- ✅ Intelligent ingrediens-parsing för amerikanska enheter
 ---
 
 ## 🔧 **KOMMANDE FASER**
-
-### **Fas 16: Portionshantering & Enhetskonvertering (4-5 timmar)**
-
-**🎯 Implementation:**
-- [ ] Portionsskalning UI med +/- knappar
-- [ ] Smart parsing av ingredienser med enheter
-- [ ] Enhetskonvertering (dl ↔ ml, kg ↔ g, etc.)
-- [ ] super_measurement package integration
-- [ ] Intelligent ingrediens-parsing för svenska enheter
 
 ### **Fas 17: Video-import (6-8 timmar)**
 
