@@ -110,7 +110,7 @@ class CachedRecipeImage extends StatelessWidget {
         child: SizedBox(
           width: size * 0.3,
           height: size * 0.3,
-          child: AppTheme.smallLoadingIndicator(context),
+          child: AppTheme.smallLoadingIndicator(),
         ),
       ),
     );
@@ -202,4 +202,3 @@ class CachedRecipeHeroImage extends StatelessWidget {
     );
   }
 }
-

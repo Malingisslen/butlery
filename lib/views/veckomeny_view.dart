@@ -312,7 +312,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 : null,
         icon:
             viewModel.isGenerating
-                ? AppTheme.smallLoadingIndicator(context)
+                ? AppTheme.smallLoadingIndicator()
                 : const Icon(Icons.restaurant_menu),
         label: Text(
           viewModel.isGenerating

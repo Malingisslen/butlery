@@ -313,6 +313,15 @@ class AppTheme {
   /// Ofta använd kombination: spacingSm + 4 = 12px
   static const double spacingSmPlus = 12.0; // För input padding och liknande
 
+  // ===== OVERLAY OCH DIVIDER KONSTANTER (NYA TILLÄGG) =====
+
+  // Overlay opacity för loading screens och dialogs
+  static const double overlayOpacity = 0.7;
+  static const double cardOverlayOpacity = 0.8;
+
+  // Divider height (du använder redan dividerColor)
+  static const double dividerHeight = 1.0;
+
   // ===== STANDARDISERADE EDGE INSETS =====
 
   /// Standardiserade EdgeInsets för vanliga användningsfall
@@ -348,6 +357,13 @@ class AppTheme {
   static Widget get extraLargeGap => SizedBox(height: spacingXl); // 32px
   static Widget get hugeGap => SizedBox(height: spacingXxl); // 48px
 
+  // ===== HORISONTELLA GAPS (NYTT TILLÄGG) =====
+
+  // Horisontella SizedBox widgets för mellanrum mellan element
+  static Widget get smallHorizontalGap => SizedBox(width: spacingSm); // 8px
+  static Widget get mediumHorizontalGap => SizedBox(width: spacingMd); // 16px
+  static Widget get largeHorizontalGap => SizedBox(width: spacingLg); // 24px
+
   // ===== SEMANTISKA ICON-STORLEKAR =====
 
   /// Specifika storlekar för olika användningsområden
@@ -365,171 +381,11 @@ class AppTheme {
   static const double iconSizeXLarge = iconSizeHero;
   static const double iconSizeXXLarge = iconSizeEmptyState;
 
-  // ===== SEMANTISKA WIDGET BUILDERS =====
+  // ===== ELEVATION KONSTANTER (NYA TILLÄGG) =====
 
-  /// Info-ikoner för metadata och statusinfo
-  static Widget infoIcon(BuildContext context, {IconData? icon}) => Icon(
-    icon ?? Icons.info_outline,
-    size: iconSizeInfo,
-    color: Theme.of(context).colorScheme.onSurfaceVariant,
-  );
-
-  /// Filter-ikon för sök och filter-funktioner
-  static Widget filterIcon(BuildContext context) => Icon(
-    Icons.filter_list,
-    size: iconSizeInfo,
-    color: Theme.of(context).colorScheme.onSurfaceVariant,
-  );
-
-  /// Action-ikoner för interaktiva element
-  static Widget actionIcon(
-    BuildContext context,
-    IconData icon, {
-    Color? color,
-  }) => Icon(
-    icon,
-    size: iconSizeAction,
-    color: color ?? Theme.of(context).colorScheme.onSurface,
-  );
-
-  /// Status-ikoner med semantiska färger
-  static Widget successIcon(BuildContext context) =>
-      Icon(Icons.check_circle, size: iconSizeInfo, color: successColor);
-
-  static Widget errorIcon(BuildContext context) =>
-      Icon(Icons.error_outline, size: iconSizeInfo, color: errorColor);
-
-  static Widget warningIcon(BuildContext context) =>
-      Icon(Icons.warning_outlined, size: iconSizeInfo, color: warningColor);
-
-  /// Loading indicators för olika storlekar
-  static Widget smallLoadingIndicator(BuildContext context) => SizedBox(
-    width: 16,
-    height: 16,
-    child: CircularProgressIndicator(
-      strokeWidth: 2,
-      valueColor: AlwaysStoppedAnimation<Color>(
-        Theme.of(context).colorScheme.onPrimary,
-      ),
-    ),
-  );
-
-  static Widget mediumLoadingIndicator() => const CircularProgressIndicator();
-
-  static Widget largeLoadingIndicator() =>
-      const CircularProgressIndicator.adaptive();
-
-  /// Error container för felmeddelanden
-  static Widget errorContainer(
-    BuildContext context,
-    String message, {
-    IconData? icon,
-  }) => Container(
-    padding: EdgeInsets.all(spacingMd),
-    decoration: BoxDecoration(
-      color: errorColor.withValues(alpha: 0.1),
-      borderRadius: mediumRadius,
-      border: Border.all(color: errorColor),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          icon ?? Icons.error_outline,
-          color: errorColor,
-          size: iconSizeInfo,
-        ),
-        SizedBox(width: spacingSm),
-        Expanded(child: Text(message, style: errorTextStyle)),
-      ],
-    ),
-  );
-
-  /// Success container för framgångsmeddelanden
-  static Widget successContainer(BuildContext context, String message) =>
-      Container(
-        padding: EdgeInsets.all(spacingMd),
-        decoration: BoxDecoration(
-          color: successColor.withValues(alpha: 0.1),
-          borderRadius: mediumRadius,
-          border: Border.all(color: successColor),
-        ),
-        child: Row(
-          children: [
-            successIcon(context),
-            SizedBox(width: spacingSm),
-            Expanded(child: Text(message, style: successTextStyle)),
-          ],
-        ),
-      );
-
-  /// Filter chip för sök och filter
-  static Widget filterChip({
-    required String label,
-    required bool selected,
-    required VoidCallback onSelected,
-  }) => FilterChip(
-    label: Text(label),
-    selected: selected,
-    onSelected: (_) => onSelected(),
-    selectedColor: primaryColor.withValues(alpha: 0.2),
-    checkmarkColor: primaryColor,
-  );
-
-  /// Choice chip för alternativ
-  static Widget choiceChip({
-    required String label,
-    required bool selected,
-    required VoidCallback onSelected,
-  }) => ChoiceChip(
-    label: Text(label),
-    selected: selected,
-    onSelected: (_) => onSelected(),
-    selectedColor: primaryColor.withValues(alpha: 0.2),
-  );
-
-  /// Måltidstyp chip med semantiska färger
-  static Widget mealTypeChip(String mealType) => Container(
-    padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
-    decoration: mealTypeChipDecoration(_getMealTypeColorForChip(mealType)),
-    child: Text(mealType, style: chipOnPrimaryTextStyle),
-  );
-
-  /// Tag chip för mindre taggar
-  static Widget tagChip(String tag) => Container(
-    padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
-    decoration: tagChipDecoration,
-    child: Text(tag, style: chipLabelStyle),
-  );
-
-  /// Hjälpfunktion för måltidsfärger
-  static Color _getMealTypeColorForChip(String mealType) {
-    switch (mealType.toLowerCase()) {
-      case 'frukost':
-        return frukostColor;
-      case 'lunch':
-        return lunchColor;
-      case 'middag':
-        return middagColor;
-      case 'dessert':
-        return dessertColor;
-      case 'mellanmål':
-        return mellanmalColor;
-      case 'fika':
-        return fikaColor;
-      default:
-        return defaultMealColor;
-    }
-  }
-
-  // ===== CONTAINER HEIGHTS (SLUTGILTIGA CENTRALISERINGAR) =====
-
-  /// Standardiserade container höjder för konsistens
-  static const double imageHeightSmall = 100.0; // Små bilder
-  static const double imageHeightMedium =
-      200.0; // Medium bilder (standard för receptbilder)
-  static const double imageHeightLarge = 300.0; // Stora bilder
-  static const double buttonHeight = 56.0; // Standard knapp-höjd
-  static const double inputHeight = 48.0; // Standard input-höjd
+  static const double elevationLow = 2.0;
+  static const double elevationMedium = 4.0;
+  static const double elevationHigh = 8.0;
 
   // ===== BORDER RADIUS (UTÖKADE) =====
 
@@ -555,6 +411,24 @@ class AppTheme {
       BorderRadius.circular(radiusRound); // 35px
   static BorderRadius get chipRadius =>
       BorderRadius.circular(radiusChip); // 6px
+
+  // ===== NYA BORDER RADIUS KONSTANTER (TILLÄGG) =====
+
+  // Bottom sheet radius
+  static const BorderRadius bottomSheetBorderRadius = BorderRadius.only(
+    topLeft: Radius.circular(radiusXLarge), // 16px
+    topRight: Radius.circular(radiusXLarge), // 16px
+  );
+
+  // Card border radius alias
+  static const BorderRadius cardBorderRadius = BorderRadius.all(
+    Radius.circular(radiusMedium), // 8px
+  );
+
+  // ===== SAKNADE BORDER RADIUS KONSTANTER =====
+
+  static const double borderRadiusSm =
+      radiusSmall; // 4px - alias för RecipeImageManager
 
   // ===== SHADOWS (FÖRBÄTTRADE) =====
 
@@ -661,6 +535,81 @@ class AppTheme {
   static const Color mellanmalColor = Color(0xFF9C27B0); // Purple
   static const Color fikaColor = Color(0xFF8D6E63); // Brown
   static const Color defaultMealColor = _textSecondary; // Fallback färg
+
+  // ===== CONTAINER HEIGHTS (SLUTGILTIGA CENTRALISERINGAR) =====
+
+  /// Standardiserade container höjder för konsistens
+  static const double imageHeightSmall = 100.0; // Små bilder
+  static const double imageHeightMedium =
+      200.0; // Medium bilder (standard för receptbilder)
+  static const double imageHeightLarge = 300.0; // Stora bilder
+  static const double buttonHeight = 56.0; // Standard knapp-höjd
+  static const double inputHeight = 48.0; // Standard input-höjd
+
+  // ===== NYA BILDSTORLEKAR (TILLÄGG) =====
+
+  // Bildstorlekar för RecipeImageManager
+  static const double imageWidthSmall = 120.0;
+  static const double imageCarouselHeight = 250.0;
+
+  // Thumbnails
+  static const double thumbnailSize = 60.0;
+  static const double thumbnailSmallSize = 40.0;
+  static const double thumbnailLargeSize = 80.0;
+
+  // Aspect ratios
+  static const double imageAspectRatio = 16 / 9;
+  static const double thumbnailAspectRatio = 1.0;
+
+  // ===== SEMANTISKA WIDGET BUILDERS =====
+
+  /// Info-ikoner för metadata och statusinfo
+  static Widget infoIcon(BuildContext context, {IconData? icon}) => Icon(
+    icon ?? Icons.info_outline,
+    size: iconSizeInfo,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
+  );
+
+  /// Filter-ikon för sök och filter-funktioner
+  static Widget filterIcon(BuildContext context) => Icon(
+    Icons.filter_list,
+    size: iconSizeInfo,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
+  );
+
+  /// Action-ikoner för interaktiva element
+  static Widget actionIcon(
+    BuildContext context,
+    IconData icon, {
+    Color? color,
+    double? size,
+  }) => Icon(
+    icon,
+    size: size ?? iconSizeAction,
+    color: color ?? Theme.of(context).colorScheme.onSurface,
+  );
+
+  /// Status-ikoner med semantiska färger
+  static Widget successIcon(BuildContext context) =>
+      Icon(Icons.check_circle, size: iconSizeInfo, color: successColor);
+
+  static Widget errorIcon(BuildContext context) =>
+      Icon(Icons.error_outline, size: iconSizeInfo, color: errorColor);
+
+  static Widget warningIcon(BuildContext context) =>
+      Icon(Icons.warning_outlined, size: iconSizeInfo, color: warningColor);
+
+  /// Loading indicators för olika storlekar
+  static Widget smallLoadingIndicator() => const SizedBox(
+    width: 16,
+    height: 16,
+    child: CircularProgressIndicator(strokeWidth: 2),
+  );
+
+  static Widget mediumLoadingIndicator() => const CircularProgressIndicator();
+
+  static Widget largeLoadingIndicator() =>
+      const CircularProgressIndicator.adaptive();
 
   // ===== ✨ NYA SEMANTISKA TEXT STYLES (KRITISKA TILLÄGG) =====
 
@@ -782,6 +731,14 @@ class AppTheme {
     height: 1.2,
   );
 
+  /// Body style alias för enklare användning
+  static TextStyle get bodyStyle => const TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: _textMedium,
+    height: 1.4,
+  );
+
   // ===== STANDARDISERADE BUTTON STYLES =====
 
   /// Förkonfigurerade ButtonStyle för konsistenta knappar
@@ -838,4 +795,133 @@ class AppTheme {
     borderRadius: mediumRadius,
     border: Border.all(color: Theme.of(context).colorScheme.outline),
   );
+
+  // ===== NYA HELPER-METODER (KRITISKA TILLÄGG) =====
+
+  /// Skapa overlay färg baserat på theme
+  static Color overlayColor(BuildContext context) {
+    return Theme.of(
+      context,
+    ).colorScheme.surface.withValues(alpha: overlayOpacity);
+  }
+
+  /// Skapa card overlay färg baserat på theme
+  static Color cardOverlayColor(BuildContext context) {
+    return Theme.of(
+      context,
+    ).colorScheme.surface.withValues(alpha: cardOverlayOpacity);
+  }
+
+  /// Skapa text med konsistent färg baserat på theme
+  static TextStyle getTextStyle(
+    BuildContext context,
+    TextStyle baseStyle, {
+    Color? color,
+  }) {
+    return baseStyle.copyWith(
+      color: color ?? Theme.of(context).colorScheme.onSurface,
+    );
+  }
+
+  /// Error container för felmeddelanden
+  static Widget errorContainer(
+    BuildContext context,
+    String message, {
+    IconData? icon,
+  }) => Container(
+    padding: EdgeInsets.all(spacingMd),
+    decoration: BoxDecoration(
+      color: errorColor.withValues(alpha: 0.1),
+      borderRadius: mediumRadius,
+      border: Border.all(color: errorColor),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          icon ?? Icons.error_outline,
+          color: errorColor,
+          size: iconSizeInfo,
+        ),
+        SizedBox(width: spacingSm),
+        Expanded(child: Text(message, style: errorTextStyle)),
+      ],
+    ),
+  );
+
+  /// Success container för framgångsmeddelanden
+  static Widget successContainer(BuildContext context, String message) =>
+      Container(
+        padding: EdgeInsets.all(spacingMd),
+        decoration: BoxDecoration(
+          color: successColor.withValues(alpha: 0.1),
+          borderRadius: mediumRadius,
+          border: Border.all(color: successColor),
+        ),
+        child: Row(
+          children: [
+            successIcon(context),
+            SizedBox(width: spacingSm),
+            Expanded(child: Text(message, style: successTextStyle)),
+          ],
+        ),
+      );
+
+  /// Filter chip för sök och filter
+  static Widget filterChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onSelected,
+  }) => FilterChip(
+    label: Text(label),
+    selected: selected,
+    onSelected: (_) => onSelected(),
+    selectedColor: primaryColor.withValues(alpha: 0.2),
+    checkmarkColor: primaryColor,
+  );
+
+  /// Choice chip för alternativ
+  static Widget choiceChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onSelected,
+  }) => ChoiceChip(
+    label: Text(label),
+    selected: selected,
+    onSelected: (_) => onSelected(),
+    selectedColor: primaryColor.withValues(alpha: 0.2),
+  );
+
+  /// Måltidstyp chip med semantiska färger
+  static Widget mealTypeChip(String mealType) => Container(
+    padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
+    decoration: mealTypeChipDecoration(_getMealTypeColorForChip(mealType)),
+    child: Text(mealType, style: chipOnPrimaryTextStyle),
+  );
+
+  /// Tag chip för mindre taggar
+  static Widget tagChip(String tag) => Container(
+    padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
+    decoration: tagChipDecoration,
+    child: Text(tag, style: chipLabelStyle),
+  );
+
+  /// Hjälpfunktion för måltidsfärger
+  static Color _getMealTypeColorForChip(String mealType) {
+    switch (mealType.toLowerCase()) {
+      case 'frukost':
+        return frukostColor;
+      case 'lunch':
+        return lunchColor;
+      case 'middag':
+        return middagColor;
+      case 'dessert':
+        return dessertColor;
+      case 'mellanmål':
+        return mellanmalColor;
+      case 'fika':
+        return fikaColor;
+      default:
+        return defaultMealColor;
+    }
+  }
 }

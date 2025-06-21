@@ -3,6 +3,14 @@
     <!-- PERMISSIONS för Internet och WebView -->
     <uses-permission android:name="android.permission.INTERNET"/>
     
+    <!-- NYA PERMISSIONS för Fas 15: Kamera och Galleri -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
+    <!-- För nyare Android-versioner (API 33+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    
     <application
         android:label="butlery"
         android:name="${applicationName}"
