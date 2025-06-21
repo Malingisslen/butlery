@@ -1,4 +1,5 @@
 // lib/views/recipe_detail_view.dart
+// UPPDATERAD för Fas 16 med smart portionsskalning
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,12 +8,13 @@ import 'package:share_plus/share_plus.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
+import '../widgets/portion_scaler.dart'; // NY IMPORT!
+import '../widgets/recipe_image_carousel.dart';
 import '../theme/app_theme.dart';
-import '../widgets/recipe_image_carousel.dart'; // NY IMPORT!
 import '../core/injection.dart';
 import '../services/share_service.dart';
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED BILDKARUSELL
+/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SMART PORTIONSSKALNING
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -37,6 +39,20 @@ class _RecipeDetailViewContent extends StatefulWidget {
 
 class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   final ShareService _shareService = sl<ShareService>();
+
+  // State för portionsskalning
+  int _currentPortions = 1;
+  List<String> _scaledIngredients = [];
+  bool _isScaled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initiera med originalvärden
+    final viewModel = context.read<RecipeDetailViewModel>();
+    _currentPortions = viewModel.recipe.portions ?? 4;
+    _scaledIngredients = List.from(viewModel.recipe.ingredients);
+  }
 
   Future<void> _deleteRecipe(BuildContext context) async {
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -91,17 +107,41 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
   Future<void> _shareRecipe(BuildContext context) async {
     final viewModel = context.read<RecipeDetailViewModel>();
-    final result = await _shareService.shareRecipe(viewModel.recipe);
+
+    // Dela med skalade ingredienser om användaren har justerat portioner
+    final recipeToShare =
+        _isScaled
+            ? viewModel.recipe.copyWith(
+              portions: _currentPortions,
+              ingredients: _scaledIngredients,
+            )
+            : viewModel.recipe;
+
+    final result = await _shareService.shareRecipe(recipeToShare);
 
     if (result.status == ShareResultStatus.success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Recept delat!'),
+        SnackBar(
+          content: Text(
+            _isScaled
+                ? 'Recept delat med $_currentPortions portioner!'
+                : 'Recept delat!',
+          ),
           backgroundColor: AppTheme.successColor,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  void _onPortionChanged(int newPortions, List<String> scaledIngredients) {
+    setState(() {
+      _currentPortions = newPortions;
+      _scaledIngredients = scaledIngredients;
+      _isScaled =
+          newPortions !=
+          (context.read<RecipeDetailViewModel>().recipe.portions ?? 4);
+    });
   }
 
   // NY METOD för att visa bilder i fullskärm
@@ -135,7 +175,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.share),
               onPressed: () => _shareRecipe(context),
-              tooltip: 'Dela recept',
+              tooltip:
+                  _isScaled
+                      ? 'Dela med $_currentPortions portioner'
+                      : 'Dela recept',
             ),
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.delete),
@@ -224,8 +267,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     AppTheme.largeGap,
                   ],
 
-                  // Ingredienser
-                  _buildIngredients(context, viewModel),
+                  // NY! PORTIONSSKALNING MED SMART INGREDIENS-UPPDATERING
+                  PortionScaler(
+                    originalPortions: viewModel.recipe.portions ?? 4,
+                    originalIngredients: viewModel.recipe.ingredients,
+                    onPortionChanged: _onPortionChanged,
+                    minPortions: 1,
+                    maxPortions: 20,
+                  ),
                   AppTheme.largeGap,
 
                   // Instruktioner
@@ -297,7 +346,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               _buildMetadataItem(
                 context,
                 Icons.people,
-                '${viewModel.portionsDisplay} portioner',
+                // Visa nuvarande portioner (kan vara skalad)
+                '$_currentPortions ${_currentPortions == 1 ? 'portion' : 'portioner'}',
+                isHighlighted: _isScaled,
               ),
               _buildMetadataItem(
                 context,
@@ -384,19 +435,31 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  Widget _buildMetadataItem(BuildContext context, IconData icon, String text) {
+  Widget _buildMetadataItem(
+    BuildContext context,
+    IconData icon,
+    String text, {
+    bool isHighlighted = false,
+  }) {
     return Column(
       children: [
         Icon(
           icon,
           size: AppTheme.iconSizeAction,
-          color: Theme.of(context).colorScheme.primary,
+          color:
+              isHighlighted
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         AppTheme.tinyGap,
         Text(
           text,
           style: AppTheme.captionStyle.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color:
+                isHighlighted
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+            fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
           ),
           textAlign: TextAlign.center,
         ),
@@ -480,61 +543,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildIngredients(
-    BuildContext context,
-    RecipeDetailViewModel viewModel,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Ingredienser', style: Theme.of(context).textTheme.headlineSmall),
-        AppTheme.smallGap,
-        Container(
-          width: double.infinity,
-          padding: AppTheme.cardPadding,
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: AppTheme.mediumRadius,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children:
-                viewModel.recipe.ingredients.map((ingredient) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: AppTheme.spacingXxs,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          margin: EdgeInsets.only(
-                            top: 8,
-                            right: AppTheme.spacingSm,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            ingredient,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-          ),
-        ),
-      ],
     );
   }
 

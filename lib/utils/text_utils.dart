@@ -1,4 +1,5 @@
 // lib/utils/text_utils.dart
+// UPPDATERAD för Fas 16 med smart enhetskonvertering
 
 import 'dart:core';
 
@@ -47,7 +48,6 @@ String formatFractional(double value) {
 }
 
 /// Parsa svenska nummer (hanterar både . och , som decimaltecken)
-/// TILLAGD FUNKTION för ShoppingListService
 double parseSwedishNumber(String number) {
   // Ta bort mellanslag och ersätt komma med punkt
   final normalized = number.trim().replaceAll(',', '.');
@@ -92,46 +92,252 @@ String toSwedishHalfFraction(double value) {
   return formatFractional(value);
 }
 
+/// NY KLASS för smart enhetskonvertering (Fas 16)
+class SmartUnitConverter {
+  /// Konverterar enheter till mer läsbara format när det är vettigt
+  /// Exempel: 15 dl → 1,5 liter, 1200 g → 1,2 kg
+  static ConvertedMeasurement convertToReadableUnit(
+    double quantity,
+    String unit,
+  ) {
+    final lowerUnit = unit.toLowerCase();
+
+    switch (lowerUnit) {
+      // AMERIKANSKA ENHETER → SVENSKA ENHETER
+
+      // Volym: amerikanska → svenska
+      case 'cup':
+      case 'cups':
+        return ConvertedMeasurement(quantity * 2.37, 'dl'); // 1 cup ≈ 2.37 dl
+
+      case 'fl oz':
+      case 'floz':
+      case 'oz': // fluid ounce
+        if (quantity >= 3.4) {
+          // 3.4 fl oz ≈ 1 dl
+          return ConvertedMeasurement(quantity / 3.4, 'dl');
+        } else {
+          return ConvertedMeasurement(
+            quantity * 29.6,
+            'ml',
+          ); // 1 fl oz ≈ 29.6 ml
+        }
+
+      case 'tbsp':
+      case 'tablespoon':
+      case 'tablespoons':
+        return ConvertedMeasurement(
+          quantity * 0.89,
+          'msk',
+        ); // 1 tbsp ≈ 0.89 msk
+
+      case 'tsp':
+      case 'teaspoon':
+      case 'teaspoons':
+        return ConvertedMeasurement(quantity * 0.84, 'tsk'); // 1 tsp ≈ 0.84 tsk
+
+      case 'pint':
+      case 'pints':
+        return ConvertedMeasurement(quantity * 4.73, 'dl'); // 1 pint ≈ 4.73 dl
+
+      case 'quart':
+      case 'quarts':
+        return ConvertedMeasurement(quantity * 9.46, 'dl'); // 1 quart ≈ 9.46 dl
+
+      case 'gallon':
+      case 'gallons':
+        return ConvertedMeasurement(quantity * 3.79, 'l'); // 1 gallon ≈ 3.79 l
+
+      // Vikt: amerikanska → svenska
+      case 'lb':
+      case 'lbs':
+      case 'pound':
+      case 'pounds':
+        return ConvertedMeasurement(quantity * 454, 'g'); // 1 lb ≈ 454 g
+
+      case 'ounce':
+      case 'ounces':
+        return ConvertedMeasurement(quantity * 28.3, 'g'); // 1 oz ≈ 28.3 g
+
+      // SVENSKA ENHETER (befintliga konverteringar)
+
+      // Volym: ml → cl → dl → liter
+      case 'ml':
+        if (quantity >= 1000) {
+          return ConvertedMeasurement(quantity / 1000, 'l');
+        } else if (quantity >= 100) {
+          return ConvertedMeasurement(quantity / 100, 'dl');
+        } else if (quantity >= 10) {
+          return ConvertedMeasurement(quantity / 10, 'cl');
+        }
+        break;
+
+      case 'cl':
+        if (quantity >= 100) {
+          return ConvertedMeasurement(quantity / 100, 'l');
+        } else if (quantity >= 10) {
+          return ConvertedMeasurement(quantity / 10, 'dl');
+        }
+        break;
+
+      case 'dl':
+        if (quantity >= 10) {
+          return ConvertedMeasurement(quantity / 10, 'l');
+        }
+        break;
+
+      // Vikt: g → kg
+      case 'g':
+        if (quantity >= 1000) {
+          return ConvertedMeasurement(quantity / 1000, 'kg');
+        }
+        break;
+
+      case 'mg':
+        if (quantity >= 1000) {
+          return ConvertedMeasurement(quantity / 1000, 'g');
+        }
+        break;
+
+      // Teskedar/matskedar → dl (ungefärliga konverteringar)
+      case 'krm':
+        if (quantity >= 5) {
+          // 5 krm ≈ 1 tsk
+          return ConvertedMeasurement(quantity / 5, 'tsk');
+        }
+        break;
+
+      case 'tsk':
+        if (quantity >= 3) {
+          // 3 tsk = 1 msk
+          return ConvertedMeasurement(quantity / 3, 'msk');
+        } else if (quantity >= 15) {
+          // 15 tsk ≈ 1 dl (fallback för stora mängder)
+          return ConvertedMeasurement(quantity / 15, 'dl');
+        }
+        break;
+
+      case 'msk':
+        if (quantity >= 5) {
+          // 5 msk ≈ 1 dl
+          return ConvertedMeasurement(quantity / 5, 'dl');
+        }
+        break;
+    }
+
+    // Ingen konvertering gjord
+    return ConvertedMeasurement(quantity, unit);
+  }
+
+  /// Kontrollerar om en konvertering förbättrar läsbarheten
+  static bool shouldConvert(double quantity, String unit) {
+    final converted = convertToReadableUnit(quantity, unit);
+
+    // Konvertera om enheten faktiskt ändrades
+    if (converted.unit != unit) {
+      // AMERIKANSKA → SVENSKA: konvertera ALLTID
+      final americanUnits = {
+        'cup',
+        'cups',
+        'oz',
+        'fl oz',
+        'floz',
+        'tbsp',
+        'tsp',
+        'lb',
+        'lbs',
+        'pound',
+        'pounds',
+        'ounce',
+        'ounces',
+        'pint',
+        'pints',
+        'quart',
+        'quarts',
+        'gallon',
+        'gallons',
+        'tablespoon',
+        'tablespoons',
+        'teaspoon',
+        'teaspoons',
+      };
+
+      if (americanUnits.contains(unit.toLowerCase())) {
+        return true; // Konvertera alltid amerikanska enheter till svenska
+      }
+
+      // SVENSKA ENHETER: befintliga regler
+      // För volym: konvertera alltid om vi går från dl till liter
+      if (unit.toLowerCase() == 'dl' && converted.unit == 'l') {
+        return true;
+      }
+
+      // För vikt: konvertera alltid om vi går från g till kg
+      if (unit.toLowerCase() == 'g' && converted.unit == 'kg') {
+        return true;
+      }
+
+      // För små enheter: konvertera alltid uppåt
+      if (unit.toLowerCase() == 'krm' && converted.unit == 'tsk') {
+        return true;
+      }
+
+      if (unit.toLowerCase() == 'tsk' &&
+          (converted.unit == 'msk' || converted.unit == 'dl')) {
+        return true;
+      }
+
+      if (unit.toLowerCase() == 'msk' && converted.unit == 'dl') {
+        return true;
+      }
+
+      // För andra konverteringar: kolla om det blir mer läsbart
+      final originalDecimals = _countDecimals(quantity);
+      final convertedDecimals = _countDecimals(converted.quantity);
+
+      return convertedDecimals <= originalDecimals ||
+          converted.quantity.round() == converted.quantity;
+    }
+
+    return false;
+  }
+
+  static int _countDecimals(double value) {
+    final str = value.toString();
+    if (str.contains('.')) {
+      return str.split('.')[1].length;
+    }
+    return 0;
+  }
+}
+
+class ConvertedMeasurement {
+  final double quantity;
+  final String unit;
+
+  ConvertedMeasurement(this.quantity, this.unit);
+
+  @override
+  String toString() => '${toSwedishHalfFraction(quantity)} $unit';
+}
+
 /// Ingrediensparser för att hantera svenska ingrediensformat
+/// UPPDATERAD för Fas 16 med smart enhetskonvertering
 class IngredientParser {
   // Regex som hanterar svenska bråk och decimalformat
   static final RegExp quantityRegex = RegExp(
     r'^(\d+(?:[,\.]\d+)?|½|¼|¾|\d+\s*½|\d+\s*¼|\d+\s*¾)([A-Za-zÅÄÖåäö]+)?\s*(.+)$',
   );
 
-  // Utökad enhetslista
+  // Utökad enhetslista med amerikanska enheter
   static final Set<String> standaloneUnits = {
-    'g',
-    'kg',
-    'hg',
-    'dag',
-    'dl',
-    'l',
-    'ml',
-    'cl',
-    'msk',
-    'tsk',
-    'krm',
-    'burk',
-    'pkt',
-    'förpackning',
-    'påse',
-    'ask',
-    'flaska',
-    'st',
-    'bit',
-    'skiva',
-    'skvätt',
-    'nypa',
-    'klyfta',
-    'sked',
-    'glas',
-    'kopp',
-    'mugg',
-    'port',
-    'portioner',
-    'pers',
-    'personer',
+    // Svenska enheter
+    'g', 'kg', 'hg', 'dag', 'mg',
+    'dl', 'l', 'ml', 'cl',
+    'msk', 'tsk', 'krm',
+    'burk', 'pkt', 'förpackning', 'påse', 'ask', 'flaska',
+    'st', 'bit', 'skiva', 'skvätt', 'nypa', 'klyfta', 'sked',
+    'glas', 'kopp', 'mugg', 'port', 'portioner', 'pers', 'personer',
     'knippe',
     'bunch',
     'blad',
@@ -142,6 +348,12 @@ class IngredientParser {
     'låda',
     'burkar',
     'paket',
+
+    // Amerikanska enheter
+    'cup', 'cups', 'oz', 'fl oz', 'floz', 'tbsp', 'tsp',
+    'lb', 'lbs', 'pound', 'pounds', 'ounce', 'ounces',
+    'pint', 'pints', 'quart', 'quarts', 'gallon', 'gallons',
+    'tablespoon', 'tablespoons', 'teaspoon', 'teaspoons',
   };
 
   static double parseQuantity(String qtyString) {
@@ -189,10 +401,36 @@ class IngredientParser {
 
   static ParsedIngredient parseIngredient(String rawIngredient) {
     final ingredient = rawIngredient.trim();
+
     if (ingredient.isEmpty) {
       return ParsedIngredient(quantity: 1.0, unit: '', name: ingredient);
     }
 
+    // FÖRBÄTTRAD: Försök hitta enheter direkt först
+    final words = ingredient.toLowerCase().split(RegExp(r'\s+'));
+
+    for (int i = 0; i < words.length; i++) {
+      if (standaloneUnits.contains(words[i])) {
+        // Hitta quantity före enheten
+        final beforeUnit = words.take(i);
+        final afterUnit = words.skip(i + 1);
+
+        double quantity = 1.0;
+        if (beforeUnit.isNotEmpty) {
+          final qtyStr = beforeUnit.join(' ');
+          quantity = parseQuantity(qtyStr);
+        }
+
+        final result = ParsedIngredient(
+          quantity: quantity,
+          unit: words[i],
+          name: afterUnit.join(' '),
+        );
+        return result;
+      }
+    }
+
+    // Fallback till original regex parsing
     final match = quantityRegex.firstMatch(ingredient);
 
     if (match != null) {
@@ -238,6 +476,53 @@ class IngredientParser {
     }
 
     return ParsedIngredient(quantity: 1.0, unit: '', name: ingredient);
+  }
+
+  /// NY METOD för Fas 16: Skala och formatera ingrediens med smart enhetskonvertering
+  static String scaleAndFormatIngredient(
+    String rawIngredient,
+    double scaleFactor,
+  ) {
+    if (rawIngredient.trim().isEmpty || scaleFactor <= 0) {
+      return rawIngredient;
+    }
+
+    final parsed = parseIngredient(rawIngredient);
+
+    // Om ingen kvantitet hittades, returnera oförändrad
+    if (parsed.quantity == 1.0 &&
+        parsed.unit.isEmpty &&
+        parsed.name == rawIngredient) {
+      return rawIngredient;
+    }
+
+    // Skala kvantiteten
+    final scaledQuantity = parsed.quantity * scaleFactor;
+
+    // Försök smart enhetskonvertering
+    String finalUnit = parsed.unit;
+    double finalQuantity = scaledQuantity;
+
+    if (parsed.unit.isNotEmpty &&
+        SmartUnitConverter.shouldConvert(scaledQuantity, parsed.unit)) {
+      final converted = SmartUnitConverter.convertToReadableUnit(
+        scaledQuantity,
+        parsed.unit,
+      );
+      finalQuantity = converted.quantity;
+      finalUnit = converted.unit;
+    }
+
+    // Formatera med svenska bråk och enheter
+    final formattedQuantity = toSwedishHalfFraction(finalQuantity);
+
+    // Bygg ihop igen
+    if (finalUnit.isNotEmpty) {
+      return '$formattedQuantity $finalUnit ${parsed.name}';
+    } else {
+      // Använd pluralisering för ingredienser utan enhet
+      return SwedishPluralization.formatIngredient(parsed.name, scaledQuantity);
+    }
   }
 }
 
@@ -402,17 +687,16 @@ class SwedishPluralization {
 
   static bool _isMeasurementUnit(String word) {
     const units = {
-      'g',
-      'kg',
-      'hg',
-      'dag',
-      'dl',
-      'l',
-      'ml',
-      'cl',
-      'msk',
-      'tsk',
-      'krm',
+      // Svenska enheter
+      'g', 'kg', 'hg', 'dag', 'mg',
+      'dl', 'l', 'ml', 'cl',
+      'msk', 'tsk', 'krm',
+
+      // Amerikanska enheter
+      'cup', 'cups', 'oz', 'fl oz', 'floz', 'tbsp', 'tsp',
+      'lb', 'lbs', 'pound', 'pounds', 'ounce', 'ounces',
+      'pint', 'pints', 'quart', 'quarts', 'gallon', 'gallons',
+      'tablespoon', 'tablespoons', 'teaspoon', 'teaspoons',
     };
     return units.contains(word);
   }
@@ -579,17 +863,44 @@ class ShoppingListGenerator {
           (groupedIngredients[key] ?? 0.0) + parsed.quantity;
     }
 
-    // Formatera för visning
+    // Formatera för visning med smart enhetskonvertering
     final displayList = <String>[];
     final sortedKeys = groupedIngredients.keys.toList()..sort();
 
     for (final key in sortedKeys) {
       final totalQuantity = groupedIngredients[key]!;
-      final formatted = SwedishPluralization.formatIngredient(
-        key,
-        totalQuantity,
-      );
-      displayList.add(formatted);
+
+      // Använd smart enhetskonvertering för inköpslistor
+      final parts = key.split(' ');
+      if (parts.length > 1 &&
+          SwedishPluralization._isMeasurementUnit(parts[0])) {
+        final unit = parts[0];
+        final name = parts.sublist(1).join(' ');
+
+        if (SmartUnitConverter.shouldConvert(totalQuantity, unit)) {
+          final converted = SmartUnitConverter.convertToReadableUnit(
+            totalQuantity,
+            unit,
+          );
+          final formatted = SwedishPluralization.formatIngredient(
+            '${converted.unit} $name',
+            converted.quantity,
+          );
+          displayList.add(formatted);
+        } else {
+          final formatted = SwedishPluralization.formatIngredient(
+            key,
+            totalQuantity,
+          );
+          displayList.add(formatted);
+        }
+      } else {
+        final formatted = SwedishPluralization.formatIngredient(
+          key,
+          totalQuantity,
+        );
+        displayList.add(formatted);
+      }
     }
 
     return displayList;
