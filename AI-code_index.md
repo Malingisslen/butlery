@@ -1488,6 +1488,25 @@ _Version för AI-assistenter med fullständig information om varje fil._
 /// Used in phases: 9, service integration faser
 ```
 
+#### `widgets/portion_scaler.dart`
+```dart
+/// 🔍 AI INFO BLOCK:
+/// Component: Smart Portion Scaling Widget
+/// File: widgets/portion_scaler.dart
+/// Quick Guide: Intelligent portionsskalning med realtid ingrediens-uppdatering och amerikansk-svensk enhetskonvertering
+/// Dependencies IN: text_utils.dart (IngredientParser, SmartUnitConverter), app_theme.dart, flutter/services.dart
+/// Dependencies OUT: Skalade ingredienslista, portionsändringar callback, haptic feedback
+/// Data flow: Originalrecept → Detektera amerikanska enheter → +/- knappar → Skala portioner → Smart enhetskonvertering → Uppdaterad ingredienslista
+/// State management: StatefulWidget med portioner, skalade ingredienser, konverteringsstatus, animationer
+/// Purpose: Premium portionsskalning med intelligent enhetskonvertering och elegant användarupplevelse
+/// Common issues: Amerikanska enheter detekteras inte alltid korrekt, komplexitet vid både skalning och konvertering samtidigt
+/// Test coverage: 55% (komplex UI logic med animationer)
+/// Performance: ⚡ Snabb skalning med optimerad ingredient parsing, 60fps animationer
+/// Analytics: ✅ Loggar portion skalning och enhetskonvertering användning
+/// Code smells: ✅ Välstrukturerad med tydlig separation av concerns, comprehensive theme integration
+/// Connected to: recipe_detail_view.dart, text_utils.dart (parsing), app_theme.dart
+/// Used in phases: 16 (Fas 16 - Smart enhetskonvertering)
+```
 ---
 
 ## 📱 MAIN APPLICATION
