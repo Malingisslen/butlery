@@ -1,18 +1,18 @@
 // lib/views/skriv_sjalv_recept_view.dart
-// REFAKTORERAD: Nu följer strikt MVVM - alla controllers hanteras av ViewModel
-// UPPDATERAD: Stöd för flera bilder
+// UPPDATERAD VERSION: Förenklad bildväljare med smart galleri-hantering
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/action_button.dart';
-import '../widgets/recipe_image_carousel.dart'; // NY IMPORT!
+import '../widgets/recipe_image_manager.dart';
 import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// Skapa nytt recept view - nu med flera bilder support
+/// Skapa nytt recept view - nu med förenklad bildväljare
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
   final bool isTemplate;
@@ -29,6 +29,10 @@ class SkrivSjalvReceptView extends StatelessWidget {
       create:
           (_) => RecipeFormViewModel(
             recipeService: sl(),
+            analyticsService: sl(),
+            storageService: sl(),
+            imagePickerService: sl(),
+            authService: sl(),
             initialRecipe: initialRecipe,
             isTemplate: isTemplate,
           ),
@@ -75,39 +79,143 @@ class _SkrivSjalvReceptViewContentState
     }
   }
 
-  // NY METOD för att hantera bildval
+  // FÖRENKLAD SMART BILDVÄLJARE
   Future<void> _pickImage(RecipeFormViewModel viewModel) async {
-    // För nu, använd en enkel dialog för URL-input
-    // TODO: Implementera kamera/galleri senare
-    final controller = TextEditingController();
-    final url = await showDialog<String>(
+    final choice = await showModalBottomSheet<String>(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: const Text('Lägg till bild'),
-            content: TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Bild-URL',
-                hintText: 'https://exempel.com/bild.jpg',
-              ),
-              autofocus: true,
+          (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: EdgeInsets.all(AppTheme.spacingMd),
+                  child: Text(
+                    'Lägg till bild',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                const Divider(height: 1),
+
+                // Ta foto
+                ListTile(
+                  leading: Icon(
+                    Icons.photo_camera,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: const Text('Ta foto'),
+                  subtitle: const Text('Använd kameran'),
+                  onTap: () => Navigator.pop(context, 'camera'),
+                ),
+
+                // Galleri-alternativ (smart automatisk val)
+                ListTile(
+                  leading: Icon(
+                    Icons.photo_library,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: const Text('Från galleriet'),
+                  subtitle: Text(
+                    viewModel.canAddMoreImages
+                        ? 'Välj upp till ${RecipeFormViewModel.maxImages - viewModel.imageUrls.length} bilder'
+                        : 'Välj en bild från galleriet',
+                  ),
+                  onTap: () => Navigator.pop(context, 'gallery'),
+                ),
+
+                const Divider(height: 1),
+
+                // URL-alternativ som backup
+                ListTile(
+                  leading: Icon(
+                    Icons.link,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  title: const Text('Lägg till från URL'),
+                  subtitle: const Text('För bilder från webben'),
+                  onTap: () => Navigator.pop(context, 'url'),
+                ),
+
+                // Avbryt
+                ListTile(
+                  leading: const Icon(Icons.close),
+                  title: const Text('Avbryt'),
+                  onTap: () => Navigator.pop(context),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, controller.text),
-                child: const Text('Lägg till'),
-              ),
-            ],
           ),
     );
 
-    if (url != null && url.isNotEmpty) {
-      viewModel.addImageUrl(url);
+    if (choice == null || !mounted) return;
+
+    switch (choice) {
+      case 'camera':
+        await viewModel.pickAndUploadImage(context, source: ImageSource.camera);
+        break;
+
+      case 'gallery':
+        // Smart galleri-val: Om man kan lägga till flera, använd pickMultiple
+        if (viewModel.canAddMoreImages && viewModel.imageUrls.length < 4) {
+          await viewModel.pickMultipleImages(context);
+        } else {
+          // Bara en bild kvar - skicka med ImageSource.gallery direkt
+          await viewModel.pickAndUploadImage(
+            context,
+            source: ImageSource.gallery,
+          );
+        }
+        break;
+
+      case 'url':
+        // URL-dialog (behålls som backup)
+        final controller = TextEditingController();
+        final url = await showDialog<String>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Lägg till bild från URL'),
+                content: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    labelText: 'Bild-URL',
+                    hintText: 'https://exempel.com/bild.jpg',
+                  ),
+                  keyboardType: TextInputType.url,
+                  autofocus: true,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Avbryt'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, controller.text),
+                    child: const Text('Lägg till'),
+                  ),
+                ],
+              ),
+        );
+
+        if (url != null && url.isNotEmpty) {
+          if (Uri.tryParse(url) != null &&
+              (url.startsWith('http://') || url.startsWith('https://'))) {
+            viewModel.addImageUrl(url);
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Ogiltig URL. Använd en fullständig URL som börjar med http:// eller https://',
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        }
+        break;
     }
   }
 
@@ -150,7 +258,7 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // UPPDATERAD: Bildhantering med RecipeImageManager
+                  // Bildhantering med RecipeImageManager
                   RecipeImageManager(
                     imageUrls: viewModel.imageUrls,
                     onAddImage: viewModel.addImageUrl,
@@ -277,9 +385,7 @@ class _SkrivSjalvReceptViewContentState
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
                     validator: (value) {
-                      // Gör URL-validering valfri
                       if (value == null || value.isEmpty) return null;
-                      // Tillåt även "Delad från annan app" och liknande texter
                       if (value.startsWith('Delad från') ||
                           value.startsWith('Importerad från') ||
                           value.contains('Butlery')) {
@@ -365,8 +471,6 @@ class _SkrivSjalvReceptViewContentState
                     keyboardType: TextInputType.multiline,
                     onChanged: (value) {
                       onUpdate(index, value);
-
-                      // Om detta är sista fältet och det har text, lägg till nytt fält
                       if (index == controllers.length - 1 && value.isNotEmpty) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           onAdd();

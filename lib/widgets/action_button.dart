@@ -73,7 +73,7 @@ class ActionButton extends StatelessWidget {
           if (isLoading)
             Padding(
               padding: EdgeInsets.only(right: AppTheme.spacingSm),
-              child: AppTheme.smallLoadingIndicator(context),
+              child: AppTheme.smallLoadingIndicator(),
             )
           else if (icon != null)
             Padding(

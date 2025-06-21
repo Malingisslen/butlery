@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../core/utils/logger.dart';
 
 /// Service för att hantera bilduppladdning till Firebase Storage
+/// Med förbättrad komprimering och progress tracking
 class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _uuid = const Uuid();
@@ -17,9 +18,15 @@ class StorageService {
   static const int _maxWidth = 1920;
   static const int _maxHeight = 1080;
   static const int _quality = 85;
+  static const int _thumbnailSize = 300;
+  static const int _thumbnailQuality = 70;
 
-  /// Ladda upp en bild från fil (kamera/galleri)
-  Future<String?> uploadImageFile(File imageFile, String userId) async {
+  /// Ladda upp en bild från fil (kamera/galleri) MED PROGRESS
+  Future<String?> uploadImageFile(
+    File imageFile,
+    String userId, {
+    Function(double)? onProgress,
+  }) async {
     try {
       AppLogger.info('Börjar uppladdning av bild: ${imageFile.path}');
 
@@ -36,8 +43,8 @@ class StorageService {
         'users/$userId/recipes/$fileName',
       );
 
-      // Ladda upp komprimerad bild
-      final uploadTask = await storageRef.putData(
+      // Skapa upload task
+      final uploadTask = storageRef.putData(
         compressedBytes,
         SettableMetadata(
           contentType: 'image/jpeg',
@@ -49,9 +56,23 @@ class StorageService {
         ),
       );
 
+      // Lyssna på progress om callback finns
+      if (onProgress != null) {
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+          onProgress(progress);
+        });
+      }
+
+      // Vänta på att uppladdningen är klar
+      final taskSnapshot = await uploadTask;
+
       // Hämta nedladdnings-URL
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      final downloadUrl = await taskSnapshot.ref.getDownloadURL();
       AppLogger.info('Bild uppladdad! URL: $downloadUrl');
+
+      // Skapa thumbnail i bakgrunden
+      _createAndUploadThumbnail(imageFile, userId, fileName);
 
       return downloadUrl;
     } catch (e) {
@@ -60,7 +81,7 @@ class StorageService {
     }
   }
 
-  /// Ladda upp flera bilder samtidigt
+  /// Ladda upp flera bilder samtidigt MED DETALJERAD PROGRESS
   Future<List<String>> uploadMultipleImages(
     List<File> imageFiles,
     String userId, {
@@ -69,13 +90,20 @@ class StorageService {
     final urls = <String>[];
 
     for (int i = 0; i < imageFiles.length; i++) {
-      final url = await uploadImageFile(imageFiles[i], userId);
+      final url = await uploadImageFile(
+        imageFiles[i],
+        userId,
+        onProgress: (fileProgress) {
+          // Rapportera total progress
+          if (onProgress != null) {
+            onProgress(i + (fileProgress > 0.99 ? 1 : 0), imageFiles.length);
+          }
+        },
+      );
+
       if (url != null) {
         urls.add(url);
       }
-
-      // Rapportera progress
-      onProgress?.call(i + 1, imageFiles.length);
     }
 
     return urls;
@@ -89,6 +117,10 @@ class StorageService {
       await ref.delete();
 
       AppLogger.info('Bild borttagen från Storage: $imageUrl');
+
+      // Försök ta bort thumbnail också
+      await _deleteThumbnail(imageUrl);
+
       return true;
     } catch (e) {
       AppLogger.error('Kunde inte ta bort bild: $e');
@@ -103,7 +135,7 @@ class StorageService {
     }
   }
 
-  /// Komprimera bild innan uppladdning
+  /// Komprimera bild innan uppladdning MED BÄTTRE KVALITET
   Future<Uint8List?> _compressImage(File file) async {
     try {
       // Läs originalbilden
@@ -116,6 +148,7 @@ class StorageService {
         minHeight: _maxHeight,
         quality: _quality,
         format: CompressFormat.jpeg,
+        autoCorrectionAngle: true, // Automatisk EXIF-rotation
       );
 
       final originalSize = bytes.length;
@@ -131,6 +164,64 @@ class StorageService {
     } catch (e) {
       AppLogger.error('Fel vid bildkomprimering: $e');
       return null;
+    }
+  }
+
+  /// Skapa och ladda upp thumbnail
+  Future<void> _createAndUploadThumbnail(
+    File imageFile,
+    String userId,
+    String originalFileName,
+  ) async {
+    try {
+      // Läs originalbilden
+      final bytes = await imageFile.readAsBytes();
+
+      // Skapa thumbnail
+      final thumbnailBytes = await FlutterImageCompress.compressWithList(
+        bytes,
+        minWidth: _thumbnailSize,
+        minHeight: _thumbnailSize,
+        quality: _thumbnailQuality,
+        format: CompressFormat.jpeg,
+        autoCorrectionAngle: true,
+      );
+
+      // Generera thumbnail-filnamn
+      final thumbFileName = originalFileName.replaceAll('.jpg', '_thumb.jpg');
+      final storageRef = _storage.ref().child(
+        'users/$userId/recipes/thumbnails/$thumbFileName',
+      );
+
+      // Ladda upp thumbnail
+      await storageRef.putData(
+        thumbnailBytes,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+
+      AppLogger.info('Thumbnail skapad och uppladdad');
+    } catch (e) {
+      AppLogger.error('Fel vid thumbnail-skapande: $e');
+      // Inte kritiskt om thumbnail misslyckas
+    }
+  }
+
+  /// Ta bort thumbnail
+  Future<void> _deleteThumbnail(String imageUrl) async {
+    try {
+      // Konvertera URL till thumbnail path
+      if (imageUrl.contains('/recipes/') &&
+          !imageUrl.contains('/thumbnails/')) {
+        final thumbUrl = imageUrl
+            .replaceAll('/recipes/', '/recipes/thumbnails/')
+            .replaceAll('.jpg', '_thumb.jpg');
+
+        final ref = _storage.refFromURL(thumbUrl);
+        await ref.delete();
+        AppLogger.info('Thumbnail borttagen');
+      }
+    } catch (e) {
+      // Ignorera om thumbnail inte finns
     }
   }
 

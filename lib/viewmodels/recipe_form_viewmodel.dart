@@ -1,8 +1,9 @@
 // lib/viewmodels/recipe_form_viewmodel.dart
-// REFAKTORERAD: Nu hanterar ViewModel alla TextEditingControllers via FormFieldsManager
-// UPPDATERAD: Stöd för flera bilder per recept med kamera/galleri
+// SLUTVERSION: Med progress tracking, förbättrad bildhantering OCH DEBUG-LOGGING
 
-import 'package:flutter/material.dart'; // För TextEditingController
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
@@ -164,36 +165,78 @@ class RecipeFormViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== IMAGE OPERATIONS - UPPDATERADE! =====
+  // ===== IMAGE OPERATIONS - MED PROGRESS TRACKING! =====
 
-  /// Välj och ladda upp bild från kamera eller galleri
-  Future<void> pickAndUploadImage(BuildContext context) async {
-    // Visa dialog för att välja källa
-    final source = await _imagePickerService.showImageSourceDialog(context);
-    if (source == null) return;
+  /// Välj och ladda upp bild från kamera eller galleri MED PROGRESS
+  Future<void> pickAndUploadImage(
+    BuildContext context, {
+    ImageSource? source,
+  }) async {
+    ImageSource selectedSource;
+
+    if (source != null) {
+      // Källa redan vald (från smart galleri-logik)
+      selectedSource = source;
+    } else {
+      // Visa dialog för att välja källa
+      final dialogSource = await _imagePickerService.showImageSourceDialog(
+        context,
+      );
+      if (dialogSource == null) return;
+      selectedSource = dialogSource;
+    }
 
     // Välj bild
-    final imageFile = await _imagePickerService.pickImage(source);
+    final imageFile = await _imagePickerService.pickImage(selectedSource);
     if (imageFile == null) return;
 
-    // Visa laddningsindikator
+    // Skapa progress stream controller
+    final progressController = StreamController<UploadProgress>();
+
+    // Visa progress dialog
     if (context.mounted) {
-      _imagePickerService.showUploadingDialog(context);
+      _imagePickerService.showDetailedUploadDialog(
+        context,
+        progressStream: progressController.stream,
+      );
     }
 
     try {
+      // Uppdatera progress
+      progressController.add(UploadProgress(0, 1, 'Komprimerar bild...'));
+
       // Hämta användar-ID
       final userId = _authService.currentUser?.uid;
       if (userId == null) {
         throw Exception('Ingen inloggad användare');
       }
 
+      // Uppdatera progress
+      progressController.add(UploadProgress(0, 1, 'Laddar upp till molnet...'));
+
       // Ladda upp bild till Firebase Storage
-      final imageUrl = await _storageService.uploadImageFile(imageFile, userId);
+      final imageUrl = await _storageService.uploadImageFile(
+        imageFile,
+        userId,
+        onProgress: (progress) {
+          progressController.add(
+            UploadProgress(
+              (progress * 100).toInt(),
+              100,
+              'Laddar upp... ${(progress * 100).toInt()}%',
+            ),
+          );
+        },
+      );
 
       if (imageUrl != null) {
         // Lägg till URL i listan
         addImageUrl(imageUrl);
+
+        progressController.add(UploadProgress(1, 1, 'Klar!'));
+
+        // Vänta lite så användaren ser "Klar!"
+        await Future.delayed(const Duration(milliseconds: 500));
 
         AppLogger.info('Bild uppladdad och tillagd till recept');
       } else {
@@ -202,23 +245,26 @@ class RecipeFormViewModel extends ChangeNotifier {
     } catch (e) {
       AppLogger.error('Fel vid bilduppladdning: $e');
       if (context.mounted) {
+        Navigator.of(context).pop(); // Stäng progress dialog
         _imagePickerService.showImageError(
           context,
           'Kunde inte ladda upp bild: ${e.toString()}',
         );
       }
     } finally {
-      // Stäng laddningsdialog
+      // Stäng progress dialog och stream
+      progressController.close();
       if (context.mounted) {
         Navigator.of(context).pop();
       }
     }
   }
 
-  /// Välj flera bilder från galleri
+  /// Välj flera bilder från galleri MED DETALJERAD PROGRESS
   Future<void> pickMultipleImages(BuildContext context) async {
     // Beräkna hur många bilder som kan läggas till
     final remainingSlots = maxImages - _imageUrls.length;
+
     if (remainingSlots <= 0) {
       _imagePickerService.showImageError(
         context,
@@ -232,13 +278,18 @@ class RecipeFormViewModel extends ChangeNotifier {
       maxImages: remainingSlots,
     );
 
-    if (imageFiles.isEmpty) return;
+    if (imageFiles.isEmpty) {
+      return;
+    }
 
-    // Visa laddningsindikator
+    // Skapa progress stream controller
+    final progressController = StreamController<UploadProgress>();
+
+    // Visa progress dialog
     if (context.mounted) {
-      _imagePickerService.showUploadingDialog(
+      _imagePickerService.showDetailedUploadDialog(
         context,
-        message: 'Laddar upp ${imageFiles.length} bilder...',
+        progressStream: progressController.stream,
       );
     }
 
@@ -249,33 +300,65 @@ class RecipeFormViewModel extends ChangeNotifier {
         throw Exception('Ingen inloggad användare');
       }
 
-      // Ladda upp alla bilder
-      final uploadedUrls = await _storageService.uploadMultipleImages(
-        imageFiles,
-        userId,
-        onProgress: (completed, total) {
-          // TODO: Uppdatera progress i dialog om vi vill
-        },
-      );
+      // Ladda upp alla bilder med detaljerad progress
+      var uploadedCount = 0;
+      final totalImages = imageFiles.length;
 
-      // Lägg till alla URL:er
-      for (final url in uploadedUrls) {
-        if (_imageUrls.length < maxImages) {
-          addImageUrl(url);
+      for (var i = 0; i < imageFiles.length; i++) {
+        final imageFile = imageFiles[i];
+
+        progressController.add(
+          UploadProgress(
+            uploadedCount,
+            totalImages,
+            'Laddar upp bild ${i + 1} av $totalImages...',
+          ),
+        );
+
+        final imageUrl = await _storageService.uploadImageFile(
+          imageFile,
+          userId,
+          onProgress: (fileProgress) {
+            progressController.add(
+              UploadProgress(
+                (fileProgress * 100).toInt(),
+                100,
+                'Laddar upp bild ${i + 1} av $totalImages... ${(fileProgress * 100).toInt()}%',
+              ),
+            );
+          },
+        );
+
+        if (imageUrl != null && _imageUrls.length < maxImages) {
+          addImageUrl(imageUrl);
+          uploadedCount++;
         }
       }
 
-      AppLogger.info('${uploadedUrls.length} bilder uppladdade');
+      progressController.add(
+        UploadProgress(
+          totalImages,
+          totalImages,
+          '$uploadedCount bilder uppladdade!',
+        ),
+      );
+
+      // Vänta lite så användaren ser resultatet
+      await Future.delayed(const Duration(seconds: 1));
+
+      AppLogger.info('$uploadedCount bilder uppladdade');
     } catch (e) {
       AppLogger.error('Fel vid uppladdning av flera bilder: $e');
       if (context.mounted) {
+        Navigator.of(context).pop(); // Stäng progress dialog
         _imagePickerService.showImageError(
           context,
-          'Kunde inte ladda upp alla bilder',
+          'Kunde inte ladda upp alla bilder: $e',
         );
       }
     } finally {
-      // Stäng laddningsdialog
+      // Stäng progress dialog och stream
+      progressController.close();
       if (context.mounted) {
         Navigator.of(context).pop();
       }

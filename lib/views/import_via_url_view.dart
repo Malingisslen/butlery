@@ -102,7 +102,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               style: AppTheme.primaryButtonStyle,
               child:
                   viewModel.isLoading
-                      ? AppTheme.smallLoadingIndicator(context)
+                      ? AppTheme.smallLoadingIndicator()
                       : const Text('Hämta text'),
             ),
 
