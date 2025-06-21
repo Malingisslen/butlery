@@ -1,131 +1,38 @@
-🚀 Butlery Projektplan - Status Juni 2025
-📋 Snabbstart för nästa session:
-yaml
-Kopiera
-Redigera
+# 🚀 Butlery Projektplan - Status Januari 2025
+
+📋 **Snabbstart för nästa session:**
+```yaml
 Välkommen tillbaka! Snabbstart-check:
 ✅ Mappstruktur mottagen
-✅ Projektplan-status: Fas 14 KLAR
-✅ Git status: Rekommenderas commit för Fas 14
-✅ Redo att börja med Fas 15!
-🏗️ Projektarkitektur
-Mappstruktur:
-pgsql
-Kopiera
-Redigera
+✅ Projektplan-status: Fas 15 KLAR ⭐
+✅ Git status: Commit för Fas 15 genomförd
+✅ Redo att börja med Fas 15.5 (UI-förbättringar)!
+```
+
+## 🏗️ Projektarkitektur
+
+**Mappstruktur:**
+```
 butlery/
 ├── lib/
-│   ├── core/
-│   │   ├── error/
-│   │   │   ├── error_handler.dart
-│   │   │   └── failures.dart
-│   │   ├── extensions/
-│   │   │   └── future_extensions.dart
-│   │   ├── form/
-│   │   │   ├── form_fields_manager.dart
-│   │   │   └── form_validators.dart
-│   │   ├── utils/
-│   │   │   ├── connectivity_check.dart
-│   │   │   ├── logger.dart
-│   │   └── validators/
-│   │       └── form_validators.dart
-│   │   ├── cache_config.dart
-│   │   └── injection.dart
-│
-│   ├── data/
-│   │   ├── archived_recipes.dart
-│   │   └── dummy_data.dart
-│
-│   ├── models/
-│   │   ├── recipe.dart
-│   │   ├── recipe.g.dart
-│   │   └── shopping_item.dart
-│
-│   ├── services/
-│   │   ├── analytics_service.dart
-│   │   ├── auth_service.dart
-│   │   ├── backup_service.dart
-│   │   ├── content_detector_service.dart
-│   │   ├── menu_service.dart
-│   │   ├── offline_service.dart
-│   │   ├── persistence_service.dart
-│   │   ├── recipe_service.dart
-│   │   ├── search_service.dart
-│   │   ├── share_service.dart
-│   │   ├── shopping_list_service.dart
-│   │   ├── social_media_extractor_interface.dart
-│   │   ├── social_media_extractor_mobile.dart
-│   │   ├── social_media_extractor_web.dart
-│   │   └── social_media_extractor.dart
-│
-│   ├── theme/
-│   │   └── app_theme.dart
-│
-│   ├── utils/
-│   │   ├── recipe_scraper.dart
-│   │   ├── route_animations.dart
-│   │   └── text_utils.dart
-│
-│   ├── viewmodels/
-│   │   ├── archive_import_viewmodel.dart
-│   │   ├── auth_viewmodel.dart
-│   │   ├── menu_viewmodel.dart
-│   │   ├── photo_import_viewmodel.dart
-│   │   ├── recipe_detail_viewmodel.dart
-│   │   ├── recipe_form_viewmodel.dart
-│   │   ├── recipe_list_viewmodel.dart
-│   │   ├── shopping_list_viewmodel.dart
-│   │   ├── text_import_viewmodel.dart
-│   │   └── url_import_viewmodel.dart
-│
-│   ├── views/
-│   │   ├── auth_view.dart
-│   │   ├── edit_recipe_view.dart
-│   │   ├── fran_sociala_medier_view.dart
-│   │   ├── import_via_url_view.dart
-│   │   ├── importera_fran_arkiv_view.dart
-│   │   ├── inkopslista_view.dart
-│   │   ├── lagg_till_recept_view.dart
-│   │   ├── mina_recept_view.dart
-│   │   ├── photo_import_view.dart
-│   │   ├── receive_share_view.dart
-│   │   ├── recipe_detail_view.dart
-│   │   ├── skriv_sjalv_recept_view.dart
-│   │   └── veckomeny_view.dart
-│
-│   ├── widgets/
-│   │   ├── action_button.dart
-│   │   ├── cached_recipe_image.dart
-│   │   ├── empty_state.dart
-│   │   ├── filter_chips.dart
-│   │   ├── instruction_editor.dart
-│   │   ├── main_layout_menu.dart
-│   │   ├── offline_indicator.dart
-│   │   ├── optimized_card.dart
-│   │   ├── profile_dialog.dart
-│   │   ├── recipe_card.dart
-│   │   ├── recipe_service_widget.dart
-│   │   ├── search_bar.dart
-│   │   └── skeleton_loader.dart
-│
+│   ├── core/                    # Kärnfunktionalitet
+│   ├── data/                    # Statisk data
+│   ├── models/                  # Datamodeller
+│   ├── services/                # Affärslogik
+│   ├── theme/                   # Design system
+│   ├── utils/                   # Hjälpfunktioner
+│   ├── viewmodels/              # Presentation logic
+│   ├── views/                   # UI-komponenter
+│   ├── widgets/                 # Återanvändbara UI-delar
 │   ├── firebase_options.dart
 │   └── main.dart
-│
-├── admin-scripts/
-│   ├── archive-updater.js
-│   ├── package.json
-│   ├── .gitignore
-│   └── README.md
-│
-├── android/
-├── ios/
-├── assets/
-├── test/
-├── .github/
-│   └── workflows/
-│       ├── analyze.yml
-│       └── test.yml
-├── pubspec.yaml
+├── admin-scripts/               # Admin-verktyg
+├── android/                     # Android-specifikt
+├── ios/                         # iOS-specifikt
+├── assets/                      # Tillgångar
+├── test/                        # Enhetstester
+└── pubspec.yaml
+```
 
 ### **Arkitekturmönster:**
 - **MVVM (Model-View-ViewModel)** - Separation mellan UI och logik
@@ -136,6 +43,7 @@ butlery/
 - **Service-princip:** Varje service har MAX ett ansvarsområde
 - **Hive + Firebase:** Kombinerad lokal & molnbaserad persistens
 - **Animations & Responsivitet:** Smooth transitions, shimmer loaders och overflow fixes
+
 ### **Firebase-struktur:**
 ```
 Firestore Database:
@@ -154,19 +62,21 @@ Firestore Database:
 
 ---
 
-## ✅ **Fas 1: Grundläggande Setup (KLAR)**
+## ✅ **GENOMFÖRDA FASER**
+
+### **Fas 1: Grundläggande Setup (KLAR)**
 - ✅ Flutter projekt initialiserat
 - ✅ Mappstruktur etablerad  
 - ✅ Navigation mellan views
 - ✅ Grundläggande UI-komponenter
 
-## ✅ **Fas 2: Theme-system (KLAR)**
+### **Fas 2: Theme-system (KLAR)**
 - ✅ AppTheme centraliserat designsystem
 - ✅ Konsistenta färger, typografi, spacing
 - ✅ Semantiska widgets och styles
 - ✅ Material 3 integration
 
-## ✅ **Fas 3: RecipeService Integration (KLAR)**
+### **Fas 3: RecipeService Integration (KLAR)**
 - ✅ Singleton RecipeService med ChangeNotifier
 - ✅ CRUD operationer (Create, Read, Update, Delete)
 - ✅ Reaktiv UI med loading states
@@ -175,13 +85,13 @@ Firestore Database:
 - ✅ 10 förbättrade standardrecept (dummy_data.dart)
 - ✅ 20 detaljerade arkivrecept för import
 
-## ✅ **Fas 4: Grundfunktionalitet (KLAR)**
+### **Fas 4: Grundfunktionalitet (KLAR)**
 - ✅ Menygeneration från prompt
 - ✅ Komplett recepthantering
 - ✅ Inköpslista med checkboxar
 - ✅ Flera import-metoder
 
-## ✅ **Fas 5: Förbättringar & Stabilitet (KLAR)**
+### **Fas 5: Förbättringar & Stabilitet (KLAR)**
 - ✅ Dependency Injection med get_it
 - ✅ ViewModel Pattern implementerat
 - ✅ Provider integration komplett
@@ -191,7 +101,7 @@ Firestore Database:
 - ✅ Optimerade widgets
 - ✅ Empty states
 
-## ✅ **Fas 6: Firebase Integration (KLAR)**
+### **Fas 6: Firebase Integration (KLAR)**
 - ✅ Firebase Core initierad med duplicate-check
 - ✅ Email/Password authentication aktiverad
 - ✅ AuthService implementerad
@@ -202,7 +112,7 @@ Firestore Database:
 - ✅ Delat arkiv (`butlery_archive`)
 - ✅ Test-användare skapad (test@example.com)
 
-## ✅ **Fas 7: Admin Tools & Arkivhantering (KLAR)**
+### **Fas 7: Admin Tools & Arkivhantering (KLAR)**
 - ✅ `admin-scripts/` mapp skapad
 - ✅ firebase-admin installerad
 - ✅ Service account key konfigurerad
@@ -212,7 +122,7 @@ Firestore Database:
 - ✅ .gitignore för admin-scripts
 - ✅ README.md för dokumentation
 
-## ✅ **Fas 8: Source URL Implementation (KLAR)**
+### **Fas 8: Source URL Implementation (KLAR)**
 - ✅ sourceUrl fält i Recipe-modellen
 - ✅ UrlImportViewModel sparar sourceUrl
 - ✅ ImportViaUrlView skickar med sourceUrl
@@ -227,19 +137,19 @@ Firestore Database:
 - ✅ Ikon (🔗) i RecipeCard om recept har sourceUrl
 - ✅ url_launcher package installerad
 
-## ✅ **Fas 8.5: CI/CD Setup (KLAR)**
+### **Fas 8.5: CI/CD Setup (KLAR)**
 - ✅ GitHub Actions workflow för kodkvalitet
 - ✅ Flutter analyze på varje push
 - ✅ Flutter 3.32.0 i CI miljö
 - ✅ Branch-strategi etablerad (main/develop/feature/*)
 
-## ✅ **Fas 9: Core UX (KLAR)**
+### **Fas 9: Core UX (KLAR)**
 - ✅ Pull-to-refresh implementerat i receptlistan
 - ❌ Swipe-to-delete (medvetet skippad - inte intuitivt för alla användare)
 - ✅ Smooth animations mellan views (150-200ms, olika för olika typer)
 - ✅ Loading skeletons med shimmer-effekt istället för spinners
 
-## ✅ **Fas 10: Sortering & Filter (KLAR)**
+### **Fas 10: Sortering & Filter (KLAR)**
 - ✅ SearchService med avancerad sök- och filterfunktionalitet
 - ✅ RecipeListViewModel uppdaterad med filter-logik
 - ✅ Filter chips widget skapad
@@ -247,204 +157,230 @@ Firestore Database:
 - ✅ Filter chips UI integrerat i MinaReceptView
 - ✅ Filter-funktionalitet testad och fungerar
 
-## ✅ **Fas 11: Delning & Export (KLAR)**
-### **11.1 Text-export för enskilt recept (KLAR)**
-- ✅ Dela-knapp i RecipeDetailView
-- ✅ Formatering av recepttext
-- ✅ ShareService implementerad
-- ✅ Native share sheet integration
-- ✅ Feedback till användaren
+### **Fas 11: Delning & Export (KLAR)**
+- ✅ **11.1** Text-export för enskilt recept
+- ✅ **11.2** Text-export för inköpslista
+- ✅ **11.3** Text-export för veckomeny
+- ⏭️ **11.4** Bild-export för veckomeny (skjuts upp)
+- ✅ **11.5** JSON Backup/Export komplett
+- ⏭️ **11.6** Delning från receptlistan (framtida version)
 
-### **11.2 Text-export för inköpslista (KLAR)**
-- ✅ Uppdaterad ShoppingListViewModel
-- ✅ Smart gruppering av items
-- ✅ Native share sheet
-- ✅ Formatering med checkboxar
+### **Fas 12: Ta emot delningar från andra appar (KLAR)**
+- ✅ Android intent-filter konfigurerad
+- ✅ ShareHandler installerad
+- ✅ ReceiveShareView implementerad
+- ✅ URL-detektion och plattformsbaserad extraktion
+- ✅ Headless WebView för mobil
+- ✅ Error tracking & Analytics integration
+- ✅ Instagram-extraktion fungerar med "mer"-knapp
 
-### **11.3 Text-export för veckomeny (KLAR)**
-- ✅ Dela-knapp i VeckomenyView
-- ✅ Formatering med emojis
-- ✅ Metadata för varje rätt
-- ✅ Native share sheet
+### **Fas 13: Offline-stöd (KLAR)**
+- ✅ Hive-lagring av recept
+- ✅ OfflineService som singleton
+- ✅ Recipe-modellen uppdaterad med isModifiedOffline och lastSyncedAt
+- ✅ Sync-kö via Hive (sync_queue)
+- ✅ Offline-indikator
+- ✅ Automatisk synk vid återanslutning
+- ✅ flutter_cache_manager för bilder
 
-### **11.4 Bild-export för veckomeny (SKIPPAD)**
-- ⏭️ Skjuts upp till senare version
+### **Fas 14: "Senast tillagad" tracking (KLAR)**
+- ✅ lastCookedAt fält i Recipe-modellen
+- ✅ "Markera som tillagad" knapp i RecipeDetailView
+- ✅ Visar "Senast tillagad" i RecipeCard
+- ✅ Smart text: "Tillagad idag", "igår", "för X dagar sedan"
+- ✅ Analytics event: recipe_cooked
+- ✅ Grön färg för nyligen tillagade recept
 
-### **11.5 JSON Backup/Export (KLAR)**
-- ✅ ShareService uppdaterad med JSON export/import-logik
-- ✅ ProfileDialog använder ShareService för all delning
-- ✅ Modularitet bevarad
-- ✅ RecipeService har getAllRecipes() metod
-- ✅ Komplett flöde implementerat
+### **⭐ Fas 15: Flera bilder per recept (KLAR)** 
+**🎉 NYLIGEN GENOMFÖRD!**
 
-### **11.6 Delning från receptlistan (SKIPPAD)**
-- ⏭️ Snabbdelning från RecipeCard
-- ⏭️ Long-press eller swipe-action
-- ⏭️ Använd samma format som 11.1
+#### **15.1 Backend & Model (KLAR)**
+- ✅ Recipe-modellen uppdaterad för array av bilder (imageUrls: List<String>)
+- ✅ Firebase Storage integration för bilduppladdning
+- ✅ StorageService för hantering av flera bilder
+- ✅ Automatisk komprimering och optimering
 
----
+#### **15.2 Smart bildväljare (KLAR)**
+- ✅ Förenklad dialog med endast 3 alternativ:
+  - 📷 Ta foto
+  - 🖼️ Från galleriet  
+  - 🔗 Lägg till från URL
+- ✅ Intelligent växling mellan multi/single-select
+- ✅ Smart galleri-hantering (pickMultipleImages när plats finns)
+- ✅ Eliminerade dubbla dialoger
 
-## ✅ **Fas 12: Ta emot delningar från andra appar (100% KLAR)**
-✅ Android intent-filter konfigurerad
-✅ ShareHandler installerad
-✅ ReceiveShareView implementerad
-✅ URL-detektion och plattformsbaserad extraktion
-✅ Headless WebView för mobil
-✅ Error tracking & Analytics integration
-✅ Instagram-extraktion fungerar med "mer"-knapp
+#### **15.3 Permission-hantering (KLAR)**
+- ✅ Omfattande permission-debugging implementerat
+- ✅ Support för "limited" photo access (iOS-stil)
+- ✅ Fallback till storage permissions för äldre Android
+- ✅ Robust error handling för nekade permissions
 
----
+#### **15.4 Progress tracking (KLAR)**
+- ✅ Detaljerad uppladdningsprogress för varje bild
+- ✅ Progress dialogs med procent och meddelanden
+- ✅ Batch-uppladdning med individuell progress
+- ✅ Upload stream controllers för realtid
 
-## ✅ **Fas 13: Offline-stöd (KLAR)**
-✅ Hive-lagring av recept
-✅ OfflineService som singleton
-✅ Recipe-modellen uppdaterad med isModifiedOffline och lastSyncedAt
-✅ Sync-kö via Hive (sync_queue)
-✅ Offline-indikator
-✅ Automatisk synk vid återanslutning
-✅ flutter_cache_manager för bilder
+#### **15.5 UX-optimering (KLAR)**
+- ✅ Max 5 bilder per recept med validering
+- ✅ Automatisk växling: 0-4 bilder = multi-select, 5 bilder = single-select
+- ✅ Ingen källdialog när källa redan vald
+- ✅ Tydliga felmeddelanden och användarguidning
 
----
+#### **15.6 Teknisk stabilitet (KLAR)**
+- ✅ Omfattande debug-logging implementerat och sedan rensat
+- ✅ Exception handling för alla bildoperationer
+- ✅ Memory management för stora bilduppladdningar
+- ✅ Clean production code utan debug-artifacts
 
-## ✅ **Fas 14: "Senast tillagad" tracking (KLAR)** ⭐ (KLAR)
-✅ lastCookedAt fält i Recipe-modellen
-✅ "Markera som tillagad" knapp i RecipeDetailView
-✅ Visar "Senast tillagad" i RecipeCard
-✅ Smart text: "Tillagad idag", "igår", "för X dagar sedan"
-✅ Analytics event: recipe_cooked
-✅ Grön färg för nyligen tillagade recept
-
----
-
-## 📸 **Fas 15: Flera bilder per recept (8-10 timmar)** - PÅGÅR
-
-### **🎯 Implementation:**
-- [ ] Uppdatera Recipe-modellen för array av bilder
-- [ ] UI för att lägga till flera bilder
-- [ ] Kamera-integration
-- [ ] Bildkarusell i RecipeDetailView
-- [ ] Optimering och Firebase Storage
-
----
-
-## 🥄 **Fas 16: Portionshantering & Enhetskonvertering (4-5 timmar)**
-
-### **🎯 Implementation:**
-- [ ] Portionsskalning UI
-- [ ] Smart parsing med super_measurement
-- [ ] Enhetskonvertering (dl ↔ ml, etc.)
+**🏆 Resultat Fas 15:**
+- 📱 Stöd för upp till 5 bilder per recept
+- 🎯 Smart UX som anpassar sig efter användarens behov
+- 🚀 Robust teknisk implementation med Firebase Storage
+- ⚡ Snabb och responsiv bildhantering
+- 🔒 Säker permission-hantering för alla plattformar
 
 ---
 
-## 🎥 **Fas 17: Video-import (6-8 timmar)**
+## 🔧 **KOMMANDE FASER**
 
-### **🎯 Implementation:**
-- [ ] YouTube URL-import
-- [ ] Smart API-användning
-- [ ] Parser för beskrivningstext
-- [ ] Copyright disclaimer
+### **Fas 15.5: RecipeImageManager UI-förbättringar (2-3 timmar)** ⭐ **NÄSTA!**
 
----
+**🎯 Problem med nuvarande UI:**
+- Svårt att förstå hur man lägger till bilder
+- Otydlig bildordning och primärbild-hantering  
+- Förvirrande remove/reorder funktionalitet
+- Inte mobiloptimerat för touch-hantering
 
-## 🤝 **Fas 18: Grundläggande social (4-5 timmar)**
+**🎨 Planerad förbättring - Karusell-stil (inspirerad av Instagram):**
+```
+    < [PRIMÄRBILD STOR] >
+      [••••○] (dots för navigation)
+[Ta bort] [Sätt som primär] [+ Lägg till]
+```
 
-### **🎯 Implementation:**
-- [ ] Offentliga receptlänkar
-- [ ] "Kopiera recept" funktion
-- [ ] Betygsystem (1-5 stjärnor)
-- [ ] Delningsstatistik
+**Implementation:**
+- ✅ Stor primärbild i centrum (aspect ratio 16:9)
+- ✅ Swipe-navigation mellan bilder
+- ✅ Dots-indikator för position
+- ✅ Tydliga action-knappar under bilden
+- ✅ "+" knapp för att lägga till fler
+- ✅ Touch-vänlig design för mobil
 
----
+**Teknisk approach:**
+- PageView.builder för swipe-navigation
+- Dots-indikator med AnimatedContainer
+- Floating action buttons för actions
+- Haptic feedback för interactions
+- Optimized memory management för stora bilder
 
-## 🔍 **Fas 19: Dark Mode (4-5 timmar)**
+### **Fas 16: Portionshantering & Enhetskonvertering (4-5 timmar)**
 
-### **🎯 Implementation:**
-- [ ] Utöka AppTheme med dark mode
-- [ ] ThemeMode.system
-- [ ] Manuell toggle
-- [ ] Testa alla vyer
+**🎯 Implementation:**
+- [ ] Portionsskalning UI med +/- knappar
+- [ ] Smart parsing av ingredienser med enheter
+- [ ] Enhetskonvertering (dl ↔ ml, kg ↔ g, etc.)
+- [ ] super_measurement package integration
+- [ ] Intelligent ingrediens-parsing för svenska enheter
 
----
+### **Fas 17: Video-import (6-8 timmar)**
 
-## ♿ **Fas 20: Accessibility (Löpande)**
+**🎯 Implementation:**
+- [ ] YouTube URL-import via API
+- [ ] Smart beskrivningstext-parser
+- [ ] Copyright disclaimer och fair use
+- [ ] Video thumbnail som receptbild
+- [ ] Rate limiting för YouTube API
 
-### **🎯 Implementation:**
-- [ ] semanticsLabel på alla ikoner
-- [ ] Kontrasttest
-- [ ] WCAG AA-standard
-- [ ] Touch targets minst 48x48
+### **Fas 18: Grundläggande social (4-5 timmar)**
 
----
+**🎯 Implementation:**
+- [ ] Offentliga receptlänkar (deep linking)
+- [ ] "Kopiera recept från länk" funktion
+- [ ] Förbättrat betygsystem (1-5 stjärnor med UI)
+- [ ] Delningsstatistik och popularitet
+- [ ] QR-kod delning för recept
 
-## 🚀 **Fas 21: Onboarding & Tutorial (2-3 timmar)**
+### **Fas 19: Dark Mode (4-5 timmar)**
 
-### **🎯 Implementation:**
-- [ ] Välkomstskärm
+**🎯 Implementation:**
+- [ ] Utöka AppTheme med darkTheme
+- [ ] ThemeMode.system för automatisk växling
+- [ ] Manuell toggle i settings
+- [ ] Testa alla vyer i dark mode
+- [ ] Optimera färgscheman för båda lägen
+
+### **Fas 20: Accessibility (Löpande)**
+
+**🎯 Implementation:**
+- [ ] semanticsLabel på alla ikoner och bilder
+- [ ] Kontrasttest för WCAG AA-standard
+- [ ] Touch targets minst 48x48 dp
+- [ ] Screen reader-optimering
+- [ ] Keyboard navigation support
+
+### **Fas 21: Onboarding & Tutorial (2-3 timmar)**
+
+**🎯 Implementation:**
+- [ ] Välkomstskärm med app-översikt
 - [ ] 3-4 slides med kärnfunktioner
-- [ ] Skip-möjlighet
-- [ ] SharedPreferences
+- [ ] Skip-möjlighet för återkommande användare
+- [ ] SharedPreferences för onboarding-status
+- [ ] Interactive tutorial för första receptskapandet
 
----
+### **Fas 22: Analytics & Monitoring (3-4 timmar)**
 
-## 📊 **Fas 22: Analytics & Monitoring (3-4 timmar)**
-
-### **🎯 Implementation:**
+**🎯 Implementation:**
 - [ ] Firebase Analytics ✅ (redan delvis implementerat)
-- [ ] Crashlytics
-- [ ] Performance Monitoring
-- [ ] Budget-varningar
+- [ ] Crashlytics för error tracking
+- [ ] Performance Monitoring för app-hastighet
+- [ ] Custom events för användarflöden
+- [ ] Budget-varningar för Firebase-användning
 
----
+### **Fas 23: Kostnadsoptimering & Performance (3-4 timmar)**
 
-## 🔍 **Fas 23: Kostnadsoptimering & Performance (3-4 timmar)**
+**🎯 Implementation:**
+- [ ] Recipe summaries för snabbare laddning
+- [ ] Pagination för stora receptlistor
+- [ ] Selektiva Firestore queries
+- [ ] Image caching optimering
+- [ ] Kostnadskalkyl och monitoring
 
-### **🎯 Implementation:**
-- [ ] Recipe summaries
-- [ ] Pagination
-- [ ] Selektiva queries
-- [ ] Kostnadskalkyl
+### **Fas 24: Kodkvalitet & Refaktorering (6-8 timmar)**
 
----
+**🎯 Implementation:**
+- [ ] Striktare linter-regler
+- [ ] Service-uppdelning för stora klasser
+- [ ] Performance-optimering av widgets
+- [ ] Modularitet och clean architecture
+- [ ] Comprehensive error handling
 
-## 🏗️ **Fas 24: Kodkvalitet & Refaktorering (6-8 timmar)**
+### **Fas 25: Unit Tests (2-3 timmar)**
 
-### **🎯 Implementation:**
-- [ ] Linter-regler
-- [ ] Service-uppdelning
-- [ ] Performance-optimering
-- [ ] Modularitet
-- [ ] Error handling
+**🎯 Implementation:**
+- [ ] Validators testning
+- [ ] Text parsing logik testning
+- [ ] Model serialization testning
+- [ ] Service mocking och testing
+- [ ] 50%+ test coverage målsättning
 
----
+### **Fas 26: Store Listings & Release Prep (5-6 timmar)**
 
-## 🧪 **Fas 25: Unit Tests (2-3 timmar)**
+**🎯 Implementation:**
+- [ ] iOS Privacy Manifest för App Store
+- [ ] Play Integrity API för Google Play
+- [ ] Legal dokument (Privacy Policy, Terms)
+- [ ] App ikoner och grafiskt material
+- [ ] Store metadata och beskrivningar
 
-### **🎯 Implementation:**
-- [ ] Validators
-- [ ] Text parsing
-- [ ] Model serialization
-- [ ] 50% coverage
+### **Fas 27: AI-Integration (5-8 timmar)**
 
----
-
-## 📱 **Fas 26: Store Listings & Release Prep (5-6 timmar)**
-
-### **🎯 Implementation:**
-- [ ] iOS Privacy Manifest
-- [ ] Play Integrity API
-- [ ] Legal dokument
-- [ ] Grafiskt material
-- [ ] Store metadata
-
----
-
-## 🤖 **Fas 27: AI-Integration (5-8 timmar)**
-
-### **🎯 Implementation:**
-- [ ] Auto-kategorisering
-- [ ] Smart menygeneration
-- [ ] Intelligent parsing
-- [ ] Användarförslag
+**🎯 Implementation:**
+- [ ] Auto-kategorisering av importerade recept
+- [ ] Smart menygeneration baserat på preferenser
+- [ ] Intelligent parsing av recepttext
+- [ ] Användarförslag baserat på historia
+- [ ] ML-baserad ingrediens-igenkänning
 
 ---
 
@@ -463,17 +399,18 @@ Firestore Database:
 - ✅ Skeleton loaders för bättre perceived performance
 - ✅ Avancerad sök- och filterfunktionalitet
 - ✅ Komplett delningsfunktionalitet
-- ✅ Full analytics integration
+- ✅ **Multi-image hantering med Firebase Storage** ⭐ **NY!**
 
 ### **📱 Plattformar:**
 - ✅ Android fullt fungerande
-- ⚠️ iOS otestat (bör fungera)
+- ⚠️ iOS otestat (bör fungera med begränsningar för photo permissions)
 - ⚠️ Web delvis fungerande (localStorage begränsningar)
 
 ### **✅ Firebase-status:**
 - ✅ Core fungerar utan duplicate errors
 - ✅ Authentication implementerad och testad
 - ✅ Firestore databas fullt fungerande
+- ✅ **Firebase Storage för bilder fullt implementerat** ⭐ **NY!**
 - ✅ Security rules konfigurerade
 - ✅ Arkivhantering via admin-verktyg
 - ✅ 20 recept i delat arkiv
@@ -497,13 +434,14 @@ Firestore Database:
 11. **Avancerad sök- och filterfunktionalitet** ⭐
 12. **Komplett delningsfunktionalitet** ⭐
 13. **Ta emot delningar från andra appar** ⭐
-14. **"Senast tillagad" tracking** ⭐ **(NY!)**
+14. **"Senast tillagad" tracking** ⭐
+15. **🎉 Flera bilder per recept med smart hantering** ⭐ **NYTT!**
 
 ---
 
 ## 📈 **Projektets hälsa: UTMÄRKT**
 
-Appen är nu i mycket bra skick:
+Appen är nu i utmärkt skick:
 - ✅ Molnbaserad med realtids-synk
 - ✅ Professionell arkitektur fullt dokumenterad
 - ✅ Admin-verktyg för innehållshantering
@@ -514,51 +452,58 @@ Appen är nu i mycket bra skick:
 - ✅ Modern UX med smooth animations
 - ✅ Avancerad sök- och filterfunktionalitet
 - ✅ Komplett delningsfunktionalitet
-- ✅ **"Senast tillagad" tracking med analytics** **(UPPDATERAT!)**
+- ✅ "Senast tillagad" tracking med analytics
+- ✅ **🎉 Robust multi-image hantering med Firebase Storage** ⭐ **NYTT!**
 
 ---
 
 ## 📊 **Realistiska tidsestimat**
 
-### **Till MVP (solo-testning):**
-- Fas 15 (Flera bilder): 8-10 timmar ⭐ **(NÄSTA!)**
-- Fas 16 (Portions/Enheter): 4-5 timmar
-- Fas 17 (Video-import): 6-8 timmar
-- Fas 18 (Grundläggande social): 4-5 timmar
+### **Till förbättrad MVP:**
+- **Fas 15.5** (UI-förbättringar): 2-3 timmar ⭐ **NÄSTA!**
+- **Fas 16** (Portions/Enheter): 4-5 timmar
+- **Fas 19** (Dark Mode): 4-5 timmar
 
-**Återstående tid till grundläggande MVP: ~22-28 timmar**
+**Återstående tid till förbättrad MVP: ~10-13 timmar**
+
+### **Till komplett v1.0:**
+- **Fas 17** (Video-import): 6-8 timmar
+- **Fas 18** (Grundläggande social): 4-5 timmar
+- **Fas 21** (Onboarding): 2-3 timmar
+
+**Total tid till feature-complete v1.0: ~22-29 timmar**
 
 ### **Kvalitetssäkring & Release:**
-- Fas 19-26: ~30-35 timmar
+- **Fas 20-26**: ~25-35 timmar
 
-**Total återstående tid till release-ready: ~52-63 timmar**
+**Total återstående tid till release-ready: ~47-64 timmar**
 
 ---
 
 ## 🎯 **Prioritering framåt:**
 
-### **Kritiska för MVP:**
-1. **Flera bilder (Fas 15)** → 8-10 timmar ⭐ **(NÄSTA!)**
-2. **Portions/Enheter (Fas 16)** → 4-5 timmar
-3. **Dark Mode (Fas 19)** → 4-5 timmar
+### **Kritiska för förbättrad UX:**
+1. **📱 RecipeImageManager UI-förbättringar (Fas 15.5)** → 2-3 timmar ⭐ **NÄSTA!**
+2. **🥄 Portions/Enheter (Fas 16)** → 4-5 timmar
+3. **🌙 Dark Mode (Fas 19)** → 4-5 timmar
 
 ### **Nice-to-have för v1.0:**
-4. **Video-import (Fas 17)** → 6-8 timmar
-5. **Grundläggande social (Fas 18)** → 4-5 timmar
-6. **Onboarding (Fas 21)** → 2-3 timmar
+4. **🎥 Video-import (Fas 17)** → 6-8 timmar
+5. **🤝 Grundläggande social (Fas 18)** → 4-5 timmar
+6. **👋 Onboarding (Fas 21)** → 2-3 timmar
 
 ### **Post-launch:**
-7. **AI-integration (Fas 27)** → 5-8 timmar
-8. **Analytics utbyggnad (Fas 22)** → 3-4 timmar
-9. **Performance optimering (Fas 23)** → 3-4 timmar
+7. **🤖 AI-integration (Fas 27)** → 5-8 timmar
+8. **📊 Analytics utbyggnad (Fas 22)** → 3-4 timmar
+9. **⚡ Performance optimering (Fas 23)** → 3-4 timmar
 
 ---
 
 ## 🚦 **Git Branch Status:**
 
 **Aktiva branches:**
-- `main` - Senaste stabila version (inkl. Fas 14)
-- Rekommendation: Gör en feature branch för Fas 15!
+- `main` - Senaste stabila version (inkl. Fas 15)
+- **Rekommendation:** Skapa `feature/fas-15.5-image-ui` för nästa fas!
 
 ---
 
@@ -569,10 +514,15 @@ Appen är nu i mycket bra skick:
 - **Source URL** alltid synlig
 - **Backup/Export** för användarkontroll
 - **GDPR-compliance** från start
+- **Firebase Storage säkerhet** med user-scoped paths
 
 ---
 
 ## 🎯 **Nästa session börjar med:**
-1. Git commit för Fas 14
-2. Skapa feature branch för Fas 15
-3. Påbörja implementation av flera bilder per recept
+
+1. **🎉 Git commit för Fas 15** (se commit-meddelande ovan)
+2. **🎨 Diskutera RecipeImageManager UI-design** (karusell-stil)
+3. **📱 Skapa feature branch:** `git checkout -b feature/fas-15.5-image-ui`
+4. **🚀 Påbörja implementation av förbättrad bildhantering**
+
+**Status: Fas 15 är 100% klar - vi är redo för UI-förbättringar! 🎉**
