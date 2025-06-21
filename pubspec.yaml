@@ -44,6 +44,7 @@ dependencies:
   cached_network_image: ^3.3.0        # Bildcaching för bättre performance
   flutter_cache_manager: ^3.3.1       # Avancerad cache-hantering
   flutter_image_compress: ^2.1.0      # Bildkomprimering (NY!)
+  permission_handler: ^11.0.1        # Hantera permissions för kamera/galleri
   
   # Network & Web parsing
   http: ^0.13.6                       # HTTP-förfrågningar för API-calls

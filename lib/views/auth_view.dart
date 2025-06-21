@@ -298,7 +298,7 @@ class _AuthViewState extends State<AuthView> {
       style: AppTheme.primaryButtonStyle,
       child:
           viewModel.isLoading
-              ? AppTheme.smallLoadingIndicator(context)
+              ? AppTheme.smallLoadingIndicator()
               : Text(viewModel.isLoginMode ? 'Logga in' : 'Skapa konto'),
     );
   }

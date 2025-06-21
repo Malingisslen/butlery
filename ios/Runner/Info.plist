@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- NYA PERMISSIONS för Fas 15: Kamera och Galleri -->
+	<key>NSCameraUsageDescription</key>
+	<string>Butlery behöver tillgång till kameran för att ta bilder av recept och ingredienser</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Butlery behöver tillgång till bildgalleriet för att välja bilder till recept</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Butlery behöver tillgång till bildgalleriet för att spara bilder av recept</string>
 </dict>
 </plist>
