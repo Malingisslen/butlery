@@ -1,14 +1,16 @@
 // lib/widgets/recipe_image_manager.dart
-// UPPDATERAD VERSION: Använder ENBART AppTheme - inga hårdkodade värden!
+// UPPDATERAD VERSION: Karusell-stil inspirerad av Instagram
+// ANVÄNDER ENBART AppTheme - inga hårdkodade värden!
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_theme.dart';
 
 /// Widget för att visa och hantera bilder i recept-formulär
-/// Med kamera/galleri-support och drag-to-reorder
+/// Med elegant karusell-layout och touch-optimerad hantering
 /// ANVÄNDER ENBART AppTheme - inga hårdkodade värden!
-class RecipeImageManager extends StatelessWidget {
+class RecipeImageManager extends StatefulWidget {
   final List<String> imageUrls;
   final Function(String) onAddImage;
   final Function(int) onRemoveImage;
@@ -29,11 +31,31 @@ class RecipeImageManager extends StatelessWidget {
   });
 
   @override
+  State<RecipeImageManager> createState() => _RecipeImageManagerState();
+}
+
+class _RecipeImageManagerState extends State<RecipeImageManager> {
+  late PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header med titel och add-knapp
+        // Header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -41,9 +63,10 @@ class RecipeImageManager extends StatelessWidget {
               'Bilder',
               style: AppTheme.getTextStyle(context, AppTheme.formLabelStyle),
             ),
-            if (canAddMore)
+            // Visa "Lägg till" endast när det finns bilder OCH vi kan lägga till fler
+            if (widget.canAddMore && widget.imageUrls.isNotEmpty)
               TextButton.icon(
-                onPressed: onPickImage,
+                onPressed: widget.onPickImage,
                 icon: AppTheme.actionIcon(context, Icons.add_photo_alternate),
                 label: Text(
                   'Lägg till',
@@ -59,24 +82,26 @@ class RecipeImageManager extends StatelessWidget {
 
         AppTheme.smallGap,
 
-        // Bildrutnät eller tom state
-        if (imageUrls.isEmpty)
+        // Karusell eller tom state
+        if (widget.imageUrls.isEmpty)
           _buildEmptyState(context)
         else
-          _buildImageGrid(context),
+          _buildImageCarousel(context),
       ],
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
     return Container(
-      height: AppTheme.imageHeightMedium,
+      height: 240, // Fast höjd för konsistens
       decoration: BoxDecoration(
         border: Border.all(
           color: Theme.of(context).colorScheme.outline,
           style: BorderStyle.solid,
+          width: 2,
         ),
         borderRadius: AppTheme.cardBorderRadius,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
       ),
       child: Center(
         child: Column(
@@ -84,143 +109,39 @@ class RecipeImageManager extends StatelessWidget {
           children: [
             AppTheme.actionIcon(
               context,
-              Icons.photo_camera,
+              Icons.photo_camera_outlined,
               color: Theme.of(context).colorScheme.outline,
-              size: AppTheme.iconSizeLarge,
+              size: AppTheme.iconSizeLarge * 1.5,
             ),
-            AppTheme.smallGap,
+            AppTheme.mediumGap,
             Text(
-              'Lägg till bilder',
+              'Lägg till bilder till ditt recept',
               style: AppTheme.getTextStyle(
                 context,
                 AppTheme.subtitleStyle,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            AppTheme.smallGap,
+            Text(
+              'Upp till 5 bilder',
+              style: AppTheme.getTextStyle(
+                context,
+                AppTheme.captionStyle,
                 color: Theme.of(context).colorScheme.outline,
               ),
             ),
-            AppTheme.smallGap,
+            AppTheme.mediumGap,
             ElevatedButton.icon(
-              onPressed: onPickImage,
-              icon: AppTheme.actionIcon(context, Icons.add),
+              onPressed: widget.onPickImage,
+              icon: AppTheme.actionIcon(context, Icons.add_a_photo),
               label: const Text('Välj bilder'),
-              style: ElevatedButton.styleFrom(padding: AppTheme.buttonPadding),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImageGrid(BuildContext context) {
-    return SizedBox(
-      height: AppTheme.imageHeightMedium,
-      child: Row(
-        children: [
-          // Primär bild (större)
-          Expanded(flex: 2, child: _buildPrimaryImage(context)),
-
-          AppTheme.smallHorizontalGap,
-
-          // Övriga bilder + add-knapp
-          Expanded(
-            flex: 1,
-            child: Column(
-              children: [
-                // Övriga bilder
-                if (imageUrls.length > 1)
-                  Expanded(child: _buildSecondaryImages(context)),
-
-                // Add-knapp
-                if (canAddMore) ...[
-                  if (imageUrls.length > 1) AppTheme.smallGap,
-                  _buildAddImageButton(context),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrimaryImage(BuildContext context) {
-    final primaryImage = imageUrls.first;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: AppTheme.cardBorderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: AppTheme.elevationMedium,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: AppTheme.cardBorderRadius,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Bilden
-            CachedNetworkImage(
-              imageUrl: primaryImage,
-              fit: BoxFit.cover,
-              placeholder:
-                  (context, url) => Container(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Center(child: AppTheme.mediumLoadingIndicator()),
-                  ),
-              errorWidget:
-                  (context, url, error) => Container(
-                    color: Theme.of(context).colorScheme.errorContainer,
-                    child: Center(
-                      child: AppTheme.actionIcon(
-                        context,
-                        Icons.error,
-                        color: Theme.of(context).colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ),
-            ),
-
-            // Overlay med knappar
-            Positioned(
-              top: AppTheme.spacingSm,
-              right: AppTheme.spacingSm,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Primary badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingSm,
-                      vertical: AppTheme.spacingXs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    ),
-                    child: Text(
-                      'Huvud',
-                      style: AppTheme.captionStyle.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-
-                  AppTheme.smallHorizontalGap,
-
-                  // Ta bort-knapp
-                  _buildActionButton(
-                    context,
-                    Icons.close,
-                    () => onRemoveImage(0),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                    foregroundColor: Theme.of(context).colorScheme.onError,
-                  ),
-                ],
+              style: ElevatedButton.styleFrom(
+                padding: AppTheme.buttonPadding,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
               ),
             ),
           ],
@@ -229,172 +150,350 @@ class RecipeImageManager extends StatelessWidget {
     );
   }
 
-  Widget _buildSecondaryImages(BuildContext context) {
-    final secondaryImages = imageUrls.skip(1).toList();
-
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: AppTheme.spacingXs,
-        mainAxisSpacing: AppTheme.spacingXs,
-        childAspectRatio: AppTheme.thumbnailAspectRatio,
-      ),
-      itemCount: secondaryImages.length,
-      itemBuilder: (context, index) {
-        final imageIndex = index + 1; // +1 eftersom primärbilden är index 0
-        final imageUrl = secondaryImages[index];
-
-        return Container(
+  Widget _buildImageCarousel(BuildContext context) {
+    return Column(
+      children: [
+        // Huvudbild med karusell
+        Container(
+          height: 240, // Fast höjd för bra proportioner
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            borderRadius: AppTheme.cardBorderRadius,
             boxShadow: [
               BoxShadow(
                 color: Theme.of(
                   context,
-                ).colorScheme.shadow.withValues(alpha: 0.1),
-                blurRadius: AppTheme.elevationLow,
-                offset: const Offset(0, 1),
+                ).colorScheme.shadow.withValues(alpha: 0.12),
+                blurRadius: AppTheme.elevationMedium,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Bilden
-                CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) => Container(
-                        color:
-                            Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                        child: Center(child: AppTheme.smallLoadingIndicator()),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        child: Center(
-                          child: AppTheme.actionIcon(
-                            context,
-                            Icons.error,
-                            color:
-                                Theme.of(context).colorScheme.onErrorContainer,
-                            size: AppTheme.iconSizeSmall,
-                          ),
-                        ),
-                      ),
-                ),
+            borderRadius: AppTheme.cardBorderRadius,
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+                // Haptic feedback vid swipe
+                HapticFeedback.lightImpact();
+              },
+              itemCount: widget.imageUrls.length,
+              itemBuilder: (context, index) {
+                return _buildCarouselImage(context, index);
+              },
+            ),
+          ),
+        ),
 
-                // Overlay med knappar
-                Positioned(
-                  top: AppTheme.spacingXs,
-                  right: AppTheme.spacingXs,
+        AppTheme.mediumGap,
+
+        // Navigation dots (om fler än 1 bild)
+        if (widget.imageUrls.length > 1) ...[
+          _buildNavigationDots(context),
+          AppTheme.mediumGap,
+        ],
+
+        // Action buttons
+        _buildActionButtons(context),
+      ],
+    );
+  }
+
+  Widget _buildCarouselImage(BuildContext context, int index) {
+    final imageUrl = widget.imageUrls[index];
+    final isPrimary = index == 0;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Bilden
+        CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder:
+              (context, url) => Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Center(
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Sätt som primär-knapp
-                      _buildActionButton(
-                        context,
-                        Icons.star,
-                        () => onSetPrimary(imageIndex),
-                        backgroundColor:
-                            Theme.of(context).colorScheme.secondary,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onSecondary,
-                        size: AppTheme.iconSizeSmall,
-                      ),
-
-                      const SizedBox(height: AppTheme.spacingXs),
-
-                      // Ta bort-knapp
-                      _buildActionButton(
-                        context,
-                        Icons.close,
-                        () => onRemoveImage(imageIndex),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
-                        size: AppTheme.iconSizeSmall,
+                      AppTheme.mediumLoadingIndicator(),
+                      AppTheme.smallGap,
+                      Text(
+                        'Laddar bild...',
+                        style: AppTheme.getTextStyle(
+                          context,
+                          AppTheme.captionStyle,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
+          errorWidget:
+              (context, url, error) => Container(
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AppTheme.actionIcon(
+                        context,
+                        Icons.broken_image_outlined,
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                        size: AppTheme.iconSizeLarge,
+                      ),
+                      AppTheme.smallGap,
+                      Text(
+                        'Kunde inte ladda bild',
+                        style: AppTheme.getTextStyle(
+                          context,
+                          AppTheme.captionStyle,
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+        ),
+
+        // Primary badge (endast för första bilden)
+        if (isPrimary)
+          Positioned(
+            top: AppTheme.spacingSm,
+            left: AppTheme.spacingSm,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingSm,
+                vertical: AppTheme.spacingXs,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.shadow.withValues(alpha: 0.2),
+                    blurRadius: AppTheme.elevationLow,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    size: AppTheme.iconSizeSmall,
+                  ),
+                  const SizedBox(width: AppTheme.spacingXs),
+                  Text(
+                    'Huvudbild',
+                    style: AppTheme.captionStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        );
-      },
+
+        // Image counter (övre högra hörnet)
+        Positioned(
+          top: AppTheme.spacingSm,
+          right: AppTheme.spacingSm,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingSm,
+              vertical: AppTheme.spacingXs,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            ),
+            child: Text(
+              '${index + 1} / ${widget.imageUrls.length}',
+              style: AppTheme.captionStyle.copyWith(
+                color: Theme.of(context).colorScheme.onInverseSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildAddImageButton(BuildContext context) {
-    return GestureDetector(
-      onTap: onPickImage,
-      child: Container(
-        height: AppTheme.thumbnailSize,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline,
-            style: BorderStyle.solid,
-          ),
-          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppTheme.actionIcon(
-              context,
-              Icons.add_photo_alternate,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              size: AppTheme.iconSizeMedium,
+  Widget _buildNavigationDots(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        widget.imageUrls.length,
+        (index) => GestureDetector(
+          onTap: () {
+            _pageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+            HapticFeedback.lightImpact();
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingXs),
+            width: _currentIndex == index ? 24 : 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color:
+                  _currentIndex == index
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
-            const SizedBox(height: AppTheme.spacingXs),
-            Text(
-              'Lägg till',
-              style: AppTheme.captionStyle.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 10,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    final currentImage =
+        _currentIndex < widget.imageUrls.length ? _currentIndex : 0;
+    final isPrimary = currentImage == 0;
+
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacingSm),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          // Ta bort-knapp
+          Expanded(
+            child: _buildActionButton(
+              context,
+              icon: Icons.delete_outline,
+              label: 'Ta bort',
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                widget.onRemoveImage(currentImage);
+
+                // Justera current index om vi tar bort en bild
+                if (_currentIndex >= widget.imageUrls.length - 1 &&
+                    _currentIndex > 0) {
+                  setState(() {
+                    _currentIndex = _currentIndex - 1;
+                  });
+                  _pageController.animateToPage(
+                    _currentIndex,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+              foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
+
+          AppTheme.mediumHorizontalGap,
+
+          // Sätt som huvudbild-knapp (endast om inte redan huvud)
+          if (!isPrimary)
+            Expanded(
+              child: _buildActionButton(
+                context,
+                icon: Icons.star_outline,
+                label: 'Sätt som huvud',
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  widget.onSetPrimary(currentImage);
+
+                  // Flytta till första positionen i karusellen
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                  _pageController.animateToPage(
+                    0,
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondaryContainer,
+                foregroundColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
               ),
             ),
-          ],
-        ),
+
+          // Om det är huvud, visa alltid "Huvudbild" status (grå)
+          if (isPrimary)
+            Expanded(
+              child: _buildActionButton(
+                context,
+                icon: Icons.star,
+                label: 'Huvudbild',
+                onPressed: () {
+                  // Ingen åtgärd - bara visar status
+                },
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHigh,
+                foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _buildActionButton(
-    BuildContext context,
-    IconData icon,
-    VoidCallback onPressed, {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
     required Color backgroundColor,
     required Color foregroundColor,
-    double? size,
   }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.all(AppTheme.spacingXs),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(
-                context,
-              ).colorScheme.shadow.withValues(alpha: 0.2),
-              blurRadius: AppTheme.elevationLow,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: foregroundColor,
-          size: size ?? AppTheme.iconSizeSmall,
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppTheme.spacingSm,
+            horizontal: AppTheme.spacingSm,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: foregroundColor, size: AppTheme.iconSizeSmall),
+              const SizedBox(width: AppTheme.spacingXs),
+              Flexible(
+                child: Text(
+                  label,
+                  style: AppTheme.captionStyle.copyWith(
+                    color: foregroundColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
