@@ -191,88 +191,16 @@ Firestore Database:
 - ✅ Analytics event: recipe_cooked
 - ✅ Grön färg för nyligen tillagade recept
 
-### **⭐ Fas 15: Flera bilder per recept (KLAR)** 
-**🎉 NYLIGEN GENOMFÖRD!**
-
-#### **15.1 Backend & Model (KLAR)**
-- ✅ Recipe-modellen uppdaterad för array av bilder (imageUrls: List<String>)
-- ✅ Firebase Storage integration för bilduppladdning
-- ✅ StorageService för hantering av flera bilder
-- ✅ Automatisk komprimering och optimering
-
-#### **15.2 Smart bildväljare (KLAR)**
-- ✅ Förenklad dialog med endast 3 alternativ:
-  - 📷 Ta foto
-  - 🖼️ Från galleriet  
-  - 🔗 Lägg till från URL
-- ✅ Intelligent växling mellan multi/single-select
-- ✅ Smart galleri-hantering (pickMultipleImages när plats finns)
-- ✅ Eliminerade dubbla dialoger
-
-#### **15.3 Permission-hantering (KLAR)**
-- ✅ Omfattande permission-debugging implementerat
-- ✅ Support för "limited" photo access (iOS-stil)
-- ✅ Fallback till storage permissions för äldre Android
-- ✅ Robust error handling för nekade permissions
-
-#### **15.4 Progress tracking (KLAR)**
-- ✅ Detaljerad uppladdningsprogress för varje bild
-- ✅ Progress dialogs med procent och meddelanden
-- ✅ Batch-uppladdning med individuell progress
-- ✅ Upload stream controllers för realtid
-
-#### **15.5 UX-optimering (KLAR)**
-- ✅ Max 5 bilder per recept med validering
-- ✅ Automatisk växling: 0-4 bilder = multi-select, 5 bilder = single-select
-- ✅ Ingen källdialog när källa redan vald
-- ✅ Tydliga felmeddelanden och användarguidning
-
-#### **15.6 Teknisk stabilitet (KLAR)**
-- ✅ Omfattande debug-logging implementerat och sedan rensat
-- ✅ Exception handling för alla bildoperationer
-- ✅ Memory management för stora bilduppladdningar
-- ✅ Clean production code utan debug-artifacts
-
-**🏆 Resultat Fas 15:**
-- 📱 Stöd för upp till 5 bilder per recept
-- 🎯 Smart UX som anpassar sig efter användarens behov
-- 🚀 Robust teknisk implementation med Firebase Storage
-- ⚡ Snabb och responsiv bildhantering
-- 🔒 Säker permission-hantering för alla plattformar
+### ** Fas 15: Flera bilder per recept (KLAR)** 
+- ✅ Stöd för upp till 5 bilder per recept
+- ✅ Smart UX som anpassar sig efter användarens behov
+- ✅ Robust teknisk implementation med Firebase Storage
+- ✅ Snabb och responsiv bildhantering
+- ✅ Säker permission-hantering för alla plattformar
 
 ---
 
 ## 🔧 **KOMMANDE FASER**
-
-### **Fas 15.5: RecipeImageManager UI-förbättringar (2-3 timmar)** ⭐ **NÄSTA!**
-
-**🎯 Problem med nuvarande UI:**
-- Svårt att förstå hur man lägger till bilder
-- Otydlig bildordning och primärbild-hantering  
-- Förvirrande remove/reorder funktionalitet
-- Inte mobiloptimerat för touch-hantering
-
-**🎨 Planerad förbättring - Karusell-stil (inspirerad av Instagram):**
-```
-    < [PRIMÄRBILD STOR] >
-      [••••○] (dots för navigation)
-[Ta bort] [Sätt som primär] [+ Lägg till]
-```
-
-**Implementation:**
-- ✅ Stor primärbild i centrum (aspect ratio 16:9)
-- ✅ Swipe-navigation mellan bilder
-- ✅ Dots-indikator för position
-- ✅ Tydliga action-knappar under bilden
-- ✅ "+" knapp för att lägga till fler
-- ✅ Touch-vänlig design för mobil
-
-**Teknisk approach:**
-- PageView.builder för swipe-navigation
-- Dots-indikator med AnimatedContainer
-- Floating action buttons för actions
-- Haptic feedback för interactions
-- Optimized memory management för stora bilder
 
 ### **Fas 16: Portionshantering & Enhetskonvertering (4-5 timmar)**
 
