@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // För SystemNavigator
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart'; // NY IMPORT för ShareResultStatus
 import '../models/recipe.dart';
 import '../viewmodels/menu_viewmodel.dart';
 import '../widgets/recipe_card.dart';
@@ -70,17 +69,17 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
-  // NY METOD för att dela veckomeny
+  // FIXED METOD för att dela veckomeny
   Future<void> _shareMenu() async {
     final viewModel = context.read<MenuViewModel>();
 
-    // Konvertera menu format för ShareService
-    // MenuViewModel har: Map<String, List<Recipe>> menu
-    final result = await _shareService.shareWeekMenuFromCategories(
+    // FIXED: ShareService now returns void, not ShareResult
+    await _shareService.shareWeekMenuFromCategories(
       viewModel.menu,
     );
 
-    if (result.status == ShareResultStatus.success && mounted) {
+    // Always show success message since Share.share() doesn't return status
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Veckomeny delad!'),
@@ -95,24 +94,23 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Future<void> _showExitDialog(BuildContext context) async {
     final shouldExit = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Avsluta Butlery?'),
-            content: const Text('Vill du verkligen avsluta appen?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Avbryt'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.errorColor,
-                ),
-                child: const Text('Avsluta'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Avsluta Butlery?'),
+        content: const Text('Vill du verkligen avsluta appen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Avbryt'),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('Avsluta'),
+          ),
+        ],
+      ),
     );
 
     if (shouldExit == true && context.mounted) {
@@ -228,22 +226,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ),
 
         // Floating action button för inköpslista
-        floatingActionButton:
-            viewModel.hasMenu
-                ? FloatingActionButton.extended(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/inkopslista',
-                      arguments: viewModel.menu,
-                    );
-                  },
-                  icon: const Icon(Icons.shopping_cart),
-                  label: const Text('Till inköpslista'),
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                )
-                : null,
+        floatingActionButton: viewModel.hasMenu
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/inkopslista',
+                    arguments: viewModel.menu,
+                  );
+                },
+                icon: const Icon(Icons.shopping_cart),
+                label: const Text('Till inköpslista'),
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              )
+            : null,
       ),
     );
   }
@@ -284,15 +281,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               hintStyle: AppTheme.inputHintStyle,
               border: const OutlineInputBorder(),
               prefixIcon: const Icon(Icons.edit),
-              suffixIcon:
-                  _promptController.text.isNotEmpty
-                      ? IconButton(
-                        icon: AppTheme.actionIcon(context, Icons.clear),
-                        onPressed: () {
-                          _promptController.clear();
-                        },
-                      )
-                      : null,
+              suffixIcon: _promptController.text.isNotEmpty
+                  ? IconButton(
+                      icon: AppTheme.actionIcon(context, Icons.clear),
+                      onPressed: () {
+                        _promptController.clear();
+                      },
+                    )
+                  : null,
             ),
             onSubmitted: (_) => _generateMenu(),
           ),
@@ -306,14 +302,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       width: double.infinity,
       height: AppTheme.buttonHeight,
       child: ElevatedButton.icon(
-        onPressed:
-            !viewModel.isGenerating && _promptController.text.isNotEmpty
-                ? _generateMenu
-                : null,
-        icon:
-            viewModel.isGenerating
-                ? AppTheme.smallLoadingIndicator()
-                : const Icon(Icons.restaurant_menu),
+        onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
+            ? _generateMenu
+            : null,
+        icon: viewModel.isGenerating
+            ? AppTheme.smallLoadingIndicator()
+            : const Icon(Icons.restaurant_menu),
         label: Text(
           viewModel.isGenerating
               ? 'Genererar...'
@@ -373,14 +367,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 Text(
                   'Din veckomeny',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                 ),
                 Text(
                   '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                 ),
               ],
             ),
@@ -407,10 +401,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               ),
               IconButton(
                 icon: AppTheme.actionIcon(context, Icons.refresh),
-                onPressed:
-                    viewModel.isGenerating
-                        ? null
-                        : () => viewModel.regenerateSection(category),
+                onPressed: viewModel.isGenerating
+                    ? null
+                    : () => viewModel.regenerateSection(category),
                 tooltip: 'Uppdatera $category',
               ),
             ],

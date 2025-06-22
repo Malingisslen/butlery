@@ -1,20 +1,23 @@
 // lib/views/recipe_detail_view.dart
-// UPPDATERAD för Fas 16 med smart portionsskalning
+// UPPDATERAD för Fas 18 med Social Platform Integration
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // NY IMPORT för debug
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
+import '../viewmodels/social_recipe_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
-import '../widgets/portion_scaler.dart'; // NY IMPORT!
+import '../widgets/portion_scaler.dart';
 import '../widgets/recipe_image_carousel.dart';
+import '../widgets/user_avatar.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
+import '../services/user_service.dart'; // NY IMPORT för debug
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SMART PORTIONSSKALNING
+/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOCIAL INTEGRATION
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -22,8 +25,15 @@ class RecipeDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => sl<RecipeDetailViewModel>(param1: recipe),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => sl<RecipeDetailViewModel>(param1: recipe),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => sl<SocialRecipeViewModel>(param1: recipe),
+        ),
+      ],
       child: const _RecipeDetailViewContent(),
     );
   }
@@ -45,6 +55,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   List<String> _scaledIngredients = [];
   bool _isScaled = false;
 
+  // State för kommentarssektion
+  bool _isCommentsExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -59,26 +72,25 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            title: const Text('Ta bort recept'),
-            content: Text(
-              'Är du säker på att du vill ta bort "${viewModel.recipe.title}"?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Avbryt'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.errorColor,
-                ),
-                child: const Text('Ta bort'),
-              ),
-            ],
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ta bort recept'),
+        content: Text(
+          'Är du säker på att du vill ta bort "${viewModel.recipe.title}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Avbryt'),
           ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('Ta bort'),
+          ),
+        ],
+      ),
     );
 
     if (confirmed == true && context.mounted) {
@@ -109,17 +121,16 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     final viewModel = context.read<RecipeDetailViewModel>();
 
     // Dela med skalade ingredienser om användaren har justerat portioner
-    final recipeToShare =
-        _isScaled
-            ? viewModel.recipe.copyWith(
-              portions: _currentPortions,
-              ingredients: _scaledIngredients,
-            )
-            : viewModel.recipe;
+    final recipeToShare = _isScaled
+        ? viewModel.recipe.copyWith(
+            portions: _currentPortions,
+            ingredients: _scaledIngredients,
+          )
+        : viewModel.recipe;
 
-    final result = await _shareService.shareRecipe(recipeToShare);
+    await _shareService.shareRecipe(recipeToShare);
 
-    if (result.status == ShareResultStatus.success && context.mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -134,17 +145,36 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     }
   }
 
+  // NY METOD: Visa social sharing dialog
+  Future<void> _showSocialShareDialog(BuildContext context) async {
+    final socialViewModel = context.read<SocialRecipeViewModel>();
+
+    // Kontrollera om användaren har vänner
+    if (socialViewModel.friends.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Du behöver vänner för att dela recept socialt'),
+          backgroundColor: AppTheme.warningColor,
+        ),
+      );
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => _SocialShareDialog(),
+    );
+  }
+
   void _onPortionChanged(int newPortions, List<String> scaledIngredients) {
     setState(() {
       _currentPortions = newPortions;
       _scaledIngredients = scaledIngredients;
-      _isScaled =
-          newPortions !=
+      _isScaled = newPortions !=
           (context.read<RecipeDetailViewModel>().recipe.portions ?? 4);
     });
   }
 
-  // NY METOD för att visa bilder i fullskärm
   Future<void> _showFullscreenImages(
     BuildContext context,
     List<String> imageUrls,
@@ -153,11 +183,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => _FullscreenImageViewer(
-              imageUrls: imageUrls,
-              initialIndex: initialIndex,
-            ),
+        builder: (context) => _FullscreenImageViewer(
+          imageUrls: imageUrls,
+          initialIndex: initialIndex,
+        ),
       ),
     );
   }
@@ -165,6 +194,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeDetailViewModel>();
+    final socialViewModel = context.watch<SocialRecipeViewModel>();
 
     return MainLayoutMenu(
       currentIndex: null,
@@ -172,13 +202,20 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         appBar: AppBar(
           title: Text(viewModel.recipe.title),
           actions: [
+            // NY: Social share ikon (bara synlig om användaren har vänner)
+            if (socialViewModel.friends.isNotEmpty)
+              IconButton(
+                icon: AppTheme.actionIcon(context, Icons.people_outline),
+                onPressed: () => _showSocialShareDialog(context),
+                tooltip: 'Dela med vänner',
+              ),
+            // Befintlig regular share
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.share),
               onPressed: () => _shareRecipe(context),
-              tooltip:
-                  _isScaled
-                      ? 'Dela med $_currentPortions portioner'
-                      : 'Dela recept',
+              tooltip: _isScaled
+                  ? 'Dela med $_currentPortions portioner'
+                  : 'Dela recept',
             ),
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.delete),
@@ -195,17 +232,16 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // UPPDATERAD: Bildkarusell istället för enkel bild
+                  // Bildkarusell
                   if (viewModel.hasImages)
                     RecipeImageCarousel(
                       imageUrls: viewModel.recipe.imageUrls,
                       height: AppTheme.imageHeightMedium,
-                      onTap:
-                          () => _showFullscreenImages(
-                            context,
-                            viewModel.recipe.imageUrls,
-                            0,
-                          ),
+                      onTap: () => _showFullscreenImages(
+                        context,
+                        viewModel.recipe.imageUrls,
+                        0,
+                      ),
                     ),
                   if (viewModel.hasImages) AppTheme.mediumGap,
 
@@ -222,9 +258,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     child: Text(
                       viewModel.recipe.mealType,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w500,
-                      ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ),
                   AppTheme.mediumGap,
@@ -242,7 +280,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   _buildMetadata(context, viewModel),
                   AppTheme.largeGap,
 
-                  // Source URL om den finns
+                  // Source URL
                   if (viewModel.recipe.sourceUrl != null &&
                       viewModel.recipe.sourceUrl!.isNotEmpty) ...[
                     _buildSourceUrl(context, viewModel),
@@ -259,15 +297,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     Wrap(
                       spacing: AppTheme.spacingSm,
                       runSpacing: AppTheme.spacingXs,
-                      children:
-                          viewModel.recipe.tags!
-                              .map((tag) => AppTheme.tagChip(tag))
-                              .toList(),
+                      children: viewModel.recipe.tags!
+                          .map((tag) => AppTheme.tagChip(tag))
+                          .toList(),
                     ),
                     AppTheme.largeGap,
                   ],
 
-                  // NY! PORTIONSSKALNING MED SMART INGREDIENS-UPPDATERING
+                  // Portionsskalning
                   PortionScaler(
                     originalPortions: viewModel.recipe.portions ?? 4,
                     originalIngredients: viewModel.recipe.ingredients,
@@ -279,7 +316,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
                   // Instruktioner
                   _buildInstructions(context, viewModel),
-                  AppTheme.extraLargeGap,
+                  AppTheme.largeGap,
+
+                  // NY: Social kommentarssektion
+                  _buildCommentsSection(context, socialViewModel),
+                  AppTheme.largeGap,
 
                   // Redigera-knapp
                   SizedBox(
@@ -346,7 +387,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               _buildMetadataItem(
                 context,
                 Icons.people,
-                // Visa nuvarande portioner (kan vara skalad)
                 '$_currentPortions ${_currentPortions == 1 ? 'portion' : 'portioner'}',
                 isHighlighted: _isScaled,
               ),
@@ -417,15 +457,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 viewModel.recipe.lastCookedText ?? 'Markera som tillagad',
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor:
-                    viewModel.recipe.wasCookedRecently
-                        ? AppTheme.successColor
-                        : Theme.of(context).colorScheme.primary,
+                foregroundColor: viewModel.recipe.wasCookedRecently
+                    ? AppTheme.successColor
+                    : Theme.of(context).colorScheme.primary,
                 side: BorderSide(
-                  color:
-                      viewModel.recipe.wasCookedRecently
-                          ? AppTheme.successColor
-                          : Theme.of(context).colorScheme.outline,
+                  color: viewModel.recipe.wasCookedRecently
+                      ? AppTheme.successColor
+                      : Theme.of(context).colorScheme.outline,
                 ),
               ),
             ),
@@ -446,19 +484,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         Icon(
           icon,
           size: AppTheme.iconSizeAction,
-          color:
-              isHighlighted
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
+          color: isHighlighted
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         AppTheme.tinyGap,
         Text(
           text,
           style: AppTheme.captionStyle.copyWith(
-            color:
-                isHighlighted
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
+            color: isHighlighted
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
             fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
           ),
           textAlign: TextAlign.center,
@@ -472,29 +508,27 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     RecipeDetailViewModel viewModel,
   ) {
     final sourceUrl = viewModel.recipe.sourceUrl!;
-    final isFromArchive =
-        sourceUrl == 'Från Butlerys arkiv' ||
+    final isFromArchive = sourceUrl == 'Från Butlerys arkiv' ||
         sourceUrl == 'Importerat från Butlery-arkivet';
 
     return InkWell(
-      onTap:
-          isFromArchive
-              ? null
-              : () async {
-                final uri = Uri.parse(sourceUrl);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                } else {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Kunde inte öppna länken: $sourceUrl'),
-                        backgroundColor: AppTheme.errorColor,
-                      ),
-                    );
-                  }
+      onTap: isFromArchive
+          ? null
+          : () async {
+              final uri = Uri.parse(sourceUrl);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Kunde inte öppna länken: $sourceUrl'),
+                      backgroundColor: AppTheme.errorColor,
+                    ),
+                  );
                 }
-              },
+              }
+            },
       borderRadius: AppTheme.mediumRadius,
       child: Container(
         width: double.infinity,
@@ -521,13 +555,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   Text(
                     sourceUrl,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color:
-                          isFromArchive
+                          color: isFromArchive
                               ? Theme.of(context).colorScheme.onSurface
                               : Theme.of(context).colorScheme.primary,
-                      decoration:
-                          isFromArchive ? null : TextDecoration.underline,
-                    ),
+                          decoration:
+                              isFromArchive ? null : TextDecoration.underline,
+                        ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -601,9 +634,550 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       ],
     );
   }
+
+  // NY METOD: Kommentarssektion
+  Widget _buildCommentsSection(
+      BuildContext context, SocialRecipeViewModel socialViewModel) {
+    return Container(
+      width: double.infinity,
+      decoration: AppTheme.infoBoxDecoration(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header med expand/collapse
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isCommentsExpanded = !_isCommentsExpanded;
+              });
+            },
+            child: Padding(
+              padding: AppTheme.cardPadding,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.comment_outlined,
+                    size: AppTheme.iconSizeAction,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  SizedBox(width: AppTheme.spacingSm),
+                  Expanded(
+                    child: Text(
+                      socialViewModel.hasComments
+                          ? 'Kommentarer (${socialViewModel.comments.length})'
+                          : 'Kommentarer',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                    ),
+                  ),
+                  Icon(
+                    _isCommentsExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Expandable kommentarinnehåll
+          if (_isCommentsExpanded) ...[
+            Divider(height: 1, color: Theme.of(context).colorScheme.outline),
+            Padding(
+              padding: AppTheme.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Kommentarer lista
+                  if (socialViewModel.isLoadingComments)
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppTheme.spacingMd),
+                        child: AppTheme.smallLoadingIndicator(),
+                      ),
+                    )
+                  else if (socialViewModel.commentsError != null)
+                    Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingMd),
+                      child: Text(
+                        socialViewModel.commentsError!,
+                        style: TextStyle(color: AppTheme.errorColor),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  else if (!socialViewModel.hasComments)
+                    Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingMd),
+                      child: Text(
+                        'Inga kommentarer än. Bli först att kommentera!',
+                        style: AppTheme.captionStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  else
+                    ...socialViewModel.topLevelComments.map((comment) =>
+                        _buildCommentItem(context, socialViewModel, comment)),
+
+                  AppTheme.mediumGap,
+
+                  // DEBUG INFO + SKAPA PROFIL
+                  Builder(
+                    builder: (context) {
+                      final userService = sl<UserService>();
+                      final authUser = FirebaseAuth.instance.currentUser;
+
+                      return Container(
+                        padding: EdgeInsets.all(AppTheme.spacingSm),
+                        color: Colors.yellow[100],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('🔍 DEBUG INFO:',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                                'SocialViewModel.currentUser: ${socialViewModel.currentUser?.displayName ?? "NULL"}'),
+                            Text(
+                                'UserService.currentUserProfile: ${userService.currentUserProfile?.displayName ?? "NULL"}'),
+                            Text(
+                                'FirebaseAuth.currentUser: ${authUser?.email ?? "NULL"}'),
+                            Text(
+                                'UserService loading: ${userService.isLoading}'),
+                            Text(
+                                'UserService error: ${userService.error ?? "none"}'),
+
+                            AppTheme.smallGap,
+
+                            // SNABBFIX: Skapa profil-knapp
+                            if (authUser != null &&
+                                userService.currentUserProfile == null)
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final displayName = authUser.displayName ??
+                                      authUser.email!.split('@')[0];
+
+                                  final profile =
+                                      await userService.createOrUpdateProfile(
+                                    displayName: displayName,
+                                    isSearchable: true,
+                                    allowEmailSearch: false,
+                                  );
+
+                                  if (profile != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Profil skapad! Starta om appen.'),
+                                        backgroundColor: AppTheme.successColor,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Text('Skapa Profil'),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  AppTheme.smallGap,
+
+                  // Kommentarsformulär (för alla inloggade användare)
+                  // DEBUG: Visa alltid för inloggade användare
+                  if (socialViewModel.currentUser != null)
+                    _buildCommentForm(context, socialViewModel)
+                  else
+                    Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingMd),
+                      child: Text(
+                        'Logga in för att kommentera',
+                        style: AppTheme.captionStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // NY METOD: Kommentarsformulär
+  Widget _buildCommentForm(
+      BuildContext context, SocialRecipeViewModel socialViewModel) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (socialViewModel.isReplying) ...[
+          Container(
+            padding: EdgeInsets.all(AppTheme.spacingSm),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              borderRadius: AppTheme.mediumRadius,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.reply,
+                  size: AppTheme.iconSizeInfo,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                SizedBox(width: AppTheme.spacingSm),
+                Expanded(
+                  child: Text(
+                    'Svarar på kommentar',
+                    style: AppTheme.captionStyle.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: socialViewModel.cancelReply,
+                  icon: Icon(
+                    Icons.close,
+                    size: AppTheme.iconSizeInfo,
+                  ),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          AppTheme.smallGap,
+        ],
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            UserAvatar.social(
+              displayName: socialViewModel.currentUser?.displayName ?? 'Du',
+              imageUrl: socialViewModel.currentUser?.avatarUrl,
+              size: 48, // Gör den lite större för bättre touch target
+            ),
+            SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: TextField(
+                onChanged: socialViewModel.updateNewCommentText,
+                decoration: InputDecoration(
+                  hintText: socialViewModel.isReplying
+                      ? 'Skriv ditt svar...'
+                      : 'Skriv en kommentar...',
+                  border: OutlineInputBorder(
+                    borderRadius: AppTheme.mediumRadius,
+                  ),
+                  contentPadding: EdgeInsets.all(AppTheme.spacingSm),
+                ),
+                maxLines: 3,
+                minLines: 1,
+              ),
+            ),
+            SizedBox(width: AppTheme.spacingSm),
+            IconButton(
+              onPressed: socialViewModel.newCommentText.trim().isNotEmpty &&
+                      !socialViewModel.isPostingComment
+                  ? () async {
+                      final success = await socialViewModel.postComment();
+                      if (success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Kommentar publicerad!'),
+                            backgroundColor: AppTheme.successColor,
+                          ),
+                        );
+                      }
+                    }
+                  : null,
+              icon: socialViewModel.isPostingComment
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: AppTheme.smallLoadingIndicator(),
+                    )
+                  : Icon(Icons.send),
+              style: IconButton.styleFrom(
+                backgroundColor:
+                    socialViewModel.newCommentText.trim().isNotEmpty
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                foregroundColor:
+                    socialViewModel.newCommentText.trim().isNotEmpty
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : null,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // NY METOD: Kommentarsitem
+  Widget _buildCommentItem(
+    BuildContext context,
+    SocialRecipeViewModel socialViewModel,
+    dynamic comment,
+  ) {
+    return Container(
+      margin: EdgeInsets.only(bottom: AppTheme.spacingSm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              UserAvatar.small(
+                displayName: socialViewModel.getAuthorDisplayName(comment),
+                imageUrl: socialViewModel.getAuthorAvatarUrl(comment),
+              ),
+              SizedBox(width: AppTheme.spacingSm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          socialViewModel.getAuthorDisplayName(comment),
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                        SizedBox(width: AppTheme.spacingSm),
+                        Text(
+                          _formatCommentTime(comment.createdAt),
+                          style: AppTheme.captionStyle,
+                        ),
+                      ],
+                    ),
+                    AppTheme.tinyGap,
+                    Text(
+                      comment.text,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    AppTheme.tinyGap,
+                    Row(
+                      children: [
+                        // Gilla-knapp
+                        InkWell(
+                          onTap: () =>
+                              socialViewModel.toggleCommentLike(comment.id),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppTheme.spacingXs,
+                              horizontal: AppTheme.spacingSm,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  socialViewModel.hasLikedComment(comment)
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  size: AppTheme.iconSizeInfo,
+                                  color:
+                                      socialViewModel.hasLikedComment(comment)
+                                          ? AppTheme.errorColor
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                ),
+                                if (comment.likeCount > 0) ...[
+                                  SizedBox(width: AppTheme.spacingXs),
+                                  Text(
+                                    '${comment.likeCount}',
+                                    style: AppTheme.captionStyle,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Svara-knapp
+                        InkWell(
+                          onTap: () => socialViewModel.setReplyTo(comment.id),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppTheme.spacingXs,
+                              horizontal: AppTheme.spacingSm,
+                            ),
+                            child: Text(
+                              'Svara',
+                              style: AppTheme.captionStyle.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Svar på kommentaren
+          ...socialViewModel.getReplies(comment.id).map((reply) => Padding(
+                padding: EdgeInsets.only(left: AppTheme.spacingLg),
+                child: _buildCommentItem(context, socialViewModel, reply),
+              )),
+        ],
+      ),
+    );
+  }
+
+  String _formatCommentTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'nu';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d';
+    } else {
+      return '${dateTime.day}/${dateTime.month}';
+    }
+  }
 }
 
-// NY KLASS för fullskärmsvisning av bilder
+// NY KLASS: Social Share Dialog
+class _SocialShareDialog extends StatefulWidget {
+  @override
+  State<_SocialShareDialog> createState() => _SocialShareDialogState();
+}
+
+class _SocialShareDialogState extends State<_SocialShareDialog> {
+  final _messageController = TextEditingController();
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final socialViewModel = context.watch<SocialRecipeViewModel>();
+
+    return AlertDialog(
+      title: const Text('Dela med vänner'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Meddelande (valfritt)
+            TextField(
+              controller: _messageController,
+              decoration: const InputDecoration(
+                hintText: 'Lägg till ett meddelande (valfritt)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
+            AppTheme.mediumGap,
+
+            // Vänlista
+            Text(
+              'Välj vänner:',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            AppTheme.smallGap,
+
+            // Select all/none knappar
+            Row(
+              children: [
+                TextButton(
+                  onPressed: socialViewModel.selectAllFriends,
+                  child: const Text('Välj alla'),
+                ),
+                TextButton(
+                  onPressed: socialViewModel.clearFriendSelection,
+                  child: const Text('Rensa alla'),
+                ),
+              ],
+            ),
+
+            // Vänlista
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                itemCount: socialViewModel.friends.length,
+                itemBuilder: (context, index) {
+                  final friend = socialViewModel.friends[index];
+                  final isSelected =
+                      socialViewModel.selectedFriendIds.contains(friend.uid);
+
+                  return CheckboxListTile(
+                    value: isSelected,
+                    onChanged: (_) =>
+                        socialViewModel.toggleFriendSelection(friend.uid),
+                    title: Text(friend.displayName),
+                    secondary: UserAvatar.small(
+                      displayName: friend.displayName,
+                      imageUrl: friend.avatarUrl,
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Avbryt'),
+        ),
+        ElevatedButton(
+          onPressed:
+              socialViewModel.hasSelectedFriends && !socialViewModel.isSharing
+                  ? () async {
+                      final success = await socialViewModel.shareRecipe(
+                        message: _messageController.text.trim().isEmpty
+                            ? null
+                            : _messageController.text.trim(),
+                      );
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? 'Recept delat med ${socialViewModel.selectedFriendIds.length} vänner!'
+                                  : socialViewModel.sharingError ??
+                                      'Kunde inte dela recept',
+                            ),
+                            backgroundColor: success
+                                ? AppTheme.successColor
+                                : AppTheme.errorColor,
+                          ),
+                        );
+                      }
+                    }
+                  : null,
+          child: socialViewModel.isSharing
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: AppTheme.smallLoadingIndicator(),
+                )
+              : const Text('Dela'),
+        ),
+      ],
+    );
+  }
+}
+
+// BEFINTLIG KLASS: Fullskärmsvisning av bilder
 class _FullscreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
