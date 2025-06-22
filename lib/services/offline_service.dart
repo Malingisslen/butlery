@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
 import '../models/recipe.dart';
+import '../core/utils/logger.dart';
 
 /// Service för offline-funktionalitet med Hive
 class OfflineService extends ChangeNotifier {
@@ -30,11 +31,15 @@ class OfflineService extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   Box<Recipe> get recipeBox => _recipeBox;
 
+  /// VIKTIGA getters för offline_status_icon.dart
+  bool get hasQueuedChanges => _isInitialized && _syncQueueBox.isNotEmpty;
+  int get queuedChangesCount => _isInitialized ? _syncQueueBox.length : 0;
+
   /// Initialisera Hive och offline-service
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    debugPrint('🗄️ Initialiserar Hive för offline-stöd...');
+    AppLogger.info('🗄️ Initialiserar Hive för offline-stöd...');
 
     try {
       // Initialisera Hive
@@ -53,11 +58,11 @@ class OfflineService extends ChangeNotifier {
       await _initConnectivityMonitoring();
 
       _isInitialized = true;
-      debugPrint(
+      AppLogger.success(
         '✅ Hive initialiserad med ${_recipeBox.length} offline recept',
       );
     } catch (e) {
-      debugPrint('❌ Fel vid Hive-initialisering: $e');
+      AppLogger.error('❌ Fel vid Hive-initialisering: $e');
       rethrow;
     }
   }
@@ -72,7 +77,7 @@ class OfflineService extends ChangeNotifier {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       _updateConnectionStatus,
       onError: (error) {
-        debugPrint('❌ Connectivity stream error: $error');
+        AppLogger.error('❌ Connectivity stream error: $error');
       },
     );
   }
@@ -82,10 +87,10 @@ class OfflineService extends ChangeNotifier {
     final wasOnline = _isOnline;
     _isOnline = results.isNotEmpty && results.first != ConnectivityResult.none;
 
-    debugPrint('📶 Connection status: ${_isOnline ? "ONLINE" : "OFFLINE"}');
+    AppLogger.info('📶 Connection status: ${_isOnline ? "ONLINE" : "OFFLINE"}');
 
     if (!wasOnline && _isOnline) {
-      debugPrint('🔄 Återansluten - startar synkronisering...');
+      AppLogger.info('🔄 Återansluten - startar synkronisering...');
       _syncPendingChanges();
     }
 
@@ -109,9 +114,9 @@ class OfflineService extends ChangeNotifier {
         await _syncQueueBox.put(recipe.id, recipe.id);
       }
 
-      debugPrint('💾 Recept sparat offline: ${recipe.title}');
+      AppLogger.info('💾 Recept sparat offline: ${recipe.title}');
     } catch (e) {
-      debugPrint('❌ Fel vid offline-sparning: $e');
+      AppLogger.error('❌ Fel vid offline-sparning: $e');
       rethrow;
     }
   }
@@ -130,21 +135,21 @@ class OfflineService extends ChangeNotifier {
   Future<void> deleteRecipeOffline(String id) async {
     await _recipeBox.delete(id);
     await _syncQueueBox.delete(id);
-    debugPrint('🗑️ Recept borttaget offline: $id');
+    AppLogger.info('🗑️ Recept borttaget offline: $id');
   }
 
   /// Rensa all offline data
   Future<void> clearOfflineData() async {
     await _recipeBox.clear();
     await _syncQueueBox.clear();
-    debugPrint('🧹 All offline data rensad');
+    AppLogger.info('🧹 All offline data rensad');
   }
 
   /// Synkronisera väntande ändringar
   Future<void> _syncPendingChanges() async {
     if (!_isOnline || _syncQueueBox.isEmpty) return;
 
-    debugPrint(
+    AppLogger.info(
       '🔄 Synkroniserar ${_syncQueueBox.length} väntande ändringar...',
     );
 
@@ -159,7 +164,7 @@ class OfflineService extends ChangeNotifier {
         recipe.lastSyncedAt = DateTime.now();
         await recipe.save(); // Nu är det säkert eftersom objektet är i boxen
         await _syncQueueBox.delete(id);
-        debugPrint('✅ Synkade recept: ${recipe.title}');
+        AppLogger.success('✅ Synkade recept: ${recipe.title}');
       }
     }
 

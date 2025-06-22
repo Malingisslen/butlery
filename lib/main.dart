@@ -30,7 +30,7 @@ import 'theme/app_theme.dart';
 // Auth view
 import 'views/auth_view.dart';
 
-// Dina vyer (svenska namn)
+// Befintliga views
 import 'views/mina_recept_view.dart';
 import 'views/lagg_till_recept_view.dart';
 import 'views/skriv_sjalv_recept_view.dart';
@@ -43,6 +43,9 @@ import 'views/importera_fran_arkiv_view.dart';
 import 'views/photo_import_view.dart';
 import 'views/import_via_url_view.dart';
 import 'views/receive_share_view.dart';
+
+// NYA: Social Views
+import 'views/social/user_profile_edit_view.dart';
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
@@ -133,7 +136,7 @@ class _ButleryAppState extends State<ButleryApp> {
   // Analytics observer för route tracking
   final FirebaseAnalyticsObserver _analyticsObserver =
       AnalyticsService().observer ??
-      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
+          FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
   // Stream subscription för delningar
   late StreamSubscription<SharedMedia> _shareSubscription;
@@ -299,7 +302,7 @@ class _ButleryAppState extends State<ButleryApp> {
                   builder: (_) => EditRecipeView(recipe: recipe),
                 );
 
-              // NY ROUTE för att ta emot delningar
+              // BEFINTLIG: Ta emot delningar
               case '/receiveShare':
                 final args = settings.arguments as Map<String, dynamic>?;
                 if (args == null) {
@@ -312,6 +315,21 @@ class _ButleryAppState extends State<ButleryApp> {
                   ),
                   settings,
                 );
+
+              // ===== NYA SOCIAL ROUTES =====
+
+              case '/profile/edit':
+                return _route(const UserProfileEditView(), settings);
+
+              // TODO: Lägg till fler social routes här när views är klara
+              // case '/friends':
+              //   return _route(const FriendsView(), settings);
+              //
+              // case '/friends/requests':
+              //   return _route(const FriendRequestsView(), settings);
+              //
+              // case '/shared-recipes':
+              //   return _route(const SharedRecipesView(), settings);
 
               default:
                 return _errorRoute('Okänd rutt: ${settings.name}');
@@ -348,7 +366,6 @@ class _ButleryAppState extends State<ButleryApp> {
         routeName == '/franSocialaMedier' ||
         routeName == '/photoImport' ||
         routeName == '/receiveShare') {
-      // Lagt till receiveShare här
       return PageRouteBuilder(
         settings: settings,
         pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -366,6 +383,30 @@ class _ButleryAppState extends State<ButleryApp> {
             position: animation.drive(tween),
             child: child,
           );
+        },
+        transitionDuration: const Duration(milliseconds: 150),
+      );
+    }
+
+    // Social screens får slide från höger (standard)
+    if (routeName.startsWith('/profile') ||
+        routeName.startsWith('/friends') ||
+        routeName.startsWith('/shared')) {
+      return PageRouteBuilder(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+              position: animation.drive(tween), child: child);
         },
         transitionDuration: const Duration(milliseconds: 150),
       );
@@ -394,49 +435,47 @@ class _ButleryAppState extends State<ButleryApp> {
   /// Error route med scale + fade animation
   Route _errorRoute([String? msg]) {
     return PageRouteBuilder(
-      pageBuilder:
-          (context, animation, secondaryAnimation) => Scaffold(
-            appBar: AppBar(
-              title: const Text('Fel'),
-              backgroundColor: AppTheme.errorColor,
-            ),
-            body: Center(
-              child: Padding(
-                padding: AppTheme.screenPadding,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: AppTheme.errorColor,
-                    ),
-                    AppTheme.mediumGap,
-                    Text(
-                      'Något gick fel',
-                      style: AppTheme.sectionTitleStyle.copyWith(
-                        color: AppTheme.errorColor,
-                      ),
-                    ),
-                    if (msg != null) ...[
-                      AppTheme.smallGap,
-                      Text(msg, textAlign: TextAlign.center),
-                    ],
-                    AppTheme.largeGap,
-                    ElevatedButton(
-                      onPressed:
-                          () => Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/',
-                            (_) => false,
-                          ),
-                      child: const Text('Startsida'),
-                    ),
-                  ],
+      pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Fel'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+        body: Center(
+          child: Padding(
+            padding: AppTheme.screenPadding,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppTheme.errorColor,
                 ),
-              ),
+                AppTheme.mediumGap,
+                Text(
+                  'Något gick fel',
+                  style: AppTheme.sectionTitleStyle.copyWith(
+                    color: AppTheme.errorColor,
+                  ),
+                ),
+                if (msg != null) ...[
+                  AppTheme.smallGap,
+                  Text(msg, textAlign: TextAlign.center),
+                ],
+                AppTheme.largeGap,
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/',
+                    (_) => false,
+                  ),
+                  child: const Text('Startsida'),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         // Scale + fade för error screens
         var scaleTween = Tween(begin: 0.8, end: 1.0);

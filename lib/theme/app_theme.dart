@@ -37,159 +37,159 @@ class AppTheme {
   // ===== MATERIAL 3 COLOR SCHEME (UPPDATERAD) =====
 
   static ColorScheme get lightColorScheme => const ColorScheme.light(
-    // Primära färger
-    primary: _primaryBlue,
-    onPrimary: Colors.white,
-    primaryContainer: Color(0xFFE1F5FE),
-    onPrimaryContainer: _textDark,
+        // Primära färger
+        primary: _primaryBlue,
+        onPrimary: Colors.white,
+        primaryContainer: Color(0xFFE1F5FE),
+        onPrimaryContainer: _textDark,
 
-    // Sekundära färger
-    secondary: _accent,
-    onSecondary: Colors.white,
-    secondaryContainer: Color(0xFFE3F2FD),
-    onSecondaryContainer: _textDark,
+        // Sekundära färger
+        secondary: _accent,
+        onSecondary: Colors.white,
+        secondaryContainer: Color(0xFFE3F2FD),
+        onSecondaryContainer: _textDark,
 
-    // Bakgrunder (uppdaterade för Material 3)
-    surface: _cardWhite,
-    onSurface: _textDark,
-    surfaceContainerHighest: Color(0xFFF8F9FA),
+        // Bakgrunder (uppdaterade för Material 3)
+        surface: _cardWhite,
+        onSurface: _textDark,
+        surfaceContainerHighest: Color(0xFFF8F9FA),
 
-    // Fel och varningar
-    error: _error,
-    onError: Colors.white,
-    errorContainer: Color(0xFFFFEBEE),
-    onErrorContainer: _error,
+        // Fel och varningar
+        error: _error,
+        onError: Colors.white,
+        errorContainer: Color(0xFFFFEBEE),
+        onErrorContainer: _error,
 
-    // Gränser och dividers
-    outline: _divider,
-    outlineVariant: Color(0xFFF3F4F6),
+        // Gränser och dividers
+        outline: _divider,
+        outlineVariant: Color(0xFFF3F4F6),
 
-    // Variabler för text
-    onSurfaceVariant: _textMedium,
-  );
+        // Variabler för text
+        onSurfaceVariant: _textMedium,
+      );
 
   // ===== TYPOGRAFI (FÖRBÄTTRAD MED ALLA SEMANTISKA STYLES) =====
 
   static TextTheme get textTheme => const TextTheme(
-    // Headers
-    displayLarge: TextStyle(
-      fontSize: 32,
-      fontWeight: FontWeight.bold,
-      color: _textDark,
-      letterSpacing: -0.5,
-    ),
-    displayMedium: TextStyle(
-      fontSize: 28,
-      fontWeight: FontWeight.bold,
-      color: _textDark,
-      letterSpacing: -0.25,
-    ),
-    displaySmall: TextStyle(
-      fontSize: 24,
-      fontWeight: FontWeight.w600,
-      color: _textDark,
-    ),
+        // Headers
+        displayLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: _textDark,
+          letterSpacing: -0.5,
+        ),
+        displayMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: _textDark,
+          letterSpacing: -0.25,
+        ),
+        displaySmall: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          color: _textDark,
+        ),
 
-    // Headlines (för "Din meny", section headers)
-    headlineLarge: TextStyle(
-      fontSize: 28,
-      fontWeight: FontWeight.bold,
-      color: _primaryBlue, // Blå som i Figma
-      letterSpacing: -0.5,
-    ),
-    headlineMedium: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.w700,
-      color: _sectionHeader, // Mörk för "Middagar", "Lunch"
-      letterSpacing: -0.25,
-    ),
-    headlineSmall: TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-      color: _textDark,
-    ),
+        // Headlines (för "Din meny", section headers)
+        headlineLarge: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: _primaryBlue, // Blå som i Figma
+          letterSpacing: -0.5,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: _sectionHeader, // Mörk för "Middagar", "Lunch"
+          letterSpacing: -0.25,
+        ),
+        headlineSmall: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: _textDark,
+        ),
 
-    // Titles (för receptnamn)
-    titleLarge: TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-      color: _textDark,
-      height: 1.3,
-    ),
-    titleMedium: TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      color: _textDark,
-      height: 1.3,
-    ),
-    titleSmall: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: _textDark,
-    ),
+        // Titles (för receptnamn)
+        titleLarge: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: _textDark,
+          height: 1.3,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: _textDark,
+          height: 1.3,
+        ),
+        titleSmall: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: _textDark,
+        ),
 
-    // Body text
-    bodyLarge: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.normal,
-      color: _textDark,
-      height: 1.5,
-    ),
-    bodyMedium: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.normal,
-      color: _textMedium,
-      height: 1.4,
-    ),
-    bodySmall: TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.normal,
-      color: _recipeMeta, // Särskild färg för metadata
-      height: 1.3,
-    ),
+        // Body text
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+          color: _textDark,
+          height: 1.5,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: _textMedium,
+          height: 1.4,
+        ),
+        bodySmall: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.normal,
+          color: _recipeMeta, // Särskild färg för metadata
+          height: 1.3,
+        ),
 
-    // Labels (för knappar etc.)
-    labelLarge: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: _textDark,
-    ),
-    labelMedium: TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      color: _textMedium,
-    ),
-    labelSmall: TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w500,
-      color: _textLight,
-    ),
-  );
+        // Labels (för knappar etc.)
+        labelLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: _textDark,
+        ),
+        labelMedium: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: _textMedium,
+        ),
+        labelSmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: _textLight,
+        ),
+      );
 
   // ===== KOMPONENT-THEMES =====
 
   static AppBarTheme get appBarTheme => const AppBarTheme(
-    backgroundColor: _backgroundBeige,
-    foregroundColor: _textDark,
-    elevation: 0,
-    centerTitle: false,
-    titleTextStyle: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      color: _textDark,
-    ),
-    iconTheme: IconThemeData(color: _textDark),
-  );
+        backgroundColor: _backgroundBeige,
+        foregroundColor: _textDark,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _textDark,
+        ),
+        iconTheme: IconThemeData(color: _textDark),
+      );
 
   static CardTheme get cardTheme => const CardTheme(
-    color: _cardWhite,
-    elevation: 2,
-    shadowColor: Color(0x1A2C3E50), // _textDark med opacity som Color
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
-    ),
-    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  );
+        color: _cardWhite,
+        elevation: 2,
+        shadowColor: Color(0x1A2C3E50), // _textDark med opacity som Color
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      );
 
   static InputDecorationTheme get inputDecorationTheme =>
       const InputDecorationTheme(
@@ -218,29 +218,31 @@ class AppTheme {
   // ===== HUVUDTHEME - SUPER FÖRENKLAD =====
 
   static ThemeData get lightTheme => ThemeData(
-    useMaterial3: true,
-    colorScheme: lightColorScheme,
-    textTheme: textTheme,
-    appBarTheme: appBarTheme,
-    cardTheme: CardThemeData(
-      color: _cardWhite,
-      elevation: 2,
-      shadowColor: const Color(0x1A2C3E50),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-      margin: EdgeInsets.symmetric(horizontal: spacingSm, vertical: spacingXs),
-    ),
-    inputDecorationTheme: inputDecorationTheme,
+        useMaterial3: true,
+        colorScheme: lightColorScheme,
+        textTheme: textTheme,
+        appBarTheme: appBarTheme,
+        cardTheme: CardThemeData(
+          color: _cardWhite,
+          elevation: 2,
+          shadowColor: const Color(0x1A2C3E50),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+          margin:
+              EdgeInsets.symmetric(horizontal: spacingSm, vertical: spacingXs),
+        ),
+        inputDecorationTheme: inputDecorationTheme,
 
-    // Grundläggande inställningar
-    scaffoldBackgroundColor: _backgroundBeige,
-    dividerColor: _divider,
-    splashColor: const Color(0x1A4A7C93), // _primaryBlue med opacity som Color
-    highlightColor: const Color(
-      0x1A4A7C93,
-    ), // _primaryBlue med opacity som Color
-  );
+        // Grundläggande inställningar
+        scaffoldBackgroundColor: _backgroundBeige,
+        dividerColor: _divider,
+        splashColor:
+            const Color(0x1A4A7C93), // _primaryBlue med opacity som Color
+        highlightColor: const Color(
+          0x1A4A7C93,
+        ), // _primaryBlue med opacity som Color
+      );
 
   // ===== HJÄLP-METODER FÖR KOMPONENTER =====
 
@@ -332,20 +334,20 @@ class AppTheme {
   static EdgeInsets get cardPadding =>
       EdgeInsets.all(spacingMd); // 16px - för card padding
   static EdgeInsets get listItemPadding => EdgeInsets.symmetric(
-    // För list items
-    horizontal: spacingMd,
-    vertical: spacingSm,
-  );
+        // För list items
+        horizontal: spacingMd,
+        vertical: spacingSm,
+      );
   static EdgeInsets get buttonPadding => EdgeInsets.symmetric(
-    // För button padding
-    vertical: spacingMd,
-    horizontal: spacingLg,
-  );
+        // För button padding
+        vertical: spacingMd,
+        horizontal: spacingLg,
+      );
   static EdgeInsets get inputPadding => EdgeInsets.symmetric(
-    // För input content padding
-    horizontal: spacingMd,
-    vertical: spacingSmPlus,
-  );
+        // För input content padding
+        horizontal: spacingMd,
+        vertical: spacingSmPlus,
+      );
 
   // ===== STANDARDISERADE SIZED BOXES (GAPS) =====
 
@@ -433,54 +435,55 @@ class AppTheme {
   // ===== SHADOWS (FÖRBÄTTRADE) =====
 
   static List<BoxShadow> get cardShadow => const [
-    BoxShadow(
-      color: Color(0x0A000000), // Subtil skugga som i Figma
-      blurRadius: 12,
-      offset: Offset(0, 4),
-      spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Color(0x05000000), // Extra subtil skugga för djup
-      blurRadius: 4,
-      offset: Offset(0, 2),
-      spreadRadius: 0,
-    ),
-  ];
+        BoxShadow(
+          color: Color(0x0A000000), // Subtil skugga som i Figma
+          blurRadius: 12,
+          offset: Offset(0, 4),
+          spreadRadius: 0,
+        ),
+        BoxShadow(
+          color: Color(0x05000000), // Extra subtil skugga för djup
+          blurRadius: 4,
+          offset: Offset(0, 2),
+          spreadRadius: 0,
+        ),
+      ];
 
   static List<BoxShadow> get buttonShadow => const [
-    BoxShadow(
-      color: Color(0x1A3B82F6), // Blå skugga för knappar
-      blurRadius: 8,
-      offset: Offset(0, 4),
-      spreadRadius: 0,
-    ),
-  ];
+        BoxShadow(
+          color: Color(0x1A3B82F6), // Blå skugga för knappar
+          blurRadius: 8,
+          offset: Offset(0, 4),
+          spreadRadius: 0,
+        ),
+      ];
 
   static List<BoxShadow> get floatingButtonShadow => const [
-    BoxShadow(
-      color: Color(0x1F000000), // Starkare skugga för floating buttons
-      blurRadius: 16,
-      offset: Offset(0, 8),
-      spreadRadius: 0,
-    ),
-  ];
+        BoxShadow(
+          color: Color(0x1F000000), // Starkare skugga för floating buttons
+          blurRadius: 16,
+          offset: Offset(0, 8),
+          spreadRadius: 0,
+        ),
+      ];
 
   // ===== STYLING GETTERS (KOMPLETT LÖSNING) =====
 
   /// Receptkort container decoration
   static BoxDecoration get recipeCardDecoration => BoxDecoration(
-    color: cardColor,
-    borderRadius: extraLargeRadius,
-    boxShadow: cardShadow,
-  );
+        color: cardColor,
+        borderRadius: extraLargeRadius,
+        boxShadow: cardShadow,
+      );
 
   /// Runda receptbilder decoration
   static BoxDecoration get recipeImageDecoration => BoxDecoration(
-    borderRadius: roundRadius,
-    boxShadow: const [
-      BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
-    ],
-  );
+        borderRadius: roundRadius,
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+        ],
+      );
 
   /// Receptkort margins
   static EdgeInsets get recipeCardMargin =>
@@ -492,19 +495,19 @@ class AppTheme {
 
   /// Section header text style ("Middagar", "Lunch")
   static TextStyle get sectionHeaderStyle => const TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    color: Color(0xFF374151),
-    letterSpacing: -0.3,
-  );
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF374151),
+        letterSpacing: -0.3,
+      );
 
   /// Receptmetadata text style ("6 portioner | 30 minuter")
   static TextStyle get recipeMetaStyle => const TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    color: Color(0xFF8B9AAF),
-    letterSpacing: 0.2,
-  );
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF8B9AAF),
+        letterSpacing: 0.2,
+      );
 
   /// Meal type chip decoration
   static BoxDecoration mealTypeChipDecoration(Color color) =>
@@ -512,10 +515,10 @@ class AppTheme {
 
   /// Tag chip decoration
   static BoxDecoration get tagChipDecoration => BoxDecoration(
-    color: backgroundColor,
-    borderRadius: BorderRadius.circular(12.0),
-    border: Border.all(color: dividerColor, width: 1),
-  );
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: dividerColor, width: 1),
+      );
 
   // ===== SAKNADE EGENSKAPER SOM ANVÄNDS I RECIPE_CARD =====
 
@@ -565,17 +568,17 @@ class AppTheme {
 
   /// Info-ikoner för metadata och statusinfo
   static Widget infoIcon(BuildContext context, {IconData? icon}) => Icon(
-    icon ?? Icons.info_outline,
-    size: iconSizeInfo,
-    color: Theme.of(context).colorScheme.onSurfaceVariant,
-  );
+        icon ?? Icons.info_outline,
+        size: iconSizeInfo,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      );
 
   /// Filter-ikon för sök och filter-funktioner
   static Widget filterIcon(BuildContext context) => Icon(
-    Icons.filter_list,
-    size: iconSizeInfo,
-    color: Theme.of(context).colorScheme.onSurfaceVariant,
-  );
+        Icons.filter_list,
+        size: iconSizeInfo,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      );
 
   /// Action-ikoner för interaktiva element
   static Widget actionIcon(
@@ -583,11 +586,12 @@ class AppTheme {
     IconData icon, {
     Color? color,
     double? size,
-  }) => Icon(
-    icon,
-    size: size ?? iconSizeAction,
-    color: color ?? Theme.of(context).colorScheme.onSurface,
-  );
+  }) =>
+      Icon(
+        icon,
+        size: size ?? iconSizeAction,
+        color: color ?? Theme.of(context).colorScheme.onSurface,
+      );
 
   /// Status-ikoner med semantiska färger
   static Widget successIcon(BuildContext context) =>
@@ -600,201 +604,210 @@ class AppTheme {
       Icon(Icons.warning_outlined, size: iconSizeInfo, color: warningColor);
 
   /// Loading indicators för olika storlekar
-  static Widget smallLoadingIndicator() => const SizedBox(
-    width: 16,
-    height: 16,
-    child: CircularProgressIndicator(strokeWidth: 2),
-  );
+  static Widget smallLoadingIndicator({Color? color}) => SizedBox(
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor:
+              color != null ? AlwaysStoppedAnimation<Color>(color) : null,
+        ),
+      );
 
-  static Widget mediumLoadingIndicator() => const CircularProgressIndicator();
+  static Widget mediumLoadingIndicator({Color? color}) =>
+      CircularProgressIndicator(
+        valueColor: color != null ? AlwaysStoppedAnimation<Color>(color) : null,
+      );
 
-  static Widget largeLoadingIndicator() =>
-      const CircularProgressIndicator.adaptive();
+  static Widget largeLoadingIndicator({Color? color}) =>
+      CircularProgressIndicator.adaptive(
+        valueColor: color != null ? AlwaysStoppedAnimation<Color>(color) : null,
+      );
 
   // ===== ✨ NYA SEMANTISKA TEXT STYLES (KRITISKA TILLÄGG) =====
 
   /// Error text style för felmeddelanden
   static TextStyle get errorTextStyle => const TextStyle(
-    color: errorColor,
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+        color: errorColor,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+      );
 
   /// Success text style för framgångsmeddelanden
   static TextStyle get successTextStyle => const TextStyle(
-    color: successColor,
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+        color: successColor,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+      );
 
   /// Warning text style för varningsmeddelanden
   static TextStyle get warningTextStyle => const TextStyle(
-    color: warningColor,
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+        color: warningColor,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+      );
 
   /// Info text style för informationsmeddelanden
   static TextStyle get infoTextStyle => const TextStyle(
-    color: _textMedium,
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+        color: _textMedium,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+      );
 
   /// Chip label style för taggar och filter chips
   static TextStyle get chipLabelStyle => const TextStyle(
-    fontSize: 11,
-    color: textSecondary,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 0.2,
-  );
+        fontSize: 11,
+        color: textSecondary,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.2,
+      );
 
   /// Chip på primär bakgrund (vit text på färgad bakgrund)
   static TextStyle get chipOnPrimaryTextStyle => const TextStyle(
-    fontSize: 11,
-    fontWeight: FontWeight.w600,
-    color: Colors.white,
-    letterSpacing: 0.2,
-  );
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+        letterSpacing: 0.2,
+      );
 
   /// Form label style för formulärfält
   static TextStyle get formLabelStyle => const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: _textMedium,
-    height: 1.2,
-  );
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: _textMedium,
+        height: 1.2,
+      );
 
   /// Input hint style för placeholder text
   static TextStyle get inputHintStyle => const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: _textLight,
-    height: 1.2,
-  );
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: _textLight,
+        height: 1.2,
+      );
 
   /// Metadata style för receptdetaljer (portioner, tid, etc.)
   static TextStyle get metadataStyle => const TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    color: _recipeMeta,
-    letterSpacing: 0.2,
-    height: 1.3,
-  );
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: _recipeMeta,
+        letterSpacing: 0.2,
+        height: 1.3,
+      );
 
   /// Section title style för större rubriker
   static TextStyle get sectionTitleStyle => const TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-    color: textPrimary,
-    letterSpacing: -0.3,
-    height: 1.2,
-  );
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: textPrimary,
+        letterSpacing: -0.3,
+        height: 1.2,
+      );
 
   /// Card title style för kort-rubriker
   static TextStyle get cardTitleStyle => const TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    color: textPrimary,
-    height: 1.3,
-    letterSpacing: -0.1,
-  );
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        color: textPrimary,
+        height: 1.3,
+        letterSpacing: -0.1,
+      );
 
   /// Subtitle style för undertexter
   static TextStyle get subtitleStyle => const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: _textMedium,
-    height: 1.4,
-  );
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: _textMedium,
+        height: 1.4,
+      );
 
   /// Caption style för små texter
   static TextStyle get captionStyle => const TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    color: textTertiary,
-    letterSpacing: 0.3,
-    height: 1.2,
-  );
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: textTertiary,
+        letterSpacing: 0.3,
+        height: 1.2,
+      );
 
   // ===== STANDARDISERADE TEXT STYLES =====
 
   /// Återkommande text styles som används i flera komponenter
   static TextStyle get buttonTextStyle => const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
-    height: 1.2,
-  );
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+        height: 1.2,
+      );
 
   /// Body style alias för enklare användning
   static TextStyle get bodyStyle => const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: _textMedium,
-    height: 1.4,
-  );
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: _textMedium,
+        height: 1.4,
+      );
 
   // ===== STANDARDISERADE BUTTON STYLES =====
 
   /// Förkonfigurerade ButtonStyle för konsistenta knappar
   static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
-    minimumSize: Size(
-      double.infinity,
-      buttonHeight,
-    ), // ✅ Använder theme konstant
-    padding: buttonPadding,
-    textStyle: buttonTextStyle,
-    shape: RoundedRectangleBorder(borderRadius: largeRadius),
-  );
+        minimumSize: Size(
+          double.infinity,
+          buttonHeight,
+        ), // ✅ Använder theme konstant
+        padding: buttonPadding,
+        textStyle: buttonTextStyle,
+        shape: RoundedRectangleBorder(borderRadius: largeRadius),
+      );
 
   static ButtonStyle get secondaryButtonStyle => OutlinedButton.styleFrom(
-    minimumSize: Size(
-      double.infinity,
-      buttonHeight,
-    ), // ✅ Använder theme konstant
-    padding: buttonPadding,
-    textStyle: buttonTextStyle,
-    shape: RoundedRectangleBorder(borderRadius: largeRadius),
-  );
+        minimumSize: Size(
+          double.infinity,
+          buttonHeight,
+        ), // ✅ Använder theme konstant
+        padding: buttonPadding,
+        textStyle: buttonTextStyle,
+        shape: RoundedRectangleBorder(borderRadius: largeRadius),
+      );
 
   // ===== STANDARDISERADE DECORATIONS =====
 
   /// Förkonfigurerade BoxDecoration för vanliga användningsfall
   static BoxDecoration get cardDecoration => BoxDecoration(
-    color: cardColor,
-    borderRadius: largeRadius,
-    boxShadow: cardShadow,
-  );
+        color: cardColor,
+        borderRadius: largeRadius,
+        boxShadow: cardShadow,
+      );
 
   static BoxDecoration get errorContainerDecoration => BoxDecoration(
-    color: errorColor.withValues(alpha: 0.1),
-    borderRadius: mediumRadius,
-    border: Border.all(color: errorColor),
-  );
+        color: errorColor.withValues(alpha: 0.1),
+        borderRadius: mediumRadius,
+        border: Border.all(color: errorColor),
+      );
 
   static BoxDecoration get successContainerDecoration => BoxDecoration(
-    color: successColor.withValues(alpha: 0.1),
-    borderRadius: mediumRadius,
-    border: Border.all(color: successColor),
-  );
+        color: successColor.withValues(alpha: 0.1),
+        borderRadius: mediumRadius,
+        border: Border.all(color: successColor),
+      );
 
   static BoxDecoration get inputContainerDecoration => BoxDecoration(
-    color: cardColor,
-    borderRadius: mediumRadius,
-    border: Border.all(color: dividerColor),
-  );
+        color: cardColor,
+        borderRadius: mediumRadius,
+        border: Border.all(color: dividerColor),
+      );
 
   /// Information box decoration (för sourceUrl, metadata etc.)
   static BoxDecoration infoBoxDecoration(BuildContext context) => BoxDecoration(
-    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-    borderRadius: mediumRadius,
-    border: Border.all(color: Theme.of(context).colorScheme.outline),
-  );
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: mediumRadius,
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      );
 
   // ===== NYA HELPER-METODER (KRITISKA TILLÄGG) =====
 
@@ -828,25 +841,26 @@ class AppTheme {
     BuildContext context,
     String message, {
     IconData? icon,
-  }) => Container(
-    padding: EdgeInsets.all(spacingMd),
-    decoration: BoxDecoration(
-      color: errorColor.withValues(alpha: 0.1),
-      borderRadius: mediumRadius,
-      border: Border.all(color: errorColor),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          icon ?? Icons.error_outline,
-          color: errorColor,
-          size: iconSizeInfo,
+  }) =>
+      Container(
+        padding: EdgeInsets.all(spacingMd),
+        decoration: BoxDecoration(
+          color: errorColor.withValues(alpha: 0.1),
+          borderRadius: mediumRadius,
+          border: Border.all(color: errorColor),
         ),
-        SizedBox(width: spacingSm),
-        Expanded(child: Text(message, style: errorTextStyle)),
-      ],
-    ),
-  );
+        child: Row(
+          children: [
+            Icon(
+              icon ?? Icons.error_outline,
+              color: errorColor,
+              size: iconSizeInfo,
+            ),
+            SizedBox(width: spacingSm),
+            Expanded(child: Text(message, style: errorTextStyle)),
+          ],
+        ),
+      );
 
   /// Success container för framgångsmeddelanden
   static Widget successContainer(BuildContext context, String message) =>
@@ -871,39 +885,41 @@ class AppTheme {
     required String label,
     required bool selected,
     required VoidCallback onSelected,
-  }) => FilterChip(
-    label: Text(label),
-    selected: selected,
-    onSelected: (_) => onSelected(),
-    selectedColor: primaryColor.withValues(alpha: 0.2),
-    checkmarkColor: primaryColor,
-  );
+  }) =>
+      FilterChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onSelected(),
+        selectedColor: primaryColor.withValues(alpha: 0.2),
+        checkmarkColor: primaryColor,
+      );
 
   /// Choice chip för alternativ
   static Widget choiceChip({
     required String label,
     required bool selected,
     required VoidCallback onSelected,
-  }) => ChoiceChip(
-    label: Text(label),
-    selected: selected,
-    onSelected: (_) => onSelected(),
-    selectedColor: primaryColor.withValues(alpha: 0.2),
-  );
+  }) =>
+      ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onSelected(),
+        selectedColor: primaryColor.withValues(alpha: 0.2),
+      );
 
   /// Måltidstyp chip med semantiska färger
   static Widget mealTypeChip(String mealType) => Container(
-    padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
-    decoration: mealTypeChipDecoration(_getMealTypeColorForChip(mealType)),
-    child: Text(mealType, style: chipOnPrimaryTextStyle),
-  );
+        padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
+        decoration: mealTypeChipDecoration(_getMealTypeColorForChip(mealType)),
+        child: Text(mealType, style: chipOnPrimaryTextStyle),
+      );
 
   /// Tag chip för mindre taggar
   static Widget tagChip(String tag) => Container(
-    padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
-    decoration: tagChipDecoration,
-    child: Text(tag, style: chipLabelStyle),
-  );
+        padding: EdgeInsets.symmetric(horizontal: spacingSm, vertical: 3),
+        decoration: tagChipDecoration,
+        child: Text(tag, style: chipLabelStyle),
+      );
 
   /// Hjälpfunktion för måltidsfärger
   static Color _getMealTypeColorForChip(String mealType) {

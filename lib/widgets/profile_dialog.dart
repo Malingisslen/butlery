@@ -14,104 +14,103 @@ Future<void> showProfileDialog(BuildContext context) async {
 
   await showDialog(
     context: context,
-    builder:
-        (context) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                Icons.account_circle,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
-              ),
-              SizedBox(width: AppTheme.spacingSm),
-              const Text('Min profil'),
-            ],
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Icon(
+            Icons.account_circle,
+            color: AppTheme.primaryColor,
+            size: AppTheme.iconSizeAction,
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Användarnamn
-              _buildInfoRow(
-                context: context,
-                icon: Icons.person_outline,
-                label: 'Namn',
-                value: user.displayName ?? 'Ingen namn angiven',
-              ),
-              AppTheme.smallGap,
-
-              // Email
-              _buildInfoRow(
-                context: context,
-                icon: Icons.email_outlined,
-                label: 'Email',
-                value: user.email ?? 'Ingen email',
-              ),
-              AppTheme.smallGap,
-
-              // Medlem sedan
-              _buildInfoRow(
-                context: context,
-                icon: Icons.calendar_today,
-                label: 'Medlem sedan',
-                value: _formatDate(user.metadata.creationTime),
-              ),
-              AppTheme.largeGap,
-
-              // Divider innan data-sektionen
-              const Divider(),
-              AppTheme.mediumGap,
-
-              // Data & Backup sektion
-              Text(
-                'Data & Backup',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              AppTheme.smallGap,
-
-              // Export-knapp
-              _buildDataButton(
-                context: context,
-                icon: Icons.download,
-                label: 'Ladda ner backup',
-                subtitle: 'Spara alla recept som JSON',
-                onPressed: () => _handleBackup(context),
-                color: AppTheme.primaryColor,
-              ),
-              AppTheme.smallGap,
-
-              // Import-knapp
-              _buildDataButton(
-                context: context,
-                icon: Icons.upload,
-                label: 'Återställ från backup',
-                subtitle: 'Importera recept från JSON',
-                onPressed: () => _handleRestore(context),
-                color: AppTheme.accentColor,
-              ),
-            ],
+          SizedBox(width: AppTheme.spacingSm),
+          const Text('Min profil'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Användarnamn
+          _buildInfoRow(
+            context: context,
+            icon: Icons.person_outline,
+            label: 'Namn',
+            value: user.displayName ?? 'Ingen namn angiven',
           ),
-          actions: [
-            // Stäng-knapp
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Stäng'),
-            ),
+          AppTheme.smallGap,
 
-            // Logga ut-knapp
-            FilledButton.tonalIcon(
-              onPressed: () => _handleLogout(context),
-              icon: const Icon(Icons.logout),
-              label: const Text('Logga ut'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.errorColor.withValues(alpha: 0.1),
-                foregroundColor: AppTheme.errorColor,
-              ),
-            ),
-          ],
+          // Email
+          _buildInfoRow(
+            context: context,
+            icon: Icons.email_outlined,
+            label: 'Email',
+            value: user.email ?? 'Ingen email',
+          ),
+          AppTheme.smallGap,
+
+          // Medlem sedan
+          _buildInfoRow(
+            context: context,
+            icon: Icons.calendar_today,
+            label: 'Medlem sedan',
+            value: _formatDate(user.metadata.creationTime),
+          ),
+          AppTheme.largeGap,
+
+          // Divider innan data-sektionen
+          const Divider(),
+          AppTheme.mediumGap,
+
+          // Data & Backup sektion
+          Text(
+            'Data & Backup',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          AppTheme.smallGap,
+
+          // Export-knapp
+          _buildDataButton(
+            context: context,
+            icon: Icons.download,
+            label: 'Ladda ner backup',
+            subtitle: 'Spara alla recept som JSON',
+            onPressed: () => _handleBackup(context),
+            color: AppTheme.primaryColor,
+          ),
+          AppTheme.smallGap,
+
+          // Import-knapp
+          _buildDataButton(
+            context: context,
+            icon: Icons.upload,
+            label: 'Återställ från backup',
+            subtitle: 'Importera recept från JSON',
+            onPressed: () => _handleRestore(context),
+            color: AppTheme.accentColor,
+          ),
+        ],
+      ),
+      actions: [
+        // Stäng-knapp
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Stäng'),
         ),
+
+        // Logga ut-knapp
+        FilledButton.tonalIcon(
+          onPressed: () => _handleLogout(context),
+          icon: const Icon(Icons.logout),
+          label: const Text('Logga ut'),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppTheme.errorColor.withValues(alpha: 0.1),
+            foregroundColor: AppTheme.errorColor,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -168,8 +167,8 @@ Widget _buildDataButton({
                   Text(
                     label,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
                   Text(
                     subtitle,
@@ -221,22 +220,21 @@ Future<void> _handleBackup(BuildContext context) async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => const Center(
-            child: Card(
-              child: Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Skapar backup...'),
-                  ],
-                ),
-              ),
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Skapar backup...'),
+              ],
             ),
           ),
+        ),
+      ),
     );
 
     // Använd BackupService istället för ShareService
@@ -314,22 +312,21 @@ Future<void> _handleRestore(BuildContext context) async {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder:
-            (context) => const Center(
-              child: Card(
-                child: Padding(
-                  padding: EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Bearbetar import...'),
-                    ],
-                  ),
-                ),
+        builder: (context) => const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Bearbetar import...'),
+                ],
               ),
             ),
+          ),
+        ),
       );
     }
 
@@ -345,101 +342,96 @@ Future<void> _handleRestore(BuildContext context) async {
     if (context.mounted) {
       await showDialog(
         context: context,
-        builder:
-            (context) => AlertDialog(
-              title: const Text('Import slutförd'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Totalt antal recept: ${result.totalRecipes}'),
-                    Text(
-                      '✅ Importerade: ${result.successCount}',
-                      style: TextStyle(color: AppTheme.successColor),
-                    ),
-                    if (result.skipCount > 0) ...[
-                      Text(
-                        '⏭️ Överhoppade: ${result.skipCount}',
-                        style: TextStyle(color: AppTheme.warningColor),
-                      ),
-                      if (result.skippedTitles.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Redan existerande recept:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                        ...result.skippedTitles
-                            .take(5)
-                            .map(
-                              (title) => Text(
-                                '• $title',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                        if (result.skippedTitles.length > 5)
-                          Text(
-                            '... och ${result.skippedTitles.length - 5} till',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                      ],
-                    ],
+        builder: (context) => AlertDialog(
+          title: const Text('Import slutförd'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Totalt antal recept: ${result.totalRecipes}'),
+                Text(
+                  '✅ Importerade: ${result.successCount}',
+                  style: TextStyle(color: AppTheme.successColor),
+                ),
+                if (result.skipCount > 0) ...[
+                  Text(
+                    '⏭️ Överhoppade: ${result.skipCount}',
+                    style: TextStyle(color: AppTheme.warningColor),
+                  ),
+                  if (result.skippedTitles.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    if (result.exportEmail != null)
-                      Text(
-                        'Backup från: ${result.exportEmail}',
-                        style: const TextStyle(fontSize: 12),
+                    const Text(
+                      'Redan existerande recept:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
-                    if (result.exportDate != null)
-                      Text(
-                        'Skapad: ${_formatDate(result.exportDate)}',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    if (result.errors.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Fel vid import:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.errorColor,
-                        ),
-                      ),
-                      ...result.errors
-                          .take(3)
-                          .map(
-                            (error) => Text(
-                              '• $error',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.errorColor,
-                              ),
-                            ),
-                          ),
-                      if (result.errors.length > 3)
-                        Text(
-                          '... och ${result.errors.length - 3} till',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
+                    ),
+                    ...result.skippedTitles.take(5).map(
+                          (title) => Text(
+                            '• $title',
+                            style: const TextStyle(fontSize: 12),
                           ),
                         ),
-                    ],
+                    if (result.skippedTitles.length > 5)
+                      Text(
+                        '... och ${result.skippedTitles.length - 5} till',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
                   ],
-                ),
-              ),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
+                ],
+                const SizedBox(height: 8),
+                if (result.exportEmail != null)
+                  Text(
+                    'Backup från: ${result.exportEmail}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                if (result.exportDate != null)
+                  Text(
+                    'Skapad: ${_formatDate(result.exportDate)}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                if (result.errors.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Fel vid import:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.errorColor,
+                    ),
+                  ),
+                  ...result.errors.take(3).map(
+                        (error) => Text(
+                          '• $error',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.errorColor,
+                          ),
+                        ),
+                      ),
+                  if (result.errors.length > 3)
+                    Text(
+                      '... och ${result.errors.length - 3} till',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
               ],
             ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     }
   } catch (e) {
@@ -459,24 +451,23 @@ Future<void> _handleLogout(BuildContext context) async {
   // Visa bekräftelse
   final shouldLogout = await showDialog<bool>(
     context: context,
-    builder:
-        (context) => AlertDialog(
-          title: const Text('Logga ut?'),
-          content: const Text('Är du säker på att du vill logga ut?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Avbryt'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.errorColor,
-              ),
-              child: const Text('Logga ut'),
-            ),
-          ],
+    builder: (context) => AlertDialog(
+      title: const Text('Logga ut?'),
+      content: const Text('Är du säker på att du vill logga ut?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Avbryt'),
         ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppTheme.errorColor,
+          ),
+          child: const Text('Logga ut'),
+        ),
+      ],
+    ),
   );
 
   if (shouldLogout == true && context.mounted) {
