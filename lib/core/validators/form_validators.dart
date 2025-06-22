@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-/// Centraliserade validators för formulär
+/// Centraliserade validators för formulär - Uppdaterad med social features
 class FormValidators {
   /// Regex patterns
   static final RegExp _emailRegex = RegExp(
@@ -11,6 +11,11 @@ class FormValidators {
 
   static final RegExp _urlRegex = RegExp(
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
+  );
+
+  // NY: Display name regex - tillåter bokstäver, siffror, mellanslag och vissa tecken
+  static final RegExp _displayNameRegex = RegExp(
+    r'^[a-zA-ZåäöÅÄÖ0-9\s\-_\.]+$',
   );
 
   /// Obligatoriskt fält
@@ -110,6 +115,101 @@ class FormValidators {
     return numberRange(min: 1, max: 1440, fieldName: 'Tillagningstid');
   }
 
+  // ===== NYA SOCIAL VALIDATORS =====
+
+  /// Display name validator - för användarprofilsn
+  static FormFieldValidator<String> displayName() {
+    return (value) {
+      if (value == null || value.trim().isEmpty) {
+        return 'Visningsnamn får inte vara tomt';
+      }
+
+      final trimmed = value.trim();
+
+      // Längdvalidering
+      if (trimmed.length < 2) {
+        return 'Visningsnamn måste vara minst 2 tecken';
+      }
+
+      if (trimmed.length > 30) {
+        return 'Visningsnamn får vara max 30 tecken';
+      }
+
+      // Teckenvalidering
+      if (!_displayNameRegex.hasMatch(trimmed)) {
+        return 'Visningsnamn får bara innehålla bokstäver, siffror, mellanslag och - _ .';
+      }
+
+      // Inte bara mellanslag eller specialtecken
+      if (trimmed.replaceAll(RegExp(r'[\s\-_\.]'), '').isEmpty) {
+        return 'Visningsnamn måste innehålla minst en bokstav eller siffra';
+      }
+
+      // Inte börja/sluta med mellanslag
+      if (trimmed != value) {
+        return 'Visningsnamn får inte börja eller sluta med mellanslag';
+      }
+
+      return null;
+    };
+  }
+
+  /// Bio validator - för profil beskrivning
+  static FormFieldValidator<String> bio() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return null; // Bio är valfritt
+      }
+
+      if (value.length > 150) {
+        return 'Beskrivning får vara max 150 tecken';
+      }
+
+      // Kolla för bara whitespace
+      if (value.trim().isEmpty) {
+        return 'Beskrivning får inte bara innehålla mellanslag';
+      }
+
+      return null;
+    };
+  }
+
+  /// Comment validator - för kommentarer på recept
+  static FormFieldValidator<String> comment() {
+    return (value) {
+      if (value == null || value.trim().isEmpty) {
+        return 'Kommentar får inte vara tom';
+      }
+
+      final trimmed = value.trim();
+
+      if (trimmed.length < 3) {
+        return 'Kommentar måste vara minst 3 tecken';
+      }
+
+      if (trimmed.length > 500) {
+        return 'Kommentar får vara max 500 tecken';
+      }
+
+      return null;
+    };
+  }
+
+  /// Share message validator - för delningsmeddelanden
+  static FormFieldValidator<String> shareMessage() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return null; // Delningsmeddelande är valfritt
+      }
+
+      if (value.length > 200) {
+        return 'Meddelande får vara max 200 tecken';
+      }
+
+      return null;
+    };
+  }
+
   /// Kombinerar flera validators
   static FormFieldValidator<String> combine(
     List<FormFieldValidator<String>> validators,
@@ -121,5 +221,23 @@ class FormValidators {
       }
       return null;
     };
+  }
+
+  // ===== SPECIFIKA KOMBINATIONER =====
+
+  /// Användarnamn validator - kombination av required och displayName
+  static FormFieldValidator<String> requiredDisplayName() {
+    return combine([
+      required('Visningsnamn'),
+      displayName(),
+    ]);
+  }
+
+  /// Kommentar validator - kombination för required comments
+  static FormFieldValidator<String> requiredComment() {
+    return combine([
+      required('Kommentar'),
+      comment(),
+    ]);
   }
 }

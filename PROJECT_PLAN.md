@@ -3,10 +3,9 @@
 📋 **Snabbstart för nästa session:**
 ```yaml
 Välkommen tillbaka! Snabbstart-check:
-✅ Mappstruktur mottagen
-✅ Projektplan-status: Fas 16 KLAR ⭐
-✅ Git status: Commit för Fas 16 genomförd
-✅ Redo att börja med Fas 17
+Aktuell fas: Fas 18 SOCIAL BACKEND KLAR ⭐ (Services & Models implementerade)
+Nästa steg: Fas 18 UI IMPLEMENTATION (Views & Integration)
+Status: 60% av Fas 18 komplett - Backend done, UI remaining
 ```
 
 ## 🏗️ Projektarkitektur
@@ -210,23 +209,84 @@ Firestore Database:
 
 ## 🔧 **KOMMANDE FASER**
 
-### **Fas 17: Video-import (6-8 timmar)**
+🎥 Fas 17: YouTube Video-Import med Smart Preview (6-8 timmar)
+🎯 Implementation - Enhanced med ChatGPT förslag:
+17A: Core Infrastructure (3 timmar)
 
-**🎯 Implementation:**
-- [ ] YouTube URL-import via API
-- [ ] Smart beskrivningstext-parser
-- [ ] Copyright disclaimer och fair use
-- [ ] Video thumbnail som receptbild
-- [ ] Rate limiting för YouTube API
+ VideoImportCoordinator - Central hub för all import logic
+ YouTube URL Parser för alla format
+ Anti-spam protection med attempt throttling
+ Video metadata service med channel analysis
+
+17B: Smart Caption System (4 timmar)
+
+ Caption Preview Service - Visa 30s preview innan quota usage
+ Enhanced caching (local + community + failed attempts)
+ Channel analyzer för recipe probability scoring
+ Optimized caption quality pre-screening
+
+17C: Enhanced UI med Preview (2.5 timmar)
+
+ CaptionPreviewCard - "Vill du importera baserat på denna text?"
+ Video import view med multi-step workflow
+ Smart recommendation UI baserat på AI confidence
+ Quota management med community credits
+
+🎯 Unique Features:
+Hybrid Approach:
+1. Description import först (gratis & snabb)
+2. Caption preview för user decision (cheap 30s sample)
+3. Full caption import endast efter approval (quota usage)
+4. Community sharing för 85% cost reduction
+💰 Kostnadsoptimering:
+
+95% kostnadsminskning: 251 → 13 units per import
+Smart preview: Låt användaren bestämma innan quota usage
+Anti-spam: Max 2 attempts per video per user per månad
+Community cache: Första användaren delar med alla andra
 
 ### **Fas 18: Grundläggande social (4-5 timmar)**
 
-**🎯 Implementation:**
-- [ ] Offentliga receptlänkar (deep linking)
-- [ ] "Kopiera recept från länk" funktion
-- [ ] Förbättrat betygsystem (1-5 stjärnor med UI)
-- [ ] Delningsstatistik och popularitet
-- [ ] QR-kod delning för recept
+✅ FAS 18: SOCIAL PLATFORM - STATUS BREAKDOWN
+🔥 KOMPLETT: Backend & Services (60%)
+
+✅ User Profile Model & Service - Komplett med cache optimization
+✅ Friends System - Requests, accept/reject, mutual friends
+✅ Recipe Sharing Service - Individual + menu sharing
+✅ Comments System - Threaded comments med likes
+✅ Firebase Integration - Firestore collections & security
+✅ DI Registration - Alla services registrerade i injection.dart
+✅ ViewModels - user_profile_viewmodel.dart, friends_viewmodel.dart, social_recipe_viewmodel.dart
+✅ User Avatar Widget - Komplett med fallbacks och storlekar
+
+🔧 ÅTERSTÅR: UI Integration (40%)
+A. Social Integration i Befintliga Views (2-3 timmar)
+
+ Recipe Detail View - Dela-ikon + kommentarssektion
+ Veckomeny View - Menu sharing ikon
+ Profile Navigation - Klick på UserAvatar → Social menu
+ Notification Badge - Friend requests counter
+
+B. Nya Social Views (3-4 timmar)
+
+ Friends List View - Lista vänner + sök nya användare
+ Friend Requests View - Hantera inkommande förfrågningar
+ Shared Recipes View - Recept delat med mig
+ Comments Section - Expandable kommentarer
+ Share Dialog - Välj vänner att dela med
+
+C. Navigation & Routing (1 timme)
+
+ Main.dart Routes - Alla social routes
+ Navigation Flow - Profile → Friends → Sharing
+ Deep Links - För shared content
+
+D. Social Widgets (2-3 timmar)
+
+ Friend Cards - Lista och request-hantering
+ Comment Components - Threading och likes
+ Share Buttons - Kompakta social actions
+ Notification Components - Badges och alerts
 
 ### **Fas 19: Dark Mode (4-5 timmar)**
 
@@ -309,6 +369,111 @@ Firestore Database:
 - [ ] Användarförslag baserat på historia
 - [ ] ML-baserad ingrediens-igenkänning
 
+🤖 Fas 27: LLM-Integration för AI-Powered Parsing (5-8 timmar) ⭐ NY!
+🎯 Revolutionary AI-Enhanced Recipe Extraction:
+27A: LLM Service Architecture (2 timmar)
+dartclass LLMRecipeParser {
+  // Multi-provider support för cost optimization
+  Future<Recipe?> parseWithAI(String text, String provider) async {
+    switch (provider) {
+      case 'openai':
+        return await _extractWithGPT(text);
+      case 'anthropic':  
+        return await _extractWithClaude(text);
+      case 'ollama':
+        return await _extractWithLocalModel(text);
+      case 'regex':
+        return await _extractWithRegex(text); // Fallback
+    }
+  }
+}
+27B: Smart Prompt Engineering (2 timmar)
+dartclass RecipeExtractionPrompts {
+  static String getExtractionPrompt(String text, String language) {
+    return """
+    Extrahera recept från denna ${language == 'sv' ? 'svenska' : 'engelska'} text. 
+    Returnera JSON i exakt detta format:
+    
+    {
+      "title": "receptnamn",
+      "servings": 4,
+      "cookingTime": "30 minuter",
+      "ingredients": [
+        "500g köttfärs",
+        "2 dl mjölk", 
+        "1 msk smör"
+      ],
+      "instructions": [
+        "Hetta upp smöret i en panna",
+        "Stek köttet tills det är genomstekt",
+        "Häll i mjölken och låt sjuda"
+      ],
+      "confidence": 0.95,
+      "detectedLanguage": "sv",
+      "recipeType": "huvudrätt"
+    }
+    
+    Om texten INTE innehåller ett recept, returnera: {"confidence": 0.0}
+    
+    Text att analysera: ${text}
+    """;
+  }
+}
+27C: Cost-Optimized Integration (2 timmar)
+dartclass LLMCostOptimizer {
+  // A/B test olika providers för bästa cost/quality ratio
+  Future<Recipe?> extractOptimized(String text) async {
+    // 1. Quick quality check med lokal model först
+    final quickCheck = await _ollama.quickQualityCheck(text);
+    if (quickCheck.confidence < 0.3) return null;
+    
+    // 2. För high-confidence text, använd billigare LLM
+    if (text.length < 500) {
+      return await _claude.extract(text); // Billigare för korta texter
+    }
+    
+    // 3. För långa texter, förbehandla med chunk strategy
+    final chunks = _intelligentChunking(text);
+    return await _gpt.extractFromChunks(chunks);
+  }
+}
+27D: Hybrid Parsing Strategy (2 timmar)
+dartclass HybridRecipeParser {
+  Future<Recipe?> parseWithFallback(String text) async {
+    try {
+      // 1. Försök LLM först (bästa kvalitet)
+      final llmResult = await _llmParser.parse(text);
+      if (llmResult != null && llmResult.confidence > 0.8) {
+        await _analytics.logEvent('llm_parsing_success');
+        return llmResult;
+      }
+      
+      // 2. Fallback till regex (gratis backup)
+      final regexResult = await _regexParser.parse(text);
+      if (regexResult != null) {
+        await _analytics.logEvent('regex_fallback_success');
+        return regexResult;
+      }
+      
+      return null;
+    } catch (e) {
+      // 3. Ultimate fallback
+      return await _regexParser.parse(text);
+    }
+  }
+}
+🎯 LLM Integration Benefits:
+
+✅ 90%+ parsing accuracy (vs 60% med regex)
+✅ Natural language understanding - "ta lite grann salt"
+✅ Multi-language support - Automatisk översättning
+✅ Context awareness - Förstår matlagningsteknik
+✅ Cost optimization - $0.01-0.03 per parsing (potentiellt billigare än YouTube API)
+
+💰 Kostnadsjämförelse:
+YouTube Caption API: ~$0.05 per import
+LLM Recipe Parsing: ~$0.01-0.03 per parsing
+→ LLM kan vara BILLIGARE + BÄTTRE kvalitet!
 ---
 
 ## 📊 **Teknisk Status**

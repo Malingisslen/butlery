@@ -325,16 +325,16 @@ class ShareService {
     return formatRecipeComplete(recipe);
   }
 
-  // ===== SHARING METHODS =====
+  // ===== SHARING METHODS - FIXED =====
 
   /// Dela recept via native share sheet
-  Future<ShareResult> shareRecipe(Recipe recipe) async {
+  Future<void> shareRecipe(Recipe recipe) async {
     final text = getSmartFormat(recipe);
-    return Share.shareWithResult(text, subject: recipe.title);
+    await Share.share(text, subject: recipe.title);
   }
 
   /// Dela recept med formatval
-  Future<ShareResult> shareRecipeWithFormat(
+  Future<void> shareRecipeWithFormat(
     Recipe recipe,
     RecipeShareFormat format,
   ) async {
@@ -344,21 +344,40 @@ class ShareService {
       RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
     };
 
-    return Share.shareWithResult(text, subject: recipe.title);
+    await Share.share(text, subject: recipe.title);
   }
 
   /// Dela inköpslista
-  Future<ShareResult> shareShoppingList(List<ShoppingItem> items) async {
+  Future<void> shareShoppingList(List<ShoppingItem> items) async {
     final text = formatShoppingList(items);
-    return Share.shareWithResult(text, subject: 'Inköpslista');
+    await Share.share(text, subject: 'Inköpslista');
   }
 
   /// Dela veckomeny från kategorier (den faktiska strukturen från MenuViewModel)
-  Future<ShareResult> shareWeekMenuFromCategories(
+  Future<void> shareWeekMenuFromCategories(
     Map<String, List<Recipe>> menu,
   ) async {
     final text = formatWeekMenuFromCategories(menu);
-    return Share.shareWithResult(text, subject: 'Veckomeny');
+    await Share.share(text, subject: 'Veckomeny');
+  }
+
+  /// GET formatted text methods (för views som behöver text)
+  String getFormattedRecipe(Recipe recipe, {RecipeShareFormat? format}) {
+    return format != null
+        ? switch (format) {
+            RecipeShareFormat.complete => formatRecipeComplete(recipe),
+            RecipeShareFormat.compact => formatRecipeCompact(recipe),
+            RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
+          }
+        : getSmartFormat(recipe);
+  }
+
+  String getFormattedShoppingList(List<ShoppingItem> items) {
+    return formatShoppingList(items);
+  }
+
+  String getFormattedWeekMenuFromCategories(Map<String, List<Recipe>> menu) {
+    return formatWeekMenuFromCategories(menu);
   }
 
   /// Formattera veckomeny från kategorier
@@ -418,10 +437,13 @@ class ShareService {
 
   /// Kopiera recept till urklipp
   Future<void> copyRecipe(Recipe recipe, {RecipeShareFormat? format}) async {
-    final text =
-        format != null
-            ? await shareRecipeWithFormat(recipe, format)
-            : getSmartFormat(recipe);
-    await copyToClipboard(text.toString());
+    final text = format != null
+        ? switch (format) {
+            RecipeShareFormat.complete => formatRecipeComplete(recipe),
+            RecipeShareFormat.compact => formatRecipeCompact(recipe),
+            RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
+          }
+        : getSmartFormat(recipe);
+    await copyToClipboard(text);
   }
 }

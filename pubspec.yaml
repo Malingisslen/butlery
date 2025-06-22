@@ -1,92 +1,76 @@
 name: butlery
-description: "Smart app för recepthantering och måltidsplanering"
-publish_to: 'none' # Privat projekt
-
+description: "Smart receptapp som automatiserar receptflödet - från import/skapande av recept till veckomeny-generering och automatisk inköpslista."
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.2
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  
+
+  # ==================== CORE DEPENDENCIES ====================
+  cupertino_icons: ^1.0.8
+
+  # ==================== FIREBASE & BACKEND ====================
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.2
+  firebase_analytics: ^11.3.3
+
+  # ==================== STATE MANAGEMENT ====================
+  provider: ^6.1.2
+  get_it: ^8.0.0
+
+  # ==================== LOCAL STORAGE ====================
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  shared_preferences: ^2.3.2
 
-  connectivity_plus: ^6.0.0
+  # ==================== NAVIGATION & UI ====================
+  go_router: ^14.6.1
 
-  # ==================== CORE PACKAGES ====================
-  
-  # State Management & Dependency Injection
-  provider: ^6.1.1                    # Reaktiv state management med ChangeNotifier
-  get_it: ^7.6.4                      # Dependency injection container
-  
-  # Data Persistence & Storage
-  shared_preferences: ^2.2.2          # Lokal datalagring mellan app-sessioner
-  
-  # Utilities & ID Generation
-  uuid: ^4.0.0                        # Generera unika ID:n för recept
-  super_measurement: ^2.0.0           # Enhetskonvertering (NY för Fas 16!)
-  
-  # ==================== FIREBASE BACKEND ====================
-  
-  firebase_core: ^2.32.0              # Firebase grundläggande funktioner
-  firebase_auth: ^4.17.8              # Användarautentisering och konton
-  cloud_firestore: ^4.15.9            # NoSQL-databas för strukturerad data
-  firebase_storage: ^11.7.7           # Fil- och bildlagring i molnet
-  firebase_messaging: ^14.9.3         # Push-notifikationer (framtida feature)
-  firebase_analytics: ^10.10.7        # Analytics för användarbeteende
-  
-  # ==================== MEDIA & NETWORK ====================
-  
-  # Image handling
-  image_picker: ^0.8.7                # Kamera och galleri-åtkomst
-  cached_network_image: ^3.3.0        # Bildcaching för bättre performance
-  flutter_cache_manager: ^3.3.1       # Avancerad cache-hantering
-  flutter_image_compress: ^2.1.0      # Bildkomprimering (NY!)
-  permission_handler: ^11.0.1        # Hantera permissions för kamera/galleri
-  
-  # Network & Web parsing
-  http: ^0.13.6                       # HTTP-förfrågningar för API-calls
-  html: ^0.15.0                       # HTML-parsing för receptimport från webbsidor
-  
-  # ==================== UI & ICONS ====================
-  
-  cupertino_icons: ^1.0.8             # iOS-stil ikoner för Flutter
-  url_launcher: ^6.3.1                # Öppna externa länkar
-  
-  # ==================== SHARING & EXPORT ====================
-  
-  share_plus: ^7.2.2                  # Native delning via share sheet
-  file_picker: ^8.0.0                 # Välj filer för import
-  path_provider: ^2.1.2               # Hitta temp-mapp för export
-  share_handler: ^0.0.19              # Ta emot delningar från andra appar
-  path: ^1.8.3                        # Filsökvägshantering (NY!)
-  
-  # ==================== WEB EXTRACTION ====================
-  
-  flutter_inappwebview: ^6.0.0        # Headless WebView för social media extraktion
+  # ==================== NETWORKING ====================
+  http: ^1.2.2
+  connectivity_plus: ^6.1.0
+
+  # ==================== IMAGE HANDLING ====================
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
+  permission_handler: ^11.3.1
+  flutter_image_compress: ^2.3.0
+
+  # ==================== UTILITIES ====================
+  uuid: ^4.5.1
+  intl: ^0.19.0
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.0
+  path_provider: ^2.1.4
+  file_picker: ^8.1.2
+  path: ^1.9.0
+
+  # ==================== PARSING & PROCESSING ====================
+  html: ^0.15.4
+  flutter_inappwebview: ^6.1.5
+
+  # ==================== SOCIAL FEATURES (FAS 18) ====================
+  timeago: ^3.6.1
+  badges: ^3.1.2
+  flutter_mentions: ^2.0.1  # FIXED: Downgraded from ^2.0.2
+  share_handler: ^0.0.19     # ADDED: För att ta emot delningar från andra appar
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0               # Kodkvalitet och stilregler
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
   hive_generator: ^2.0.1
-  build_runner: ^2.4.6
-
-# ==================== FLUTTER KONFIGURATION ====================
 
 flutter:
   uses-material-design: true
-
-  # Framtida assets kan läggas till här:
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/
-  
-  # Framtida custom fonts kan läggas till här:
-  # fonts:
-  #   - family: CustomFont
-  #     fonts:
-  #       - asset: assets/fonts/CustomFont-Regular.ttf
+  assets:
+    - assets/images/
