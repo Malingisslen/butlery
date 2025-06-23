@@ -1,4 +1,5 @@
 // lib/core/injection.dart
+// ✅ UPPDATERAD för integrerad MenuViewModel
 
 /// Dependency injection konfiguration för Butlery med Social Platform
 library;
@@ -110,10 +111,13 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+  // ✅ UPPDATERAD: MenuViewModel med alla nya dependencies
   sl.registerFactory<MenuViewModel>(
     () => MenuViewModel(
       recipeService: sl<RecipeService>(),
       menuService: sl<MenuService>(),
+      socialService: sl<SocialRecipeService>(),
+      userService: sl<UserService>(),
     ),
   );
 
@@ -188,7 +192,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // 🔧 FIXAD: SharedContentViewModel registreras EFTER alla dependencies
+  // SharedContentViewModel registreras EFTER alla dependencies
   sl.registerFactory<SharedContentViewModel>(
     () => SharedContentViewModel(
       socialRecipeService: sl<SocialRecipeService>(),
@@ -211,7 +215,7 @@ Future<void> initializeDependencies() async {
     await sl<OfflineService>().initialize();
     debugPrint('✅ OfflineService initierad');
 
-    // 🔧 KRITISK FIX: SocialRecipeService initialize() anropas här
+    // SocialRecipeService initialize() anropas här
     await sl<SocialRecipeService>().initialize();
     debugPrint('✅ SocialRecipeService initierad');
 
@@ -248,7 +252,8 @@ Future<void> initializeDependencies() async {
     sl<UserService>();
     sl<FriendsService>();
     sl<SocialRecipeService>();
-    sl<SharedContentViewModel>(); // 🔧 TILLAGT: Validera SharedContentViewModel
+    sl<SharedContentViewModel>();
+    sl<MenuViewModel>(); // ✅ VALIDERA UPPDATERAD MenuViewModel
     debugPrint('✅ Alla kritiska services validerade');
   } catch (e) {
     debugPrint('❌ Service validation fel: $e');
@@ -256,6 +261,6 @@ Future<void> initializeDependencies() async {
   }
 
   debugPrint(
-    '🚀 Dependency injection komplett - appen redo för social features!',
+    '🚀 Dependency injection komplett - appen redo för integrerad menu management!',
   );
 }

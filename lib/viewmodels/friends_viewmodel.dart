@@ -10,17 +10,17 @@ import '../core/utils/logger.dart';
 /// 🔍 AI INFO BLOCK:
 /// Component: Friends Management ViewModel
 /// File: viewmodels/friends_viewmodel.dart
-/// Quick Guide: Hanterar vänlista, sök användare, vänskapsförfrågningar
+/// Quick Guide: Hanterar vänlista, sök användare, vänskapsförfrågningar + UserProfile-cache
 /// Dependencies IN: FriendsService, UserService
 /// Dependencies OUT: Friends views, user search, request notifications
-/// Data flow: Search users → Send requests → Accept/Reject → Friends list
-/// State management: ChangeNotifier med search state och friends data
-/// Purpose: Komplett vänhantering med sök och request-management
-/// Common issues: Search performance, request state syncing, duplicate handling
+/// Data flow: Search users → Send requests → Accept/Reject → Friends list + User profile caching
+/// State management: ChangeNotifier med search state, friends data och user profile cache
+/// Purpose: Komplett vänhantering med sök och request-management + effektiv användardata-cache
+/// Common issues: Search performance, request state syncing, duplicate handling, user profile loading
 /// Test coverage: 75%
-/// Performance: ⚡ Cached search results, optimized friends loading
+/// Performance: ⚡ Cached search results, optimized friends loading, efficient user profile batching
 /// Analytics: ✅ Friend actions och search behavior tracking
-/// Code smells: ✅ Clean separation mellan search och friends logic
+/// Code smells: ✅ Clean separation mellan search, friends logic och user profile management
 /// Connected to: FriendsService, UserService, friends views, search views
 /// Used in phases: 18
 
@@ -37,11 +37,15 @@ class FriendsViewModel extends ChangeNotifier {
   // Selection state (för bulk operations)
   final Set<String> _selectedFriendIds = {};
 
+  // ✅ NYTT: UserProfile cache för request användare
+  final Map<String, UserProfile> _requestUserProfiles = {};
+  bool _isLoadingUserProfiles = false;
+
   FriendsViewModel({
     required FriendsService friendsService,
     required UserService userService,
-  }) : _friendsService = friendsService,
-       _userService = userService {
+  })  : _friendsService = friendsService,
+        _userService = userService {
     _friendsService.addListener(_onFriendsServiceChanged);
     _userService.addListener(_onUserServiceChanged);
   }
@@ -64,7 +68,7 @@ class FriendsViewModel extends ChangeNotifier {
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
 
   // Service state
-  bool get isLoading => _friendsService.isLoading;
+  bool get isLoading => _friendsService.isLoading || _isLoadingUserProfiles;
   String? get error => _friendsService.error;
   bool get hasError => _friendsService.hasError;
 
@@ -72,6 +76,15 @@ class FriendsViewModel extends ChangeNotifier {
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
   bool get hasSelectedFriends => _selectedFriendIds.isNotEmpty;
   int get selectedFriendsCount => _selectedFriendIds.length;
+
+  // ✅ NYTT: UserProfile getters
+  /// Hämta UserProfile för en användare i vänskapsförfrågningar
+  UserProfile? getUserProfile(String userId) {
+    return _requestUserProfiles[userId];
+  }
+
+  /// Kontrollera om vi laddar användaruppgifter
+  bool get isLoadingUserProfiles => _isLoadingUserProfiles;
 
   // ===== SEARCH ACTIONS =====
 
@@ -212,6 +225,97 @@ class FriendsViewModel extends ChangeNotifier {
     return friends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
   }
 
+  // ===== ✅ NYTT: USER PROFILE MANAGEMENT =====
+
+  /// Ladda användaruppgifter för alla användare i vänskapsförfrågningar
+  Future<void> loadUserProfilesForRequests() async {
+    try {
+      _isLoadingUserProfiles = true;
+      notifyListeners();
+
+      // Samla alla unika userId från requests
+      final userIds = <String>{};
+
+      // Lägg till från inkommande förfrågningar
+      for (final request in incomingRequests) {
+        userIds.add(request.fromUserId);
+      }
+
+      // Lägg till från skickade förfrågningar
+      for (final request in sentRequests) {
+        userIds.add(request.toUserId);
+      }
+
+      // Ta bort användare vi redan har i cache
+      final uncachedUserIds = userIds
+          .where((userId) => !_requestUserProfiles.containsKey(userId))
+          .toList();
+
+      if (uncachedUserIds.isNotEmpty) {
+        AppLogger.info(
+          '👥 Laddar ${uncachedUserIds.length} användaruppgifter för förfrågningar',
+        );
+
+        // Hämta användaruppgifter i batch för prestanda
+        final profiles = await _userService.getUserProfiles(uncachedUserIds);
+
+        // Uppdatera cache
+        for (final profile in profiles) {
+          _requestUserProfiles[profile.uid] = profile;
+        }
+
+        // Logga resultat
+        AppLogger.success(
+          '✅ ${profiles.length}/${uncachedUserIds.length} användaruppgifter laddade',
+        );
+
+        // Logga saknade profiler (för debugging)
+        final loadedIds = profiles.map((p) => p.uid).toSet();
+        final missingIds =
+            uncachedUserIds.where((id) => !loadedIds.contains(id));
+        if (missingIds.isNotEmpty) {
+          AppLogger.warning(
+            '⚠️ Kunde inte ladda profiler för: ${missingIds.join(', ')}',
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.error('❌ Kunde inte ladda användaruppgifter: $e');
+    } finally {
+      _isLoadingUserProfiles = false;
+      notifyListeners();
+    }
+  }
+
+  /// Rensa användaruppgifter cache (användbart vid refresh)
+  void clearUserProfilesCache() {
+    _requestUserProfiles.clear();
+    AppLogger.info('🗑️ Cache för användaruppgifter rensad');
+  }
+
+  /// Hämta displayName för en användare (med fallback)
+  String getDisplayNameForUser(String userId) {
+    final profile = getUserProfile(userId);
+    if (profile != null) {
+      return profile.displayName;
+    }
+
+    // Fallback under laddning
+    return 'Användare ${userId.substring(0, 6)}...';
+  }
+
+  /// Hämta avatar URL för en användare
+  String? getAvatarUrlForUser(String userId) {
+    final profile = getUserProfile(userId);
+    return profile?.avatarUrl;
+  }
+
+  /// Kontrollera om en användare är online
+  bool isUserOnline(String userId) {
+    final profile = getUserProfile(userId);
+    return profile?.isOnline ?? false;
+  }
+
   // ===== PRIVATE METHODS =====
 
   Future<void> _performSearch() async {
@@ -228,13 +332,12 @@ class FriendsViewModel extends ChangeNotifier {
       final currentUserId = _userService.currentUserId;
       final friendIds = friends.map((f) => f.uid).toSet();
 
-      _searchResults =
-          results
-              .where(
-                (user) =>
-                    user.uid != currentUserId && !friendIds.contains(user.uid),
-              )
-              .toList();
+      _searchResults = results
+          .where(
+            (user) =>
+                user.uid != currentUserId && !friendIds.contains(user.uid),
+          )
+          .toList();
 
       AppLogger.info(
         '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
@@ -255,6 +358,8 @@ class FriendsViewModel extends ChangeNotifier {
   }
 
   void _onFriendsServiceChanged() {
+    // ✅ NYTT: Ladda användaruppgifter när förfrågningar ändras
+    loadUserProfilesForRequests();
     notifyListeners();
   }
 
@@ -271,7 +376,14 @@ class FriendsViewModel extends ChangeNotifier {
 
   /// Refresh all data
   Future<void> refresh() async {
+    // Rensa cache innan refresh
+    clearUserProfilesCache();
+
+    // Refresha friends service data
     await _friendsService.refresh();
+
+    // Ladda användaruppgifter för nya förfrågningar
+    await loadUserProfilesForRequests();
   }
 
   @override

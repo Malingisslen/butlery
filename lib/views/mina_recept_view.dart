@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // För SystemNavigator
 import 'package:provider/provider.dart';
 import '../../viewmodels/recipe_list_viewmodel.dart';
+import '../../viewmodels/friends_viewmodel.dart'; // För vänskapsförfrågningar
+import '../../viewmodels/shared_content_viewmodel.dart'; // ✅ NYTT: För delade recept/menyer
 import '../../widgets/main_layout_menu.dart';
 import '../../widgets/recipe_card.dart';
 import '../../widgets/search_bar.dart';
@@ -19,18 +21,23 @@ import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../widgets/skeleton_loader.dart';
 
-/// ✨ UPPDATERAD VY MED OFFLINE SUPPORT OCH USER AVATAR
-/// Nu visar vi offline-status och synkroniserar med pull-to-refresh
+/// ✨ UPPDATERAD VY MED OFFLINE SUPPORT, USER AVATAR OCH NOTIFICATION BADGE
+/// Nu visar vi offline-status, synkroniserar med pull-to-refresh och visar vänskapsförfrågningar på avataren
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Wrap med ChangeNotifierProvider för att tillhandahålla ViewModel
+    // ✅ UPPDATERAT: Lägg till FriendsViewModel och SharedContentViewModel för total notification count
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => sl<RecipeListViewModel>()),
         ChangeNotifierProvider.value(value: sl<UserService>()),
+        ChangeNotifierProvider(
+            create: (_) => sl<FriendsViewModel>()), // För vänskapsförfrågningar
+        ChangeNotifierProvider(
+            create: (_) => sl<
+                SharedContentViewModel>()), // ✅ NYTT: För delade recept/menyer
       ],
       child: const _MinaReceptViewContent(),
     );
@@ -54,6 +61,15 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     super.initState();
     // Lyssna på text-ändringar och uppdatera ViewModel
     _searchController.addListener(_onSearchTextChanged);
+
+    // ✅ NYTT: Ladda vänskapsdata och delat innehåll för notification count
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final friendsViewModel = context.read<FriendsViewModel>();
+      final sharedContentViewModel = context.read<SharedContentViewModel>();
+
+      friendsViewModel.refresh();
+      sharedContentViewModel.refresh();
+    });
   }
 
   @override
@@ -179,12 +195,67 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
+  /// ✅ UPPDATERAD: Bygger avatar med total notification badge (vänner + delade recept + delade menyer)
+  Widget _buildUserAvatarWithBadge() {
+    return Consumer3<UserService, FriendsViewModel, SharedContentViewModel>(
+      builder: (context, userService, friendsViewModel, sharedContentViewModel,
+          child) {
+        // ✅ TOTAL NOTIFICATION COUNT
+        final pendingFriendRequests = friendsViewModel.pendingRequestsCount;
+        final unreadRecipes = sharedContentViewModel.unreadRecipesCount;
+        final unreadMenus = sharedContentViewModel.unreadMenusCount;
+
+        final totalNotifications =
+            pendingFriendRequests + unreadRecipes + unreadMenus;
+
+        return Stack(
+          children: [
+            UserAvatar.social(
+              imageUrl: userService.currentUserProfile?.avatarUrl,
+              displayName: userService.currentUserProfile?.displayName ??
+                  'Okänd användare',
+            ),
+            // ✅ TOTAL NOTIFICATION BADGE
+            if (totalNotifications > 0)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.errorColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 2,
+                    ),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 20,
+                    minHeight: 20,
+                  ),
+                  child: Text(
+                    totalNotifications > 99 ? '99+' : '$totalNotifications',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch för att lyssna på ViewModel-ändringar
     final viewModel = context.watch<RecipeListViewModel>();
     final offlineService = context.watch<offline_service.OfflineService>();
-    final userService = context.watch<UserService>();
 
     return PopScope(
       canPop: false,
@@ -200,14 +271,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // OFFLINE STATUS ICON
           const OfflineStatusIcon(),
 
-          // USER AVATAR med social funktionalitet (logout, backup, etc.)
+          // ✅ UPPDATERAD: USER AVATAR med notification badge
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingXs),
-            child: UserAvatar.social(
-              imageUrl: userService.currentUserProfile?.avatarUrl,
-              displayName: userService.currentUserProfile?.displayName ??
-                  'Okänd användare',
-            ),
+            child: _buildUserAvatarWithBadge(),
           ),
 
           // Filter-knapp med indikator för aktiva filter
