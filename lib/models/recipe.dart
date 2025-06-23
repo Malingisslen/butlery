@@ -94,10 +94,10 @@ class Recipe extends HiveObject {
     this.lastSyncedAt,
     this.isModifiedOffline = false,
     this.lastCookedAt,
-  }) : id = id ?? const Uuid().v4(),
-       imageUrls = imageUrls ?? [], // Tom lista som default
-       createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
+  })  : id = id ?? const Uuid().v4(),
+        imageUrls = imageUrls ?? [], // Tom lista som default
+        createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
   /// Hjälp-getter för att kontrollera om recept har bilder
   bool get hasImages => imageUrls.isNotEmpty;
@@ -223,29 +223,24 @@ class Recipe extends HiveObject {
       imageUrls: // NY - med migration från gamla imageUrl
           json['imageUrls'] != null
               ? List<String>.from(json['imageUrls'] as List)
-              : json['imageUrl'] !=
-                  null // Bakåtkompatibilitet för import
-              ? [json['imageUrl'] as String]
-              : [],
+              : json['imageUrl'] != null // Bakåtkompatibilitet för import
+                  ? [json['imageUrl'] as String]
+                  : [],
       mealType: json['mealType'] as String,
       sourceUrl: json['sourceUrl'] as String?,
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'] as String)
-              : DateTime.now(),
-      updatedAt:
-          json['updatedAt'] != null
-              ? DateTime.parse(json['updatedAt'] as String)
-              : DateTime.now(),
-      lastSyncedAt:
-          json['lastSyncedAt'] != null
-              ? DateTime.parse(json['lastSyncedAt'] as String)
-              : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : DateTime.now(),
+      lastSyncedAt: json['lastSyncedAt'] != null
+          ? DateTime.parse(json['lastSyncedAt'] as String)
+          : null,
       isModifiedOffline: json['isModifiedOffline'] as bool? ?? false,
-      lastCookedAt:
-          json['lastCookedAt'] != null
-              ? DateTime.parse(json['lastCookedAt'] as String)
-              : null,
+      lastCookedAt: json['lastCookedAt'] != null
+          ? DateTime.parse(json['lastCookedAt'] as String)
+          : null,
     );
   }
 
@@ -269,10 +264,9 @@ class Recipe extends HiveObject {
       imageUrls: // NY - med migration från gamla imageUrl
           data['imageUrls'] != null
               ? List<String>.from(data['imageUrls'] as List)
-              : data['imageUrl'] !=
-                  null // Migration från gamla recept
-              ? [data['imageUrl'] as String]
-              : [],
+              : data['imageUrl'] != null // Migration från gamla recept
+                  ? [data['imageUrl'] as String]
+                  : [],
       mealType: data['mealType'] as String,
       sourceUrl: data['sourceUrl'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -284,7 +278,7 @@ class Recipe extends HiveObject {
   }
 
   /// Konvertera Recipe till Firestore-format
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toFirestore({bool isNested = false}) {
     return {
       // ID hanteras separat som dokument-ID
       'title': title,
@@ -299,8 +293,10 @@ class Recipe extends HiveObject {
       'mealType': mealType,
       'sourceUrl': sourceUrl,
       'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt':
-          FieldValue.serverTimestamp(), // Använd server-tid för uppdatering
+      // 🔧 FIXED: Använd serverTimestamp endast för top-level dokument
+      'updatedAt': isNested
+          ? Timestamp.fromDate(updatedAt)
+          : FieldValue.serverTimestamp(),
       'lastCookedAt':
           lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
     };

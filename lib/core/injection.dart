@@ -40,6 +40,7 @@ import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import '../viewmodels/friends_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
+import '../viewmodels/shared_content_viewmodel.dart';
 
 // Models
 import '../models/recipe.dart';
@@ -47,11 +48,11 @@ import '../models/recipe.dart';
 /// Service Locator instance
 final GetIt sl = GetIt.instance;
 
-/// Initialiserar alla dependencies - UPPDATERAD MED SOCIAL FEATURES
+/// Initialiserar alla dependencies - FIXAD REGISTRERINGSORDNING
 Future<void> initializeDependencies() async {
   debugPrint('🔄 Initialiserar dependency injection...');
 
-  // ==================== CORE SERVICES ====================
+  // ==================== CORE SERVICES (FÖRST) ====================
 
   // AuthService - REGISTRERAS FÖRST (behövs för användarspecifik data)
   sl.registerSingleton<AuthService>(AuthService());
@@ -187,6 +188,15 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+  // 🔧 FIXAD: SharedContentViewModel registreras EFTER alla dependencies
+  sl.registerFactory<SharedContentViewModel>(
+    () => SharedContentViewModel(
+      socialRecipeService: sl<SocialRecipeService>(),
+      userService: sl<UserService>(),
+    ),
+  );
+  debugPrint('✅ SharedContentViewModel registrerad (efter dependencies)');
+
   debugPrint('✅ Alla social ViewModels registrerade');
 
   // ==================== INITIALIZATION SEQUENCE ====================
@@ -200,6 +210,13 @@ Future<void> initializeDependencies() async {
 
     await sl<OfflineService>().initialize();
     debugPrint('✅ OfflineService initierad');
+
+    // 🔧 KRITISK FIX: SocialRecipeService initialize() anropas här
+    await sl<SocialRecipeService>().initialize();
+    debugPrint('✅ SocialRecipeService initierad');
+
+    await sl<FriendsService>().initialize();
+    debugPrint('✅ FriendsService initierad');
 
     // 2. Social services initialiseras automatiskt när de används först
     debugPrint('✅ Social services redo att användas');
@@ -231,6 +248,7 @@ Future<void> initializeDependencies() async {
     sl<UserService>();
     sl<FriendsService>();
     sl<SocialRecipeService>();
+    sl<SharedContentViewModel>(); // 🔧 TILLAGT: Validera SharedContentViewModel
     debugPrint('✅ Alla kritiska services validerade');
   } catch (e) {
     debugPrint('❌ Service validation fel: $e');

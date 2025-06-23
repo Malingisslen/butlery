@@ -2,22 +2,23 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Shared Recipe Model - Firebase First
+/// Component: Shared Recipe Model - Firebase First - FIXED + DISMISS
 /// File: models/shared_recipe.dart
-/// Quick Guide: Clean Firebase-only modell för delade recept mellan vänner
-/// Dependencies IN: cloud_firestore, uuid, recipe.dart
+/// Quick Guide: Clean Firebase-only modell för delade recept mellan vänner - ROBUST PARSING + DISMISS
+/// Dependencies IN: cloud_firestore, uuid, recipe.dart, flutter/foundation.dart
 /// Dependencies OUT: SocialRecipeService, sharing views
 /// Data flow: Firestore ↔ SharedRecipe object ↔ Social UI
 /// State management: Immutable med copyWith pattern och cached recipe data
-/// Purpose: Receptdelning med tracking och import functionality
-/// Common issues: Large recipe snapshots, permission management
+/// Purpose: Receptdelning med tracking, import och dismiss functionality
+/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, dismiss tracking added
 /// Test coverage: 70%
 /// Performance: ⚡ Cached recipe data för offline access
-/// Analytics: ✅ Sharing engagement och import success tracking
-/// Code smells: ✅ Clean separation between sharing metadata och recipe data
+/// Analytics: ✅ Sharing engagement, import success och dismiss tracking
+/// Code smells: ✅ Clean separation between sharing metadata och recipe data, FIXED parsing + dismiss logic
 /// Connected to: Recipe, UserProfile, SocialRecipeService, sharing views
 /// Used in phases: 18
 
@@ -41,6 +42,8 @@ class SharedRecipe {
   final int importCount; // How many times imported
   final List<String> viewedByUserIds; // Who has viewed
   final List<String> importedByUserIds; // Who has imported
+  final List<String>
+      dismissedByUserIds; // 🆕 Who has dismissed it from their list
 
   // Cached recipe data (for performance and offline)
   final Recipe recipeSnapshot; // Copy of recipe at time of sharing
@@ -59,6 +62,7 @@ class SharedRecipe {
     this.importCount = 0,
     this.viewedByUserIds = const [],
     this.importedByUserIds = const [],
+    this.dismissedByUserIds = const [], // 🆕 Default tom lista
     required this.recipeSnapshot,
   }) : sharedAt = sharedAt ?? DateTime.now();
 
@@ -74,8 +78,7 @@ class SharedRecipe {
     required Recipe recipeSnapshot,
   }) {
     // Determine scope based on number of recipients
-    final determinedScope =
-        scope ??
+    final determinedScope = scope ??
         (sharedToUserIds.length == 1
             ? ShareScope.individual
             : ShareScope.multiple);
@@ -100,6 +103,7 @@ class SharedRecipe {
     int? importCount,
     List<String>? viewedByUserIds,
     List<String>? importedByUserIds,
+    List<String>? dismissedByUserIds, // 🆕 Lägg till dismiss tracking
   }) {
     return SharedRecipe(
       id: id,
@@ -115,6 +119,8 @@ class SharedRecipe {
       importCount: importCount ?? this.importCount,
       viewedByUserIds: viewedByUserIds ?? List.from(this.viewedByUserIds),
       importedByUserIds: importedByUserIds ?? List.from(this.importedByUserIds),
+      dismissedByUserIds:
+          dismissedByUserIds ?? List.from(this.dismissedByUserIds), // 🆕
       recipeSnapshot: recipeSnapshot,
     );
   }
@@ -139,6 +145,27 @@ class SharedRecipe {
     );
   }
 
+  /// 🆕 Mark as dismissed by user (ta bort från användarens lista)
+  SharedRecipe markDismissedBy(String userId) {
+    if (dismissedByUserIds.contains(userId)) return this;
+
+    return copyWith(
+      dismissedByUserIds: [...dismissedByUserIds, userId],
+    );
+  }
+
+  /// 🆕 Un-dismiss (återställ till användarens lista)
+  SharedRecipe undismissBy(String userId) {
+    if (!dismissedByUserIds.contains(userId)) return this;
+
+    final updatedDismissed = List<String>.from(dismissedByUserIds);
+    updatedDismissed.remove(userId);
+
+    return copyWith(
+      dismissedByUserIds: updatedDismissed,
+    );
+  }
+
   /// Check if user is recipient
   bool isSharedTo(String userId) => sharedToUserIds.contains(userId);
 
@@ -148,9 +175,17 @@ class SharedRecipe {
   /// Check if user has imported
   bool isImportedBy(String userId) => importedByUserIds.contains(userId);
 
+  /// 🆕 Check if user has dismissed (dolt från sin lista)
+  bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
+
   /// Check if user can view this share
   bool canBeViewedBy(String userId) {
     return sharedByUserId == userId || isSharedTo(userId);
+  }
+
+  /// 🆕 Check if should be shown in user's shared list
+  bool shouldBeShownTo(String userId) {
+    return canBeViewedBy(userId) && !isDismissedBy(userId);
   }
 
   /// Create recipe with proper attribution for import
@@ -198,41 +233,101 @@ class SharedRecipe {
       'importCount': importCount,
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
-      'recipeSnapshot': recipeSnapshot.toFirestore(),
+      'dismissedByUserIds': dismissedByUserIds, // 🆕 Spara dismiss data
+      'recipeSnapshot': recipeSnapshot.toFirestore(
+          isNested: true), // 🔧 FIXED: isNested = true
     };
   }
 
-  /// Create from Firestore document
-  factory SharedRecipe.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  /// 🔧 FIXED: Create from Firestore document - No more type cast errors!
+  factory SharedRecipe.fromFirestore(dynamic doc) {
+    try {
+      final data = doc.data() as Map<String, dynamic>;
 
-    // Reconstruct recipe from snapshot
-    final recipeData = data['recipeSnapshot'] as Map<String, dynamic>;
-    final recipe = Recipe.fromFirestore(
-      // Create a mock DocumentSnapshot for the Recipe
-      _MockDocumentSnapshot(recipeData['id'] ?? '', recipeData)
-          as DocumentSnapshot,
-    );
+      debugPrint('🔍 Parsing SharedRecipe från doc ID: ${doc.id}');
 
-    return SharedRecipe(
-      id: doc.id,
-      originalRecipeId: data['originalRecipeId'] as String? ?? '',
-      sharedByUserId: data['sharedByUserId'] as String? ?? '',
-      sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
-      sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
-      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      shareMessage: data['shareMessage'] as String?,
-      scope: ShareScope.values.firstWhere(
-        (s) => s.name == data['scope'],
-        orElse: () => ShareScope.individual,
-      ),
-      allowImport: data['allowImport'] as bool? ?? true,
-      viewCount: data['viewCount'] as int? ?? 0,
-      importCount: data['importCount'] as int? ?? 0,
-      viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
-      importedByUserIds: List<String>.from(data['importedByUserIds'] ?? []),
-      recipeSnapshot: recipe,
-    );
+      // 🔧 FIXED: Hantera recipe snapshot utan type cast
+      final recipeData = data['recipeSnapshot'] as Map<String, dynamic>;
+
+      // Skapa Recipe direkt från data istället för att använda mock DocumentSnapshot
+      final recipe = Recipe(
+        id: recipeData['id'] as String? ?? '',
+        title: recipeData['title'] as String? ?? 'Untitled Recipe',
+        description: recipeData['description'] as String? ?? '',
+        ingredients: List<String>.from(recipeData['ingredients'] ?? []),
+        instructions: List<String>.from(recipeData['instructions'] ?? []),
+        imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
+        mealType: recipeData['mealType'] as String? ?? 'Middag',
+        portions: recipeData['portions'] as int?,
+        timeMinutes: recipeData['timeMinutes'] as int?,
+        rating: (recipeData['rating'] as num?)?.toDouble(),
+        tags: List<String>.from(recipeData['tags'] ?? []),
+        sourceUrl: recipeData['sourceUrl'] as String?,
+        createdAt: _parseTimestamp(recipeData['createdAt']) ?? DateTime.now(),
+        updatedAt: _parseTimestamp(recipeData['updatedAt']) ?? DateTime.now(),
+        lastCookedAt: _parseTimestamp(recipeData['lastCookedAt']),
+      );
+
+      return SharedRecipe(
+        id: doc.id,
+        originalRecipeId: data['originalRecipeId'] as String? ?? '',
+        sharedByUserId: data['sharedByUserId'] as String? ?? '',
+        sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
+        sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
+        sharedAt: _parseTimestamp(data['sharedAt']) ?? DateTime.now(),
+        shareMessage: data['shareMessage'] as String?,
+        scope: ShareScope.values.firstWhere(
+          (s) => s.name == data['scope'],
+          orElse: () => ShareScope.individual,
+        ),
+        allowImport: data['allowImport'] as bool? ?? true,
+        viewCount: data['viewCount'] as int? ?? 0,
+        importCount: data['importCount'] as int? ?? 0,
+        viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
+        importedByUserIds: List<String>.from(data['importedByUserIds'] ?? []),
+        dismissedByUserIds: List<String>.from(
+            data['dismissedByUserIds'] ?? []), // 🆕 Läs dismiss data
+        recipeSnapshot: recipe,
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error parsing SharedRecipe från doc ${doc.id}: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 🔧 ADDED: Helper method för robust timestamp parsing
+  static DateTime? _parseTimestamp(dynamic timestamp) {
+    if (timestamp == null) return null;
+
+    try {
+      if (timestamp is Timestamp) {
+        return timestamp.toDate();
+      } else if (timestamp is DateTime) {
+        return timestamp;
+      } else if (timestamp.toString().contains('Timestamp')) {
+        // Handle mock timestamps från debug output
+        final timestampObj = timestamp as dynamic;
+        final seconds = timestampObj.seconds as int;
+        final nanoseconds = timestampObj.nanoseconds as int? ?? 0;
+        return DateTime.fromMillisecondsSinceEpoch(
+            seconds * 1000 + nanoseconds ~/ 1000000);
+      } else if (timestamp is Map) {
+        // Handle raw timestamp data
+        final seconds = timestamp['seconds'] as int?;
+        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
+        if (seconds != null) {
+          return DateTime.fromMillisecondsSinceEpoch(
+              seconds * 1000 + nanoseconds ~/ 1000000);
+        }
+      }
+
+      debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');
+      return DateTime.now();
+    } catch (e) {
+      debugPrint('❌ Error parsing timestamp: $e');
+      return DateTime.now();
+    }
   }
 
   /// JSON serialization för caching
@@ -251,6 +346,7 @@ class SharedRecipe {
       'importCount': importCount,
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
+      'dismissedByUserIds': dismissedByUserIds, // 🆕 JSON support för dismiss
       'recipeSnapshot': recipeSnapshot.toJson(),
     };
   }
@@ -273,6 +369,8 @@ class SharedRecipe {
       importCount: json['importCount'] as int? ?? 0,
       viewedByUserIds: List<String>.from(json['viewedByUserIds'] ?? []),
       importedByUserIds: List<String>.from(json['importedByUserIds'] ?? []),
+      dismissedByUserIds: List<String>.from(
+          json['dismissedByUserIds'] ?? []), // 🆕 JSON parse för dismiss
       recipeSnapshot: Recipe.fromJson(
         json['recipeSnapshot'] as Map<String, dynamic>,
       ),
@@ -292,16 +390,4 @@ class SharedRecipe {
 
   @override
   int get hashCode => id.hashCode;
-}
-
-// Helper class för Recipe reconstruction från Firestore data
-class _MockDocumentSnapshot {
-  final String _id;
-  final Map<String, dynamic> _data;
-
-  _MockDocumentSnapshot(this._id, this._data);
-
-  String get id => _id;
-  Map<String, dynamic>? data() => _data;
-  bool get exists => true;
 }
