@@ -1,6 +1,5 @@
 // lib/views/social/shared_with_me_view.dart
-
-// ignore_for_file: unintended_html_in_doc_comment
+// ✅ FIXAD: Proper Provider setup without conflicts
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,32 +11,31 @@ import '../../models/shared_recipe.dart';
 import '../../models/shared_menu.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/user_avatar.dart';
+import 'menu_preview_view.dart'; // ✅ NY IMPORT
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Shared With Me View - Mottaget delat innehåll med Dismiss Functionality
-/// File: views/social/shared_with_me_view.dart
-/// Quick Guide: Elegant UI för recept och menyer delade med användaren + dismiss features
-/// Dependencies IN: SharedContentViewModel, Provider, social models
-/// Dependencies OUT: Import functionality, dismiss actions, navigation till receptdetaljer
-/// Data flow: Load shared content → Display tabs → Import/Dismiss actions → Navigation
-/// State management: Consumer<SharedContentViewModel> för reactive UI med dismiss tracking
-/// Purpose: Central vy för hantering av allt mottaget socialt innehåll + user-friendly dismiss
-/// Common issues: Tab state management, import feedback, large lists performance, dismiss confirmations
-/// Test coverage: 60% (UI interaction testing)
-/// Performance: ⚡ Optimized med lazy loading, efficient list rendering, optimistic dismiss updates
-/// Analytics: ✅ View tracking, import engagement metrics, dismiss vs import analytics
-/// Code smells: ✅ Clean separation mellan recept och meny components, user-friendly dismiss patterns
-/// Connected to: SharedContentViewModel, social navigation, import system, dismiss management
-/// Used in phases: 18.2 (Shared Content Management)
-
-class SharedWithMeView extends StatefulWidget {
+/// ✅ FIXAD SharedWithMeView med korrekt Provider-arkitektur
+class SharedWithMeView extends StatelessWidget {
   const SharedWithMeView({super.key});
 
   @override
-  State<SharedWithMeView> createState() => _SharedWithMeViewState();
+  Widget build(BuildContext context) {
+    // ✅ FIX: Skapa Provider här utan konflikter
+    return ChangeNotifierProvider<SharedContentViewModel>(
+      create: (context) => sl<SharedContentViewModel>(),
+      child: const _SharedWithMeViewContent(),
+    );
+  }
 }
 
-class _SharedWithMeViewState extends State<SharedWithMeView>
+class _SharedWithMeViewContent extends StatefulWidget {
+  const _SharedWithMeViewContent();
+
+  @override
+  State<_SharedWithMeViewContent> createState() =>
+      _SharedWithMeViewContentState();
+}
+
+class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
@@ -47,13 +45,16 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Sync tab controller med ViewModel
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        context
-            .read<SharedContentViewModel>()
-            .setTabIndex(_tabController.index);
-      }
+    // ✅ FIX: Säker Provider access utan context.read() i initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final viewModel = context.read<SharedContentViewModel>();
+
+      // Sync tab controller med ViewModel
+      _tabController.addListener(() {
+        if (!_tabController.indexIsChanging) {
+          viewModel.setTabIndex(_tabController.index);
+        }
+      });
     });
 
     // Konfigurera svenska för timeago
@@ -69,25 +70,19 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SharedContentViewModel>(
-      create: (_) => SharedContentViewModel(
-        socialRecipeService: sl(),
-        userService: sl(),
-      ),
-      child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        body: Consumer<SharedContentViewModel>(
-          builder: (context, viewModel, _) {
-            return CustomScrollView(
-              slivers: [
-                _buildAppBar(context, viewModel),
-                _buildSearchBar(context, viewModel),
-                _buildTabBar(context, viewModel),
-                _buildContent(context, viewModel),
-              ],
-            );
-          },
-        ),
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Consumer<SharedContentViewModel>(
+        builder: (context, viewModel, _) {
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(context, viewModel),
+              _buildSearchBar(context, viewModel),
+              _buildTabBar(context, viewModel),
+              _buildContent(context, viewModel),
+            ],
+          );
+        },
       ),
     );
   }
@@ -270,8 +265,20 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
 
   Widget _buildContent(BuildContext context, SharedContentViewModel viewModel) {
     if (viewModel.isLoading) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AppTheme.mediumLoadingIndicator(),
+              AppTheme.mediumGap,
+              Text(
+                'Laddar delat innehåll...',
+                style: AppTheme.subtitleStyle,
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -457,7 +464,7 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
                       ],
                     ),
                   ),
-                  // 🆕 X knapp för att dölja receptet - fullt theme-styrd
+                  // Dismiss knapp
                   Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context)
@@ -681,7 +688,16 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
           if (!isRead) {
             viewModel.markMenuAsRead(sharedMenu);
           }
-          // TODO: Navigera till meny-detaljvy
+          // ✅ NAVIGERA till MenuPreviewView
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider.value(
+                value: viewModel,
+                child: MenuPreviewView(sharedMenu: sharedMenu),
+              ),
+            ),
+          );
         },
         child: Container(
           padding: AppTheme.cardPadding,
@@ -732,7 +748,7 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
                       ],
                     ),
                   ),
-                  // 🆕 X knapp för att dölja menyn - fullt theme-styrd
+                  // Dismiss knapp
                   Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context)
@@ -880,7 +896,16 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
                         if (!isRead) {
                           viewModel.markMenuAsRead(sharedMenu);
                         }
-                        // TODO: Navigera till meny-förhandsvisning
+                        // ✅ NAVIGERA till MenuPreviewView
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChangeNotifierProvider.value(
+                              value: viewModel,
+                              child: MenuPreviewView(sharedMenu: sharedMenu),
+                            ),
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.visibility, size: 18),
                       label: const Text('Visa'),
@@ -965,7 +990,6 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
     }
   }
 
-  /// 🆕 Dismiss recept från användarens lista
   Future<void> _dismissRecipe(
     BuildContext context,
     SharedContentViewModel viewModel,
@@ -1020,7 +1044,6 @@ class _SharedWithMeViewState extends State<SharedWithMeView>
     }
   }
 
-  /// 🆕 Dismiss meny från användarens lista
   Future<void> _dismissMenu(
     BuildContext context,
     SharedContentViewModel viewModel,

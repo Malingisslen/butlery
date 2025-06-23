@@ -1,24 +1,25 @@
 // lib/models/shared_menu.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Shared Menu Model - Firebase First - FIXED med allowImport + DISMISS
+/// Component: Shared Menu Model - Firebase First - FIXED med allowImport + DISMISS + isDismissed GETTER
 /// File: models/shared_menu.dart
-/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner - ROBUST PARSING + IMPORT CONTROL + DISMISS
-/// Dependencies IN: cloud_firestore, uuid, recipe.dart, flutter/foundation.dart
+/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner - ROBUST PARSING + IMPORT + DISMISS + GETTER
+/// Dependencies IN: cloud_firestore, firebase_auth, uuid, recipe.dart, flutter/foundation.dart
 /// Dependencies OUT: SocialRecipeService, menu sharing views
 /// Data flow: Firestore ↔ SharedMenu object ↔ Social UI
 /// State management: Immutable med copyWith pattern och cached menu data
-/// Purpose: Menydelning med komplett veckomeny, tracking, import och dismiss functionality
-/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, allowImport getter, dismiss tracking added
+/// Purpose: Menydelning med komplett veckomeny, tracking, import och dismiss functionality + easy isDismissed check
+/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, allowImport getter, dismiss tracking, isDismissed getter added
 /// Test coverage: 65%
 /// Performance: ⚡ Cached menu data för offline access, optimized queries
 /// Analytics: ✅ Menu sharing engagement tracking, dismiss analytics
-/// Code smells: ✅ Clean separation mellan sharing metadata och menu data, FIXED parsing + import + dismiss logic
+/// Code smells: ✅ Clean separation mellan sharing metadata och menu data, FIXED parsing + import + dismiss + getter
 /// Connected to: Recipe, UserProfile, SocialRecipeService, menu views
 /// Used in phases: 18
 
@@ -185,6 +186,14 @@ class SharedMenu {
 
   /// 🆕 Check if user has dismissed (dolt från sin lista)
   bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
+
+  /// ✅ FIXAT: Easy isDismissed getter för current user
+  bool get isDismissed {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return false;
+
+    return isDismissedBy(currentUserId);
+  }
 
   /// 🆕 Check if should be shown in user's shared list
   bool shouldBeShownTo(String userId) {

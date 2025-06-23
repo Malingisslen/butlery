@@ -1,5 +1,5 @@
 // lib/views/veckomeny_view.dart
-// UPPDATERAD för Enhanced Menu Sharing
+// UPPDATERAD för Enhanced Menu Sharing + Menu Persistence
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // För SystemNavigator
@@ -10,12 +10,13 @@ import '../widgets/recipe_card.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/menu_share_dialog.dart'; // ✅ NY IMPORT
+import '../widgets/menu_persistence_dialogs.dart'; // ✅ NY IMPORT för menyhantering
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
 import '../services/friends_service.dart'; // ✅ NY IMPORT
 
-/// ✨ UPPDATERAD VY MED ENHANCED MENU SHARING
+/// ✨ UPPDATERAD VY MED ENHANCED MENU SHARING + MENU PERSISTENCE
 class VeckomenyView extends StatelessWidget {
   const VeckomenyView({super.key});
 
@@ -45,10 +46,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     super.initState();
     _promptController.addListener(_onPromptChanged);
 
-    // Ladda sparad meny (för framtida implementation)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MenuViewModel>().loadSavedMenu();
-    });
+    // Ladda sparad meny inte längre automatiskt - användaren väljer själv
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   context.read<MenuViewModel>().loadSavedMenu();
+    // });
   }
 
   @override
@@ -71,6 +72,40 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final viewModel = context.read<MenuViewModel>();
     viewModel.clearMenu();
     _promptController.clear();
+  }
+
+  // ✨ NY: Visa spara meny-dialog
+  Future<void> _showSaveMenuDialog() async {
+    final viewModel = context.read<MenuViewModel>();
+
+    if (!viewModel.hasMenu) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Skapa en meny först innan du kan spara den'),
+          backgroundColor: AppTheme.warningColor,
+        ),
+      );
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) => SaveMenuDialog(viewModel: viewModel),
+    );
+  }
+
+  // ✨ NY: Visa ladda meny bottom sheet
+  Future<void> _showLoadMenuBottomSheet() async {
+    final viewModel = context.read<MenuViewModel>();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => LoadMenuBottomSheet(viewModel: viewModel),
+    );
   }
 
   // BEFINTLIG METOD för regular sharing
@@ -265,6 +300,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         currentIndex: 2,
         title: 'Veckomeny',
         actions: [
+          // ✨ NY: Ladda meny-knapp
+          IconButton(
+            icon: AppTheme.actionIcon(context, Icons.folder_open),
+            onPressed: _showLoadMenuBottomSheet,
+            tooltip: 'Ladda sparad meny',
+          ),
+
+          // ✨ NY: Spara meny-knapp (endast när meny finns)
+          if (viewModel.hasMenu)
+            IconButton(
+              icon: AppTheme.actionIcon(context, Icons.save),
+              onPressed: _showSaveMenuDialog,
+              tooltip: 'Spara meny',
+            ),
+
           // ✨ NY: Enhanced social share ikon
           if (viewModel.hasMenu)
             IconButton(
@@ -465,7 +515,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       return EmptyState(
         icon: Icons.restaurant_menu,
         title: 'Ingen meny genererad ännu',
-        subtitle: 'Skriv vad du vill ha och tryck på knappen ovan',
+        subtitle:
+            'Skriv vad du vill ha och tryck på knappen ovan\n\nTips: Använd mapp-ikonen för att ladda en sparad meny!',
       );
     }
 

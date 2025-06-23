@@ -1,6 +1,6 @@
 // lib/views/recipe_detail_view.dart
 // UPPDATERAD för Fas 18 med Enhanced Social Platform Integration
-// ✅ SLUTGILTIG VERSION - GARANTERAT INGA ASYNC GAPS
+// ✅ SLUTGILTIG LÖSNING MED HELPER-METODER - INGA ASYNC GAPS
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,6 +60,30 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   // State för kommentarssektion
   bool _isCommentsExpanded = false;
 
+  // ✅ HELPER-METODER FÖR SÄKER CONTEXT ANVÄNDNING
+  void _showSnackBarSafely(String message, {Color? backgroundColor}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: backgroundColor ?? AppTheme.successColor,
+        ),
+      );
+    }
+  }
+
+  void _navigateSafely(String route) {
+    if (mounted) {
+      Navigator.pushNamed(context, route);
+    }
+  }
+
+  void _popSafely() {
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -69,7 +93,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     _scaledIngredients = List.from(viewModel.recipe.ingredients);
   }
 
-  // ✅ FULLSTÄNDIGT SÄKER: _deleteRecipe med perfekt async gap handling
+  // ✅ SÄKER: _deleteRecipe med helper-metoder
   Future<void> _deleteRecipe(BuildContext context) async {
     if (!mounted) return;
 
@@ -98,33 +122,24 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       ),
     );
 
+    if (!mounted || confirmed != true) return;
+
+    final success = await viewModel.deleteRecipe();
+
     if (!mounted) return;
 
-    if (confirmed == true) {
-      final success = await viewModel.deleteRecipe();
-
-      if (!mounted) return;
-
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recept borttaget'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
-        if (mounted) Navigator.pop(context);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.error ?? 'Kunde inte ta bort recept'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-      }
+    if (success) {
+      _showSnackBarSafely('Recept borttaget');
+      _popSafely();
+    } else {
+      _showSnackBarSafely(
+        viewModel.error ?? 'Kunde inte ta bort recept',
+        backgroundColor: AppTheme.errorColor,
+      );
     }
   }
 
-  // ✅ FULLSTÄNDIGT SÄKER: _shareRecipe med mounted check
+  // ✅ SÄKER: _shareRecipe med helper-metod
   Future<void> _shareRecipe(BuildContext context) async {
     if (!mounted) return;
 
@@ -140,22 +155,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
     await _shareService.shareRecipe(recipeToShare);
 
-    if (!mounted) return;
+    final message = _isScaled
+        ? 'Recept delat med $_currentPortions portioner!'
+        : 'Recept delat!';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isScaled
-              ? 'Recept delat med $_currentPortions portioner!'
-              : 'Recept delat!',
-        ),
-        backgroundColor: AppTheme.successColor,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    _showSnackBarSafely(message);
   }
 
-  // ✅ FULLSTÄNDIGT SÄKER: _showSocialShareDialog med mounted checks
+  // ✅ SÄKER: _showSocialShareDialog med helper-metod
   Future<void> _showSocialShareDialog(BuildContext context) async {
     if (!mounted) return;
 
@@ -189,9 +196,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             FilledButton.icon(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                if (mounted) {
-                  Navigator.pushNamed(context, '/friends');
-                }
+                _navigateSafely('/friends');
               },
               icon: const Icon(Icons.person_add),
               label: const Text('Lägg till vänner'),
@@ -228,7 +233,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     });
   }
 
-  // ✅ FULLSTÄNDIGT SÄKER: _showFullscreenImages med mounted check
+  // ✅ SÄKER: _showFullscreenImages
   Future<void> _showFullscreenImages(
     BuildContext context,
     List<String> imageUrls,
@@ -379,7 +384,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   _buildCommentsSection(context, socialViewModel),
                   AppTheme.largeGap,
 
-                  // ✅ SÄKER: Redigera-knapp med mounted check
+                  // ✅ SÄKER: Redigera-knapp
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -485,25 +490,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             ),
           ],
 
-          // ✅ SÄKER: "Tillagad idag"-knapp med mounted check
+          // ✅ SÄKER: "Tillagad idag"-knapp med helper-metod
           AppTheme.mediumGap,
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () async {
                 final success = await viewModel.markAsCooked();
-                if (success && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        viewModel.recipe.lastCookedText == null
-                            ? 'Markerad som tillagad för första gången! 🎉'
-                            : 'Uppdaterad som tillagad idag!',
-                      ),
-                      backgroundColor: AppTheme.successColor,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
+                if (success) {
+                  final message = viewModel.recipe.lastCookedText == null
+                      ? 'Markerad som tillagad för första gången! 🎉'
+                      : 'Uppdaterad som tillagad idag!';
+                  _showSnackBarSafely(message);
                 }
               },
               icon: Icon(
@@ -561,7 +559,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  // ✅ SÄKER: _buildSourceUrl med mounted check
+  // ✅ SÄKER: _buildSourceUrl med helper-metod
   Widget _buildSourceUrl(
     BuildContext context,
     RecipeDetailViewModel viewModel,
@@ -578,14 +576,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               } else {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Kunde inte öppna länken: $sourceUrl'),
-                      backgroundColor: AppTheme.errorColor,
-                    ),
-                  );
-                }
+                _showSnackBarSafely(
+                  'Kunde inte öppna länken: $sourceUrl',
+                  backgroundColor: AppTheme.errorColor,
+                );
               }
             },
       borderRadius: AppTheme.mediumRadius,
@@ -851,7 +845,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
                             AppTheme.smallGap,
 
-                            // ✅ SÄKER: SNABBFIX: Skapa profil-knapp med mounted check
+                            // ✅ SÄKER: SNABBFIX: Skapa profil-knapp med helper-metod
                             if (authUser != null &&
                                 userService.currentUserProfile == null)
                               ElevatedButton(
@@ -866,14 +860,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     allowEmailSearch: false,
                                   );
 
-                                  if (profile != null && mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            'Profil skapad! Starta om appen.'),
-                                        backgroundColor: AppTheme.successColor,
-                                      ),
-                                    );
+                                  if (profile != null) {
+                                    _showSnackBarSafely(
+                                        'Profil skapad! Starta om appen.');
                                   }
                                 },
                                 child: Text('Skapa Profil'),
@@ -929,7 +918,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  // ✅ SÄKER: Kommentarsformulär med mounted check
+  // ✅ SÄKER: Kommentarsformulär med helper-metod
   Widget _buildCommentForm(
       BuildContext context, SocialRecipeViewModel socialViewModel) {
     return Column(
@@ -1003,13 +992,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       !socialViewModel.isPostingComment
                   ? () async {
                       final success = await socialViewModel.postComment();
-                      if (success && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Kommentar publicerad!'),
-                            backgroundColor: AppTheme.successColor,
-                          ),
-                        );
+                      if (success) {
+                        _showSnackBarSafely('Kommentar publicerad!');
                       }
                     }
                   : null,

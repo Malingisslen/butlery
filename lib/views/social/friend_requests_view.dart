@@ -13,17 +13,17 @@ import '../../models/friend_request.dart';
 /// 🔍 AI INFO BLOCK:
 /// Component: Friend Requests Notification Center
 /// File: views/social/friend_requests_view.dart
-/// Quick Guide: Dedikerad vy för alla typer av vänskapsförfrågningar
+/// Quick Guide: Dedikerad vy för alla typer av vänskapsförfrågningar med riktig användardata
 /// Dependencies IN: FriendsViewModel, UserAvatar
 /// Dependencies OUT: Friend request management, notification badges
-/// Data flow: All friend requests → Categorized display → Batch actions
+/// Data flow: All friend requests → Load user profiles → Categorized display → Batch actions
 /// State management: Konsumerar FriendsViewModel med Provider
-/// Purpose: Centraliserad notifikationscenter för all friend request activity
-/// Common issues: Request state syncing, batch operation performance
+/// Purpose: Centraliserad notifikationscenter för all friend request activity med riktiga användarnamn och bilder
+/// Common issues: Request state syncing, batch operation performance, user profile loading
 /// Test coverage: 70%
-/// Performance: ⚡ Optimized för stora mängder requests
+/// Performance: ⚡ Optimized för stora mängder requests med cached user profiles
 /// Analytics: ✅ Request management actions tracking
-/// Code smells: ✅ Clean separation av request types
+/// Code smells: ✅ Clean separation av request types, proper user data integration
 /// Connected to: FriendsViewModel, UserService, notification system
 /// Used in phases: 18
 
@@ -394,13 +394,20 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     );
   }
 
-  /// Inkommande förfrågningskort
+  /// Inkommande förfrågningskort - ✅ UPPDATERAD med riktig användardata
   Widget _buildIncomingRequestCard(
     FriendRequest request,
     FriendsViewModel viewModel,
     bool isSelected,
     Function(bool) onSelectionChanged,
   ) {
+    // ✅ NYTT: Hämta riktig användardata
+    final userProfile = viewModel.getUserProfile(request.fromUserId);
+    final displayName = userProfile?.displayName ??
+        viewModel.getDisplayNameForUser(request.fromUserId);
+    final avatarUrl = userProfile?.avatarUrl;
+    final isOnline = userProfile?.isOnline ?? false;
+
     return Card(
       color: isSelected
           ? Theme.of(context)
@@ -424,30 +431,79 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
                   ),
                   SizedBox(width: AppTheme.spacingSm),
 
-                  // User avatar
-                  UserAvatar.medium(
-                    imageUrl: null, // TODO: Hämta från UserService
-                    displayName:
-                        'Användare ${request.fromUserId.substring(0, 6)}...',
+                  // ✅ UPPDATERAD: User avatar med riktig data
+                  Stack(
+                    children: [
+                      UserAvatar.medium(
+                        imageUrl: avatarUrl,
+                        displayName: displayName,
+                      ),
+                      // Online indicator
+                      if (isOnline)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: AppTheme.successColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surface,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   SizedBox(width: AppTheme.spacingMd),
 
-                  // Request info
+                  // Request info - ✅ UPPDATERAD med riktig användardata
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Vänskapsförfrågan',
+                          displayName,
                           style: Theme.of(context).textTheme.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        if (request.message?.isNotEmpty == true)
-                          Text(
-                            request.message!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          'vill bli vän',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
+                        if (request.message?.isNotEmpty == true) ...[
+                          SizedBox(height: AppTheme.spacingXs),
+                          Container(
+                            padding: EdgeInsets.all(AppTheme.spacingSm),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '"${request.message!}"',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
+                        ],
                         SizedBox(height: AppTheme.spacingXs),
                         Text(
                           request.timeAgoText,
@@ -505,13 +561,20 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     );
   }
 
-  /// Skickade förfrågningskort
+  /// Skickade förfrågningskort - ✅ UPPDATERAD med riktig användardata
   Widget _buildSentRequestCard(
     FriendRequest request,
     FriendsViewModel viewModel,
     bool isSelected,
     Function(bool) onSelectionChanged,
   ) {
+    // ✅ NYTT: Hämta riktig användardata
+    final userProfile = viewModel.getUserProfile(request.toUserId);
+    final displayName = userProfile?.displayName ??
+        viewModel.getDisplayNameForUser(request.toUserId);
+    final avatarUrl = userProfile?.avatarUrl;
+    final isOnline = userProfile?.isOnline ?? false;
+
     Color statusColor;
     IconData statusIcon;
     String statusText;
@@ -568,26 +631,52 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 
               SizedBox(width: AppTheme.spacingSm),
 
-              // User avatar
-              UserAvatar.medium(
-                imageUrl: null, // TODO: Hämta från UserService
-                displayName: 'Användare ${request.toUserId.substring(0, 6)}...',
+              // ✅ UPPDATERAD: User avatar med riktig data
+              Stack(
+                children: [
+                  UserAvatar.medium(
+                    imageUrl: avatarUrl,
+                    displayName: displayName,
+                  ),
+                  // Online indicator
+                  if (isOnline)
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: AppTheme.successColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.surface,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               SizedBox(width: AppTheme.spacingMd),
 
-              // Request info
+              // Request info - ✅ UPPDATERAD med riktig användardata
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Till användare',
+                      displayName,
                       style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (request.message?.isNotEmpty == true)
                       Text(
                         request.message!,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

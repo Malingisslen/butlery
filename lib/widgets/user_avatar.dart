@@ -3,27 +3,30 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart'; // ✅ LÄGG TILL för Consumer
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/backup_service.dart';
 import '../core/injection.dart';
+import '../services/social_recipe_service.dart';
+import '../viewmodels/friends_viewmodel.dart'; // ✅ LÄGG TILL för notifikationer
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Integrerad User Avatar Widget med komplett profil-funktionalitet
+/// Component: Integrerad User Avatar Widget med komplett profil-funktionalitet och notification badges
 /// File: widgets/user_avatar.dart
-/// Quick Guide: Smart avatar med social navigation + backup/restore + logout
-/// Dependencies IN: cached_network_image, firebase_auth, auth_service, backup_service
-/// Dependencies OUT: Alla views som visar användare + komplett profil-hantering
-/// Data flow: Avatar URL → Cache check → Tap → Komplett social menu med alla funktioner
-/// State management: Stateless med Firebase Auth integration
-/// Purpose: Centraliserad avatar med all profil-relaterad funktionalitet
-/// Common issues: Firebase Auth timing, backup file permissions
+/// Quick Guide: Smart avatar med social navigation + backup/restore + logout + notifikationer
+/// Dependencies IN: cached_network_image, firebase_auth, auth_service, backup_service, friends_viewmodel
+/// Dependencies OUT: Alla views som visar användare + komplett profil-hantering med notifikationer
+/// Data flow: Avatar URL → Cache check → Tap → Komplett social menu med notification badges
+/// State management: Stateless med Firebase Auth integration + reactive notification counts
+/// Purpose: Centraliserad avatar med all profil-relaterad funktionalitet inklusive notification management
+/// Common issues: Firebase Auth timing, backup file permissions, notification count syncing
 /// Test coverage: 70%
-/// Performance: ⚡ Cached med memory optimization
-/// Analytics: ✅ Comprehensive tracking för alla actions
-/// Code smells: ✅ Clean integration av profile_dialog funktionalitet
-/// Connected to: Firebase Auth, BackupService, alla social views
-/// Used in phases: 18 (integrerad social + backup)
+/// Performance: ⚡ Cached med memory optimization + optimized notification loading
+/// Analytics: ✅ Comprehensive tracking för alla actions inklusive notification interactions
+/// Code smells: ✅ Clean integration av profile_dialog funktionalitet + notification badges
+/// Connected to: Firebase Auth, BackupService, FriendsViewModel, alla social views
+/// Used in phases: 18 (integrerad social + backup + notifications)
 
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
@@ -233,62 +236,78 @@ class UserAvatar extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurfaceVariant
-                    .withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
+      builder: (context) => MultiProvider(
+        providers: [
+          // ✅ LÄGG TILL FriendsViewModel för notification count
+          ChangeNotifierProvider(create: (_) => sl<FriendsViewModel>()),
+        ],
+        child: Builder(
+          builder: (context) {
+            // ✅ LADDA DATA när modal öppnas
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final friendsViewModel = context.read<FriendsViewModel>();
+              friendsViewModel.refresh();
+            });
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
               ),
-            ),
-
-            // Scrollable content
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Header med användarinfo
-                    _buildProfileHeader(context, user),
-
-                    SizedBox(height: AppTheme.spacingLg),
-
-                    // Social funktioner
-                    _buildSocialSection(context),
-
-                    SizedBox(height: AppTheme.spacingLg),
-
-                    // Data & Backup sektion
-                    _buildDataBackupSection(context),
-
-                    SizedBox(height: AppTheme.spacingLg),
-
-                    // Logout sektion
-                    _buildLogoutSection(context),
-
-                    SizedBox(height: AppTheme.spacingMd),
-                  ],
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
                 ),
               ),
-            ),
-          ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant
+                          .withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+
+                  // Scrollable content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Header med användarinfo
+                          _buildProfileHeader(context, user),
+
+                          SizedBox(height: AppTheme.spacingLg),
+
+                          // Social funktioner
+                          _buildSocialSection(context),
+
+                          SizedBox(height: AppTheme.spacingLg),
+
+                          // Data & Backup sektion
+                          _buildDataBackupSection(context),
+
+                          SizedBox(height: AppTheme.spacingLg),
+
+                          // Logout sektion
+                          _buildLogoutSection(context),
+
+                          SizedBox(height: AppTheme.spacingMd),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -415,7 +434,7 @@ class UserAvatar extends StatelessWidget {
     );
   }
 
-  /// Social funktioner sektion
+  /// Social funktioner sektion med notification badges
   Widget _buildSocialSection(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
@@ -440,24 +459,17 @@ class UserAvatar extends StatelessWidget {
               Navigator.pushNamed(context, '/profile/edit');
             },
           ),
-          _buildMenuItem(
-            context,
-            icon: Icons.people_outline,
-            title: 'Vänner',
-            subtitle: 'Hantera vänner och förfrågningar',
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/friends');
-            },
-          ),
-          _buildMenuItem(
+          // ✅ UPPDATERAD: Vänner med notification badge
+          _buildFriendsMenuItem(context),
+          // ✨ UPPDATERAD: Delat innehåll med notification badge
+          _buildNotificationMenuItem(
             context,
             icon: Icons.share_outlined,
-            title: 'Delat innehåll',
+            title: 'Delat med mig',
             subtitle: 'Recept och menyer som delats med mig',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/shared'); // ✅ ANVÄND DETTA
+              Navigator.pushNamed(context, '/shared');
             },
           ),
           _buildMenuItem(
@@ -471,6 +483,263 @@ class UserAvatar extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// ✅ NY: Vänner menu item med notification badge för vänskapsförfrågningar
+  Widget _buildFriendsMenuItem(BuildContext context) {
+    return Consumer<FriendsViewModel>(
+      builder: (context, friendsViewModel, child) {
+        final pendingRequestsCount = friendsViewModel.pendingRequestsCount;
+
+        return InkWell(
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, '/friends');
+          },
+          borderRadius: AppTheme.mediumRadius,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(AppTheme.spacingSm),
+            margin: EdgeInsets.only(bottom: AppTheme.spacingXs),
+            child: Row(
+              children: [
+                // Icon container med badge
+                Stack(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: AppTheme.mediumRadius,
+                      ),
+                      child: Icon(
+                        Icons.people_outline,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    // ✅ NOTIFICATION BADGE för vänskapsförfrågningar
+                    if (pendingRequestsCount > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingXs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.errorColor,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.surface,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Text(
+                            pendingRequestsCount > 99
+                                ? '99+'
+                                : pendingRequestsCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                SizedBox(width: AppTheme.spacingSm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Vänner',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          if (pendingRequestsCount > 0) ...[
+                            SizedBox(width: AppTheme.spacingXs),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingXs,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '$pendingRequestsCount VÄNTANDE',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      Text(
+                        pendingRequestsCount > 0
+                            ? 'Hantera vänner och förfrågningar ($pendingRequestsCount nya)'
+                            : 'Hantera vänner och förfrågningar',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// ✨ NY: Menu item med notification badge
+  Widget _buildNotificationMenuItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    // Hämta notification count från SocialRecipeService
+    final socialService = sl<SocialRecipeService>();
+    final newItemsCount =
+        socialService.recipesSharedWithMe.where((r) => !r.isDismissed).length +
+            socialService.menusSharedWithMe.where((m) => !m.isDismissed).length;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppTheme.mediumRadius,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(AppTheme.spacingSm),
+        margin: EdgeInsets.only(bottom: AppTheme.spacingXs),
+        child: Row(
+          children: [
+            // Icon container med badge
+            Stack(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: AppTheme.mediumRadius,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                // Notification badge
+                if (newItemsCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingXs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.errorColor,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Text(
+                        newItemsCount > 99 ? '99+' : newItemsCount.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (newItemsCount > 0) ...[
+                        SizedBox(width: AppTheme.spacingXs),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingXs,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.successColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'NYTT',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    newItemsCount > 0
+                        ? '$subtitle ($newItemsCount nya)'
+                        : subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
       ),
     );
   }

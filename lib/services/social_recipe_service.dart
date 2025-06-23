@@ -52,10 +52,20 @@ class SocialRecipeService extends ChangeNotifier {
   })  : _userService = userService,
         _recipeService = recipeService;
 
-  // Getters
+  // ===== GETTERS =====
+
   List<SharedRecipe> get sharedWithMe => List.unmodifiable(_sharedWithMe);
   List<SharedMenu> get menusSharedWithMe =>
       List.unmodifiable(_menusSharedWithMe);
+
+  /// ✅ FIXAT: Getters för UserAvatar notification badge
+  List<SharedRecipe> get recipesSharedWithMe {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return [];
+
+    return _sharedWithMe;
+  }
+
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
