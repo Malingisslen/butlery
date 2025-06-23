@@ -1,10 +1,10 @@
 // lib/views/recipe_detail_view.dart
-// UPPDATERAD för Fas 18 med Social Platform Integration
+// UPPDATERAD för Fas 18 med Enhanced Social Platform Integration
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // NY IMPORT för debug
+import 'package:firebase_auth/firebase_auth.dart'; // VIKTIGT: Behövs för debug
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
@@ -12,12 +12,13 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/portion_scaler.dart';
 import '../widgets/recipe_image_carousel.dart';
 import '../widgets/user_avatar.dart';
+import '../widgets/social_share_dialog.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
-import '../services/user_service.dart'; // NY IMPORT för debug
+import '../services/user_service.dart'; // VIKTIGT: Behövs för debug
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED SOCIAL INTEGRATION
+/// ✨ UPPDATERAD RECEPTDETALJ-VY MED ENHANCED SOCIAL INTEGRATION
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -145,24 +146,56 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     }
   }
 
-  // NY METOD: Visa social sharing dialog
+  // ✨ UPPDATERAD METOD: Enhanced social sharing dialog
   Future<void> _showSocialShareDialog(BuildContext context) async {
     final socialViewModel = context.read<SocialRecipeViewModel>();
 
     // Kontrollera om användaren har vänner
     if (socialViewModel.friends.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Du behöver vänner för att dela recept socialt'),
-          backgroundColor: AppTheme.warningColor,
+      // Visa informativ dialog om inga vänner
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.people_outline,
+                color: AppTheme.warningColor,
+              ),
+              SizedBox(width: AppTheme.spacingSm),
+              const Text('Inga vänner'),
+            ],
+          ),
+          content: const Text(
+            'Du behöver vänner för att dela recept socialt. '
+            'Gå till vänhantering för att lägga till vänner!',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Stäng'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                Navigator.pushNamed(context, '/friends');
+              },
+              icon: const Icon(Icons.person_add),
+              label: const Text('Lägg till vänner'),
+            ),
+          ],
         ),
       );
       return;
     }
 
+    // Visa enhanced sharing dialog
     await showDialog(
       context: context,
-      builder: (dialogContext) => _SocialShareDialog(),
+      builder: (dialogContext) => SocialShareDialog(
+        recipeTitle: socialViewModel.recipe.title,
+        socialViewModel: socialViewModel,
+      ),
     );
   }
 
@@ -202,13 +235,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         appBar: AppBar(
           title: Text(viewModel.recipe.title),
           actions: [
-            // NY: Social share ikon (bara synlig om användaren har vänner)
-            if (socialViewModel.friends.isNotEmpty)
-              IconButton(
-                icon: AppTheme.actionIcon(context, Icons.people_outline),
-                onPressed: () => _showSocialShareDialog(context),
-                tooltip: 'Dela med vänner',
-              ),
+            // ✨ UPPDATERAD: Enhanced social share ikon
+            IconButton(
+              icon: AppTheme.actionIcon(context, Icons.people_outline),
+              onPressed: () => _showSocialShareDialog(context),
+              tooltip: socialViewModel.friends.isEmpty
+                  ? 'Lägg till vänner för att dela'
+                  : 'Dela med vänner',
+            ),
             // Befintlig regular share
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.share),
@@ -318,7 +352,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   _buildInstructions(context, viewModel),
                   AppTheme.largeGap,
 
-                  // NY: Social kommentarssektion
+                  // ✨ UPPDATERAD: Social kommentarssektion
                   _buildCommentsSection(context, socialViewModel),
                   AppTheme.largeGap,
 
@@ -635,7 +669,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  // NY METOD: Kommentarssektion
+  // ✨ FÖRBÄTTRAD KOMMENTARSSEKTION
   Widget _buildCommentsSection(
       BuildContext context, SocialRecipeViewModel socialViewModel) {
     return Container(
@@ -650,6 +684,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               setState(() {
                 _isCommentsExpanded = !_isCommentsExpanded;
               });
+
+              // Ladda kommentarer när man expanderar första gången
+              if (_isCommentsExpanded && !socialViewModel.hasComments) {
+                socialViewModel.refreshComments();
+              }
             },
             child: Padding(
               padding: AppTheme.cardPadding,
@@ -671,10 +710,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                     ),
                   ),
-                  Icon(
-                    _isCommentsExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  if (socialViewModel.friends.isNotEmpty)
+                    Icon(
+                      _isCommentsExpanded
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                 ],
               ),
             ),
@@ -693,25 +735,62 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     Center(
                       child: Padding(
                         padding: EdgeInsets.all(AppTheme.spacingMd),
-                        child: AppTheme.smallLoadingIndicator(),
+                        child: Column(
+                          children: [
+                            AppTheme.smallLoadingIndicator(),
+                            AppTheme.smallGap,
+                            Text(
+                              'Laddar kommentarer...',
+                              style: AppTheme.captionStyle,
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   else if (socialViewModel.commentsError != null)
-                    Padding(
+                    Container(
                       padding: EdgeInsets.all(AppTheme.spacingMd),
-                      child: Text(
-                        socialViewModel.commentsError!,
-                        style: TextStyle(color: AppTheme.errorColor),
-                        textAlign: TextAlign.center,
+                      decoration: BoxDecoration(
+                        color: AppTheme.errorColor.withValues(alpha: 0.1),
+                        borderRadius: AppTheme.smallRadius,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: AppTheme.errorColor),
+                          SizedBox(width: AppTheme.spacingSm),
+                          Expanded(
+                            child: Text(
+                              socialViewModel.commentsError!,
+                              style: TextStyle(color: AppTheme.errorColor),
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   else if (!socialViewModel.hasComments)
-                    Padding(
-                      padding: EdgeInsets.all(AppTheme.spacingMd),
-                      child: Text(
-                        'Inga kommentarer än. Bli först att kommentera!',
-                        style: AppTheme.captionStyle,
-                        textAlign: TextAlign.center,
+                    Container(
+                      padding: EdgeInsets.all(AppTheme.spacingMd * 2),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 48,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          AppTheme.mediumGap,
+                          Text(
+                            'Inga kommentarer än',
+                            style: Theme.of(context).textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          AppTheme.smallGap,
+                          Text(
+                            'Bli först att kommentera detta recept!',
+                            style: AppTheme.captionStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     )
                   else
@@ -786,12 +865,34 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   if (socialViewModel.currentUser != null)
                     _buildCommentForm(context, socialViewModel)
                   else
-                    Padding(
+                    Container(
                       padding: EdgeInsets.all(AppTheme.spacingMd),
-                      child: Text(
-                        'Logga in för att kommentera',
-                        style: AppTheme.captionStyle,
-                        textAlign: TextAlign.center,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainer,
+                        borderRadius: AppTheme.mediumRadius,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.person_add_outlined,
+                            size: 32,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          AppTheme.smallGap,
+                          Text(
+                            'Skapa profil för att kommentera',
+                            style: Theme.of(context).textTheme.titleSmall,
+                            textAlign: TextAlign.center,
+                          ),
+                          AppTheme.smallGap,
+                          FilledButton.icon(
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/profile/edit'),
+                            icon: const Icon(Icons.person_add),
+                            label: const Text('Skapa profil'),
+                          ),
+                        ],
                       ),
                     ),
                 ],
@@ -803,7 +904,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  // NY METOD: Kommentarsformulär
+  // Kommentarsformulär (samma som innan)
   Widget _buildCommentForm(
       BuildContext context, SocialRecipeViewModel socialViewModel) {
     return Column(
@@ -852,7 +953,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             UserAvatar.social(
               displayName: socialViewModel.currentUser?.displayName ?? 'Du',
               imageUrl: socialViewModel.currentUser?.avatarUrl,
-              size: 48, // Gör den lite större för bättre touch target
+              size: 48,
             ),
             SizedBox(width: AppTheme.spacingSm),
             Expanded(
@@ -911,7 +1012,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  // NY METOD: Kommentarsitem
+  // Kommentarsitem (samma som innan)
   Widget _buildCommentItem(
     BuildContext context,
     SocialRecipeViewModel socialViewModel,
@@ -1045,139 +1146,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 }
 
-// NY KLASS: Social Share Dialog
-class _SocialShareDialog extends StatefulWidget {
-  @override
-  State<_SocialShareDialog> createState() => _SocialShareDialogState();
-}
-
-class _SocialShareDialogState extends State<_SocialShareDialog> {
-  final _messageController = TextEditingController();
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final socialViewModel = context.watch<SocialRecipeViewModel>();
-
-    return AlertDialog(
-      title: const Text('Dela med vänner'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Meddelande (valfritt)
-            TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                hintText: 'Lägg till ett meddelande (valfritt)',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-            ),
-            AppTheme.mediumGap,
-
-            // Vänlista
-            Text(
-              'Välj vänner:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTheme.smallGap,
-
-            // Select all/none knappar
-            Row(
-              children: [
-                TextButton(
-                  onPressed: socialViewModel.selectAllFriends,
-                  child: const Text('Välj alla'),
-                ),
-                TextButton(
-                  onPressed: socialViewModel.clearFriendSelection,
-                  child: const Text('Rensa alla'),
-                ),
-              ],
-            ),
-
-            // Vänlista
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                itemCount: socialViewModel.friends.length,
-                itemBuilder: (context, index) {
-                  final friend = socialViewModel.friends[index];
-                  final isSelected =
-                      socialViewModel.selectedFriendIds.contains(friend.uid);
-
-                  return CheckboxListTile(
-                    value: isSelected,
-                    onChanged: (_) =>
-                        socialViewModel.toggleFriendSelection(friend.uid),
-                    title: Text(friend.displayName),
-                    secondary: UserAvatar.small(
-                      displayName: friend.displayName,
-                      imageUrl: friend.avatarUrl,
-                    ),
-                    contentPadding: EdgeInsets.zero,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt'),
-        ),
-        ElevatedButton(
-          onPressed:
-              socialViewModel.hasSelectedFriends && !socialViewModel.isSharing
-                  ? () async {
-                      final success = await socialViewModel.shareRecipe(
-                        message: _messageController.text.trim().isEmpty
-                            ? null
-                            : _messageController.text.trim(),
-                      );
-
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success
-                                  ? 'Recept delat med ${socialViewModel.selectedFriendIds.length} vänner!'
-                                  : socialViewModel.sharingError ??
-                                      'Kunde inte dela recept',
-                            ),
-                            backgroundColor: success
-                                ? AppTheme.successColor
-                                : AppTheme.errorColor,
-                          ),
-                        );
-                      }
-                    }
-                  : null,
-          child: socialViewModel.isSharing
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: AppTheme.smallLoadingIndicator(),
-                )
-              : const Text('Dela'),
-        ),
-      ],
-    );
-  }
-}
-
-// BEFINTLIG KLASS: Fullskärmsvisning av bilder
+// BEFINTLIG KLASS: Fullskärmsvisning av bilder (samma som innan)
 class _FullscreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;

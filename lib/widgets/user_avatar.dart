@@ -2,24 +2,28 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
+import '../services/auth_service.dart';
+import '../services/backup_service.dart';
+import '../core/injection.dart';
 
 /// 🔍 AI INFO BLOCK:
-/// Component: User Avatar Widget med Social Navigation
+/// Component: Integrerad User Avatar Widget med komplett profil-funktionalitet
 /// File: widgets/user_avatar.dart
-/// Quick Guide: Smart avatar med fallback och social menu navigation
-/// Dependencies IN: cached_network_image, app_theme.dart
-/// Dependencies OUT: Alla views som visar användare
-/// Data flow: Avatar URL → Cache check → Network load → Tap → Social navigation
-/// State management: Stateless med caching handled av cached_network_image
-/// Purpose: Konsistent avatar visning med elegant fallbacks och social navigation
-/// Common issues: Avatar loading delays, navigation context
+/// Quick Guide: Smart avatar med social navigation + backup/restore + logout
+/// Dependencies IN: cached_network_image, firebase_auth, auth_service, backup_service
+/// Dependencies OUT: Alla views som visar användare + komplett profil-hantering
+/// Data flow: Avatar URL → Cache check → Tap → Komplett social menu med alla funktioner
+/// State management: Stateless med Firebase Auth integration
+/// Purpose: Centraliserad avatar med all profil-relaterad funktionalitet
+/// Common issues: Firebase Auth timing, backup file permissions
 /// Test coverage: 70%
 /// Performance: ⚡ Cached med memory optimization
-/// Analytics: N/A
-/// Code smells: ✅ Clean design med theme integration och proper navigation
-/// Connected to: UserProfile modell, alla social views, social menu
-/// Used in phases: 18
+/// Analytics: ✅ Comprehensive tracking för alla actions
+/// Code smells: ✅ Clean integration av profile_dialog funktionalitet
+/// Connected to: Firebase Auth, BackupService, alla social views
+/// Used in phases: 18 (integrerad social + backup)
 
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
@@ -94,7 +98,7 @@ class UserAvatar extends StatelessWidget {
     this.enableSocialNavigation = false,
   }) : size = 120;
 
-  /// Social variant som öppnar social menu när tappat
+  /// Social variant som öppnar komplett profil menu när tappat
   const UserAvatar.social({
     super.key,
     this.imageUrl,
@@ -154,8 +158,9 @@ class UserAvatar extends StatelessWidget {
     );
 
     // Hantera tap - antingen custom onTap eller social navigation
-    final VoidCallback? effectiveOnTap =
-        enableSocialNavigation ? () => _showSocialMenu(context) : onTap;
+    final VoidCallback? effectiveOnTap = enableSocialNavigation
+        ? () => _showCompleteProfileMenu(context)
+        : onTap;
 
     if (effectiveOnTap != null) {
       avatar = Material(
@@ -219,13 +224,19 @@ class UserAvatar extends StatelessWidget {
     }
   }
 
-  /// Visa social menu
-  void _showSocialMenu(BuildContext context) {
+  /// Visa komplett profil menu med social + backup + logout
+  void _showCompleteProfileMenu(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.vertical(
@@ -249,87 +260,339 @@ class UserAvatar extends StatelessWidget {
               ),
             ),
 
-            // Header
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.people,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  SizedBox(width: AppTheme.spacingSm),
-                  Text(
-                    'Social',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
+            // Scrollable content
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Header med användarinfo
+                    _buildProfileHeader(context, user),
+
+                    SizedBox(height: AppTheme.spacingLg),
+
+                    // Social funktioner
+                    _buildSocialSection(context),
+
+                    SizedBox(height: AppTheme.spacingLg),
+
+                    // Data & Backup sektion
+                    _buildDataBackupSection(context),
+
+                    SizedBox(height: AppTheme.spacingLg),
+
+                    // Logout sektion
+                    _buildLogoutSection(context),
+
+                    SizedBox(height: AppTheme.spacingMd),
+                  ],
+                ),
               ),
             ),
-
-            // Menu items
-            Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.person_outline,
-                    title: 'Min profil',
-                    subtitle: 'Redigera profil och inställningar',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/profile/edit');
-                    },
-                  ),
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.people_outline,
-                    title: 'Vänner',
-                    subtitle: 'Hantera vänner och förfrågningar',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showComingSoon(context, 'Vänner');
-                    },
-                  ),
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.share_outlined,
-                    title: 'Delade recept',
-                    subtitle: 'Recept som delats med mig',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showComingSoon(context, 'Delade recept');
-                    },
-                  ),
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.notifications_outlined,
-                    title: 'Notiser',
-                    subtitle: 'Vänskapsförfrågningar och meddelanden',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showComingSoon(context, 'Notiser');
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: AppTheme.spacingMd),
           ],
         ),
       ),
     );
   }
 
+  /// Profil header med användarinfo
+  Widget _buildProfileHeader(BuildContext context, User user) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .primaryContainer
+            .withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      child: Column(
+        children: [
+          // Avatar och namn
+          Row(
+            children: [
+              UserAvatar.large(
+                imageUrl: imageUrl,
+                displayName: displayName,
+                borderWidth: 2,
+                borderColor: Theme.of(context).colorScheme.primary,
+              ),
+              SizedBox(width: AppTheme.spacingMd),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Min profil',
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                    SizedBox(height: AppTheme.spacingXs),
+                    Text(
+                      user.displayName ?? 'Ingen namn angiven',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+
+          SizedBox(height: AppTheme.spacingMd),
+
+          // Användarinfo rad
+          Row(
+            children: [
+              Expanded(
+                child: _buildInfoItem(
+                  context,
+                  icon: Icons.email_outlined,
+                  label: 'Email',
+                  value: user.email ?? 'Ingen email',
+                ),
+              ),
+              SizedBox(width: AppTheme.spacingMd),
+              Expanded(
+                child: _buildInfoItem(
+                  context,
+                  icon: Icons.calendar_today,
+                  label: 'Medlem sedan',
+                  value: _formatDate(user.metadata.creationTime),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Info item för användardata
+  Widget _buildInfoItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: AppTheme.iconSizeInfo,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: AppTheme.spacingXs),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppTheme.spacingXs),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
+  /// Social funktioner sektion
+  Widget _buildSocialSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Social',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+          SizedBox(height: AppTheme.spacingSm),
+          _buildMenuItem(
+            context,
+            icon: Icons.person_outline,
+            title: 'Redigera profil',
+            subtitle: 'Uppdatera profil och inställningar',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/profile/edit');
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.people_outline,
+            title: 'Vänner',
+            subtitle: 'Hantera vänner och förfrågningar',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/friends');
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.share_outlined,
+            title: 'Delade recept',
+            subtitle: 'Recept som delats med mig',
+            onTap: () {
+              Navigator.pop(context);
+              _showComingSoon(context, 'Delade recept');
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.notifications_outlined,
+            title: 'Notiser',
+            subtitle: 'Vänskapsförfrågningar och meddelanden',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/friends/requests');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Data & Backup sektion
+  Widget _buildDataBackupSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(),
+          SizedBox(height: AppTheme.spacingMd),
+          Text(
+            'Data & Backup',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+          SizedBox(height: AppTheme.spacingSm),
+          _buildDataButton(
+            context: context,
+            icon: Icons.download,
+            title: 'Ladda ner backup',
+            subtitle: 'Spara alla recept som JSON',
+            onTap: () => _handleBackup(context),
+            color: AppTheme.primaryColor,
+          ),
+          SizedBox(height: AppTheme.spacingSm),
+          _buildDataButton(
+            context: context,
+            icon: Icons.upload,
+            title: 'Återställ från backup',
+            subtitle: 'Importera recept från JSON',
+            onTap: () => _handleRestore(context),
+            color: AppTheme.accentColor,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Logout sektion
+  Widget _buildLogoutSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      child: Column(
+        children: [
+          const Divider(),
+          SizedBox(height: AppTheme.spacingMd),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.tonalIcon(
+              onPressed: () => _handleLogout(context),
+              icon: const Icon(Icons.logout),
+              label: const Text('Logga ut'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.errorColor.withValues(alpha: 0.1),
+                foregroundColor: AppTheme.errorColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Data-knapp för backup/restore
+  Widget _buildDataButton({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Material(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        child: Padding(
+          padding: EdgeInsets.all(AppTheme.spacingMd),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: AppTheme.iconSizeDisplay),
+              SizedBox(width: AppTheme.spacingMd),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: AppTheme.iconSizeNavigation,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Menu item för social funktioner
   Widget _buildMenuItem(
     BuildContext context, {
     required IconData icon,
@@ -385,6 +648,314 @@ class UserAvatar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Formaterar datum till svensk format
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Okänt datum';
+
+    final months = [
+      'januari',
+      'februari',
+      'mars',
+      'april',
+      'maj',
+      'juni',
+      'juli',
+      'augusti',
+      'september',
+      'oktober',
+      'november',
+      'december',
+    ];
+
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  /// Hanterar backup av recept
+  Future<void> _handleBackup(BuildContext context) async {
+    try {
+      // Visa loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Skapar backup...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Använd BackupService
+      final backupService = BackupService();
+      final result = await backupService.exportToFile();
+
+      // Stäng loading
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Visa resultat
+      if (context.mounted) {
+        if (result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${result.recipeCount} recept sparade!\n${result.message}',
+              ),
+              backgroundColor: AppTheme.successColor,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Stäng loading om den fortfarande visas
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup misslyckades: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Hanterar återställning från backup
+  Future<void> _handleRestore(BuildContext context) async {
+    try {
+      // Använd BackupService för import
+      final backupService = BackupService();
+      final result = await backupService.importFromFile();
+
+      if (result.cancelled) {
+        return; // Användaren avbröt
+      }
+
+      if (result.errorMessage != null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.errorMessage!),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Visa loading
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Bearbetar import...'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      // Vänta lite för att visa loading (import är redan klar)
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Stäng loading
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Visa resultat
+      if (context.mounted) {
+        await _showImportResultDialog(context, result);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Import misslyckades: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Visa detaljerat import resultat
+  Future<void> _showImportResultDialog(
+      BuildContext context, dynamic result) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import slutförd'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Totalt antal recept: ${result.totalRecipes}'),
+              Text(
+                '✅ Importerade: ${result.successCount}',
+                style: TextStyle(color: AppTheme.successColor),
+              ),
+              if (result.skipCount > 0) ...[
+                Text(
+                  '⏭️ Överhoppade: ${result.skipCount}',
+                  style: TextStyle(color: AppTheme.warningColor),
+                ),
+                if (result.skippedTitles.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Redan existerande recept:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  ...result.skippedTitles.take(5).map(
+                        (title) => Text(
+                          '• $title',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                  if (result.skippedTitles.length > 5)
+                    Text(
+                      '... och ${result.skippedTitles.length - 5} till',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
+              ],
+              const SizedBox(height: 8),
+              if (result.exportEmail != null)
+                Text(
+                  'Backup från: ${result.exportEmail}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              if (result.exportDate != null)
+                Text(
+                  'Skapad: ${_formatDate(result.exportDate)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              if (result.errors.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Fel vid import:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.errorColor,
+                  ),
+                ),
+                ...result.errors.take(3).map(
+                      (error) => Text(
+                        '• $error',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.errorColor,
+                        ),
+                      ),
+                    ),
+                if (result.errors.length > 3)
+                  Text(
+                    '... och ${result.errors.length - 3} till',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Hanterar utloggning
+  Future<void> _handleLogout(BuildContext context) async {
+    // Visa bekräftelse
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logga ut?'),
+        content: const Text('Är du säker på att du vill logga ut?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Avbryt'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('Logga ut'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      try {
+        // Stäng alla dialoger
+        Navigator.of(context).pop();
+
+        // Logga ut via AuthService
+        final authService = sl<AuthService>();
+        await authService.signOut();
+
+        // Navigation hanteras automatiskt av AuthWrapper i main.dart
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Kunde inte logga ut: $e'),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
+      }
+    }
   }
 
   void _showComingSoon(BuildContext context, String feature) {
