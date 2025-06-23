@@ -1,4 +1,5 @@
 // lib/views/veckomeny_view.dart
+// UPPDATERAD för Enhanced Menu Sharing
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // För SystemNavigator
@@ -8,11 +9,13 @@ import '../viewmodels/menu_viewmodel.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/menu_share_dialog.dart'; // ✅ NY IMPORT
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
-import '../services/share_service.dart'; // NY IMPORT
+import '../services/share_service.dart';
+import '../services/friends_service.dart'; // ✅ NY IMPORT
 
-/// ✨ UPPDATERAD VY MED MENUVIEWMODEL
+/// ✨ UPPDATERAD VY MED ENHANCED MENU SHARING
 class VeckomenyView extends StatelessWidget {
   const VeckomenyView({super.key});
 
@@ -34,7 +37,8 @@ class _VeckomenyViewContent extends StatefulWidget {
 
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
-  final ShareService _shareService = sl<ShareService>(); // NY SERVICE
+  final ShareService _shareService = sl<ShareService>();
+  final FriendsService _friendsService = sl<FriendsService>(); // ✅ NY SERVICE
 
   @override
   void initState() {
@@ -69,16 +73,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
-  // FIXED METOD för att dela veckomeny
+  // BEFINTLIG METOD för regular sharing
   Future<void> _shareMenu() async {
     final viewModel = context.read<MenuViewModel>();
 
-    // FIXED: ShareService now returns void, not ShareResult
     await _shareService.shareWeekMenuFromCategories(
       viewModel.menu,
     );
 
-    // Always show success message since Share.share() doesn't return status
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -90,7 +92,59 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
-  // NY METOD för exit-dialog
+  // ✨ NY METOD: Enhanced social menu sharing
+  Future<void> _showSocialMenuShareDialog() async {
+    final viewModel = context.read<MenuViewModel>();
+
+    // Kontrollera om användaren har vänner
+    if (_friendsService.friends.isEmpty) {
+      // Visa informativ dialog om inga vänner
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.people_outline,
+                color: AppTheme.warningColor,
+              ),
+              SizedBox(width: AppTheme.spacingSm),
+              const Text('Inga vänner'),
+            ],
+          ),
+          content: const Text(
+            'Du behöver vänner för att dela menyer socialt. '
+            'Gå till vänhantering för att lägga till vänner!',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Stäng'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                Navigator.pushNamed(context, '/friends');
+              },
+              icon: const Icon(Icons.person_add),
+              label: const Text('Lägg till vänner'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Visa enhanced menu sharing dialog
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => MenuShareDialog(
+        menu: viewModel.menu,
+        friends: _friendsService.friends,
+      ),
+    );
+  }
+
   Future<void> _showExitDialog(BuildContext context) async {
     final shouldExit = await showDialog<bool>(
       context: context,
@@ -133,7 +187,17 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         currentIndex: 2,
         title: 'Veckomeny',
         actions: [
-          // NY DELA-KNAPP
+          // ✨ NY: Enhanced social share ikon
+          if (viewModel.hasMenu)
+            IconButton(
+              icon: AppTheme.actionIcon(context, Icons.people_outline),
+              onPressed: _showSocialMenuShareDialog,
+              tooltip: _friendsService.friends.isEmpty
+                  ? 'Lägg till vänner för att dela'
+                  : 'Dela med vänner',
+            ),
+
+          // BEFINTLIG: Regular share button
           if (viewModel.hasMenu)
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.share),

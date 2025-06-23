@@ -125,8 +125,13 @@ class UserService extends ChangeNotifier {
         );
       }
 
-      // Save to Firestore
-      await _profilesRef.doc(user.uid).set(profile.toFirestore());
+// ✅ NYTT: Skapa Firestore data med displayNameLower
+      final firestoreData = profile.toFirestore();
+      firestoreData['displayNameLower'] =
+          displayName.toLowerCase(); // ⚡ SNABB SÖKNING
+
+// Save to Firestore
+      await _profilesRef.doc(user.uid).set(firestoreData);
 
       // Update cache
       _currentUserProfile = profile;
@@ -146,7 +151,7 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  /// Search users by display name or email
+  /// Search users by display name or email - OPTIMERAD VERSION
   Future<List<UserProfile>> searchUsers(String query) async {
     if (query.trim().isEmpty) return [];
 
@@ -157,40 +162,48 @@ class UserService extends ChangeNotifier {
       final normalizedQuery = query.trim().toLowerCase();
       AppLogger.info('🔍 Söker användare: "$normalizedQuery"');
 
-      // Search by display name (case-insensitive approximation)
-      final nameQuery = await _profilesRef
-          .where('isSearchable', isEqualTo: true)
-          .orderBy('displayName')
-          .startAt([normalizedQuery])
-          .endAt(['$normalizedQuery\uf8ff'])
-          .limit(_searchLimit)
-          .get();
-
       final results = <UserProfile>[];
       final seenIds = <String>{};
       final currentUserId = _auth.currentUser?.uid;
 
-      // Add results from name search
-      for (final doc in nameQuery.docs) {
-        try {
-          // Skippa current user
-          if (doc.id == currentUserId) continue;
+      // ⚡ SNABB: Search by displayNameLower (server-side indexerad sökning)
+      try {
+        final nameQuery = await _profilesRef
+            .where('isSearchable', isEqualTo: true)
+            .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
+            .where('displayNameLower', isLessThan: normalizedQuery + '\uf8ff')
+            .limit(_searchLimit)
+            .get();
 
-          final profile = UserProfile.fromFirestore(doc);
-          if (!seenIds.contains(profile.uid) &&
-              profile.matchesSearchTerm(query)) {
-            results.add(profile);
-            seenIds.add(profile.uid);
-            // Cache the profile
-            _profileCache[profile.uid] = profile;
-            _cacheTimestamps[profile.uid] = DateTime.now();
+        // Add results from name search
+        for (final doc in nameQuery.docs) {
+          try {
+            // Skippa current user
+            if (doc.id == currentUserId) continue;
+
+            final profile = UserProfile.fromFirestore(doc);
+            if (!seenIds.contains(profile.uid)) {
+              results.add(profile);
+              seenIds.add(profile.uid);
+              // Cache the profile
+              _profileCache[profile.uid] = profile;
+              _cacheTimestamps[profile.uid] = DateTime.now();
+            }
+          } catch (e) {
+            AppLogger.warning('⚠️ Kunde inte parsa profil ${doc.id}: $e');
           }
-        } catch (e) {
-          AppLogger.warning('⚠️ Kunde inte parsa profil ${doc.id}: $e');
         }
+
+        AppLogger.success(
+            '⚡ Snabb sökning: ${results.length} användare hittades');
+      } catch (e) {
+        // Fallback till långsam sökning om displayNameLower saknas
+        AppLogger.warning(
+            '⚠️ Snabb sökning misslyckades, försöker långsam sökning: $e');
+        return await _searchUsersSlowFallback(query);
       }
 
-      // Search by email if query looks like email and we haven't found enough results
+      // ⚡ SNABB: Search by email om query ser ut som email OCH vi behöver fler resultat
       if (normalizedQuery.contains('@') && results.length < 5) {
         final emailQuery = await _profilesRef
             .where('allowEmailSearch', isEqualTo: true)
@@ -216,7 +229,7 @@ class UserService extends ChangeNotifier {
         }
       }
 
-      // Sortera results - exakta matches först
+      // Sortera results - exakta matches först, sedan alfabetiskt
       results.sort((a, b) {
         final aExact = a.displayName.toLowerCase() == normalizedQuery;
         final bExact = b.displayName.toLowerCase() == normalizedQuery;
@@ -227,7 +240,6 @@ class UserService extends ChangeNotifier {
         return a.displayName.compareTo(b.displayName);
       });
 
-      AppLogger.success('✅ Hittade ${results.length} användare');
       return results;
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
@@ -236,6 +248,95 @@ class UserService extends ChangeNotifier {
       return [];
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Fallback sökning för när displayNameLower saknas
+  Future<List<UserProfile>> _searchUsersSlowFallback(String query) async {
+    final normalizedQuery = query.trim().toLowerCase();
+    AppLogger.info('🐌 Kör långsam sökning för: "$normalizedQuery"');
+
+    try {
+      // Hämta fler användare för client-side filtrering
+      final nameQuery = await _profilesRef
+          .where('isSearchable', isEqualTo: true)
+          .orderBy('displayName')
+          .limit(100) // Större limit för filtrering
+          .get();
+
+      final results = <UserProfile>[];
+      final seenIds = <String>{};
+      final currentUserId = _auth.currentUser?.uid;
+
+      // Client-side filtrering
+      for (final doc in nameQuery.docs) {
+        try {
+          if (doc.id == currentUserId) continue;
+
+          final profile = UserProfile.fromFirestore(doc);
+
+          // Client-side case-insensitive matching
+          final displayNameMatch =
+              profile.displayName.toLowerCase().contains(normalizedQuery);
+
+          if (displayNameMatch && !seenIds.contains(profile.uid)) {
+            results.add(profile);
+            seenIds.add(profile.uid);
+            _profileCache[profile.uid] = profile;
+            _cacheTimestamps[profile.uid] = DateTime.now();
+
+            // Begränsa resultat för prestanda
+            if (results.length >= _searchLimit) break;
+          }
+        } catch (e) {
+          AppLogger.warning('⚠️ Kunde inte parsa profil ${doc.id}: $e');
+        }
+      }
+
+      // Email search om nödvändigt
+      if (normalizedQuery.contains('@') && results.length < 5) {
+        final emailQuery = await _profilesRef
+            .where('allowEmailSearch', isEqualTo: true)
+            .where('email', isEqualTo: normalizedQuery)
+            .limit(5)
+            .get();
+
+        for (final doc in emailQuery.docs) {
+          try {
+            if (doc.id == currentUserId) continue;
+
+            final profile = UserProfile.fromFirestore(doc);
+            if (!seenIds.contains(profile.uid)) {
+              results.add(profile);
+              seenIds.add(profile.uid);
+              _profileCache[profile.uid] = profile;
+              _cacheTimestamps[profile.uid] = DateTime.now();
+            }
+          } catch (e) {
+            AppLogger.warning('⚠️ Kunde inte parsa email-profil ${doc.id}: $e');
+          }
+        }
+      }
+
+      // Sortera results
+      results.sort((a, b) {
+        final aExact = a.displayName.toLowerCase() == normalizedQuery;
+        final bExact = b.displayName.toLowerCase() == normalizedQuery;
+
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+
+        return a.displayName.compareTo(b.displayName);
+      });
+
+      AppLogger.info(
+          '🐌 Långsam sökning: ${results.length} användare hittades');
+      return results;
+    } catch (e) {
+      final failure = ErrorHandler.handleError(e);
+      AppLogger.error('❌ Även långsam sökning misslyckades: $e');
+      _setError(failure.message);
+      return [];
     }
   }
 

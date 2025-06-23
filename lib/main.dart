@@ -46,6 +46,8 @@ import 'views/receive_share_view.dart';
 
 // NYA: Social Views
 import 'views/social/user_profile_edit_view.dart';
+import 'views/social/friends_list_view.dart';
+import 'views/social/friend_requests_view.dart';
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
@@ -320,14 +322,12 @@ class _ButleryAppState extends State<ButleryApp> {
 
               case '/profile/edit':
                 return _route(const UserProfileEditView(), settings);
+              case '/friends':
+                return _route(const FriendsListView(), settings);
+              case '/friends/requests':
+                return _route(const FriendRequestsView(), settings);
 
               // TODO: Lägg till fler social routes här när views är klara
-              // case '/friends':
-              //   return _route(const FriendsView(), settings);
-              //
-              // case '/friends/requests':
-              //   return _route(const FriendRequestsView(), settings);
-              //
               // case '/shared-recipes':
               //   return _route(const SharedRecipesView(), settings);
 

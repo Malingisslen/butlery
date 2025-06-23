@@ -16,15 +16,17 @@ butlery/
 ├── lib/
 │   ├── core/                    # Kärnfunktionalitet
 │   ├── data/                    # Statisk data
-│   ├── models/                  # Datamodeller
-│   ├── services/                # Affärslogik
+│   ├── models/                  # Datamodeller (inkl. social)
+│   ├── services/                # Affärslogik (inkl. social)
 │   ├── theme/                   # Design system
 │   ├── utils/                   # Hjälpfunktioner
-│   ├── viewmodels/              # Presentation logic
-│   ├── views/                   # UI-komponenter
-│   ├── widgets/                 # Återanvändbara UI-delar
+│   ├── viewmodels/              # Presentation logic (inkl. social)
+│   ├── views/                   # UI-komponenter (inkl. social)
+│   │   ├── main_views/          # Huvudvyer
+│   │   └── social/              # ⭐ Social platform views
+│   ├── widgets/                 # Återanvändbara UI-delar (inkl. social)
 │   ├── firebase_options.dart
-│   └── main.dart
+│   └── main.dart                # ⭐ Uppdaterad med social routes
 ├── admin-scripts/               # Admin-verktyg
 ├── android/                     # Android-specifikt
 ├── ios/                         # iOS-specifikt
@@ -42,6 +44,9 @@ butlery/
 - **Service-princip:** Varje service har MAX ett ansvarsområde
 - **Hive + Firebase:** Kombinerad lokal & molnbaserad persistens
 - **Animations & Responsivitet:** Smooth transitions, shimmer loaders och overflow fixes
+- **Social Platform:** Komplett vän- och delningssystem med optimerad prestanda
+
+
 
 ### **Firebase-struktur:**
 ```
