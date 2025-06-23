@@ -92,57 +92,135 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
-  // ✨ NY METOD: Enhanced social menu sharing
+// ✨ FIXED: Enhanced social menu sharing med korrekt context handling
   Future<void> _showSocialMenuShareDialog() async {
     final viewModel = context.read<MenuViewModel>();
 
-    // Kontrollera om användaren har vänner
-    if (_friendsService.friends.isEmpty) {
-      // Visa informativ dialog om inga vänner
-      await showDialog(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                Icons.people_outline,
-                color: AppTheme.warningColor,
-              ),
-              SizedBox(width: AppTheme.spacingSm),
-              const Text('Inga vänner'),
-            ],
+    // Kontrollera att meny finns
+    if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Skapa en meny först innan du kan dela den'),
+            backgroundColor: AppTheme.warningColor,
           ),
-          content: const Text(
-            'Du behöver vänner för att dela menyer socialt. '
-            'Gå till vänhantering för att lägga till vänner!',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Stäng'),
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                Navigator.pushNamed(context, '/friends');
-              },
-              icon: const Icon(Icons.person_add),
-              label: const Text('Lägg till vänner'),
-            ),
-          ],
-        ),
-      );
+        );
+      }
       return;
     }
 
-    // Visa enhanced menu sharing dialog
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => MenuShareDialog(
-        menu: viewModel.menu,
-        friends: _friendsService.friends,
-      ),
-    );
+    try {
+      // Visa loading medan vi laddar vänner
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Center(
+            child: Container(
+              padding: AppTheme.cardPadding,
+              decoration: BoxDecoration(
+                color: AppTheme.cardColor,
+                borderRadius: AppTheme.largeRadius,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppTheme.mediumLoadingIndicator(),
+                  AppTheme.smallGap,
+                  Text(
+                    'Laddar vänner...',
+                    style: AppTheme.subtitleStyle,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
+      // Säkerställ att vänner är laddade
+      await _friendsService.loadFriends();
+
+      // Stäng loading - FIXED: Lagra context innan async
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Kontrollera om användaren har vänner
+      if (_friendsService.friends.isEmpty) {
+        // FIXED: Check mounted before using context
+        if (!mounted) return;
+
+        // Visa informativ dialog om inga vänner
+        await showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(
+                  Icons.people_outline,
+                  color: AppTheme.warningColor,
+                ),
+                SizedBox(width: AppTheme.spacingSm),
+                const Text('Inga vänner'),
+              ],
+            ),
+            content: const Text(
+              'Du behöver vänner för att dela menyer socialt. '
+              'Gå till vänhantering för att lägga till vänner!',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Stäng'),
+              ),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  // FIXED: Use dialogContext instead of context
+                  Navigator.pushNamed(dialogContext, '/friends');
+                },
+                icon: const Icon(Icons.person_add),
+                label: const Text('Lägg till vänner'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      // FIXED: Check mounted again before final dialog
+      if (!mounted) return;
+
+      // Visa enhanced menu sharing dialog
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => MenuShareDialog(
+          menu: viewModel.menu,
+          friends: _friendsService.friends,
+        ),
+      );
+    } catch (e) {
+      // Stäng loading om det fortfarande visas - FIXED: Check mounted
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Visa error - FIXED: Check mounted
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte ladda vänner: $e'),
+            backgroundColor: AppTheme.errorColor,
+            action: SnackBarAction(
+              label: 'Försök igen',
+              onPressed: _showSocialMenuShareDialog,
+              textColor: Colors.white,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _showExitDialog(BuildContext context) async {

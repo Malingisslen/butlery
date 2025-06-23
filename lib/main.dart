@@ -48,12 +48,13 @@ import 'views/receive_share_view.dart';
 import 'views/social/user_profile_edit_view.dart';
 import 'views/social/friends_list_view.dart';
 import 'views/social/friend_requests_view.dart';
+import 'views/social/shared_with_me_view.dart';
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2️⃣ Initiera Firebase
+  // 2️⃣ Initiera Firebase - COMPLETE FIX
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
@@ -61,7 +62,7 @@ Future<void> main() async {
       );
       debugPrint('✅ Firebase initierad för första gången');
     } else {
-      debugPrint('✅ Firebase redan initierad, hoppar över');
+      debugPrint('✅ Firebase redan initierad (${Firebase.apps.length} apps)');
     }
 
     // 3️⃣ Firestore ping - bara om vi har en autentiserad användare
@@ -86,8 +87,15 @@ Future<void> main() async {
     } else {
       debugPrint('ℹ️ Ingen användare inloggad, hoppar över Firestore-ping');
     }
-  } catch (e, st) {
-    debugPrint('❌ Firebase-fel: $e\n$st');
+  } on FirebaseException catch (e) {
+    if (e.code == 'duplicate-app') {
+      debugPrint('✅ Firebase redan initierad - duplicate error ignorerad');
+    } else {
+      debugPrint('❌ Firebase-fel: $e');
+    }
+    // Fortsätt ändå - låt appen köra med begränsad funktionalitet
+  } catch (e) {
+    debugPrint('❌ Generellt Firebase-fel: $e');
     // Fortsätt ändå - låt appen köra med begränsad funktionalitet
   }
 
@@ -191,7 +199,6 @@ class _ButleryAppState extends State<ButleryApp> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       debugPrint('⚠️ Användare ej inloggad - kan inte hantera delning');
-      // TODO: Visa meddelande till användaren
       return;
     }
 
@@ -247,7 +254,8 @@ class _ButleryAppState extends State<ButleryApp> {
 
               case '/photoImport':
                 return _route(const PhotoImportView(), settings);
-
+              case '/shared':
+                return _route(const SharedWithMeView(), settings);
               case '/skrivSjalv':
                 final recipe = settings.arguments as Recipe?;
                 return _route(
@@ -327,9 +335,8 @@ class _ButleryAppState extends State<ButleryApp> {
               case '/friends/requests':
                 return _route(const FriendRequestsView(), settings);
 
-              // TODO: Lägg till fler social routes här när views är klara
-              // case '/shared-recipes':
-              //   return _route(const SharedRecipesView(), settings);
+              // ===== SOCIAL ROUTES KOMPLETT =====
+              // SharedWithMeView hanterar både recept och menyer
 
               default:
                 return _errorRoute('Okänd rutt: ${settings.name}');

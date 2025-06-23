@@ -46,8 +46,6 @@ butlery/
 - **Animations & Responsivitet:** Smooth transitions, shimmer loaders och overflow fixes
 - **Social Platform:** Komplett vän- och delningssystem med optimerad prestanda
 
-
-
 ### **Firebase-struktur:**
 ```
 Firestore Database:
@@ -55,8 +53,20 @@ Firestore Database:
 │   └── {userId}/
 │       ├── recipes/              # Fullständiga recept
 │       │   └── {recipeId}
-│       └── recipe_summaries/     # Lätta dokument för listor
-│           └── {recipeId}        # Bara titel, bild, datum
+│       ├── recipe_summaries/     # Lätta dokument för listor
+│       │   └── {recipeId}        # Bara titel, bild, datum
+│       └── friends/              # Vänlista
+│           └── {friendUserId}
+├── public_profiles/              # Offentliga profiler med displayNameLower
+│   └── {userId}                  # displayName, bio, avatar, searchable
+├── friend_requests/              # Vänskapsförfrågningar
+│   └── {requestId}               # från, till, status, meddelande
+├── shared_recipes/               # Delade recept
+│   └── {shareId}                 # recept snapshot, behörigheter
+├── shared_menus/                 # Delade menyer
+│   └── {menuId}                  # meny snapshot, bulk sharing
+├── recipe_comments/              # Threaded kommentarer
+│   └── {commentId}               # threaded med parentId
 └── butlery_archive/
     ├── recipes/
     │   └── {recipeId}
@@ -250,48 +260,40 @@ Smart preview: Låt användaren bestämma innan quota usage
 Anti-spam: Max 2 attempts per video per user per månad
 Community cache: Första användaren delar med alla andra
 
-### **Fas 18: Grundläggande social (4-5 timmar)**
+## ✅ **Fas 18: Social Platform - UPPDATERAD STATUS**
 
-✅ FAS 18: SOCIAL PLATFORM - STATUS BREAKDOWN
-🔥 KOMPLETT: Backend & Services (60%)
+### **🎉 KOMPLETT (85%):**
 
-✅ User Profile Model & Service - Komplett med cache optimization
-✅ Friends System - Requests, accept/reject, mutual friends
-✅ Recipe Sharing Service - Individual + menu sharing
-✅ Comments System - Threaded comments med likes
-✅ Firebase Integration - Firestore collections & security
-✅ DI Registration - Alla services registrerade i injection.dart
-✅ ViewModels - user_profile_viewmodel.dart, friends_viewmodel.dart, social_recipe_viewmodel.dart
-✅ User Avatar Widget - Komplett med fallbacks och storlekar
+✅ **18.1: Social Backend & Services (100%)**
+- UserService med optimerad sökning
+- FriendsService med request management  
+- SocialRecipeService med sharing och comments
+- Alla social models (UserProfile, FriendRequest, etc.)
+- Firebase integration med security rules
+- Dependency injection för alla social services
 
-🔧 ÅTERSTÅR: UI Integration (40%)
-A. Social Integration i Befintliga Views (2-3 timmar)
+✅ **18.2: Core Social UI (100%)**
+- UserAvatar widget family
+- SocialShareDialog för receptdelning
+- MenuShareDialog för menydelning  
+- UserProfileEditView för profil-redigering
+- FriendsListView för vänhantering
+- SharedWithMeView för mottaget innehåll
+- Integration i RecipeDetailView och VeckomenyView
 
- Recipe Detail View - Dela-ikon + kommentarssektion
- Veckomeny View - Menu sharing ikon
- Profile Navigation - Klick på UserAvatar → Social menu
- Notification Badge - Friend requests counter
+🔧 **18.3: Menu Persistence System (0%)** ⭐ **NÄSTA!**
+- SharedPreferences för sparade menyer
+- "Spara meny" funktionalitet med namngivning
+- "Ladda sparad meny" med preview
+- UI integration i VeckomenyView
+- **Estimated: 2-3 timmar**
 
-B. Nya Social Views (3-4 timmar)
+### **🚀 ÅTERSTÅENDE SOCIAL FEATURES (15%):**
 
- Friends List View - Lista vänner + sök nya användare
- Friend Requests View - Hantera inkommande förfrågningar
- Shared Recipes View - Recept delat med mig
- Comments Section - Expandable kommentarer
- Share Dialog - Välj vänner att dela med
-
-C. Navigation & Routing (1 timme)
-
- Main.dart Routes - Alla social routes
- Navigation Flow - Profile → Friends → Sharing
- Deep Links - För shared content
-
-D. Social Widgets (2-3 timmar)
-
- Friend Cards - Lista och request-hantering
- Comment Components - Threading och likes
- Share Buttons - Kompakta social actions
- Notification Components - Badges och alerts
+🔧 **18.4: Enhanced Social Features (Optional)**
+- Comment threading i RecipeDetailView
+- Social notifications system
+- **Estimated: 3-4 timmar**
 
 ### **Fas 19: Dark Mode (4-5 timmar)**
 

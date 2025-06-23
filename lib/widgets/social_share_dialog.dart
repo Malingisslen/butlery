@@ -224,9 +224,8 @@ class _SocialShareDialogState extends State<SocialShareDialog>
             textAlign: TextAlign.center,
           ),
           AppTheme.smallGap,
-          Text(
-            'Ditt recept har delats med ${socialViewModel.selectedFriendIds.length} vänner',
-            style: Theme.of(context).textTheme.bodyMedium,
+          const Text(
+            'Ditt recept har delats framgångsrikt!',
             textAlign: TextAlign.center,
           ),
           AppTheme.largeGap,
@@ -552,7 +551,7 @@ class _SocialShareDialogState extends State<SocialShareDialog>
                 child: FilledButton.icon(
                   onPressed: socialViewModel.hasSelectedFriends &&
                           !socialViewModel.isSharing
-                      ? _shareRecipe
+                      ? _handleShareRecipe
                       : null,
                   icon: socialViewModel.isSharing
                       ? SizedBox(
@@ -578,7 +577,7 @@ class _SocialShareDialogState extends State<SocialShareDialog>
     );
   }
 
-  Future<void> _shareRecipe() async {
+  Future<void> _handleShareRecipe() async {
     final socialViewModel = widget.socialViewModel;
 
     final success = await socialViewModel.shareRecipe(

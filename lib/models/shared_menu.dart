@@ -2,22 +2,23 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Shared Menu Model - Firebase First
+/// Component: Shared Menu Model - Firebase First - FIXED med allowImport + DISMISS
 /// File: models/shared_menu.dart
-/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner
-/// Dependencies IN: cloud_firestore, uuid, recipe.dart
+/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner - ROBUST PARSING + IMPORT CONTROL + DISMISS
+/// Dependencies IN: cloud_firestore, uuid, recipe.dart, flutter/foundation.dart
 /// Dependencies OUT: SocialRecipeService, menu sharing views
 /// Data flow: Firestore ↔ SharedMenu object ↔ Social UI
 /// State management: Immutable med copyWith pattern och cached menu data
-/// Purpose: Menydelning med komplett veckomeny och tracking
-/// Common issues: Large menu payloads, complex recipe reconstruction
+/// Purpose: Menydelning med komplett veckomeny, tracking, import och dismiss functionality
+/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, allowImport getter, dismiss tracking added
 /// Test coverage: 65%
 /// Performance: ⚡ Cached menu data för offline access, optimized queries
-/// Analytics: ✅ Menu sharing engagement tracking
-/// Code smells: ✅ Clean separation mellan sharing metadata och menu data
+/// Analytics: ✅ Menu sharing engagement tracking, dismiss analytics
+/// Code smells: ✅ Clean separation mellan sharing metadata och menu data, FIXED parsing + import + dismiss logic
 /// Connected to: Recipe, UserProfile, SocialRecipeService, menu views
 /// Used in phases: 18
 
@@ -36,6 +37,8 @@ class SharedMenu {
   final int importCount;
   final List<String> viewedByUserIds;
   final List<String> importedByUserIds;
+  final List<String>
+      dismissedByUserIds; // 🆕 Who has dismissed it from their list
 
   SharedMenu({
     required this.id,
@@ -48,16 +51,18 @@ class SharedMenu {
     required this.menuSnapshot,
     List<String>? viewedByUserIds,
     List<String>? importedByUserIds,
-  }) : sharedAt = sharedAt ?? DateTime.now(),
-       totalRecipeCount = menuSnapshot.values.fold(
-         0,
-         (totalCount, recipes) => totalCount + recipes.length,
-       ),
-       categories = menuSnapshot.keys.toList(),
-       viewCount = 0,
-       importCount = 0,
-       viewedByUserIds = viewedByUserIds ?? [],
-       importedByUserIds = importedByUserIds ?? [];
+    List<String>? dismissedByUserIds, // 🆕 Optional parameter
+  })  : sharedAt = sharedAt ?? DateTime.now(),
+        totalRecipeCount = menuSnapshot.values.fold(
+          0,
+          (totalCount, recipes) => totalCount + recipes.length,
+        ),
+        categories = menuSnapshot.keys.toList(),
+        viewCount = 0,
+        importCount = 0,
+        viewedByUserIds = viewedByUserIds ?? [],
+        importedByUserIds = importedByUserIds ?? [],
+        dismissedByUserIds = dismissedByUserIds ?? []; // 🆕 Default tom lista
 
   /// Factory constructor with auto-generated ID
   factory SharedMenu.create({
@@ -88,6 +93,7 @@ class SharedMenu {
     int? importCount,
     List<String>? viewedByUserIds,
     List<String>? importedByUserIds,
+    List<String>? dismissedByUserIds, // 🆕 Lägg till dismiss tracking
   }) {
     return SharedMenu._internal(
       id: id,
@@ -104,6 +110,8 @@ class SharedMenu {
       importCount: importCount ?? this.importCount,
       viewedByUserIds: viewedByUserIds ?? List.from(this.viewedByUserIds),
       importedByUserIds: importedByUserIds ?? List.from(this.importedByUserIds),
+      dismissedByUserIds:
+          dismissedByUserIds ?? List.from(this.dismissedByUserIds), // 🆕
     );
   }
 
@@ -123,6 +131,7 @@ class SharedMenu {
     required this.importCount,
     required this.viewedByUserIds,
     required this.importedByUserIds,
+    required this.dismissedByUserIds, // 🆕
   });
 
   /// Mark as viewed
@@ -145,6 +154,27 @@ class SharedMenu {
     );
   }
 
+  /// 🆕 Mark as dismissed by user (ta bort från användarens lista)
+  SharedMenu markDismissedBy(String userId) {
+    if (dismissedByUserIds.contains(userId)) return this;
+
+    return copyWith(
+      dismissedByUserIds: [...dismissedByUserIds, userId],
+    );
+  }
+
+  /// 🆕 Un-dismiss (återställ till användarens lista)
+  SharedMenu undismissBy(String userId) {
+    if (!dismissedByUserIds.contains(userId)) return this;
+
+    final updatedDismissed = List<String>.from(dismissedByUserIds);
+    updatedDismissed.remove(userId);
+
+    return copyWith(
+      dismissedByUserIds: updatedDismissed,
+    );
+  }
+
   /// Check permissions
   bool canBeViewedBy(String userId) {
     return sharedByUserId == userId || sharedToUserIds.contains(userId);
@@ -152,6 +182,27 @@ class SharedMenu {
 
   bool isViewedBy(String userId) => viewedByUserIds.contains(userId);
   bool isImportedBy(String userId) => importedByUserIds.contains(userId);
+
+  /// 🆕 Check if user has dismissed (dolt från sin lista)
+  bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
+
+  /// 🆕 Check if should be shown in user's shared list
+  bool shouldBeShownTo(String userId) {
+    return canBeViewedBy(userId) && !isDismissedBy(userId);
+  }
+
+  /// 🔧 ADDED: Import permission check - Löser SocialRecipeService error
+  bool get allowImport {
+    // Basic logic: alla menyer kan importeras om de har recept
+    if (totalRecipeCount == 0) return false;
+
+    // Du kan lägga till mer komplex logik här senare, som:
+    // - Kontrollera om sharedByUserId har tillåtit import
+    // - Kontrollera om menyn är för gammal
+    // - Kontrollera premium features, etc.
+
+    return true; // Som standard tillåter vi import av alla menyer med recept
+  }
 
   /// Get menu summary for preview
   String get menuSummary {
@@ -186,11 +237,28 @@ class SharedMenu {
 
   /// Convert to Firestore format
   Map<String, dynamic> toFirestore() {
-    // Convert menu snapshot to Firestore format
+    // Convert menu snapshot to Firestore format - UTAN serverTimestamp i nested data
     final menuData = <String, dynamic>{};
     for (final entry in menuSnapshot.entries) {
-      menuData[entry.key] =
-          entry.value.map((recipe) => recipe.toFirestore()).toList();
+      menuData[entry.key] = entry.value.map((recipe) {
+        // Få recipe data och säkerställ att inga FieldValue.serverTimestamp() finns i nested objects
+        final recipeData = recipe.toFirestore(isNested: true);
+
+        // Ersätt eventuella serverTimestamp med DateTime.now() för nested objects
+        if (recipeData['createdAt'] is FieldValue) {
+          recipeData['createdAt'] = Timestamp.fromDate(recipe.createdAt);
+        }
+        if (recipeData['updatedAt'] is FieldValue) {
+          recipeData['updatedAt'] = Timestamp.fromDate(recipe.updatedAt);
+        }
+        if (recipeData['lastCookedAt'] is FieldValue) {
+          recipeData['lastCookedAt'] = recipe.lastCookedAt != null
+              ? Timestamp.fromDate(recipe.lastCookedAt!)
+              : null;
+        }
+
+        return recipeData;
+      }).toList();
     }
 
     return {
@@ -207,53 +275,115 @@ class SharedMenu {
       'importCount': importCount,
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
+      'dismissedByUserIds': dismissedByUserIds, // 🆕 Spara dismiss data
     };
   }
 
-  /// Create from Firestore document
-  factory SharedMenu.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  /// 🔧 FIXED: Create from Firestore document - No more type cast errors!
+  factory SharedMenu.fromFirestore(dynamic doc) {
+    try {
+      final data = doc.data() as Map<String, dynamic>;
 
-    // Reconstruct menu snapshot
-    final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
-    final reconstructedMenu = <String, List<Recipe>>{};
+      debugPrint('🔍 Parsing SharedMenu från doc ID: ${doc.id}');
 
-    for (final entry in menuData.entries) {
-      final recipeList = <Recipe>[];
-      final recipes = entry.value as List<dynamic>? ?? [];
+      // 🔧 FIXED: Reconstruct menu snapshot utan MockDocumentSnapshot type cast
+      final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
+      final reconstructedMenu = <String, List<Recipe>>{};
 
-      for (final recipeData in recipes) {
-        try {
-          // Create a mock DocumentSnapshot for Recipe reconstruction
-          final recipeMap = recipeData as Map<String, dynamic>;
-          final mockDoc =
-              _MockDocumentSnapshot(recipeMap['id'] ?? '', recipeMap)
-                  as DocumentSnapshot;
-          recipeList.add(Recipe.fromFirestore(mockDoc));
-        } catch (e) {
-          // Skip invalid recipes rather than failing entirely
-          continue;
+      for (final entry in menuData.entries) {
+        final recipeList = <Recipe>[];
+        final recipes = entry.value as List<dynamic>? ?? [];
+
+        for (final recipeData in recipes) {
+          try {
+            // 🔧 FIXED: Skapa Recipe direkt från data istället för via mock DocumentSnapshot
+            final recipeMap = recipeData as Map<String, dynamic>;
+            final recipe = Recipe(
+              id: recipeMap['id'] as String? ?? '',
+              title: recipeMap['title'] as String? ?? 'Untitled Recipe',
+              description: recipeMap['description'] as String? ?? '',
+              ingredients: List<String>.from(recipeMap['ingredients'] ?? []),
+              instructions: List<String>.from(recipeMap['instructions'] ?? []),
+              imageUrls: List<String>.from(recipeMap['imageUrls'] ?? []),
+              mealType: recipeMap['mealType'] as String? ?? 'Middag',
+              portions: recipeMap['portions'] as int?,
+              timeMinutes: recipeMap['timeMinutes'] as int?,
+              rating: (recipeMap['rating'] as num?)?.toDouble(),
+              tags: List<String>.from(recipeMap['tags'] ?? []),
+              sourceUrl: recipeMap['sourceUrl'] as String?,
+              createdAt:
+                  _parseTimestamp(recipeMap['createdAt']) ?? DateTime.now(),
+              updatedAt:
+                  _parseTimestamp(recipeMap['updatedAt']) ?? DateTime.now(),
+              lastCookedAt: _parseTimestamp(recipeMap['lastCookedAt']),
+            );
+            recipeList.add(recipe);
+          } catch (e) {
+            debugPrint('⚠️ Skippar ogiltigt recept i meny: $e');
+            // Skip invalid recipes rather than failing entirely
+            continue;
+          }
+        }
+        reconstructedMenu[entry.key] = recipeList;
+      }
+
+      return SharedMenu._internal(
+        id: doc.id,
+        sharedByUserId: data['sharedByUserId'] as String? ?? '',
+        sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
+        sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
+        sharedAt: _parseTimestamp(data['sharedAt']) ?? DateTime.now(),
+        shareMessage: data['shareMessage'] as String?,
+        menuTitle: data['menuTitle'] as String? ?? 'Delad meny',
+        menuSnapshot: reconstructedMenu,
+        totalRecipeCount: data['totalRecipeCount'] as int? ?? 0,
+        categories: List<String>.from(data['categories'] ?? []),
+        viewCount: data['viewCount'] as int? ?? 0,
+        importCount: data['importCount'] as int? ?? 0,
+        viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
+        importedByUserIds: List<String>.from(data['importedByUserIds'] ?? []),
+        dismissedByUserIds: List<String>.from(
+            data['dismissedByUserIds'] ?? []), // 🆕 Läs dismiss data
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error parsing SharedMenu från doc ${doc.id}: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 🔧 ADDED: Helper method för robust timestamp parsing
+  static DateTime? _parseTimestamp(dynamic timestamp) {
+    if (timestamp == null) return null;
+
+    try {
+      if (timestamp is Timestamp) {
+        return timestamp.toDate();
+      } else if (timestamp is DateTime) {
+        return timestamp;
+      } else if (timestamp.toString().contains('Timestamp')) {
+        // Handle mock timestamps från debug output
+        final timestampObj = timestamp as dynamic;
+        final seconds = timestampObj.seconds as int;
+        final nanoseconds = timestampObj.nanoseconds as int? ?? 0;
+        return DateTime.fromMillisecondsSinceEpoch(
+            seconds * 1000 + nanoseconds ~/ 1000000);
+      } else if (timestamp is Map) {
+        // Handle raw timestamp data
+        final seconds = timestamp['seconds'] as int?;
+        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
+        if (seconds != null) {
+          return DateTime.fromMillisecondsSinceEpoch(
+              seconds * 1000 + nanoseconds ~/ 1000000);
         }
       }
-      reconstructedMenu[entry.key] = recipeList;
-    }
 
-    return SharedMenu._internal(
-      id: doc.id,
-      sharedByUserId: data['sharedByUserId'] as String? ?? '',
-      sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
-      sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
-      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      shareMessage: data['shareMessage'] as String?,
-      menuTitle: data['menuTitle'] as String? ?? 'Delad meny',
-      menuSnapshot: reconstructedMenu,
-      totalRecipeCount: data['totalRecipeCount'] as int? ?? 0,
-      categories: List<String>.from(data['categories'] ?? []),
-      viewCount: data['viewCount'] as int? ?? 0,
-      importCount: data['importCount'] as int? ?? 0,
-      viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
-      importedByUserIds: List<String>.from(data['importedByUserIds'] ?? []),
-    );
+      debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');
+      return DateTime.now();
+    } catch (e) {
+      debugPrint('❌ Error parsing timestamp: $e');
+      return DateTime.now();
+    }
   }
 
   /// JSON serialization för caching
@@ -280,6 +410,7 @@ class SharedMenu {
       'importCount': importCount,
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
+      'dismissedByUserIds': dismissedByUserIds, // 🆕 JSON support för dismiss
     };
   }
 
@@ -318,6 +449,8 @@ class SharedMenu {
       importCount: json['importCount'] as int? ?? 0,
       viewedByUserIds: List<String>.from(json['viewedByUserIds'] ?? []),
       importedByUserIds: List<String>.from(json['importedByUserIds'] ?? []),
+      dismissedByUserIds: List<String>.from(
+          json['dismissedByUserIds'] ?? []), // 🆕 JSON parse för dismiss
     );
   }
 
@@ -334,16 +467,4 @@ class SharedMenu {
 
   @override
   int get hashCode => id.hashCode;
-}
-
-// Helper class för Recipe reconstruction från Firestore data
-class _MockDocumentSnapshot {
-  final String _id;
-  final Map<String, dynamic> _data;
-
-  _MockDocumentSnapshot(this._id, this._data);
-
-  String get id => _id;
-  Map<String, dynamic>? data() => _data;
-  bool get exists => true;
 }
