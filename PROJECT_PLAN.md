@@ -3,9 +3,8 @@
 📋 **Snabbstart för nästa session:**
 ```yaml
 Välkommen tillbaka! Snabbstart-check:
-Aktuell fas: Fas 18 SOCIAL BACKEND KLAR ⭐ (Services & Models implementerade)
-Nästa steg: Fas 18 UI IMPLEMENTATION (Views & Integration)
-Status: 60% av Fas 18 komplett - Backend done, UI remaining
+Nästa steg: Gör klart Fas 18
+Status: 90% av Fas 18 komplett - Backend done, UI remaining
 ```
 
 ## 🏗️ Projektarkitektur
@@ -281,11 +280,16 @@ Community cache: Första användaren delar med alla andra
 - SharedWithMeView för mottaget innehåll
 - Integration i RecipeDetailView och VeckomenyView
 
-🔧 **18.3: Menu Persistence System (0%)** ⭐ **NÄSTA!**
+🔧 **18.3: Menu Persistence System (90%)** ⭐ **NÄSTA!**
+Klar
 - SharedPreferences för sparade menyer
 - "Spara meny" funktionalitet med namngivning
 - "Ladda sparad meny" med preview
 - UI integration i VeckomenyView
+Kvar
+- SharedPreferences för inköpslista
+- Hämta från UserService i friend_requests_view
+- Notis på avatar och i avatarvyn när det finns nya recept eller menyer delade med dig
 - **Estimated: 2-3 timmar**
 
 ### **🚀 ÅTERSTÅENDE SOCIAL FEATURES (15%):**

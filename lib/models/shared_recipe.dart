@@ -1,24 +1,25 @@
 // lib/models/shared_recipe.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Shared Recipe Model - Firebase First - FIXED + DISMISS
+/// Component: Shared Recipe Model - Firebase First - FIXED + DISMISS + isDismissed GETTER
 /// File: models/shared_recipe.dart
-/// Quick Guide: Clean Firebase-only modell för delade recept mellan vänner - ROBUST PARSING + DISMISS
-/// Dependencies IN: cloud_firestore, uuid, recipe.dart, flutter/foundation.dart
+/// Quick Guide: Clean Firebase-only modell för delade recept mellan vänner - ROBUST PARSING + DISMISS + GETTER
+/// Dependencies IN: cloud_firestore, firebase_auth, uuid, recipe.dart, flutter/foundation.dart
 /// Dependencies OUT: SocialRecipeService, sharing views
 /// Data flow: Firestore ↔ SharedRecipe object ↔ Social UI
 /// State management: Immutable med copyWith pattern och cached recipe data
-/// Purpose: Receptdelning med tracking, import och dismiss functionality
-/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, dismiss tracking added
+/// Purpose: Receptdelning med tracking, import och dismiss functionality + easy isDismissed check
+/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, dismiss tracking, isDismissed getter added
 /// Test coverage: 70%
 /// Performance: ⚡ Cached recipe data för offline access
 /// Analytics: ✅ Sharing engagement, import success och dismiss tracking
-/// Code smells: ✅ Clean separation between sharing metadata och recipe data, FIXED parsing + dismiss logic
+/// Code smells: ✅ Clean separation between sharing metadata och recipe data, FIXED parsing + dismiss + getter
 /// Connected to: Recipe, UserProfile, SocialRecipeService, sharing views
 /// Used in phases: 18
 
@@ -177,6 +178,14 @@ class SharedRecipe {
 
   /// 🆕 Check if user has dismissed (dolt från sin lista)
   bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
+
+  /// ✅ FIXAT: Easy isDismissed getter för current user
+  bool get isDismissed {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return false;
+
+    return isDismissedBy(currentUserId);
+  }
 
   /// Check if user can view this share
   bool canBeViewedBy(String userId) {

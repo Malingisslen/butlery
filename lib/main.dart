@@ -1,4 +1,5 @@
 // lib/main.dart
+// ✅ TILLAGD: Locale initialization för svenska datum
 
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -15,6 +16,9 @@ import 'package:share_handler/share_handler.dart';
 
 // State management
 import 'package:provider/provider.dart';
+
+// ✅ NY IMPORT: Locale initialization
+import 'package:intl/date_symbol_data_local.dart';
 
 // Services
 import 'services/offline_service.dart';
@@ -53,6 +57,16 @@ import 'views/social/shared_with_me_view.dart';
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ NYTT: Initiera svenska lokaliseringar FÖRE allt annat
+  try {
+    await initializeDateFormatting('sv_SE', null);
+    await initializeDateFormatting('sv', null); // Fallback
+    debugPrint('✅ Svenska lokaliseringar initierade');
+  } catch (e) {
+    debugPrint('❌ Kunde inte initiera svenska lokaliseringar: $e');
+    // Fortsätt ändå med engelska som fallback
+  }
 
   // 2️⃣ Initiera Firebase - COMPLETE FIX
   try {
