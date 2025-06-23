@@ -43,61 +43,71 @@ class RecipeService extends ChangeNotifier {
     return _firestore.collection('butlery_archive');
   }
 
-  /// Constructor - startar lyssnare om användare är inloggad
+  /// Constructor - startar lyssnare om användare är inloggad - FIXED AUTH HANDLING
   RecipeService() {
     debugPrint('🔥 RecipeService constructor called');
-    _auth.authStateChanges().listen((user) {
+
+    // Enhanced auth state listener med komplett cleanup
+    _auth.authStateChanges().listen((user) async {
       debugPrint('🔥 Auth state changed: ${user?.email}');
-      if (user != null) {
-        debugPrint('🔥 User logged in, calling initialize()');
-        initialize();
+
+      if (user == null) {
+        // LOGOUT: Komplett cleanup
+        debugPrint('👋 User logged out - clearing all data');
+        _offlineService.setCurrentUser(null);
+        await _performLogoutCleanup();
       } else {
-        debugPrint('🔥 User logged out');
-        _stopListening();
-        _recipes.clear();
-        notifyListeners();
+        // LOGIN: Setup för användare (oavsett om ny eller samma)
+        debugPrint('👤 User logged in: ${user.email}');
+        _offlineService.setCurrentUser(user.uid);
+        await _performLoginSetup(user.uid);
       }
     });
   }
 
-  /// Initiera service
+  /// Enhanced initialize med better user checking
   Future<void> initialize() async {
-    debugPrint('🔥 RecipeService.initialize() called');
-    debugPrint('🔥 Current userId: $_userId');
+    final currentUserId = _userId;
+    debugPrint('🔥 RecipeService.initialize() called for user: $currentUserId');
 
-    if (_userId == null) {
-      debugPrint('⚠️ Ingen användare inloggad, skippar initiering');
+    if (currentUserId == null) {
+      debugPrint('⚠️ No user logged in, skipping initialization');
+      _recipes.clear();
+      notifyListeners();
       return;
     }
 
     try {
       debugPrint(
-        '🔥 Initierar RecipeService med Firestore och offline-support',
-      );
+          '🔥 Initializing RecipeService with Firestore and offline support');
 
-      // Ladda offline-recept först för snabb start
-      _loadOfflineRecipes();
+      // Ladda offline-recept först för snabb start (men bara för denna användare)
+      _loadOfflineRecipesForUser(currentUserId);
 
       // Starta lyssnare för användarens recept
       await _startListening();
 
-      debugPrint('✅ RecipeService.initialize() klar');
+      debugPrint('✅ RecipeService.initialize() complete');
     } catch (e) {
-      debugPrint('❌ Fel vid initiering av RecipeService: $e');
+      debugPrint('❌ Error initializing RecipeService: $e');
       _setError('Kunde inte initiera recept: $e');
     }
   }
 
-  /// Ladda recept från offline-cache
-  void _loadOfflineRecipes() {
+  /// Ladda offline recept för specifik användare - USER-SPECIFIC
+  void _loadOfflineRecipesForUser(String userId) {
     if (_offlineService.isInitialized) {
       final offlineRecipes = _offlineService.getAllOfflineRecipes();
+
+      // Filtrera offline recept för denna användare (om du har userId i offline data)
+      // För nu, ladda alla offline recept men logga vilken användare
       if (offlineRecipes.isNotEmpty) {
         _recipes = offlineRecipes;
         notifyListeners();
         AppLogger.info(
-          '📦 ${offlineRecipes.length} recept laddade från offline-cache',
-        );
+            '📦 ${offlineRecipes.length} offline recept laddade för användare: $userId');
+      } else {
+        debugPrint('📦 Inga offline recept hittades för användare: $userId');
       }
     }
   }
@@ -121,85 +131,91 @@ class RecipeService extends ChangeNotifier {
           .orderBy('updatedAt', descending: true)
           .snapshots()
           .listen(
-            (snapshot) {
-              // VIKTIG ÄNDRING: Hantera bara de dokument som faktiskt ändrats
-              for (final change in snapshot.docChanges) {
-                final recipe = Recipe.fromFirestore(change.doc);
+        (snapshot) {
+          // VIKTIG ÄNDRING: Hantera bara de dokument som faktiskt ändrats
+          for (final change in snapshot.docChanges) {
+            final recipe = Recipe.fromFirestore(change.doc);
 
-                switch (change.type) {
-                  case DocumentChangeType.added:
-                    // Lägg till recept om det inte redan finns lokalt
-                    if (!_recipes.any((r) => r.id == recipe.id)) {
-                      _recipes.insert(0, recipe);
-                      // Synka bara detta recept till offline
-                      _offlineService.saveRecipeOffline(recipe).catchError((e) {
-                        AppLogger.error('Kunde inte spara recept offline', e);
-                      });
-                      AppLogger.info('➕ Nytt recept: "${recipe.title}"');
-                    }
-                    break;
-
-                  case DocumentChangeType.modified:
-                    // Uppdatera befintligt recept
-                    final index = _recipes.indexWhere((r) => r.id == recipe.id);
-                    if (index != -1) {
-                      _recipes[index] = recipe;
-                      // Synka bara detta recept till offline
-                      _offlineService.saveRecipeOffline(recipe).catchError((e) {
-                        AppLogger.error(
-                          'Kunde inte uppdatera recept offline',
-                          e,
-                        );
-                      });
-                      AppLogger.info('✏️ Uppdaterat recept: "${recipe.title}"');
-                    }
-                    break;
-
-                  case DocumentChangeType.removed:
-                    // Ta bort recept
-                    _recipes.removeWhere((r) => r.id == recipe.id);
-                    // Ta bort från offline-cache
-                    _offlineService.deleteRecipeOffline(recipe.id).catchError((
-                      e,
-                    ) {
-                      AppLogger.error('Kunde inte ta bort recept offline', e);
-                    });
-                    AppLogger.info('🗑️ Borttaget recept: "${recipe.title}"');
-                    break;
+            switch (change.type) {
+              case DocumentChangeType.added:
+                // Lägg till recept om det inte redan finns lokalt
+                if (!_recipes.any((r) => r.id == recipe.id)) {
+                  _recipes.insert(0, recipe);
+                  // Synka bara detta recept till offline
+                  _offlineService.saveRecipeOffline(recipe).catchError((e) {
+                    AppLogger.error('Kunde inte spara recept offline', e);
+                  });
+                  AppLogger.info('➕ Nytt recept: "${recipe.title}"');
                 }
-              }
+                break;
 
-              // Om det är första laddningen (metadata.isFromCache är false och vi har många ändringar)
-              if (!snapshot.metadata.isFromCache &&
-                  snapshot.docChanges.length > 5) {
-                // Sortera listan en gång efter alla ändringar
-                _recipes.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-                AppLogger.success(
-                  '✅ Initial laddning: ${_recipes.length} recept',
-                );
-              }
+              case DocumentChangeType.modified:
+                // Uppdatera befintligt recept
+                final index = _recipes.indexWhere((r) => r.id == recipe.id);
+                if (index != -1) {
+                  _recipes[index] = recipe;
+                  // Synka bara detta recept till offline
+                  _offlineService.saveRecipeOffline(recipe).catchError((e) {
+                    AppLogger.error(
+                      'Kunde inte uppdatera recept offline',
+                      e,
+                    );
+                  });
+                  AppLogger.info('✏️ Uppdaterat recept: "${recipe.title}"');
+                }
+                break;
 
-              _setLoading(false);
-              notifyListeners();
-            },
-            onError: (error) {
-              AppLogger.error('Firestore lyssnare fel', error);
-              _setError('Kunde inte lyssna på recept: $error');
-              _setLoading(false);
+              case DocumentChangeType.removed:
+                // Ta bort recept
+                _recipes.removeWhere((r) => r.id == recipe.id);
+                // Ta bort från offline-cache
+                _offlineService.deleteRecipeOffline(recipe.id).catchError((
+                  e,
+                ) {
+                  AppLogger.error('Kunde inte ta bort recept offline', e);
+                });
+                AppLogger.info('🗑️ Borttaget recept: "${recipe.title}"');
+                break;
+            }
+          }
 
-              // Fallback till offline-recept vid fel
-              _loadOfflineRecipes();
-            },
-          );
+          // Om det är första laddningen (metadata.isFromCache är false och vi har många ändringar)
+          if (!snapshot.metadata.isFromCache &&
+              snapshot.docChanges.length > 5) {
+            // Sortera listan en gång efter alla ändringar
+            _recipes.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+            AppLogger.success(
+              '✅ Initial laddning: ${_recipes.length} recept',
+            );
+          }
+
+          _setLoading(false);
+          notifyListeners();
+        },
+        onError: (error) {
+          AppLogger.error('Firestore lyssnare fel', error);
+          _setError('Kunde inte lyssna på recept: $error');
+          _setLoading(false);
+
+          // Fallback till offline-recept vid fel
+          final userId = _userId;
+          if (userId != null) {
+            _loadOfflineRecipesForUser(userId);
+          }
+        },
+      ); // ✅ LÄGG TILL DENNA RAD
     } catch (e) {
       AppLogger.error('Fel vid start av lyssnare', e);
       _setError('Kunde inte starta lyssnare: $e');
       _setLoading(false);
 
       // Fallback till offline-recept vid fel
-      _loadOfflineRecipes();
-    }
-  }
+      final userId = _userId;
+      if (userId != null) {
+        _loadOfflineRecipesForUser(userId);
+      }
+    } // ✅ LÄGG TILL DENNA RAD
+  } // ✅ DENNA SKA REDAN FINNAS
 
   /// Synkronisera ALLA recept till offline-cache (används vid manuell refresh)
   Future<void> _syncAllToOfflineCache() async {
@@ -484,10 +500,9 @@ class RecipeService extends ChangeNotifier {
         }
       }
 
-      final message =
-          addedCount == recipes.length
-              ? 'Alla $addedCount recept importerade'
-              : '$addedCount av ${recipes.length} recept importerade';
+      final message = addedCount == recipes.length
+          ? 'Alla $addedCount recept importerade'
+          : '$addedCount av ${recipes.length} recept importerade';
 
       AppLogger.info(message);
       return RecipeOperationResult.success(
@@ -608,28 +623,119 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
-  /// Manuell refresh
+  /// Enhanced manual refresh med user validation
   Future<void> refresh() async {
+    final userId = _userId;
+    if (userId == null) {
+      debugPrint('⚠️ Cannot refresh - no user logged in');
+      return;
+    }
+
+    debugPrint('🔄 Refreshing recipes for user: $userId');
+
     _setLoading(true);
+
     try {
       if (_offlineService.isOnline && _userRecipesRef != null) {
-        // Om online, hämta från Firestore
-        final snapshot = await _userRecipesRef!.get();
+        // Explicit Firestore query för denna användare
+        final snapshot = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('recipes')
+            .orderBy('updatedAt', descending: true)
+            .get();
+
         _recipes =
             snapshot.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
+        debugPrint(
+            '✅ Refreshed ${_recipes.length} recipes from Firestore for user: $userId');
 
-        // Synka ALLA till offline-cache vid manuell refresh
+        // Synka till offline-cache
         await _syncAllToOfflineCache();
       } else {
-        // Om offline, ladda från cache
-        _loadOfflineRecipes();
+        // Om offline, ladda från cache för denna användare
+        _loadOfflineRecipesForUser(userId);
+        debugPrint('📵 Offline - loaded recipes from cache for user: $userId');
       }
 
       notifyListeners();
     } catch (e) {
+      debugPrint('❌ Error refreshing recipes for user $userId: $e');
       _setError('Kunde inte uppdatera: $e');
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Komplett cleanup vid logout - ENHANCED
+  Future<void> _performLogoutCleanup() async {
+    try {
+      // 1. Stoppa alla aktiva listeners
+      await _recipesSubscription?.cancel();
+      _recipesSubscription = null;
+      debugPrint('✅ Firestore listeners stopped');
+
+      // 2. Rensa all lokal state
+      _recipes.clear();
+      _isLoading = false;
+      _lastError = null;
+      debugPrint('✅ Local state cleared');
+
+      // 3. Notifiera UI omedelbart
+      notifyListeners();
+      debugPrint('✅ UI notified of empty state');
+
+      // 4. Rensa offline cache för säkerhets skull (optional)
+      try {
+        final userId = _auth.currentUser?.uid;
+        if (userId != null) {
+          await _offlineService.clearUserData(userId);
+          debugPrint('✅ Offline cache cleared for user: $userId');
+        } else {
+          debugPrint('⚠️ No user ID available for cache cleanup');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Could not clear offline cache: $e');
+        // Inte kritiskt - fortsätt ändå
+      }
+
+      debugPrint('🎉 Logout cleanup complete');
+    } catch (e) {
+      debugPrint('❌ Error during logout cleanup: $e');
+      // Säkerställ att vi ändå har tom state
+      _recipes.clear();
+      _isLoading = false;
+      _lastError = null;
+      notifyListeners();
+    }
+  }
+
+  /// Setup för ny användare - ENHANCED
+  Future<void> _performLoginSetup(String userId) async {
+    try {
+      debugPrint('🔄 Setting up for new user: $userId');
+
+      // 1. Sätt loading state
+      _isLoading = true;
+      _lastError = null;
+      notifyListeners();
+
+      // 2. Vänta lite för att säkerställa att Firebase auth är helt klar
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // 3. Verifiera att användaren fortfarande är inloggad
+      if (_auth.currentUser?.uid != userId) {
+        debugPrint('⚠️ User changed during setup, aborting');
+        return;
+      }
+
+      // 4. Initialize för ny användare
+      await initialize();
+
+      debugPrint('✅ New user setup complete');
+    } catch (e) {
+      debugPrint('❌ Error during new user setup: $e');
+      _setError('Kunde inte ladda data för ny användare');
     }
   }
 

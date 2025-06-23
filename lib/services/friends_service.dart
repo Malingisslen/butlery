@@ -540,4 +540,10 @@ class FriendsService extends ChangeNotifier {
     await _loadFriends();
     await _loadFriendRequests();
   }
+
+  /// Public method to load friends - ADDED FOR VECKOMENY_VIEW
+  Future<void> loadFriends() async {
+    AppLogger.info('🔄 Public loadFriends called');
+    await _loadFriends();
+  }
 }

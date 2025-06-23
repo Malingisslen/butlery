@@ -171,7 +171,7 @@ class UserService extends ChangeNotifier {
         final nameQuery = await _profilesRef
             .where('isSearchable', isEqualTo: true)
             .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
-            .where('displayNameLower', isLessThan: normalizedQuery + '\uf8ff')
+            .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
             .limit(_searchLimit)
             .get();
 

@@ -453,11 +453,11 @@ class UserAvatar extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.share_outlined,
-            title: 'Delade recept',
-            subtitle: 'Recept som delats med mig',
+            title: 'Delat innehåll',
+            subtitle: 'Recept och menyer som delats med mig',
             onTap: () {
               Navigator.pop(context);
-              _showComingSoon(context, 'Delade recept');
+              Navigator.pushNamed(context, '/shared'); // ✅ ANVÄND DETTA
             },
           ),
           _buildMenuItem(
@@ -956,15 +956,6 @@ class UserAvatar extends StatelessWidget {
         }
       }
     }
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature kommer snart! 🚀'),
-        backgroundColor: AppTheme.warningColor,
-      ),
-    );
   }
 }
 
