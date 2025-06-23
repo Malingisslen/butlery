@@ -78,25 +78,24 @@ class _AppSearchBarState extends State<AppSearchBar> {
     return TextField(
       controller: _controller,
       enabled: widget.enabled,
-      style: Theme.of(context).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
+      style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
         hintText: widget.hintText,
-        hintStyle: AppTheme.inputHintStyle, // ✅ SEMANTISK STYLE
+        hintStyle: AppTheme.inputHintStyle,
         prefixIcon: widget.prefixIcon ?? const Icon(Icons.search),
-        suffixIcon:
-            _hasText
-                ? IconButton(
-                  icon: AppTheme.actionIcon(
-                    context,
-                    Icons.clear,
-                  ), // ✅ SEMANTISK IKON
-                  onPressed: _onClear,
-                )
-                : null,
+        suffixIcon: _hasText
+            ? IconButton(
+                icon: AppTheme.actionIcon(
+                  context,
+                  Icons.clear,
+                ),
+                onPressed: _onClear,
+              )
+            : null,
         border: const OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingMd, // ✅ SEMANTISK SPACING
-          vertical: AppTheme.spacingSmPlus, // ✅ SEMANTISK SPACING (12px)
+          horizontal: AppTheme.spacingMd,
+          vertical: AppTheme.spacingSmPlus,
         ),
       ),
       onChanged: widget.onChanged,

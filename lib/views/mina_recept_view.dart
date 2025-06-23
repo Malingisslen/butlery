@@ -8,7 +8,6 @@ import '../../widgets/main_layout_menu.dart';
 import '../../widgets/recipe_card.dart';
 import '../../widgets/search_bar.dart';
 import '../../widgets/empty_state.dart';
-// FIXA: Ta bort oanvänd import '../../widgets/profile_dialog.dart';
 import '../../widgets/filter_chips.dart';
 import '../../widgets/offline_indicator.dart'; // För offline indicator
 import '../../widgets/user_avatar.dart'; // För avatar
@@ -180,11 +179,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  // Navigera till profil
-  void _navigateToProfile() {
-    Navigator.pushNamed(context, '/profile/edit');
-  }
-
   @override
   Widget build(BuildContext context) {
     // Watch för att lyssna på ViewModel-ändringar
@@ -206,14 +200,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // OFFLINE STATUS ICON
           const OfflineStatusIcon(),
 
-          // USER AVATAR istället för gamla profil-ikonen
+          // USER AVATAR med social funktionalitet (logout, backup, etc.)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingXs),
-            child: UserAvatar.medium(
+            child: UserAvatar.social(
               imageUrl: userService.currentUserProfile?.avatarUrl,
               displayName: userService.currentUserProfile?.displayName ??
                   'Okänd användare',
-              onTap: _navigateToProfile,
             ),
           ),
 

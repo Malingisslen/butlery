@@ -177,10 +177,9 @@ class FriendRequest {
         orElse: () => FriendRequestStatus.pending,
       ),
       sentAt: DateTime.parse(json['sentAt'] as String),
-      respondedAt:
-          json['respondedAt'] != null
-              ? DateTime.parse(json['respondedAt'] as String)
-              : null,
+      respondedAt: json['respondedAt'] != null
+          ? DateTime.parse(json['respondedAt'] as String)
+          : null,
       message: json['message'] as String?,
     );
   }
