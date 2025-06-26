@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Centraliserat theme-system för Butlery-appen
 /// Baserat på Figma-prototypen med Material 3 design
-/// ✨ KOMPLETT SEMANTISK THEME MED ALLA TEXTSTYLES
+/// ✨ KOMPLETT SEMANTISK THEME MED ALLA TEXTSTYLES + 100% COVERAGE
 class AppTheme {
   // ===== FÄRGPALETT BASERAT PÅ FIGMA (UTÖKAD) =====
 
@@ -310,6 +310,12 @@ class AppTheme {
   static const double spacingXxs = 2.0; // För mycket små mellanrum
   static const double spacingHuge = 64.0; // För stora section-separatorer
 
+// ===== ANIMATION DURATIONS ===== <-- LÄGG TILL DETTA HÄR
+  static const Duration animationDurationFast = Duration(milliseconds: 100);
+  static const Duration animationDurationMedium = Duration(milliseconds: 150);
+  static const Duration animationDurationSlow = Duration(milliseconds: 300);
+  static const Duration animationDurationDelay = Duration(milliseconds: 500);
+
   // ===== SEMANTISKA SPACING KOMBINATIONER =====
 
   /// Ofta använd kombination: spacingSm + 4 = 12px
@@ -432,6 +438,49 @@ class AppTheme {
   static const double borderRadiusSm =
       radiusSmall; // 4px - alias för RecipeImageManager
 
+  // ===== CONTAINER HEIGHTS (✨ NYA TILLÄGG FÖR 100% COVERAGE) =====
+
+  /// Standardiserade container höjder för konsistens
+  static const double containerHeightSmall = 200.0; // Små containers
+  static const double containerHeightMedium = 300.0; // Medium containers
+  static const double containerHeightLarge =
+      400.0; // Stora containers (FriendCategoryManager)
+  static const double containerHeightXLarge = 500.0; // Extra stora containers
+
+  // ===== BUTTON WIDTHS (✨ NYA TILLÄGG FÖR 100% COVERAGE) =====
+
+  /// Standardiserade button-widths för konsistens
+  static const double buttonWidthSmall = 80.0; // Små knappar (t.ex. "OK")
+  static const double buttonWidthMedium =
+      140.0; // Medium knappar (t.ex. "Skapa & Dela")
+  static const double buttonWidthLarge = 200.0; // Stora knappar
+  static const double buttonWidthXLarge = 280.0; // Extra stora knappar
+
+  // ===== CONTAINER HEIGHTS (TIDIGARE TILLÄGG) =====
+
+  /// Standardiserade container höjder för konsistens
+  static const double imageHeightSmall = 100.0; // Små bilder
+  static const double imageHeightMedium =
+      200.0; // Medium bilder (standard för receptbilder)
+  static const double imageHeightLarge = 300.0; // Stora bilder
+  static const double buttonHeight = 56.0; // Standard knapp-höjd
+  static const double inputHeight = 48.0; // Standard input-höjd
+
+  // ===== NYA BILDSTORLEKAR (TILLÄGG) =====
+
+  // Bildstorlekar för RecipeImageManager
+  static const double imageWidthSmall = 120.0;
+  static const double imageCarouselHeight = 250.0;
+
+  // Thumbnails
+  static const double thumbnailSize = 60.0;
+  static const double thumbnailSmallSize = 40.0;
+  static const double thumbnailLargeSize = 80.0;
+
+  // Aspect ratios
+  static const double imageAspectRatio = 16 / 9;
+  static const double thumbnailAspectRatio = 1.0;
+
   // ===== SHADOWS (FÖRBÄTTRADE) =====
 
   static List<BoxShadow> get cardShadow => const [
@@ -538,31 +587,6 @@ class AppTheme {
   static const Color mellanmalColor = Color(0xFF9C27B0); // Purple
   static const Color fikaColor = Color(0xFF8D6E63); // Brown
   static const Color defaultMealColor = _textSecondary; // Fallback färg
-
-  // ===== CONTAINER HEIGHTS (SLUTGILTIGA CENTRALISERINGAR) =====
-
-  /// Standardiserade container höjder för konsistens
-  static const double imageHeightSmall = 100.0; // Små bilder
-  static const double imageHeightMedium =
-      200.0; // Medium bilder (standard för receptbilder)
-  static const double imageHeightLarge = 300.0; // Stora bilder
-  static const double buttonHeight = 56.0; // Standard knapp-höjd
-  static const double inputHeight = 48.0; // Standard input-höjd
-
-  // ===== NYA BILDSTORLEKAR (TILLÄGG) =====
-
-  // Bildstorlekar för RecipeImageManager
-  static const double imageWidthSmall = 120.0;
-  static const double imageCarouselHeight = 250.0;
-
-  // Thumbnails
-  static const double thumbnailSize = 60.0;
-  static const double thumbnailSmallSize = 40.0;
-  static const double thumbnailLargeSize = 80.0;
-
-  // Aspect ratios
-  static const double imageAspectRatio = 16 / 9;
-  static const double thumbnailAspectRatio = 1.0;
 
   // ===== SEMANTISKA WIDGET BUILDERS =====
 

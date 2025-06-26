@@ -1,7 +1,7 @@
 // lib/views/inkopslista_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // För SystemNavigator
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../viewmodels/shopping_list_viewmodel.dart';
@@ -11,7 +11,7 @@ import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD VY MED PERSISTENCE INTEGRATION
+/// ✨ ENHANCED med Social Shopping Integration & AppTheme Förbättringar
 class InkopslistaView extends StatelessWidget {
   const InkopslistaView({super.key});
 
@@ -59,13 +59,24 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inköpslista delad!'),
+        SnackBar(
+          content: const Text('Inköpslista delad!'),
           backgroundColor: AppTheme.successColor,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  /// ✨ NY: Social shopping integration (om tillgängligt)
+  Future<void> _shareWithFriends(BuildContext context) async {
+    // Implementera social sharing här när social services är tillgängliga
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Social delning kommer snart!'),
+        backgroundColor: AppTheme.warningColor,
+      ),
+    );
   }
 
   // Visa clear all dialog
@@ -109,7 +120,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
     }
   }
 
-  // ✨ NY METOD: Visa clear all shopping list dialog
+  // ✨ UPPDATERAD: Clear all shopping list dialog
   Future<void> _showClearAllShoppingListDialog(BuildContext context) async {
     final viewModel = context.read<ShoppingListViewModel>();
 
@@ -142,8 +153,8 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Hela inköpslistan rensad'),
+          SnackBar(
+            content: const Text('Hela inköpslistan rensad'),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -203,14 +214,14 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
                 tooltip: 'Rensa checkade (${viewModel.checkedCount})',
               ),
 
-            // Share button
+            // Share button (system sharing)
             IconButton(
               icon: AppTheme.actionIcon(context, Icons.share),
               onPressed: () => _shareShoppingList(context),
               tooltip: 'Dela inköpslista',
             ),
 
-            // ✨ NYTT: Clear all button
+            // More options
             PopupMenuButton<String>(
               icon: AppTheme.actionIcon(context, Icons.more_vert),
               onSelected: (value) {
@@ -220,6 +231,9 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
                     break;
                   case 'export':
                     _exportShoppingList(context, viewModel);
+                    break;
+                  case 'share_friends':
+                    _shareWithFriends(context);
                     break;
                 }
               },
@@ -231,6 +245,16 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
                       const Icon(Icons.download),
                       SizedBox(width: AppTheme.spacingSm),
                       const Text('Exportera som text'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'share_friends',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.group),
+                      SizedBox(width: AppTheme.spacingSm),
+                      const Text('Dela med vänner (snart)'),
                     ],
                   ),
                 ),
@@ -352,15 +376,15 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
                       ),
                 ),
               ),
-              // ✨ NYTT: Persistence indicator
+              // ✨ FÖRBÄTTRAD: Persistence indicator med AppTheme
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingXs,
-                  vertical: 2,
+                  horizontal: AppTheme.spacingSm,
+                  vertical: AppTheme.spacingXs,
                 ),
                 decoration: BoxDecoration(
                   color: AppTheme.successColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppTheme.chipRadius,
                   border: Border.all(
                     color: AppTheme.successColor.withValues(alpha: 0.3),
                   ),
@@ -370,16 +394,15 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
                   children: [
                     Icon(
                       Icons.save,
-                      size: 12,
+                      size: AppTheme.iconSizeInfo,
                       color: AppTheme.successColor,
                     ),
                     SizedBox(width: AppTheme.spacingXs),
                     Text(
                       'AUTO-SPARAD',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                      style: AppTheme.chipLabelStyle.copyWith(
                         color: AppTheme.successColor,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -390,9 +413,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
           SizedBox(height: AppTheme.spacingXs),
           Text(
             '${viewModel.totalCount} artiklar${viewModel.checkedCount > 0 ? ' • ${viewModel.checkedCount} checkade' : ''}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+            style: AppTheme.metadataStyle,
           ),
 
           // Success indikator
@@ -400,26 +421,15 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
             SizedBox(height: AppTheme.spacingSm),
             Container(
               padding: EdgeInsets.all(AppTheme.spacingSm),
-              decoration: BoxDecoration(
-                color: AppTheme.successColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.smallRadius,
-                border: Border.all(
-                  color: AppTheme.successColor.withValues(alpha: 0.3),
-                ),
-              ),
+              decoration: AppTheme.successContainerDecoration,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: AppTheme.successColor,
-                    size: AppTheme.iconSizeInfo,
-                  ),
+                  AppTheme.successIcon(context),
                   SizedBox(width: AppTheme.spacingXs),
                   Expanded(
                     child: Text(
                       'Alla artiklar checkade! 🎉',
-                      style: TextStyle(
-                        color: AppTheme.successColor,
+                      style: AppTheme.successTextStyle.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -447,7 +457,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
         horizontal: AppTheme.spacingMd,
         vertical: AppTheme.spacingXxs,
       ),
-      elevation: 0,
+      elevation: AppTheme.elevationLow,
       color: isChecked
           ? Theme.of(context)
               .colorScheme
@@ -459,7 +469,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
           value: isChecked,
           onChanged: (_) => viewModel.toggleItem(index),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppTheme.smallRadius,
           ),
         ),
         title: Text(
@@ -474,18 +484,9 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
         ),
         onTap: () => viewModel.toggleItem(index),
         dense: true,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingMd,
-          vertical: AppTheme.spacingXs,
-        ),
-        // ✨ NYTT: Visual feedback för checked items
-        trailing: isChecked
-            ? Icon(
-                Icons.check_circle,
-                color: AppTheme.successColor,
-                size: AppTheme.iconSizeInfo,
-              )
-            : null,
+        contentPadding: AppTheme.listItemPadding,
+        // ✨ FÖRBÄTTRAD: Visual feedback med AppTheme
+        trailing: isChecked ? AppTheme.successIcon(context) : null,
       ),
     );
   }
@@ -506,7 +507,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
       ),
       child: Row(
         children: [
-          // ✨ UPPDATERAD: Update button med persistence feedback
+          // Update button
           Expanded(
             child: ActionButton.outlined(
               label: 'Uppdatera',
@@ -515,7 +516,9 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
               isLoading: viewModel.isLoading,
             ),
           ),
-          SizedBox(width: AppTheme.spacingSm + 4),
+          SizedBox(width: AppTheme.spacingSm),
+
+          // Standard share button
           Expanded(
             child: ActionButton.primary(
               label: 'Dela lista',
@@ -528,7 +531,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
     );
   }
 
-  /// ✨ NYTT: Export shopping list som text
+  /// ✨ FÖRBÄTTRAD: Export shopping list med AppTheme
   void _exportShoppingList(
       BuildContext context, ShoppingListViewModel viewModel) {
     final textData = viewModel.exportAsText();
@@ -549,7 +552,7 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
     );
   }
 
-  /// ✨ NYTT: Visa export preview
+  /// ✨ FÖRBÄTTRAD: Export preview med AppTheme
   void _showExportPreview(BuildContext context, String textData) {
     showDialog(
       context: context,
@@ -561,9 +564,9 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
           child: SingleChildScrollView(
             child: Text(
               textData,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'monospace',
-                  ),
+              style: AppTheme.bodyStyle.copyWith(
+                fontFamily: 'monospace',
+              ),
             ),
           ),
         ),
@@ -577,9 +580,10 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
               Clipboard.setData(ClipboardData(text: textData));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Kopierat till urklipp igen!'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: const Text('Kopierat till urklipp igen!'),
+                  backgroundColor: AppTheme.successColor,
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },

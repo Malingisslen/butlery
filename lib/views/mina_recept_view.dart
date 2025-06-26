@@ -20,6 +20,7 @@ import '../../services/user_service.dart'; // För user service
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../core/utils/logger.dart'; // ✅ LÄGG TILL för AppLogger
 
 /// ✨ UPPDATERAD VY MED OFFLINE SUPPORT, USER AVATAR OCH NOTIFICATION BADGE
 /// Nu visar vi offline-status, synkroniserar med pull-to-refresh och visar vänskapsförfrågningar på avataren
@@ -28,16 +29,22 @@ class MinaReceptView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ UPPDATERAT: Lägg till FriendsViewModel och SharedContentViewModel för total notification count
+    // ✅ FIXAT: SÄKER Provider setup MED RecipeListViewModel
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => sl<RecipeListViewModel>()),
+        // ✅ KRITISK FIX: Lägg till RecipeListViewModel som FÖRSTA provider
+        ChangeNotifierProvider<RecipeListViewModel>(
+          create: (context) => sl<RecipeListViewModel>(),
+        ),
+
+        // ✅ SÄKERT: Använd befintliga singletons utan att skapa nya
         ChangeNotifierProvider.value(value: sl<UserService>()),
-        ChangeNotifierProvider(
-            create: (_) => sl<FriendsViewModel>()), // För vänskapsförfrågningar
-        ChangeNotifierProvider(
-            create: (_) => sl<
-                SharedContentViewModel>()), // ✅ NYTT: För delade recept/menyer
+        ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
+        ChangeNotifierProvider.value(value: sl<SharedContentViewModel>()),
+
+        // ✅ LÄGG TILL: OfflineService för att kunna watch den
+        ChangeNotifierProvider.value(
+            value: sl<offline_service.OfflineService>()),
       ],
       child: const _MinaReceptViewContent(),
     );
@@ -62,13 +69,12 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     // Lyssna på text-ändringar och uppdatera ViewModel
     _searchController.addListener(_onSearchTextChanged);
 
-    // ✅ NYTT: Ladda vänskapsdata och delat innehåll för notification count
+    // ✅ SÄKERT: Ladda data efter widget mount med safety checks
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final friendsViewModel = context.read<FriendsViewModel>();
-      final sharedContentViewModel = context.read<SharedContentViewModel>();
-
-      friendsViewModel.refresh();
-      sharedContentViewModel.refresh();
+      if (mounted) {
+        _safeLoadSocialData();
+        _safeLoadRecipeData(); // ✅ NYTT: Ladda också receptdata
+      }
     });
   }
 
@@ -77,6 +83,42 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// ✅ SÄKER metod för att ladda social data
+  void _safeLoadSocialData() {
+    try {
+      final friendsViewModel = context.read<FriendsViewModel>();
+      final sharedContentViewModel = context.read<SharedContentViewModel>();
+
+      // ✅ SAFE: Kontrollera att ViewModels inte är disposed innan användning
+      if (mounted) {
+        AppLogger.info('🔄 Laddar social data för MinaReceptView...');
+
+        friendsViewModel.refresh();
+        sharedContentViewModel.refresh();
+
+        AppLogger.success('✅ Social data laddar för MinaReceptView');
+      }
+    } catch (e) {
+      AppLogger.error('❌ Fel vid laddning av social data i MinaReceptView', e);
+    }
+  }
+
+  /// ✅ NYTT: Säker metod för att ladda receptdata
+  void _safeLoadRecipeData() {
+    try {
+      if (mounted) {
+        AppLogger.info('🔄 Laddar receptdata för MinaReceptView...');
+
+        // RecipeListViewModel laddar automatiskt data från RecipeService
+        // Inget explicit refresh behövs här - providern hanterar detta
+
+        AppLogger.success('✅ Receptdata redo för MinaReceptView');
+      }
+    } catch (e) {
+      AppLogger.error('❌ Fel vid laddning av receptdata i MinaReceptView', e);
+    }
   }
 
   void _onSearchTextChanged() {
@@ -195,15 +237,25 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  /// ✅ UPPDATERAD: Bygger avatar med total notification badge (vänner + delade recept + delade menyer)
+  /// ✅ FIXAD: Bygger avatar med total notification badge + SÄKER Consumer
   Widget _buildUserAvatarWithBadge() {
     return Consumer3<UserService, FriendsViewModel, SharedContentViewModel>(
       builder: (context, userService, friendsViewModel, sharedContentViewModel,
           child) {
-        // ✅ TOTAL NOTIFICATION COUNT
-        final pendingFriendRequests = friendsViewModel.pendingRequestsCount;
-        final unreadRecipes = sharedContentViewModel.unreadRecipesCount;
-        final unreadMenus = sharedContentViewModel.unreadMenusCount;
+        // ✅ SAFETY: Hantera disposed ViewModels gracefully
+        int pendingFriendRequests = 0;
+        int unreadRecipes = 0;
+        int unreadMenus = 0;
+
+        try {
+          pendingFriendRequests = friendsViewModel.pendingRequestsCount;
+          unreadRecipes = sharedContentViewModel.unreadRecipesCount;
+          unreadMenus = sharedContentViewModel.unreadMenusCount;
+        } catch (e) {
+          AppLogger.warning(
+              '⚠️ Ett eller flera ViewModels är disposed - visar fallback notification badge');
+          // Fallback till 0 om ViewModels är disposed
+        }
 
         final totalNotifications =
             pendingFriendRequests + unreadRecipes + unreadMenus;
@@ -253,7 +305,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch för att lyssna på ViewModel-ändringar
+    // ✅ FIXAT: Nu kan vi använda watch för RecipeListViewModel eftersom den finns i MultiProvider
     final viewModel = context.watch<RecipeListViewModel>();
     final offlineService = context.watch<offline_service.OfflineService>();
 

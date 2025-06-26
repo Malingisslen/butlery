@@ -1,7 +1,7 @@
 // lib/core/injection.dart
-// ✅ UPPDATERAD för integrerad MenuViewModel
+// ✅ KOMPLETT FIXAD VERSION - Nu med GroupInvitationService
 
-/// Dependency injection konfiguration för Butlery med Social Platform
+/// Dependency injection konfiguration för Butlery med Social Shopping Platform
 library;
 
 import 'package:get_it/get_it.dart';
@@ -20,10 +20,13 @@ import '../services/image_picker_service.dart';
 import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
 
-// ==================== NYA SOCIAL SERVICES ====================
+// ==================== SOCIAL SERVICES ====================
 import '../services/user_service.dart';
 import '../services/friends_service.dart';
 import '../services/social_recipe_service.dart';
+import '../services/friend_categories_service.dart';
+import '../services/social_shopping_service.dart';
+import '../services/group_invitation_service.dart'; // ✅ NYTT: GroupInvitationService import
 
 // ==================== BEFINTLIGA VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';
@@ -37,11 +40,16 @@ import '../viewmodels/url_import_viewmodel.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
-// ==================== NYA SOCIAL VIEWMODELS ====================
+// ==================== SOCIAL VIEWMODELS ====================
 import '../viewmodels/user_profile_viewmodel.dart';
 import '../viewmodels/friends_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
 import '../viewmodels/shared_content_viewmodel.dart';
+import '../viewmodels/collaborative_shopping_viewmodel.dart';
+import '../viewmodels/create_shared_list_viewmodel.dart';
+import '../viewmodels/add_members_to_group_viewmodel.dart';
+import '../viewmodels/group_invitations_viewmodel.dart';
+import '../viewmodels/create_group_viewmodel.dart';
 
 // Models
 import '../models/recipe.dart';
@@ -49,9 +57,9 @@ import '../models/recipe.dart';
 /// Service Locator instance
 final GetIt sl = GetIt.instance;
 
-/// Initialiserar alla dependencies - FIXAD REGISTRERINGSORDNING
+/// Initialiserar alla dependencies - KOMPLETT SOCIAL SHOPPING
 Future<void> initializeDependencies() async {
-  debugPrint('🔄 Initialiserar dependency injection...');
+  debugPrint('🔄 Initialiserar dependency injection för Social Shopping...');
 
   // ==================== CORE SERVICES (FÖRST) ====================
 
@@ -63,7 +71,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<PersistenceService>(PersistenceService());
   debugPrint('✅ PersistenceService registrerad');
 
-  // ==================== SOCIAL SERVICES (REGISTRERAS TIDIGT) ====================
+  // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
 
   // UserService - Hanterar användarprofilsn (måste komma före FriendsService)
   sl.registerSingleton<UserService>(UserService());
@@ -72,6 +80,19 @@ Future<void> initializeDependencies() async {
   // FriendsService - Hanterar vänskaper (ingen dependency injection behövs)
   sl.registerSingleton<FriendsService>(FriendsService());
   debugPrint('✅ FriendsService registrerad');
+
+  // ✅ FIXAT: FriendCategoriesService - Behöver FriendsService
+  sl.registerLazySingleton<FriendCategoriesService>(
+    () => FriendCategoriesService(friendsService: sl<FriendsService>()),
+  );
+  debugPrint('✅ FriendCategoriesService registrerad');
+
+  // ✅ NYTT: GroupInvitationService - Behöver FriendCategoriesService
+  sl.registerLazySingleton<GroupInvitationService>(
+    () => GroupInvitationService(
+        categoriesService: sl<FriendCategoriesService>()),
+  );
+  debugPrint('✅ GroupInvitationService registrerad');
 
   // ==================== EXISTING SERVICES ====================
 
@@ -90,7 +111,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<AnalyticsService>(AnalyticsService());
   debugPrint('✅ Alla core services registrerade');
 
-  // ==================== SOCIAL SERVICES (BEHÖVER ANDRA SERVICES) ====================
+  // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
 
   // SocialRecipeService - Behöver UserService och RecipeService
   sl.registerSingleton<SocialRecipeService>(
@@ -101,9 +122,19 @@ Future<void> initializeDependencies() async {
   );
   debugPrint('✅ SocialRecipeService registrerad');
 
+  // SocialShoppingService - Behöver flera dependencies
+  sl.registerSingleton<SocialShoppingService>(
+    SocialShoppingService(
+      userService: sl<UserService>(),
+      categoriesService: sl<FriendCategoriesService>(),
+      basicShoppingService: sl<ShoppingListService>(),
+    ),
+  );
+  debugPrint('✅ SocialShoppingService registrerad');
+
   // ==================== BEFINTLIGA VIEWMODELS ====================
 
-  // ViewModels - Factory (ny instans för varje view)
+  // ✅ FIXAT: RecipeListViewModel - Factory (ny instans för varje view)
   sl.registerFactory<RecipeListViewModel>(
     () => RecipeListViewModel(
       recipeService: sl<RecipeService>(),
@@ -111,7 +142,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // ✅ UPPDATERAD: MenuViewModel med alla nya dependencies
+  // MenuViewModel med alla nya dependencies inklusive social shopping
   sl.registerFactory<MenuViewModel>(
     () => MenuViewModel(
       recipeService: sl<RecipeService>(),
@@ -121,6 +152,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+  // ShoppingListViewModel - behåller original konstruktor
   sl.registerFactory<ShoppingListViewModel>(
     () => ShoppingListViewModel(
       shoppingListService: sl<ShoppingListService>(),
@@ -163,7 +195,7 @@ Future<void> initializeDependencies() async {
 
   debugPrint('✅ Alla befintliga ViewModels registrerade');
 
-  // ==================== NYA SOCIAL VIEWMODELS ====================
+  // ==================== SOCIAL VIEWMODELS ====================
 
   // UserProfileViewModel - för profil-redigering
   sl.registerFactory<UserProfileViewModel>(
@@ -174,11 +206,13 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // FriendsViewModel - för vänhantering
-  sl.registerFactory<FriendsViewModel>(
+  // ✅ MVVM: FriendsViewModel som PERSISTENT SINGLETON (aldrig disposed)
+  // VIKTIGT: Denna rad ska ERSÄTTA den befintliga FriendsViewModel-registreringen
+  sl.registerLazySingleton<FriendsViewModel>(
     () => FriendsViewModel(
       friendsService: sl<FriendsService>(),
       userService: sl<UserService>(),
+      categoriesService: sl<FriendCategoriesService>(),
     ),
   );
 
@@ -192,15 +226,59 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // SharedContentViewModel registreras EFTER alla dependencies
+// ViewModels
+  sl.registerFactory<CreateGroupViewModel>(
+    () => CreateGroupViewModel(
+      categoriesService: sl<FriendCategoriesService>(),
+      groupInvitationService: sl<GroupInvitationService>(),
+    ),
+  );
+
+  // SharedContentViewModel
   sl.registerFactory<SharedContentViewModel>(
     () => SharedContentViewModel(
       socialRecipeService: sl<SocialRecipeService>(),
       userService: sl<UserService>(),
     ),
   );
-  debugPrint('✅ SharedContentViewModel registrerad (efter dependencies)');
 
+  // CollaborativeShoppingViewModel - Factory med traditionell constructor injection
+  sl.registerFactory<CollaborativeShoppingViewModel>(
+    () => CollaborativeShoppingViewModel(
+      socialShoppingService: sl<SocialShoppingService>(),
+      userService: sl<UserService>(),
+      listId: '', // Kommer att sättas vid användning
+    ),
+  );
+
+  // CreateSharedListViewModel - för att skapa delade listor
+  sl.registerFactory<CreateSharedListViewModel>(
+    () => CreateSharedListViewModel(),
+  );
+
+  // ✅ FIXAT: AddMembersToGroupViewModel - Nu med GroupInvitationService
+  sl.registerFactoryParam<AddMembersToGroupViewModel, String, void>(
+    (groupId, _) => AddMembersToGroupViewModel(
+      groupId: groupId,
+      friendsService: sl<FriendsService>(),
+      categoriesService: sl<FriendCategoriesService>(),
+      groupInvitationService: sl<
+          GroupInvitationService>(), // ✅ NYTT: Lagt till GroupInvitationService
+    ),
+  );
+
+  // ✅ FIXAT: GroupInvitationsViewModel - Nu med GroupInvitationService dependency
+  sl.registerFactory<GroupInvitationsViewModel>(
+    () => GroupInvitationsViewModel(
+      categoriesService: sl<FriendCategoriesService>(),
+      friendsService: sl<FriendsService>(),
+      authService: sl<AuthService>(),
+      groupInvitationService: sl<
+          GroupInvitationService>(), // ✅ NYTT: Lagt till GroupInvitationService
+    ),
+  );
+
+  debugPrint('✅ GroupInvitationsViewModel registrerad');
   debugPrint('✅ Alla social ViewModels registrerade');
 
   // ==================== INITIALIZATION SEQUENCE ====================
@@ -215,15 +293,27 @@ Future<void> initializeDependencies() async {
     await sl<OfflineService>().initialize();
     debugPrint('✅ OfflineService initierad');
 
-    // SocialRecipeService initialize() anropas här
-    await sl<SocialRecipeService>().initialize();
-    debugPrint('✅ SocialRecipeService initierad');
+    // 2. Social services initialization (KORREKT ORDNING!)
+    debugPrint('🔄 Initialiserar social services...');
+
+    await sl<UserService>().initialize();
+    debugPrint('✅ UserService initierad');
 
     await sl<FriendsService>().initialize();
     debugPrint('✅ FriendsService initierad');
 
-    // 2. Social services initialiseras automatiskt när de används först
-    debugPrint('✅ Social services redo att användas');
+    await sl<FriendCategoriesService>().initialize();
+    debugPrint('✅ FriendCategoriesService initierad');
+
+    // ✅ NYTT: Initiera GroupInvitationService
+    await sl<GroupInvitationService>().initialize();
+    debugPrint('✅ GroupInvitationService initierad');
+
+    await sl<SocialRecipeService>().initialize();
+    debugPrint('✅ SocialRecipeService initierad');
+
+    await sl<SocialShoppingService>().initialize();
+    debugPrint('✅ SocialShoppingService initierad');
 
     debugPrint('🎉 Alla services initierade framgångsrikt!');
   } catch (e) {
@@ -231,36 +321,80 @@ Future<void> initializeDependencies() async {
     // Fortsätt ändå - låt appen köra med begränsad funktionalitet
   }
 
-  // ==================== MANUAL SOCIAL INITIALIZATION ====================
-
-  // Initiera UserService manuellt när auth state är klar
-  try {
-    final userService = sl<UserService>();
-    await userService.initialize();
-    debugPrint('✅ UserService manuellt initierad');
-  } catch (e) {
-    debugPrint('⚠️ UserService initialization fel: $e');
-    // Fortsätt ändå
-  }
-
   // ==================== VALIDATION ====================
 
   // Validera att alla kritiska services är registrerade
   try {
+    // Core services
     sl<AuthService>();
     sl<RecipeService>();
     sl<UserService>();
     sl<FriendsService>();
     sl<SocialRecipeService>();
+
+    // Social shopping services
+    sl<FriendCategoriesService>();
+    sl<SocialShoppingService>();
+    sl<GroupInvitationService>(); // ✅ NYTT: Validera GroupInvitationService
+
+    // ✅ ViewModels - Testa att de kan skapas
+    sl<RecipeListViewModel>(); // ✅ NU FINNS DENNA!
+    sl<FriendsViewModel>(); // ✅ NU FUNGERAR DENNA!
     sl<SharedContentViewModel>();
-    sl<MenuViewModel>(); // ✅ VALIDERA UPPDATERAD MenuViewModel
-    debugPrint('✅ Alla kritiska services validerade');
+    sl<MenuViewModel>();
+    sl<ShoppingListViewModel>();
+    sl<CreateSharedListViewModel>();
+    sl<GroupInvitationsViewModel>(); // ✅ Testa att den kan skapas
+
+    debugPrint(
+        '✅ Alla kritiska services validerade inklusive gruppinbjudningar');
   } catch (e) {
     debugPrint('❌ Service validation fel: $e');
+    debugPrint('❌ Fel vid init av DI: $e');
     throw Exception('Kritiska services saknas: $e');
   }
 
   debugPrint(
-    '🚀 Dependency injection komplett - appen redo för integrerad menu management!',
+    '🚀 Dependency injection komplett - Social Shopping Platform med gruppinbjudningar redo! 🛒✨',
   );
+}
+
+/// Hjälpfunktion för att hämta CollaborativeShoppingViewModel med listId
+CollaborativeShoppingViewModel getCollaborativeShoppingViewModel(
+    String listId) {
+  return CollaborativeShoppingViewModel(
+    socialShoppingService: sl<SocialShoppingService>(),
+    userService: sl<UserService>(),
+    listId: listId,
+  );
+}
+
+/// ✅ NYTT: Hjälpfunktion för AddMembersToGroupViewModel med groupId
+AddMembersToGroupViewModel getAddMembersToGroupViewModel(String groupId) {
+  return sl<AddMembersToGroupViewModel>(param1: groupId);
+}
+
+/// Hjälpfunktion för att kontrollera om alla social shopping services är redo
+bool isSocialShoppingReady() {
+  try {
+    sl<SocialShoppingService>();
+    sl<FriendCategoriesService>();
+    sl<UserService>();
+    sl<FriendsService>();
+    sl<GroupInvitationService>(); // ✅ NYTT: Kontrollera GroupInvitationService
+    return true;
+  } catch (e) {
+    debugPrint('⚠️ Social shopping services inte redo: $e');
+    return false;
+  }
+}
+
+/// Debug-funktion för att visa alla registrerade services
+void debugPrintRegisteredServices() {
+  debugPrint('📋 Registrerade Services:');
+  debugPrint('  Core: AuthService, RecipeService, UserService');
+  debugPrint('  Social: FriendsService, SocialRecipeService');
+  debugPrint('  Shopping: FriendCategoriesService, SocialShoppingService');
+  debugPrint('  Invitations: GroupInvitationService'); // ✅ NYTT
+  debugPrint('  ViewModels: Alla ViewModels inklusive gruppinbjudningar');
 }
