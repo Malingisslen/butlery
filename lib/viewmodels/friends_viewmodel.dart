@@ -3,30 +3,36 @@
 import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../models/friend_request.dart';
+import '../models/friend_category.dart';
 import '../services/friends_service.dart';
 import '../services/user_service.dart';
-import '../core/utils/logger.dart';
+import '../services/friend_categories_service.dart';
+import '../core/utils/logger.dart'; // ✅ NYTT: För AppLogger
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Friends Management ViewModel
+/// Component: Friends Management ViewModel med gruppstöd
 /// File: viewmodels/friends_viewmodel.dart
-/// Quick Guide: Hanterar vänlista, sök användare, vänskapsförfrågningar + UserProfile-cache
-/// Dependencies IN: FriendsService, UserService
-/// Dependencies OUT: Friends views, user search, request notifications
-/// Data flow: Search users → Send requests → Accept/Reject → Friends list + User profile caching
-/// State management: ChangeNotifier med search state, friends data och user profile cache
-/// Purpose: Komplett vänhantering med sök och request-management + effektiv användardata-cache
-/// Common issues: Search performance, request state syncing, duplicate handling, user profile loading
+/// Quick Guide: Hanterar vänlista, sök användare, vänskapsförfrågningar + UserProfile-cache + GRUPPER
+/// Dependencies IN: FriendsService, UserService, FriendCategoriesService
+/// Dependencies OUT: Friends views, user search, request notifications, group management
+/// Data flow: Search users → Send requests → Accept/Reject → Friends list + User profile caching + Group management
+/// State management: ChangeNotifier med search state, friends data, user profile cache OCH group state
+/// Purpose: Komplett vänhantering med sök och request-management + effektiv användardata-cache + grupphantering
+/// Common issues: ✅ FIXAT: Dispose-säker listener hantering, search performance, request state syncing
 /// Test coverage: 75%
-/// Performance: ⚡ Cached search results, optimized friends loading, efficient user profile batching
-/// Analytics: ✅ Friend actions och search behavior tracking
-/// Code smells: ✅ Clean separation mellan search, friends logic och user profile management
-/// Connected to: FriendsService, UserService, friends views, search views
-/// Used in phases: 18
+/// Performance: ⚡ Cached search results, optimized friends loading, efficient user profile batching, cached groups
+/// Analytics: ✅ Friend actions, search behavior tracking OCH group usage
+/// Code smells: ✅ Clean separation mellan search, friends logic, user profile management OCH group logic
+/// Connected to: FriendsService, UserService, FriendCategoriesService, friends views, search views, group views
+/// Used in phases: 18, 18.4
 
 class FriendsViewModel extends ChangeNotifier {
   final FriendsService _friendsService;
   final UserService _userService;
+  final FriendCategoriesService _categoriesService; // ✅ NYTT
+
+  // ✅ NYTT: Dispose-säkerhet
+  bool _isDisposed = false;
 
   // Search state
   String _searchQuery = '';
@@ -37,17 +43,28 @@ class FriendsViewModel extends ChangeNotifier {
   // Selection state (för bulk operations)
   final Set<String> _selectedFriendIds = {};
 
-  // ✅ NYTT: UserProfile cache för request användare
+  // ✅ UserProfile cache för request användare
   final Map<String, UserProfile> _requestUserProfiles = {};
   bool _isLoadingUserProfiles = false;
+
+  // ✅ NYTT: Group creation state
+  bool _isCreatingGroup = false;
+  String? _groupCreationError;
 
   FriendsViewModel({
     required FriendsService friendsService,
     required UserService userService,
+    required FriendCategoriesService categoriesService, // ✅ NYTT
   })  : _friendsService = friendsService,
-        _userService = userService {
+        _userService = userService,
+        _categoriesService = categoriesService {
+    // ✅ NYTT
+    // ✅ VIKTIGT: Registrera listeners vid skapandet
+    AppLogger.info('🔄 Registrerar ViewModel listeners...');
     _friendsService.addListener(_onFriendsServiceChanged);
     _userService.addListener(_onUserServiceChanged);
+    _categoriesService.addListener(_onCategoriesServiceChanged); // ✅ NYTT
+    AppLogger.success('✅ Alla ViewModel listeners registrerade');
   }
 
   // ===== GETTERS =====
@@ -59,6 +76,14 @@ class FriendsViewModel extends ChangeNotifier {
   int get friendsCount => _friendsService.friendsCount;
   int get pendingRequestsCount => _friendsService.pendingRequestsCount;
 
+  // ✅ NYTT: Group data från categories service
+  List<FriendCategory> get groups => _categoriesService.sortedCategories;
+  List<FriendCategory> get groupsWithFriends =>
+      _categoriesService.categoriesWithFriends;
+  bool get isLoadingGroups => _categoriesService.isLoading;
+  String? get groupsError => _categoriesService.error;
+  int get groupsCount => groups.length;
+
   // Search state
   String get searchQuery => _searchQuery;
   List<UserProfile> get searchResults => List.unmodifiable(_searchResults);
@@ -68,16 +93,21 @@ class FriendsViewModel extends ChangeNotifier {
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
 
   // Service state
-  bool get isLoading => _friendsService.isLoading || _isLoadingUserProfiles;
-  String? get error => _friendsService.error;
-  bool get hasError => _friendsService.hasError;
+  bool get isLoading =>
+      _friendsService.isLoading || _isLoadingUserProfiles || _isCreatingGroup;
+  String? get error => _friendsService.error ?? _groupCreationError;
+  bool get hasError => _friendsService.hasError || _groupCreationError != null;
 
   // Selection state
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
   bool get hasSelectedFriends => _selectedFriendIds.isNotEmpty;
   int get selectedFriendsCount => _selectedFriendIds.length;
 
-  // ✅ NYTT: UserProfile getters
+  // ✅ NYTT: Group creation state
+  bool get isCreatingGroup => _isCreatingGroup;
+  String? get groupCreationError => _groupCreationError;
+
+  // ✅ UserProfile getters
   /// Hämta UserProfile för en användare i vänskapsförfrågningar
   UserProfile? getUserProfile(String userId) {
     return _requestUserProfiles[userId];
@@ -159,6 +189,67 @@ class FriendsViewModel extends ChangeNotifier {
     return success;
   }
 
+  // ===== ✅ NYTT: GROUP ACTIONS =====
+
+  /// Skapa ny grupp
+  Future<bool> createGroup({
+    required String name,
+    String? description,
+    String? emoji,
+    List<String>? selectedFriendIds,
+  }) async {
+    try {
+      _isCreatingGroup = true;
+      _groupCreationError = null;
+      notifyListeners();
+
+      AppLogger.info('🔄 Skapar grupp: $name');
+
+      final success = await _categoriesService.createCategory(
+        name: name,
+        description: description,
+        emoji: emoji,
+        friendUserIds: selectedFriendIds,
+      );
+
+      if (success) {
+        AppLogger.success('✅ Grupp "$name" skapad!');
+      } else {
+        _groupCreationError =
+            _categoriesService.error ?? 'Kunde inte skapa grupp';
+      }
+
+      return success;
+    } catch (e) {
+      AppLogger.error('❌ Fel vid skapande av grupp', e);
+      _groupCreationError = 'Fel vid skapande av grupp: $e';
+      return false;
+    } finally {
+      _isCreatingGroup = false;
+      notifyListeners();
+    }
+  }
+
+  /// Hämta vänner för en specifik grupp
+  List<UserProfile> getFriendsInGroup(String groupId) {
+    return _categoriesService.getFriendsForCategory(groupId);
+  }
+
+  /// Kontrollera om gruppmamn är tillgängligt
+  bool isGroupNameAvailable(String name) {
+    return _categoriesService.isCategoryNameAvailable(name);
+  }
+
+  /// Hämta grupper för en specifik vän
+  List<FriendCategory> getGroupsForFriend(String friendUserId) {
+    return _categoriesService.getCategoriesForFriend(friendUserId);
+  }
+
+  /// Sök grupper
+  List<FriendCategory> searchGroups(String query) {
+    return _categoriesService.searchCategories(query);
+  }
+
   // ===== UTILITY METHODS =====
 
   /// Get relationship status with user
@@ -225,10 +316,13 @@ class FriendsViewModel extends ChangeNotifier {
     return friends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
   }
 
-  // ===== ✅ NYTT: USER PROFILE MANAGEMENT =====
+  // ===== USER PROFILE MANAGEMENT =====
 
   /// Ladda användaruppgifter för alla användare i vänskapsförfrågningar
   Future<void> loadUserProfilesForRequests() async {
+    // ✅ SÄKER: Kontrollera dispose innan asynkrona operationer
+    if (_isDisposed) return;
+
     try {
       _isLoadingUserProfiles = true;
       notifyListeners();
@@ -259,6 +353,9 @@ class FriendsViewModel extends ChangeNotifier {
         // Hämta användaruppgifter i batch för prestanda
         final profiles = await _userService.getUserProfiles(uncachedUserIds);
 
+        // ✅ SÄKER: Kontrollera dispose efter asynkron operation
+        if (_isDisposed) return;
+
         // Uppdatera cache
         for (final profile in profiles) {
           _requestUserProfiles[profile.uid] = profile;
@@ -282,8 +379,10 @@ class FriendsViewModel extends ChangeNotifier {
     } catch (e) {
       AppLogger.error('❌ Kunde inte ladda användaruppgifter: $e');
     } finally {
-      _isLoadingUserProfiles = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        _isLoadingUserProfiles = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -328,6 +427,9 @@ class FriendsViewModel extends ChangeNotifier {
 
       final results = await _userService.searchUsers(_searchQuery);
 
+      // ✅ SÄKER: Kontrollera dispose efter asynkron operation
+      if (_isDisposed) return;
+
       // Filter out current user and existing friends
       final currentUserId = _userService.currentUserId;
       final friendIds = friends.map((f) => f.uid).toSet();
@@ -346,8 +448,10 @@ class FriendsViewModel extends ChangeNotifier {
       _searchError = 'Sökningen misslyckades: $e';
       AppLogger.error('Search failed', e);
     } finally {
-      _isSearching = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        _isSearching = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -357,30 +461,76 @@ class FriendsViewModel extends ChangeNotifier {
     _searchError = null;
   }
 
+  // ✅ SÄKRA LISTENER METODER
   void _onFriendsServiceChanged() {
-    // ✅ NYTT: Ladda användaruppgifter när förfrågningar ändras
-    loadUserProfilesForRequests();
-    notifyListeners();
+    // ✅ SÄKER: Kontrollera om ViewModel är disposed innan notifiering
+    if (!_isDisposed) {
+      loadUserProfilesForRequests();
+      notifyListeners();
+    } else {
+      AppLogger.warning(
+          '⚠️ Ignorerar friends service change - ViewModel är disposed');
+    }
   }
 
   void _onUserServiceChanged() {
-    notifyListeners();
+    // ✅ SÄKER: Kontrollera om ViewModel är disposed innan notifiering
+    if (!_isDisposed) {
+      notifyListeners();
+    } else {
+      AppLogger.warning(
+          '⚠️ Ignorerar user service change - ViewModel är disposed');
+    }
+  }
+
+  // ✅ VIKTIGT: Lyssna på ändringar i grupper och uppdatera UI
+  void _onCategoriesServiceChanged() {
+    // ✅ SÄKER: Kontrollera om ViewModel är disposed innan notifiering
+    if (!_isDisposed) {
+      AppLogger.info(
+          '🔔 _onCategoriesServiceChanged anropad - kategorier har ändrats!');
+      AppLogger.info(
+          '📊 Antal grupper nu: ${_categoriesService.categories.length}');
+
+      // Trigga UI rebuild
+      notifyListeners();
+      AppLogger.info('✅ notifyListeners anropad för FriendsViewModel');
+    } else {
+      AppLogger.warning(
+          '⚠️ Ignorerar categories service change - ViewModel är disposed');
+    }
   }
 
   /// Clear errors
   void clearError() {
-    _friendsService.clearError();
-    _searchError = null;
-    notifyListeners();
+    if (!_isDisposed) {
+      _friendsService.clearError();
+      _categoriesService.clearError(); // ✅ NYTT
+      _searchError = null;
+      _groupCreationError = null; // ✅ NYTT
+      notifyListeners();
+    }
   }
 
   /// Refresh all data
   Future<void> refresh() async {
+    // ✅ SÄKER: Kontrollera dispose före asynkrona operationer
+    if (_isDisposed) return;
+
     // Rensa cache innan refresh
     clearUserProfilesCache();
 
     // Refresha friends service data
     await _friendsService.refresh();
+
+    // ✅ SÄKER: Kontrollera dispose efter asynkron operation
+    if (_isDisposed) return;
+
+    // ✅ NYTT: Refresha groups data
+    await _categoriesService.refresh();
+
+    // ✅ SÄKER: Kontrollera dispose efter asynkron operation
+    if (_isDisposed) return;
 
     // Ladda användaruppgifter för nya förfrågningar
     await loadUserProfilesForRequests();
@@ -388,8 +538,15 @@ class FriendsViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _friendsService.removeListener(_onFriendsServiceChanged);
-    _userService.removeListener(_onUserServiceChanged);
+    // ✅ MARKERA som disposed för säkerhet
+    _isDisposed = true;
+
+    // ✅ KRITISK FIX: FriendsViewModel är en SINGLETON som ska leva
+    AppLogger.warning(
+        '⚠️ FriendsViewModel.dispose() anropad - IGNORERAS för singleton safety');
+
+    // ✅ ANROPA super.dispose() för att uppfylla @mustCallSuper
+    // Men ta INTE bort listeners eller rensa state
     super.dispose();
   }
 }

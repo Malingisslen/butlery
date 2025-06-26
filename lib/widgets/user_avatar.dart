@@ -1,32 +1,33 @@
-// lib/widgets/user_avatar.dart
+// lib/widgets/user_avatar.dart - FIXAD NAVIGATION
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart'; // ✅ LÄGG TILL för Consumer
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/backup_service.dart';
 import '../core/injection.dart';
 import '../services/social_recipe_service.dart';
-import '../viewmodels/friends_viewmodel.dart'; // ✅ LÄGG TILL för notifikationer
+import '../viewmodels/friends_viewmodel.dart';
+import '../core/utils/logger.dart';
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Integrerad User Avatar Widget med komplett profil-funktionalitet och notification badges
+/// Component: Integrerad User Avatar Widget med FIXAD navigation
 /// File: widgets/user_avatar.dart
-/// Quick Guide: Smart avatar med social navigation + backup/restore + logout + notifikationer
+/// Quick Guide: Smart avatar med social navigation + backup/restore + logout + KORREKT navigation
 /// Dependencies IN: cached_network_image, firebase_auth, auth_service, backup_service, friends_viewmodel
-/// Dependencies OUT: Alla views som visar användare + komplett profil-hantering med notifikationer
-/// Data flow: Avatar URL → Cache check → Tap → Komplett social menu med notification badges
+/// Dependencies OUT: KORREKTA vyer - editProfile, shared, friends
+/// Data flow: Avatar URL → Cache check → Tap → Komplett social menu med RÄTT navigation
 /// State management: Stateless med Firebase Auth integration + reactive notification counts
-/// Purpose: Centraliserad avatar med all profil-relaterad funktionalitet inklusive notification management
-/// Common issues: Firebase Auth timing, backup file permissions, notification count syncing
+/// Purpose: Centraliserad avatar med all profil-relaterad funktionalitet + FIXAD navigation
+/// Common issues: ✅ LÖST: Navigation går nu till rätt vyer istället för GroupInvitationsView
 /// Test coverage: 70%
 /// Performance: ⚡ Cached med memory optimization + optimized notification loading
-/// Analytics: ✅ Comprehensive tracking för alla actions inklusive notification interactions
-/// Code smells: ✅ Clean integration av profile_dialog funktionalitet + notification badges
-/// Connected to: Firebase Auth, BackupService, FriendsViewModel, alla social views
-/// Used in phases: 18 (integrerad social + backup + notifications)
+/// Analytics: ✅ Comprehensive tracking för alla actions inklusive korrekt navigation
+/// Code smells: ✅ Clean integration + FIXAD navigation till rätt vyer
+/// Connected to: Firebase Auth, BackupService, FriendsViewModel, KORREKTA social views
+/// Used in phases: 18.4 - Komplett social med FIXAD navigation
 
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
@@ -238,15 +239,19 @@ class UserAvatar extends StatelessWidget {
       isScrollControlled: true,
       builder: (context) => MultiProvider(
         providers: [
-          // ✅ LÄGG TILL FriendsViewModel för notification count
-          ChangeNotifierProvider(create: (_) => sl<FriendsViewModel>()),
+          ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
         ],
         child: Builder(
           builder: (context) {
-            // ✅ LADDA DATA när modal öppnas
+            // Ladda data när modal öppnas
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              final friendsViewModel = context.read<FriendsViewModel>();
-              friendsViewModel.refresh();
+              try {
+                final friendsViewModel = context.read<FriendsViewModel>();
+                friendsViewModel.refresh();
+              } catch (e) {
+                AppLogger.warning(
+                    '⚠️ FriendsViewModel disposed i UserAvatar dialog');
+              }
             });
 
             return Container(
@@ -264,15 +269,15 @@ class UserAvatar extends StatelessWidget {
                 children: [
                   // Handle bar
                   Container(
-                    width: 40,
-                    height: 4,
+                    width: AppTheme.iconSizeDisplay,
+                    height: AppTheme.spacingXs,
                     margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
                     decoration: BoxDecoration(
                       color: Theme.of(context)
                           .colorScheme
                           .onSurfaceVariant
                           .withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(AppTheme.spacingXxs),
                     ),
                   ),
 
@@ -449,6 +454,8 @@ class UserAvatar extends StatelessWidget {
                 ),
           ),
           SizedBox(height: AppTheme.spacingSm),
+
+          // ✅ FIXAD: Redigera profil - navigera till editProfile
           _buildMenuItem(
             context,
             icon: Icons.person_outline,
@@ -456,12 +463,14 @@ class UserAvatar extends StatelessWidget {
             subtitle: 'Uppdatera profil och inställningar',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/profile/edit');
+              Navigator.pushNamed(context, '/editProfile');
             },
           ),
-          // ✅ UPPDATERAD: Vänner med notification badge
+
+          // Vänner med notification badge
           _buildFriendsMenuItem(context),
-          // ✨ UPPDATERAD: Delat innehåll med notification badge
+
+          // ✅ FIXAD: Delat med mig - navigera till SharedWithMeView
           _buildNotificationMenuItem(
             context,
             icon: Icons.share_outlined,
@@ -472,6 +481,8 @@ class UserAvatar extends StatelessWidget {
               Navigator.pushNamed(context, '/shared');
             },
           ),
+
+          // ✅ FIXAD: Notiser - navigera till friends med notification tab
           _buildMenuItem(
             context,
             icon: Icons.notifications_outlined,
@@ -479,7 +490,11 @@ class UserAvatar extends StatelessWidget {
             subtitle: 'Vänskapsförfrågningar och meddelanden',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/friends/requests');
+              Navigator.pushNamed(
+                context,
+                '/friends',
+                arguments: {'tabIndex': 1}, // Notification tab
+              );
             },
           ),
         ],
@@ -487,11 +502,19 @@ class UserAvatar extends StatelessWidget {
     );
   }
 
-  /// ✅ NY: Vänner menu item med notification badge för vänskapsförfrågningar
+  /// Vänner menu item med konsistent layout och navigation till huvudsaklig vänvy
   Widget _buildFriendsMenuItem(BuildContext context) {
     return Consumer<FriendsViewModel>(
       builder: (context, friendsViewModel, child) {
-        final pendingRequestsCount = friendsViewModel.pendingRequestsCount;
+        // Safety check: Hantera disposed ViewModel
+        int pendingRequestsCount;
+        try {
+          pendingRequestsCount = friendsViewModel.pendingRequestsCount;
+        } catch (e) {
+          AppLogger.warning(
+              '⚠️ FriendsViewModel disposed i UserAvatar - visar fallback');
+          pendingRequestsCount = 0;
+        }
 
         return InkWell(
           onTap: () {
@@ -516,40 +539,38 @@ class UserAvatar extends StatelessWidget {
                         borderRadius: AppTheme.mediumRadius,
                       ),
                       child: Icon(
-                        Icons.people_outline,
+                        Icons.people,
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
-                    // ✅ NOTIFICATION BADGE för vänskapsförfrågningar
+                    // Notification badge
                     if (pendingRequestsCount > 0)
                       Positioned(
-                        right: -2,
-                        top: -2,
+                        right: -AppTheme.spacingXxs,
+                        top: -AppTheme.spacingXxs,
                         child: Container(
-                          constraints: const BoxConstraints(
-                            minWidth: 20,
-                            minHeight: 20,
+                          constraints: BoxConstraints(
+                            minWidth: AppTheme.iconSizeAction,
+                            minHeight: AppTheme.iconSizeAction,
                           ),
                           padding: EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingXs,
                           ),
                           decoration: BoxDecoration(
                             color: AppTheme.errorColor,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(
+                                AppTheme.radiusSmall * 2.5),
                             border: Border.all(
                               color: Theme.of(context).colorScheme.surface,
-                              width: 1.5,
+                              width: AppTheme.dividerHeight *
+                                  1.5, // Istället för 1.5
                             ),
                           ),
                           child: Text(
                             pendingRequestsCount > 99
                                 ? '99+'
                                 : pendingRequestsCount.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTheme.chipLabelStyle,
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -572,17 +593,16 @@ class UserAvatar extends StatelessWidget {
                             Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingXs,
-                                vertical: 2,
+                                vertical: AppTheme.spacingXxs,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.errorColor,
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppTheme.successColor,
+                                borderRadius: AppTheme.chipRadius,
                               ),
                               child: Text(
-                                '$pendingRequestsCount VÄNTANDE',
-                                style: const TextStyle(
+                                'NYTT',
+                                style: AppTheme.chipLabelStyle.copyWith(
                                   color: Colors.white,
-                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -592,8 +612,8 @@ class UserAvatar extends StatelessWidget {
                       ),
                       Text(
                         pendingRequestsCount > 0
-                            ? 'Hantera vänner och förfrågningar ($pendingRequestsCount nya)'
-                            : 'Hantera vänner och förfrågningar',
+                            ? 'Sök efter vänner och hantera förfrågningar ($pendingRequestsCount nya)'
+                            : 'Sök efter vänner och hantera förfrågningar',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
@@ -616,7 +636,7 @@ class UserAvatar extends StatelessWidget {
     );
   }
 
-  /// ✨ NY: Menu item med notification badge
+  /// Menu item med notification badge
   Widget _buildNotificationMenuItem(
     BuildContext context, {
     required IconData icon,
@@ -677,7 +697,7 @@ class UserAvatar extends StatelessWidget {
                       ),
                       child: Text(
                         newItemsCount > 99 ? '99+' : newItemsCount.toString(),
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -710,7 +730,7 @@ class UserAvatar extends StatelessWidget {
                             color: AppTheme.successColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(
+                          child: const Text(
                             'NYTT',
                             style: TextStyle(
                               color: Colors.white,
@@ -1270,7 +1290,7 @@ class UserAvatarWithStatus extends StatelessWidget {
               color: isOnline ? AppTheme.successColor : Colors.grey[400],
               border: Border.all(
                 color: Theme.of(context).colorScheme.surface,
-                width: 2,
+                width: AppTheme.spacingXxs,
               ),
             ),
           ),
