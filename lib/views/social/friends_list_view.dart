@@ -1,41 +1,51 @@
-// lib/views/social/friends_list_view.dart
+// lib/views/social/friends_list_view.dart - UPPDATERAD med gruppinbjudnings-badge
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
+import '../../services/group_invitation_service.dart'; // ✅ NYTT: Import GroupInvitationService
+import '../../models/group_invitation.dart'; // ✅ NYTT: Import GroupInvitation
 import '../../widgets/user_avatar.dart';
 import '../../widgets/main_layout_menu.dart';
-import '../../widgets/search_bar.dart'; // ✅ AppSearchBar widget
+import '../../widgets/search_bar.dart';
 import '../../widgets/empty_state.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
+import '../../models/friend_category.dart';
+import '../../services/friend_categories_service.dart';
+import 'create_group_dialog.dart';
+import 'group_detail_view.dart';
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Friends List Interface med sök och request-hantering
+/// Component: Friends List Interface med gruppinbjudnings-badge
 /// File: views/social/friends_list_view.dart
-/// Quick Guide: Komplett vänhantering med sök, förfrågningar och vänlista
-/// Dependencies IN: FriendsViewModel, UserAvatar, SearchBar
-/// Dependencies OUT: Friend request notifications, user search
-/// Data flow: Search users → Send requests → Accept/Reject → Friends list
-/// State management: Konsumerar FriendsViewModel med Provider
-/// Purpose: Central hub för all vänhantering och social discovery
-/// Common issues: ✅ KOMPLETT: Tab navigation och sök fungerar perfekt
+/// Quick Guide: Komplett vänhantering med gruppinbjudningar direkt i grupper-tabben
+/// Dependencies IN: FriendsViewModel, GroupInvitationService, UserAvatar, SearchBar
+/// Dependencies OUT: Friend management, group invitations, smart tab navigation
+/// Data flow: Show pending invitations in groups tab → Accept/reject inline
+/// State management: ✅ Multi-provider för FriendsViewModel + GroupInvitationService
+/// Purpose: Central hub för vänhantering OCH gruppinbjudningar
+/// Common issues: ✅ LÖST: Inline invitation handling, orange badges
 /// Test coverage: 75%
-/// Performance: ⚡ Cached search results, optimized friends loading
-/// Analytics: ✅ Friend actions och search behavior tracking
-/// Code smells: ✅ Clean separation med ViewModel
-/// Connected to: FriendsViewModel, UserService, social features
-/// Used in phases: 18
+/// Performance: ⚡ Optimerad med Consumer2 pattern
+/// Analytics: ✅ Invitation response tracking
+/// Code smells: ✅ Clean separation av concerns
+/// Connected to: FriendsViewModel, GroupInvitationService, GroupDetailView
+/// Used in phases: 18.4 - Komplett gruppinbjudningssystem
 
 class FriendsListView extends StatelessWidget {
   const FriendsListView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => sl<FriendsViewModel>(),
+    return MultiProvider(
+      // ✅ NYTT: MultiProvider för både Friends och GroupInvitations
+      providers: [
+        ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
+        ChangeNotifierProvider.value(value: sl<GroupInvitationService>()),
+      ],
       child: const _FriendsListViewContent(),
     );
   }
@@ -53,14 +63,13 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
-  int _currentTabIndex = 0; // ✅ FIXAT: Nu uppdateras denna korrekt
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
 
-    // ✅ FIXAT: Lyssna på TabController ändringar
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() {
@@ -69,13 +78,21 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       }
     });
 
-    // Lyssna på search changes
     _searchController.addListener(_onSearchChanged);
 
-    // Ladda initial data
+    // Hantera navigation arguments för att sätta rätt tab
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = context.read<FriendsViewModel>();
-      viewModel.refresh();
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['tabIndex'] != null) {
+        final tabIndex = args['tabIndex'] as int;
+        if (tabIndex >= 0 && tabIndex < 4) {
+          _tabController.animateTo(tabIndex);
+          setState(() {
+            _currentTabIndex = tabIndex;
+          });
+        }
+      }
     });
   }
 
@@ -101,100 +118,129 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<FriendsViewModel>();
+    return Consumer2<FriendsViewModel, GroupInvitationService>(
+      // ✅ NYTT: Consumer2
+      builder: (context, viewModel, groupInvitationService, child) {
+        // Hämta kategorier direkt från service
+        final categoriesService = sl<FriendCategoriesService>();
+        final pendingInvitationsCount =
+            groupInvitationService.pendingNotificationsCount;
 
-    return MainLayoutMenu(
-      currentIndex: null,
-      body: Scaffold(
-        appBar: AppBar(
-          title: const Text('Vänner'),
-          bottom: TabBar(
-            controller: _tabController,
-            // ✅ BORTTAGET: onTap behövs inte längre eftersom TabController hanterar allt
-            tabs: [
-              Tab(
-                icon: const Icon(Icons.people),
-                text: 'Mina vänner (${viewModel.friends.length})',
-              ),
-              Tab(
-                icon: Badge(
-                  isLabelVisible: viewModel.incomingRequests.isNotEmpty,
-                  label: Text('${viewModel.incomingRequests.length}'),
-                  child: const Icon(Icons.person_add),
-                ),
-                text: 'Förfrågningar',
-              ),
-              Tab(
-                icon: const Icon(Icons.search),
-                text: 'Sök vänner',
-              ),
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            // Error display
-            if (viewModel.hasError)
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(AppTheme.spacingMd),
-                margin: EdgeInsets.all(AppTheme.spacingMd),
-                decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.smallRadius,
-                  border: Border.all(
-                      color: AppTheme.errorColor.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: AppTheme.errorColor),
-                    SizedBox(width: AppTheme.spacingSm),
-                    Expanded(
-                      child: Text(
-                        viewModel.error!,
-                        style: TextStyle(color: AppTheme.errorColor),
-                      ),
+        return MainLayoutMenu(
+          currentIndex: null,
+          body: Scaffold(
+            appBar: AppBar(
+              title: const Text('Vänner & Grupper'),
+              bottom: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelPadding:
+                    EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+                tabs: [
+                  Tab(
+                    icon: const Icon(Icons.people),
+                    text: 'Vänner (${viewModel.friends.length})',
+                  ),
+                  Tab(
+                    icon: Badge(
+                      isLabelVisible: viewModel.incomingRequests.isNotEmpty,
+                      label: Text('${viewModel.incomingRequests.length}'),
+                      child: const Icon(Icons.person_add),
                     ),
-                    TextButton(
-                      onPressed: viewModel.clearError,
-                      child: const Text('Stäng'),
+                    text: 'Förfrågningar',
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.search),
+                    text: 'Sök',
+                  ),
+                  // ✅ UPPDATERAD: Grupper tab med orange badge för inbjudningar
+                  Tab(
+                    icon: Badge(
+                      isLabelVisible: pendingInvitationsCount > 0,
+                      label: Text('$pendingInvitationsCount'),
+                      backgroundColor: AppTheme.warningColor,
+                      child: const Icon(Icons.group),
                     ),
-                  ],
-                ),
-              ),
-
-            // ✅ SÖKFÄLT: Visa endast för sök-tab (index 2)
-            if (_currentTabIndex == 2)
-              Padding(
-                padding: EdgeInsets.all(AppTheme.spacingMd),
-                child: AppSearchBar(
-                  controller: _searchController,
-                  hintText: 'Sök efter vänner...',
-                  onChanged: (value) {
-                    // onChanged hanteras redan av _searchController.addListener
-                  },
-                  onClear: _onSearchCleared,
-                ),
-              ),
-
-            // Tab content
-            Expanded(
-              child: IndexedStack(
-                index: _currentTabIndex, // ✅ Nu uppdateras denna korrekt
-                children: [
-                  _buildFriendsTab(viewModel), // Index 0: Mina vänner
-                  _buildRequestsTab(viewModel), // Index 1: Förfrågningar
-                  _buildSearchTab(viewModel), // Index 2: Sök vänner
+                    text: 'Grupper (${categoriesService.categories.length})',
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+            body: Column(
+              children: [
+                // Error display
+                if (viewModel.hasError)
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(AppTheme.spacingMd),
+                    margin: EdgeInsets.all(AppTheme.spacingMd),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withValues(alpha: 0.1),
+                      borderRadius: AppTheme.smallRadius,
+                      border: Border.all(
+                          color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: AppTheme.errorColor),
+                        SizedBox(width: AppTheme.spacingSm),
+                        Expanded(
+                          child: Text(
+                            viewModel.error!,
+                            style: TextStyle(color: AppTheme.errorColor),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: viewModel.clearError,
+                          child: const Text('Stäng'),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Sökfält: Visa endast för sök-tab (index 2)
+                if (_currentTabIndex == 2)
+                  Padding(
+                    padding: EdgeInsets.all(AppTheme.spacingMd),
+                    child: AppSearchBar(
+                      controller: _searchController,
+                      hintText: 'Sök efter vänner...',
+                      onChanged: (value) {
+                        // onChanged hanteras redan av _searchController.addListener
+                      },
+                      onClear: _onSearchCleared,
+                    ),
+                  ),
+
+                // Tab content
+                Expanded(
+                  child: IndexedStack(
+                    index: _currentTabIndex,
+                    children: [
+                      _buildFriendsTab(viewModel),
+                      _buildRequestsTab(viewModel),
+                      _buildSearchTab(viewModel),
+                      _buildGroupsTab(categoriesService,
+                          groupInvitationService), // ✅ UPPDATERAD: Pass GroupInvitationService
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            floatingActionButton: _currentTabIndex == 3
+                ? FloatingActionButton.extended(
+                    onPressed: () => _showCreateGroupDialog(viewModel),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Skapa grupp'),
+                  )
+                : null,
+          ),
+        );
+      },
     );
   }
 
-  /// Tab 1: Mina vänner
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.friends.isEmpty) {
       return const Center(
@@ -235,7 +281,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// Tab 2: Vänskapsförfrågningar
   Widget _buildRequestsTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
       return const Center(
@@ -275,7 +320,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// Tab 3: Sök vänner - ✅ FIXAT: Sökfält flyttat till huvudwidget
   Widget _buildSearchTab(FriendsViewModel viewModel) {
     if (_searchController.text.isEmpty) {
       return const EmptyState(
@@ -319,7 +363,326 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// Vänkort för vänlistan
+  /// ✅ UPPDATERAD: Grupper-tab med gruppinbjudningar
+  Widget _buildGroupsTab(FriendCategoriesService categoriesService,
+      GroupInvitationService groupInvitationService) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([categoriesService, groupInvitationService]),
+      builder: (context, child) {
+        final groups = categoriesService.categories;
+        final pendingInvitations =
+            groupInvitationService.pendingReceivedInvitations;
+
+        if (categoriesService.isLoading &&
+            groups.isEmpty &&
+            pendingInvitations.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Laddar grupper...'),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            await Future.wait([
+              categoriesService.refresh(),
+              groupInvitationService.refresh(),
+            ]);
+          },
+          child: CustomScrollView(
+            slivers: [
+              // ✅ NYTT: Pending inbjudningar sektion
+              if (pendingInvitations.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: AppTheme.screenPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.mail_outline,
+                              color: AppTheme.warningColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Gruppinbjudningar (${pendingInvitations.length})',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.warningColor,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Du har fått inbjudningar att gå med i grupper',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textSecondary,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final invitation = pendingInvitations[index];
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMd,
+                          vertical: AppTheme.spacingXs,
+                        ),
+                        child: _buildInvitationCard(
+                            invitation, groupInvitationService),
+                      );
+                    },
+                    childCount: pendingInvitations.length,
+                  ),
+                ),
+                // Separator
+                if (groups.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: AppTheme.screenPadding,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          Divider(color: AppTheme.dividerColor),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+
+              // Befintliga grupper sektion
+              if (groups.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: AppTheme.screenPadding,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.groups,
+                          color: AppTheme.primaryColor,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Mina grupper (${groups.length})',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final group = groups[index];
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMd,
+                          vertical: AppTheme.spacingXs,
+                        ),
+                        child: _buildGroupCard(group, categoriesService),
+                      );
+                    },
+                    childCount: groups.length,
+                  ),
+                ),
+              ],
+
+              // Empty state
+              if (groups.isEmpty && pendingInvitations.isEmpty) ...[
+                const SliverFillRemaining(
+                  child: EmptyState(
+                    icon: Icons.groups_outlined,
+                    title: 'Inga grupper än',
+                    subtitle:
+                        'Skapa din första grupp eller vänta på inbjudningar från vänner.',
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// ✅ NYTT: Widget för inbjudningskort
+  Widget _buildInvitationCard(
+      GroupInvitation invitation, GroupInvitationService service) {
+    return Card(
+      color: AppTheme.warningColor.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppTheme.mediumRadius,
+        side: BorderSide(
+          color: AppTheme.warningColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: AppTheme.cardPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Gruppmoji
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.warningColor.withValues(alpha: 0.1),
+                    borderRadius: AppTheme.smallRadius,
+                  ),
+                  child: Center(
+                    child: Text(
+                      invitation.groupEmoji,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        invitation.groupName,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                      Text(
+                        'Inbjudan från ${invitation.fromUserName}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.textSecondary,
+                            ),
+                      ),
+                      Text(
+                        'Skickat: ${invitation.timeAgoText}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.warningColor,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (invitation.personalMessage?.isNotEmpty == true) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(AppTheme.spacingSm),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                  borderRadius: AppTheme.smallRadius,
+                ),
+                child: Text(
+                  invitation.personalMessage!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: service.isLoading
+                        ? null
+                        : () => _rejectInvitation(invitation.id, service),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.errorColor,
+                      side: BorderSide(color: AppTheme.errorColor),
+                    ),
+                    child: const Text('Avvisa'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: service.isLoading
+                        ? null
+                        : () => _acceptInvitation(invitation.id, service),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.successColor,
+                    ),
+                    child: const Text('Acceptera'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // _buildGroupCard utan menyknapparna (borttagna för bättre UX)
+  Widget _buildGroupCard(
+      FriendCategory group, FriendCategoriesService categoriesService) {
+    return Card(
+      child: ListTile(
+        // Navigation till gruppdetaljer
+        onTap: () => _navigateToGroupDetail(group),
+        leading: CircleAvatar(
+          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+          child: Text(
+            group.emoji ?? '👥',
+            style: const TextStyle(fontSize: 20),
+          ),
+        ),
+        title: Text(
+          group.name,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (group.description?.isNotEmpty == true)
+              Text(
+                group.description!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            SizedBox(height: AppTheme.spacingXs),
+            Text(
+              group.summary,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFriendCard(UserProfile friend, FriendsViewModel viewModel) {
     return Card(
       child: ListTile(
@@ -379,19 +742,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
             ),
           ],
         ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profilvisning kommer snart! 🚀'),
-              backgroundColor: AppTheme.warningColor,
-            ),
-          );
-        },
       ),
     );
   }
 
-  /// Förfrågningskort
   Widget _buildRequestCard(FriendRequest request, FriendsViewModel viewModel) {
     return Card(
       child: Padding(
@@ -472,7 +826,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// Sökresultatkort
   Widget _buildSearchResultCard(UserProfile user, FriendsViewModel viewModel) {
     final isFriend = viewModel.friends.any((friend) => friend.uid == user.uid);
     final hasPendingRequest =
@@ -501,13 +854,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// Action-knapp för sökresultat
-  Widget _buildActionButton(
-    UserProfile user,
-    FriendsViewModel viewModel,
-    bool isFriend,
-    bool hasPendingRequest,
-  ) {
+  Widget _buildActionButton(UserProfile user, FriendsViewModel viewModel,
+      bool isFriend, bool hasPendingRequest) {
     if (isFriend) {
       return Container(
         padding: EdgeInsets.symmetric(
@@ -590,11 +938,85 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// Skicka vänskapsförfrågan
+  // ===== NAVIGATION METHODS =====
+
+  // Navigation till gruppdetaljer
+  void _navigateToGroupDetail(FriendCategory group) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GroupDetailView(groupId: group.id),
+      ),
+    );
+  }
+
+  Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
+    await showDialog(
+      context: context,
+      builder: (context) =>
+          const CreateGroupDialog(), // Ta bort viewModel parameter
+    );
+
+    // Refresh efter dialog
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  // ===== INVITATION ACTIONS =====
+
+  /// ✅ NYTT: Acceptera gruppinbjudan
+  Future<void> _acceptInvitation(
+      String invitationId, GroupInvitationService service) async {
+    final success = await service.acceptGroupInvitation(invitationId);
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inbjudan accepterad! Välkommen till gruppen! 🎉'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
+      // Refresh för att uppdatera grupplist
+      final viewModel = context.read<FriendsViewModel>();
+      viewModel.refresh();
+    } else if (mounted && service.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fel: ${service.error}'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
+  /// ✅ NYTT: Avvisa gruppinbjudan
+  Future<void> _rejectInvitation(
+      String invitationId, GroupInvitationService service) async {
+    final success = await service.rejectGroupInvitation(invitationId);
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inbjudan avvisad'),
+          backgroundColor: AppTheme.warningColor,
+        ),
+      );
+    } else if (mounted && service.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fel: ${service.error}'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
+  // ===== FRIEND ACTIONS =====
+
   Future<void> _sendFriendRequest(
       UserProfile user, FriendsViewModel viewModel) async {
     final success = await viewModel.sendFriendRequest(user.uid);
-
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -606,11 +1028,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
   }
 
-  /// Acceptera förfrågan
   Future<void> _acceptRequest(
       FriendRequest request, FriendsViewModel viewModel) async {
     final success = await viewModel.acceptFriendRequest(request.id);
-
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -621,11 +1041,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
   }
 
-  /// Avböj förfrågan
   Future<void> _rejectRequest(
       FriendRequest request, FriendsViewModel viewModel) async {
     final success = await viewModel.rejectFriendRequest(request.id);
-
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -636,7 +1054,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
   }
 
-  /// Ta bort vän dialog
   Future<void> _showRemoveFriendDialog(
       UserProfile friend, FriendsViewModel viewModel) async {
     final shouldRemove = await showDialog<bool>(
@@ -652,9 +1069,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
             child: const Text('Ta bort'),
           ),
         ],
@@ -663,7 +1078,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
     if (shouldRemove == true && mounted) {
       final success = await viewModel.removeFriend(friend.uid);
-
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

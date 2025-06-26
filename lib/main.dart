@@ -29,6 +29,7 @@ import 'core/injection.dart';
 import 'services/recipe_service.dart';
 
 import 'models/recipe.dart';
+import 'models/shared_menu.dart';
 import 'theme/app_theme.dart';
 
 // Auth view
@@ -53,6 +54,9 @@ import 'views/social/user_profile_edit_view.dart';
 import 'views/social/friends_list_view.dart';
 import 'views/social/friend_requests_view.dart';
 import 'views/social/shared_with_me_view.dart';
+import 'views/social/collaborative_shopping_view.dart';
+import 'views/social/menu_preview_view.dart';
+import 'views/social/create_shared_shopping_list_view.dart';
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
@@ -192,7 +196,7 @@ class _ButleryAppState extends State<ButleryApp> {
       if (initialMedia != null) {
         debugPrint('📥 Mottog delning (app startad): ${initialMedia.content}');
         // Vänta lite så navigation är redo
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(AppTheme.animationDurationSlow, () {
           _handleSharedMedia(initialMedia);
         });
       }
@@ -348,7 +352,29 @@ class _ButleryAppState extends State<ButleryApp> {
                 return _route(const FriendsListView(), settings);
               case '/friends/requests':
                 return _route(const FriendRequestsView(), settings);
+              case '/collaborative-shopping':
+                final listId = settings.arguments as String;
+                return _route(
+                    CollaborativeShoppingView(listId: listId), settings);
 
+              case '/menu-preview':
+                final sharedMenu = settings.arguments as SharedMenu;
+                return _route(
+                    MenuPreviewView(sharedMenu: sharedMenu), settings);
+
+              case '/create-shared-shopping':
+                return _route(const CreateSharedShoppingListView(), settings);
+
+              case '/shared-shopping-lists':
+                return _route(
+                  Scaffold(
+                    appBar: AppBar(title: const Text('Delade inköpslistor')),
+                    body: const Center(
+                      child: Text('Delade inköpslistor kommer snart!'),
+                    ),
+                  ),
+                  settings,
+                );
               // ===== SOCIAL ROUTES KOMPLETT =====
               // SharedWithMeView hanterar både recept och menyer
 
@@ -376,7 +402,7 @@ class _ButleryAppState extends State<ButleryApp> {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 100),
+        transitionDuration: AppTheme.animationDurationFast,
       );
     }
 
@@ -405,7 +431,7 @@ class _ButleryAppState extends State<ButleryApp> {
             child: child,
           );
         },
-        transitionDuration: const Duration(milliseconds: 150),
+        transitionDuration: AppTheme.animationDurationMedium,
       );
     }
 
@@ -429,7 +455,7 @@ class _ButleryAppState extends State<ButleryApp> {
           return SlideTransition(
               position: animation.drive(tween), child: child);
         },
-        transitionDuration: const Duration(milliseconds: 150),
+        transitionDuration: AppTheme.animationDurationMedium,
       );
     }
 
@@ -449,7 +475,7 @@ class _ButleryAppState extends State<ButleryApp> {
 
         return SlideTransition(position: animation.drive(tween), child: child);
       },
-      transitionDuration: const Duration(milliseconds: 150),
+      transitionDuration: AppTheme.animationDurationMedium,
     );
   }
 
@@ -511,7 +537,7 @@ class _ButleryAppState extends State<ButleryApp> {
           ),
         );
       },
-      transitionDuration: const Duration(milliseconds: 100),
+      transitionDuration: AppTheme.animationDurationFast,
     );
   }
 }
