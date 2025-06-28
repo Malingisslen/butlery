@@ -336,6 +336,14 @@ class _InkopslistaViewContentState extends State<_InkopslistaViewContent> {
     if (!hasLists) return [];
 
     return [
+      // Demo-knapp för Unified Shopping
+      IconButton(
+        icon: const Icon(Icons.science, color: Colors.orange),
+        tooltip: 'Testa Unified Shopping',
+        onPressed: () {
+          Navigator.pushNamed(context, '/unified-shopping-demo');
+        },
+      ),
       // Synk-status indikator
       Selector<ShoppingListViewModel, (bool, bool)>(
         selector: (_, vm) => (vm.needsSync, vm.isSyncing),
