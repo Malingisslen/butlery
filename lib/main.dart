@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'core/constants/routes.dart';
 
 // Firebase-kärna + Firestore + Auth + Analytics
 import 'package:firebase_core/firebase_core.dart';
@@ -30,6 +31,8 @@ import 'services/recipe_service.dart';
 
 import 'models/recipe.dart';
 import 'models/shared_menu.dart';
+import 'models/user_profile.dart';
+
 import 'theme/app_theme.dart';
 
 // Auth view
@@ -57,6 +60,7 @@ import 'views/social/shared_with_me_view.dart';
 import 'views/social/collaborative_shopping_view.dart';
 import 'views/social/menu_preview_view.dart';
 import 'views/social/create_shared_shopping_list_view.dart';
+import 'views/social/friend_profile_view.dart';
 
 Future<void> main() async {
   // 1️⃣ Säkerställ att Flutter-bindningar är klara
@@ -364,6 +368,13 @@ class _ButleryAppState extends State<ButleryApp> {
 
               case '/create-shared-shopping':
                 return _route(const CreateSharedShoppingListView(), settings);
+
+              case Routes.friendProfile: // eller '/friend-profile':
+                final friend = settings.arguments as UserProfile;
+                return _route(
+                  FriendProfileView(friend: friend),
+                  settings,
+                );
 
               case '/shared-shopping-lists':
                 return _route(

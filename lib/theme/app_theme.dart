@@ -34,6 +34,20 @@ class AppTheme {
   ); // För "Middagar", "Lunch" etc
   static const Color _starGold = Color(0xFFFBBF24); // Guldgul för stjärnor
 
+// ===== FÄRGER FÖR REDAN DELADE RECEPT (✨ NYTT TILLÄGG) =====
+
+  /// Färger för recept som redan delats med vänner
+  static const Color _sharedRecipeText = Color(0xFF9CA3AF); // Ljus grå för text
+  static const Color _sharedRecipeIcon =
+      Color(0xFFD1D5DB); // Ännu ljusare för ikoner
+  static const Color _sharedRecipeBackground =
+      Color(0xFFF9FAFB); // Mycket ljus bakgrund
+
+  // Publika getters för redan delade recept
+  static const Color sharedRecipeTextColor = _sharedRecipeText;
+  static const Color sharedRecipeIconColor = _sharedRecipeIcon;
+  static const Color sharedRecipeBackgroundColor = _sharedRecipeBackground;
+
   // ===== MATERIAL 3 COLOR SCHEME (UPPDATERAD) =====
 
   static ColorScheme get lightColorScheme => const ColorScheme.light(
@@ -774,6 +788,47 @@ class AppTheme {
         fontWeight: FontWeight.normal,
         color: _textMedium,
         height: 1.4,
+      );
+// ===== TEXT STYLES FÖR REDAN DELADE RECEPT (✨ NYTT TILLÄGG) =====
+
+  /// Text style för redan delade recepttitlar
+  static TextStyle get sharedRecipeTitleStyle => cardTitleStyle.copyWith(
+        color: sharedRecipeTextColor,
+      );
+
+  /// Text style för redan delad metadata (måltidstyp, beskrivning)
+  static TextStyle get sharedRecipeMetaStyle => subtitleStyle.copyWith(
+        color: sharedRecipeTextColor.withValues(alpha: 0.8),
+      );
+
+  /// Text style för redan delad information (portioner, tid)
+  static TextStyle get sharedRecipeInfoStyle => captionStyle.copyWith(
+        color: sharedRecipeTextColor.withValues(alpha: 0.7),
+      );
+
+  /// Förbättrad "Delad" chip style
+  static TextStyle get sharedChipTextStyle => const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+        letterSpacing: 0.3,
+      );
+
+  /// Box decoration för förbättrad "Delad" chip
+  static BoxDecoration get sharedChipDecoration => BoxDecoration(
+        color: successColor.withValues(alpha: 0.9),
+        borderRadius: chipRadius,
+        border: Border.all(
+          color: successColor,
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: successColor.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       );
 
   // ===== STANDARDISERADE BUTTON STYLES =====
