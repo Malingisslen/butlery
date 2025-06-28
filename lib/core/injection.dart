@@ -1,8 +1,14 @@
 // lib/core/injection.dart
+
 // ✅ FINAL VERSION - Renamed enhanced classes to standard names + SharedPreferences
 
 /// Dependency injection konfiguration för Butlery med Social Shopping Platform
 library;
+
+// ==================== UNIFIED SHOPPING SYSTEM ====================
+import '../services/unified/unified_shopping_service.dart';
+import '../viewmodels/unified/unified_shopping_demo_viewmodel.dart';
+// =================================================================
 
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
@@ -134,6 +140,12 @@ Future<void> initializeDependencies() async {
     ),
   );
   debugPrint('✅ MultiShoppingListService registrerad');
+
+  // 4. Initiera unified shopping system (demo)
+  debugPrint('🔄 Initialiserar unified shopping system...');
+
+  await sl<UnifiedShoppingService>().initialize();
+  debugPrint('✅ UnifiedShoppingService initierad');
 
   // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
 
@@ -357,6 +369,34 @@ Future<void> initializeDependencies() async {
     // Fortsätt ändå - låt appen köra med begränsad funktionalitet
   }
 
+// ==================== UNIFIED SHOPPING SYSTEM (DEMO) ====================
+
+  debugPrint('🔄 Registrerar Unified Shopping System...');
+
+// Fix för FriendsViewModel dependency
+  if (!sl.isRegistered<FriendsViewModel>()) {
+    sl.registerLazySingleton<FriendsViewModel>(
+      () => FriendsViewModel(
+        friendsService: sl<FriendsService>(),
+        userService: sl<UserService>(),
+        categoriesService: sl<FriendCategoriesService>(),
+      ),
+    );
+  }
+
+// UnifiedShoppingService - Det nya systemet
+  sl.registerSingleton<UnifiedShoppingService>(UnifiedShoppingService());
+  debugPrint('✅ UnifiedShoppingService registrerad');
+
+  // UnifiedShoppingDemoViewModel - För att testa
+  sl.registerFactory<UnifiedShoppingDemoViewModel>(
+    () => UnifiedShoppingDemoViewModel(),
+  );
+  debugPrint('✅ UnifiedShoppingDemoViewModel registrerad');
+
+  debugPrint('🎉 Unified Shopping System registrerat!');
+  //=====================================================
+
   // ==================== VALIDATION ====================
 
   // Validera att alla kritiska services är registrerade
@@ -384,6 +424,10 @@ Future<void> initializeDependencies() async {
     sl<ShoppingListViewModel>(); // Den nya multi-list versionen
     sl<CreateSharedListViewModel>();
     sl<GroupInvitationsViewModel>();
+
+// Unified shopping system
+    sl<UnifiedShoppingService>();
+    sl<UnifiedShoppingDemoViewModel>();
 
     debugPrint(
         '✅ Alla kritiska services validerade inklusive multi-list shopping');
@@ -450,4 +494,16 @@ void debugPrintRegisteredServices() {
   debugPrint('  Multi-list: MultiShoppingListService');
   debugPrint('  Invitations: GroupInvitationService');
   debugPrint('  ViewModels: Alla ViewModels inklusive multi-list shopping');
+}
+
+/// Hjälpfunktion för att kontrollera unified shopping system
+bool isUnifiedShoppingReady() {
+  try {
+    sl<UnifiedShoppingService>();
+    sl<UnifiedShoppingDemoViewModel>();
+    return true;
+  } catch (e) {
+    debugPrint('⚠️ Unified shopping system inte redo: $e');
+    return false;
+  }
 }
