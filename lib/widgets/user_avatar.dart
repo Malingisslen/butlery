@@ -463,7 +463,7 @@ class UserAvatar extends StatelessWidget {
             subtitle: 'Uppdatera profil och inställningar',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/editProfile');
+              Navigator.pushNamed(context, '/profile/edit');
             },
           ),
 

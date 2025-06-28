@@ -558,6 +558,19 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
+  /// Hämta alla användarens recept (alias för getAllRecipes för kompatibilitet)
+  Future<List<Recipe>> getUserRecipes() async {
+    try {
+      AppLogger.info('📦 Hämtar användarens recept...');
+
+      // Återanvänd den befintliga getAllRecipes logiken
+      return await getAllRecipes();
+    } catch (e) {
+      AppLogger.error('Kunde inte hämta användarrecept', e);
+      throw Exception('Kunde inte hämta recept: $e');
+    }
+  }
+
   /// Skapa nytt recept (används av ShareService vid import)
   Future<RecipeOperationResult> createRecipe(Recipe recipe) async {
     // Använder samma logik som addRecipe

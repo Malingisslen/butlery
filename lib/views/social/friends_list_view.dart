@@ -686,6 +686,14 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   Widget _buildFriendCard(UserProfile friend, FriendsViewModel viewModel) {
     return Card(
       child: ListTile(
+        // ✅ LÄGG TILL DENNA onTap:
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/friend-profile', // eller Routes.friendProfile om du använder constants
+            arguments: friend,
+          );
+        },
         leading: UserAvatar.medium(
           imageUrl: friend.avatarUrl,
           displayName: friend.displayName,
@@ -709,11 +717,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 _showRemoveFriendDialog(friend, viewModel);
                 break;
               case 'profile':
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profilvisning kommer snart! 🚀'),
-                    backgroundColor: AppTheme.warningColor,
-                  ),
+                // Nu kan vi navigera istället för att bara visa snackbar
+                Navigator.pushNamed(
+                  context,
+                  '/friend-profile',
+                  arguments: friend,
                 );
                 break;
             }
