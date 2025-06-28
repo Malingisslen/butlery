@@ -569,6 +569,43 @@ class SocialRecipeService extends ChangeNotifier {
     }
   }
 
+  /// ✅ NY: Hämta recept-ID:n som redan delats med en specifik vän
+  Future<Set<String>> getRecipesSharedWithFriend(String friendUserId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return {};
+
+    try {
+      AppLogger.info(
+          '🔍 Kollar vilka recept som redan delats med vän: $friendUserId');
+
+      // Sök efter recept som vi redan delat med denna vän
+      final query = await _sharedRecipesRef
+          .where('sharedByUserId', isEqualTo: currentUserId)
+          .where('sharedToUserIds', arrayContains: friendUserId)
+          .get();
+
+      // Returnera set med originalRecipeId för snabb lookup
+      final sharedRecipeIds = query.docs
+          .map((doc) => SharedRecipe.fromFirestore(doc).originalRecipeId)
+          .toSet();
+
+      AppLogger.info(
+          '✅ Hittade ${sharedRecipeIds.length} redan delade recept med $friendUserId');
+      return sharedRecipeIds;
+    } catch (e) {
+      AppLogger.error(
+          'Kunde inte hämta delade recept för vän $friendUserId', e);
+      return {};
+    }
+  }
+
+  /// ✅ NY: Kontrollera om ett specifikt recept redan delats med en vän
+  Future<bool> isRecipeAlreadySharedWith(
+      String recipeId, String friendUserId) async {
+    final sharedRecipeIds = await getRecipesSharedWithFriend(friendUserId);
+    return sharedRecipeIds.contains(recipeId);
+  }
+
   /// Helper: Skapa importerat recept med meny-attribution
   Recipe _createImportedRecipeFromMenu({
     required Recipe originalRecipe,

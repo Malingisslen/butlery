@@ -1,11 +1,12 @@
 // lib/core/injection.dart
-// ✅ FINAL VERSION - Renamed enhanced classes to standard names
+// ✅ FINAL VERSION - Renamed enhanced classes to standard names + SharedPreferences
 
 /// Dependency injection konfiguration för Butlery med Social Shopping Platform
 library;
 
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // ← LÄGG TILL DENNA IMPORT
 
 // ==================== BEFINTLIGA IMPORTS ====================
 import '../services/recipe_service.dart';
@@ -53,9 +54,11 @@ import '../viewmodels/create_shared_list_viewmodel.dart';
 import '../viewmodels/add_members_to_group_viewmodel.dart';
 import '../viewmodels/group_invitations_viewmodel.dart';
 import '../viewmodels/create_group_viewmodel.dart';
+import '../viewmodels/recipe_selection_viewmodel.dart';
 
 // Models
 import '../models/recipe.dart';
+import '../models/user_profile.dart';
 
 /// Service Locator instance
 final GetIt sl = GetIt.instance;
@@ -65,7 +68,14 @@ Future<void> initializeDependencies() async {
   debugPrint(
       '🔄 Initialiserar dependency injection för Multi-list Shopping...');
 
-  // ==================== CORE SERVICES (FÖRST) ====================
+  // ==================== SHARED PREFERENCES (FÖRST AV ALLT!) ====================
+
+  // SharedPreferences - MÅSTE registreras först eftersom många services använder den
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerSingleton<SharedPreferences>(sharedPreferences);
+  debugPrint('✅ SharedPreferences registrerad');
+
+  // ==================== CORE SERVICES (EFTER SHARED PREFERENCES) ====================
 
   // AuthService - REGISTRERAS FÖRST (behövs för användarspecifik data)
   sl.registerSingleton<AuthService>(AuthService());
@@ -209,9 +219,9 @@ Future<void> initializeDependencies() async {
 
   debugPrint('✅ Alla befintliga ViewModels registrerade');
 
-  // ==================== SOCIAL VIEWMODELS ====================
+// ==================== SOCIAL VIEWMODELS - FIXED RECIPE SELECTION ====================
 
-  // UserProfileViewModel - för profil-redigering
+// UserProfileViewModel - för profil-redigering
   sl.registerFactory<UserProfileViewModel>(
     () => UserProfileViewModel(
       sl<UserService>(),
@@ -220,7 +230,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // FriendsViewModel som PERSISTENT SINGLETON (aldrig disposed)
+// FriendsViewModel som PERSISTENT SINGLETON (aldrig disposed)
   sl.registerLazySingleton<FriendsViewModel>(
     () => FriendsViewModel(
       friendsService: sl<FriendsService>(),
@@ -229,7 +239,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // SocialRecipeViewModel - för receptdelning och kommentarer
+// SocialRecipeViewModel - för receptdelning och kommentarer
   sl.registerFactoryParam<SocialRecipeViewModel, Recipe, void>(
     (recipe, _) => SocialRecipeViewModel(
       recipe: recipe,
@@ -239,7 +249,16 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // CreateGroupViewModel
+// ✅ FIXAD RecipeSelectionViewModel - Factory med parameters
+  sl.registerFactoryParam<RecipeSelectionViewModel, UserProfile, void>(
+    (targetFriend, _) => RecipeSelectionViewModel(
+      recipeService: sl<RecipeService>(),
+      socialRecipeService: sl<SocialRecipeService>(),
+      targetFriend: targetFriend,
+    ),
+  );
+
+// CreateGroupViewModel
   sl.registerFactory<CreateGroupViewModel>(
     () => CreateGroupViewModel(
       categoriesService: sl<FriendCategoriesService>(),
@@ -247,7 +266,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // SharedContentViewModel
+// SharedContentViewModel
   sl.registerFactory<SharedContentViewModel>(
     () => SharedContentViewModel(
       socialRecipeService: sl<SocialRecipeService>(),
@@ -255,7 +274,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // CollaborativeShoppingViewModel - Factory med traditionell constructor injection
+// CollaborativeShoppingViewModel - Factory med traditionell constructor injection
   sl.registerFactory<CollaborativeShoppingViewModel>(
     () => CollaborativeShoppingViewModel(
       socialShoppingService: sl<SocialShoppingService>(),
@@ -264,12 +283,12 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // CreateSharedListViewModel - för att skapa delade listor
+// CreateSharedListViewModel - för att skapa delade listor
   sl.registerFactory<CreateSharedListViewModel>(
     () => CreateSharedListViewModel(),
   );
 
-  // AddMembersToGroupViewModel - Nu med GroupInvitationService
+// AddMembersToGroupViewModel - Nu med GroupInvitationService
   sl.registerFactoryParam<AddMembersToGroupViewModel, String, void>(
     (groupId, _) => AddMembersToGroupViewModel(
       groupId: groupId,
@@ -279,7 +298,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // GroupInvitationsViewModel - Nu med GroupInvitationService dependency
+// GroupInvitationsViewModel - Nu med GroupInvitationService dependency
   sl.registerFactory<GroupInvitationsViewModel>(
     () => GroupInvitationsViewModel(
       categoriesService: sl<FriendCategoriesService>(),
@@ -290,6 +309,7 @@ Future<void> initializeDependencies() async {
   );
 
   debugPrint('✅ GroupInvitationsViewModel registrerad');
+  debugPrint('✅ RecipeSelectionViewModel registrerad');
   debugPrint('✅ Alla social ViewModels registrerade');
 
   // ==================== INITIALIZATION SEQUENCE ====================
