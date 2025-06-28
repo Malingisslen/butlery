@@ -15,6 +15,7 @@ import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
 import '../services/friends_service.dart'; // ✅ NY IMPORT
+import '../widgets/shopping_list_selector_dialog.dart';
 
 /// ✨ UPPDATERAD VY MED ENHANCED MENU SHARING + MENU PERSISTENCE
 class VeckomenyView extends StatelessWidget {
@@ -420,11 +421,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         // Floating action button för inköpslista
         floatingActionButton: viewModel.hasMenu
             ? FloatingActionButton.extended(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/inkopslista',
-                    arguments: viewModel.menu,
+                onPressed: () async {
+                  // Visa dialog för att välja lista
+                  await showDialog(
+                    context: context,
+                    builder: (context) => ShoppingListSelectorDialog(
+                      menu: viewModel.menu,
+                    ),
                   );
                 },
                 icon: const Icon(Icons.shopping_cart),
