@@ -1,28 +1,51 @@
 // lib/widgets/add_shopping_item_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../models/shopping_item.dart';
+import '../models/unified/unified_shopping_item.dart';
 import '../theme/app_theme.dart';
 
-/// Dialog för att lägga till ny artikel i inköpslistan
-class AddShoppingItemDialog extends StatefulWidget {
-  final ShoppingItem? initialItem;
+/// ✅ FÖRBÄTTRAD: Dialog för att lägga till ny artikel med korrekt enhetshantering
+/// 🔧 FIXAD: Layout overflow-problem på rad 180 genom bättre flex-fördelning
+class AddUnifiedShoppingItemDialog extends StatefulWidget {
+  final UnifiedShoppingItem? initialItem;
 
-  const AddShoppingItemDialog({this.initialItem, super.key});
+  const AddUnifiedShoppingItemDialog({this.initialItem, super.key});
 
   @override
-  State<AddShoppingItemDialog> createState() => _AddShoppingItemDialogState();
+  State<AddUnifiedShoppingItemDialog> createState() =>
+      _AddUnifiedShoppingItemDialogState();
 }
 
-class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
+class _AddUnifiedShoppingItemDialogState
+    extends State<AddUnifiedShoppingItemDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _amountController;
-  late TextEditingController _unitController;
 
+  late String _selectedUnit;
   late String _selectedCategory;
 
-  // Vanliga kategorier
+  // ✅ DIN SPECIFIKATION: Enheter med korrekt dropdown-text och visningstext
+  final List<Map<String, String>> _units = [
+    {'value': 'st', 'display': 'st', 'dropdown': 'st'},
+    {'value': 'liter', 'display': 'l', 'dropdown': 'liter'},
+    {'value': 'dl', 'display': 'dl', 'dropdown': 'dl'},
+    {'value': 'msk', 'display': 'msk', 'dropdown': 'msk'},
+    {'value': 'krm', 'display': 'krm', 'dropdown': 'krm'},
+    {'value': 'ml', 'display': 'ml', 'dropdown': 'ml'},
+    {'value': 'cl', 'display': 'cl', 'dropdown': 'cl'},
+    {'value': 'g', 'display': 'g', 'dropdown': 'g'},
+    {'value': 'kg', 'display': 'kg', 'dropdown': 'kg'},
+    {'value': 'förpackning', 'display': 'förp', 'dropdown': 'förpackning'},
+    {'value': 'tsk', 'display': 'tsk', 'dropdown': 'tsk'},
+    {'value': 'påse', 'display': 'påse', 'dropdown': 'påse'},
+    {'value': 'burk', 'display': 'burk', 'dropdown': 'burk'},
+    {'value': 'flaska', 'display': 'flaska', 'dropdown': 'flaska'},
+    {'value': 'bit', 'display': 'bit', 'dropdown': 'bit'},
+    {'value': 'klyfta', 'display': 'klyfta', 'dropdown': 'klyfta'},
+  ];
+
+  // ✅ SORTERADE KATEGORIER för bättre gruppering
   final List<String> _categories = [
     'Frukt & Grönt',
     'Mejeri',
@@ -36,30 +59,15 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
     'Övrigt',
   ];
 
-  // Vanliga enheter
-  final List<String> _commonUnits = [
-    'st',
-    'kg',
-    'g',
-    'l',
-    'dl',
-    'ml',
-    'förp',
-    'påse',
-    'burk',
-    'flaska',
-  ];
-
   @override
   void initState() {
     super.initState();
     _nameController =
         TextEditingController(text: widget.initialItem?.name ?? '');
     _amountController = TextEditingController(
-      text: widget.initialItem?.amount.toString() ?? '1',
+      text: widget.initialItem?.formattedAmount ?? '1',
     );
-    _unitController =
-        TextEditingController(text: widget.initialItem?.unit ?? '');
+    _selectedUnit = widget.initialItem?.unit ?? 'st';
     _selectedCategory = widget.initialItem?.category ?? 'Övrigt';
   }
 
@@ -67,7 +75,6 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
-    _unitController.dispose();
     super.dispose();
   }
 
@@ -80,10 +87,14 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
         children: [
           Icon(
             isEditing ? Icons.edit : Icons.add_shopping_cart,
-            color: Theme.of(context).colorScheme.primary,
+            color: AppTheme.primaryColor,
+            size: AppTheme.iconSizeAction,
           ),
           SizedBox(width: AppTheme.spacingSm),
-          Text(isEditing ? 'Redigera artikel' : 'Lägg till artikel'),
+          Text(
+            isEditing ? 'Redigera artikel' : 'Lägg till artikel',
+            style: AppTheme.cardTitleStyle,
+          ),
         ],
       ),
       content: SizedBox(
@@ -93,14 +104,24 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Artikelnamn
+              // ✅ ARTIKELNAMN - fokus först
               TextFormField(
                 controller: _nameController,
                 autofocus: true,
-                decoration: const InputDecoration(
+                style: AppTheme.bodyStyle,
+                decoration: InputDecoration(
                   labelText: 'Artikel',
+                  labelStyle: AppTheme.formLabelStyle,
                   hintText: 'T.ex. Mjölk',
-                  prefixIcon: Icon(Icons.shopping_basket),
+                  hintStyle: AppTheme.inputHintStyle,
+                  prefixIcon: Icon(
+                    Icons.shopping_basket,
+                    color: AppTheme.primaryColor,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: AppTheme.mediumRadius,
+                  ),
+                  contentPadding: AppTheme.inputPadding,
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 validator: (value) {
@@ -112,72 +133,88 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
               ),
               AppTheme.mediumGap,
 
-              // Mängd och enhet
+              // 🔧 FIXAD: ANTAL och ENHET på samma rad - justerade flex-värden
               Row(
                 children: [
-                  // Mängd
+                  // Antal (mindre utrymme - flex: 1)
                   Expanded(
-                    flex: 2,
+                    flex:
+                        1, // 🔧 ÄNDRAT: från 2 till 1 för att ge dropdown mer plats
                     child: TextFormField(
                       controller: _amountController,
-                      decoration: const InputDecoration(
-                        labelText: 'Mängd',
-                        prefixIcon: Icon(Icons.numbers),
+                      style: AppTheme.bodyStyle,
+                      decoration: InputDecoration(
+                        labelText: 'Antal',
+                        labelStyle: AppTheme.formLabelStyle,
+                        hintText: '1',
+                        hintStyle: AppTheme.inputHintStyle,
+                        prefixIcon: Icon(
+                          Icons.numbers,
+                          color: AppTheme.primaryColor,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: AppTheme.mediumRadius,
+                        ),
+                        contentPadding: AppTheme.inputPadding,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Ange mängd';
+                          return 'Ange antal';
                         }
                         final amount = double.tryParse(
                           value.replaceAll(',', '.'),
                         );
                         if (amount == null || amount <= 0) {
-                          return 'Ogiltig mängd';
+                          return 'Ogiltigt antal';
                         }
                         return null;
                       },
                     ),
                   ),
-                  SizedBox(width: AppTheme.spacingMd),
+                  SizedBox(width: AppTheme.spacingSm),
 
-                  // Enhet
+                  // 🔧 FIXAD: ENHET - mer utrymme för dropdown (flex: 2)
                   Expanded(
-                    flex: 3,
-                    child: Autocomplete<String>(
-                      initialValue:
-                          TextEditingValue(text: _unitController.text),
-                      optionsBuilder: (textEditingValue) {
-                        if (textEditingValue.text.isEmpty) {
-                          return _commonUnits;
-                        }
-                        return _commonUnits.where((unit) {
-                          return unit.toLowerCase().contains(
-                                textEditingValue.text.toLowerCase(),
-                              );
-                        });
-                      },
-                      fieldViewBuilder:
-                          (context, controller, focusNode, onFieldSubmitted) {
-                        // Synka controllers
-                        controller.addListener(() {
-                          _unitController.text = controller.text;
-                        });
-                        return TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: const InputDecoration(
-                            labelText: 'Enhet',
-                            hintText: 'st, kg, l...',
-                            prefixIcon: Icon(Icons.straighten),
+                    flex: 2, // 🔧 ÄNDRAT: från 3 till 2, ger bättre balans
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedUnit,
+                      style: AppTheme.bodyStyle,
+                      decoration: InputDecoration(
+                        labelText: 'Enhet',
+                        labelStyle: AppTheme.formLabelStyle,
+                        prefixIcon: Icon(
+                          Icons.straighten,
+                          color: AppTheme.primaryColor,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: AppTheme.mediumRadius,
+                        ),
+                        contentPadding: AppTheme.inputPadding,
+                      ),
+                      // 🔧 TILLAGT: Gör dropdown mer kompakt
+                      isDense: true,
+                      isExpanded:
+                          true, // 🔧 VIKTIGT: Ser till att dropdown tar hela tillgängliga bredden
+                      items: _units.map((unit) {
+                        return DropdownMenuItem<String>(
+                          value: unit['value'],
+                          child: Text(
+                            unit['dropdown']!, // Visa "liter" i dropdown
+                            style: AppTheme.bodyStyle,
+                            overflow: TextOverflow
+                                .ellipsis, // 🔧 TILLAGT: Förhindra text-overflow
                           ),
-                          onFieldSubmitted: (value) => onFieldSubmitted(),
                         );
-                      },
-                      onSelected: (selection) {
-                        _unitController.text = selection;
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedUnit = value;
+                          });
+                        }
                       },
                     ),
                   ),
@@ -185,17 +222,33 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
               ),
               AppTheme.mediumGap,
 
-              // Kategori
+              // ✅ KATEGORI - dropdown
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
-                decoration: const InputDecoration(
+                style: AppTheme.bodyStyle,
+                decoration: InputDecoration(
                   labelText: 'Kategori',
-                  prefixIcon: Icon(Icons.category),
+                  labelStyle: AppTheme.formLabelStyle,
+                  prefixIcon: Icon(
+                    Icons.category,
+                    color: AppTheme.primaryColor,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: AppTheme.mediumRadius,
+                  ),
+                  contentPadding: AppTheme.inputPadding,
                 ),
+                isExpanded:
+                    true, // 🔧 TILLAGT: För att förhindra overflow även här
                 items: _categories.map((category) {
-                  return DropdownMenuItem(
+                  return DropdownMenuItem<String>(
                     value: category,
-                    child: Text(category),
+                    child: Text(
+                      category,
+                      style: AppTheme.bodyStyle,
+                      overflow:
+                          TextOverflow.ellipsis, // 🔧 TILLAGT: Säkerhetsåtgärd
+                    ),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -213,10 +266,12 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
+          style: AppTheme.secondaryButtonStyle,
           child: const Text('Avbryt'),
         ),
         FilledButton.icon(
           onPressed: _submitForm,
+          style: AppTheme.primaryButtonStyle,
           icon: Icon(isEditing ? Icons.save : Icons.add),
           label: Text(isEditing ? 'Spara' : 'Lägg till'),
         ),
@@ -230,10 +285,11 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
         _amountController.text.replaceAll(',', '.'),
       );
 
-      final item = ShoppingItem(
+      final item = UnifiedShoppingItem(
+        id: widget.initialItem?.id, // Behåll ID vid redigering
         name: _nameController.text.trim(),
         amount: amount,
-        unit: _unitController.text.trim(),
+        unit: _selectedUnit,
         category: _selectedCategory,
         bought: widget.initialItem?.bought ?? false,
       );

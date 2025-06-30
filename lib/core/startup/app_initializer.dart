@@ -1,0 +1,280 @@
+// lib/core/startup/app_initializer.dart
+
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
+// Services
+import '../../services/offline_service.dart';
+import '../../services/analytics_service.dart';
+
+// Dependency Injection
+import '../injection.dart';
+import '../../services/recipe_service.dart';
+
+// Firebase config
+import '../../firebase_options.dart';
+
+/// 🚀 AppInitializer
+///
+/// Centraliserad klass för all app-initialization.
+/// Ersätter den komplexa main()-funktionen med strukturerad initialization.
+///
+/// Användning:
+/// ```dart
+/// Future<void> main() async {
+///   await AppInitializer.initialize();
+///   runApp(const ButleryApp());
+/// }
+/// ```
+class AppInitializer {
+  /// Huvudmetod som kör all app-initialization
+  ///
+  /// Kör dessa steg i ordning:
+  /// 1. Flutter-bindningar
+  /// 2. Svenska lokaliseringar
+  /// 3. Firebase initialization
+  /// 4. Analytics setup
+  /// 5. Dependency Injection
+  /// 6. Offline Service (Hive)
+  static Future<void> initialize() async {
+    debugPrint('🚀 === BUTLERY APP INITIALIZATION START ===');
+
+    try {
+      // 1️⃣ Säkerställ Flutter-bindningar
+      await _initializeFlutterBindings();
+
+      // 2️⃣ Initiera svenska lokaliseringar
+      await _initializeLocalization();
+
+      // 3️⃣ Initiera Firebase
+      await _initializeFirebase();
+
+      // 4️⃣ Initiera Analytics
+      await _initializeAnalytics();
+
+      // 5️⃣ Initiera Dependency Injection
+      await _initializeDependencyInjection();
+
+      // 6️⃣ Initiera Offline Service
+      await _initializeOfflineService();
+
+      debugPrint('✅ === BUTLERY APP INITIALIZATION COMPLETE ===');
+    } catch (e, stackTrace) {
+      debugPrint('❌ KRITISKT FEL vid app-initialization: $e');
+      debugPrint('Stack trace: $stackTrace');
+
+      // Låt appen fortsätta även vid fel, men logga allvarligt
+      debugPrint('⚠️ Appen fortsätter med begränsad funktionalitet');
+    }
+  }
+
+  /// 1️⃣ Säkerställer att Flutter-bindningar är klara
+  static Future<void> _initializeFlutterBindings() async {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+      debugPrint('✅ Flutter-bindningar initierade');
+    } catch (e) {
+      debugPrint('❌ Fel vid Flutter-bindningar: $e');
+      rethrow; // Kritiskt fel - appen kan inte fortsätta
+    }
+  }
+
+  /// 2️⃣ Initierar svenska lokaliseringar för datum och formatering
+  static Future<void> _initializeLocalization() async {
+    try {
+      // Initiera svenska först
+      await initializeDateFormatting('sv_SE', null);
+      await initializeDateFormatting('sv', null); // Fallback
+
+      debugPrint('✅ Svenska lokaliseringar initierade');
+    } catch (e) {
+      debugPrint('❌ Kunde inte initiera svenska lokaliseringar: $e');
+      debugPrint('ℹ️ Fortsätter med engelska som fallback');
+      // Inte kritiskt - appen fungerar med engelska datum
+    }
+  }
+
+  /// 3️⃣ Initierar Firebase med komplett felhantering
+  static Future<void> _initializeFirebase() async {
+    try {
+      // Kontrollera om Firebase redan är initierat
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        debugPrint('✅ Firebase initierad för första gången');
+      } else {
+        debugPrint('✅ Firebase redan initierad (${Firebase.apps.length} apps)');
+      }
+
+      // Utför Firestore-ping om användare är inloggad
+      await _performFirestorePing();
+    } on FirebaseException catch (e) {
+      if (e.code == 'duplicate-app') {
+        debugPrint('✅ Firebase redan initierad - duplicate error ignorerad');
+      } else {
+        debugPrint('❌ Firebase-fel (${e.code}): ${e.message}');
+        debugPrint('⚠️ Fortsätter med begränsad Firebase-funktionalitet');
+      }
+    } catch (e) {
+      debugPrint('❌ Generellt Firebase-fel: $e');
+      debugPrint('⚠️ Vissa Firebase-funktioner kanske inte fungerar');
+    }
+  }
+
+  /// Utför Firestore-ping för att testa anslutning
+  ///
+  /// Endast om användare är inloggad för att undvika onödiga fel
+  static Future<void> _performFirestorePing() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        debugPrint('ℹ️ Ingen användare inloggad, hoppar över Firestore-ping');
+        return;
+      }
+
+      // Skapa en test-ping till användarens collection
+      final doc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .collection('connection_tests')
+          .doc('ping');
+
+      await doc.set({
+        'checkedAt': FieldValue.serverTimestamp(),
+        'appVersion':
+            'TODO: Hämta från package info', // TODO: Få från package info
+      });
+
+      final snapshot = await doc.get();
+      if (snapshot.exists) {
+        debugPrint('✅ Firestore-ping lyckades för: ${currentUser.email}');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Firestore-ping misslyckades (kan vara permissions): $e');
+      // Inte kritiskt - kan vara nätverksproblem eller permissions
+    }
+  }
+
+  /// 4️⃣ Initierar Analytics Service
+  static Future<void> _initializeAnalytics() async {
+    try {
+      final analyticsService = AnalyticsService();
+      await analyticsService.initialize();
+      debugPrint('✅ Analytics Service initierad');
+    } catch (e) {
+      debugPrint('❌ Fel vid Analytics initialization: $e');
+      debugPrint('ℹ️ Analytics är inte kritiskt - appen fortsätter');
+      // Analytics är inte kritiskt för app-funktionalitet
+    }
+  }
+
+  /// 5️⃣ Initierar Dependency Injection med GetIt
+  static Future<void> _initializeDependencyInjection() async {
+    try {
+      await initializeDependencies();
+      debugPrint('✅ Dependency Injection initierad');
+
+      // Testa att kritiska services fungerar
+      await _validateCriticalServices();
+    } catch (e) {
+      debugPrint('❌ KRITISKT: Fel vid Dependency Injection: $e');
+      rethrow; // DI är kritiskt - appen kan inte fungera utan services
+    }
+  }
+
+  /// Validerar att kritiska services kan skapas
+  static Future<void> _validateCriticalServices() async {
+    try {
+      // Testa RecipeService (mest kritisk)
+      sl<RecipeService>();
+      debugPrint('✅ RecipeService hämtad från DI');
+
+      // TODO: Lägg till fler service-valideringar här
+      // final authService = sl<AuthService>();
+      // debugPrint('✅ AuthService hämtad från DI');
+    } catch (e) {
+      debugPrint('❌ Service validation misslyckades: $e');
+      rethrow; // Om services inte fungerar är det kritiskt
+    }
+  }
+
+  /// 6️⃣ Initierar Offline Service (Hive)
+  static Future<void> _initializeOfflineService() async {
+    try {
+      final offlineService = OfflineService();
+      await offlineService.initialize();
+      debugPrint('✅ Offline Service initierad');
+    } catch (e) {
+      debugPrint('❌ Fel vid Offline Service initialization: $e');
+      debugPrint('ℹ️ Offline-funktioner kommer inte fungera');
+      // Offline-stöd är inte kritiskt - appen fungerar online
+    }
+  }
+
+  /// 🔍 Debug-metod för att visa initialization-status
+  ///
+  /// Användbar för troubleshooting och development
+  static Future<Map<String, bool>> getInitializationStatus() async {
+    final status = <String, bool>{};
+
+    try {
+      // Kontrollera Firebase
+      status['firebase'] = Firebase.apps.isNotEmpty;
+
+      // Kontrollera Auth
+      status['auth'] = FirebaseAuth.instance.currentUser != null;
+
+      // Kontrollera DI
+      try {
+        sl<RecipeService>();
+        status['dependency_injection'] = true;
+      } catch (e) {
+        status['dependency_injection'] = false;
+      }
+
+      // Kontrollera Offline Service
+      try {
+        final offlineService = OfflineService();
+        status['offline_service'] = offlineService.isInitialized;
+      } catch (e) {
+        status['offline_service'] = false;
+      }
+
+      // Kontrollera Analytics
+      try {
+        // AnalyticsService har ingen isInitialized property, så vi antar den är ok
+        status['analytics'] = true;
+      } catch (e) {
+        status['analytics'] = false;
+      }
+    } catch (e) {
+      debugPrint('❌ Fel vid status-check: $e');
+    }
+
+    return status;
+  }
+
+  /// 🚨 Emergency initialization för när normal init misslyckas
+  ///
+  /// Kör bara det absolut nödvändiga för att appen ska starta
+  static Future<void> emergencyInitialize() async {
+    debugPrint('🚨 === EMERGENCY INITIALIZATION ===');
+
+    try {
+      // Bara Flutter-bindningar och DI
+      WidgetsFlutterBinding.ensureInitialized();
+      await initializeDependencies();
+
+      debugPrint('✅ Emergency initialization klar');
+    } catch (e) {
+      debugPrint('❌ Emergency initialization misslyckades: $e');
+      // Om detta misslyckas måste appen visa ett error-screen
+      rethrow;
+    }
+  }
+}
