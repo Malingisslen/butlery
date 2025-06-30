@@ -2,23 +2,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../services/social_shopping_service.dart';
-import '../../services/user_service.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Collaborative Shopping View - MVVM + AppTheme Compliant
+/// Component: Collaborative Shopping View - MVVM + UnifiedShopping Compliant
 /// File: views/social/collaborative_shopping_view.dart
-/// Quick Guide: Real-time collaborative shopping med proper MVVM separation
+/// Quick Guide: Real-time collaborative shopping med unified system backend
 /// Dependencies IN: CollaborativeShoppingViewModel, AppTheme
 /// Dependencies OUT: Collaborative shopping UI med complete MVVM pattern
-/// Data flow: View → ViewModel → Service, pure UI rendering
+/// Data flow: View → ViewModel → UnifiedShoppingService, pure UI rendering
 /// State management: ChangeNotifierProvider med ViewModel
 /// Purpose: MVVM-compliant collaborative shopping experience
-/// Common issues: ✅ LÖST: Proper separation, AppTheme usage, clean architecture
+/// Common issues: ✅ LÖST: Proper separation, AppTheme usage, unified backend
 /// Performance: ⚡ Optimized rendering, efficient state management
-/// Connected to: CollaborativeShoppingViewModel, SocialShoppingService
+/// Connected to: CollaborativeShoppingViewModel, UnifiedShoppingService
 /// Used in phases: 18.4
 
 class CollaborativeShoppingView extends StatefulWidget {
@@ -46,11 +44,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => CollaborativeShoppingViewModel(
-        socialShoppingService: sl<SocialShoppingService>(),
-        userService: sl<UserService>(),
-        listId: widget.listId,
-      ),
+      create: (_) => sl<CollaborativeShoppingViewModel>(param1: widget.listId),
       child: Consumer<CollaborativeShoppingViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
@@ -520,8 +514,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
         horizontal: AppTheme.spacingMd,
         vertical: AppTheme.spacingXs,
       ),
-      elevation: item.isPurchased ? 0 : AppTheme.elevationLow,
-      color: item.isPurchased
+      elevation: item.bought ? 0 : AppTheme.elevationLow,
+      color: item.bought
           ? Theme.of(context)
               .colorScheme
               .surfaceContainerHighest
@@ -529,7 +523,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
           : null,
       child: ListTile(
         leading: Checkbox(
-          value: item.isPurchased,
+          value: item.bought,
           onChanged:
               viewModel.canView ? (_) => _toggleItem(viewModel, item.id) : null,
           shape: RoundedRectangleBorder(
@@ -539,11 +533,11 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
         title: Text(
           item.displayText,
           style: TextStyle(
-            decoration: item.isPurchased ? TextDecoration.lineThrough : null,
-            color: item.isPurchased
+            decoration: item.bought ? TextDecoration.lineThrough : null,
+            color: item.bought
                 ? Theme.of(context).colorScheme.onSurfaceVariant
                 : null,
-            fontWeight: item.isPurchased ? FontWeight.normal : FontWeight.w500,
+            fontWeight: item.bought ? FontWeight.normal : FontWeight.w500,
           ),
         ),
         subtitle: _buildItemSubtitle(context, viewModel, item),

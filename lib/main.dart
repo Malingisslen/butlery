@@ -1,16 +1,13 @@
-// lib/main.dart
-// ✅ TILLAGD: Locale initialization för svenska datum
+﻿// lib/main.dart
+// ✅ REFAKTORISERAD: Använder AppInitializer för clean startup
 
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'core/constants/routes.dart';
 
-// Firebase-kärna + Firestore + Auth + Analytics
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// Firebase Analytics (för observer)
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Share handling
 import 'package:share_handler/share_handler.dart';
@@ -18,21 +15,19 @@ import 'package:share_handler/share_handler.dart';
 // State management
 import 'package:provider/provider.dart';
 
-// ✅ NY IMPORT: Locale initialization
-import 'package:intl/date_symbol_data_local.dart';
+// ✅ NY IMPORT: AppInitializer (ersätter 100+ rader initialization-kod)
+import 'core/startup/app_initializer.dart';
 
 // Services
 import 'services/offline_service.dart';
 import 'services/analytics_service.dart';
 
-// Dependency Injection
-import 'core/injection.dart';
-import 'services/recipe_service.dart';
-
+// Models
 import 'models/recipe.dart';
 import 'models/shared_menu.dart';
 import 'models/user_profile.dart';
 
+// Theme
 import 'theme/app_theme.dart';
 
 // Auth view
@@ -46,13 +41,15 @@ import 'views/fran_sociala_medier_view.dart';
 import 'views/recipe_detail_view.dart';
 import 'views/edit_recipe_view.dart';
 import 'views/veckomeny_view.dart' as vecko;
-import 'views/inkopslista_view.dart' as inkop;
 import 'views/importera_fran_arkiv_view.dart';
 import 'views/photo_import_view.dart';
 import 'views/import_via_url_view.dart';
 import 'views/receive_share_view.dart';
 
-// NYA: Social Views
+// ===== UNIFIED SHOPPING SYSTEM =====
+import 'views/unified_shopping_view.dart';
+
+// Social Views
 import 'views/social/user_profile_edit_view.dart';
 import 'views/social/friends_list_view.dart';
 import 'views/social/friend_requests_view.dart';
@@ -62,95 +59,12 @@ import 'views/social/menu_preview_view.dart';
 import 'views/social/create_shared_shopping_list_view.dart';
 import 'views/social/friend_profile_view.dart';
 
+// ✅ DRAMATISKT FÖRENKLAD main() funktion - NER FRÅN 693 RADER!
 Future<void> main() async {
-  // 1️⃣ Säkerställ att Flutter-bindningar är klara
-  WidgetsFlutterBinding.ensureInitialized();
+  // All initialization (Firebase, lokalisering, DI, services) sköts nu av AppInitializer
+  await AppInitializer.initialize();
 
-  // ✅ NYTT: Initiera svenska lokaliseringar FÖRE allt annat
-  try {
-    await initializeDateFormatting('sv_SE', null);
-    await initializeDateFormatting('sv', null); // Fallback
-    debugPrint('✅ Svenska lokaliseringar initierade');
-  } catch (e) {
-    debugPrint('❌ Kunde inte initiera svenska lokaliseringar: $e');
-    // Fortsätt ändå med engelska som fallback
-  }
-
-  // 2️⃣ Initiera Firebase - COMPLETE FIX
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      debugPrint('✅ Firebase initierad för första gången');
-    } else {
-      debugPrint('✅ Firebase redan initierad (${Firebase.apps.length} apps)');
-    }
-
-    // 3️⃣ Firestore ping - bara om vi har en autentiserad användare
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      try {
-        final doc = FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .collection('connection_tests')
-            .doc('ping');
-        await doc.set({'checkedAt': FieldValue.serverTimestamp()});
-        final snapshot = await doc.get();
-        if (snapshot.exists) {
-          debugPrint(
-            '✅ Firestore-ping lyckades för användare: ${currentUser.email}',
-          );
-        }
-      } catch (e) {
-        debugPrint('⚠️ Firestore-ping misslyckades (kan vara permissions): $e');
-      }
-    } else {
-      debugPrint('ℹ️ Ingen användare inloggad, hoppar över Firestore-ping');
-    }
-  } on FirebaseException catch (e) {
-    if (e.code == 'duplicate-app') {
-      debugPrint('✅ Firebase redan initierad - duplicate error ignorerad');
-    } else {
-      debugPrint('❌ Firebase-fel: $e');
-    }
-    // Fortsätt ändå - låt appen köra med begränsad funktionalitet
-  } catch (e) {
-    debugPrint('❌ Generellt Firebase-fel: $e');
-    // Fortsätt ändå - låt appen köra med begränsad funktionalitet
-  }
-
-  // 4️⃣ Initiera Analytics
-  try {
-    await AnalyticsService().initialize();
-    debugPrint('✅ Analytics Service initierad');
-  } catch (e) {
-    debugPrint('❌ Fel vid Analytics init: $e');
-    // Fortsätt ändå - analytics är inte kritiskt
-  }
-
-  // 5️⃣ Initiera Dependency Injection
-  try {
-    await initializeDependencies();
-    debugPrint('✅ Dependency Injection initierad');
-
-    // Testa att RecipeService skapas och fungerar
-    sl<RecipeService>();
-    debugPrint('✅ RecipeService hämtad från DI');
-  } catch (e) {
-    debugPrint('❌ Fel vid init av DI: $e');
-  }
-
-  // 6️⃣ Initiera Offline Service (Hive)
-  try {
-    await OfflineService().initialize();
-    debugPrint('✅ Offline service initierad');
-  } catch (e) {
-    debugPrint('❌ Fel vid offline service init: $e');
-    // Fortsätt ändå - appen kan köra utan offline-stöd
-  }
-
+  // Starta appen
   runApp(const ButleryApp());
 }
 
@@ -181,7 +95,7 @@ class _ButleryAppState extends State<ButleryApp> {
 
   /// Initierar share handler för att ta emot delningar från andra appar
   Future<void> _initShareHandler() async {
-    debugPrint('🔄 Initierar share handler...');
+    debugPrint('📄 Initierar share handler...');
 
     // Lyssna på delningar när appen är öppen
     _shareSubscription = ShareHandler.instance.sharedMediaStream.listen(
@@ -276,8 +190,10 @@ class _ButleryAppState extends State<ButleryApp> {
 
               case '/photoImport':
                 return _route(const PhotoImportView(), settings);
+
               case '/shared':
                 return _route(const SharedWithMeView(), settings);
+
               case '/skrivSjalv':
                 final recipe = settings.arguments as Recipe?;
                 return _route(
@@ -314,8 +230,13 @@ class _ButleryAppState extends State<ButleryApp> {
               case '/veckomeny':
                 return _route(const vecko.VeckomenyView(), settings);
 
+              // ===== UNIFIED SHOPPING SYSTEM ROUTES =====
+              case '/unified-shopping':
+                return _route(const UnifiedShoppingView(), settings);
+
               case '/inkopslista':
-                return _route(const inkop.InkopslistaView(), settings);
+                return _route(const UnifiedShoppingView(), settings);
+              // ===== END UNIFIED SHOPPING ROUTES =====
 
               case '/receptDetalj':
                 final recipe = settings.arguments as Recipe?;
@@ -348,14 +269,17 @@ class _ButleryAppState extends State<ButleryApp> {
                   settings,
                 );
 
-              // ===== NYA SOCIAL ROUTES =====
+              // ===== SOCIAL ROUTES =====
 
               case '/profile/edit':
                 return _route(const UserProfileEditView(), settings);
+
               case '/friends':
                 return _route(const FriendsListView(), settings);
+
               case '/friends/requests':
                 return _route(const FriendRequestsView(), settings);
+
               case '/collaborative-shopping':
                 final listId = settings.arguments as String;
                 return _route(
@@ -386,8 +310,6 @@ class _ButleryAppState extends State<ButleryApp> {
                   ),
                   settings,
                 );
-              // ===== SOCIAL ROUTES KOMPLETT =====
-              // SharedWithMeView hanterar både recept och menyer
 
               default:
                 return _errorRoute('Okänd rutt: ${settings.name}');
@@ -441,6 +363,30 @@ class _ButleryAppState extends State<ButleryApp> {
             position: animation.drive(tween),
             child: child,
           );
+        },
+        transitionDuration: AppTheme.animationDurationMedium,
+      );
+    }
+
+    // Unified shopping screens får slide från höger
+    if (routeName.contains('unified') ||
+        routeName.contains('migration') ||
+        routeName.contains('shopping')) {
+      return PageRouteBuilder(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+              position: animation.drive(tween), child: child);
         },
         transitionDuration: AppTheme.animationDurationMedium,
       );

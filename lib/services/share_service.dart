@@ -3,7 +3,7 @@
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/recipe.dart';
-import '../models/shopping_item.dart';
+import '../models/unified/unified_shopping_item.dart';
 import '../theme/app_theme.dart';
 
 /// Format-alternativ för receptdelning
@@ -223,7 +223,7 @@ class ShareService {
   // ===== SHOPPING LIST FORMATTING =====
 
   /// Formattera inköpslista som text
-  String formatShoppingList(List<ShoppingItem> items) {
+  String formatShoppingList(List<UnifiedShoppingItem> items) {
     final buffer = StringBuffer();
 
     buffer.writeln('🛒 INKÖPSLISTA');
@@ -231,7 +231,7 @@ class ShareService {
     buffer.writeln();
 
     // Gruppera efter kategori om det finns kategorier
-    final groupedItems = <String, List<ShoppingItem>>{};
+    final groupedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in items) {
       final category = item.category.isEmpty ? 'Övrigt' : item.category;
       groupedItems.putIfAbsent(category, () => []).add(item);
@@ -260,7 +260,7 @@ class ShareService {
 
   /// Formattera inköpslista grupperad efter kategori
   String formatShoppingListGrouped(
-    Map<String, List<ShoppingItem>> groupedItems,
+    Map<String, List<UnifiedShoppingItem>> groupedItems,
   ) {
     final buffer = StringBuffer();
 
@@ -348,7 +348,7 @@ class ShareService {
   }
 
   /// Dela inköpslista
-  Future<void> shareShoppingList(List<ShoppingItem> items) async {
+  Future<void> shareShoppingList(List<UnifiedShoppingItem> items) async {
     final text = formatShoppingList(items);
     await Share.share(text, subject: 'Inköpslista');
   }
@@ -372,7 +372,7 @@ class ShareService {
         : getSmartFormat(recipe);
   }
 
-  String getFormattedShoppingList(List<ShoppingItem> items) {
+  String getFormattedShoppingList(List<UnifiedShoppingItem> items) {
     return formatShoppingList(items);
   }
 

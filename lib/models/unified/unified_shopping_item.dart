@@ -1,21 +1,21 @@
 // lib/models/unified/unified_shopping_item.dart
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Unified Shopping Item Model - BEHÅLLER ALL FUNKTIONALITET
+/// Component: Unified Shopping Item Model - FÖRBÄTTRAD FORMATERING
 /// File: models/unified/unified_shopping_item.dart
-/// Quick Guide: Enhetlig modell som ersätter både ShoppingItem och EnhancedShoppingItem
+/// Quick Guide: Smart formatering av mängd och enhet + förbättrad displayText
 /// Dependencies IN: cloud_firestore, uuid
 /// Dependencies OUT: UnifiedShoppingService, alla shopping UI-komponenter
 /// Data flow: Recipe ingredients → UnifiedShoppingItem → UI rendering → Firebase sync
 /// State management: Immutable data class med copyWith pattern
-/// Purpose: Enhetlig representation av shopping items med ALLA befintliga features
-/// Common issues: Migrera från gamla modeller, behåll all funktionalitet
-/// Test coverage: 0% (ny komponent som ersätter befintliga)
+/// Purpose: Enhetlig representation av shopping items med SMART FORMATERING
+/// Common issues: Inga onödiga decimaler, korrekt enhetsvisning
+/// Test coverage: 0% (förbättring av befintlig komponent)
 /// Performance: ⚡ Optimerad serialization, effektiv state management
 /// Analytics: ✅ Shopping item interactions tracking
-/// Code smells: ✅ Clean unified design som konsoliderar features
+/// Code smells: ✅ Clean unified design med smart formatering
 /// Connected to: UnifiedShoppingService, alla shopping views, Firebase
-/// Used in phases: 18.3 (Unified Shopping Migration)
+/// Used in phases: 18.3 (Unified Shopping Migration) + UI förbättringar
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -23,8 +23,7 @@ import 'package:uuid/uuid.dart';
 /// Enhetlig shopping item som kombinerar alla features från:
 /// - ShoppingItem (grundläggande funktionalitet)
 /// - EnhancedShoppingItem (social features)
-///
-/// Detta behåller ALL befintlig funktionalitet men gör koden enklare att underhålla
+/// + SMART FORMATERING för bättre UX
 class UnifiedShoppingItem {
   final String id;
   final String name;
@@ -70,7 +69,7 @@ class UnifiedShoppingItem {
 
   // ===== FACTORY CONSTRUCTORS för enklare skapande =====
 
-  /// Skapa basic shopping item (för vanliga listor) - ERSÄTTER ShoppingItem.basic
+  /// Skapa basic shopping item (för vanliga listor)
   factory UnifiedShoppingItem.basic({
     required String name,
     required double amount,
@@ -87,7 +86,7 @@ class UnifiedShoppingItem {
     );
   }
 
-  /// Skapa collaborative item (för shared lists) - ERSÄTTER EnhancedShoppingItem
+  /// Skapa collaborative item (för shared lists)
   factory UnifiedShoppingItem.collaborative({
     required String name,
     required double amount,
@@ -119,7 +118,6 @@ class UnifiedShoppingItem {
 
   /// Migrera från din befintliga ShoppingItem
   factory UnifiedShoppingItem.fromShoppingItem(dynamic oldItem) {
-    // Detta kommer vi att implementera för att migrera din befintliga data
     return UnifiedShoppingItem.basic(
       name: oldItem.name,
       amount: oldItem.amount,
@@ -129,16 +127,67 @@ class UnifiedShoppingItem {
     );
   }
 
-  // ===== HELPER METHODS - BEHÅLLER alla dina befintliga patterns =====
+  // ===== SMART FORMATERING - HUVUDFÖRBÄTTRINGEN =====
 
   bool get isCollaborative => addedByUserId != null;
   bool get isPurchased => bought;
 
-  String get displayText {
-    if (unit.isNotEmpty) {
-      return '$amount $unit $name';
+  /// ✅ SMART: Formatera mängd utan onödiga decimaler
+  String get formattedAmount {
+    // Om det är ett heltal, visa utan decimaler
+    if (amount == amount.roundToDouble()) {
+      return amount.round().toString();
     }
-    return '$amount $name';
+
+    // Annars visa med minimal precision
+    return amount.toString();
+  }
+
+  /// ✅ SMART: Formatera enhet med korrekta förkortningar
+  String get formattedUnit {
+    if (unit.isEmpty) return '';
+
+    // Mappa långa enhetsnamn till korta för visning
+    final unitMappings = {
+      'liter': 'l',
+      'styck': 'st',
+      'stycken': 'st',
+      'förpackning': 'förp',
+      'förpackningar': 'förp',
+      'påse': 'påse',
+      'påsar': 'påse',
+      'burk': 'burk',
+      'burkar': 'burk',
+      'flaska': 'flaska',
+      'flaskor': 'flaska',
+      'bit': 'bit',
+      'bitar': 'bit',
+      'klyfta': 'klyfta',
+      'klyftor': 'klyfta',
+      'tesked': 'tsk',
+      'teskedar': 'tsk',
+    };
+
+    return unitMappings[unit.toLowerCase()] ?? unit;
+  }
+
+  /// ✅ SMART: Perfekt displayText som hanterar alla fall
+  String get displayText {
+    final amountStr = formattedAmount;
+    final unitStr = formattedUnit;
+
+    // Om vi har enhet, visa: "1,5 l Mjölk" eller "2 st Ägg"
+    if (unitStr.isNotEmpty) {
+      return '$amountStr $unitStr $name';
+    }
+
+    // Om bara amount utan enhet: "3 Bananer"
+    if (amount != 1.0) {
+      return '$amountStr $name';
+    }
+
+    // Om amount är 1 utan enhet, visa bara namnet: "Bröd"
+    return name;
   }
 
   String get priorityEmoji {
@@ -158,7 +207,7 @@ class UnifiedShoppingItem {
     }
   }
 
-  // ===== UPDATE METHODS - samma patterns som du redan använder =====
+  // ===== UPDATE METHODS =====
 
   UnifiedShoppingItem copyWith({
     String? name,
@@ -199,7 +248,7 @@ class UnifiedShoppingItem {
     );
   }
 
-  /// Toggle purchased status med collaborative tracking - BEHÅLLER din funktionalitet
+  /// Toggle purchased status med collaborative tracking
   UnifiedShoppingItem togglePurchased({
     String? userId,
     String? userDisplayName,
@@ -229,7 +278,7 @@ class UnifiedShoppingItem {
     );
   }
 
-  // ===== SERIALIZATION - kompatibel med dina befintliga Firebase strukturer =====
+  // ===== SERIALIZATION =====
 
   Map<String, dynamic> toJson() {
     return {
@@ -306,8 +355,7 @@ class UnifiedShoppingItem {
     );
   }
 
-  factory UnifiedShoppingItem.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory UnifiedShoppingItem.fromFirestore(Map<String, dynamic> data) {
     return UnifiedShoppingItem(
       id: data['id'] as String,
       name: data['name'] as String,
