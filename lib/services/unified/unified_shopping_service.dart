@@ -1,16 +1,15 @@
 // lib/services/unified/unified_shopping_service.dart
 
 /// AI INFO BLOCK:
-/// Component: Unified Shopping Service - ERSATTER ALLA shopping services
+/// Component: Unified Shopping Service - CLEAN VERSION (utan migration)
 /// File: services/unified/unified_shopping_service.dart
 /// Quick Guide: Central service som hanterar ALL shopping funktionalitet
 /// Dependencies IN: Firebase, Hive, auth_service, offline_service
 /// Dependencies OUT: ChangeNotifier med lists, CRUD metoder, sync functionality
 /// Data flow: Firebase realtime <-> Service state <-> ViewModels -> UI
-// ignore: unintended_html_in_doc_comment
-/// State management: ChangeNotifier med List<UnifiedShoppingList> och loading states
+/// State management: ChangeNotifier med List(UnifiedShoppingList) och loading states
 /// Purpose: Ersatt shopping_list_service, multi_shopping_list_service, social_shopping_service
-/// Used in phases: 18.3 (Unified Shopping Migration)
+/// Used in phases: 18.3 (Unified Shopping Migration) - UTAN GAMMAL MIGRATION-KOD
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -30,7 +29,7 @@ class UnifiedShoppingService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // State - BEHOLLER samma struktur som du har idag
+  // State
   final List<UnifiedShoppingList> _lists = [];
   String? _activeListId;
   bool _isInitialized = false;
@@ -38,7 +37,7 @@ class UnifiedShoppingService extends ChangeNotifier {
   bool _isSyncing = false;
   String? _error;
 
-  // Firebase listeners - samma patterns
+  // Firebase listeners
   final Map<String, StreamSubscription<DocumentSnapshot>> _listListeners = {};
   StreamSubscription<QuerySnapshot>? _personalListsSubscription;
   StreamSubscription<QuerySnapshot>? _collaborativeListsSubscription;
@@ -47,7 +46,7 @@ class UnifiedShoppingService extends ChangeNotifier {
   // Sync queue for offline operations
   final Set<String> _pendingSyncListIds = {};
 
-  // ===== GETTERS - samma API som du anvander idag =====
+  // ===== GETTERS =====
 
   List<UnifiedShoppingList> get lists => List.unmodifiable(_lists);
   List<UnifiedShoppingList> get personalLists =>
@@ -69,21 +68,34 @@ class UnifiedShoppingService extends ChangeNotifier {
   String? get currentUserId => _auth.currentUser?.uid;
   String? get currentUserDisplayName => _auth.currentUser?.displayName ?? 'Du';
 
-  // ===== INITIALIZATION - samma som du har idag =====
+  // ===== INITIALIZATION - FÖRENKLAD UTAN MIGRATION =====
 
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      AppLogger.info('Initialiserar UnifiedShoppingService...');
+      AppLogger.info('🔄 Initialiserar UnifiedShoppingService...');
 
-      // Oppna Hive box for caching
+      // ✅ EMULATOR FIX: Konfigurera Firestore för emulator om det behövs
+      if (kDebugMode) {
+        try {
+          // Detta hjälper med emulator DNS-problem
+          _firestore.settings = const Settings(
+            persistenceEnabled: true,
+            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+          );
+        } catch (e) {
+          AppLogger.debug('Firestore settings redan satta');
+        }
+      }
+
+      // Öppna Hive box för caching
       final box = await Hive.openBox<String>(_hiveBoxName);
 
-      // Ladda cached data forst (offline-first)
+      // Ladda cached data först (offline-first)
       await _loadCachedLists(box);
 
-      // Lyssna pa auth changes
+      // Lyssna på auth changes
       _auth.authStateChanges().listen((user) {
         if (user != null) {
           _startFirebaseSync();
@@ -99,20 +111,20 @@ class UnifiedShoppingService extends ChangeNotifier {
       }
 
       _isInitialized = true;
-      AppLogger.success('UnifiedShoppingService initialiserad');
+      AppLogger.success('✅ UnifiedShoppingService initialiserad');
       notifyListeners();
     } catch (e) {
-      AppLogger.error('Fel vid initialisering: $e');
-      _setError('Kunde inte ladda inkopslistor: $e');
+      AppLogger.error('❌ Fel vid initialisering: $e');
+      _setError('Kunde inte ladda inköpslistor: $e');
     }
   }
 
-  // ===== LIST MANAGEMENT - BEHOLLER alla dina metoder =====
+  // ===== LIST MANAGEMENT =====
 
   Future<String?> createPersonalList(String name,
       {List<UnifiedShoppingItem>? items}) async {
     if (currentUserId == null) {
-      _setError('Du maste vara inloggad');
+      _setError('Du måste vara inloggad');
       return null;
     }
 
@@ -129,18 +141,21 @@ class UnifiedShoppingService extends ChangeNotifier {
         items: items,
       );
 
-      // Lagg till lokalt (optimistic update)
+      // Lägg till lokalt (optimistic update)
       _lists.add(newList);
       _activeListId = newList.id;
       notifyListeners();
 
-      // Synka till Firebase
-      await _syncListToFirebase(newList);
+      // Spara till cache
+      await _saveToCache(newList);
 
-      AppLogger.success('Personlig lista "$name" skapad');
+      // Synka till Firebase
+      _scheduleSyncForList(newList.id);
+
+      AppLogger.success('✅ Personlig lista "$name" skapad');
       return newList.id;
     } catch (e) {
-      AppLogger.error('Kunde inte skapa personlig lista: $e');
+      AppLogger.error('❌ Kunde inte skapa personlig lista: $e');
       _setError('Kunde inte skapa lista: $e');
       return null;
     }
@@ -157,7 +172,7 @@ class UnifiedShoppingService extends ChangeNotifier {
     bool autoRemoveCompleted = false,
   }) async {
     if (currentUserId == null) {
-      _setError('Du maste vara inloggad');
+      _setError('Du måste vara inloggad');
       return null;
     }
 
@@ -185,19 +200,22 @@ class UnifiedShoppingService extends ChangeNotifier {
         autoRemoveCompleted: autoRemoveCompleted,
       );
 
-      // Lagg till lokalt (optimistic update)
+      // Lägg till lokalt (optimistic update)
       _lists.add(newList);
       _activeListId = newList.id;
       notifyListeners();
 
-      // Synka till Firebase (collaborative lists anvander annan collection)
-      await _syncCollaborativeListToFirebase(newList);
+      // Spara till cache
+      await _saveToCache(newList);
+
+      // Synka till Firebase (collaborative lists använder annan collection)
+      _scheduleSyncForList(newList.id);
 
       AppLogger.success(
-          'Kollaborativ lista "$name" skapad med ${memberIds.length} medlemmar');
+          '✅ Kollaborativ lista "$name" skapad med ${memberIds.length} medlemmar');
       return newList.id;
     } catch (e) {
-      AppLogger.error('Kunde inte skapa kollaborativ lista: $e');
+      AppLogger.error('❌ Kunde inte skapa kollaborativ lista: $e');
       _setError('Kunde inte skapa kollaborativ lista: $e');
       return null;
     }
@@ -219,7 +237,7 @@ class UnifiedShoppingService extends ChangeNotifier {
       final updatedList = list.copyWith(name: newName.trim());
       return await _updateList(updatedList);
     } catch (e) {
-      AppLogger.error('Kunde inte byta namn pa lista: $e');
+      AppLogger.error('❌ Kunde inte byta namn på lista: $e');
       _setError('Kunde inte byta namn: $e');
       return false;
     }
@@ -227,9 +245,9 @@ class UnifiedShoppingService extends ChangeNotifier {
 
   Future<bool> deleteList(String listId) async {
     try {
-      // Kan inte ta bort om det ar enda listan
+      // Kan inte ta bort om det är enda listan
       if (_lists.length <= 1) {
-        _setError('Du maste ha minst en inkopslista');
+        _setError('Du måste ha minst en inköpslista');
         return false;
       }
 
@@ -242,21 +260,21 @@ class UnifiedShoppingService extends ChangeNotifier {
       // Ta bort lokalt
       _lists.removeWhere((l) => l.id == listId);
 
-      // Om det var aktiva listan, satt en annan som aktiv
+      // Om det var aktiva listan, sätt en annan som aktiv
       if (_activeListId == listId && _lists.isNotEmpty) {
         await setActiveList(_lists.first.id);
       }
 
-      // Ta bort fran Firebase
-      await _deleteListFromFirebase(list);
-
-      // Ta bort fran cache
+      // Ta bort från cache
       await _removeFromCache(listId);
+
+      // Ta bort från Firebase
+      _scheduleDeleteForList(listId, list.isCollaborative);
 
       notifyListeners();
       return true;
     } catch (e) {
-      AppLogger.error('Kunde inte ta bort lista: $e');
+      AppLogger.error('❌ Kunde inte ta bort lista: $e');
       _setError('Kunde inte ta bort lista: $e');
       return false;
     }
@@ -278,19 +296,19 @@ class UnifiedShoppingService extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      AppLogger.error('Kunde inte satta aktiv lista: $e');
+      AppLogger.error('❌ Kunde inte sätta aktiv lista: $e');
       _setError('Kunde inte byta lista: $e');
       return false;
     }
   }
 
-  // ===== ITEM MANAGEMENT - BEHOLLER alla dina metoder =====
+  // ===== ITEM MANAGEMENT =====
 
   Future<bool> addItemToActiveList({
     required String name,
     required double amount,
     String unit = '',
-    String category = 'Ovrigt',
+    String category = 'Övrigt',
     String? note,
     double? estimatedPrice,
     int priority = 3,
@@ -301,7 +319,7 @@ class UnifiedShoppingService extends ChangeNotifier {
     }
 
     if (name.trim().isEmpty) {
-      _setError('Artikelnamn kravs');
+      _setError('Artikelnamn krävs');
       return false;
     }
 
@@ -333,8 +351,8 @@ class UnifiedShoppingService extends ChangeNotifier {
 
       return await _updateList(updatedList);
     } catch (e) {
-      AppLogger.error('Kunde inte lagga till artikel: $e');
-      _setError('Kunde inte lagga till artikel: $e');
+      AppLogger.error('❌ Kunde inte lägga till artikel: $e');
+      _setError('Kunde inte lägga till artikel: $e');
       return false;
     }
   }
@@ -354,8 +372,8 @@ class UnifiedShoppingService extends ChangeNotifier {
 
       return await _updateList(updatedList);
     } catch (e) {
-      AppLogger.error('Kunde inte andra artikel-status: $e');
-      _setError('Kunde inte andra status: $e');
+      AppLogger.error('❌ Kunde inte ändra artikel-status: $e');
+      _setError('Kunde inte ändra status: $e');
       return false;
     }
   }
@@ -375,7 +393,7 @@ class UnifiedShoppingService extends ChangeNotifier {
 
       return await _updateList(updatedList);
     } catch (e) {
-      AppLogger.error('Kunde inte ta bort artikel: $e');
+      AppLogger.error('❌ Kunde inte ta bort artikel: $e');
       _setError('Kunde inte ta bort artikel: $e');
       return false;
     }
@@ -395,8 +413,8 @@ class UnifiedShoppingService extends ChangeNotifier {
 
       return await _updateList(updatedList);
     } catch (e) {
-      AppLogger.error('Kunde inte rensa kopta artiklar: $e');
-      _setError('Kunde inte rensa kopta artiklar: $e');
+      AppLogger.error('❌ Kunde inte rensa köpta artiklar: $e');
+      _setError('Kunde inte rensa köpta artiklar: $e');
       return false;
     }
   }
@@ -415,30 +433,50 @@ class UnifiedShoppingService extends ChangeNotifier {
 
       return await _updateList(updatedList);
     } catch (e) {
-      AppLogger.error('Kunde inte avmarkera alla artiklar: $e');
+      AppLogger.error('❌ Kunde inte avmarkera alla artiklar: $e');
       _setError('Kunde inte avmarkera alla artiklar: $e');
       return false;
     }
   }
 
-  // ===== MIGRATION HELPERS - for att flytta din befintliga data =====
+  // ===== EXPORT =====
 
-  /// Migrerar din befintliga shopping_list data till unified systemet
-  Future<void> migrateFromExistingData() async {
-    try {
-      AppLogger.info('Startar migration av befintliga shopping lists...');
+  String exportListAsText() {
+    if (activeList == null) return 'Ingen aktiv lista';
 
-      // Detta kommer vi implementera steg-for-steg
-      // for att flytta din befintliga data sakert
+    final buffer = StringBuffer();
+    buffer.writeln('📋 ${activeList!.name}');
+    buffer.writeln('=' * activeList!.name.length);
+    buffer.writeln();
 
-      AppLogger.success('Migration slutford!');
-    } catch (e) {
-      AppLogger.error('Migration misslyckades: $e');
-      rethrow;
+    if (activeList!.description?.isNotEmpty == true) {
+      buffer.writeln(activeList!.description);
+      buffer.writeln();
     }
+
+    final activeItems =
+        activeList!.items.where((item) => !item.bought).toList();
+    final boughtItems = activeList!.items.where((item) => item.bought).toList();
+
+    if (activeItems.isNotEmpty) {
+      buffer.writeln('📝 Kvar att handla:');
+      for (final item in activeItems) {
+        buffer.writeln('☐ ${item.displayText}');
+      }
+      buffer.writeln();
+    }
+
+    if (boughtItems.isNotEmpty) {
+      buffer.writeln('✅ Inhandlat:');
+      for (final item in boughtItems) {
+        buffer.writeln('☑ ${item.displayText}');
+      }
+    }
+
+    return buffer.toString();
   }
 
-  // ===== PRIVATE METHODS - samma patterns som du har =====
+  // ===== PRIVATE METHODS =====
 
   Future<bool> _updateList(UnifiedShoppingList updatedList) async {
     try {
@@ -460,7 +498,7 @@ class UnifiedShoppingService extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      AppLogger.error('Kunde inte uppdatera lista: $e');
+      AppLogger.error('❌ Kunde inte uppdatera lista: $e');
       _setError('Kunde inte uppdatera lista: $e');
       return false;
     }
@@ -476,6 +514,11 @@ class UnifiedShoppingService extends ChangeNotifier {
     _syncDebounceTimer = Timer(_syncDebounce, () {
       _syncPendingLists();
     });
+  }
+
+  void _scheduleDeleteForList(String listId, bool isCollaborative) {
+    // För borttagning, gör direkt utan debounce
+    _deleteListFromFirebase(listId, isCollaborative);
   }
 
   Future<void> _syncPendingLists() async {
@@ -500,6 +543,8 @@ class UnifiedShoppingService extends ChangeNotifier {
     }
   }
 
+  // ===== FIREBASE SYNC METHODS =====
+
   Future<void> _syncListToFirebase(UnifiedShoppingList list) async {
     if (currentUserId == null) return;
 
@@ -507,24 +552,13 @@ class UnifiedShoppingService extends ChangeNotifier {
       await _firestore
           .collection('users')
           .doc(currentUserId)
-          .collection('shopping_lists')
+          .collection('unified_shopping_lists')
           .doc(list.id)
           .set(list.toFirestore(), SetOptions(merge: true));
 
-      // Uppdatera sync status
-      final syncedList = list.markAsSynced();
-      final index = _lists.indexWhere((l) => l.id == list.id);
-      if (index != -1) {
-        _lists[index] = syncedList;
-        await _saveToCache(syncedList);
-      }
+      AppLogger.debug('Lista synkad: ${list.name}');
     } catch (e) {
-      AppLogger.error('Firebase synk-fel for lista ${list.id}: $e');
-      final errorList = list.markAsError();
-      final index = _lists.indexWhere((l) => l.id == list.id);
-      if (index != -1) {
-        _lists[index] = errorList;
-      }
+      AppLogger.error('Firebase synk-fel för lista ${list.id}: $e');
     }
   }
 
@@ -534,49 +568,52 @@ class UnifiedShoppingService extends ChangeNotifier {
 
     try {
       await _firestore
-          .collection('shared_shopping_lists')
+          .collection('unified_shared_shopping_lists')
           .doc(list.id)
           .set(list.toFirestore(), SetOptions(merge: true));
 
-      // Uppdatera sync status
-      final syncedList = list.markAsSynced();
-      final index = _lists.indexWhere((l) => l.id == list.id);
-      if (index != -1) {
-        _lists[index] = syncedList;
-        await _saveToCache(syncedList);
-      }
+      AppLogger.debug('Kollaborativ lista synkad: ${list.name}');
     } catch (e) {
       AppLogger.error(
-          'Firebase synk-fel for kollaborativ lista ${list.id}: $e');
-      final errorList = list.markAsError();
-      final index = _lists.indexWhere((l) => l.id == list.id);
-      if (index != -1) {
-        _lists[index] = errorList;
-      }
+          'Firebase synk-fel för kollaborativ lista ${list.id}: $e');
     }
   }
-
-  // ===== FIREBASE SYNC METHODS =====
 
   void _startFirebaseSync() {
     if (currentUserId == null) return;
 
-    AppLogger.info('Startar Firebase sync...');
+    AppLogger.info('🔄 Startar Firebase sync för unified data...');
 
-    // Personal lists
-    _personalListsSubscription = _firestore
-        .collection('users')
-        .doc(currentUserId)
-        .collection('shopping_lists')
-        .snapshots()
-        .listen(_handlePersonalListsSnapshot);
+    try {
+      // Personal lists
+      _personalListsSubscription = _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('unified_shopping_lists')
+          .snapshots()
+          .listen(
+        _handlePersonalListsSnapshot,
+        onError: (error) {
+          AppLogger.error('Personal lists snapshot error: $error');
+        },
+      );
 
-    // Collaborative lists
-    _collaborativeListsSubscription = _firestore
-        .collection('shared_shopping_lists')
-        .where('memberPermissions.$currentUserId', isNotEqualTo: null)
-        .snapshots()
-        .listen(_handleCollaborativeListsSnapshot);
+      // Collaborative lists
+      _collaborativeListsSubscription = _firestore
+          .collection('unified_shared_shopping_lists')
+          .where('memberPermissions.$currentUserId', isNotEqualTo: null)
+          .snapshots()
+          .listen(
+        _handleCollaborativeListsSnapshot,
+        onError: (error) {
+          AppLogger.error('Collaborative lists snapshot error: $error');
+        },
+      );
+
+      AppLogger.success('✅ Firebase sync startat');
+    } catch (e) {
+      AppLogger.error('❌ Kunde inte starta Firebase sync: $e');
+    }
   }
 
   void _stopFirebaseSync() {
@@ -648,7 +685,7 @@ class UnifiedShoppingService extends ChangeNotifier {
     _removeFromCache(listId);
   }
 
-  // ===== CACHE METHODS =====
+  // ===== CACHE METHODS - ✅ FIXAD FÖR ATT FUNGERA OFFLINE =====
 
   Future<void> _loadCachedLists(Box<String> box) async {
     try {
@@ -658,16 +695,30 @@ class UnifiedShoppingService extends ChangeNotifier {
       for (final listId in cachedListIds) {
         final cachedData = box.get(listId);
         if (cachedData != null) {
-          jsonDecode(cachedData);
-          // Simplified cache loading - i produktion skulle vi ha mer robust parsing
-          AppLogger.info('Laddat cached lista: $listId');
+          try {
+            // ✅ FIX: Parse JSON properly from cache
+            final listData = jsonDecode(cachedData);
+            final list = UnifiedShoppingList.fromJson(listData);
+            _lists.add(list);
+            AppLogger.debug('Laddad cached lista: ${list.name}');
+          } catch (e) {
+            AppLogger.error('Fel vid parsing av cached lista $listId: $e');
+            // Ta bort trasig cache
+            await box.delete(listId);
+          }
         }
       }
 
       // Load active list ID
       _activeListId = box.get(_activeListKey);
 
-      AppLogger.info('Cached lists laddade');
+      // Om ingen aktiv lista men vi har listor, sätt första som aktiv
+      if (_activeListId == null && _lists.isNotEmpty) {
+        _activeListId = _lists.first.id;
+        await box.put(_activeListKey, _activeListId!);
+      }
+
+      AppLogger.debug('✅ ${_lists.length} cached lists laddade');
     } catch (e) {
       AppLogger.error('Fel vid laddning av cached lists: $e');
     }
@@ -676,8 +727,10 @@ class UnifiedShoppingService extends ChangeNotifier {
   Future<void> _saveToCache(UnifiedShoppingList list) async {
     try {
       final box = await Hive.openBox<String>(_hiveBoxName);
-      final listJson = jsonEncode(list.toFirestore());
+      final listData = list.toJson();
+      final listJson = jsonEncode(listData);
       await box.put(list.id, listJson);
+      AppLogger.debug('Lista cachad: ${list.name}');
     } catch (e) {
       AppLogger.error('Fel vid sparande till cache: $e');
     }
@@ -687,28 +740,31 @@ class UnifiedShoppingService extends ChangeNotifier {
     try {
       final box = await Hive.openBox<String>(_hiveBoxName);
       await box.delete(listId);
+      AppLogger.debug('Lista borttagen från cache: $listId');
     } catch (e) {
-      AppLogger.error('Fel vid borttagning fran cache: $e');
+      AppLogger.error('Fel vid borttagning från cache: $e');
     }
   }
 
-  Future<void> _deleteListFromFirebase(UnifiedShoppingList list) async {
+  Future<void> _deleteListFromFirebase(
+      String listId, bool isCollaborative) async {
     try {
-      if (list.isCollaborative) {
+      if (isCollaborative) {
         await _firestore
-            .collection('shared_shopping_lists')
-            .doc(list.id)
+            .collection('unified_shared_shopping_lists')
+            .doc(listId)
             .delete();
       } else {
         await _firestore
             .collection('users')
             .doc(currentUserId)
-            .collection('shopping_lists')
-            .doc(list.id)
+            .collection('unified_shopping_lists')
+            .doc(listId)
             .delete();
       }
+      AppLogger.debug('Lista borttagen från Firebase: $listId');
     } catch (e) {
-      AppLogger.error('Fel vid borttagning fran Firebase: $e');
+      AppLogger.error('Fel vid borttagning från Firebase: $e');
     }
   }
 

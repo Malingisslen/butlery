@@ -1,15 +1,15 @@
 // lib/models/unified/unified_shopping_list.dart
 
 /// AI INFO BLOCK:
-/// Component: Unified Shopping List Model - BEHOLLER ALL FUNKTIONALITET
+/// Component: Unified Shopping List Model - KOMPLETT MED fromJson
 /// File: models/unified/unified_shopping_list.dart
-/// Quick Guide: Enhetlig listmodell som ersatter ShoppingList och SharedShoppingList
+/// Quick Guide: Enhetlig listmodell som ersätter ShoppingList och SharedShoppingList
 /// Dependencies IN: cloud_firestore, uuid, unified_shopping_item.dart
 /// Dependencies OUT: UnifiedShoppingService, alla shopping UI-komponenter
 /// Data flow: User actions -> List updates -> Firebase sync -> UI refresh
 /// State management: Immutable data class med copyWith pattern
 /// Purpose: Central representation av shopping lists med ALLA features
-/// Used in phases: 18.3 (Unified Shopping Migration)
+/// Used in phases: 18.3 (Unified Shopping Migration) - NU MED CACHE SUPPORT
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -17,8 +17,8 @@ import 'unified_shopping_item.dart';
 
 enum SyncStatus {
   synced, // Synkad med Firebase
-  pending, // Vantar pa synk
-  conflict, // Konflikt som behover losas
+  pending, // Väntar på synk
+  conflict, // Konflikt som behöver lösas
   local, // Endast lokal (offline)
   error, // Synk-fel
 }
@@ -30,15 +30,15 @@ enum ListType {
 
 enum SharedListPermission {
   view, // Kan bara se listan
-  edit, // Kan lagga till/ta bort items
-  admin, // Kan redigera behorigheter och ta bort lista
+  edit, // Kan lägga till/ta bort items
+  admin, // Kan redigera behörigheter och ta bort lista
 }
 
-/// Enhetlig shopping list som kombinerar alla features fran:
-/// - ShoppingList (grundlaggande funktionalitet)
+/// Enhetlig shopping list som kombinerar alla features från:
+/// - ShoppingList (grundläggande funktionalitet)
 /// - SharedShoppingList (collaborative features)
 ///
-/// Detta beholler ALL befintlig funktionalitet men gor koden enklare
+/// Detta behåller ALL befintlig funktionalitet men gör koden enklare
 class UnifiedShoppingList {
   final String id;
   final String name;
@@ -58,7 +58,7 @@ class UnifiedShoppingList {
   final String? lastActivityByUserId;
   final String? lastActivityByDisplayName;
   final String? description;
-  final Map<String, dynamic> settings; // Framtida installningar
+  final Map<String, dynamic> settings; // Framtida inställningar
   final List<String> categoryIds; // Related friend categories for bulk sharing
   final bool allowGuestEditing;
   final bool autoRemoveCompleted;
@@ -87,9 +87,9 @@ class UnifiedShoppingList {
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
-  // ===== FACTORY CONSTRUCTORS - samma patterns som du anvander =====
+  // ===== FACTORY CONSTRUCTORS - samma patterns som du använder =====
 
-  /// Skapa personal shopping list - ERSATTER ShoppingList.personal
+  /// Skapa personal shopping list - ERSÄTTER ShoppingList.personal
   factory UnifiedShoppingList.personal({
     required String name,
     required String ownerId,
@@ -105,7 +105,7 @@ class UnifiedShoppingList {
     );
   }
 
-  /// Skapa collaborative shopping list - ERSATTER SharedShoppingList
+  /// Skapa collaborative shopping list - ERSÄTTER SharedShoppingList
   factory UnifiedShoppingList.collaborative({
     required String name,
     required String ownerId,
@@ -139,7 +139,7 @@ class UnifiedShoppingList {
     );
   }
 
-  // ===== PROPERTIES - BEHOLLER alla dina befintliga getters =====
+  // ===== PROPERTIES - BEHÅLLER alla dina befintliga getters =====
 
   bool get isPersonal => type == ListType.personal;
   bool get isCollaborative => type == ListType.collaborative;
@@ -160,7 +160,7 @@ class UnifiedShoppingList {
 
   String get summary {
     if (isEmpty) return 'Tom lista';
-    if (allItemsBought) return 'Alla $totalItems artiklar kopta ✓';
+    if (allItemsBought) return 'Alla $totalItems artiklar köpta ✓';
     return '$unboughtItems av $totalItems artiklar kvar';
   }
 
@@ -294,7 +294,7 @@ class UnifiedShoppingList {
     return copyWith(syncStatus: SyncStatus.error);
   }
 
-  // ===== ITEM OPERATIONS - BEHOLLER alla dina metoder =====
+  // ===== ITEM OPERATIONS - BEHÅLLER alla dina metoder =====
 
   UnifiedShoppingList addItem(
     UnifiedShoppingItem item, {
@@ -425,6 +425,79 @@ class UnifiedShoppingList {
       'allowGuestEditing': allowGuestEditing,
       'autoRemoveCompleted': autoRemoveCompleted,
     };
+  }
+
+  /// JSON serialization för cache (konverterar Timestamps till Strings)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'ownerId': ownerId,
+      'ownerDisplayName': ownerDisplayName,
+      'items': items.map((item) => item.toJson()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'lastSyncedAt': lastSyncedAt?.toIso8601String(),
+      'syncStatus': syncStatus.name,
+      'type': type.name,
+      'memberPermissions': memberPermissions.map(
+        (userId, permission) => MapEntry(userId, permission.name),
+      ),
+      'lastActivityAt': lastActivityAt?.toIso8601String(),
+      'lastActivityByUserId': lastActivityByUserId,
+      'lastActivityByDisplayName': lastActivityByDisplayName,
+      'description': description,
+      'settings': settings,
+      'categoryIds': categoryIds,
+      'allowGuestEditing': allowGuestEditing,
+      'autoRemoveCompleted': autoRemoveCompleted,
+    };
+  }
+
+  /// ✅ NY: JSON deserialization för cache-loading
+  factory UnifiedShoppingList.fromJson(Map<String, dynamic> json) {
+    return UnifiedShoppingList(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      ownerId: json['ownerId'] as String,
+      ownerDisplayName: json['ownerDisplayName'] as String,
+      items: (json['items'] as List<dynamic>?)
+              ?.map((item) =>
+                  UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      lastSyncedAt: json['lastSyncedAt'] != null
+          ? DateTime.parse(json['lastSyncedAt'] as String)
+          : null,
+      syncStatus: SyncStatus.values.firstWhere(
+        (s) => s.name == json['syncStatus'],
+        orElse: () => SyncStatus.local,
+      ),
+      type: ListType.values.firstWhere(
+        (t) => t.name == json['type'],
+        orElse: () => ListType.personal,
+      ),
+      memberPermissions: (json['memberPermissions'] as Map<String, dynamic>?)
+              ?.map((userId, permissionName) => MapEntry(
+                  userId,
+                  SharedListPermission.values.firstWhere(
+                    (p) => p.name == permissionName,
+                    orElse: () => SharedListPermission.view,
+                  ))) ??
+          {},
+      lastActivityAt: json['lastActivityAt'] != null
+          ? DateTime.parse(json['lastActivityAt'] as String)
+          : null,
+      lastActivityByUserId: json['lastActivityByUserId'] as String?,
+      lastActivityByDisplayName: json['lastActivityByDisplayName'] as String?,
+      description: json['description'] as String?,
+      settings: Map<String, dynamic>.from(json['settings'] as Map? ?? {}),
+      categoryIds: List<String>.from(json['categoryIds'] as List? ?? []),
+      allowGuestEditing: json['allowGuestEditing'] as bool? ?? true,
+      autoRemoveCompleted: json['autoRemoveCompleted'] as bool? ?? false,
+    );
   }
 
   factory UnifiedShoppingList.fromFirestore(DocumentSnapshot doc) {

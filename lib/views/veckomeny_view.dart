@@ -1,5 +1,4 @@
 // lib/views/veckomeny_view.dart
-// UPPDATERAD för Enhanced Menu Sharing + Menu Persistence
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // För SystemNavigator
@@ -9,15 +8,15 @@ import '../viewmodels/menu_viewmodel.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/menu_share_dialog.dart'; // ✅ NY IMPORT
-import '../widgets/menu_persistence_dialogs.dart'; // ✅ NY IMPORT för menyhantering
+import '../widgets/menu_share_dialog.dart';
+import '../widgets/menu_persistence_dialogs.dart';
+import '../widgets/shopping_list_selector.dart'; // ✅ NY IMPORT
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
-import '../services/friends_service.dart'; // ✅ NY IMPORT
-import '../widgets/shopping_list_selector_dialog.dart';
+import '../services/friends_service.dart';
 
-/// ✨ UPPDATERAD VY MED ENHANCED MENU SHARING + MENU PERSISTENCE
+/// ✨ UPPDATERAD VY MED MENU -> SHOPPING INTEGRATION
 class VeckomenyView extends StatelessWidget {
   const VeckomenyView({super.key});
 
@@ -40,17 +39,12 @@ class _VeckomenyViewContent extends StatefulWidget {
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
   final ShareService _shareService = sl<ShareService>();
-  final FriendsService _friendsService = sl<FriendsService>(); // ✅ NY SERVICE
+  final FriendsService _friendsService = sl<FriendsService>();
 
   @override
   void initState() {
     super.initState();
     _promptController.addListener(_onPromptChanged);
-
-    // Ladda sparad meny inte längre automatiskt - användaren väljer själv
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   context.read<MenuViewModel>().loadSavedMenu();
-    // });
   }
 
   @override
@@ -128,7 +122,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
-// ✨ FIXED: Enhanced social menu sharing med korrekt context handling
+// ✨ FIXED: Enhanced social menu sharing
   Future<void> _showSocialMenuShareDialog() async {
     final viewModel = context.read<MenuViewModel>();
 
@@ -177,14 +171,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Säkerställ att vänner är laddade
       await _friendsService.loadFriends();
 
-      // Stäng loading - FIXED: Lagra context innan async
+      // Stäng loading
       if (mounted) {
         Navigator.pop(context);
       }
 
       // Kontrollera om användaren har vänner
       if (_friendsService.friends.isEmpty) {
-        // FIXED: Check mounted before using context
         if (!mounted) return;
 
         // Visa informativ dialog om inga vänner
@@ -213,7 +206,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               FilledButton.icon(
                 onPressed: () {
                   Navigator.pop(dialogContext);
-                  // FIXED: Use dialogContext instead of context
                   Navigator.pushNamed(dialogContext, '/friends');
                 },
                 icon: const Icon(Icons.person_add),
@@ -225,7 +217,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         return;
       }
 
-      // FIXED: Check mounted again before final dialog
       if (!mounted) return;
 
       // Visa enhanced menu sharing dialog
@@ -237,12 +228,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ),
       );
     } catch (e) {
-      // Stäng loading om det fortfarande visas - FIXED: Check mounted
+      // Stäng loading om det fortfarande visas
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
 
-      // Visa error - FIXED: Check mounted
+      // Visa error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -257,6 +248,35 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         );
       }
     }
+  }
+
+  // ✅ UPPDATERAD: Menu till Shopping List integration
+  Future<void> _showShoppingListSelector() async {
+    final viewModel = context.read<MenuViewModel>();
+
+    // Kontrollera att meny finns
+    if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Skapa en meny först innan du kan skapa inköpslista'),
+          backgroundColor: AppTheme.warningColor,
+        ),
+      );
+      return;
+    }
+
+    // ✅ SKICKA MENY DATA TILL SHOPPING LIST SELECTOR
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => ShoppingListSelector(
+        menu: viewModel.menu, // ✅ SKICKA MENY DATA
+        onListSelected: () {
+          // Lista vald och ingredienser tillagda - stäng modal
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   Future<void> _showExitDialog(BuildContext context) async {
@@ -418,18 +438,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ],
         ),
 
-        // Floating action button för inköpslista
+        // ✅ UPPDATERAD: Floating action button för inköpslista
         floatingActionButton: viewModel.hasMenu
             ? FloatingActionButton.extended(
-                onPressed: () async {
-                  // Visa dialog för att välja lista
-                  await showDialog(
-                    context: context,
-                    builder: (context) => ShoppingListSelectorDialog(
-                      menu: viewModel.menu,
-                    ),
-                  );
-                },
+                onPressed: _showShoppingListSelector, // ✅ NY METOD
                 icon: const Icon(Icons.shopping_cart),
                 label: const Text('Till inköpslista'),
                 backgroundColor: AppTheme.primaryColor,
