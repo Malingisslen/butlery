@@ -22,6 +22,9 @@ import '../services/analytics_service.dart';
 import '../services/realtime/event_bus_service.dart';
 import '../services/realtime/content_sharing_service.dart';
 import '../services/realtime/realtime_event_handler.dart';
+import '../services/realtime/handlers/recipe_realtime_handler.dart';
+import '../services/realtime/handlers/menu_realtime_handler.dart';
+import '../services/realtime/handlers/shopping_realtime_handler.dart';
 
 // ==================== UNIFIED SHOPPING SYSTEM ====================
 import '../services/unified/unified_shopping_service.dart';
@@ -127,6 +130,14 @@ Future<void> initializeDependencies() async {
               eventBus: sl<EventBusService>(),
               sharingService: sl<ContentSharingService>(),
             ));
+
+    // Content specific realtime handlers
+    sl.registerLazySingleton<RecipeRealtimeHandler>(
+        () => RecipeRealtimeHandler(eventBus: sl<EventBusService>()));
+    sl.registerLazySingleton<MenuRealtimeHandler>(
+        () => MenuRealtimeHandler(eventBus: sl<EventBusService>()));
+    sl.registerLazySingleton<ShoppingRealtimeHandler>(
+        () => ShoppingRealtimeHandler(eventBus: sl<EventBusService>()));
     debugPrint('✅ Alla core services registrerade');
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
