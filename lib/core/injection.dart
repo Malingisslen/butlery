@@ -18,6 +18,10 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
+// ==================== REALTIME SERVICES ====================
+import '../services/realtime/event_bus_service.dart';
+import '../services/realtime/content_sharing_service.dart';
+import '../services/realtime/realtime_event_handler.dart';
 
 // ==================== UNIFIED SHOPPING SYSTEM ====================
 import '../services/unified/unified_shopping_service.dart';
@@ -109,6 +113,15 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<ImagePickerService>(ImagePickerService());
     sl.registerSingleton<OfflineService>(OfflineService());
     sl.registerSingleton<AnalyticsService>(AnalyticsService());
+    // Realtime event infrastructure
+    sl.registerLazySingleton<EventBusService>(() => EventBusService());
+    sl.registerLazySingleton<ContentSharingService>(
+        () => ContentSharingService(eventBus: sl<EventBusService>()));
+    sl.registerLazySingleton<RealtimeEventHandler>(
+        () => RealtimeEventHandler(
+              eventBus: sl<EventBusService>(),
+              sharingService: sl<ContentSharingService>(),
+            ));
     debugPrint('✅ Alla core services registrerade');
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
