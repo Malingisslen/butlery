@@ -44,6 +44,11 @@ import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/unified_shopping_viewmodel.dart';
 import '../viewmodels/shopping_share_viewmodel.dart';
 
+// ==================== REALTIME VIEWMODELS ====================
+import '../viewmodels/realtime/recipe_realtime_viewmodel.dart';
+import '../viewmodels/realtime/menu_realtime_viewmodel.dart';
+import '../viewmodels/realtime/shopping_realtime_viewmodel.dart';
+
 // ==================== SOCIAL VIEWMODELS ====================
 import '../viewmodels/user_profile_viewmodel.dart';
 import '../viewmodels/friends_viewmodel.dart';
@@ -196,6 +201,26 @@ Future<void> initializeDependencies() async {
         listId: listId,
         shoppingService: sl<UnifiedShoppingService>(),
         userService: sl<UserService>(),
+      ),
+    );
+
+    // ==================== REALTIME VIEWMODELS ====================
+    sl.registerFactory<RecipeRealtimeViewModel>(
+      () => RecipeRealtimeViewModel(
+        recipeService: sl<RecipeService>(),
+      ),
+    );
+
+    sl.registerFactory<MenuRealtimeViewModel>(
+      () => MenuRealtimeViewModel(
+        recipeService: sl<RecipeService>(),
+        menuService: sl<MenuService>(),
+      ),
+    );
+
+    sl.registerFactory<ShoppingRealtimeViewModel>(
+      () => ShoppingRealtimeViewModel(
+        shoppingService: sl<UnifiedShoppingService>(),
       ),
     );
 
