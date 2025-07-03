@@ -5,7 +5,7 @@ import '../services/content_detector_service.dart';
 import '../services/social_media_extractor.dart';
 import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt SkeletonLoader
 
 /// View för att ta emot och hantera delningar från andra appar
 class ReceiveShareView extends StatefulWidget {
@@ -68,8 +68,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       '/franSocialaMedier',
       arguments: {
         'text': widget.content,
-        'sourceUrl':
-            _detectionResult.extractedUrl ??
+        'sourceUrl': _detectionResult.extractedUrl ??
             'Importerad från ${_getSourceDescription()}',
       },
     );
@@ -175,28 +174,27 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Manuell kopiering'),
-            content: Text(
-              '1. Gå tillbaka till ${_getPlatformName()}\n'
-              '2. Kopiera recepttexten från inlägget\n'
-              '3. Kom tillbaka hit och välj "Klistra in text"',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _navigateToTextImport();
-                },
-                child: const Text('Klistra in text'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Manuell kopiering'),
+        content: Text(
+          '1. Gå tillbaka till ${_getPlatformName()}\n'
+          '2. Kopiera recepttexten från inlägget\n'
+          '3. Kom tillbaka hit och välj "Klistra in text"',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Avbryt'),
           ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToTextImport();
+            },
+            child: const Text('Klistra in text'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -204,10 +202,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Importera recept')),
-      body:
-          _isProcessing
-              ? _buildLoadingView()
-              : _isExtracting
+      body: _isProcessing
+          ? _buildLoadingView()
+          : _isExtracting
               ? _buildExtractingView()
               : _buildContentView(),
     );
@@ -219,7 +216,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const RecipeListSkeleton(itemCount: 1),
+          // ✅ MIGRATION: StateWidget skeleton loader
+          StateWidget.skeletonRecipeList(itemCount: 1),
           SizedBox(height: AppTheme.spacingLg),
           Text('Analyserar innehåll...', style: AppTheme.subtitleStyle),
         ],
@@ -244,8 +242,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
           Text(
             'Detta kan ta några sekunder',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
           ),
         ],
       ),
@@ -317,8 +315,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
                 Text(
                   _detectionResult.extractedUrl!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -372,8 +370,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
                       child: Text(
                         _extractionError!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.errorColor,
-                        ),
+                              color: AppTheme.errorColor,
+                            ),
                       ),
                     ),
                   ],
@@ -381,7 +379,6 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
               ),
               SizedBox(height: AppTheme.spacingMd),
             ],
-
             ElevatedButton.icon(
               onPressed: _extractFromSocialMedia,
               icon: const Icon(Icons.download),
@@ -392,13 +389,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
               ),
               style: AppTheme.primaryButtonStyle,
             ),
-
             SizedBox(height: AppTheme.spacingMd),
-
             Text('eller', style: Theme.of(context).textTheme.bodySmall),
-
             SizedBox(height: AppTheme.spacingSm),
-
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
@@ -445,8 +438,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
                     child: Text(
                       'Recepttext detekterad! Vi kan importera detta.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.successColor,
-                      ),
+                            color: AppTheme.successColor,
+                          ),
                     ),
                   ),
                 ],

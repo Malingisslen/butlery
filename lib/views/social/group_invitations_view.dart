@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/group_invitations_viewmodel.dart';
 import '../../models/friend_category.dart';
 import '../../widgets/user_avatar.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 
@@ -117,11 +117,11 @@ class GroupInvitationsView extends StatelessWidget {
 
     // Empty state
     if (viewModel.availableGroups.isEmpty) {
-      return EmptyState(
-        icon: Icons.group_outlined,
+      return StateWidget.empty(
         title: 'Inga grupper tillgängliga',
         subtitle: 'Det finns inga grupper att gå med i just nu. '
             'Fråga dina vänner om de har skapat några grupper!',
+        icon: Icons.group_outlined,
         actionLabel: 'Uppdatera',
         onAction: viewModel.refresh,
       );

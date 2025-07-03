@@ -12,9 +12,9 @@ import '../models/user_profile.dart';
 import '../viewmodels/menu_viewmodel.dart';
 
 // Widgets
-import '../widgets/recipe_card.dart';
+import '../widgets/content_card.dart';
 import '../widgets/main_layout_menu.dart';
-import '../widgets/empty_state.dart';
+import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../widgets/universal_share_dialog.dart';
 import '../widgets/menu_persistence_dialogs.dart';
 import '../widgets/shopping_list_selector.dart';
@@ -445,11 +445,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   Widget _buildMenuContent(MenuViewModel viewModel) {
     if (!viewModel.hasMenu) {
-      return EmptyState(
-        icon: Icons.restaurant_menu,
+      // ✅ MIGRATION: StateWidget empty state
+      return StateWidget.empty(
         title: 'Ingen meny genererad ännu',
         subtitle:
             'Skriv vad du vill ha och tryck på knappen ovan\n\nTips: Använd mapp-ikonen för att ladda en sparad meny!',
+        icon: Icons.restaurant_menu,
       );
     }
 
@@ -538,7 +539,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         for (final recipe in recipes)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppTheme.spacingXs),
-            child: CompactRecipeCard(
+            child: ContentCard.compactRecipe(
               recipe: recipe,
               onTap: () {
                 Navigator.pushNamed(

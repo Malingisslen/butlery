@@ -9,7 +9,7 @@ import '../../models/shared_menu.dart';
 import '../../models/recipe.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/user_avatar.dart';
-import '../../widgets/recipe_card.dart';
+import '../../widgets/content_card.dart';
 import '../../viewmodels/shared_content_viewmodel.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
@@ -311,7 +311,7 @@ class MenuPreviewView extends StatelessWidget {
                 // Recept i kategorin
                 ...recipes.map((recipe) => Container(
                       margin: EdgeInsets.only(bottom: AppTheme.spacingXs),
-                      child: CompactRecipeCard(
+                      child: ContentCard.compactRecipe(
                         recipe: recipe,
                         onTap: () => _navigateToRecipeDetail(context, recipe),
                       ),

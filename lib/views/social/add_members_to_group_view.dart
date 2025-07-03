@@ -1,4 +1,4 @@
-// lib/views/social/add_members_to_group_view.dart - KOMPLETT med debug-prints
+// lib/views/social/add_members_to_group_view.dart - KOMPLETT med StateWidget migration
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,25 +6,8 @@ import '../../core/injection.dart';
 import '../../models/user_profile.dart';
 import '../../viewmodels/add_members_to_group_viewmodel.dart';
 import '../../widgets/user_avatar.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../../theme/app_theme.dart';
-
-/// 🔍 AI INFO BLOCK:
-/// Component: Add Members to Group View - KOMPLETT med debug-prints
-/// File: views/social/add_members_to_group_view.dart
-/// Quick Guide: UI för att lägga till medlemmar med riktiga gruppinbjudningar + DEBUG
-/// Dependencies IN: AddMembersToGroupViewModel, AppTheme design system
-/// Dependencies OUT: GroupInvitation notifications via ViewModel
-/// Data flow: View → ViewModel → GroupInvitationService → Firebase
-/// State management: Provider pattern med ChangeNotifier ViewModel
-/// Purpose: Clean UI som skickar riktiga gruppinbjudningar + DEBUG OUTPUT
-/// Common issues: N/A - Pure UI logic med debug
-/// Test coverage: 70% (UI testing med mocked ViewModel)
-/// Performance: ⚡ Pure UI, inga direkta service calls
-/// Analytics: ✅ UI interactions via ViewModel
-/// Code smells: ✅ 100% MVVM separation med debug output
-/// Connected to: AddMembersToGroupViewModel, GroupDetailView
-/// Used in phases: 18.5 - Avancerad medlemshantering med DEBUG
 
 class AddMembersToGroupView extends StatefulWidget {
   final String groupId;
@@ -42,27 +25,23 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   @override
   void initState() {
     super.initState();
-    // ✅ DEBUG: initState
     debugPrint(
         '🔍 DEBUG: AddMembersToGroupView.initState() - groupId: ${widget.groupId}');
   }
 
   @override
   void dispose() {
-    // ✅ DEBUG: dispose
     debugPrint('🔍 DEBUG: AddMembersToGroupView.dispose()');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ DEBUG: build method entry
     debugPrint(
         '🔍 DEBUG: AddMembersToGroupView.build() kallad för groupId: ${widget.groupId}');
 
     return ChangeNotifierProvider<AddMembersToGroupViewModel>(
       create: (context) {
-        // ✅ DEBUG: ViewModel creation
         debugPrint(
             '🔍 DEBUG: Creating AddMembersToGroupViewModel från View med groupId: ${widget.groupId}');
         debugPrint(
@@ -84,7 +63,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       },
       child: Consumer<AddMembersToGroupViewModel>(
         builder: (context, viewModel, child) {
-          // ✅ DEBUG: Consumer rebuild
           debugPrint(
               '🔍 DEBUG: Consumer building med viewModel: ${viewModel.runtimeType}');
           debugPrint(
@@ -158,9 +136,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   Widget _buildBody(
       BuildContext context, AddMembersToGroupViewModel viewModel) {
     if (viewModel.isLoading && viewModel.availableFriends.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return StateWidget.loading(
+          message: 'Laddar vänner...'); // ✅ MIGRATION: StateWidget
     }
 
     if (viewModel.hasError) {
@@ -168,11 +145,12 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     }
 
     if (viewModel.showEmptyState) {
-      return EmptyState(
-        icon: Icons.people_outline,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Inga vänner tillgängliga',
         subtitle: 'Alla dina vänner är redan medlemmar i denna grupp, '
             'eller så har du redan skickat inbjudningar till dem.',
+        icon: Icons.people_outline,
         actionLabel: 'Uppdatera',
         onAction: () {
           debugPrint('🔍 DEBUG: Empty state refresh tryckt');
@@ -405,7 +383,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
               onPressed: viewModel.isSendingInvitations
                   ? null
                   : () async {
-                      // ✅ DEBUG: Button pressed
                       debugPrint(
                           '🔍 DEBUG: ===== SKICKA INBJUDNINGAR KNAPP TRYCKT =====');
                       debugPrint(
@@ -473,40 +450,13 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   Widget _buildErrorState(AddMembersToGroupViewModel viewModel) {
-    return Center(
-      child: Padding(
-        padding: AppTheme.screenPadding,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppTheme.errorColor,
-            ),
-            AppTheme.largeGap,
-            Text(
-              'Ett fel uppstod',
-              style: AppTheme.sectionTitleStyle,
-            ),
-            AppTheme.smallGap,
-            Text(
-              viewModel.error ?? 'Okänt fel',
-              style: AppTheme.bodyStyle,
-              textAlign: TextAlign.center,
-            ),
-            AppTheme.largeGap,
-            FilledButton(
-              onPressed: () {
-                debugPrint('🔍 DEBUG: Error state retry tryckt');
-                viewModel.clearError();
-                viewModel.refresh();
-              },
-              child: const Text('Försök igen'),
-            ),
-          ],
-        ),
-      ),
+    return StateWidget.error(
+      message: viewModel.error ?? 'Okänt fel',
+      onAction: () {
+        debugPrint('🔍 DEBUG: Error state retry tryckt');
+        viewModel.clearError();
+        viewModel.refresh();
+      },
     );
   }
 }
