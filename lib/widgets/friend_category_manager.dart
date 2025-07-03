@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/friends_viewmodel.dart';
 import '../services/friend_categories_service.dart';
 import '../models/friend_category.dart';
+import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt custom _buildEmptyState
 import '../theme/app_theme.dart';
 import '../core/utils/logger.dart';
 
@@ -12,7 +13,7 @@ import '../core/utils/logger.dart';
 /// Component: Friend Category Management Widget
 /// File: widgets/friend_category_manager.dart
 /// Quick Guide: Kategorisering av vänner för shopping list sharing
-/// Dependencies IN: FriendCategoriesService, FriendsViewModel
+/// Dependencies IN: FriendCategoriesService, FriendsViewModel, StateWidget
 /// Dependencies OUT: Category selection för shopping list sharing
 /// Data flow: Load categories → Display with friends → Selection callback
 /// State management: Local selection state + service integration
@@ -105,7 +106,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         final friends = friendsVM.friends;
 
         if (categories.isEmpty && friends.isEmpty) {
-          return _buildEmptyState(context);
+          // ✅ MIGRATION: Ersätt custom _buildEmptyState med StateWidget
+          return StateWidget.empty(
+            title: 'Inga vänner eller kategorier',
+            subtitle: 'Lägg till vänner och skapa kategorier först',
+            icon: Icons.people_outline,
+            actionLabel: 'Hantera vänner',
+            onAction: () => Navigator.pushNamed(context, '/friends'),
+          );
         }
 
         return Column(
@@ -436,44 +444,6 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.people_outline,
-            size: AppTheme.iconSizeEmptyState,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          AppTheme.mediumGap,
-          Text(
-            'Inga vänner eller kategorier',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          AppTheme.smallGap,
-          Text(
-            'Lägg till vänner och skapa kategorier först',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          AppTheme.largeGap,
-          FilledButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/friends');
-            },
-            icon: const Icon(Icons.person_add),
-            label: const Text('Hantera vänner'),
-          ),
         ],
       ),
     );

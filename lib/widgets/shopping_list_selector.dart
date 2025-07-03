@@ -1,8 +1,4 @@
-﻿// lib/widgets/shopping_list_selector.dart
-
-/// 🛒 UNIFIED SHOPPING LIST SELECTOR - MENU INTEGRATION
-/// Ersätter gamla selector med UnifiedShoppingService integration
-/// Hanterar menu -> shopping list conversion med ingredienser
+﻿// lib/widgets/shopping_list_selector.dart - StateWidget Migration
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,17 +7,17 @@ import '../models/unified/unified_shopping_list.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../models/recipe.dart';
 import '../theme/app_theme.dart';
-import '../widgets/empty_state.dart';
+import '../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../core/utils/logger.dart';
 
 class ShoppingListSelector extends StatefulWidget {
   final VoidCallback? onListSelected;
-  final Map<String, List<Recipe>>? menu; // ✅ NY: Mottag meny data
+  final Map<String, List<Recipe>>? menu;
 
   const ShoppingListSelector({
     super.key,
     this.onListSelected,
-    this.menu, // ✅ NY: Menu parameter
+    this.menu,
   });
 
   @override
@@ -31,7 +27,7 @@ class ShoppingListSelector extends StatefulWidget {
 class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   late UnifiedShoppingViewModel _viewModel;
   String? _selectedListId;
-  bool _isAddingToList = false; // ✅ NY: Loading state för tillägg
+  bool _isAddingToList = false;
 
   @override
   void initState() {
@@ -40,7 +36,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     _selectedListId = _viewModel.activeList?.id;
   }
 
-  // ✅ NY: Konvertera meny till shopping items
   List<UnifiedShoppingItem> _convertMenuToShoppingItems() {
     if (widget.menu == null || widget.menu!.isEmpty) return [];
 
@@ -50,16 +45,14 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     for (final entry in widget.menu!.entries) {
       for (final recipe in entry.value) {
         for (final ingredient in recipe.ingredients) {
-          // Undvik duplicat ingredienser
           final normalizedIngredient = ingredient.toLowerCase().trim();
           if (!seenIngredients.contains(normalizedIngredient)) {
             seenIngredients.add(normalizedIngredient);
 
-            // Skapa shopping item från ingrediens
             items.add(UnifiedShoppingItem.basic(
               name: ingredient.trim(),
-              amount: 1.0, // Default amount
-              unit: '', // Vi parsar inte enheter från ingrediens-strängar ännu
+              amount: 1.0,
+              unit: '',
               category: _categorizeIngredient(ingredient),
             ));
           }
@@ -71,7 +64,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     return items;
   }
 
-  // ✅ NY: Enkel kategorisering av ingredienser
   String _categorizeIngredient(String ingredient) {
     final lowerIngredient = ingredient.toLowerCase();
 
@@ -117,7 +109,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       return 'Skafferi';
     }
 
-    // Default
     return 'Övrigt';
   }
 
@@ -189,7 +180,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                 'Välj inköpslista',
                 style: AppTheme.sectionTitleStyle,
               ),
-              // ✅ NY: Visa ingrediens-info om meny finns
               if (widget.menu != null) ...[
                 AppTheme.tinyGap,
                 Text(
@@ -213,36 +203,21 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   Widget _buildContent(UnifiedShoppingViewModel viewModel) {
     if (viewModel.isLoading) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppTheme.mediumLoadingIndicator(),
-            AppTheme.smallGap,
-            Text(
-              'Laddar listor...',
-              style: AppTheme.subtitleStyle,
-            ),
-          ],
-        ),
-      );
+      return StateWidget.loading(message: 'Laddar listor...'); // ✅ MIGRATION
     }
 
     if (viewModel.hasError) {
-      return Center(
-        child: AppTheme.errorContainer(
-          context,
-          viewModel.error ?? 'Okänt fel',
-          icon: Icons.error_outline,
-        ),
-      );
+      return StateWidget.error(
+        message: viewModel.error ?? 'Okänt fel',
+      ); // ✅ MIGRATION
     }
 
     if (!viewModel.hasLists) {
-      return const EmptyState(
-        icon: Icons.list_alt,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Inga inköpslistor',
         subtitle: 'Skapa din första lista för att komma igång',
+        icon: Icons.list_alt,
       );
     }
 
@@ -515,7 +490,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
         AppTheme.smallGap,
 
-        // ✅ UPPDATERAD: Lägg till knapp med loading
+        // Lägg till knapp med loading
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
@@ -537,7 +512,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     );
   }
 
-  // ✅ NY: Lägg till meny-ingredienser till lista och navigera
   Future<void> _addMenuToListAndNavigate(
       UnifiedShoppingViewModel viewModel) async {
     if (_selectedListId == null) return;
@@ -639,7 +613,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     }
   }
 
-  // ✅ UPPDATERAD: Endast personliga listor
   Future<void> _showCreateListDialog(UnifiedShoppingViewModel viewModel) async {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -677,7 +650,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               maxLines: 2,
             ),
             AppTheme.mediumGap,
-            // ✅ INFO: Bara personliga listor
             Container(
               padding: AppTheme.cardPadding,
               decoration: BoxDecoration(
@@ -733,7 +705,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         return;
       }
 
-      // ✅ SKAPA ENDAST PERSONLIG LISTA
       final success = await viewModel.createPersonalList(name);
 
       if (mounted) {
@@ -745,7 +716,6 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
             ),
           );
 
-          // Uppdatera vald lista till den nya
           setState(() {
             _selectedListId = viewModel.activeList?.id;
           });

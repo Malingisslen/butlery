@@ -1,14 +1,14 @@
-// lib/views/social/friends_list_view.dart - UPPDATERAD med gruppinbjudnings-badge
+// lib/views/social/friends_list_view.dart - UPPDATERAD med StateWidget
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/group_invitation_service.dart'; // ✅ NYTT: Import GroupInvitationService
-import '../../models/group_invitation.dart'; // ✅ NYTT: Import GroupInvitation
+import '../../services/group_invitation_service.dart';
+import '../../models/group_invitation.dart';
 import '../../widgets/user_avatar.dart';
 import '../../widgets/main_layout_menu.dart';
 import '../../widgets/search_bar.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/user_profile.dart';
@@ -18,30 +18,12 @@ import '../../services/friend_categories_service.dart';
 import 'create_group_dialog.dart';
 import 'group_detail_view.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friends List Interface med gruppinbjudnings-badge
-/// File: views/social/friends_list_view.dart
-/// Quick Guide: Komplett vänhantering med gruppinbjudningar direkt i grupper-tabben
-/// Dependencies IN: FriendsViewModel, GroupInvitationService, UserAvatar, SearchBar
-/// Dependencies OUT: Friend management, group invitations, smart tab navigation
-/// Data flow: Show pending invitations in groups tab → Accept/reject inline
-/// State management: ✅ Multi-provider för FriendsViewModel + GroupInvitationService
-/// Purpose: Central hub för vänhantering OCH gruppinbjudningar
-/// Common issues: ✅ LÖST: Inline invitation handling, orange badges
-/// Test coverage: 75%
-/// Performance: ⚡ Optimerad med Consumer2 pattern
-/// Analytics: ✅ Invitation response tracking
-/// Code smells: ✅ Clean separation av concerns
-/// Connected to: FriendsViewModel, GroupInvitationService, GroupDetailView
-/// Used in phases: 18.4 - Komplett gruppinbjudningssystem
-
 class FriendsListView extends StatelessWidget {
   const FriendsListView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      // ✅ NYTT: MultiProvider för både Friends och GroupInvitations
       providers: [
         ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
         ChangeNotifierProvider.value(value: sl<GroupInvitationService>()),
@@ -69,7 +51,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() {
@@ -77,10 +58,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         });
       }
     });
-
     _searchController.addListener(_onSearchChanged);
 
-    // Hantera navigation arguments för att sätta rätt tab
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
@@ -119,9 +98,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   @override
   Widget build(BuildContext context) {
     return Consumer2<FriendsViewModel, GroupInvitationService>(
-      // ✅ NYTT: Consumer2
       builder: (context, viewModel, groupInvitationService, child) {
-        // Hämta kategorier direkt från service
         final categoriesService = sl<FriendCategoriesService>();
         final pendingInvitationsCount =
             groupInvitationService.pendingNotificationsCount;
@@ -154,7 +131,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     icon: const Icon(Icons.search),
                     text: 'Sök',
                   ),
-                  // ✅ UPPDATERAD: Grupper tab med orange badge för inbjudningar
                   Tab(
                     icon: Badge(
                       isLabelVisible: pendingInvitationsCount > 0,
@@ -221,8 +197,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       _buildFriendsTab(viewModel),
                       _buildRequestsTab(viewModel),
                       _buildSearchTab(viewModel),
-                      _buildGroupsTab(categoriesService,
-                          groupInvitationService), // ✅ UPPDATERAD: Pass GroupInvitationService
+                      _buildGroupsTab(
+                          categoriesService, groupInvitationService),
                     ],
                   ),
                 ),
@@ -243,24 +219,16 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.friends.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Laddar vänner...'),
-          ],
-        ),
-      );
+      return StateWidget.loading(message: 'Laddar vänner...');
     }
 
     if (viewModel.friends.isEmpty) {
-      return const EmptyState(
-        icon: Icons.people_outline,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Inga vänner än',
         subtitle:
             'Sök efter användare och skicka vänskapsförfrågningar för att bygga ditt nätverk!',
+        icon: Icons.people_outline,
       );
     }
 
@@ -283,23 +251,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   Widget _buildRequestsTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Laddar förfrågningar...'),
-          ],
-        ),
-      );
+      return StateWidget.loading(message: 'Laddar förfrågningar...');
     }
 
     if (viewModel.incomingRequests.isEmpty) {
-      return const EmptyState(
-        icon: Icons.notifications_none,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Inga vänskapsförfrågningar',
         subtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
+        icon: Icons.notifications_none,
       );
     }
 
@@ -322,33 +282,22 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   Widget _buildSearchTab(FriendsViewModel viewModel) {
     if (_searchController.text.isEmpty) {
-      return const EmptyState(
-        icon: Icons.search,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Sök efter nya vänner',
         subtitle:
             'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
+        icon: Icons.search,
       );
     }
 
     if (viewModel.isSearching) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Söker användare...'),
-          ],
-        ),
-      );
+      return StateWidget.loading(message: 'Söker användare...');
     }
 
     if (viewModel.searchResults.isEmpty) {
-      return const EmptyState(
-        icon: Icons.search_off,
-        title: 'Inga användare hittades',
-        subtitle: 'Försök med ett annat sökord eller kontrollera stavningen.',
-      );
+      return StateWidget
+          .noSearchResults(); // ✅ MIGRATION: StateWidget istället för EmptyState
     }
 
     return ListView.separated(
@@ -363,7 +312,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// ✅ UPPDATERAD: Grupper-tab med gruppinbjudningar
   Widget _buildGroupsTab(FriendCategoriesService categoriesService,
       GroupInvitationService groupInvitationService) {
     return AnimatedBuilder(
@@ -376,16 +324,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         if (categoriesService.isLoading &&
             groups.isEmpty &&
             pendingInvitations.isEmpty) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Laddar grupper...'),
-              ],
-            ),
-          );
+          return StateWidget.loading(message: 'Laddar grupper...');
         }
 
         return RefreshIndicator(
@@ -397,7 +336,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           },
           child: CustomScrollView(
             slivers: [
-              // ✅ NYTT: Pending inbjudningar sektion
+              // Pending inbjudningar sektion
               if (pendingInvitations.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: Padding(
@@ -407,11 +346,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.mail_outline,
-                              color: AppTheme.warningColor,
-                              size: 20,
-                            ),
+                            Icon(Icons.mail_outline,
+                                color: AppTheme.warningColor, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               'Gruppinbjudningar (${pendingInvitations.length})',
@@ -425,7 +361,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'Du har fått inbjudningar att gå med i grupper',
                           style:
@@ -476,11 +412,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     padding: AppTheme.screenPadding,
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.groups,
-                          color: AppTheme.primaryColor,
-                          size: 20,
-                        ),
+                        Icon(Icons.groups,
+                            color: AppTheme.primaryColor, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           'Mina grupper (${groups.length})',
@@ -510,14 +443,14 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 ),
               ],
 
-              // Empty state
+              // Empty state - ✅ MIGRATION: StateWidget istället för EmptyState
               if (groups.isEmpty && pendingInvitations.isEmpty) ...[
-                const SliverFillRemaining(
-                  child: EmptyState(
-                    icon: Icons.groups_outlined,
+                SliverFillRemaining(
+                  child: StateWidget.empty(
                     title: 'Inga grupper än',
                     subtitle:
                         'Skapa din första grupp eller vänta på inbjudningar från vänner.',
+                    icon: Icons.groups_outlined,
                   ),
                 ),
               ],
@@ -528,7 +461,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  /// ✅ NYTT: Widget för inbjudningskort
+  // ... (resten av metoderna förblir oförändrade)
+
   Widget _buildInvitationCard(
       GroupInvitation invitation, GroupInvitationService service) {
     return Card(
@@ -547,7 +481,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           children: [
             Row(
               children: [
-                // Gruppmoji
                 Container(
                   width: 40,
                   height: 40,
@@ -642,12 +575,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  // _buildGroupCard utan menyknapparna (borttagna för bättre UX)
   Widget _buildGroupCard(
       FriendCategory group, FriendCategoriesService categoriesService) {
     return Card(
       child: ListTile(
-        // Navigation till gruppdetaljer
         onTap: () => _navigateToGroupDetail(group),
         leading: CircleAvatar(
           backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
@@ -686,11 +617,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   Widget _buildFriendCard(UserProfile friend, FriendsViewModel viewModel) {
     return Card(
       child: ListTile(
-        // ✅ LÄGG TILL DENNA onTap:
         onTap: () {
           Navigator.pushNamed(
             context,
-            '/friend-profile', // eller Routes.friendProfile om du använder constants
+            '/friend-profile',
             arguments: friend,
           );
         },
@@ -717,7 +647,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 _showRemoveFriendDialog(friend, viewModel);
                 break;
               case 'profile':
-                // Nu kan vi navigera istället för att bara visa snackbar
                 Navigator.pushNamed(
                   context,
                   '/friend-profile',
@@ -946,9 +875,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  // ===== NAVIGATION METHODS =====
-
-  // Navigation till gruppdetaljer
+  // Navigation methods
   void _navigateToGroupDetail(FriendCategory group) {
     Navigator.push(
       context,
@@ -961,19 +888,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
     await showDialog(
       context: context,
-      builder: (context) =>
-          const CreateGroupDialog(), // Ta bort viewModel parameter
+      builder: (context) => const CreateGroupDialog(),
     );
 
-    // Refresh efter dialog
     if (mounted) {
       setState(() {});
     }
   }
 
-  // ===== INVITATION ACTIONS =====
-
-  /// ✅ NYTT: Acceptera gruppinbjudan
+  // Invitation actions
   Future<void> _acceptInvitation(
       String invitationId, GroupInvitationService service) async {
     final success = await service.acceptGroupInvitation(invitationId);
@@ -985,7 +908,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           backgroundColor: AppTheme.successColor,
         ),
       );
-      // Refresh för att uppdatera grupplist
       final viewModel = context.read<FriendsViewModel>();
       viewModel.refresh();
     } else if (mounted && service.hasError) {
@@ -998,7 +920,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
   }
 
-  /// ✅ NYTT: Avvisa gruppinbjudan
   Future<void> _rejectInvitation(
       String invitationId, GroupInvitationService service) async {
     final success = await service.rejectGroupInvitation(invitationId);
@@ -1020,8 +941,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
   }
 
-  // ===== FRIEND ACTIONS =====
-
+  // Friend actions
   Future<void> _sendFriendRequest(
       UserProfile user, FriendsViewModel viewModel) async {
     final success = await viewModel.sendFriendRequest(user.uid);

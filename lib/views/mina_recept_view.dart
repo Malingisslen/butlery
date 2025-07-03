@@ -7,9 +7,9 @@ import '../../viewmodels/recipe_list_viewmodel.dart';
 import '../../viewmodels/friends_viewmodel.dart'; // För vänskapsförfrågningar
 import '../../viewmodels/shared_content_viewmodel.dart'; // ✅ NYTT: För delade recept/menyer
 import '../../widgets/main_layout_menu.dart';
-import '../../widgets/recipe_card.dart';
+import '../../widgets/content_card.dart';
 import '../../widgets/search_bar.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../../widgets/filter_chips.dart';
 import '../../widgets/offline_indicator.dart'; // För offline indicator
 import '../../widgets/user_avatar.dart'; // För avatar
@@ -19,7 +19,6 @@ import '../../services/offline_service.dart'
 import '../../services/user_service.dart'; // För user service
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
-import '../../widgets/skeleton_loader.dart';
 import '../../core/utils/logger.dart'; // ✅ LÄGG TILL för AppLogger
 
 /// ✨ UPPDATERAD VY MED OFFLINE SUPPORT, USER AVATAR OCH NOTIFICATION BADGE
@@ -548,8 +547,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 ],
               ),
             ),
-          // Skeleton loader istället för spinner
-          const Expanded(child: RecipeListSkeleton(itemCount: 5)),
+          // ✅ MIGRATION: StateWidget skeleton loader
+          Expanded(child: StateWidget.skeletonRecipeList(itemCount: 5)),
         ],
       );
     }
@@ -634,10 +633,12 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           statsWidget,
           Expanded(
             child: viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-                ? EmptyState.noRecipes(
+                // ✅ MIGRATION: StateWidget no recipes
+                ? StateWidget.noRecipes(
                     onAction: () => Navigator.pushNamed(context, '/laggTill'),
                   )
-                : EmptyState.noSearchResults(
+                // ✅ MIGRATION: StateWidget no search results
+                : StateWidget.noSearchResults(
                     onAction: viewModel.searchQuery.isNotEmpty
                         ? _onSearchCleared
                         : _clearAllFilters,
@@ -686,7 +687,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     horizontal: AppTheme.spacingSm,
                     vertical: AppTheme.spacingXs,
                   ),
-                  child: RecipeCard(
+                  child: ContentCard.recipe(
                     recipe: recipe,
                     onTap: () async {
                       // Navigera till detaljer

@@ -107,6 +107,7 @@ class Recipe extends HiveObject {
 
   /// Skapa kopia med uppdaterade värden
   Recipe copyWith({
+    String? id, // ← NYTT
     String? title,
     String? description,
     int? portions,
@@ -115,16 +116,17 @@ class Recipe extends HiveObject {
     List<String>? instructions,
     List<String>? tags,
     double? rating,
-    List<String>? imageUrls, // NY parameter
+    List<String>? imageUrls,
     String? mealType,
     String? sourceUrl,
+    DateTime? createdAt, // ← NYTT
     DateTime? updatedAt,
+    DateTime? lastCookedAt,
     DateTime? lastSyncedAt,
     bool? isModifiedOffline,
-    DateTime? lastCookedAt,
   }) {
     return Recipe(
-      id: id, // behåll samma ID!
+      id: id ?? this.id, // ← NYTT
       title: title ?? this.title,
       description: description ?? this.description,
       portions: portions ?? this.portions,
@@ -133,14 +135,14 @@ class Recipe extends HiveObject {
       instructions: instructions ?? this.instructions,
       tags: tags ?? this.tags,
       rating: rating ?? this.rating,
-      imageUrls: imageUrls ?? this.imageUrls, // NY
+      imageUrls: imageUrls ?? this.imageUrls,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
-      createdAt: createdAt, // behåll original skapandetid
-      updatedAt: updatedAt ?? DateTime.now(), // uppdatera till nu
+      createdAt: createdAt ?? this.createdAt, // ← NYTT
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastCookedAt: lastCookedAt ?? this.lastCookedAt,
       lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
       isModifiedOffline: isModifiedOffline ?? this.isModifiedOffline,
-      lastCookedAt: lastCookedAt ?? this.lastCookedAt,
     );
   }
 

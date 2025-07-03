@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/state_widget.dart';
 import '../theme/app_theme.dart';
 
 /// Widget för att visa och hantera bilder i recept-formulär
@@ -103,49 +104,12 @@ class _RecipeImageManagerState extends State<RecipeImageManager> {
         borderRadius: AppTheme.cardBorderRadius,
         color: Theme.of(context).colorScheme.surfaceContainerLowest,
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppTheme.actionIcon(
-              context,
-              Icons.photo_camera_outlined,
-              color: Theme.of(context).colorScheme.outline,
-              size: AppTheme.iconSizeLarge * 1.5,
-            ),
-            AppTheme.mediumGap,
-            Text(
-              'Lägg till bilder till ditt recept',
-              style: AppTheme.getTextStyle(
-                context,
-                AppTheme.subtitleStyle,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            AppTheme.smallGap,
-            Text(
-              'Upp till 5 bilder',
-              style: AppTheme.getTextStyle(
-                context,
-                AppTheme.captionStyle,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            AppTheme.mediumGap,
-            ElevatedButton.icon(
-              onPressed: widget.onPickImage,
-              icon: AppTheme.actionIcon(context, Icons.add_a_photo),
-              label: const Text('Välj bilder'),
-              style: ElevatedButton.styleFrom(
-                padding: AppTheme.buttonPadding,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-              ),
-            ),
-          ],
-        ),
+      child: StateWidget.empty(
+        title: 'Lägg till bilder till ditt recept',
+        subtitle: 'Upp till 5 bilder för att göra receptet mer attraktivt',
+        icon: Icons.photo_camera_outlined,
+        actionLabel: 'Välj bilder',
+        onAction: widget.onPickImage,
       ),
     );
   }
@@ -212,53 +176,51 @@ class _RecipeImageManagerState extends State<RecipeImageManager> {
         CachedNetworkImage(
           imageUrl: imageUrl,
           fit: BoxFit.cover,
-          placeholder:
-              (context, url) => Container(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AppTheme.mediumLoadingIndicator(),
-                      AppTheme.smallGap,
-                      Text(
-                        'Laddar bild...',
-                        style: AppTheme.getTextStyle(
-                          context,
-                          AppTheme.captionStyle,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+          placeholder: (context, url) => Container(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppTheme.mediumLoadingIndicator(),
+                  AppTheme.smallGap,
+                  Text(
+                    'Laddar bild...',
+                    style: AppTheme.getTextStyle(
+                      context,
+                      AppTheme.captionStyle,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
+                ],
               ),
-          errorWidget:
-              (context, url, error) => Container(
-                color: Theme.of(context).colorScheme.errorContainer,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AppTheme.actionIcon(
-                        context,
-                        Icons.broken_image_outlined,
-                        color: Theme.of(context).colorScheme.onErrorContainer,
-                        size: AppTheme.iconSizeLarge,
-                      ),
-                      AppTheme.smallGap,
-                      Text(
-                        'Kunde inte ladda bild',
-                        style: AppTheme.getTextStyle(
-                          context,
-                          AppTheme.captionStyle,
-                          color: Theme.of(context).colorScheme.onErrorContainer,
-                        ),
-                      ),
-                    ],
+            ),
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: Theme.of(context).colorScheme.errorContainer,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppTheme.actionIcon(
+                    context,
+                    Icons.broken_image_outlined,
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                    size: AppTheme.iconSizeLarge,
                   ),
-                ),
+                  AppTheme.smallGap,
+                  Text(
+                    'Kunde inte ladda bild',
+                    style: AppTheme.getTextStyle(
+                      context,
+                      AppTheme.captionStyle,
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ],
               ),
+            ),
+          ),
         ),
 
         // Primary badge (endast för första bilden)
@@ -351,12 +313,11 @@ class _RecipeImageManagerState extends State<RecipeImageManager> {
             width: _currentIndex == index ? 24 : 8,
             height: 8,
             decoration: BoxDecoration(
-              color:
-                  _currentIndex == index
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.3),
+              color: _currentIndex == index
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
           ),
