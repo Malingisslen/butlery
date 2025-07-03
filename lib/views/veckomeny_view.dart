@@ -1,18 +1,32 @@
 // lib/views/veckomeny_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // För SystemNavigator
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
+// Models
 import '../models/recipe.dart';
+import '../models/user_profile.dart';
+
+// ViewModels
 import '../viewmodels/menu_viewmodel.dart';
+
+// Widgets
 import '../widgets/recipe_card.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/menu_share_dialog.dart';
+import '../widgets/universal_share_dialog.dart';
 import '../widgets/menu_persistence_dialogs.dart';
-import '../widgets/shopping_list_selector.dart'; // ✅ NY IMPORT
+import '../widgets/shopping_list_selector.dart';
+
+// Theme
 import '../theme/app_theme.dart';
+
+// Core
 import '../core/injection.dart';
+import '../core/utils/logger.dart';
+
+// Services
 import '../services/share_service.dart';
 import '../services/friends_service.dart';
 
@@ -122,132 +136,36 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
-// ✨ FIXED: Enhanced social menu sharing
   Future<void> _showSocialMenuShareDialog() async {
-    final viewModel = context.read<MenuViewModel>();
+    final menuViewModel = Provider.of<MenuViewModel>(context, listen: false);
 
     // Kontrollera att meny finns
-    if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Skapa en meny först innan du kan dela den'),
-            backgroundColor: AppTheme.warningColor,
-          ),
-        );
-      }
+    if (!menuViewModel.hasMenu) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Skapa en meny först innan du kan dela den'),
+          backgroundColor: AppTheme.warningColor,
+        ),
+      );
       return;
     }
 
+    // Hämta vänner
+    List<UserProfile> availableFriends = [];
     try {
-      // Visa loading medan vi laddar vänner
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => Center(
-            child: Container(
-              padding: AppTheme.cardPadding,
-              decoration: BoxDecoration(
-                color: AppTheme.cardColor,
-                borderRadius: AppTheme.largeRadius,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppTheme.mediumLoadingIndicator(),
-                  AppTheme.smallGap,
-                  Text(
-                    'Laddar vänner...',
-                    style: AppTheme.subtitleStyle,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-
-      // Säkerställ att vänner är laddade
-      await _friendsService.loadFriends();
-
-      // Stäng loading
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // Kontrollera om användaren har vänner
-      if (_friendsService.friends.isEmpty) {
-        if (!mounted) return;
-
-        // Visa informativ dialog om inga vänner
-        await showDialog(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  color: AppTheme.warningColor,
-                ),
-                SizedBox(width: AppTheme.spacingSm),
-                const Text('Inga vänner'),
-              ],
-            ),
-            content: const Text(
-              'Du behöver vänner för att dela menyer socialt. '
-              'Gå till vänhantering för att lägga till vänner!',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Stäng'),
-              ),
-              FilledButton.icon(
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  Navigator.pushNamed(dialogContext, '/friends');
-                },
-                icon: const Icon(Icons.person_add),
-                label: const Text('Lägg till vänner'),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
-
-      if (!mounted) return;
-
-      // Visa enhanced menu sharing dialog
-      await showDialog(
-        context: context,
-        builder: (dialogContext) => MenuShareDialog(
-          menu: viewModel.menu,
-          friends: _friendsService.friends,
-        ),
-      );
+      availableFriends = _friendsService.friends;
     } catch (e) {
-      // Stäng loading om det fortfarande visas
-      if (mounted && Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-
-      // Visa error
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Kunde inte ladda vänner: $e'),
-            backgroundColor: AppTheme.errorColor,
-            action: SnackBarAction(
-              label: 'Försök igen',
-              onPressed: _showSocialMenuShareDialog,
-              textColor: Colors.white,
-            ),
-          ),
-        );
-      }
+      AppLogger.warning('⚠️ Kunde inte hämta vänner: $e');
     }
+
+    showDialog(
+      context: context,
+      builder: (context) => UniversalShareDialog.menu(
+        menu: menuViewModel.menu,
+        initialMessage: "Kolla min veckomeny!",
+        availableFriends: availableFriends,
+      ),
+    );
   }
 
   // ✅ UPPDATERAD: Menu till Shopping List integration
