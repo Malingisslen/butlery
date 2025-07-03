@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/archive_import_viewmodel.dart';
-import '../widgets/recipe_card.dart';
+import '../widgets/content_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/action_button.dart';
-import '../widgets/empty_state.dart';
+import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
@@ -94,8 +94,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               // Filter-sektion i en scrollbar container
               Container(
                 constraints: BoxConstraints(
-                  maxHeight:
-                      MediaQuery.of(context).size.height *
+                  maxHeight: MediaQuery.of(context).size.height *
                       0.35, // Max 35% av skärmhöjden
                 ),
                 child: SingleChildScrollView(
@@ -113,16 +112,15 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       if (allTags.isNotEmpty) ...[
                         Wrap(
                           spacing: AppTheme.spacingSm,
-                          children:
-                              allTags.map((tag) {
-                                return AppTheme.filterChip(
-                                  label: tag,
-                                  selected: viewModel.selectedTags.contains(
-                                    tag,
-                                  ),
-                                  onSelected: () => viewModel.toggleTag(tag),
-                                );
-                              }).toList(),
+                          children: allTags.map((tag) {
+                            return AppTheme.filterChip(
+                              label: tag,
+                              selected: viewModel.selectedTags.contains(
+                                tag,
+                              ),
+                              onSelected: () => viewModel.toggleTag(tag),
+                            );
+                          }).toList(),
                         ),
                         SizedBox(height: AppTheme.spacingMd),
                       ],
@@ -246,16 +244,16 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         Text(
           '${viewModel.filteredRecipes.length} av ${viewModel.archivedRecipes.length} recept',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
         ),
         const Spacer(),
         Text(
           '${viewModel.selectedCount} valda',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.w500,
-          ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       ],
     );
@@ -268,10 +266,11 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final recipes = viewModel.filteredRecipes;
 
     if (recipes.isEmpty) {
-      return EmptyState(
-        icon: Icons.search_off,
+      // ✅ MIGRATION: StateWidget empty state
+      return StateWidget.empty(
         title: 'Inga recept matchade filtren',
         subtitle: 'Prova att justera sökning eller filter',
+        icon: Icons.search_off,
       );
     }
 
@@ -283,14 +282,14 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: AppTheme.spacingXxs),
-          child: CompactRecipeCard(
+          // ✅ UPPDATERAD: Använd ContentCard.compactRecipe istället för CompactRecipeCard
+          child: ContentCard.compactRecipe(
             recipe: recipe,
-            onTap:
-                () => Navigator.pushNamed(
-                  context,
-                  '/receptDetalj',
-                  arguments: recipe,
-                ),
+            onTap: () => Navigator.pushNamed(
+              context,
+              '/receptDetalj',
+              arguments: recipe,
+            ),
             trailing: Checkbox(
               value: selected,
               onChanged: (_) => viewModel.toggleRecipeSelection(recipe.id),
@@ -324,15 +323,13 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           Expanded(
             flex: 2,
             child: ActionButton.primary(
-              label:
-                  viewModel.hasSelection
-                      ? 'Importera valda (${viewModel.selectedCount})'
-                      : 'Importera alla (${viewModel.archivedRecipes.length})',
+              label: viewModel.hasSelection
+                  ? 'Importera valda (${viewModel.selectedCount})'
+                  : 'Importera alla (${viewModel.archivedRecipes.length})',
               icon: Icons.upload,
-              onPressed:
-                  viewModel.isImporting
-                      ? null
-                      : () => _handleImport(context, viewModel),
+              onPressed: viewModel.isImporting
+                  ? null
+                  : () => _handleImport(context, viewModel),
               isLoading: viewModel.isImporting,
               loadingText: 'Importerar...',
             ),

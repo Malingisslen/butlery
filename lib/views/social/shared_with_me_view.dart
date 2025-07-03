@@ -11,6 +11,7 @@ import '../../models/shared_recipe.dart';
 import '../../models/shared_menu.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/user_avatar.dart';
+import '../../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt custom _buildEmptyState
 import 'menu_preview_view.dart'; // ✅ NY IMPORT
 
 /// ✅ FIXAD SharedWithMeView med korrekt Provider-arkitektur
@@ -284,39 +285,37 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
     if (viewModel.hasError) {
       return SliverFillRemaining(
-        child: _buildEmptyState(
-          context: context,
-          icon: Icons.error_outline,
-          title: 'Ett fel uppstod',
+        // ✅ MIGRATION: Error state
+        child: StateWidget.error(
           message: viewModel.error!,
-          actionText: 'Försök igen',
-          onActionPressed: viewModel.loadSharedContent,
+          onAction: viewModel.loadSharedContent,
         ),
       );
     }
 
     if (!viewModel.hasSharedContent) {
       return SliverFillRemaining(
-        child: _buildEmptyState(
-          context: context,
-          icon: Icons.share_outlined,
+        // ✅ MIGRATION: No shared content state
+        child: StateWidget.empty(
           title: 'Inga delade recept än',
-          message:
+          subtitle:
               'När vänner delar recept eller menyer med dig kommer de att visas här.',
-          actionText: 'Lägg till vänner',
-          onActionPressed: () => Navigator.pushNamed(context, '/friends'),
+          icon: Icons.share_outlined,
+          actionLabel: 'Lägg till vänner',
+          onAction: () => Navigator.pushNamed(context, '/friends'),
         ),
       );
     }
 
     if (!viewModel.hasFilteredContent && viewModel.searchQuery.isNotEmpty) {
       return SliverFillRemaining(
-        child: _buildEmptyState(
-          context: context,
-          icon: Icons.search_off,
-          title: 'Inga resultat',
-          message:
-              'Inga recept eller menyer matchade "${viewModel.searchQuery}"',
+        // ✅ MIGRATION: No search results state
+        child: StateWidget.noSearchResults(
+          actionLabel: 'Rensa sökning',
+          onAction: () {
+            _searchController.clear();
+            viewModel.clearSearch();
+          },
         ),
       );
     }
@@ -337,13 +336,13 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     final recipes = viewModel.filteredSharedRecipes;
 
     if (recipes.isEmpty) {
-      return _buildEmptyState(
-        context: context,
-        icon: Icons.restaurant_outlined,
+      // ✅ MIGRATION: No recipes state
+      return StateWidget.empty(
         title: 'Inga recept',
-        message: 'Inga recept har delats med dig än.',
-        actionText: 'Hitta vänner',
-        onActionPressed: () => Navigator.pushNamed(context, '/friends'),
+        subtitle: 'Inga recept har delats med dig än.',
+        icon: Icons.restaurant_outlined,
+        actionLabel: 'Hitta vänner',
+        onAction: () => Navigator.pushNamed(context, '/friends'),
       );
     }
 
@@ -367,13 +366,13 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     final menus = viewModel.filteredSharedMenus;
 
     if (menus.isEmpty) {
-      return _buildEmptyState(
-        context: context,
-        icon: Icons.calendar_month_outlined,
+      // ✅ MIGRATION: No menus state
+      return StateWidget.empty(
         title: 'Inga menyer',
-        message: 'Inga menyer har delats med dig än.',
-        actionText: 'Hitta vänner',
-        onActionPressed: () => Navigator.pushNamed(context, '/friends'),
+        subtitle: 'Inga menyer har delats med dig än.',
+        icon: Icons.calendar_month_outlined,
+        actionLabel: 'Hitta vänner',
+        onAction: () => Navigator.pushNamed(context, '/friends'),
       );
     }
 
@@ -1095,53 +1094,5 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
         );
       }
     }
-  }
-
-  Widget _buildEmptyState({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String message,
-    String? actionText,
-    VoidCallback? onActionPressed,
-  }) {
-    return Center(
-      child: Padding(
-        padding: AppTheme.screenPadding,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 64,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            SizedBox(height: AppTheme.spacingMd),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppTheme.spacingSm),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            if (actionText != null && onActionPressed != null) ...[
-              SizedBox(height: AppTheme.spacingLg),
-              FilledButton(
-                onPressed: onActionPressed,
-                child: Text(actionText),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 }

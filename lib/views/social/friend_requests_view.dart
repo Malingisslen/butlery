@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../widgets/user_avatar.dart';
 import '../../widgets/main_layout_menu.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/friend_request.dart';
@@ -207,23 +207,16 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   /// Tab 1: Inkommande förfrågningar
   Widget _buildIncomingTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Laddar förfrågningar...'),
-          ],
-        ),
-      );
+      return StateWidget.loading(
+          message: 'Laddar förfrågningar...'); // ✅ MIGRATION
     }
 
     if (viewModel.incomingRequests.isEmpty) {
-      return const EmptyState(
-        icon: Icons.inbox_outlined,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Inga vänskapsförfrågningar',
         subtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
+        icon: Icons.inbox_outlined,
       );
     }
 
@@ -302,23 +295,16 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   /// Tab 2: Skickade förfrågningar
   Widget _buildSentTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.sentRequests.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Laddar skickade förfrågningar...'),
-          ],
-        ),
-      );
+      return StateWidget.loading(
+          message: 'Laddar skickade förfrågningar...'); // ✅ MIGRATION
     }
 
     if (viewModel.sentRequests.isEmpty) {
-      return const EmptyState(
-        icon: Icons.outbox_outlined,
+      // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.empty(
         title: 'Inga skickade förfrågningar',
         subtitle: 'Förfrågningar du skickar till andra visas här.',
+        icon: Icons.outbox_outlined,
       );
     }
 

@@ -1,6 +1,6 @@
 // lib/core/injection.dart
 
-/// Dependency injection konfiguration för Butlery - RENSAD VERSION
+/// Dependency injection konfiguration för Butlery - UPPDATERAD MED REALTIME SYNC
 library;
 
 import 'package:get_it/get_it.dart';
@@ -18,6 +18,14 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
+
+// ==================== REALTIME SERVICES (FAS 2 + 3) ====================
+import '../services/realtime_sync_service.dart';
+import '../services/realtime/realtime_recipe_service.dart';
+import '../services/realtime/realtime_menu_service.dart';
+
+// ==================== INVITATION SERVICES (FAS 2) ====================
+import '../services/invitations/group_invitation_expander.dart';
 
 // ==================== UNIFIED SHOPPING SYSTEM ====================
 import '../services/unified/unified_shopping_service.dart';
@@ -80,6 +88,28 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<PersistenceService>(PersistenceService());
     debugPrint('✅ PersistenceService registrerad');
 
+    // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
+    sl.registerSingleton<RealtimeSyncService>(RealtimeSyncService());
+    debugPrint('✅ RealtimeSyncService registrerad');
+
+    sl.registerLazySingleton<RealtimeRecipeService>(
+      () => RealtimeRecipeService(
+        syncService: sl<RealtimeSyncService>(),
+        authService: sl<AuthService>(),
+        userService: sl<UserService>(),
+      ),
+    );
+    debugPrint('✅ RealtimeRecipeService registrerad');
+
+    sl.registerLazySingleton<RealtimeMenuService>(
+      () => RealtimeMenuService(
+        syncService: sl<RealtimeSyncService>(),
+        authService: sl<AuthService>(),
+        userService: sl<UserService>(),
+      ),
+    );
+    debugPrint('✅ RealtimeMenuService registrerad');
+
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
     sl.registerSingleton<UserService>(UserService());
     debugPrint('✅ UserService registrerad');
@@ -97,6 +127,15 @@ Future<void> initializeDependencies() async {
           categoriesService: sl<FriendCategoriesService>()),
     );
     debugPrint('✅ GroupInvitationService registrerad');
+
+    // ==================== INVITATION SERVICES (FAS 2) ====================
+    sl.registerLazySingleton<GroupInvitationExpander>(
+      () => GroupInvitationExpander(
+        categoriesService: sl<FriendCategoriesService>(),
+        friendsService: sl<FriendsService>(),
+      ),
+    );
+    debugPrint('✅ GroupInvitationExpander registrerad');
 
     // ==================== EXISTING SERVICES ====================
     sl.registerSingleton<RecipeService>(RecipeService());
@@ -283,6 +322,11 @@ Future<void> initializeDependencies() async {
     await sl<OfflineService>().initialize();
     debugPrint('✅ OfflineService initierad');
 
+    // ==================== REALTIME SYNC INITIALIZATION (FAS 2) ====================
+    debugPrint('🔄 Initialiserar RealtimeSyncService...');
+    await sl<RealtimeSyncService>().initialize();
+    debugPrint('✅ RealtimeSyncService initierad');
+
     debugPrint('🔄 Initialiserar social services...');
 
     await sl<UserService>().initialize();
@@ -312,6 +356,10 @@ Future<void> initializeDependencies() async {
     // Validera att alla kritiska services är registrerade
     sl<AuthService>();
     sl<RecipeService>();
+    sl<RealtimeSyncService>(); // ✅ NYTT: Validera RealtimeSyncService
+    sl<RealtimeRecipeService>(); // ✅ NYTT: Validera RealtimeRecipeService
+    sl<RealtimeMenuService>(); // ✅ NYTT: Validera RealtimeMenuService
+    sl<GroupInvitationExpander>(); // ✅ NYTT: Validera GroupInvitationExpander
     sl<UserService>();
     sl<FriendsService>();
     sl<SocialRecipeService>();
@@ -331,7 +379,8 @@ Future<void> initializeDependencies() async {
     sl<UnifiedShoppingViewModel>();
 
     debugPrint('✅ Alla kritiska services validerade');
-    debugPrint('🚀 Dependency injection komplett - Butlery redo! 🛒✨');
+    debugPrint(
+        '🚀 Dependency injection komplett - Butlery med RealtimeSync redo! 🔄✨');
   } catch (e) {
     debugPrint('❌ Fel vid init av DI: $e');
     throw Exception('Kritiska services saknas: $e');
@@ -357,12 +406,26 @@ bool isUnifiedShoppingReady() {
   }
 }
 
+/// ✅ NYTT: Helper för att kontrollera RealtimeSyncService
+bool isRealtimeSyncReady() {
+  try {
+    sl<RealtimeSyncService>();
+    return true;
+  } catch (e) {
+    debugPrint('⚠️ RealtimeSyncService inte redo: $e');
+    return false;
+  }
+}
+
 /// Debug-funktion för att visa alla registrerade services
 void debugPrintRegisteredServices() {
   debugPrint('📋 Registrerade Services:');
   debugPrint('  Core: AuthService, RecipeService, UserService');
   debugPrint('  Social: FriendsService, SocialRecipeService');
+  debugPrint(
+      '  ✅ Realtime: RealtimeSyncService, RealtimeRecipeService, RealtimeMenuService (FAS 2+3)');
+  debugPrint('  ✅ Invitations: GroupInvitationExpander (FAS 2)');
   debugPrint('  ✅ Shopping: UnifiedShoppingService (ENDAST UNIFIED)');
-  debugPrint('  Invitations: GroupInvitationService');
+  debugPrint('  Existing: GroupInvitationService');
   debugPrint('  ViewModels: Alla ViewModels inklusive unified shopping');
 }

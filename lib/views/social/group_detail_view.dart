@@ -9,7 +9,7 @@ import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../models/group_invitation.dart';
 import '../../widgets/user_avatar.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/events/group_events.dart';
@@ -813,10 +813,10 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
         // EMPTY STATE
         if (members.isEmpty && _pendingInvitations.isEmpty)
-          const EmptyState(
-            icon: Icons.people_outline,
+          StateWidget.empty(
             title: 'Inga medlemmar än',
             subtitle: 'Lägg till vänner i den här gruppen för att komma igång.',
+            icon: Icons.people_outline,
           ),
       ],
     );
@@ -1020,11 +1020,11 @@ class _GroupDetailViewState extends State<GroupDetailView> {
         appBar: AppBar(
           title: const Text('Grupp hittades inte'),
         ),
-        body: const EmptyState(
-          icon: Icons.error_outline,
+        body: StateWidget.empty(
           title: 'Grupp hittades inte',
           subtitle:
               'Den här gruppen kanske har tagits bort eller så saknar du behörighet.',
+          icon: Icons.error_outline,
         ),
       );
     }

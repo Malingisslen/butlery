@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../viewmodels/menu_viewmodel.dart';
+import '../widgets/state_widget.dart';
 import '../theme/app_theme.dart';
 
 /// Dialog för att spara en meny med namn, kommentar OCH social sharing
@@ -441,27 +442,10 @@ class LoadMenuBottomSheet extends StatelessWidget {
   Widget _buildEmptyState(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: AppTheme.spacingLg),
-      child: Column(
-        children: [
-          Icon(
-            Icons.folder_off,
-            size: AppTheme.iconSizeLarge,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          AppTheme.mediumGap,
-          Text(
-            'Inga sparade menyer ännu',
-            style: AppTheme.subtitleStyle.copyWith(
-              color: Theme.of(context).colorScheme.outline,
-            ),
-          ),
-          AppTheme.smallGap,
-          Text(
-            'Spara din första meny för att komma igång!',
-            style: AppTheme.captionStyle,
-            textAlign: TextAlign.center,
-          ),
-        ],
+      child: StateWidget.empty(
+        title: 'Inga sparade menyer ännu',
+        subtitle: 'Spara din första meny för att komma igång!',
+        icon: Icons.folder_off,
       ),
     );
   }

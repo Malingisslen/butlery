@@ -1,4 +1,4 @@
-// lib/views/unified_shopping_view.dart
+// lib/views/unified_shopping_view.dart - StateWidget Migration
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,11 +8,11 @@ import '../viewmodels/unified_shopping_viewmodel.dart';
 
 // Models
 import '../models/unified/unified_shopping_item.dart';
-import '../models/user_profile.dart'; // ✅ LÄGG TILL: För UserProfile
+import '../models/user_profile.dart';
 
 // Widgets
 import '../widgets/main_layout_menu.dart';
-import '../widgets/empty_state.dart';
+import '../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../widgets/offline_indicator.dart';
 import '../widgets/universal_share_dialog.dart';
 import '../widgets/add_shopping_item_dialog.dart';
@@ -22,14 +22,12 @@ import '../theme/app_theme.dart';
 
 // Core
 import '../core/injection.dart';
-import '../core/utils/logger.dart'; // ✅ LÄGG TILL: För AppLogger
+import '../core/utils/logger.dart';
 
 // Services
 import '../services/share_service.dart';
-import '../services/friends_service.dart'; // ✅ LÄGG TILL: För FriendsService
+import '../services/friends_service.dart';
 
-/// 🎯 FÖRBÄTTRAD UNIFIED SHOPPING VIEW
-/// ✅ Kategorigruppering + smart formatering + ingen hamburgermeny
 class UnifiedShoppingView extends StatefulWidget {
   const UnifiedShoppingView({super.key});
 
@@ -57,9 +55,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       value: _viewModel,
       child: MainLayoutMenu(
         title: 'Inköpslistor',
-        currentIndex: 3, // Shopping list är tab 3
+        currentIndex: 3,
         actions: [
-          // ✨ DIREKTA IKONER som receptdesignen
           Consumer<UnifiedShoppingViewModel>(
             builder: (context, viewModel, child) {
               final canShare = viewModel.hasItems;
@@ -202,75 +199,36 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // ✅ Statistik borttagen - visas nu i dropdown istället
         ],
       ),
     );
   }
 
-  // ✅ Metod borttagen - används inte längre
-
   Widget _buildMainContent(UnifiedShoppingViewModel viewModel) {
     if (viewModel.isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Laddar inköpslistor...'),
-          ],
-        ),
-      );
+      return StateWidget.loading(
+          message: 'Laddar inköpslistor...'); // ✅ MIGRATION
     }
 
     if (viewModel.hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppTheme.errorColor,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Fel: ${viewModel.error}',
-              style: const TextStyle(
-                color: AppTheme.errorColor,
-                fontSize: 16,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                viewModel.clearError();
-                _initializeViewModel();
-              },
-              child: const Text('Försök igen'),
-            ),
-          ],
-        ),
+      return StateWidget.error(
+        message: viewModel.error ?? 'Okänt fel',
+        onAction: () {
+          viewModel.clearError();
+          _initializeViewModel();
+        },
       );
     }
 
     if (!viewModel.hasItems) {
-      return const EmptyState(
-        icon: Icons.shopping_cart_outlined,
-        title: 'Inga artiklar i listan',
-        subtitle: 'Tryck på + för att lägga till din första artikel',
-      );
+      return StateWidget
+          .noShoppingList(); // ✅ MIGRATION: StateWidget istället för EmptyState
     }
 
     return _buildCategorizedItemsList(viewModel);
   }
 
-  // ✅ NY: Kategoriserad lista istället för enkel lista
   Widget _buildCategorizedItemsList(UnifiedShoppingViewModel viewModel) {
     final itemsByCategory = viewModel.itemsByCategory;
     final boughtItemsByCategory = <String, List<UnifiedShoppingItem>>{};
@@ -288,7 +246,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // ✅ AKTIVA ARTIKLAR - grupperade per kategori
+        // Aktiva artiklar - grupperade per kategori
         ...activeItemsByCategory.entries
             .where((entry) => entry.value.isNotEmpty)
             .map((entry) => _buildCategorySection(
@@ -298,7 +256,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                   isCompleted: false,
                 )),
 
-        // ✅ KÖPTA ARTIKLAR - egen sektion
+        // Köpta artiklar - egen sektion
         if (viewModel.boughtItems > 0) ...[
           const SizedBox(height: 24),
           _buildCompletedItemsHeader(viewModel),
@@ -316,7 +274,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  // ✅ NY: Bygg kategori-sektion med header
   Widget _buildCategorySection(
     String category,
     List<UnifiedShoppingItem> items,
@@ -376,7 +333,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  // ✅ Kategori-ikoner för visuell tydlighet
   Widget _getCategoryIcon(String category, bool isCompleted) {
     IconData iconData;
     switch (category.toLowerCase()) {
@@ -451,8 +407,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         ),
         TextButton.icon(
           onPressed: () => _clearBoughtItemsWithConfirmation(viewModel),
-          icon: Icon(Icons.delete,
-              size: 18, color: Colors.grey.shade600), // ✅ Soptunna-ikon
+          icon: Icon(Icons.delete, size: 18, color: Colors.grey.shade600),
           label: Text(
             'Töm',
             style: TextStyle(color: Colors.grey.shade600),
@@ -465,7 +420,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  // ✅ FÖRBÄTTRAD: Item tile utan hamburgermeny
   Widget _buildItemTile(UnifiedShoppingItem item,
       UnifiedShoppingViewModel viewModel, bool isCompleted) {
     return Dismissible(
@@ -514,7 +468,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
             ),
           ),
           title: Text(
-            item.displayText, // ✅ Använder förbättrade displayText
+            item.displayText,
             style: item.bought
                 ? TextStyle(
                     decoration: TextDecoration.lineThrough,
@@ -526,9 +480,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                     fontSize: 16,
                   ),
           ),
-          // ✅ Ingen subtitle med kategori längre - kategorin är redan i headern
-
-          // ✅ Redigera-knapp istället för hamburgermeny
           trailing: item.bought
               ? null
               : IconButton(
@@ -550,12 +501,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   void _showShoppingShareDialog() {
     if (_viewModel.activeList == null) return;
 
-    // ✅ SÄKER: Hämta vänner direkt från FriendsService
     List<UserProfile> availableFriends = [];
 
     try {
-      final friendsService =
-          sl<FriendsService>(); // Du kanske redan har denna som field
+      final friendsService = sl<FriendsService>();
       availableFriends = friendsService.friends;
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte hämta vänner för shopping sharing: $e');
@@ -567,12 +516,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       builder: (context) => UniversalShareDialog.shoppingList(
         shoppingList: _viewModel.activeList!,
         initialMessage: "Kolla min inköpslista!",
-        availableFriends: availableFriends, // ✅ SÄKER: null eller lista
+        availableFriends: availableFriends,
       ),
     );
   }
 
-  // ✅ FÖRBÄTTRAD: Använd ny dialog
   void _showAddItemDialog() {
     showDialog<UnifiedShoppingItem>(
       context: context,
@@ -584,7 +532,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     });
   }
 
-  // ✅ NY: Redigera befintlig artikel
   void _showEditItemDialog(UnifiedShoppingItem item) {
     showDialog<UnifiedShoppingItem>(
       context: context,
@@ -596,7 +543,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     });
   }
 
-  // ✅ FÖRBÄTTRAD: Hantera ny artikel från dialog
   Future<void> _addItemFromDialog(UnifiedShoppingItem item) async {
     try {
       final success = await _viewModel.addItem(
@@ -616,7 +562,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     }
   }
 
-  // ✅ NY: Hantera redigerad artikel
   Future<void> _editItemFromDialog(
       String itemId, UnifiedShoppingItem editedItem) async {
     try {
