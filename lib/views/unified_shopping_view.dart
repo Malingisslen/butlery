@@ -2,16 +2,31 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+// ViewModels
 import '../viewmodels/unified_shopping_viewmodel.dart';
+
+// Models
 import '../models/unified/unified_shopping_item.dart';
+import '../models/user_profile.dart'; // ✅ LÄGG TILL: För UserProfile
+
+// Widgets
 import '../widgets/main_layout_menu.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/offline_indicator.dart';
-import '../widgets/shopping_share_dialog.dart';
-import '../widgets/add_shopping_item_dialog.dart'; // ✅ Importera förbättrad dialog
+import '../widgets/universal_share_dialog.dart';
+import '../widgets/add_shopping_item_dialog.dart';
+
+// Theme
 import '../theme/app_theme.dart';
+
+// Core
 import '../core/injection.dart';
+import '../core/utils/logger.dart'; // ✅ LÄGG TILL: För AppLogger
+
+// Services
 import '../services/share_service.dart';
+import '../services/friends_service.dart'; // ✅ LÄGG TILL: För FriendsService
 
 /// 🎯 FÖRBÄTTRAD UNIFIED SHOPPING VIEW
 /// ✅ Kategorigruppering + smart formatering + ingen hamburgermeny
@@ -533,20 +548,26 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   // ==================== DIALOG METODER ====================
 
   void _showShoppingShareDialog() {
-    if (_viewModel.activeList == null) {
-      _showErrorSnackBar('Ingen aktiv lista att dela');
-      return;
-    }
+    if (_viewModel.activeList == null) return;
 
-    if (_viewModel.totalItems == 0) {
-      _showErrorSnackBar('Listan är tom - lägg till artiklar först');
-      return;
+    // ✅ SÄKER: Hämta vänner direkt från FriendsService
+    List<UserProfile> availableFriends = [];
+
+    try {
+      final friendsService =
+          sl<FriendsService>(); // Du kanske redan har denna som field
+      availableFriends = friendsService.friends;
+    } catch (e) {
+      AppLogger.warning('⚠️ Kunde inte hämta vänner för shopping sharing: $e');
+      availableFriends = [];
     }
 
     showDialog(
       context: context,
-      builder: (context) => ShoppingShareDialog(
+      builder: (context) => UniversalShareDialog.shoppingList(
         shoppingList: _viewModel.activeList!,
+        initialMessage: "Kolla min inköpslista!",
+        availableFriends: availableFriends, // ✅ SÄKER: null eller lista
       ),
     );
   }

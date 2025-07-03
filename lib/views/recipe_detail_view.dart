@@ -1,11 +1,9 @@
 // lib/views/recipe_detail_view.dart
-// UPPDATERAD för Fas 18 med Enhanced Social Platform Integration
-// ✅ SLUTGILTIG LÖSNING MED HELPER-METODER - INGA ASYNC GAPS
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // VIKTIGT: Behövs för debug
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
@@ -13,13 +11,12 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/portion_scaler.dart';
 import '../widgets/recipe_image_carousel.dart';
 import '../widgets/user_avatar.dart';
-import '../widgets/social_share_dialog.dart';
+import '../widgets/universal_share_dialog.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
-import '../services/user_service.dart'; // VIKTIGT: Behövs för debug
+import '../services/user_service.dart';
 
-/// ✨ UPPDATERAD RECEPTDETALJ-VY MED ENHANCED SOCIAL INTEGRATION
 class RecipeDetailView extends StatelessWidget {
   final Recipe recipe;
 
@@ -69,12 +66,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           backgroundColor: backgroundColor ?? AppTheme.successColor,
         ),
       );
-    }
-  }
-
-  void _navigateSafely(String route) {
-    if (mounted) {
-      Navigator.pushNamed(context, route);
     }
   }
 
@@ -162,64 +153,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     _showSnackBarSafely(message);
   }
 
-  // ✅ SÄKER: _showSocialShareDialog med helper-metod
   Future<void> _showSocialShareDialog(BuildContext context) async {
     if (!mounted) return;
 
     final socialViewModel = context.read<SocialRecipeViewModel>();
 
-    // Kontrollera om användaren har vänner
-    if (socialViewModel.friends.isEmpty) {
-      // Visa informativ dialog om inga vänner
-      await showDialog(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                Icons.people_outline,
-                color: AppTheme.warningColor,
-              ),
-              SizedBox(width: AppTheme.spacingSm),
-              const Text('Inga vänner'),
-            ],
-          ),
-          content: const Text(
-            'Du behöver vänner för att dela recept socialt. '
-            'Gå till vänhantering för att lägga till vänner!',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Stäng'),
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                _navigateSafely('/friends');
-              },
-              icon: const Icon(Icons.person_add),
-              label: const Text('Lägg till vänner'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    if (!mounted) return;
-
-    // Visa enhanced sharing dialog med korrekt Provider context
     await showDialog(
       context: context,
-      builder: (dialogContext) => ChangeNotifierProvider.value(
-        value: socialViewModel, // Dela samma ViewModel instans
-        child: Consumer<SocialRecipeViewModel>(
-          builder: (context, viewModel, _) => SocialShareDialog(
-            recipeTitle: viewModel.recipe.title,
-            socialViewModel: viewModel,
-          ),
-        ),
+      builder: (context) => UniversalShareDialog.recipe(
+        recipe:
+            socialViewModel.recipe, // ✅ KORREKT: använd getter från ViewModel
+        initialMessage: "Kolla detta recept!",
+        availableFriends: socialViewModel.friends,
       ),
     );
   }
