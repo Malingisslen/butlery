@@ -1,10 +1,10 @@
-// lib/views/realtime/handlers/recipe_interaction_handler.dart - PROPERLY FIXED
+// lib/views/realtime/handlers/recipe_interaction_handler.dart
 
 import 'package:flutter/material.dart';
 import '../../../viewmodels/realtime_menu_viewmodel.dart';
 import '../../../models/recipe.dart';
-import '../../../widgets/menu_recipe_selection_dialog.dart'; // ✅ RÄTT DIALOG
-import '../../../theme/app_theme.dart'; // ✅ FIX: Lägg till AppTheme import
+import '../../../widgets/common/navigation_components.dart';
+import '../../../theme/app_theme.dart';
 import '../../../core/utils/logger.dart';
 
 /// Handler för recipe interactions med kategori-struktur
@@ -18,13 +18,11 @@ class RecipeInteractionHandler {
   });
 
   /// Visa dialog för att lägga till recept till kategori
-  /// ✅ PROPER FIX: Använd MenuRecipeSelectionDialog istället
+  /// ✅ UPPDATERAD: Använder NavigationComponents.showMenuRecipeSelector()
   Future<void> showAddRecipeDialog(String categoryName) async {
-    final result = await showDialog<List<Recipe>>(
-      context: context,
-      builder: (context) => MenuRecipeSelectionDialog(
-        categoryName: categoryName, // ✅ CORRECT: Skicka kategori-namn
-      ),
+    final result = await NavigationComponents.showMenuRecipeSelector(
+      context,
+      categoryName: categoryName,
     );
 
     if (result != null && result.isNotEmpty) {
@@ -48,48 +46,28 @@ class RecipeInteractionHandler {
 
   /// Bekräfta borttagning av recept
   Future<bool> confirmRemoveRecipe(String recipeTitle) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Ta bort recept'),
-            content:
-                Text('Vill du ta bort "$recipeTitle" från denna kategori?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Avbryt'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Ta bort'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    return await NavigationComponents.showConfirmationDialog(
+      context,
+      title: 'Ta bort recept',
+      message: 'Vill du ta bort "$recipeTitle" från denna kategori?',
+      confirmText: 'Ta bort',
+      cancelText: 'Avbryt',
+      confirmColor: AppTheme.errorColor,
+    );
   }
 
   /// Bekräfta rensning av hela kategorin
   Future<void> confirmClearCategory(String categoryName) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rensa kategori'),
-        content: Text('Vill du ta bort alla recept från $categoryName?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Rensa'),
-          ),
-        ],
-      ),
+    final confirmed = await NavigationComponents.showConfirmationDialog(
+      context,
+      title: 'Rensa kategori',
+      message: 'Vill du ta bort alla recept från $categoryName?',
+      confirmText: 'Rensa',
+      cancelText: 'Avbryt',
+      confirmColor: AppTheme.errorColor,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       await viewModel.clearCategory(categoryName);
 
       // ✅ BONUS: Visa bekräftelse
@@ -106,28 +84,16 @@ class RecipeInteractionHandler {
 
   /// Visa dialog för att regenerera kategori (AI-funktion)
   Future<void> showRegenerateCategoryDialog(String categoryName) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Regenerera kategori'),
-        content: Text(
-          'Vill du låta AI:n generera nya recept för $categoryName? '
+    final confirmed = await NavigationComponents.showConfirmationDialog(
+      context,
+      title: 'Regenerera kategori',
+      message: 'Vill du låta AI:n generera nya recept för $categoryName? '
           'Detta kommer ersätta alla nuvarande recept i kategorin.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Regenerera'),
-          ),
-        ],
-      ),
+      confirmText: 'Regenerera',
+      cancelText: 'Avbryt',
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       await viewModel.regenerateCategory(categoryName);
 
       // ✅ BONUS: Visa bekräftelse

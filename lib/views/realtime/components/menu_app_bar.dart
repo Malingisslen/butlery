@@ -1,8 +1,8 @@
-// lib/views/realtime/components/menu_app_bar.dart - FIXED MED 100% APPTHEME
+// lib/views/realtime/components/menu_app_bar.dart
 
 import 'package:flutter/material.dart';
 import '../../../viewmodels/realtime_menu_viewmodel.dart';
-import '../../../widgets/realtime/realtime_status_indicator.dart';
+import '../../../widgets/common/navigation_components.dart';
 import '../handlers/menu_action_handler.dart';
 import '../../../theme/app_theme.dart';
 
@@ -48,8 +48,8 @@ class MenuAppBar extends StatelessWidget {
         titlePadding: AppTheme.cardPadding,
       ),
       actions: [
-        // Connection status
-        RealtimeStatusIndicator(
+        // ✅ UPPDATERAD: Använder NavigationComponents.realtimeStatus()
+        NavigationComponents.realtimeStatus(
           isOnline: viewModel.isOnline,
           statusDescription: viewModel.connectionStatusDescription,
           statusEmoji: viewModel.connectionStatusEmoji,

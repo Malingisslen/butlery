@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../models/user_profile.dart';
 import '../../widgets/user/user_display_widgets.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/recipe_selection_dialog.dart';
+import '../../widgets/common/navigation_components.dart';
 
 /// Enkel vänprofilvy för att visa väninformation
 class FriendProfileView extends StatelessWidget {
@@ -176,11 +176,11 @@ class FriendProfileView extends StatelessWidget {
     );
   }
 
-  // ✅ METODEN MÅSTE VARA INNE I KLASSEN!
+  // ✅ UPPDATERAD: Använder NavigationComponents.showRecipeSelector()
   Future<void> _showRecipeSelection(BuildContext context) async {
-    await showDialog(
-      context: context,
-      builder: (context) => RecipeSelectionDialog(friend: friend),
+    await NavigationComponents.showRecipeSelector(
+      context,
+      friend: friend,
     );
   }
 
