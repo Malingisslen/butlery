@@ -1,10 +1,11 @@
 // lib/views/importera_fran_arkiv_view.dart
+// 🔄 UPPDATERAD: Migrerad från AppSearchBar till SearchFilterWidget.searchOnly()
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/archive_import_viewmodel.dart';
 import '../widgets/common/content_card.dart';
-import '../widgets/search_bar.dart';
+import '../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
 import '../widgets/action_button.dart';
 import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../theme/app_theme.dart';
@@ -101,11 +102,17 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   padding: EdgeInsets.all(AppTheme.spacingMd),
                   child: Column(
                     children: [
-                      // Sökfält
-                      AppSearchBar(
-                        hintText: 'Sök i arkiv...',
-                        onChanged: viewModel.updateSearch,
+                      // 🔄 UPPDATERAD: SearchFilterWidget.searchOnly() istället för AppSearchBar
+                      SearchFilterWidget.searchOnly(
+                        searchQuery: viewModel.searchQuery,
+                        onSearchChanged: viewModel.updateSearch,
+                        searchHint: 'Sök i arkiv...',
+                        showStats: true, // ✨ BONUS: Visa sökstatistik
+                        resultCount: viewModel.searchQuery.isNotEmpty
+                            ? viewModel.filteredRecipes.length
+                            : null,
                       ),
+
                       SizedBox(height: AppTheme.spacingMd),
 
                       // Tagg-filter
@@ -135,16 +142,15 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               // Divider mellan filter och innehåll
               const Divider(height: 1),
 
-              // Sökstatistik
-              if (viewModel.searchQuery.isNotEmpty ||
-                  viewModel.selectedTags.isNotEmpty ||
+              // 🔄 UPPDATERAD: Förenklad sökstatistik (SearchFilterWidget visar redan grundläggande stats)
+              if (viewModel.selectedTags.isNotEmpty ||
                   viewModel.timeFilter != TimeFilter.all)
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: AppTheme.spacingMd,
                     vertical: AppTheme.spacingSm,
                   ),
-                  child: _buildSearchStats(context, viewModel),
+                  child: _buildAdvancedStats(context, viewModel),
                 ),
 
               // Recept-lista
@@ -233,30 +239,78 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchStats(
+  /// 🔄 UPPDATERAD: Fokusera på avancerad filter-statistik (SearchFilterWidget hanterar grundläggande)
+  Widget _buildAdvancedStats(
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) {
-    return Row(
-      children: [
-        AppTheme.filterIcon(context),
-        SizedBox(width: AppTheme.spacingXs),
-        Text(
-          '${viewModel.filteredRecipes.length} av ${viewModel.archivedRecipes.length} recept',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+    final filterParts = <String>[];
+
+    // Lägg till tagg-filter info
+    if (viewModel.selectedTags.isNotEmpty) {
+      filterParts.add('${viewModel.selectedTags.length} taggar');
+    }
+
+    // Lägg till tids-filter info
+    if (viewModel.timeFilter != TimeFilter.all) {
+      final timeLabel = _getTimeFilterLabel(viewModel.timeFilter);
+      filterParts.add(timeLabel);
+    }
+
+    if (filterParts.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingMd,
+        vertical: AppTheme.spacingXs,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .secondaryContainer
+            .withValues(alpha: 0.3),
+        borderRadius: AppTheme.smallRadius,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
         ),
-        const Spacer(),
-        Text(
-          '${viewModel.selectedCount} valda',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+      ),
+      child: Row(
+        children: [
+          AppTheme.filterIcon(context),
+          SizedBox(width: AppTheme.spacingXs),
+          Expanded(
+            child: Text(
+              'Filter: ${filterParts.join(' • ')}',
+              style: AppTheme.captionStyle.copyWith(
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
                 fontWeight: FontWeight.w500,
               ),
-        ),
-      ],
+            ),
+          ),
+          Text(
+            '${viewModel.selectedCount} valda',
+            style: AppTheme.captionStyle.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  String _getTimeFilterLabel(TimeFilter filter) {
+    switch (filter) {
+      case TimeFilter.under15:
+        return '≤ 15 min';
+      case TimeFilter.under30:
+        return '≤ 30 min';
+      case TimeFilter.under60:
+        return '≤ 60 min';
+      case TimeFilter.all:
+        return 'Alla tider';
+    }
   }
 
   Widget _buildRecipeList(

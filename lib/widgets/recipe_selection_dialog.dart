@@ -1,12 +1,13 @@
 // lib/widgets/recipe_selection_dialog.dart
 // ✅ 100% AppTheme migrerad - ANVÄNDER ENDAST BEFINTLIGA APPTHEME PROPERTIES
+// 🔄 UPPDATERAD: Migrerad från AppSearchBar till SearchFilterWidget.searchOnly()
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/user_profile.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_selection_viewmodel.dart';
-import '../widgets/search_bar.dart';
+import '../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
@@ -162,14 +163,16 @@ class RecipeSelectionDialog extends StatelessWidget {
 
     return Column(
       children: [
-        // Sökfält
-        Padding(
+        // 🔄 UPPDATERAD: SearchFilterWidget.searchOnly() istället för AppSearchBar
+        SearchFilterWidget.searchOnly(
+          searchQuery: viewModel.searchQuery,
+          onSearchChanged: viewModel.updateSearch,
+          searchHint: 'Sök recept...',
           padding: EdgeInsets.all(AppTheme.spacingMd),
-          child: AppSearchBar(
-            hintText: 'Sök recept...',
-            onChanged: viewModel.updateSearch,
-            onClear: viewModel.clearSearch,
-          ),
+          showStats: true, // ✨ BONUS: Visa antal resultat
+          resultCount: viewModel.hasSearchResults
+              ? viewModel.filteredRecipes.length
+              : null,
         ),
 
         // Resultat info och bulk actions
