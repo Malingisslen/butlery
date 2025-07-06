@@ -1,4 +1,4 @@
-// lib/views/social/friends_list_view.dart - UPPDATERAD med StateWidget
+// lib/views/social/friends_list_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +7,7 @@ import '../../services/group_invitation_service.dart';
 import '../../models/group_invitation.dart';
 import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/main_layout_menu.dart';
-import '../../widgets/search_bar.dart';
+import '../../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
 import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
@@ -43,9 +43,9 @@ class _FriendsListViewContent extends StatefulWidget {
 
 class _FriendsListViewContentState extends State<_FriendsListViewContent>
     with TickerProviderStateMixin {
-  final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
   int _currentTabIndex = 0;
+  String _searchQuery = ''; // ✅ ERSATT: TextEditingController med String
 
   @override
   void initState() {
@@ -58,7 +58,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         });
       }
     });
-    _searchController.addListener(_onSearchChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
@@ -77,22 +76,16 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    final query = _searchController.text;
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
     final viewModel = context.read<FriendsViewModel>();
     viewModel.updateSearch(query);
-  }
-
-  void _onSearchCleared() {
-    _searchController.clear();
-    final viewModel = context.read<FriendsViewModel>();
-    viewModel.clearSearch();
   }
 
   @override
@@ -175,18 +168,16 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ),
                   ),
 
-                // Sökfält: Visa endast för sök-tab (index 2)
+                // ✅ NY: SearchFilterWidget för sök-tab (index 2)
                 if (_currentTabIndex == 2)
-                  Padding(
+                  SearchFilterWidget.searchOnly(
+                    searchQuery: _searchQuery,
+                    onSearchChanged: _onSearchChanged,
+                    searchHint: 'Sök efter vänner...',
+                    autofocus: false,
                     padding: EdgeInsets.all(AppTheme.spacingMd),
-                    child: AppSearchBar(
-                      controller: _searchController,
-                      hintText: 'Sök efter vänner...',
-                      onChanged: (value) {
-                        // onChanged hanteras redan av _searchController.addListener
-                      },
-                      onClear: _onSearchCleared,
-                    ),
+                    showStats: true,
+                    resultCount: viewModel.searchResults.length,
                   ),
 
                 // Tab content
@@ -223,7 +214,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
 
     if (viewModel.friends.isEmpty) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
       return StateWidget.empty(
         title: 'Inga vänner än',
         subtitle:
@@ -255,7 +245,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
 
     if (viewModel.incomingRequests.isEmpty) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
       return StateWidget.empty(
         title: 'Inga vänskapsförfrågningar',
         subtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
@@ -281,8 +270,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildSearchTab(FriendsViewModel viewModel) {
-    if (_searchController.text.isEmpty) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
+    if (_searchQuery.isEmpty) {
       return StateWidget.empty(
         title: 'Sök efter nya vänner',
         subtitle:
@@ -296,8 +284,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
 
     if (viewModel.searchResults.isEmpty) {
-      return StateWidget
-          .noSearchResults(); // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.noSearchResults();
     }
 
     return ListView.separated(
@@ -311,6 +298,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       },
     );
   }
+
+  // ... (resten av metoderna förblir oförändrade)
+  // [Alla andra metoder från ursprungsfilen behålls som de är]
 
   Widget _buildGroupsTab(FriendCategoriesService categoriesService,
       GroupInvitationService groupInvitationService) {
@@ -443,7 +433,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 ),
               ],
 
-              // Empty state - ✅ MIGRATION: StateWidget istället för EmptyState
+              // Empty state
               if (groups.isEmpty && pendingInvitations.isEmpty) ...[
                 SliverFillRemaining(
                   child: StateWidget.empty(
@@ -461,7 +451,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  // ... (resten av metoderna förblir oförändrade)
+  // ... [Alla andra helper-metoder från ursprungsfilen behålls]
 
   Widget _buildInvitationCard(
       GroupInvitation invitation, GroupInvitationService service) {
