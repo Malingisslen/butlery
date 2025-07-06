@@ -20,50 +20,125 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
-/// Unified search and filter widget that replaces separate components
-/// REGEL: Functional cohesion - search and filter belong together
+/// Unified search and filter widget that replaces ALL search/filter components
+/// REGEL: Kan användas för både full filter-funktionalitet OCH ren search
 class SearchFilterWidget extends StatefulWidget {
   // Search properties
   final String searchQuery;
   final Function(String) onSearchChanged;
   final String searchHint;
 
-  // Filter properties
-  final Set<String> activeTimeFilters;
-  final Set<String> activeMealTypeFilters;
-  final Set<String> activeRatingFilters;
-  final Function(String) onTimeFilterToggle;
-  final Function(String) onMealTypeFilterToggle;
-  final Function(String) onRatingFilterToggle;
+  // Filter properties (OPTIONAL - null means no filters)
+  final Set<String>? activeTimeFilters;
+  final Set<String>? activeMealTypeFilters;
+  final Set<String>? activeRatingFilters;
+  final Function(String)? onTimeFilterToggle;
+  final Function(String)? onMealTypeFilterToggle;
+  final Function(String)? onRatingFilterToggle;
 
-  // UI state
-  final bool showFilters;
-  final VoidCallback onToggleFilters;
-  final bool hasActiveFilters;
-  final VoidCallback onClearAllFilters;
+  // UI state (OPTIONAL - null means no filter toggle)
+  final bool? showFilters;
+  final VoidCallback? onToggleFilters;
+  final bool? hasActiveFilters;
+  final VoidCallback? onClearAllFilters;
 
-  // Results info
+  // Results info (OPTIONAL)
   final int? resultCount;
   final bool showStats;
+
+  // Search-only mode settings
+  final bool searchOnly;
+  final bool autofocus;
+  final EdgeInsetsGeometry? padding;
 
   const SearchFilterWidget({
     super.key,
     required this.searchQuery,
     required this.onSearchChanged,
     this.searchHint = 'Sök...',
-    required this.activeTimeFilters,
-    required this.activeMealTypeFilters,
-    required this.activeRatingFilters,
-    required this.onTimeFilterToggle,
-    required this.onMealTypeFilterToggle,
-    required this.onRatingFilterToggle,
-    required this.showFilters,
-    required this.onToggleFilters,
-    required this.hasActiveFilters,
-    required this.onClearAllFilters,
+
+    // Filter properties (optional)
+    this.activeTimeFilters,
+    this.activeMealTypeFilters,
+    this.activeRatingFilters,
+    this.onTimeFilterToggle,
+    this.onMealTypeFilterToggle,
+    this.onRatingFilterToggle,
+
+    // UI state (optional)
+    this.showFilters,
+    this.onToggleFilters,
+    this.hasActiveFilters,
+    this.onClearAllFilters,
+
+    // Results (optional)
     this.resultCount,
     this.showStats = true,
+
+    // Search-only mode
+    this.searchOnly = false,
+    this.autofocus = false,
+    this.padding,
   });
+
+  /// Factory: Full search + filter functionality
+  factory SearchFilterWidget.withFilters({
+    required String searchQuery,
+    required Function(String) onSearchChanged,
+    String searchHint = 'Sök...',
+    required Set<String> activeTimeFilters,
+    required Set<String> activeMealTypeFilters,
+    required Set<String> activeRatingFilters,
+    required Function(String) onTimeFilterToggle,
+    required Function(String) onMealTypeFilterToggle,
+    required Function(String) onRatingFilterToggle,
+    required bool showFilters,
+    required VoidCallback onToggleFilters,
+    required bool hasActiveFilters,
+    required VoidCallback onClearAllFilters,
+    int? resultCount,
+    bool showStats = true,
+  }) {
+    return SearchFilterWidget(
+      searchQuery: searchQuery,
+      onSearchChanged: onSearchChanged,
+      searchHint: searchHint,
+      activeTimeFilters: activeTimeFilters,
+      activeMealTypeFilters: activeMealTypeFilters,
+      activeRatingFilters: activeRatingFilters,
+      onTimeFilterToggle: onTimeFilterToggle,
+      onMealTypeFilterToggle: onMealTypeFilterToggle,
+      onRatingFilterToggle: onRatingFilterToggle,
+      showFilters: showFilters,
+      onToggleFilters: onToggleFilters,
+      hasActiveFilters: hasActiveFilters,
+      onClearAllFilters: onClearAllFilters,
+      resultCount: resultCount,
+      showStats: showStats,
+    );
+  }
+
+  /// Factory: Search-only functionality
+  factory SearchFilterWidget.searchOnly({
+    required String searchQuery,
+    required Function(String) onSearchChanged,
+    String searchHint = 'Sök...',
+    bool autofocus = false,
+    EdgeInsetsGeometry? padding,
+    bool showStats = false,
+    int? resultCount,
+  }) {
+    return SearchFilterWidget(
+      searchQuery: searchQuery,
+      onSearchChanged: onSearchChanged,
+      searchHint: searchHint,
+      searchOnly: true,
+      autofocus: autofocus,
+      padding: padding,
+      showStats: showStats,
+      resultCount: resultCount,
+    );
+  }
 
   @override
   State<SearchFilterWidget> createState() => _SearchFilterWidgetState();
@@ -113,19 +188,87 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Search-only mode: just return search bar
+    if (widget.searchOnly) {
+      return _buildSearchOnlyMode(context);
+    }
+
+    // Full mode: search + filters + stats
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Search bar section
         _buildSearchSection(context),
 
-        // Filter section with animation
-        _buildFilterSection(context),
+        // Filter section with animation (only if filters are provided)
+        if (_hasFilters()) _buildFilterSection(context),
 
         // Statistics section
         if (widget.showStats) _buildStatsSection(context),
       ],
     );
+  }
+
+  /// Check if widget has filter functionality
+  bool _hasFilters() {
+    return widget.activeTimeFilters != null &&
+        widget.activeMealTypeFilters != null &&
+        widget.activeRatingFilters != null;
+  }
+
+  /// Search-only mode widget
+  Widget _buildSearchOnlyMode(BuildContext context) {
+    final searchField = TextField(
+      controller: _searchController,
+      focusNode: _searchFocusNode,
+      autofocus: widget.autofocus,
+      style: AppTheme.bodyStyle,
+      decoration: InputDecoration(
+        hintText: widget.searchHint,
+        hintStyle: AppTheme.inputHintStyle,
+        prefixIcon: Icon(
+          Icons.search,
+          size: AppTheme.iconSizeAction,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: Icon(
+                  Icons.clear,
+                  size: AppTheme.iconSizeAction,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                onPressed: _onSearchCleared,
+              )
+            : null,
+        border: OutlineInputBorder(
+          borderRadius: AppTheme.mediumRadius,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppTheme.mediumRadius,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
+        ),
+        contentPadding: AppTheme.inputPadding,
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+      ),
+    );
+
+    // Wrap with padding if provided
+    if (widget.padding != null) {
+      return Padding(
+        padding: widget.padding!,
+        child: searchField,
+      );
+    }
+
+    return searchField;
   }
 
   /// Search bar with integrated filter toggle
@@ -176,51 +319,55 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
             ),
           ),
 
-          AppTheme.smallHorizontalGap,
-
-          // Filter toggle button
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: AppTheme.mediumRadius,
-              border: Border.all(
-                color: widget.showFilters
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.outline,
-                width: widget.showFilters ? 2 : 1,
-              ),
-              color: widget.showFilters
-                  ? Theme.of(context).colorScheme.primaryContainer
-                  : Theme.of(context).colorScheme.surface,
-            ),
-            child: Stack(
-              children: [
-                IconButton(
-                  onPressed: widget.onToggleFilters,
-                  icon: Icon(
-                    Icons.filter_list,
-                    color: widget.showFilters
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  tooltip: widget.showFilters ? 'Dölj filter' : 'Visa filter',
+          // Filter toggle button (only if filters available)
+          if (_hasFilters() && widget.onToggleFilters != null) ...[
+            AppTheme.smallHorizontalGap,
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: AppTheme.mediumRadius,
+                border: Border.all(
+                  color: (widget.showFilters ?? false)
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outline,
+                  width: (widget.showFilters ?? false) ? 2 : 1,
                 ),
-                // Active filters indicator
-                if (widget.hasActiveFilters && !widget.showFilters)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.error,
-                        shape: BoxShape.circle,
+                color: (widget.showFilters ?? false)
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : Theme.of(context).colorScheme.surface,
+              ),
+              child: Stack(
+                children: [
+                  IconButton(
+                    onPressed: widget.onToggleFilters,
+                    icon: Icon(
+                      Icons.filter_list,
+                      color: (widget.showFilters ?? false)
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    tooltip: (widget.showFilters ?? false)
+                        ? 'Dölj filter'
+                        : 'Visa filter',
+                  ),
+                  // Active filters indicator
+                  if ((widget.hasActiveFilters ?? false) &&
+                      !(widget.showFilters ?? false))
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.error,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -231,7 +378,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
     return AnimatedSize(
       duration: AppTheme.animationDurationMedium,
       curve: Curves.easeInOut,
-      child: widget.showFilters
+      child: (widget.showFilters ?? false)
           ? Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
@@ -251,8 +398,8 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                     context,
                     title: 'Tillagningstid',
                     options: RecipeFilters.timeFilters,
-                    activeFilters: widget.activeTimeFilters,
-                    onToggle: widget.onTimeFilterToggle,
+                    activeFilters: widget.activeTimeFilters!,
+                    onToggle: widget.onTimeFilterToggle!,
                   ),
 
                   // Meal type filters
@@ -260,8 +407,8 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                     context,
                     title: 'Måltidstyp',
                     options: RecipeFilters.mealTypeFilters,
-                    activeFilters: widget.activeMealTypeFilters,
-                    onToggle: widget.onMealTypeFilterToggle,
+                    activeFilters: widget.activeMealTypeFilters!,
+                    onToggle: widget.onMealTypeFilterToggle!,
                   ),
 
                   // Rating filters
@@ -269,12 +416,12 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                     context,
                     title: 'Betyg',
                     options: RecipeFilters.ratingFilters,
-                    activeFilters: widget.activeRatingFilters,
-                    onToggle: widget.onRatingFilterToggle,
+                    activeFilters: widget.activeRatingFilters!,
+                    onToggle: widget.onRatingFilterToggle!,
                   ),
 
                   // Clear all filters button
-                  if (widget.hasActiveFilters) ...[
+                  if (widget.hasActiveFilters ?? false) ...[
                     AppTheme.smallGap,
                     Center(
                       child: TextButton.icon(
@@ -428,7 +575,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   /// Check if stats should be shown
   bool _shouldShowStats() {
     return widget.searchQuery.isNotEmpty ||
-        widget.hasActiveFilters ||
+        (widget.hasActiveFilters ?? false) ||
         widget.resultCount != null;
   }
 
@@ -440,11 +587,13 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       parts.add('Sökning: "${widget.searchQuery}"');
     }
 
-    if (widget.hasActiveFilters) {
-      final filterCount = widget.activeTimeFilters.length +
-          widget.activeMealTypeFilters.length +
-          widget.activeRatingFilters.length;
-      parts.add('$filterCount filter aktiva');
+    if (widget.hasActiveFilters ?? false) {
+      final filterCount = (widget.activeTimeFilters?.length ?? 0) +
+          (widget.activeMealTypeFilters?.length ?? 0) +
+          (widget.activeRatingFilters?.length ?? 0);
+      if (filterCount > 0) {
+        parts.add('$filterCount filter aktiva');
+      }
     }
 
     if (widget.resultCount != null) {
