@@ -7,8 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
-import '../widgets/main_layout_menu.dart';
-import '../widgets/common/input_components.dart'; // ✅ NY IMPORT
+import '../widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
+import '../widgets/common/input_components.dart';
 import '../widgets/image/universal_image_manager.dart' as img;
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/user/user_display_widgets.dart';
@@ -161,8 +161,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     await showDialog(
       context: context,
       builder: (context) => UniversalShareDialog.recipe(
-        recipe:
-            socialViewModel.recipe, // ✅ KORREKT: använd getter från ViewModel
+        recipe: socialViewModel.recipe,
         initialMessage: "Kolla detta recept!",
         availableFriends: socialViewModel.friends,
       ),
@@ -202,7 +201,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     final viewModel = context.watch<RecipeDetailViewModel>();
     final socialViewModel = context.watch<SocialRecipeViewModel>();
 
-    return MainLayoutMenu(
+    return LayoutComponents.mainMenu(
+      // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
       currentIndex: null,
       body: Scaffold(
         appBar: AppBar(
