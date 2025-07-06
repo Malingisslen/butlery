@@ -1,46 +1,36 @@
-// lib/views/main_views/mina_recept_view.dart - UPPDATERAD MED SearchFilterWidget
+// lib/views/main_views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // För SystemNavigator
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/recipe_list_viewmodel.dart';
-import '../../viewmodels/friends_viewmodel.dart'; // För vänskapsförfrågningar
-import '../../viewmodels/shared_content_viewmodel.dart'; // ✅ NYTT: För delade recept/menyer
-import '../../widgets/main_layout_menu.dart';
+import '../../viewmodels/friends_viewmodel.dart';
+import '../../viewmodels/shared_content_viewmodel.dart';
+import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/content_card.dart';
-import '../../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
-import '../../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
-import '../../widgets/offline_indicator.dart'; // För offline indicator
-import '../widgets/user/user_display_widgets.dart'; // För avatar
+import '../../widgets/common/search_filter_widget.dart';
+import '../../widgets/common/state_widget.dart';
+import '../widgets/user/user_display_widgets.dart';
 import '../../services/search_service.dart';
-import '../../services/offline_service.dart'
-    as offline_service; // FIXA: Använd prefix
-import '../../services/user_service.dart'; // För user service
+import '../../services/offline_service.dart' as offline_service;
+import '../../services/user_service.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
-import '../../core/utils/logger.dart'; // ✅ LÄGG TILL för AppLogger
+import '../../core/utils/logger.dart';
 
-/// ✨ UPPDATERAD VY MED SearchFilterWidget - DRASTISKT FÖRENKLAD
-/// Nu använder vi den unified SearchFilterWidget istället för separata komponenter
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FIXAT: SÄKER Provider setup MED RecipeListViewModel
     return MultiProvider(
       providers: [
-        // ✅ KRITISK FIX: Lägg till RecipeListViewModel som FÖRSTA provider
         ChangeNotifierProvider<RecipeListViewModel>(
           create: (context) => sl<RecipeListViewModel>(),
         ),
-
-        // ✅ SÄKERT: Använd befintliga singletons utan att skapa nya
         ChangeNotifierProvider.value(value: sl<UserService>()),
         ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
         ChangeNotifierProvider.value(value: sl<SharedContentViewModel>()),
-
-        // ✅ LÄGG TILL: OfflineService för att kunna watch den
         ChangeNotifierProvider.value(
             value: sl<offline_service.OfflineService>()),
       ],
@@ -287,12 +277,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           _showExitDialog(context);
         }
       },
-      child: MainLayoutMenu(
+      child: LayoutComponents.mainMenu(
+        // ✅ UPPDATERAD WIDGET
         currentIndex: 0,
         title: 'Mina recept',
         actions: [
-          // OFFLINE STATUS ICON
-          const OfflineStatusIcon(),
+          // OFFLINE STATUS ICON - ✅ UPPDATERAD
+          LayoutComponents.offlineStatusIcon(),
 
           // ✅ UPPDATERAD: USER AVATAR med notification badge
           Padding(
@@ -397,8 +388,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         ],
         body: Column(
           children: [
-            // OFFLINE INDICATOR
-            const OfflineIndicator(),
+            // OFFLINE INDICATOR - ✅ UPPDATERAD
+            LayoutComponents.offlineIndicator(),
 
             // ✅ HELT NY: SearchFilterWidget ersätter ~50 rader kod!
             SearchFilterWidget(
