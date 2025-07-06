@@ -23,7 +23,7 @@ import '../../models/user_profile.dart';
 import '../../models/invitations/invitation_target.dart';
 import '../../theme/app_theme.dart';
 import '../user/user_display_widgets.dart';
-import '../friend_category_manager.dart';
+import 'utility_components.dart';
 import '../invitation_target/target_display_widgets.dart';
 import '../invitation_target/target_input_widgets.dart';
 import '../invitation_target/target_state_widgets.dart';
@@ -346,7 +346,6 @@ class SocialComponents {
 
   // ===== FRIEND CATEGORY MANAGEMENT =====
 
-  /// Bygg friend category manager för komplex selection
   static Widget categoryManager({
     required List<String> selectedFriendIds,
     required Function(List<String>) onSelectionChanged,
@@ -354,7 +353,7 @@ class SocialComponents {
     String title = 'Välj vänner',
     String subtitle = 'Välj kategorier eller individuella vänner',
   }) {
-    return FriendCategoryManager(
+    return UtilityComponents.friendCategoryManager(
       selectedFriendIds: selectedFriendIds,
       onSelectionChanged: onSelectionChanged,
       allowMultipleCategories: allowMultipleCategories,
@@ -363,13 +362,12 @@ class SocialComponents {
     );
   }
 
-  /// Bygg kompakt friend category manager
   static Widget compactCategoryManager({
     required List<String> selectedFriendIds,
     required Function(List<String>) onSelectionChanged,
     int maxHeight = 300,
   }) {
-    return CompactFriendCategoryManager(
+    return UtilityComponents.compactFriendCategoryManager(
       selectedFriendIds: selectedFriendIds,
       onSelectionChanged: onSelectionChanged,
       maxHeight: maxHeight,

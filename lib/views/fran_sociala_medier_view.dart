@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/text_import_viewmodel.dart';
 import '../views/skriv_sjalv_recept_view.dart';
-import '../widgets/action_button.dart';
+import '../widgets/common/utility_components.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD VY MED SOURCEURL-STÖD
+/// ✨ MIGRERAD VY MED SOURCEURL-STÖD - Nu med UtilityComponents
 class FranSocialaMedierView extends StatelessWidget {
   final String? initialText;
-  final String? sourceUrl; // NY! URL från import
+  final String? sourceUrl;
 
   const FranSocialaMedierView({
     super.key,
     this.initialText,
-    this.sourceUrl, // NY parameter
+    this.sourceUrl,
   });
 
   @override
@@ -40,11 +40,10 @@ class FranSocialaMedierView extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (_) => SkrivSjalvReceptView(
-                          initialRecipe: viewModel.parsedRecipe,
-                          isTemplate: true, // VIKTIGT! Detta är en import
-                        ),
+                    builder: (_) => SkrivSjalvReceptView(
+                      initialRecipe: viewModel.parsedRecipe,
+                      isTemplate: true,
+                    ),
                   ),
                 );
               }
@@ -69,21 +68,15 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder:
-              (_) => SkrivSjalvReceptView(
-                initialRecipe: viewModel.parsedRecipe,
-                isTemplate:
-                    true, // VIKTIGT! Detta är en import, inte redigering
-              ),
+          builder: (_) => SkrivSjalvReceptView(
+            initialRecipe: viewModel.parsedRecipe,
+            isTemplate: true,
+          ),
         ),
       );
     } else if (context.mounted && viewModel.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(viewModel.error!),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
+      // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
+      UtilityComponents.showErrorSnackbar(context, viewModel.error!);
     }
   }
 
@@ -138,8 +131,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                 onChanged: viewModel.updateInputText,
                 enabled: !viewModel.isParsing,
                 decoration: InputDecoration(
-                  hintText:
-                      'Klistra in recepttext här...\n\n'
+                  hintText: 'Klistra in recepttext här...\n\n'
                       'Exempel:\n'
                       'Köttfärssås\n'
                       '500g köttfärs\n'
@@ -152,13 +144,12 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                   hintStyle: AppTheme.inputHintStyle,
                   border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
-                  suffixIcon:
-                      viewModel.inputText.isNotEmpty
-                          ? IconButton(
-                            icon: AppTheme.actionIcon(context, Icons.clear),
-                            onPressed: viewModel.clearInput,
-                          )
-                          : null,
+                  suffixIcon: viewModel.inputText.isNotEmpty
+                      ? IconButton(
+                          icon: AppTheme.actionIcon(context, Icons.clear),
+                          onPressed: viewModel.clearInput,
+                        )
+                      : null,
                 ),
                 style: Theme.of(context).textTheme.bodyMedium,
                 keyboardType: TextInputType.multiline,
@@ -170,14 +161,14 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
             ),
             AppTheme.mediumGap,
 
-            // Parse-knapp
-            ActionButton.primary(
+            // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+            UtilityComponents.primaryButton(
+              context,
               label: 'Förhandsgranska och redigera',
               icon: Icons.preview,
-              onPressed:
-                  viewModel.isParsing || !viewModel.canParse
-                      ? null
-                      : () => _parseAndNavigate(context),
+              onPressed: viewModel.isParsing || !viewModel.canParse
+                  ? null
+                  : () => _parseAndNavigate(context),
               isLoading: viewModel.isParsing,
               loadingText: 'Tolkar text...',
               isExpanded: true,

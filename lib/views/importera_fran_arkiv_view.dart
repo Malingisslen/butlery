@@ -1,17 +1,16 @@
 // lib/views/importera_fran_arkiv_view.dart
-// 🔄 UPPDATERAD: Migrerad från AppSearchBar till SearchFilterWidget.searchOnly()
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/archive_import_viewmodel.dart';
 import '../widgets/common/content_card.dart';
-import '../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
-import '../widgets/action_button.dart';
-import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
+import '../widgets/common/search_filter_widget.dart';
+import '../widgets/common/utility_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD ARKIV IMPORT VY MED ARCHIVEIMPORTVIEWMODEL
+/// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatelessWidget {
   const ImporteraFranArkivView({super.key});
 
@@ -39,24 +38,13 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (context.mounted) {
       if (viewModel.error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recept importerade!'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
+        // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showSuccessSnackbar
+        UtilityComponents.showSuccessSnackbar(context, 'Recept importerade!');
         Navigator.pop(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.error!),
-            backgroundColor: AppTheme.errorColor,
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: viewModel.clearError,
-            ),
-          ),
-        );
+        // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
+        UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+        viewModel.clearError();
       }
     }
   }
@@ -74,15 +62,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             IconButton(
               icon: AppTheme.errorIcon(context),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.error!),
-                    action: SnackBarAction(
-                      label: 'Stäng',
-                      onPressed: viewModel.clearError,
-                    ),
-                  ),
-                );
+                // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
+                UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+                viewModel.clearError();
               },
               tooltip: 'Visa fel',
             ),
@@ -95,19 +77,17 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               // Filter-sektion i en scrollbar container
               Container(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height *
-                      0.35, // Max 35% av skärmhöjden
+                  maxHeight: MediaQuery.of(context).size.height * 0.35,
                 ),
                 child: SingleChildScrollView(
                   padding: EdgeInsets.all(AppTheme.spacingMd),
                   child: Column(
                     children: [
-                      // 🔄 UPPDATERAD: SearchFilterWidget.searchOnly() istället för AppSearchBar
                       SearchFilterWidget.searchOnly(
                         searchQuery: viewModel.searchQuery,
                         onSearchChanged: viewModel.updateSearch,
                         searchHint: 'Sök i arkiv...',
-                        showStats: true, // ✨ BONUS: Visa sökstatistik
+                        showStats: true,
                         resultCount: viewModel.searchQuery.isNotEmpty
                             ? viewModel.filteredRecipes.length
                             : null,
@@ -122,9 +102,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                           children: allTags.map((tag) {
                             return AppTheme.filterChip(
                               label: tag,
-                              selected: viewModel.selectedTags.contains(
-                                tag,
-                              ),
+                              selected: viewModel.selectedTags.contains(tag),
                               onSelected: () => viewModel.toggleTag(tag),
                             );
                           }).toList(),
@@ -142,7 +120,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               // Divider mellan filter och innehåll
               const Divider(height: 1),
 
-              // 🔄 UPPDATERAD: Förenklad sökstatistik (SearchFilterWidget visar redan grundläggande stats)
+              // Avancerad filter-statistik
               if (viewModel.selectedTags.isNotEmpty ||
                   viewModel.timeFilter != TimeFilter.all)
                 Padding(
@@ -178,30 +156,11 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             ],
           ),
 
-          // Loading overlay
+          // Loading overlay - ✅ MIGRERAD: Custom overlay → UtilityComponents.loadingOverlay
           if (viewModel.isImporting)
-            Container(
-              color: Colors.black26,
-              child: Center(
-                child: Container(
-                  padding: AppTheme.cardPadding,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: AppTheme.largeRadius,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppTheme.mediumLoadingIndicator(),
-                      AppTheme.smallGap,
-                      Text(
-                        'Importerar recept...',
-                        style: AppTheme.subtitleStyle,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            UtilityComponents.loadingOverlay(
+              isLoading: true,
+              loadingMessage: 'Importerar recept...',
             ),
         ],
       ),
@@ -239,19 +198,16 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     );
   }
 
-  /// 🔄 UPPDATERAD: Fokusera på avancerad filter-statistik (SearchFilterWidget hanterar grundläggande)
   Widget _buildAdvancedStats(
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) {
     final filterParts = <String>[];
 
-    // Lägg till tagg-filter info
     if (viewModel.selectedTags.isNotEmpty) {
       filterParts.add('${viewModel.selectedTags.length} taggar');
     }
 
-    // Lägg till tids-filter info
     if (viewModel.timeFilter != TimeFilter.all) {
       final timeLabel = _getTimeFilterLabel(viewModel.timeFilter);
       filterParts.add(timeLabel);
@@ -320,7 +276,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final recipes = viewModel.filteredRecipes;
 
     if (recipes.isEmpty) {
-      // ✅ MIGRATION: StateWidget empty state
       return StateWidget.empty(
         title: 'Inga recept matchade filtren',
         subtitle: 'Prova att justera sökning eller filter',
@@ -336,7 +291,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: AppTheme.spacingXxs),
-          // ✅ UPPDATERAD: Använd ContentCard.compactRecipe istället för CompactRecipeCard
           child: ContentCard.compactRecipe(
             recipe: recipe,
             onTap: () => Navigator.pushNamed(
@@ -366,7 +320,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: ActionButton.outlined(
+            // ✅ MIGRERAD: ActionButton.outlined → UtilityComponents.outlinedButton
+            child: UtilityComponents.outlinedButton(
+              context,
               label: 'Markera alla',
               icon: Icons.select_all,
               onPressed:
@@ -376,7 +332,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           SizedBox(width: AppTheme.spacingSm),
           Expanded(
             flex: 2,
-            child: ActionButton.primary(
+            // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+            child: UtilityComponents.primaryButton(
+              context,
               label: viewModel.hasSelection
                   ? 'Importera valda (${viewModel.selectedCount})'
                   : 'Importera alla (${viewModel.archivedRecipes.length})',
