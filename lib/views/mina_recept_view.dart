@@ -10,9 +10,9 @@ import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/content_card.dart';
 import '../../widgets/common/search_filter_widget.dart';
 import '../../widgets/common/state_widget.dart';
-import '../widgets/user/user_display_widgets.dart';
 import '../../services/search_service.dart';
 import '../../services/offline_service.dart' as offline_service;
+import '../../widgets/common/social_components.dart';
 import '../../services/user_service.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
@@ -220,13 +220,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         return Stack(
           children: [
-            UserDisplayWidgets.avatar(
+            SocialComponents.avatar(
+              user: userService.currentUserProfile,
               size: ImageSize.medium,
-              imageUrl: userService.currentUserProfile?.avatarUrl,
-              displayName: userService.currentUserProfile?.displayName ??
-                  'Okänd användare',
               showStatus: true,
-              isOnline: userService.currentUserProfile?.isOnline ?? false,
             ),
             // ✅ TOTAL NOTIFICATION BADGE
             if (totalNotifications > 0)

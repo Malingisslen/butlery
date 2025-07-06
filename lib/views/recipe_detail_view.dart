@@ -11,7 +11,7 @@ import '../widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
 import '../widgets/common/input_components.dart';
 import '../widgets/image/universal_image_manager.dart' as img;
 import '../widgets/common/universal_share_dialog.dart';
-import '../widgets/user/user_display_widgets.dart';
+import '../widgets/common/social_components.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
@@ -909,9 +909,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            UserDisplayWidgets.avatar(
-              displayName: socialViewModel.currentUser?.displayName ?? 'Du',
-              imageUrl: socialViewModel.currentUser?.avatarUrl,
+            SocialComponents.avatar(
+              user: socialViewModel.currentUser,
+              displayName: 'Du', // fallback om user är null
               size: ImageSize.small,
             ),
             SizedBox(width: AppTheme.spacingSm),
@@ -980,7 +980,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              UserDisplayWidgets.avatar(
+              SocialComponents.avatar(
                 displayName: socialViewModel.getAuthorDisplayName(comment),
                 imageUrl: socialViewModel.getAuthorAvatarUrl(comment),
                 size: ImageSize.small,

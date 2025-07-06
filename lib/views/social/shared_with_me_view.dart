@@ -1,5 +1,4 @@
 // lib/views/social/shared_with_me_view.dart
-// ✅ FIXAD: Proper Provider setup without conflicts
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,17 +9,16 @@ import '../../viewmodels/shared_content_viewmodel.dart';
 import '../../models/shared_recipe.dart';
 import '../../models/shared_menu.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/user/user_display_widgets.dart';
-import '../../widgets/common/state_widget.dart';
-import 'menu_preview_view.dart'; // ✅ NY IMPORT
 
-/// ✅ FIXAD SharedWithMeView med korrekt Provider-arkitektur
+import '../../widgets/common/social_components.dart';
+import '../../widgets/common/state_widget.dart';
+import 'menu_preview_view.dart';
+
 class SharedWithMeView extends StatelessWidget {
   const SharedWithMeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FIX: Skapa Provider här utan konflikter
     return ChangeNotifierProvider<SharedContentViewModel>(
       create: (context) => sl<SharedContentViewModel>(),
       child: const _SharedWithMeViewContent(),
@@ -46,7 +44,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // ✅ FIX: Säker Provider access utan context.read() i initState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<SharedContentViewModel>();
 
@@ -285,7 +282,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
     if (viewModel.hasError) {
       return SliverFillRemaining(
-        // ✅ MIGRATION: Error state
         child: StateWidget.error(
           message: viewModel.error!,
           onAction: viewModel.loadSharedContent,
@@ -295,7 +291,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
     if (!viewModel.hasSharedContent) {
       return SliverFillRemaining(
-        // ✅ MIGRATION: No shared content state
         child: StateWidget.empty(
           title: 'Inga delade recept än',
           subtitle:
@@ -309,7 +304,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
     if (!viewModel.hasFilteredContent && viewModel.searchQuery.isNotEmpty) {
       return SliverFillRemaining(
-        // ✅ MIGRATION: No search results state
         child: StateWidget.noSearchResults(
           actionLabel: 'Rensa sökning',
           onAction: () {
@@ -336,7 +330,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     final recipes = viewModel.filteredSharedRecipes;
 
     if (recipes.isEmpty) {
-      // ✅ MIGRATION: No recipes state
       return StateWidget.empty(
         title: 'Inga recept',
         subtitle: 'Inga recept har delats med dig än.',
@@ -366,7 +359,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     final menus = viewModel.filteredSharedMenus;
 
     if (menus.isEmpty) {
-      // ✅ MIGRATION: No menus state
       return StateWidget.empty(
         title: 'Inga menyer',
         subtitle: 'Inga menyer har delats med dig än.',
@@ -431,7 +423,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
               // Header med delningsinfo
               Row(
                 children: [
-                  UserDisplayWidgets.avatar(
+                  // ✅ MIGRATION 1/2: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
+                  SocialComponents.avatar(
                     size: ImageSize.small,
                     displayName: sharedRecipe.sharedByDisplayName,
                   ),
@@ -688,7 +681,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
           if (!isRead) {
             viewModel.markMenuAsRead(sharedMenu);
           }
-          // ✅ NAVIGERA till MenuPreviewView
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -716,7 +708,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
               // Header med delningsinfo
               Row(
                 children: [
-                  UserDisplayWidgets.avatar(
+                  // ✅ MIGRATION 2/2: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
+                  SocialComponents.avatar(
                     size: ImageSize.small,
                     displayName: sharedMenu.sharedByDisplayName,
                   ),
@@ -897,7 +890,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                         if (!isRead) {
                           viewModel.markMenuAsRead(sharedMenu);
                         }
-                        // ✅ NAVIGERA till MenuPreviewView
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -942,6 +934,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     );
   }
 
+  // Action methods
   Future<void> _importRecipe(
     BuildContext context,
     SharedContentViewModel viewModel,
@@ -996,7 +989,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     SharedContentViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) async {
-    // Visa bekräftelsedialog
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1050,7 +1042,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     SharedContentViewModel viewModel,
     SharedMenu sharedMenu,
   ) async {
-    // Visa bekräftelsedialog
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
