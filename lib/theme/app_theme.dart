@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Centraliserat theme-system för Butlery-appen
 /// Baserat på Figma-prototypen med Material 3 design
+
 /// ✨ KOMPLETT SEMANTISK THEME MED ALLA TEXTSTYLES + 100% COVERAGE
 class AppTheme {
   // ===== FÄRGPALETT BASERAT PÅ FIGMA (UTÖKAD) =====

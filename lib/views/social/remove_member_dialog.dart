@@ -5,7 +5,7 @@ import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../services/friend_categories_service.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/user_avatar.dart';
+import '../../widgets/user/user_display_widgets.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
@@ -125,7 +125,8 @@ class _RemoveMemberDialogState extends State<RemoveMemberDialog> {
       decoration: AppTheme.cardDecoration,
       child: Row(
         children: [
-          UserAvatar.medium(
+          UserDisplayWidgets.avatar(
+            size: ImageSize.small,
             imageUrl: widget.member.avatarUrl,
             displayName: widget.member.displayName,
           ),

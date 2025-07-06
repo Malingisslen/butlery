@@ -8,8 +8,8 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../models/shared_menu.dart';
 import '../../models/recipe.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/user_avatar.dart';
-import '../../widgets/content_card.dart';
+import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/content_card.dart';
 import '../../viewmodels/shared_content_viewmodel.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
@@ -74,7 +74,9 @@ class MenuPreviewView extends StatelessWidget {
             // Delningsinformation
             Row(
               children: [
-                UserAvatar.medium(
+                UserDisplayWidgets.avatar(
+                  size: ImageSize.small,
+                  imageUrl: null, // Lägg till denna parameter
                   displayName: sharedMenu.sharedByDisplayName,
                 ),
                 SizedBox(width: AppTheme.spacingSm),

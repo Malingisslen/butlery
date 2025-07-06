@@ -34,10 +34,10 @@ class OfflineIndicator extends StatelessWidget {
                 color: Colors.white,
                 size: AppTheme.iconSizeSmall,
               ),
-              SizedBox(width: AppTheme.spacingSm),
+              AppTheme.smallHorizontalGap,
               Text(
                 'Offline-läge - Ändringar sparas lokalt',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: AppTheme.bodyStyle.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),

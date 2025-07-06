@@ -7,12 +7,12 @@ import '../../viewmodels/recipe_list_viewmodel.dart';
 import '../../viewmodels/friends_viewmodel.dart'; // För vänskapsförfrågningar
 import '../../viewmodels/shared_content_viewmodel.dart'; // ✅ NYTT: För delade recept/menyer
 import '../../widgets/main_layout_menu.dart';
-import '../../widgets/content_card.dart';
+import '../../widgets/common/content_card.dart';
 import '../../widgets/search_bar.dart';
-import '../../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
+import '../../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../../widgets/filter_chips.dart';
 import '../../widgets/offline_indicator.dart'; // För offline indicator
-import '../../widgets/user_avatar.dart'; // För avatar
+import '../widgets/user/user_display_widgets.dart'; // För avatar
 import '../../services/search_service.dart';
 import '../../services/offline_service.dart'
     as offline_service; // FIXA: Använd prefix
@@ -261,10 +261,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         return Stack(
           children: [
-            UserAvatar.social(
+            UserDisplayWidgets.avatar(
+              size: ImageSize.medium,
               imageUrl: userService.currentUserProfile?.avatarUrl,
               displayName: userService.currentUserProfile?.displayName ??
                   'Okänd användare',
+              showStatus: true,
+              isOnline: userService.currentUserProfile?.isOnline ?? false,
             ),
             // ✅ TOTAL NOTIFICATION BADGE
             if (totalNotifications > 0)

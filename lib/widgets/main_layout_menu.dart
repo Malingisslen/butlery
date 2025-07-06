@@ -7,7 +7,7 @@ class MainLayoutMenu extends StatelessWidget {
   final Widget body;
   final int? currentIndex;
   final String? title;
-  final List<Widget>? actions; // För AppBar-actions
+  final List<Widget>? actions;
   final FloatingActionButton? floatingActionButton;
 
   const MainLayoutMenu({
@@ -22,17 +22,18 @@ class MainLayoutMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          title != null
-              ? AppBar(
-                title: Text(title!),
-                actions: actions,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-                automaticallyImplyLeading:
-                    false, // ✅ Tar bort bakåtpilen för huvudvyer
-              )
-              : null,
+      appBar: title != null
+          ? AppBar(
+              title: Text(
+                title!,
+                style: AppTheme.sectionTitleStyle,
+              ),
+              actions: actions,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              automaticallyImplyLeading: false,
+            )
+          : null,
       body: body,
       floatingActionButton: floatingActionButton,
       bottomNavigationBar: _buildBottomNavigation(context),
@@ -41,6 +42,7 @@ class MainLayoutMenu extends StatelessWidget {
 
   Widget _buildBottomNavigation(BuildContext context) {
     return AppTheme.styledBottomNavBar(
+      // ✅ AppTheme navigation
       currentIndex: currentIndex ?? 0,
       onTap: (index) => _handleNavigation(context, index),
       items: const [
@@ -115,10 +117,15 @@ class SimpleLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          appBar ??
+      appBar: appBar ??
           (title != null
-              ? AppBar(title: Text(title!), actions: actions)
+              ? AppBar(
+                  title: Text(
+                    title!,
+                    style: AppTheme.sectionTitleStyle,
+                  ),
+                  actions: actions,
+                )
               : null),
       body: body,
     );

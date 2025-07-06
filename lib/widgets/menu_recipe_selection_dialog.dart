@@ -22,7 +22,7 @@ import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_list_viewmodel.dart';
 import '../widgets/search_bar.dart';
-import '../widgets/state_widget.dart';
+import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 

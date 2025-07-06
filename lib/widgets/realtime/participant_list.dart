@@ -1,8 +1,7 @@
-// lib/widgets/realtime/participant_list.dart - FIXED MED 100% APPTHEME
+// lib/widgets/realtime/participant_list.dart - ANVÄNDER ENDAST BEFINTLIGA APPTHEME PROPERTIES
 
 import 'package:flutter/material.dart';
 import '../../viewmodels/realtime/participant_tracker.dart';
-import '../../widgets/user_avatar.dart';
 import '../../theme/app_theme.dart';
 
 /// Lista deltagare med online status och management actions
@@ -37,8 +36,11 @@ class ParticipantList extends StatelessWidget {
           children: [
             Row(
               children: [
-                AppTheme.actionIcon(context, Icons.people,
-                    color: AppTheme.primaryColor),
+                AppTheme.actionIcon(
+                  context,
+                  Icons.people,
+                  color: AppTheme.primaryColor,
+                ),
                 AppTheme.smallHorizontalGap,
                 Text(
                   'Deltagare (${activities.length})',
@@ -75,7 +77,9 @@ class ParticipantList extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.successColor.withValues(alpha: 0.1),
         borderRadius: AppTheme.chipRadius,
-        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppTheme.successColor.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -88,7 +92,7 @@ class ParticipantList extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppTheme.spacingXs),
             ),
           ),
-          SizedBox(width: AppTheme.spacingXs),
+          AppTheme.tinyGap,
           Text(
             '$onlineCount online',
             style: AppTheme.successTextStyle.copyWith(fontSize: 12),
@@ -115,7 +119,7 @@ class ParticipantList extends StatelessWidget {
           color: isCurrentUser
               ? AppTheme.primaryColor.withValues(alpha: 0.1)
               : Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.iconSizeAction),
           border: Border.all(
             color: isCurrentUser
                 ? AppTheme.primaryColor.withValues(alpha: 0.3)
@@ -128,9 +132,8 @@ class ParticipantList extends StatelessWidget {
             // Avatar with online indicator
             Stack(
               children: [
-                UserAvatar.small(
-                  displayName: activity.displayName,
-                ),
+                _buildSimpleAvatar(activity.displayName,
+                    AppTheme.iconSizeDisplay / 2), // 32px för small avatar
 
                 // Online indicator
                 Positioned(
@@ -179,13 +182,52 @@ class ParticipantList extends StatelessWidget {
 
             // Management menu indicator
             if (canRemove) ...[
-              SizedBox(width: AppTheme.spacingXs),
+              AppTheme.tinyGap,
               AppTheme.infoIcon(context, icon: Icons.more_vert),
             ],
           ],
         ),
       ),
     );
+  }
+
+  /// Enkel avatar utan externa dependencies
+  Widget _buildSimpleAvatar(String displayName, double size) {
+    final initials = _getInitials(displayName);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: AppTheme.bodyStyle.copyWith(
+            fontSize: size * 0.4,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Generera initials från namn
+  String _getInitials(String name) {
+    if (name.isEmpty) return '?';
+
+    final words = name.trim().split(RegExp(r'\s+'));
+    if (words.length == 1) {
+      final word = words[0];
+      return word.length >= 2
+          ? '${word[0]}${word[1]}'.toUpperCase()
+          : word[0].toUpperCase();
+    } else {
+      return '${words[0][0]}${words[1][0]}'.toUpperCase();
+    }
   }
 
   String _getActivityText(ParticipantActivity activity) {
@@ -205,7 +247,8 @@ class ParticipantList extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.bottomSheetBorderRadius),
+        borderRadius: AppTheme.bottomSheetBorderRadius,
+      ),
       builder: (context) => _ParticipantMenu(
         activity: activity,
         onRemove: onRemoveParticipant,
@@ -238,9 +281,8 @@ class _ParticipantMenu extends StatelessWidget {
           // Header
           Row(
             children: [
-              UserAvatar.medium(
-                displayName: activity.displayName,
-              ),
+              _buildSimpleAvatar(activity.displayName,
+                  AppTheme.iconSizeHero), // 48px för medium avatar
               AppTheme.mediumHorizontalGap,
               Expanded(
                 child: Column(
@@ -263,13 +305,19 @@ class _ParticipantMenu extends StatelessWidget {
           ),
 
           AppTheme.mediumGap,
-          Divider(color: AppTheme.dividerColor, height: AppTheme.dividerHeight),
+          Divider(
+            color: AppTheme.dividerColor,
+            height: AppTheme.dividerHeight,
+          ),
 
           // Actions
           if (onChangePermission != null)
             ListTile(
               leading: AppTheme.actionIcon(context, Icons.security),
-              title: Text('Ändra behörigheter', style: AppTheme.bodyStyle),
+              title: Text(
+                'Ändra behörigheter',
+                style: AppTheme.bodyStyle,
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 onChangePermission?.call(activity.userId);
@@ -278,8 +326,11 @@ class _ParticipantMenu extends StatelessWidget {
 
           if (onRemove != null)
             ListTile(
-              leading: AppTheme.actionIcon(context, Icons.person_remove,
-                  color: AppTheme.errorColor),
+              leading: AppTheme.actionIcon(
+                context,
+                Icons.person_remove,
+                color: AppTheme.errorColor,
+              ),
               title: Text(
                 'Ta bort från meny',
                 style: AppTheme.errorTextStyle,
@@ -295,18 +346,64 @@ class _ParticipantMenu extends StatelessWidget {
           OutlinedButton(
             style: AppTheme.secondaryButtonStyle,
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Avbryt'),
+            child: Text('Avbryt',
+                style: AppTheme.buttonTextStyle), // ✅ Explicit AppTheme style
           ),
         ],
       ),
     );
   }
 
+  /// Enkel avatar för menyn
+  Widget _buildSimpleAvatar(String displayName, double size) {
+    final initials = _getInitials(displayName);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: AppTheme.bodyStyle.copyWith(
+            fontSize: size * 0.4,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Generera initials från namn
+  String _getInitials(String name) {
+    if (name.isEmpty) return '?';
+
+    final words = name.trim().split(RegExp(r'\s+'));
+    if (words.length == 1) {
+      final word = words[0];
+      return word.length >= 2
+          ? '${word[0]}${word[1]}'.toUpperCase()
+          : word[0].toUpperCase();
+    } else {
+      return '${words[0][0]}${words[1][0]}'.toUpperCase();
+    }
+  }
+
   void _confirmRemoval(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Ta bort deltagare', style: AppTheme.sectionTitleStyle),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.largeRadius,
+        ),
+        title: Text(
+          'Ta bort deltagare',
+          style: AppTheme.sectionTitleStyle,
+        ),
         content: Text(
           'Vill du ta bort ${activity.displayName} från denna meny? '
           'De kommer inte längre kunna se eller redigera menyn.',
@@ -315,15 +412,20 @@ class _ParticipantMenu extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Avbryt'),
+            style: AppTheme.secondaryButtonStyle,
+            child: Text('Avbryt',
+                style: AppTheme.buttonTextStyle), // ✅ Explicit AppTheme style
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               onRemove?.call(activity.userId);
             },
-            style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
-            child: const Text('Ta bort'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorColor,
+            ),
+            child: Text('Ta bort',
+                style: AppTheme.buttonTextStyle), // ✅ Explicit AppTheme style
           ),
         ],
       ),

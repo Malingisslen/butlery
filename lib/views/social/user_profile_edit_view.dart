@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
-import '../../widgets/user_avatar.dart';
+import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/main_layout_menu.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
@@ -308,13 +308,13 @@ class _UserProfileEditViewContentState
           // Avatar with edit overlay
           Stack(
             children: [
-              ProfileHeaderAvatar(
+              UserDisplayWidgets.editableAvatar(
                 imageUrl: viewModel.avatarUrl,
                 displayName: viewModel.displayName.isNotEmpty
                     ? viewModel.displayName
                     : 'Ny användare',
+                onEditTap: _uploadAvatar, // Lägg till denna parameter
               ),
-
               // Upload progress overlay
               if (viewModel.isUploadingAvatar)
                 Positioned.fill(

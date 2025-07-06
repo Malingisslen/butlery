@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../services/group_invitation_service.dart';
 import '../../models/group_invitation.dart';
-import '../../widgets/user_avatar.dart';
+import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/main_layout_menu.dart';
 import '../../widgets/search_bar.dart';
-import '../../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
+import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/user_profile.dart';
@@ -624,9 +624,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
             arguments: friend,
           );
         },
-        leading: UserAvatar.medium(
+        leading: UserDisplayWidgets.avatar(
           imageUrl: friend.avatarUrl,
           displayName: friend.displayName,
+          size: ImageSize.small,
         ),
         title: Text(
           friend.displayName,
@@ -691,10 +692,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           children: [
             Row(
               children: [
-                UserAvatar.medium(
-                  imageUrl: null,
+                UserDisplayWidgets.avatar(
+                  size: ImageSize.small,
+                  imageUrl: viewModel.getAvatarUrlForUser(request.fromUserId),
                   displayName:
-                      'Användare ${request.fromUserId.substring(0, 6)}...',
+                      viewModel.getDisplayNameForUser(request.fromUserId),
                 ),
                 SizedBox(width: AppTheme.spacingMd),
                 Expanded(
@@ -770,9 +772,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
     return Card(
       child: ListTile(
-        leading: UserAvatar.medium(
-          imageUrl: user.avatarUrl,
-          displayName: user.displayName,
+        leading: UserDisplayWidgets.avatar(
+          size: ImageSize.small,
+          imageUrl: viewModel.getAvatarUrlForUser(user.uid),
+          displayName: viewModel.getDisplayNameForUser(user.uid),
         ),
         title: Text(
           user.displayName,
