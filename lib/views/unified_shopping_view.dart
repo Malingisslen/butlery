@@ -15,7 +15,7 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../widgets/offline_indicator.dart';
 import '../widgets/common/universal_share_dialog.dart';
-import '../widgets/add_shopping_item_dialog.dart';
+import '../widgets/common/input_components.dart'; // ✅ NY IMPORT
 
 // Theme
 import '../theme/app_theme.dart';
@@ -521,26 +521,25 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  void _showAddItemDialog() {
-    showDialog<UnifiedShoppingItem>(
-      context: context,
-      builder: (context) => const AddUnifiedShoppingItemDialog(),
-    ).then((item) {
-      if (item != null) {
-        _addItemFromDialog(item);
-      }
-    });
+  // ✅ MIGRERAD: _showAddItemDialog använder InputComponents
+  void _showAddItemDialog() async {
+    final item = await InputComponents.showShoppingItemDialog(context);
+
+    if (item != null) {
+      _addItemFromDialog(item);
+    }
   }
 
-  void _showEditItemDialog(UnifiedShoppingItem item) {
-    showDialog<UnifiedShoppingItem>(
-      context: context,
-      builder: (context) => AddUnifiedShoppingItemDialog(initialItem: item),
-    ).then((editedItem) {
-      if (editedItem != null) {
-        _editItemFromDialog(item.id, editedItem);
-      }
-    });
+  // ✅ MIGRERAD: _showEditItemDialog använder InputComponents
+  void _showEditItemDialog(UnifiedShoppingItem item) async {
+    final editedItem = await InputComponents.showShoppingItemDialog(
+      context,
+      initialItem: item,
+    );
+
+    if (editedItem != null) {
+      _editItemFromDialog(item.id, editedItem);
+    }
   }
 
   Future<void> _addItemFromDialog(UnifiedShoppingItem item) async {

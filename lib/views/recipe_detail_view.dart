@@ -8,7 +8,7 @@ import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
-import '../widgets/portion_scaler.dart';
+import '../widgets/common/input_components.dart'; // ✅ NY IMPORT
 import '../widgets/image/universal_image_manager.dart' as img;
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/user/user_display_widgets.dart';
@@ -311,8 +311,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     AppTheme.largeGap,
                   ],
 
-                  // Portionsskalning
-                  PortionScaler(
+                  // ✅ MIGRERAD: Portionsskalning med InputComponents
+                  InputComponents.portionScaler(
                     originalPortions: viewModel.recipe.portions ?? 4,
                     originalIngredients: viewModel.recipe.ingredients,
                     onPortionChanged: _onPortionChanged,
