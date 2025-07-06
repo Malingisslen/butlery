@@ -18,8 +18,8 @@
 /// Used in phases: Core UI foundation
 
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import 'action_button.dart';
+import '../../theme/app_theme.dart';
+import '../action_button.dart';
 
 /// Enum för olika state-typer
 enum StateType {

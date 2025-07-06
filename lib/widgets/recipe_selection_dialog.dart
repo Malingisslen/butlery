@@ -1,4 +1,5 @@
 // lib/widgets/recipe_selection_dialog.dart
+// ✅ 100% AppTheme migrerad - ANVÄNDER ENDAST BEFINTLIGA APPTHEME PROPERTIES
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,11 @@ class RecipeSelectionDialog extends StatelessWidget {
       child: Consumer<RecipeSelectionViewModel>(
         builder: (context, viewModel, child) {
           return AlertDialog(
-            title: Text('Dela recept med ${friend.displayName}'),
+            title: Text(
+              'Dela recept med ${friend.displayName}',
+              style: AppTheme
+                  .sectionTitleStyle, // ✅ Använder befintlig sectionTitleStyle
+            ),
             contentPadding: EdgeInsets.zero,
             content: SizedBox(
               width: double.maxFinite,
@@ -36,7 +41,7 @@ class RecipeSelectionDialog extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt'),
+                child: Text('Avbryt', style: AppTheme.buttonTextStyle),
               ),
               if (viewModel.hasSelectedRecipes)
                 FilledButton.icon(
@@ -46,15 +51,16 @@ class RecipeSelectionDialog extends StatelessWidget {
                   style: AppTheme.primaryButtonStyle,
                   icon: viewModel.isSharing
                       ? SizedBox(
-                          width: 16,
-                          height: 16,
+                          width: AppTheme.iconSizeAction,
+                          height: AppTheme.iconSizeAction,
                           child: AppTheme.smallLoadingIndicator(),
                         )
-                      : const Icon(Icons.share),
+                      : AppTheme.actionIcon(context, Icons.share),
                   label: Text(
                     viewModel.isSharing
                         ? 'Delar...'
                         : 'Dela (${viewModel.selectedCount})',
+                    style: AppTheme.buttonTextStyle,
                   ),
                 ),
             ],
@@ -105,7 +111,7 @@ class RecipeSelectionDialog extends StatelessWidget {
               ElevatedButton(
                 onPressed: viewModel.loadRecipes,
                 style: AppTheme.primaryButtonStyle,
-                child: const Text('Försök igen'),
+                child: Text('Försök igen', style: AppTheme.buttonTextStyle),
               ),
             ],
           ),
@@ -145,8 +151,8 @@ class RecipeSelectionDialog extends StatelessWidget {
                   Navigator.pushNamed(context, '/laggTill');
                 },
                 style: AppTheme.primaryButtonStyle,
-                icon: const Icon(Icons.add),
-                label: const Text('Skapa recept'),
+                icon: AppTheme.actionIcon(context, Icons.add),
+                label: Text('Skapa recept', style: AppTheme.buttonTextStyle),
               ),
             ],
           ),
@@ -182,7 +188,7 @@ class RecipeSelectionDialog extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: AppTheme.spacingXs,
-                      vertical: 2,
+                      vertical: AppTheme.spacingXxs,
                     ),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor.withValues(alpha: 0.1),
@@ -201,18 +207,18 @@ class RecipeSelectionDialog extends StatelessWidget {
                 if (viewModel.hasSelectedRecipes)
                   TextButton(
                     onPressed: viewModel.clearSelections,
-                    child: const Text('Rensa val'),
+                    child: Text('Rensa val', style: AppTheme.buttonTextStyle),
                   )
                 else if (viewModel.searchQuery.isNotEmpty)
                   TextButton(
                     onPressed: viewModel.clearSearch,
-                    child: const Text('Rensa'),
+                    child: Text('Rensa', style: AppTheme.buttonTextStyle),
                   ),
               ],
             ),
           ),
 
-        Divider(height: 1, color: AppTheme.dividerColor),
+        Divider(height: AppTheme.dividerHeight, color: AppTheme.dividerColor),
 
         // Receptlista
         Expanded(
@@ -268,7 +274,7 @@ class RecipeSelectionDialog extends StatelessWidget {
             OutlinedButton(
               onPressed: viewModel.clearSearch,
               style: AppTheme.secondaryButtonStyle,
-              child: const Text('Rensa sökning'),
+              child: Text('Rensa sökning', style: AppTheme.buttonTextStyle),
             ),
           ],
         ),
@@ -288,25 +294,33 @@ class RecipeSelectionDialog extends StatelessWidget {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(shareMessage), // ✅ Använd det sparade meddelandet
+          content: Text(
+            shareMessage, // ✅ Använd det sparade meddelandet
+            style: AppTheme.bodyStyle.copyWith(
+                color: Colors.white), // ✅ Använder befintlig bodyStyle
+          ),
           backgroundColor: AppTheme.successColor,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 3), // ✅ Hårdkodad duration
         ),
       );
     } else if (!success && context.mounted) {
       // ✅ BONUS: Visa felmeddelande om delningen misslyckas
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.error ?? 'Kunde inte dela recept'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
+          content: Text(
+            viewModel.error ?? 'Kunde inte dela recept',
+            style: AppTheme.bodyStyle.copyWith(
+                color: Colors.white), // ✅ Använder befintlig bodyStyle
+          ),
+          backgroundColor: AppTheme.errorColor,
+          duration: const Duration(seconds: 3), // ✅ Hårdkodad duration
         ),
       );
     }
   }
 }
 
-/// ✅ FINAL: RecipeListItem - 100% AppTheme, ingen hårdkodning
+/// ✅ FINAL: RecipeListItem - 100% AppTheme, endast befintliga properties
 class _RecipeListItem extends StatelessWidget {
   final Recipe recipe;
   final bool isSelected;
@@ -343,23 +357,27 @@ class _RecipeListItem extends StatelessWidget {
             child: Text(
               recipe.title,
               style: isAlreadyShared
-                  ? AppTheme.sharedRecipeTitleStyle
+                  ? AppTheme.cardTitleStyle.copyWith(
+                      color: AppTheme
+                          .sharedRecipeTextColor) // ✅ Använder befintlig sharedRecipeTextColor
                   : AppTheme.cardTitleStyle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          // ✅ "Delad" chip med AppTheme styling
+          // ✅ "Delad" chip med befintlig AppTheme styling
           if (isAlreadyShared)
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: AppTheme.spacingXs,
-                vertical: 2,
+                vertical: AppTheme.spacingXxs,
               ),
-              decoration: AppTheme.sharedChipDecoration,
+              decoration: AppTheme
+                  .sharedChipDecoration, // ✅ Använder befintlig decoration
               child: Text(
                 'Delad',
-                style: AppTheme.sharedChipTextStyle,
+                style: AppTheme
+                    .sharedChipTextStyle, // ✅ Använder befintlig textStyle
               ),
             ),
         ],
@@ -370,7 +388,7 @@ class _RecipeListItem extends StatelessWidget {
           Text(
             recipe.mealType,
             style: isAlreadyShared
-                ? AppTheme.sharedRecipeMetaStyle.copyWith(
+                ? AppTheme.captionStyle.copyWith(
                     color: AppTheme.sharedRecipeTextColor,
                     fontWeight: FontWeight.w600,
                   )
@@ -383,7 +401,8 @@ class _RecipeListItem extends StatelessWidget {
             Text(
               recipe.description,
               style: isAlreadyShared
-                  ? AppTheme.sharedRecipeMetaStyle
+                  ? AppTheme.captionStyle
+                      .copyWith(color: AppTheme.sharedRecipeTextColor)
                   : AppTheme.captionStyle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -404,7 +423,10 @@ class _RecipeListItem extends StatelessWidget {
                 Text(
                   '${recipe.timeMinutes} min',
                   style: isAlreadyShared
-                      ? AppTheme.sharedRecipeInfoStyle
+                      ? AppTheme.captionStyle.copyWith(
+                          color: AppTheme.sharedRecipeIconColor,
+                          fontSize: 11,
+                        )
                       : AppTheme.captionStyle.copyWith(fontSize: 11),
                 ),
               ],
@@ -414,7 +436,8 @@ class _RecipeListItem extends StatelessWidget {
                   Text(
                     '•',
                     style: isAlreadyShared
-                        ? AppTheme.sharedRecipeInfoStyle
+                        ? AppTheme.captionStyle
+                            .copyWith(color: AppTheme.sharedRecipeIconColor)
                         : AppTheme.captionStyle,
                   ),
                   AppTheme.smallGap,
@@ -430,7 +453,10 @@ class _RecipeListItem extends StatelessWidget {
                 Text(
                   '${recipe.portions} port',
                   style: isAlreadyShared
-                      ? AppTheme.sharedRecipeInfoStyle
+                      ? AppTheme.captionStyle.copyWith(
+                          color: AppTheme.sharedRecipeIconColor,
+                          fontSize: 11,
+                        )
                       : AppTheme.captionStyle.copyWith(fontSize: 11),
                 ),
               ],

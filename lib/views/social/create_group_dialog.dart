@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../widgets/user_avatar.dart';
+import '../../widgets/user/user_display_widgets.dart';
 import '../../theme/app_theme.dart';
 // ✅ NYTT: Import GroupInvitationService
 import 'package:provider/provider.dart'; // <-- LÄGG TILL
@@ -294,7 +294,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                                     value: isSelected,
                                     onChanged: (_) =>
                                         viewModel.toggleFriend(friend.uid),
-                                    secondary: UserAvatar.small(
+                                    secondary: UserDisplayWidgets.avatar(
+                                      size: ImageSize.small,
                                       imageUrl: friend.avatarUrl,
                                       displayName: friend.displayName,
                                     ),

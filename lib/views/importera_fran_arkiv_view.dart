@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/archive_import_viewmodel.dart';
-import '../widgets/content_card.dart';
+import '../widgets/common/content_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/action_button.dart';
-import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
+import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 

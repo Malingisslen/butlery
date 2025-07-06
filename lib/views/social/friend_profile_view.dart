@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../models/user_profile.dart';
-import '../../widgets/user_avatar.dart';
+import '../../widgets/user/user_display_widgets.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/recipe_selection_dialog.dart';
 
@@ -31,9 +31,18 @@ class FriendProfileView extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  ProfileHeaderAvatar(
+                  UserDisplayWidgets.editableAvatar(
                     imageUrl: friend.avatarUrl,
                     displayName: friend.displayName,
+                    onEditTap: () {
+                      // För vänprofiler - visa bara ett meddelande
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kan inte redigera vänners profiler'),
+                          backgroundColor: AppTheme.warningColor,
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: AppTheme.spacingMd),
                   Text(

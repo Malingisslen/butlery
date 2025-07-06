@@ -5,7 +5,7 @@ import '../services/content_detector_service.dart';
 import '../services/social_media_extractor.dart';
 import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt SkeletonLoader
+import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt SkeletonLoader
 
 /// View för att ta emot och hantera delningar från andra appar
 class ReceiveShareView extends StatefulWidget {

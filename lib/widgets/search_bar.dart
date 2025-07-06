@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD ÅTERANVÄNDBAR SÖKKOMPONENT
 class AppSearchBar extends StatefulWidget {
   final String hintText;
   final Function(String) onChanged;
@@ -78,25 +77,22 @@ class _AppSearchBarState extends State<AppSearchBar> {
     return TextField(
       controller: _controller,
       enabled: widget.enabled,
-      style: Theme.of(context).textTheme.bodyMedium,
+      style: AppTheme.bodyStyle,
       decoration: InputDecoration(
         hintText: widget.hintText,
         hintStyle: AppTheme.inputHintStyle,
-        prefixIcon: widget.prefixIcon ?? const Icon(Icons.search),
+        prefixIcon:
+            widget.prefixIcon ?? AppTheme.actionIcon(context, Icons.search),
         suffixIcon: _hasText
             ? IconButton(
-                icon: AppTheme.actionIcon(
-                  context,
-                  Icons.clear,
-                ),
+                icon: AppTheme.actionIcon(context, Icons.clear),
                 onPressed: _onClear,
               )
             : null,
-        border: const OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingMd,
-          vertical: AppTheme.spacingSmPlus,
+        border: OutlineInputBorder(
+          borderRadius: AppTheme.mediumRadius,
         ),
+        contentPadding: AppTheme.inputPadding,
       ),
       onChanged: widget.onChanged,
     );

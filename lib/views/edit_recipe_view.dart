@@ -1,18 +1,19 @@
 // lib/views/edit_recipe_view.dart
-// UPPDATERAD VERSION: Förenklad bildväljare med smart galleri-hantering
+// UPPDATERAD VERSION: Använder UniversalImageManager istället för RecipeImageManager
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../services/auth_service.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/action_button.dart';
-import '../widgets/recipe_image_manager.dart';
+import '../widgets/image/universal_image_manager.dart';
 import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 
-/// Redigera recept view - nu med förenklad bildväljare
+/// Redigera recept view - nu med UniversalImageManager
 class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
@@ -21,15 +22,14 @@ class EditRecipeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create:
-          (_) => RecipeFormViewModel(
-            recipeService: sl(),
-            analyticsService: sl(),
-            storageService: sl(),
-            imagePickerService: sl(),
-            authService: sl(),
-            initialRecipe: recipe,
-          ),
+      create: (_) => RecipeFormViewModel(
+        recipeService: sl(),
+        analyticsService: sl(),
+        storageService: sl(),
+        imagePickerService: sl(),
+        authService: sl(),
+        initialRecipe: recipe,
+      ),
       child: const _EditRecipeViewContent(),
     );
   }
@@ -75,69 +75,68 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   Future<void> _pickImage(RecipeFormViewModel viewModel) async {
     final choice = await showModalBottomSheet<String>(
       context: context,
-      builder:
-          (context) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: EdgeInsets.all(AppTheme.spacingMd),
-                  child: Text(
-                    'Lägg till bild',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                const Divider(height: 1),
-
-                // Ta foto
-                ListTile(
-                  leading: Icon(
-                    Icons.photo_camera,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: const Text('Ta foto'),
-                  subtitle: const Text('Använd kameran'),
-                  onTap: () => Navigator.pop(context, 'camera'),
-                ),
-
-                // Galleri-alternativ (smart automatisk val)
-                ListTile(
-                  leading: Icon(
-                    Icons.photo_library,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: const Text('Från galleriet'),
-                  subtitle: Text(
-                    viewModel.canAddMoreImages
-                        ? 'Välj upp till ${RecipeFormViewModel.maxImages - viewModel.imageUrls.length} bilder'
-                        : 'Välj en bild från galleriet',
-                  ),
-                  onTap: () => Navigator.pop(context, 'gallery'),
-                ),
-
-                const Divider(height: 1),
-
-                // URL-alternativ som backup
-                ListTile(
-                  leading: Icon(
-                    Icons.link,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                  title: const Text('Lägg till från URL'),
-                  subtitle: const Text('För bilder från webben'),
-                  onTap: () => Navigator.pop(context, 'url'),
-                ),
-
-                // Avbryt
-                ListTile(
-                  leading: const Icon(Icons.close),
-                  title: const Text('Avbryt'),
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.all(AppTheme.spacingMd),
+              child: Text(
+                'Lägg till bild',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
-          ),
+            const Divider(height: 1),
+
+            // Ta foto
+            ListTile(
+              leading: Icon(
+                Icons.photo_camera,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Ta foto'),
+              subtitle: const Text('Använd kameran'),
+              onTap: () => Navigator.pop(context, 'camera'),
+            ),
+
+            // Galleri-alternativ (smart automatisk val)
+            ListTile(
+              leading: Icon(
+                Icons.photo_library,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Från galleriet'),
+              subtitle: Text(
+                viewModel.canAddMoreImages
+                    ? 'Välj upp till ${RecipeFormViewModel.maxImages - viewModel.imageUrls.length} bilder'
+                    : 'Välj en bild från galleriet',
+              ),
+              onTap: () => Navigator.pop(context, 'gallery'),
+            ),
+
+            const Divider(height: 1),
+
+            // URL-alternativ som backup
+            ListTile(
+              leading: Icon(
+                Icons.link,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+              title: const Text('Lägg till från URL'),
+              subtitle: const Text('För bilder från webben'),
+              onTap: () => Navigator.pop(context, 'url'),
+            ),
+
+            // Avbryt
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('Avbryt'),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
     );
 
     if (choice == null || !mounted) return;
@@ -165,29 +164,28 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         final controller = TextEditingController();
         final url = await showDialog<String>(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Lägg till bild från URL'),
-                content: TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    labelText: 'Bild-URL',
-                    hintText: 'https://exempel.com/bild.jpg',
-                  ),
-                  keyboardType: TextInputType.url,
-                  autofocus: true,
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Avbryt'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, controller.text),
-                    child: const Text('Lägg till'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: const Text('Lägg till bild från URL'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Bild-URL',
+                hintText: 'https://exempel.com/bild.jpg',
               ),
+              keyboardType: TextInputType.url,
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Avbryt'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Lägg till'),
+              ),
+            ],
+          ),
         );
 
         if (url != null && url.isNotEmpty) {
@@ -212,6 +210,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
+    final authService = context.read<AuthService>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Redigera recept')),
@@ -239,27 +238,26 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   DropdownButtonFormField<String>(
                     value: viewModel.mealType,
                     decoration: const InputDecoration(labelText: 'Måltidstyp'),
-                    items:
-                        RecipeFormViewModel.mealTypes
-                            .map(
-                              (mt) =>
-                                  DropdownMenuItem(value: mt, child: Text(mt)),
-                            )
-                            .toList(),
+                    items: RecipeFormViewModel.mealTypes
+                        .map(
+                          (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
+                        )
+                        .toList(),
                     onChanged: (value) {
                       if (value != null) viewModel.setMealType(value);
                     },
                   ),
                   AppTheme.mediumGap,
 
-                  // Bildhantering med RecipeImageManager
-                  RecipeImageManager(
+                  // ✅ FIXAD: Bildhantering med UniversalImageManager
+                  UniversalImageManager.recipeEdit(
                     imageUrls: viewModel.imageUrls,
+                    userId: authService.currentUser?.uid ?? '',
                     onAddImage: viewModel.addImageUrl,
                     onRemoveImage: viewModel.removeImageAt,
                     onSetPrimary: viewModel.setPrimaryImage,
                     onPickImage: () => _pickImage(viewModel),
-                    canAddMore: viewModel.canAddMoreImages,
+                    maxImages: 5,
                   ),
                   AppTheme.largeGap,
 
@@ -411,7 +409,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       children: [
         Text(label, style: AppTheme.formLabelStyle),
         AppTheme.smallGap,
-
         ...controllers.asMap().entries.map((entry) {
           final index = entry.key;
           final controller = entry.value;
@@ -440,7 +437,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ),
           );
         }),
-
         if (controllers.isEmpty ||
             (controllers.isNotEmpty && controllers.last.text.isNotEmpty))
           TextButton.icon(

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD INSTRUKTIONS-EDITOR
 class InstructionEditor extends StatefulWidget {
   final List<String> initialInstructions;
 
@@ -19,10 +18,9 @@ class _InstructionEditorState extends State<InstructionEditor> {
   @override
   void initState() {
     super.initState();
-    controllers =
-        widget.initialInstructions
-            .map((text) => TextEditingController(text: text))
-            .toList();
+    controllers = widget.initialInstructions
+        .map((text) => TextEditingController(text: text))
+        .toList();
     if (controllers.isEmpty) {
       controllers.add(TextEditingController());
     }
@@ -59,15 +57,19 @@ class _InstructionEditorState extends State<InstructionEditor> {
       children: List.generate(controllers.length, (i) {
         return Padding(
           padding: EdgeInsets.symmetric(
-            vertical: AppTheme.spacingXs, // ✅ SEMANTISK PADDING
+            vertical: AppTheme.spacingXs,
           ),
           child: TextFormField(
             controller: controllers[i],
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Instruktion',
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: AppTheme.mediumRadius,
+              ),
+              labelText: 'Instruktion ${i + 1}',
+              labelStyle: AppTheme.formLabelStyle,
+              contentPadding: AppTheme.inputPadding,
             ),
-            style: Theme.of(context).textTheme.bodyMedium, // ✅ THEME TYPOGRAPHY
+            style: AppTheme.bodyStyle,
             onFieldSubmitted: (_) => _handleEnterPressed(i, controllers[i]),
             textInputAction: TextInputAction.newline,
             keyboardType: TextInputType.multiline,

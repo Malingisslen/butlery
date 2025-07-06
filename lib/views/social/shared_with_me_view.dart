@@ -10,8 +10,8 @@ import '../../viewmodels/shared_content_viewmodel.dart';
 import '../../models/shared_recipe.dart';
 import '../../models/shared_menu.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/user_avatar.dart';
-import '../../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt custom _buildEmptyState
+import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/state_widget.dart';
 import 'menu_preview_view.dart'; // ✅ NY IMPORT
 
 /// ✅ FIXAD SharedWithMeView med korrekt Provider-arkitektur
@@ -431,7 +431,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
               // Header med delningsinfo
               Row(
                 children: [
-                  UserAvatar.small(
+                  UserDisplayWidgets.avatar(
+                    size: ImageSize.small,
                     displayName: sharedRecipe.sharedByDisplayName,
                   ),
                   SizedBox(width: AppTheme.spacingSm),
@@ -536,7 +537,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurfaceVariant,
-                                size: 32,
+                                size: AppTheme.iconSizeInfo,
                               )
                             : null,
                       ),
@@ -715,7 +716,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
               // Header med delningsinfo
               Row(
                 children: [
-                  UserAvatar.small(
+                  UserDisplayWidgets.avatar(
+                    size: ImageSize.small,
                     displayName: sharedMenu.sharedByDisplayName,
                   ),
                   SizedBox(width: AppTheme.spacingSm),

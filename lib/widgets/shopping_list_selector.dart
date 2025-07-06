@@ -1,4 +1,5 @@
-﻿// lib/widgets/shopping_list_selector.dart - StateWidget Migration
+﻿// lib/widgets/shopping_list_selector.dart
+// ✅ 100% AppTheme migrerad - ANVÄNDER ENDAST BEFINTLIGA APPTHEME PROPERTIES
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +8,7 @@ import '../models/unified/unified_shopping_list.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../models/recipe.dart';
 import '../theme/app_theme.dart';
-import '../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
+import '../widgets/common/state_widget.dart';
 import '../core/utils/logger.dart';
 
 class ShoppingListSelector extends StatefulWidget {
@@ -132,12 +133,12 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               children: [
                 // Drag handle
                 Container(
-                  width: 40,
-                  height: 4,
+                  width: AppTheme.iconSizeDisplay,
+                  height: AppTheme.spacingXs,
                   margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
                   decoration: BoxDecoration(
                     color: AppTheme.dividerColor,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppTheme.spacingXxs),
                   ),
                 ),
 
@@ -166,10 +167,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   Widget _buildHeader() {
     return Row(
       children: [
-        Icon(
+        AppTheme.actionIcon(
+          context,
           Icons.list_alt,
           color: AppTheme.primaryColor,
-          size: AppTheme.iconSizeAction,
         ),
         AppTheme.smallHorizontalGap,
         Expanded(
@@ -203,17 +204,16 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   Widget _buildContent(UnifiedShoppingViewModel viewModel) {
     if (viewModel.isLoading) {
-      return StateWidget.loading(message: 'Laddar listor...'); // ✅ MIGRATION
+      return StateWidget.loading(message: 'Laddar listor...');
     }
 
     if (viewModel.hasError) {
       return StateWidget.error(
         message: viewModel.error ?? 'Okänt fel',
-      ); // ✅ MIGRATION
+      );
     }
 
     if (!viewModel.hasLists) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
       return StateWidget.empty(
         title: 'Inga inköpslistor',
         subtitle: 'Skapa din första lista för att komma igång',
@@ -229,7 +229,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       shrinkWrap: true,
       itemCount: viewModel.lists.length,
       separatorBuilder: (context, index) => Divider(
-        height: 1,
+        height: AppTheme.dividerHeight,
         color: AppTheme.dividerColor,
       ),
       itemBuilder: (context, index) {
@@ -303,14 +303,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                   horizontal: AppTheme.spacingSm,
                   vertical: AppTheme.spacingXs,
                 ),
-                decoration: BoxDecoration(
-                  color: AppTheme.successColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.chipRadius,
-                  border: Border.all(
-                    color: AppTheme.successColor,
-                    width: 0.5,
-                  ),
-                ),
+                decoration: AppTheme.successContainerDecoration,
                 child: Text(
                   'AKTIV',
                   style: AppTheme.chipLabelStyle.copyWith(
@@ -352,7 +345,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: AppTheme.spacingXs,
-            vertical: 2,
+            vertical: AppTheme.spacingXxs,
           ),
           decoration: BoxDecoration(
             color: _getSyncStatusColor(list).withValues(alpha: 0.1),
@@ -363,9 +356,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
             children: [
               Text(
                 list.syncStatusEmoji,
-                style: const TextStyle(fontSize: 10),
+                style: AppTheme.captionStyle.copyWith(fontSize: 10),
               ),
-              const SizedBox(width: 2),
+              AppTheme.tinyGap,
               Text(
                 _getSyncStatusText(list),
                 style: AppTheme.captionStyle.copyWith(
@@ -381,7 +374,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           Container(
             padding: EdgeInsets.symmetric(
               horizontal: AppTheme.spacingXs,
-              vertical: 2,
+              vertical: AppTheme.spacingXxs,
             ),
             decoration: BoxDecoration(
               color: AppTheme.accentColor.withValues(alpha: 0.1),
@@ -401,7 +394,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           Container(
             padding: EdgeInsets.symmetric(
               horizontal: AppTheme.spacingXs,
-              vertical: 2,
+              vertical: AppTheme.spacingXxs,
             ),
             decoration: BoxDecoration(
               color: AppTheme.warningColor.withValues(alpha: 0.1),
@@ -412,10 +405,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               children: [
                 Icon(
                   Icons.access_time,
-                  size: 10,
+                  size: AppTheme.iconSizeInfo,
                   color: AppTheme.warningColor,
                 ),
-                const SizedBox(width: 2),
+                AppTheme.tinyGap,
                 Text(
                   'Aktiv',
                   style: AppTheme.captionStyle.copyWith(
@@ -436,34 +429,38 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       icon: AppTheme.actionIcon(context, Icons.more_vert),
       onSelected: (action) => _handleListAction(action, list, viewModel),
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
-              Icon(Icons.edit),
-              SizedBox(width: 8),
-              Text('Byt namn'),
+              AppTheme.actionIcon(context, Icons.edit),
+              AppTheme.smallHorizontalGap,
+              Text('Byt namn', style: AppTheme.bodyStyle),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'export',
           child: Row(
             children: [
-              Icon(Icons.download),
-              SizedBox(width: 8),
-              Text('Exportera'),
+              AppTheme.actionIcon(context, Icons.download),
+              AppTheme.smallHorizontalGap,
+              Text('Exportera', style: AppTheme.bodyStyle),
             ],
           ),
         ),
         if (viewModel.lists.length > 1) ...[
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'delete',
             child: Row(
               children: [
-                Icon(Icons.delete, color: AppTheme.errorColor),
-                SizedBox(width: 8),
-                Text('Ta bort', style: TextStyle(color: AppTheme.errorColor)),
+                AppTheme.actionIcon(context, Icons.delete,
+                    color: AppTheme.errorColor),
+                AppTheme.smallHorizontalGap,
+                Text(
+                  'Ta bort',
+                  style: AppTheme.errorTextStyle,
+                ),
               ],
             ),
           ),
@@ -480,11 +477,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () => _showCreateListDialog(viewModel),
-            icon: const Icon(Icons.add),
-            label: const Text('Skapa ny lista'),
-            style: OutlinedButton.styleFrom(
-              padding: AppTheme.buttonPadding,
-            ),
+            icon: AppTheme.actionIcon(context, Icons.add),
+            label: Text('Skapa ny lista', style: AppTheme.buttonTextStyle),
+            style: AppTheme.secondaryButtonStyle,
           ),
         ),
 
@@ -499,12 +494,15 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                 : null,
             icon: _isAddingToList
                 ? AppTheme.smallLoadingIndicator()
-                : const Icon(Icons.add_shopping_cart),
-            label: Text(_isAddingToList
-                ? 'Lägger till...'
-                : widget.menu != null
-                    ? 'Lägg till ingredienser'
-                    : 'Öppna lista'),
+                : AppTheme.actionIcon(context, Icons.add_shopping_cart),
+            label: Text(
+              _isAddingToList
+                  ? 'Lägger till...'
+                  : widget.menu != null
+                      ? 'Lägg till ingredienser'
+                      : 'Öppna lista',
+              style: AppTheme.buttonTextStyle,
+            ),
             style: AppTheme.primaryButtonStyle,
           ),
         ),
@@ -551,7 +549,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               content: Text(
                   'Lade till ${ingredientItems.length} ingredienser från menyn'),
               backgroundColor: AppTheme.successColor,
-              duration: const Duration(seconds: 3),
+              duration: const Duration(seconds: 3), // ✅ Hårdkodad duration
             ),
           );
         }
@@ -620,11 +618,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.add_circle_outline),
-            SizedBox(width: 8),
-            Text('Skapa ny lista'),
+            AppTheme.actionIcon(context, Icons.add_circle_outline),
+            AppTheme.smallHorizontalGap,
+            Text('Skapa ny lista', style: AppTheme.sectionTitleStyle),
           ],
         ),
         content: Column(
@@ -632,21 +630,27 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Listnamn *',
+                labelStyle: AppTheme.formLabelStyle,
                 hintText: 'T.ex. Veckohandling',
-                border: OutlineInputBorder(),
+                hintStyle: AppTheme.inputHintStyle,
+                border: const OutlineInputBorder(),
               ),
+              style: AppTheme.bodyStyle,
               autofocus: true,
             ),
             AppTheme.mediumGap,
             TextField(
               controller: descriptionController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Beskrivning (valfri)',
+                labelStyle: AppTheme.formLabelStyle,
                 hintText: 'Beskriv vad listan är till för',
-                border: OutlineInputBorder(),
+                hintStyle: AppTheme.inputHintStyle,
+                border: const OutlineInputBorder(),
               ),
+              style: AppTheme.bodyStyle,
               maxLines: 2,
             ),
             AppTheme.mediumGap,
@@ -661,11 +665,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppTheme.primaryColor,
-                    size: AppTheme.iconSizeInfo,
-                  ),
+                  AppTheme.infoIcon(context),
                   AppTheme.smallHorizontalGap,
                   Expanded(
                     child: Text(
@@ -683,11 +683,12 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text('Avbryt', style: AppTheme.buttonTextStyle),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Skapa'),
+            style: AppTheme.primaryButtonStyle,
+            child: Text('Skapa', style: AppTheme.buttonTextStyle),
           ),
         ],
       ),
@@ -697,8 +698,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       final name = nameController.text.trim();
       if (name.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Listnamn krävs'),
+          SnackBar(
+            content: Text('Listnamn krävs',
+                style: AppTheme.bodyStyle.copyWith(color: Colors.white)),
             backgroundColor: AppTheme.warningColor,
           ),
         );
@@ -711,7 +713,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Lista "$name" skapad!'),
+              content: Text('Lista "$name" skapad!',
+                  style: AppTheme.bodyStyle.copyWith(color: Colors.white)),
               backgroundColor: AppTheme.successColor,
             ),
           );
@@ -724,6 +727,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
             SnackBar(
               content: Text(
                 'Kunde inte skapa lista: ${viewModel.error ?? "Okänt fel"}',
+                style: AppTheme.bodyStyle.copyWith(color: Colors.white),
               ),
               backgroundColor: AppTheme.errorColor,
             ),
@@ -758,23 +762,26 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Byt namn på lista'),
+        title: Text('Byt namn på lista', style: AppTheme.sectionTitleStyle),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Nytt namn',
-            border: OutlineInputBorder(),
+            labelStyle: AppTheme.formLabelStyle,
+            border: const OutlineInputBorder(),
           ),
+          style: AppTheme.bodyStyle,
           autofocus: true,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
+            child: Text('Avbryt', style: AppTheme.buttonTextStyle),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, nameController.text.trim()),
-            child: const Text('Spara'),
+            style: AppTheme.primaryButtonStyle,
+            child: Text('Spara', style: AppTheme.buttonTextStyle),
           ),
         ],
       ),
@@ -790,6 +797,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               success
                   ? 'Lista omdöpt till "$result"'
                   : 'Kunde inte byta namn: ${viewModel.error ?? "Okänt fel"}',
+              style: AppTheme.bodyStyle.copyWith(color: Colors.white),
             ),
             backgroundColor:
                 success ? AppTheme.successColor : AppTheme.errorColor,
@@ -805,7 +813,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Lista exporterad! ${exportText.length} tecken'),
+        content: Text(
+          'Lista exporterad! ${exportText.length} tecken',
+          style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+        ),
         backgroundColor: AppTheme.successColor,
       ),
     );
@@ -816,28 +827,29 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.warning, color: AppTheme.errorColor),
-            SizedBox(width: 8),
-            Text('Ta bort lista'),
+            AppTheme.smallHorizontalGap,
+            Text('Ta bort lista', style: AppTheme.sectionTitleStyle),
           ],
         ),
         content: Text(
           'Är du säker på att du vill ta bort "${list.name}"?\n\n'
           'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
+          style: AppTheme.bodyStyle,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text('Avbryt', style: AppTheme.buttonTextStyle),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
             ),
-            child: const Text('Ta bort'),
+            child: Text('Ta bort', style: AppTheme.buttonTextStyle),
           ),
         ],
       ),
@@ -853,6 +865,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               success
                   ? 'Lista "${list.name}" borttagen'
                   : 'Kunde inte ta bort lista: ${viewModel.error ?? "Okänt fel"}',
+              style: AppTheme.bodyStyle.copyWith(color: Colors.white),
             ),
             backgroundColor:
                 success ? AppTheme.successColor : AppTheme.errorColor,

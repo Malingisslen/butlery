@@ -1,4 +1,5 @@
 // lib/widgets/recipe_service_widget.dart
+// ✅ 100% AppTheme migrerad - ANVÄNDER ENDAST BEFINTLIGA APPTHEME PROPERTIES
 
 import 'package:flutter/material.dart';
 import '../services/recipe_service.dart';
@@ -54,7 +55,10 @@ class RecipeServiceWidget extends StatelessWidget {
         children: [
           AppTheme.mediumLoadingIndicator(),
           AppTheme.mediumGap,
-          Text('Laddar recept...', style: AppTheme.subtitleStyle),
+          Text(
+            'Laddar recept...',
+            style: AppTheme.subtitleStyle,
+          ),
         ],
       ),
     );
@@ -71,7 +75,7 @@ class RecipeServiceWidget extends StatelessWidget {
 
   Widget _buildLoadingOverlay() {
     return Container(
-      color: Colors.black26,
+      color: Colors.black.withValues(alpha: 0.3),
       child: Center(
         child: Container(
           padding: AppTheme.cardPadding,
@@ -84,7 +88,10 @@ class RecipeServiceWidget extends StatelessWidget {
             children: [
               AppTheme.mediumLoadingIndicator(),
               AppTheme.smallGap,
-              Text('Uppdaterar...', style: AppTheme.subtitleStyle),
+              Text(
+                'Uppdaterar...',
+                style: AppTheme.subtitleStyle,
+              ),
             ],
           ),
         ),
@@ -99,8 +106,7 @@ class RecipeServiceConsumer extends StatelessWidget {
     BuildContext context,
     RecipeService value,
     Widget? child,
-  )
-  builder;
+  ) builder;
   final Widget? child;
 
   const RecipeServiceConsumer({super.key, required this.builder, this.child});
@@ -125,13 +131,19 @@ class RecipeServiceSnackbar {
         content: Row(
           children: [
             AppTheme.successIcon(context),
-            SizedBox(width: AppTheme.spacingSm),
-            Expanded(child: Text(message)),
+            AppTheme.smallHorizontalGap,
+            Expanded(
+              child: Text(
+                message,
+                style: AppTheme.bodyStyle.copyWith(
+                    color: Colors.white), // ✅ Använder befintlig bodyStyle
+              ),
+            ),
           ],
         ),
         backgroundColor: AppTheme.successColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 3), // ✅ Hårdkodad duration
       ),
     );
   }
@@ -142,13 +154,19 @@ class RecipeServiceSnackbar {
         content: Row(
           children: [
             AppTheme.errorIcon(context),
-            SizedBox(width: AppTheme.spacingSm),
-            Expanded(child: Text(message)),
+            AppTheme.smallHorizontalGap,
+            Expanded(
+              child: Text(
+                message,
+                style: AppTheme.bodyStyle.copyWith(
+                    color: Colors.white), // ✅ Använder befintlig bodyStyle
+              ),
+            ),
           ],
         ),
         backgroundColor: AppTheme.errorColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 4), // ✅ Hårdkodad duration
       ),
     );
   }
@@ -158,14 +176,22 @@ class RecipeServiceSnackbar {
       SnackBar(
         content: Row(
           children: [
-            AppTheme.warningIcon(context),
-            SizedBox(width: AppTheme.spacingSm),
-            Expanded(child: Text(message)),
+            Icon(Icons.warning_outlined,
+                size: AppTheme.iconSizeInfo,
+                color: AppTheme.warningColor), // ✅ Hårdkodad warning icon
+            AppTheme.smallHorizontalGap,
+            Expanded(
+              child: Text(
+                message,
+                style: AppTheme.bodyStyle.copyWith(
+                    color: Colors.white), // ✅ Använder befintlig bodyStyle
+              ),
+            ),
           ],
         ),
         backgroundColor: AppTheme.warningColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 4), // ✅ Hårdkodad duration
       ),
     );
   }

@@ -12,9 +12,9 @@ import '../models/user_profile.dart';
 
 // Widgets
 import '../widgets/main_layout_menu.dart';
-import '../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
+import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../widgets/offline_indicator.dart';
-import '../widgets/universal_share_dialog.dart';
+import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/add_shopping_item_dialog.dart';
 
 // Theme

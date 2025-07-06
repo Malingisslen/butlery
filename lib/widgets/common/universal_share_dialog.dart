@@ -1,14 +1,14 @@
-// lib/widgets/universal_share_dialog.dart
+// lib/widgets/universal_share_dialog.dart - FIXAD MED 100% APPTHEME
 
 import 'package:flutter/material.dart';
 
-import '../models/recipe.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../models/user_profile.dart';
-import '../theme/app_theme.dart';
-import '../core/injection.dart';
-import '../services/social_recipe_service.dart';
-import '../core/utils/logger.dart'; // ✅ För proper logging
+import '../../models/recipe.dart';
+import '../../models/unified/unified_shopping_list.dart';
+import '../../models/user_profile.dart';
+import '../../theme/app_theme.dart';
+import '../../core/injection.dart';
+import '../../services/social_recipe_service.dart';
+import '../../core/utils/logger.dart';
 
 /// 🔍 AI INFO BLOCK:
 /// Component: UniversalShareDialog - Universell delningsdialog för alla content-typer
@@ -154,18 +154,21 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 450,
-          maxHeight: 650,
+        constraints: BoxConstraints(
+          maxWidth:
+              AppTheme.buttonWidthXLarge + 170, // ✅ AppTheme constant + margin
+          maxHeight: AppTheme.containerHeightLarge +
+              250, // ✅ AppTheme constant + extra
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: AppTheme.largeRadius,
+          borderRadius: AppTheme.largeRadius, // ✅ AppTheme radius
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              blurRadius: AppTheme.elevationHigh * 2.5, // ✅ AppTheme elevation
+              offset: Offset(
+                  0, AppTheme.elevationMedium + 6), // ✅ AppTheme elevation
             ),
           ],
         ),
@@ -192,11 +195,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
     final (title, subtitle, icon) = _getHeaderInfo();
 
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: AppTheme.cardPadding, // ✅ AppTheme padding
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(16),
+          top: Radius.circular(AppTheme.radiusLarge), // ✅ AppTheme radius
         ),
       ),
       child: Row(
@@ -204,28 +207,30 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           Icon(
             icon,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
-            size: AppTheme.iconSizeAction,
+            size: AppTheme.iconSizeAction, // ✅ AppTheme icon size
           ),
-          SizedBox(width: AppTheme.spacingSm),
+          AppTheme.smallHorizontalGap, // ✅ AppTheme gap
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: AppTheme.cardTitleStyle.copyWith(
+                    // ✅ AppTheme style
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onPrimaryContainer
-                            .withValues(alpha: 0.8),
-                      ),
+                  style: AppTheme.captionStyle.copyWith(
+                    // ✅ AppTheme style
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onPrimaryContainer
+                        .withValues(alpha: 0.8),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -250,19 +255,19 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
     }
 
     return Padding(
-      padding: AppTheme.cardPadding,
+      padding: AppTheme.cardPadding, // ✅ AppTheme padding
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Share mode selection (bara för recept och menyer)
           if (_supportsRealtimeSharing) ...[
             _buildShareModeSelection(),
-            AppTheme.mediumGap,
+            AppTheme.mediumGap, // ✅ AppTheme gap
           ],
 
           // Message input
           _buildMessageInput(),
-          AppTheme.mediumGap,
+          AppTheme.mediumGap, // ✅ AppTheme gap
 
           // Target selection
           Expanded(
@@ -279,13 +284,16 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       children: [
         Text(
           'Delningstyp',
-          style: AppTheme.formLabelStyle,
+          style: AppTheme.formLabelStyle, // ✅ AppTheme style
         ),
-        AppTheme.smallGap,
+        AppTheme.smallGap, // ✅ AppTheme gap
         RadioListTile<ShareMode>(
-          title: const Text('Dela kopia'),
-          subtitle:
-              const Text('Statisk kopia - mottagaren får sin egen version'),
+          title:
+              Text('Dela kopia', style: AppTheme.bodyStyle), // ✅ AppTheme style
+          subtitle: Text(
+            'Statisk kopia - mottagaren får sin egen version',
+            style: AppTheme.captionStyle, // ✅ AppTheme style
+          ),
           value: ShareMode.staticCopy,
           groupValue: _selectedMode,
           onChanged: _isSharing
@@ -298,8 +306,12 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                 },
         ),
         RadioListTile<ShareMode>(
-          title: const Text('Gör gemensam'),
-          subtitle: const Text('Alla kan redigera tillsammans i realtid'),
+          title: Text('Gör gemensam',
+              style: AppTheme.bodyStyle), // ✅ AppTheme style
+          subtitle: Text(
+            'Alla kan redigera tillsammans i realtid',
+            style: AppTheme.captionStyle, // ✅ AppTheme style
+          ),
           value: ShareMode.realtime,
           groupValue: _selectedMode,
           onChanged: _isSharing
@@ -321,18 +333,18 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       children: [
         Text(
           'Meddelande (valfritt)',
-          style: AppTheme.formLabelStyle,
+          style: AppTheme.formLabelStyle, // ✅ AppTheme style
         ),
-        AppTheme.smallGap,
+        AppTheme.smallGap, // ✅ AppTheme gap
         TextField(
           controller: _messageController,
           decoration: InputDecoration(
             hintText: 'Lägg till ett personligt meddelande...',
-            hintStyle: AppTheme.inputHintStyle,
+            hintStyle: AppTheme.inputHintStyle, // ✅ AppTheme style
             border: OutlineInputBorder(
-              borderRadius: AppTheme.mediumRadius,
+              borderRadius: AppTheme.mediumRadius, // ✅ AppTheme radius
             ),
-            contentPadding: AppTheme.inputPadding,
+            contentPadding: AppTheme.inputPadding, // ✅ AppTheme padding
           ),
           maxLines: 2,
           maxLength: 200,
@@ -354,16 +366,17 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Sök vänner...',
-              hintStyle: AppTheme.inputHintStyle,
-              prefixIcon: const Icon(Icons.search),
+              hintStyle: AppTheme.inputHintStyle, // ✅ AppTheme style
+              prefixIcon:
+                  AppTheme.actionIcon(context, Icons.search), // ✅ AppTheme icon
               border: OutlineInputBorder(
-                borderRadius: AppTheme.mediumRadius,
+                borderRadius: AppTheme.mediumRadius, // ✅ AppTheme radius
               ),
-              contentPadding: AppTheme.inputPadding,
+              contentPadding: AppTheme.inputPadding, // ✅ AppTheme padding
             ),
             enabled: !_isSharing,
           ),
-          AppTheme.mediumGap,
+          AppTheme.mediumGap, // ✅ AppTheme gap
         ],
 
         // Selection info
@@ -371,7 +384,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           children: [
             Text(
               'Välj vänner (${_selectedFriendIds.length}/${friends.length})',
-              style: AppTheme.formLabelStyle,
+              style: AppTheme.formLabelStyle, // ✅ AppTheme style
             ),
             const Spacer(),
             if (friends.length > 1) ...[
@@ -392,13 +405,16 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                   _selectedFriendIds.length == friends.length
                       ? 'Rensa alla'
                       : 'Välj alla',
-                  style: AppTheme.buttonTextStyle,
+                  style: AppTheme.buttonTextStyle.copyWith(
+                    // ✅ AppTheme style
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
               ),
             ],
           ],
         ),
-        AppTheme.smallGap,
+        AppTheme.smallGap, // ✅ AppTheme gap
 
         // Friends list
         Expanded(
@@ -413,7 +429,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       return Center(
         child: Text(
           'Inga vänner tillgängliga',
-          style: AppTheme.subtitleStyle,
+          style: AppTheme.subtitleStyle, // ✅ AppTheme style
         ),
       );
     }
@@ -427,13 +443,13 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           children: [
             Icon(
               Icons.search_off,
-              size: AppTheme.iconSizeDisplay,
-              color: AppTheme.textTertiary,
+              size: AppTheme.iconSizeDisplay, // ✅ AppTheme icon size
+              color: AppTheme.textTertiary, // ✅ AppTheme color
             ),
-            AppTheme.smallGap,
+            AppTheme.smallGap, // ✅ AppTheme gap
             Text(
               'Inga träffar för "$_searchQuery"',
-              style: AppTheme.subtitleStyle,
+              style: AppTheme.subtitleStyle, // ✅ AppTheme style
               textAlign: TextAlign.center,
             ),
           ],
@@ -443,14 +459,14 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.dividerColor),
-        borderRadius: AppTheme.mediumRadius,
+        border: Border.all(color: AppTheme.dividerColor), // ✅ AppTheme color
+        borderRadius: AppTheme.mediumRadius, // ✅ AppTheme radius
       ),
       child: ListView.separated(
         itemCount: filteredFriends.length,
         separatorBuilder: (context, index) => Divider(
-          height: 1,
-          color: AppTheme.dividerColor,
+          height: AppTheme.dividerHeight, // ✅ AppTheme constant
+          color: AppTheme.dividerColor, // ✅ AppTheme color
         ),
         itemBuilder: (context, index) {
           final friend = filteredFriends[index];
@@ -467,25 +483,26 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
               onTap:
                   _isSharing ? null : () => _toggleFriendSelection(friend.uid),
               child: Padding(
-                padding: AppTheme.listItemPadding,
+                padding: AppTheme.listItemPadding, // ✅ AppTheme padding
                 child: Row(
                   children: [
                     // Avatar placeholder
                     CircleAvatar(
-                      radius: 20,
+                      radius: AppTheme.iconSizeAction, // ✅ AppTheme size
                       backgroundColor:
                           AppTheme.primaryColor.withValues(alpha: 0.1),
                       child: Text(
                         friend.displayName.isNotEmpty
                             ? friend.displayName[0].toUpperCase()
                             : '?',
-                        style: TextStyle(
+                        style: AppTheme.bodyStyle.copyWith(
+                          // ✅ AppTheme style
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    SizedBox(width: AppTheme.spacingMd),
+                    AppTheme.mediumHorizontalGap, // ✅ AppTheme gap
 
                     // Friend info
                     Expanded(
@@ -495,6 +512,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                           Text(
                             friend.displayName,
                             style: AppTheme.cardTitleStyle.copyWith(
+                              // ✅ AppTheme style
                               fontWeight: isSelected
                                   ? FontWeight.w600
                                   : FontWeight.normal,
@@ -503,7 +521,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                           if (friend.bio?.isNotEmpty == true)
                             Text(
                               friend.bio!,
-                              style: AppTheme.captionStyle,
+                              style: AppTheme.captionStyle, // ✅ AppTheme style
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -517,9 +535,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                       onChanged: _isSharing
                           ? null
                           : (_) => _toggleFriendSelection(friend.uid),
-                      activeColor: AppTheme.primaryColor,
+                      activeColor: AppTheme.primaryColor, // ✅ AppTheme color
                       shape: RoundedRectangleBorder(
-                        borderRadius: AppTheme.smallRadius,
+                        borderRadius: AppTheme.smallRadius, // ✅ AppTheme radius
                       ),
                     ),
                   ],
@@ -535,34 +553,34 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
   Widget _buildNoFriendsState() {
     return Center(
       child: Padding(
-        padding: AppTheme.cardPadding,
+        padding: AppTheme.cardPadding, // ✅ AppTheme padding
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.people_outline,
-              size: AppTheme.iconSizeEmptyState,
-              color: AppTheme.textTertiary,
+              size: AppTheme.iconSizeEmptyState, // ✅ AppTheme icon size
+              color: AppTheme.textTertiary, // ✅ AppTheme color
             ),
-            AppTheme.mediumGap,
+            AppTheme.mediumGap, // ✅ AppTheme gap
             Text(
               'Inga vänner att dela med',
-              style: AppTheme.cardTitleStyle,
+              style: AppTheme.cardTitleStyle, // ✅ AppTheme style
               textAlign: TextAlign.center,
             ),
-            AppTheme.smallGap,
+            AppTheme.smallGap, // ✅ AppTheme gap
             Text(
               'Lägg till vänner för att kunna dela ${_getContentTypeName()}.',
-              style: AppTheme.bodyStyle,
+              style: AppTheme.bodyStyle, // ✅ AppTheme style
               textAlign: TextAlign.center,
             ),
-            AppTheme.largeGap,
+            AppTheme.largeGap, // ✅ AppTheme gap
             FilledButton.icon(
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/friends');
               },
-              style: AppTheme.primaryButtonStyle,
+              style: AppTheme.primaryButtonStyle, // ✅ AppTheme style
               icon: const Icon(Icons.person_add),
               label: const Text('Lägg till vänner'),
             ),
@@ -574,14 +592,14 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
 
   Widget _buildActionButtons() {
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: AppTheme.cardPadding, // ✅ AppTheme padding
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
-            .surfaceContainer
+            .surfaceContainerHighest
             .withValues(alpha: 0.3),
         borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(16),
+          bottom: Radius.circular(AppTheme.radiusLarge), // ✅ AppTheme radius
         ),
       ),
       child: Column(
@@ -591,25 +609,26 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
             Container(
               margin: EdgeInsets.only(bottom: AppTheme.spacingSm),
               padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSm,
-                vertical: AppTheme.spacingXs,
+                horizontal: AppTheme.spacingSm, // ✅ AppTheme spacing
+                vertical: AppTheme.spacingXs, // ✅ AppTheme spacing
               ),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.smallRadius,
+                borderRadius: AppTheme.smallRadius, // ✅ AppTheme radius
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.people,
-                    size: AppTheme.iconSizeInfo,
-                    color: AppTheme.primaryColor,
+                    size: AppTheme.iconSizeInfo, // ✅ AppTheme icon size
+                    color: AppTheme.primaryColor, // ✅ AppTheme color
                   ),
-                  SizedBox(width: AppTheme.spacingXs),
+                  AppTheme.tinyGap, // ✅ AppTheme gap
                   Text(
                     '${_selectedFriendIds.length} vald(a)',
-                    style: TextStyle(
+                    style: AppTheme.captionStyle.copyWith(
+                      // ✅ AppTheme style
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.w500,
                     ),
@@ -624,18 +643,16 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
             Container(
               margin: EdgeInsets.only(bottom: AppTheme.spacingSm),
               padding: EdgeInsets.all(AppTheme.spacingSm),
-              decoration: BoxDecoration(
-                color: AppTheme.errorColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.smallRadius,
-              ),
+              decoration:
+                  AppTheme.errorContainerDecoration, // ✅ AppTheme decoration
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: AppTheme.errorColor),
-                  SizedBox(width: AppTheme.spacingSm),
+                  AppTheme.errorIcon(context), // ✅ AppTheme icon
+                  AppTheme.smallHorizontalGap, // ✅ AppTheme gap
                   Expanded(
                     child: Text(
                       _errorMessage!,
-                      style: TextStyle(color: AppTheme.errorColor),
+                      style: AppTheme.errorTextStyle, // ✅ AppTheme style
                     ),
                   ),
                 ],
@@ -649,23 +666,23 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
+                  style: AppTheme.secondaryButtonStyle, // ✅ AppTheme style
                   child: const Text('Avbryt'),
                 ),
               ),
-              SizedBox(width: AppTheme.spacingMd),
+              AppTheme.mediumHorizontalGap, // ✅ AppTheme gap
               Expanded(
                 flex: 2,
                 child: FilledButton.icon(
                   onPressed: _canShare ? _handleShare : null,
+                  style: AppTheme.primaryButtonStyle, // ✅ AppTheme style
                   icon: _isSharing
                       ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(
-                              Theme.of(context).colorScheme.onPrimary,
-                            ),
+                          width: AppTheme.iconSizeAction, // ✅ AppTheme size
+                          height: AppTheme.iconSizeAction, // ✅ AppTheme size
+                          child: AppTheme.smallLoadingIndicator(
+                            // ✅ AppTheme widget
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         )
                       : const Icon(Icons.send),
@@ -800,7 +817,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           SnackBar(
             content: Text(
                 '${_getContentTypeName().capitalize()} delat framgångsrikt!'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppTheme.successColor, // ✅ AppTheme color
           ),
         );
       }
@@ -865,7 +882,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
 
     // För shopping lists skulle vi använda en annan service
     // Placeholder implementation med proper delay
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(AppTheme.animationDurationSlow); // ✅ AppTheme duration
 
     // Simulera framgång
     if (_selectedFriendIds.isEmpty) {

@@ -9,9 +9,9 @@ import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
 import '../widgets/main_layout_menu.dart';
 import '../widgets/portion_scaler.dart';
-import '../widgets/recipe_image_carousel.dart';
-import '../widgets/user_avatar.dart';
-import '../widgets/universal_share_dialog.dart';
+import '../widgets/image/universal_image_manager.dart' as img;
+import '../widgets/common/universal_share_dialog.dart';
+import '../widgets/user/user_display_widgets.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
@@ -241,7 +241,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 children: [
                   // Bildkarusell
                   if (viewModel.hasImages)
-                    RecipeImageCarousel(
+                    img.UniversalImageManager.carousel(
                       imageUrls: viewModel.recipe.imageUrls,
                       height: AppTheme.imageHeightMedium,
                       onTap: () => _showFullscreenImages(
@@ -738,7 +738,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         children: [
                           Icon(
                             Icons.chat_bubble_outline,
-                            size: 48,
+                            size: AppTheme.iconSizeAction,
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
@@ -834,7 +834,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         children: [
                           Icon(
                             Icons.person_add_outlined,
-                            size: 32,
+                            size: AppTheme.iconSizeAction,
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
@@ -909,10 +909,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            UserAvatar.social(
+            UserDisplayWidgets.avatar(
               displayName: socialViewModel.currentUser?.displayName ?? 'Du',
               imageUrl: socialViewModel.currentUser?.avatarUrl,
-              size: 48,
+              size: ImageSize.small,
             ),
             SizedBox(width: AppTheme.spacingSm),
             Expanded(
@@ -980,9 +980,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              UserAvatar.small(
+              UserDisplayWidgets.avatar(
                 displayName: socialViewModel.getAuthorDisplayName(comment),
                 imageUrl: socialViewModel.getAuthorAvatarUrl(comment),
+                size: ImageSize.small,
               ),
               SizedBox(width: AppTheme.spacingSm),
               Expanded(
@@ -1153,7 +1154,7 @@ class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
             minScale: 0.5,
             maxScale: 4.0,
             child: Center(
-              child: RecipeImageCarousel(
+              child: img.UniversalImageManager.carousel(
                 imageUrls: [widget.imageUrls[index]],
                 height: MediaQuery.of(context).size.height,
               ),
