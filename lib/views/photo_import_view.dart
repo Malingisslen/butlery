@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/photo_import_viewmodel.dart';
-import '../widgets/action_button.dart';
+import '../widgets/common/utility_components.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
-/// ✨ UPPDATERAD FOTO-OCR VY MED BÅDE KAMERA OCH GALLERI
+/// ✨ MIGRERAD FOTO-OCR VY - Nu med UtilityComponents
 class PhotoImportView extends StatelessWidget {
   const PhotoImportView({super.key});
 
@@ -127,14 +127,14 @@ class _PhotoImportViewContent extends StatelessWidget {
             ),
             AppTheme.mediumGap,
 
-            // Välj bild-knapp
-            ActionButton.primary(
+            // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+            UtilityComponents.primaryButton(
+              context,
               label: viewModel.hasImage ? 'Välj ny bild' : 'Välj bild',
               icon: Icons.add_photo_alternate,
-              onPressed:
-                  viewModel.isProcessing
-                      ? null
-                      : () => _showImageSourceDialog(context),
+              onPressed: viewModel.isProcessing
+                  ? null
+                  : () => _showImageSourceDialog(context),
               isExpanded: true,
             ),
             AppTheme.mediumGap,
@@ -167,7 +167,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                 ),
               ),
               AppTheme.mediumGap,
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'Gå vidare till redigera',
                 icon: Icons.arrow_forward,
                 onPressed: () => _navigateToTextImport(context, viewModel),

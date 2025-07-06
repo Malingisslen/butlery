@@ -4,7 +4,7 @@
 /// Component: StateWidget - Universal state handler for all app states
 /// File: lib/widgets/state_widget.dart
 /// Quick Guide: Replaces multiple state widgets with one flexible component
-/// Dependencies IN: AppTheme, Flutter material, action_button.dart
+/// Dependencies IN: AppTheme, Flutter material, UtilityComponents
 /// Dependencies OUT: All views that need state display
 /// Data flow: State type + data → Visual representation
 /// State management: Stateless, receives state from parent
@@ -19,7 +19,7 @@
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../action_button.dart';
+import '../common/utility_components.dart';
 
 /// Enum för olika state-typer
 enum StateType {
@@ -449,7 +449,9 @@ class StateWidget extends StatelessWidget {
             customAction!,
           ] else if (actionLabel != null && onAction != null) ...[
             AppTheme.largeGap,
-            ActionButton.primary(
+            // ✅ UPPDATERAD: ActionButton.primary → UtilityComponents.primaryButton
+            UtilityComponents.primaryButton(
+              context,
               label: actionLabel!,
               onPressed: onAction,
               icon: emptyConfig.actionIcon,
@@ -514,8 +516,7 @@ class StateWidget extends StatelessWidget {
         );
       case EmptyStateVariant.noTargets:
         return _EmptyStateConfig(
-          icon: Icons
-              .group_add, // ✅ FIX: Använd befintlig ikon istället för Icons.target
+          icon: Icons.group_add,
           title: 'Inga destinationer tillgängliga',
           subtitle:
               'Lägg till vänner eller grupper för att kunna dela innehåll',
@@ -586,7 +587,9 @@ class StateWidget extends StatelessWidget {
           // Retry knapp
           if (actionLabel != null && onAction != null) ...[
             AppTheme.largeGap,
-            ActionButton.primary(
+            // ✅ UPPDATERAD: ActionButton.primary → UtilityComponents.primaryButton
+            UtilityComponents.primaryButton(
+              context,
               label: actionLabel!,
               onPressed: onAction,
               icon: Icons.refresh,
@@ -635,7 +638,9 @@ class StateWidget extends StatelessWidget {
           // Action knapp
           if (actionLabel != null && onAction != null) ...[
             AppTheme.largeGap,
-            ActionButton.primary(
+            // ✅ UPPDATERAD: ActionButton.primary → UtilityComponents.primaryButton
+            UtilityComponents.primaryButton(
+              context,
               label: actionLabel!,
               onPressed: onAction,
             ),
@@ -676,7 +681,9 @@ class StateWidget extends StatelessWidget {
           ],
           if (actionLabel != null && onAction != null) ...[
             AppTheme.largeGap,
-            ActionButton.outlined(
+            // ✅ UPPDATERAD: ActionButton.outlined → UtilityComponents.outlinedButton
+            UtilityComponents.outlinedButton(
+              context,
               label: actionLabel!,
               onPressed: onAction,
             ),
@@ -719,7 +726,9 @@ class StateWidget extends StatelessWidget {
           ],
           if (actionLabel != null && onAction != null) ...[
             AppTheme.largeGap,
-            ActionButton.primary(
+            // ✅ UPPDATERAD: ActionButton.primary → UtilityComponents.primaryButton
+            UtilityComponents.primaryButton(
+              context,
               label: actionLabel!,
               onPressed: onAction,
             ),

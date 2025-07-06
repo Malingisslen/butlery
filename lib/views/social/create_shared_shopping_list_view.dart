@@ -5,26 +5,11 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/create_shared_list_viewmodel.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../services/friend_categories_service.dart';
-import '../../widgets/friend_category_manager.dart';
+import '../../widgets/common/utility_components.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Create Shared Shopping List View - 100% Pure MVVM
-/// File: views/social/create_shared_shopping_list_view.dart
-/// Quick Guide: Perfect MVVM implementation med dedicated ViewModel
-/// Dependencies IN: CreateSharedListViewModel, FriendsViewModel, FriendCategoriesService
-/// Dependencies OUT: Shared shopping list creation med 100% MVVM separation
-/// Data flow: User actions → ViewModel → Service → UI state updates
-/// State management: MultiProvider med alla social services + dedicated ViewModel
-/// Purpose: 100% MVVM-compliant social sharing - ZERO business logic i View
-/// Common issues: ✅ LÖST: Complete separation, proper providers, AppTheme 100%
-/// Performance: ⚡ Optimized med lazy providers och efficient ViewModel
-/// Analytics: ✅ Complete tracking via ViewModel
-/// Code smells: ✅ 100% clean - perfect MVVM pattern
-/// Connected to: CreateSharedListViewModel, social services
-/// Used in phases: 18.4
-
+/// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
   const CreateSharedShoppingListView({super.key});
 
@@ -219,15 +204,14 @@ class _CreateSharedShoppingListViewState
           style: AppTheme.sectionTitleStyle,
         ),
         AppTheme.mediumGap,
-
-        // ✅ FIXED: AppTheme constants instead of magic numbers
         Container(
           height: AppTheme.containerHeightLarge,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
             borderRadius: AppTheme.mediumRadius,
           ),
-          child: FriendCategoryManager(
+          // ✅ MIGRERAD: FriendCategoryManager → UtilityComponents.friendCategoryManager
+          child: UtilityComponents.friendCategoryManager(
             selectedFriendIds: viewModel.selectedFriendIds,
             onSelectionChanged: viewModel.updateSelectedFriends,
             title: '',
@@ -299,7 +283,7 @@ class _CreateSharedShoppingListViewState
       child: SafeArea(
         child: Row(
           children: [
-            // ✅ PURE MVVM: Selection summary kommer från ViewModel
+            // Selection summary från ViewModel
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -323,7 +307,6 @@ class _CreateSharedShoppingListViewState
             ),
             AppTheme.mediumHorizontalGap,
 
-            // ✅ FIXED: AppTheme constant instead of magic number
             SizedBox(
               width: AppTheme.buttonWidthMedium,
               child: FilledButton.icon(
@@ -342,7 +325,7 @@ class _CreateSharedShoppingListViewState
     );
   }
 
-  // ✅ PURE MVVM: Business logic delegeras till ViewModel
+  // Pure MVVM: Business logic delegeras till ViewModel
   Future<void> _createSharedList(
       BuildContext context, CreateSharedListViewModel viewModel) async {
     // Store context reference before async operation
@@ -350,7 +333,7 @@ class _CreateSharedShoppingListViewState
 
     final listId = await viewModel.createSharedList();
 
-    // ✅ FIXED: Use mounted check without using context across async gaps
+    // Use mounted check without using context across async gaps
     if (mounted && listId != null) {
       // Success - return listId using stored navigator
       navigator.pop(listId);

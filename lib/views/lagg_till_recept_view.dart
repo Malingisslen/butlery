@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/common/layout_components.dart';
-import '../widgets/action_button.dart';
+import '../widgets/common/utility_components.dart';
 import '../theme/app_theme.dart';
 
 // Exit dialog funktion
@@ -34,7 +34,7 @@ Future<void> _showExitDialog(BuildContext context) async {
   }
 }
 
-/// ✨ 100% THEME-CENTRALISERAD LÄGG TILL RECEPT VY
+/// ✨ 100% THEME-CENTRALISERAD LÄGG TILL RECEPT VY - MIGRERAD TILL UtilityComponents
 class LaggTillReceptView extends StatelessWidget {
   const LaggTillReceptView({super.key});
 
@@ -52,67 +52,80 @@ class LaggTillReceptView extends StatelessWidget {
         }
       },
       child: LayoutComponents.mainMenu(
-        // ✅ UPPDATERAD WIDGET
         currentIndex: 1,
         body: Padding(
-          padding: AppTheme.sectionPadding, // ✅ SEMANTISK PADDING (24px)
+          padding: AppTheme.sectionPadding,
           child: ListView(
             children: [
               Text(
                 'Hur vill du lägga till ditt recept?',
-                style: AppTheme.sectionTitleStyle, // ✅ SEMANTISK STYLE
+                style: AppTheme.sectionTitleStyle,
               ),
-              AppTheme.extraLargeGap, // ✅ SEMANTISK GAP (32px)
-              // Använder ActionButton för konsistens
-              ActionButton.primary(
+              AppTheme.extraLargeGap,
+
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'INSTAGRAM',
                 icon: Icons.camera_alt,
                 onPressed: () => _navigate(context, '/franSocialaMedier'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
 
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'FACEBOOK',
                 icon: Icons.facebook,
                 onPressed: () => _navigate(context, '/franSocialaMedier'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
 
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'TIKTOK',
                 icon: Icons.music_note,
                 onPressed: () => _navigate(context, '/franSocialaMedier'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
 
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'FOTO',
                 icon: Icons.photo,
                 onPressed: () => _navigate(context, '/photoImport'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
 
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'LÄNK',
                 icon: Icons.link,
                 onPressed: () => _navigate(context, '/importViaUrl'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
 
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'SKRIV SJÄLV',
                 icon: Icons.edit,
                 onPressed: () => _navigate(context, '/skrivSjalv'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap, // ✅ SEMANTISK GAP
+              AppTheme.mediumGap,
 
-              ActionButton.primary(
+              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+              UtilityComponents.primaryButton(
+                context,
                 label: 'ARKIV',
                 icon: Icons.archive,
                 onPressed: () => _navigate(context, '/importFranArkiv'),

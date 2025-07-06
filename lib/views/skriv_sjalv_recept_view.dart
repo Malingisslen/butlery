@@ -1,5 +1,4 @@
 // lib/views/skriv_sjalv_recept_view.dart
-// UPPDATERAD VERSION: Förenklad bildväljare med smart galleri-hantering
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,13 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/theme/app_theme.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
-import '../widgets/action_button.dart';
+import '../widgets/common/utility_components.dart';
 import '../widgets/image/universal_image_manager.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
 import '../services/auth_service.dart';
 
-/// Skapa nytt recept view - nu med förenklad bildväljare
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
   final bool isTemplate;
@@ -61,20 +59,13 @@ class _SkrivSjalvReceptViewContentState
 
     if (mounted) {
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recept sparat!'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
+        // ✅ MIGRERAD: Använd UtilityComponents.showSuccessSnackbar
+        UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
         Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.error ?? 'Kunde inte spara recept'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
+        UtilityComponents.showErrorSnackbar(
+            context, viewModel.error ?? 'Kunde inte spara recept');
       }
     }
   }
@@ -87,7 +78,6 @@ class _SkrivSjalvReceptViewContentState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
             Container(
               padding: EdgeInsets.all(AppTheme.spacingMd),
               child: Text(
@@ -96,8 +86,6 @@ class _SkrivSjalvReceptViewContentState
               ),
             ),
             const Divider(height: 1),
-
-            // Ta foto
             ListTile(
               leading: Icon(
                 Icons.photo_camera,
@@ -107,8 +95,6 @@ class _SkrivSjalvReceptViewContentState
               subtitle: const Text('Använd kameran'),
               onTap: () => Navigator.pop(context, 'camera'),
             ),
-
-            // Galleri-alternativ (smart automatisk val)
             ListTile(
               leading: Icon(
                 Icons.photo_library,
@@ -122,10 +108,7 @@ class _SkrivSjalvReceptViewContentState
               ),
               onTap: () => Navigator.pop(context, 'gallery'),
             ),
-
             const Divider(height: 1),
-
-            // URL-alternativ som backup
             ListTile(
               leading: Icon(
                 Icons.link,
@@ -135,8 +118,6 @@ class _SkrivSjalvReceptViewContentState
               subtitle: const Text('För bilder från webben'),
               onTap: () => Navigator.pop(context, 'url'),
             ),
-
-            // Avbryt
             ListTile(
               leading: const Icon(Icons.close),
               title: const Text('Avbryt'),
@@ -153,22 +134,17 @@ class _SkrivSjalvReceptViewContentState
       case 'camera':
         await viewModel.pickAndUploadImage(context, source: ImageSource.camera);
         break;
-
       case 'gallery':
-        // Smart galleri-val: Om man kan lägga till flera, använd pickMultiple
         if (viewModel.canAddMoreImages && viewModel.imageUrls.length < 4) {
           await viewModel.pickMultipleImages(context);
         } else {
-          // Bara en bild kvar - skicka med ImageSource.gallery direkt
           await viewModel.pickAndUploadImage(
             context,
             source: ImageSource.gallery,
           );
         }
         break;
-
       case 'url':
-        // URL-dialog (behålls som backup)
         final controller = TextEditingController();
         final url = await showDialog<String>(
           context: context,
@@ -202,14 +178,8 @@ class _SkrivSjalvReceptViewContentState
             viewModel.addImageUrl(url);
           } else {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Ogiltig URL. Använd en fullständig URL som börjar med http:// eller https://',
-                  ),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              UtilityComponents.showErrorSnackbar(context,
+                  'Ogiltig URL. Använd en fullständig URL som börjar med http:// eller https://');
             }
           }
         }
@@ -254,7 +224,7 @@ class _SkrivSjalvReceptViewContentState
                   ),
                   AppTheme.mediumGap,
 
-                  // Bildhantering med RecipeImageManager
+                  // Bildhantering med UniversalImageManager
                   UniversalImageManager.recipeEdit(
                     imageUrls: viewModel.imageUrls,
                     onAddImage: viewModel.addImageUrl,
@@ -395,32 +365,20 @@ class _SkrivSjalvReceptViewContentState
             ),
           ),
 
-          // Loading overlay
+          // Loading overlay med UtilityComponents
           if (viewModel.isSaving)
-            Container(
-              color: Colors.black26,
-              child: Center(
-                child: Container(
-                  padding: AppTheme.cardPadding,
-                  decoration: AppTheme.cardDecoration,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppTheme.mediumLoadingIndicator(),
-                      AppTheme.smallGap,
-                      Text('Sparar recept...', style: AppTheme.subtitleStyle),
-                    ],
-                  ),
-                ),
-              ),
+            UtilityComponents.loadingOverlay(
+              isLoading: true,
+              loadingMessage: 'Sparar recept...',
             ),
         ],
       ),
 
-      // Spara-knappen
+      // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
       bottomNavigationBar: Padding(
         padding: AppTheme.screenPadding,
-        child: ActionButton.primary(
+        child: UtilityComponents.primaryButton(
+          context,
           label: 'Spara recept',
           icon: Icons.save,
           onPressed:
