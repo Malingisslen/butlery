@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/injection.dart';
+import '../../widgets/common/social_components.dart';
 import '../../models/user_profile.dart';
 import '../../viewmodels/add_members_to_group_viewmodel.dart';
-import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 
@@ -250,10 +250,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       elevation: AppTheme.elevationLow,
       shape: RoundedRectangleBorder(borderRadius: AppTheme.mediumRadius),
       child: ListTile(
-        leading: UserDisplayWidgets.avatar(
-          size: ImageSize.medium, // AppTheme.iconSizeAction motsvarar medium
-          imageUrl: friend.avatarUrl,
-          displayName: friend.displayName,
+        leading: SocialComponents.avatar(
+          user: friend,
+          size: ImageSize.medium,
         ),
         title: Text(
           friend.displayName,

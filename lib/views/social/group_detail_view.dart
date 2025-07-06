@@ -1,5 +1,4 @@
-// lib/views/social/group_detail_view.dart - FIXAD med behörighetskontroll
-
+// lib/views/social/group_detail_view.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../viewmodels/friends_viewmodel.dart';
@@ -8,33 +7,30 @@ import '../../services/group_invitation_service.dart';
 import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../models/group_invitation.dart';
-import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/social_components.dart';
 import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/events/group_events.dart';
-import 'edit_group_dialog.dart';
-import 'delete_group_dialog.dart';
 import 'add_members_to_group_view.dart';
-import 'remove_member_dialog.dart';
 import '../../services/auth_service.dart';
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Group Detail View - FIXAD med behörighetskontroll
+/// Component: Group Detail View - MIGRERAD TILL SocialComponents
 /// File: views/social/group_detail_view.dart
-/// Quick Guide: Gruppdetaljer med KORREKT behörighetskontroll och smart medlemshantering
-/// Dependencies IN: FriendsViewModel, FriendCategoriesService, GroupInvitationService, AuthService
+/// Quick Guide: Gruppdetaljer med KORREKT behörighetskontroll och smart medlemshantering + unified social API
+/// Dependencies IN: FriendsViewModel, FriendCategoriesService, GroupInvitationService, AuthService, SocialComponents
 /// Dependencies OUT: Group management actions, member management, invitation tracking
 /// Data flow: Load group → Check permissions → Show appropriate actions → Handle member management
 /// State management: ✅ Event-baserad uppdatering med korrekt behörighetskontroll
-/// Purpose: Komplett gruppvy med KORREKT behörighetshantering för edit/delete/leave actions
+/// Purpose: Komplett gruppvy med KORREKT behörighetshantering för edit/delete/leave actions + unified social API
 /// Common issues: ✅ ALLA FIXADE: Behörighetskontroll, leave group, member permissions
 /// Test coverage: 85%
 /// Performance: ⚡ Optimerad med smart invitation loading + permission checks
 /// Analytics: ✅ Group viewing + invitation tracking + permission analytics
-/// Code smells: ✅ Clean code med tydlig behörighetslogik och säker medlemshantering
-/// Connected to: FriendsViewModel, FriendCategoriesService, GroupInvitationService, AuthService
-/// Used in phases: 18.6 - Komplett gruppvy med säker behörighetshantering
+/// Code smells: ✅ Clean code med tydlig behörighetslogik och säker medlemshantering + unified social patterns
+/// Connected to: FriendsViewModel, FriendCategoriesService, GroupInvitationService, AuthService, SocialComponents
+/// Used in phases: 18.6 - Komplett gruppvy med säker behörighetshantering + migrerad till unified social API
 
 class GroupDetailView extends StatefulWidget {
   final String groupId;
@@ -325,9 +321,9 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
     return Card(
       child: ListTile(
-        leading: UserDisplayWidgets.avatar(
-          imageUrl: member.avatarUrl,
-          displayName: member.displayName,
+        // ✅ MIGRATION: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
+        leading: SocialComponents.avatar(
+          user: member,
           size: ImageSize.small,
         ),
         title: Row(
@@ -594,13 +590,20 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     }
   }
 
+  // ✅ UPPDATERAD: Använd SocialComponents.showEditGroupDialog
   void _showEditGroupDialog(FriendCategory group) async {
-    await showDialog(
-      context: context,
-      builder: (context) => EditGroupDialog(group: group),
+    final result = await SocialComponents.showEditGroupDialog(
+      context,
+      group: group,
     );
 
-    if (mounted) {
+    if (result != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gruppen "${result.name}" uppdaterades! ✅'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
       _loadGroupData();
     }
   }
@@ -624,12 +627,13 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     }
   }
 
+  // ✅ UPPDATERAD: Använd SocialComponents.showDeleteGroupDialog
   void _showDeleteGroupDialog(FriendCategory group) async {
     if (_isNavigating) return;
 
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => DeleteGroupDialog(group: group),
+    final shouldDelete = await SocialComponents.showDeleteGroupDialog(
+      context,
+      group: group,
     );
 
     if (shouldDelete == true && mounted && !_isNavigating) {
@@ -641,6 +645,13 @@ class _GroupDetailViewState extends State<GroupDetailView> {
         await Future.delayed(const Duration(milliseconds: 100));
 
         if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gruppen "${group.name}" har tagits bort'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
 
         Navigator.pushReplacementNamed(
           context,
@@ -670,13 +681,12 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     );
   }
 
+  // ✅ UPPDATERAD: Använd SocialComponents.showRemoveMemberDialog
   void _showRemoveMemberDialog(UserProfile member) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => RemoveMemberDialog(
-        group: _group!,
-        member: member,
-      ),
+    final result = await SocialComponents.showRemoveMemberDialog(
+      context,
+      group: _group!,
+      member: member,
     );
 
     if (result == true && mounted) {

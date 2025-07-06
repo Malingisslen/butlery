@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
@@ -11,10 +11,10 @@ import '../../core/injection.dart';
 import '../../models/friend_request.dart';
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Friend Requests Notification Center
+/// Component: Friend Requests Notification Center - MIGRERAD TILL SocialComponents
 /// File: views/social/friend_requests_view.dart
 /// Quick Guide: Dedikerad vy för alla typer av vänskapsförfrågningar med riktig användardata
-/// Dependencies IN: FriendsViewModel, UserAvatar
+/// Dependencies IN: FriendsViewModel, SocialComponents (istället för UserAvatar)
 /// Dependencies OUT: Friend request management, notification badges
 /// Data flow: All friend requests → Load user profiles → Categorized display → Batch actions
 /// State management: Konsumerar FriendsViewModel med Provider
@@ -24,8 +24,8 @@ import '../../models/friend_request.dart';
 /// Performance: ⚡ Optimized för stora mängder requests med cached user profiles
 /// Analytics: ✅ Request management actions tracking
 /// Code smells: ✅ Clean separation av request types, proper user data integration
-/// Connected to: FriendsViewModel, UserService, notification system
-/// Used in phases: 18
+/// Connected to: FriendsViewModel, UserService, notification system, SocialComponents
+/// Used in phases: 18 - MIGRERAD till unified social API
 
 class FriendRequestsView extends StatelessWidget {
   const FriendRequestsView({super.key});
@@ -85,7 +85,6 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
         viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
     return LayoutComponents.mainMenu(
-      // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
       currentIndex: null,
       body: Scaffold(
         appBar: AppBar(
@@ -377,7 +376,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     );
   }
 
-  /// Inkommande förfrågningskort - ✅ UPPDATERAD med riktig användardata
+  /// Inkommande förfrågningskort - ✅ MIGRERAD till SocialComponents
   Widget _buildIncomingRequestCard(
     FriendRequest request,
     FriendsViewModel viewModel,
@@ -414,14 +413,13 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
                   ),
                   SizedBox(width: AppTheme.spacingSm),
 
-                  // ✅ UPPDATERAD: User avatar med riktig data
+                  // ✅ MIGRATION 1/2: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
                   Stack(
                     children: [
-                      UserDisplayWidgets.avatar(
+                      SocialComponents.avatar(
                         size: ImageSize.small,
                         imageUrl: avatarUrl,
-                        displayName:
-                            'Användare ${request.fromUserId.substring(0, 6)}...',
+                        displayName: displayName,
                       ),
                       // Online indicator
                       if (isOnline)
@@ -546,7 +544,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     );
   }
 
-  /// Skickade förfrågningskort - ✅ UPPDATERAD med riktig användardata
+  /// Skickade förfrågningskort - ✅ MIGRERAD till SocialComponents
   Widget _buildSentRequestCard(
     FriendRequest request,
     FriendsViewModel viewModel,
@@ -616,14 +614,13 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 
               SizedBox(width: AppTheme.spacingSm),
 
-              // ✅ UPPDATERAD: User avatar med riktig data
+              // ✅ MIGRATION 2/2: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
               Stack(
                 children: [
-                  UserDisplayWidgets.avatar(
+                  SocialComponents.avatar(
                     size: ImageSize.small,
                     imageUrl: avatarUrl,
-                    displayName:
-                        'Användare ${request.fromUserId.substring(0, 6)}...',
+                    displayName: displayName,
                   ),
                   // Online indicator
                   if (isOnline)
