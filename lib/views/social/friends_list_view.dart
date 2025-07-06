@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../services/group_invitation_service.dart';
 import '../../models/group_invitation.dart';
-import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/search_filter_widget.dart';
 import '../../widgets/common/state_widget.dart';
@@ -15,7 +15,6 @@ import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
 import '../../models/friend_category.dart';
 import '../../services/friend_categories_service.dart';
-import 'create_group_dialog.dart';
 import 'group_detail_view.dart';
 
 class FriendsListView extends StatelessWidget {
@@ -97,7 +96,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
             groupInvitationService.pendingNotificationsCount;
 
         return LayoutComponents.mainMenu(
-          // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
           currentIndex: null,
           body: Scaffold(
             appBar: AppBar(
@@ -610,9 +608,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
             arguments: friend,
           );
         },
-        leading: UserDisplayWidgets.avatar(
-          imageUrl: friend.avatarUrl,
-          displayName: friend.displayName,
+        // ✅ MIGRATION 1/3: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
+        leading: SocialComponents.avatar(
+          user: friend,
           size: ImageSize.small,
         ),
         title: Text(
@@ -678,7 +676,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           children: [
             Row(
               children: [
-                UserDisplayWidgets.avatar(
+                // ✅ MIGRATION 2/3: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
+                SocialComponents.avatar(
                   size: ImageSize.small,
                   imageUrl: viewModel.getAvatarUrlForUser(request.fromUserId),
                   displayName:
@@ -758,7 +757,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
     return Card(
       child: ListTile(
-        leading: UserDisplayWidgets.avatar(
+        // ✅ MIGRATION 3/3: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
+        leading: SocialComponents.avatar(
           size: ImageSize.small,
           imageUrl: viewModel.getAvatarUrlForUser(user.uid),
           displayName: viewModel.getDisplayNameForUser(user.uid),
@@ -874,14 +874,18 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
+  // ✅ UPPDATERAD: Använd SocialComponents.showCreateGroupDialog
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
-    await showDialog(
-      context: context,
-      builder: (context) => const CreateGroupDialog(),
-    );
+    final result = await SocialComponents.showCreateGroupDialog(context);
 
-    if (mounted) {
-      setState(() {});
+    if (result != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gruppen "${result.name}" skapades! 🎉'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
+      setState(() {}); // Uppdatera vyn
     }
   }
 
