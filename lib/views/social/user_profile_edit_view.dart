@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../../widgets/user/user_display_widgets.dart';
-import '../../widgets/main_layout_menu.dart';
+import '../../widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/validators/form_validators.dart';
@@ -221,7 +221,8 @@ class _UserProfileEditViewContentState
           }
         }
       },
-      child: MainLayoutMenu(
+      child: LayoutComponents.mainMenu(
+        // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
         currentIndex: null,
         body: Scaffold(
           appBar: AppBar(

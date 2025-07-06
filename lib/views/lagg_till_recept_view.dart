@@ -1,8 +1,8 @@
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // För SystemNavigator
-import '../widgets/main_layout_menu.dart';
+import 'package:flutter/services.dart';
+import '../widgets/common/layout_components.dart';
 import '../widgets/action_button.dart';
 import '../theme/app_theme.dart';
 
@@ -10,24 +10,23 @@ import '../theme/app_theme.dart';
 Future<void> _showExitDialog(BuildContext context) async {
   final shouldExit = await showDialog<bool>(
     context: context,
-    builder:
-        (context) => AlertDialog(
-          title: const Text('Avsluta Butlery?'),
-          content: const Text('Vill du verkligen avsluta appen?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Avbryt'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.errorColor,
-              ),
-              child: const Text('Avsluta'),
-            ),
-          ],
+    builder: (context) => AlertDialog(
+      title: const Text('Avsluta Butlery?'),
+      content: const Text('Vill du verkligen avsluta appen?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Avbryt'),
         ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppTheme.errorColor,
+          ),
+          child: const Text('Avsluta'),
+        ),
+      ],
+    ),
   );
 
   if (shouldExit == true && context.mounted) {
@@ -52,7 +51,8 @@ class LaggTillReceptView extends StatelessWidget {
           _showExitDialog(context);
         }
       },
-      child: MainLayoutMenu(
+      child: LayoutComponents.mainMenu(
+        // ✅ UPPDATERAD WIDGET
         currentIndex: 1,
         body: Padding(
           padding: AppTheme.sectionPadding, // ✅ SEMANTISK PADDING (24px)

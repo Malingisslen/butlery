@@ -11,13 +11,12 @@ import '../models/user_profile.dart';
 // ViewModels
 import '../viewmodels/menu_viewmodel.dart';
 
-// Widgets
+// Widgets - MIGRATED: Using LayoutComponents
 import '../widgets/common/content_card.dart';
-import '../widgets/main_layout_menu.dart';
-import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
+import '../widgets/common/layout_components.dart'; // ✅ MIGRATED: New import
+import '../widgets/common/state_widget.dart';
 import '../widgets/common/universal_share_dialog.dart';
-import '../widgets/menu_persistence_dialogs.dart';
-import '../widgets/common/input_components.dart'; // ✅ NY IMPORT
+import '../widgets/common/input_components.dart';
 
 // Theme
 import '../theme/app_theme.dart';
@@ -30,7 +29,7 @@ import '../core/utils/logger.dart';
 import '../services/share_service.dart';
 import '../services/friends_service.dart';
 
-/// ✨ UPPDATERAD VY MED MENU -> SHOPPING INTEGRATION
+/// ✨ MIGRATED VY MED LAYOUTCOMPONENTS
 class VeckomenyView extends StatelessWidget {
   const VeckomenyView({super.key});
 
@@ -83,7 +82,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
-  // ✨ NY: Visa spara meny-dialog
+  // ✅ MIGRATED: Använd LayoutComponents.showSaveMenuDialog
   Future<void> _showSaveMenuDialog() async {
     final viewModel = context.read<MenuViewModel>();
 
@@ -97,23 +96,20 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       return;
     }
 
-    await showDialog(
-      context: context,
-      builder: (context) => SaveMenuDialog(viewModel: viewModel),
+    await LayoutComponents.showSaveMenuDialog(
+      context,
+      viewModel: viewModel,
+      availableFriends: _friendsService.friends,
     );
   }
 
-  // ✨ NY: Visa ladda meny bottom sheet
+  // ✅ MIGRATED: Använd LayoutComponents.showLoadMenuDialog
   Future<void> _showLoadMenuBottomSheet() async {
     final viewModel = context.read<MenuViewModel>();
 
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => LoadMenuBottomSheet(viewModel: viewModel),
+    await LayoutComponents.showLoadMenuDialog(
+      context,
+      viewModel: viewModel,
     );
   }
 
@@ -232,7 +228,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           _showExitDialog(context);
         }
       },
-      child: MainLayoutMenu(
+      // ✅ MIGRATED: Använd LayoutComponents.mainMenu istället för MainLayoutMenu
+      child: LayoutComponents.mainMenu(
         currentIndex: 2,
         title: 'Veckomeny',
         actions: [

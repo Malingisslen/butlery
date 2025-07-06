@@ -1,4 +1,4 @@
-// lib/views/unified_shopping_view.dart - StateWidget Migration
+// lib/views/unified_shopping_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,12 +10,11 @@ import '../viewmodels/unified_shopping_viewmodel.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../models/user_profile.dart';
 
-// Widgets
-import '../widgets/main_layout_menu.dart';
-import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
-import '../widgets/offline_indicator.dart';
+// Widgets - MIGRATED: Using LayoutComponents
+import '../widgets/common/layout_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../widgets/common/universal_share_dialog.dart';
-import '../widgets/common/input_components.dart'; // ✅ NY IMPORT
+import '../widgets/common/input_components.dart';
 
 // Theme
 import '../theme/app_theme.dart';
@@ -53,7 +52,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: MainLayoutMenu(
+      // ✅ MIGRATED: Använd LayoutComponents.mainMenu istället för MainLayoutMenu
+      child: LayoutComponents.mainMenu(
         title: 'Inköpslistor',
         currentIndex: 3,
         actions: [
@@ -131,8 +131,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
           builder: (context, viewModel, child) {
             return Column(
               children: [
-                // Offline indicator
-                if (!viewModel.isOnline) const OfflineIndicator(),
+                // ✅ MIGRATED: Använd LayoutComponents.offlineIndicator
+                if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
 
                 // Lista header
                 _buildListHeader(viewModel),

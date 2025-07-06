@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../widgets/user/user_display_widgets.dart';
-import '../../widgets/main_layout_menu.dart';
-import '../../widgets/common/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
+import '../../widgets/common/layout_components.dart';
+import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/friend_request.dart';
@@ -84,7 +84,8 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     final totalRequests =
         viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
-    return MainLayoutMenu(
+    return LayoutComponents.mainMenu(
+      // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
       currentIndex: null,
       body: Scaffold(
         appBar: AppBar(
@@ -207,12 +208,10 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   /// Tab 1: Inkommande förfrågningar
   Widget _buildIncomingTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
-      return StateWidget.loading(
-          message: 'Laddar förfrågningar...'); // ✅ MIGRATION
+      return StateWidget.loading(message: 'Laddar förfrågningar...');
     }
 
     if (viewModel.incomingRequests.isEmpty) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
       return StateWidget.empty(
         title: 'Inga vänskapsförfrågningar',
         subtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
@@ -295,12 +294,10 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   /// Tab 2: Skickade förfrågningar
   Widget _buildSentTab(FriendsViewModel viewModel) {
     if (viewModel.isLoading && viewModel.sentRequests.isEmpty) {
-      return StateWidget.loading(
-          message: 'Laddar skickade förfrågningar...'); // ✅ MIGRATION
+      return StateWidget.loading(message: 'Laddar skickade förfrågningar...');
     }
 
     if (viewModel.sentRequests.isEmpty) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
       return StateWidget.empty(
         title: 'Inga skickade förfrågningar',
         subtitle: 'Förfrågningar du skickar till andra visas här.',

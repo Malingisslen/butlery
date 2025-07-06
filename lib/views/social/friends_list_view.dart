@@ -6,8 +6,8 @@ import '../../viewmodels/friends_viewmodel.dart';
 import '../../services/group_invitation_service.dart';
 import '../../models/group_invitation.dart';
 import '../../widgets/user/user_display_widgets.dart';
-import '../../widgets/main_layout_menu.dart';
-import '../../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
+import '../../widgets/common/layout_components.dart';
+import '../../widgets/common/search_filter_widget.dart';
 import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
@@ -45,7 +45,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     with TickerProviderStateMixin {
   late TabController _tabController;
   int _currentTabIndex = 0;
-  String _searchQuery = ''; // ✅ ERSATT: TextEditingController med String
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -96,7 +96,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         final pendingInvitationsCount =
             groupInvitationService.pendingNotificationsCount;
 
-        return MainLayoutMenu(
+        return LayoutComponents.mainMenu(
+          // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
           currentIndex: null,
           body: Scaffold(
             appBar: AppBar(
@@ -168,7 +169,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ),
                   ),
 
-                // ✅ NY: SearchFilterWidget för sök-tab (index 2)
+                // SearchFilterWidget för sök-tab (index 2)
                 if (_currentTabIndex == 2)
                   SearchFilterWidget.searchOnly(
                     searchQuery: _searchQuery,
@@ -298,9 +299,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       },
     );
   }
-
-  // ... (resten av metoderna förblir oförändrade)
-  // [Alla andra metoder från ursprungsfilen behålls som de är]
 
   Widget _buildGroupsTab(FriendCategoriesService categoriesService,
       GroupInvitationService groupInvitationService) {
@@ -450,8 +448,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       },
     );
   }
-
-  // ... [Alla andra helper-metoder från ursprungsfilen behålls]
 
   Widget _buildInvitationCard(
       GroupInvitation invitation, GroupInvitationService service) {
