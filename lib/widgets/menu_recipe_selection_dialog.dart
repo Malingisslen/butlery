@@ -4,7 +4,7 @@
 /// Component: MenuRecipeSelectionDialog - Recipe selection for menu categories
 /// File: lib/widgets/menu_recipe_selection_dialog.dart
 /// Quick Guide: Dialog for selecting recipes to add to menu categories
-/// Dependencies IN: Recipe model, ViewModels, AppTheme, StateWidget
+/// Dependencies IN: Recipe model, ViewModels, AppTheme, StateWidget, SearchFilterWidget
 /// Dependencies OUT: RealtimeMenuViewModel, recipe handlers
 /// Data flow: Category name → Recipe selection → Add to category
 /// State management: StatefulWidget with local selection state
@@ -21,7 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_list_viewmodel.dart';
-import '../widgets/search_bar.dart';
+import '../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
 import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
@@ -42,7 +42,7 @@ class MenuRecipeSelectionDialog extends StatefulWidget {
 
 class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
   final Set<String> _selectedRecipeIds = {};
-  String _searchQuery = '';
+  String _searchQuery = ''; // ✅ ERSATT: TextEditingController med String
 
   @override
   Widget build(BuildContext context) {
@@ -118,65 +118,53 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
 
     return Column(
       children: [
-        // Search section
-        Padding(
+        // ✅ NY: SearchFilterWidget för dialog-search
+        SearchFilterWidget.searchOnly(
+          searchQuery: _searchQuery,
+          onSearchChanged: (query) {
+            setState(() {
+              _searchQuery = query;
+            });
+          },
+          searchHint: 'Sök recept att lägga till...',
+          autofocus: true,
           padding: EdgeInsets.all(AppTheme.spacingMd),
-          child: AppSearchBar(
-            hintText: 'Sök recept att lägga till...',
-            onChanged: (query) {
-              setState(() {
-                _searchQuery = query;
-              });
-            },
-            onClear: () {
-              setState(() {
-                _searchQuery = '';
-              });
-            },
-          ),
+          showStats: true,
+          resultCount: filteredRecipes.length,
         ),
 
         // Results info and actions
-        if (_searchQuery.isNotEmpty || _selectedRecipeIds.isNotEmpty)
+        if (_selectedRecipeIds.isNotEmpty)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
             child: Row(
               children: [
-                if (_searchQuery.isNotEmpty)
-                  Text(
-                    '${filteredRecipes.length} av ${viewModel.recipes.length} recept',
-                    style: AppTheme.captionStyle,
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingXs,
+                    vertical: 2,
                   ),
-                if (_selectedRecipeIds.isNotEmpty) ...[
-                  if (_searchQuery.isNotEmpty) const Spacer(),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingXs,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: AppTheme.chipRadius,
-                    ),
-                    child: Text(
-                      '${_selectedRecipeIds.length} valda',
-                      style: AppTheme.captionStyle.copyWith(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: AppTheme.chipRadius,
+                  ),
+                  child: Text(
+                    '${_selectedRecipeIds.length} valda',
+                    style: AppTheme.captionStyle.copyWith(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
+                ),
                 const Spacer(),
-                if (_selectedRecipeIds.isNotEmpty)
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedRecipeIds.clear();
-                      });
-                    },
-                    child: const Text('Rensa val'),
-                  ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedRecipeIds.clear();
+                    });
+                  },
+                  child: const Text('Rensa val'),
+                ),
               ],
             ),
           ),
