@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../viewmodels/menu_viewmodel.dart';
-import '../widgets/state_widget.dart';
+import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 
 /// Dialog för att spara en meny med namn, kommentar OCH social sharing

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/group_invitations_viewmodel.dart';
 import '../../models/friend_category.dart';
-import '../../widgets/user_avatar.dart';
-import '../../widgets/state_widget.dart';
+import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 
@@ -275,7 +275,8 @@ class GroupInvitationsView extends StatelessWidget {
               padding: EdgeInsets.only(right: AppTheme.spacingSm),
               child: Column(
                 children: [
-                  UserAvatar.small(
+                  UserDisplayWidgets.avatar(
+                    size: ImageSize.small,
                     imageUrl: member.avatarUrl,
                     displayName: member.displayName,
                   ),

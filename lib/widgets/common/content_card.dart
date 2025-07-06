@@ -1,9 +1,9 @@
-// lib/widgets/content_card.dart
+// lib/widgets/content_card.dart - FIXAD MED 100% APPTHEME
 
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
-import '../theme/app_theme.dart';
-import 'cached_recipe_image.dart';
+import '../../models/recipe.dart';
+import '../../theme/app_theme.dart';
+import '../image/universal_image_manager.dart';
 
 /// 🔥 GENERISK KORTKOMPONENT SOM ERSÄTTER:
 /// - recipe_card.dart
@@ -99,7 +99,7 @@ class ContentCardAdapter {
 
       return Text(
         '$portionsText | $timeText',
-        style: AppTheme.metadataStyle,
+        style: AppTheme.metadataStyle, // ✅ AppTheme style
       );
     }
     return null;
@@ -118,15 +118,16 @@ class ContentCardAdapter {
             children: [
               Icon(
                 Icons.restaurant,
-                size: AppTheme.iconSizeSmall,
+                size: AppTheme.iconSizeSmall, // ✅ AppTheme constant
                 color: recipe.wasCookedRecently
-                    ? AppTheme.successColor
-                    : AppTheme.textSecondary,
+                    ? AppTheme.successColor // ✅ AppTheme color
+                    : AppTheme.textSecondary, // ✅ AppTheme color
               ),
-              SizedBox(width: AppTheme.spacingXs),
+              AppTheme.smallHorizontalGap, // ✅ AppTheme gap
               Text(
                 recipe.lastCookedText!,
                 style: AppTheme.captionStyle.copyWith(
+                  // ✅ AppTheme style
                   color: recipe.wasCookedRecently
                       ? AppTheme.successColor
                       : AppTheme.textSecondary,
@@ -143,7 +144,7 @@ class ContentCardAdapter {
       // Lägg till betyg
       if (recipe.rating != null) {
         if (statusWidgets.isNotEmpty) {
-          statusWidgets.add(SizedBox(height: AppTheme.spacingSm));
+          statusWidgets.add(AppTheme.smallGap); // ✅ AppTheme gap
         }
 
         statusWidgets.add(
@@ -161,8 +162,8 @@ class ContentCardAdapter {
               }
               return Icon(
                 icon,
-                size: AppTheme.iconSizeSmall,
-                color: AppTheme.starColor,
+                size: AppTheme.iconSizeSmall, // ✅ AppTheme constant
+                color: AppTheme.starColor, // ✅ AppTheme color
               );
             }),
           ),
@@ -172,14 +173,14 @@ class ContentCardAdapter {
       // Lägg till source URL indikator
       if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
         if (statusWidgets.isNotEmpty) {
-          statusWidgets.add(SizedBox(width: AppTheme.spacingXs));
+          statusWidgets.add(AppTheme.smallHorizontalGap); // ✅ AppTheme gap
         }
         statusWidgets.insert(
             0,
             Icon(
               Icons.link,
-              size: AppTheme.iconSizeInfo,
-              color: AppTheme.primaryColor,
+              size: AppTheme.iconSizeInfo, // ✅ AppTheme constant
+              color: AppTheme.primaryColor, // ✅ AppTheme color
             ));
       }
 
@@ -263,10 +264,10 @@ class ContentCard extends StatelessWidget {
     return RepaintBoundary(
       child: Container(
         margin: customMargin ?? _getDefaultMargin(),
-        decoration: _getCardDecoration(),
+        decoration: _getCardDecoration(context), // ✅ Pass context
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppTheme.extraLargeRadius,
+          borderRadius: AppTheme.extraLargeRadius, // ✅ AppTheme radius
           child: Padding(
             padding: customPadding ?? _getDefaultPadding(),
             child: _buildCardContent(context),
@@ -296,12 +297,12 @@ class ContentCard extends StatelessWidget {
         // Leading widget (om tillgänglig)
         if (leading != null) ...[
           leading!,
-          SizedBox(width: AppTheme.spacingMd),
+          AppTheme.mediumHorizontalGap, // ✅ AppTheme gap
         ],
 
         // Innehållsbild
         _buildContentImage(),
-        SizedBox(width: AppTheme.spacingMd),
+        AppTheme.mediumHorizontalGap, // ✅ AppTheme gap
 
         // Huvudinnehåll
         Expanded(
@@ -310,18 +311,18 @@ class ContentCard extends StatelessWidget {
             children: [
               // Titel och typ-indikator
               _buildTitleRow(context),
-              SizedBox(height: AppTheme.spacingSm - 2),
+              AppTheme.smallGap, // ✅ AppTheme gap
 
               // Metadata (portioner, tid etc.)
               if (adapter.getMetadataWidget() != null) ...[
                 adapter.getMetadataWidget()!,
-                SizedBox(height: AppTheme.spacingSm - 2),
+                AppTheme.smallGap, // ✅ AppTheme gap
               ],
 
               // Status widget (betyg, "senast tillagd" etc.)
               if (adapter.getStatusWidget() != null) ...[
                 adapter.getStatusWidget()!,
-                SizedBox(height: AppTheme.spacingSm),
+                AppTheme.mediumGap, // ✅ AppTheme gap
               ],
 
               // Beskrivning (om showFullDetails)
@@ -330,13 +331,11 @@ class ContentCard extends StatelessWidget {
                   adapter.displayDescription!.isNotEmpty) ...[
                 Text(
                   adapter.displayDescription!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
+                  style: AppTheme.subtitleStyle, // ✅ AppTheme style
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: AppTheme.spacingSm),
+                AppTheme.mediumGap, // ✅ AppTheme gap
               ],
 
               // Taggar (om showFullDetails)
@@ -351,7 +350,7 @@ class ContentCard extends StatelessWidget {
 
         // Trailing widget
         if (trailing != null) ...[
-          SizedBox(width: AppTheme.spacingSm),
+          AppTheme.smallHorizontalGap, // ✅ AppTheme gap
           trailing!,
         ],
       ],
@@ -364,8 +363,8 @@ class ContentCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Mindre bild för kompakt layout
-        _buildContentImage(size: 50),
-        SizedBox(width: AppTheme.spacingSm),
+        _buildContentImage(size: AppTheme.thumbnailSize), // ✅ AppTheme constant
+        AppTheme.smallHorizontalGap, // ✅ AppTheme gap
 
         // Endast titel och typ
         Expanded(
@@ -374,7 +373,7 @@ class ContentCard extends StatelessWidget {
             children: [
               _buildTitleRow(context),
               if (adapter.getMetadataWidget() != null) ...[
-                SizedBox(height: AppTheme.spacingXs),
+                AppTheme.tinyGap, // ✅ AppTheme gap
                 adapter.getMetadataWidget()!,
               ],
             ],
@@ -382,7 +381,7 @@ class ContentCard extends StatelessWidget {
         ),
 
         if (trailing != null) ...[
-          SizedBox(width: AppTheme.spacingSm),
+          AppTheme.smallHorizontalGap, // ✅ AppTheme gap
           trailing!,
         ],
       ],
@@ -396,10 +395,10 @@ class ContentCard extends StatelessWidget {
       children: [
         // Bild överst
         _buildContentImage(
-          aspectRatio: 16 / 9,
+          aspectRatio: AppTheme.imageAspectRatio, // ✅ AppTheme constant
           width: double.infinity,
         ),
-        SizedBox(height: AppTheme.spacingSm),
+        AppTheme.mediumGap, // ✅ AppTheme gap
 
         // Titel och metadata under
         Padding(
@@ -409,12 +408,12 @@ class ContentCard extends StatelessWidget {
             children: [
               Text(
                 adapter.displayTitle,
-                style: AppTheme.cardTitleStyle,
+                style: AppTheme.cardTitleStyle, // ✅ AppTheme style
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               if (adapter.getTypeIndicator() != null) ...[
-                SizedBox(height: AppTheme.spacingXs),
+                AppTheme.tinyGap, // ✅ AppTheme gap
                 adapter.getTypeIndicator()!,
               ],
             ],
@@ -432,13 +431,13 @@ class ContentCard extends StatelessWidget {
         Expanded(
           child: Text(
             adapter.displayTitle,
-            style: AppTheme.cardTitleStyle,
+            style: AppTheme.cardTitleStyle, // ✅ AppTheme style
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
         if (adapter.getTypeIndicator() != null) ...[
-          SizedBox(width: AppTheme.spacingSm),
+          AppTheme.smallHorizontalGap, // ✅ AppTheme gap
           adapter.getTypeIndicator()!,
         ],
       ],
@@ -453,23 +452,23 @@ class ContentCard extends StatelessWidget {
   }) {
     // För Recipe-typ, använd CachedRecipeImage
     if (adapter.type == ContentCardType.recipe && adapter.item is Recipe) {
-      return CachedRecipeImage(
+      return UniversalImageManager.cached(
         imageUrls: adapter.displayImageUrls,
-        size: size ?? AppTheme.recipeImageSize,
-        borderRadius: AppTheme.roundRadius,
+        size: size ?? AppTheme.recipeImageSize, // ✅ AppTheme constant
+        borderRadius: AppTheme.roundRadius, // ✅ AppTheme radius
       );
     }
 
     // För andra typer, bygg en generisk bildwidget
-    final imageSize = size ?? AppTheme.recipeImageSize;
+    final imageSize = size ?? AppTheme.recipeImageSize; // ✅ AppTheme constant
 
     return Container(
       width: width ?? imageSize,
       height: aspectRatio != null ? null : imageSize,
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: AppTheme.roundRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppTheme.backgroundColor, // ✅ AppTheme color
+        borderRadius: AppTheme.roundRadius, // ✅ AppTheme radius
+        border: Border.all(color: AppTheme.dividerColor), // ✅ AppTheme color
       ),
       child: aspectRatio != null
           ? AspectRatio(
@@ -497,8 +496,8 @@ class ContentCard extends StatelessWidget {
 
     return Icon(
       icon,
-      color: AppTheme.textTertiary,
-      size: AppTheme.iconSizeMedium,
+      color: AppTheme.textTertiary, // ✅ AppTheme color
+      size: AppTheme.iconSizeMedium, // ✅ AppTheme constant
     );
   }
 
@@ -509,11 +508,11 @@ class ContentCard extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: AppTheme.spacingSm - 2,
-      runSpacing: AppTheme.spacingXs,
+      spacing: AppTheme.spacingSm, // ✅ AppTheme spacing
+      runSpacing: AppTheme.spacingXs, // ✅ AppTheme spacing
       children: adapter.displayTags!
           .take(3)
-          .map((tag) => AppTheme.tagChip(tag))
+          .map((tag) => AppTheme.tagChip(tag)) // ✅ AppTheme widget
           .toList(),
     );
   }
@@ -523,13 +522,13 @@ class ContentCard extends StatelessWidget {
     switch (style) {
       case ContentCardStyle.compact:
         return EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingSm,
-          vertical: AppTheme.spacingXs,
+          horizontal: AppTheme.spacingSm, // ✅ AppTheme spacing
+          vertical: AppTheme.spacingXs, // ✅ AppTheme spacing
         );
       case ContentCardStyle.grid:
-        return EdgeInsets.all(AppTheme.spacingXs);
+        return EdgeInsets.all(AppTheme.spacingXs); // ✅ AppTheme spacing
       case ContentCardStyle.detailed:
-        return AppTheme.recipeCardMargin;
+        return AppTheme.recipeCardMargin; // ✅ AppTheme margin
     }
   }
 
@@ -538,18 +537,18 @@ class ContentCard extends StatelessWidget {
     switch (style) {
       case ContentCardStyle.compact:
         return EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingSm,
-          vertical: AppTheme.spacingSm,
+          horizontal: AppTheme.spacingSm, // ✅ AppTheme spacing
+          vertical: AppTheme.spacingSm, // ✅ AppTheme spacing
         );
       case ContentCardStyle.grid:
-        return EdgeInsets.all(AppTheme.spacingSm);
+        return EdgeInsets.all(AppTheme.spacingSm); // ✅ AppTheme spacing
       case ContentCardStyle.detailed:
-        return AppTheme.recipeCardPadding;
+        return AppTheme.recipeCardPadding; // ✅ AppTheme padding
     }
   }
 
   /// Card decoration
-  BoxDecoration _getCardDecoration() {
-    return AppTheme.recipeCardDecoration;
+  BoxDecoration _getCardDecoration(BuildContext context) {
+    return AppTheme.recipeCardDecoration; // ✅ AppTheme decoration
   }
 }

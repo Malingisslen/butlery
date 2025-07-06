@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// ✨ 100% THEME-CENTRALISERAD ÅTERANVÄNDBAR KNAPPKOMPONENT
 class ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -62,8 +61,7 @@ class ActionButton extends StatelessWidget {
     // Bygg knappens innehåll med bättre flex-hantering
     Widget buttonChild = Padding(
       padding: EdgeInsets.symmetric(
-        horizontal:
-            AppTheme.spacingXs, // Liten padding för att undvika overflow
+        horizontal: AppTheme.spacingXs,
       ),
       child: Row(
         mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
@@ -86,6 +84,7 @@ class ActionButton extends StatelessWidget {
             fit: isExpanded ? FlexFit.tight : FlexFit.loose,
             child: Text(
               effectiveLabel,
+              style: AppTheme.buttonTextStyle,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               textAlign: isExpanded ? TextAlign.center : TextAlign.start,
@@ -100,7 +99,7 @@ class ActionButton extends StatelessWidget {
       case ActionButtonStyle.primary:
         button = ElevatedButton(
           onPressed: effectiveOnPressed,
-          style: AppTheme.primaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
+          style: AppTheme.primaryButtonStyle,
           child: buttonChild,
         );
         break;
@@ -108,7 +107,6 @@ class ActionButton extends StatelessWidget {
         button = ElevatedButton(
           onPressed: effectiveOnPressed,
           style: AppTheme.primaryButtonStyle.copyWith(
-            // Baserad på primary men med egen styling om behövs
             backgroundColor: WidgetStateProperty.all(
               Theme.of(context).colorScheme.secondary,
             ),
@@ -119,7 +117,7 @@ class ActionButton extends StatelessWidget {
       case ActionButtonStyle.outlined:
         button = OutlinedButton(
           onPressed: effectiveOnPressed,
-          style: AppTheme.secondaryButtonStyle, // ✅ SEMANTISK BUTTON STYLE
+          style: AppTheme.secondaryButtonStyle,
           child: buttonChild,
         );
         break;

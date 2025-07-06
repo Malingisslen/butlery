@@ -8,8 +8,8 @@ import '../../services/group_invitation_service.dart';
 import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../models/group_invitation.dart';
-import '../../widgets/user_avatar.dart';
-import '../../widgets/state_widget.dart';
+import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/events/group_events.dart';
@@ -325,9 +325,10 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
     return Card(
       child: ListTile(
-        leading: UserAvatar.medium(
+        leading: UserDisplayWidgets.avatar(
           imageUrl: member.avatarUrl,
           displayName: member.displayName,
+          size: ImageSize.small,
         ),
         title: Row(
           children: [

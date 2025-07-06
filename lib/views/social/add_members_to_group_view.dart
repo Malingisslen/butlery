@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/injection.dart';
 import '../../models/user_profile.dart';
 import '../../viewmodels/add_members_to_group_viewmodel.dart';
-import '../../widgets/user_avatar.dart';
-import '../../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
+import '../../widgets/user/user_display_widgets.dart';
+import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 
 class AddMembersToGroupView extends StatefulWidget {
@@ -250,7 +250,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       elevation: AppTheme.elevationLow,
       shape: RoundedRectangleBorder(borderRadius: AppTheme.mediumRadius),
       child: ListTile(
-        leading: UserAvatar.medium(
+        leading: UserDisplayWidgets.avatar(
+          size: ImageSize.medium, // AppTheme.iconSizeAction motsvarar medium
           imageUrl: friend.avatarUrl,
           displayName: friend.displayName,
         ),

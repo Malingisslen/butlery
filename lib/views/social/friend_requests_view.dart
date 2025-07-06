@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../widgets/user_avatar.dart';
+import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/main_layout_menu.dart';
-import '../../widgets/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
+import '../../widgets/common/state_widget.dart'; // ✅ MIGRATION: StateWidget istället för EmptyState
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/friend_request.dart';
@@ -420,9 +420,11 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
                   // ✅ UPPDATERAD: User avatar med riktig data
                   Stack(
                     children: [
-                      UserAvatar.medium(
+                      UserDisplayWidgets.avatar(
+                        size: ImageSize.small,
                         imageUrl: avatarUrl,
-                        displayName: displayName,
+                        displayName:
+                            'Användare ${request.fromUserId.substring(0, 6)}...',
                       ),
                       // Online indicator
                       if (isOnline)
@@ -620,9 +622,11 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
               // ✅ UPPDATERAD: User avatar med riktig data
               Stack(
                 children: [
-                  UserAvatar.medium(
+                  UserDisplayWidgets.avatar(
+                    size: ImageSize.small,
                     imageUrl: avatarUrl,
-                    displayName: displayName,
+                    displayName:
+                        'Användare ${request.fromUserId.substring(0, 6)}...',
                   ),
                   // Online indicator
                   if (isOnline)

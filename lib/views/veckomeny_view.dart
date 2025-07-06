@@ -12,10 +12,10 @@ import '../models/user_profile.dart';
 import '../viewmodels/menu_viewmodel.dart';
 
 // Widgets
-import '../widgets/content_card.dart';
+import '../widgets/common/content_card.dart';
 import '../widgets/main_layout_menu.dart';
-import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
-import '../widgets/universal_share_dialog.dart';
+import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
+import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/menu_persistence_dialogs.dart';
 import '../widgets/shopping_list_selector.dart';
 

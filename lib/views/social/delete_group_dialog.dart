@@ -45,7 +45,7 @@ class _DeleteGroupDialogState extends State<DeleteGroupDialog> {
     return AlertDialog(
       icon: Icon(
         Icons.warning_amber_rounded,
-        size: 48,
+        size: AppTheme.iconSizeAction,
         color: AppTheme.errorColor,
       ),
       title: const Text(

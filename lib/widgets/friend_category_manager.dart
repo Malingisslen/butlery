@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/friends_viewmodel.dart';
 import '../services/friend_categories_service.dart';
 import '../models/friend_category.dart';
-import '../widgets/state_widget.dart'; // ✅ MIGRATION: Ersätt custom _buildEmptyState
+import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt custom _buildEmptyState
 import '../theme/app_theme.dart';
 import '../core/utils/logger.dart';
 
