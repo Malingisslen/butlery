@@ -1,4 +1,4 @@
-// lib/views/main_views/mina_recept_view.dart
+// lib/views/main_views/mina_recept_view.dart - UPPDATERAD MED SearchFilterWidget
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // För SystemNavigator
@@ -8,9 +8,8 @@ import '../../viewmodels/friends_viewmodel.dart'; // För vänskapsförfrågning
 import '../../viewmodels/shared_content_viewmodel.dart'; // ✅ NYTT: För delade recept/menyer
 import '../../widgets/main_layout_menu.dart';
 import '../../widgets/common/content_card.dart';
-import '../../widgets/search_bar.dart';
+import '../../widgets/common/search_filter_widget.dart'; // ✅ NY IMPORT
 import '../../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
-import '../../widgets/filter_chips.dart';
 import '../../widgets/offline_indicator.dart'; // För offline indicator
 import '../widgets/user/user_display_widgets.dart'; // För avatar
 import '../../services/search_service.dart';
@@ -21,8 +20,8 @@ import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart'; // ✅ LÄGG TILL för AppLogger
 
-/// ✨ UPPDATERAD VY MED OFFLINE SUPPORT, USER AVATAR OCH NOTIFICATION BADGE
-/// Nu visar vi offline-status, synkroniserar med pull-to-refresh och visar vänskapsförfrågningar på avataren
+/// ✨ UPPDATERAD VY MED SearchFilterWidget - DRASTISKT FÖRENKLAD
+/// Nu använder vi den unified SearchFilterWidget istället för separata komponenter
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
 
@@ -59,29 +58,19 @@ class _MinaReceptViewContent extends StatefulWidget {
 }
 
 class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
-  final TextEditingController _searchController = TextEditingController();
-  bool _showFilters = false;
+  bool _showFilters = false; // ✅ BEHÅLLS för filter toggle
 
   @override
   void initState() {
     super.initState();
-    // Lyssna på text-ändringar och uppdatera ViewModel
-    _searchController.addListener(_onSearchTextChanged);
 
     // ✅ SÄKERT: Ladda data efter widget mount med safety checks
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _safeLoadSocialData();
-        _safeLoadRecipeData(); // ✅ NYTT: Ladda också receptdata
+        _safeLoadRecipeData();
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchTextChanged);
-    _searchController.dispose();
-    super.dispose();
   }
 
   /// ✅ SÄKER metod för att ladda social data
@@ -120,31 +109,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  void _onSearchTextChanged() {
-    // Hämta ViewModel och uppdatera sökfrågan
-    final viewModel = context.read<RecipeListViewModel>();
-    viewModel.updateSearch(_searchController.text);
-  }
-
-  void _onSearchCleared() {
-    _searchController.clear();
-    // Text controller listener kommer automatiskt uppdatera ViewModel
-  }
-
   void _onSortChanged(SortCriteria? criteria) {
     if (criteria != null) {
       final viewModel = context.read<RecipeListViewModel>();
       viewModel.updateSort(criteria);
     }
-  }
-
-  // Återställ alla filter
-  void _clearAllFilters() {
-    final viewModel = context.read<RecipeListViewModel>();
-    viewModel.clearAllFilters();
-    setState(() {
-      _showFilters = false;
-    });
   }
 
   // Exit-dialog
@@ -431,86 +400,31 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             // OFFLINE INDICATOR
             const OfflineIndicator(),
 
-            // Sökfält
-            Padding(
-              padding: EdgeInsets.all(AppTheme.spacingSmPlus),
-              child: AppSearchBar(
-                controller: _searchController,
-                hintText: 'Sök recept...',
-                onChanged:
-                    (_) {}, // ViewModel uppdateras via controller listener
-                onClear: _onSearchCleared,
-              ),
-            ),
+            // ✅ HELT NY: SearchFilterWidget ersätter ~50 rader kod!
+            SearchFilterWidget(
+              // Search properties
+              searchQuery: viewModel.searchQuery,
+              onSearchChanged: viewModel.updateSearch,
+              searchHint: 'Sök recept...',
 
-            // FILTER CHIPS SEKTION - animerad visning
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              child: _showFilters
-                  ? Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Tidsfilter
-                          FilterChips(
-                            title: 'Tillagningstid',
-                            options: RecipeFilters.timeFilters,
-                            selectedIds: viewModel.activeTimeFilters,
-                            onToggle: viewModel.toggleTimeFilter,
-                            scrollable: false,
-                          ),
+              // Filter properties
+              activeTimeFilters: viewModel.activeTimeFilters,
+              activeMealTypeFilters: viewModel.activeMealTypeFilters,
+              activeRatingFilters: viewModel.activeRatingFilters,
+              onTimeFilterToggle: viewModel.toggleTimeFilter,
+              onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
+              onRatingFilterToggle: viewModel.toggleRatingFilter,
 
-                          SizedBox(height: AppTheme.spacingSm),
+              // UI state
+              showFilters: _showFilters,
+              onToggleFilters: () =>
+                  setState(() => _showFilters = !_showFilters),
+              hasActiveFilters: viewModel.hasActiveFilters,
+              onClearAllFilters: viewModel.clearAllFilters,
 
-                          // Måltidstyp-filter
-                          FilterChips(
-                            title: 'Måltidstyp',
-                            options: RecipeFilters.mealTypeFilters,
-                            selectedIds: viewModel.activeMealTypeFilters,
-                            onToggle: viewModel.toggleMealTypeFilter,
-                            scrollable: false,
-                          ),
-
-                          SizedBox(height: AppTheme.spacingSm),
-
-                          // Betygsfilter
-                          FilterChips(
-                            title: 'Betyg',
-                            options: RecipeFilters.ratingFilters,
-                            selectedIds: viewModel.activeRatingFilters,
-                            onToggle: viewModel.toggleRatingFilter,
-                            scrollable: false,
-                          ),
-
-                          // Rensa filter-knapp om det finns aktiva filter
-                          if (viewModel.hasActiveFilters)
-                            Padding(
-                              padding: EdgeInsets.all(AppTheme.spacingSmPlus),
-                              child: Center(
-                                child: TextButton.icon(
-                                  onPressed: _clearAllFilters,
-                                  icon: const Icon(Icons.clear),
-                                  label: const Text('Rensa alla filter'),
-                                ),
-                              ),
-                            ),
-
-                          SizedBox(height: AppTheme.spacingSm),
-                        ],
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+              // Results info
+              resultCount: viewModel.recipes.length,
+              showStats: true,
             ),
 
             // Huvudinnehåll
@@ -529,27 +443,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (viewModel.isLoading) {
       return Column(
         children: [
-          // Behåll sökfältet synligt om det finns söktext
-          if (_searchController.text.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmPlus),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.search,
-                    size: AppTheme.iconSizeInfo,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  SizedBox(width: AppTheme.spacingXs),
-                  Text(
-                    'Söker...',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ),
           // ✅ MIGRATION: StateWidget skeleton loader
           Expanded(child: StateWidget.skeletonRecipeList(itemCount: 5)),
         ],
@@ -582,133 +475,72 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     // Hämta filtrerade och sorterade recept från ViewModel
     final recipes = viewModel.recipes;
 
-    // Sök- och filterstatistik
-    Widget statsWidget = const SizedBox.shrink();
-    if (viewModel.searchQuery.isNotEmpty || viewModel.hasActiveFilters) {
-      final statsText = <String>[];
-
-      if (viewModel.searchQuery.isNotEmpty) {
-        statsText.add('Sökning: "${viewModel.searchQuery}"');
-      }
-
-      if (viewModel.hasActiveFilters) {
-        final filterCount = viewModel.activeTimeFilters.length +
-            viewModel.activeMealTypeFilters.length +
-            viewModel.activeRatingFilters.length;
-        statsText.add('$filterCount filter aktiva');
-      }
-
-      statsText.add('${recipes.length} recept hittades');
-
-      statsWidget = Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingSmPlus,
-          vertical: AppTheme.spacingXs,
-        ),
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        child: Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              size: AppTheme.iconSizeInfo,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-            SizedBox(width: AppTheme.spacingXs),
-            Expanded(
-              child: Text(
-                statsText.join(' • '),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     // Empty states
     if (recipes.isEmpty) {
-      return Column(
-        children: [
-          statsWidget,
-          Expanded(
-            child: viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-                // ✅ MIGRATION: StateWidget no recipes
-                ? StateWidget.noRecipes(
-                    onAction: () => Navigator.pushNamed(context, '/laggTill'),
-                  )
-                // ✅ MIGRATION: StateWidget no search results
-                : StateWidget.noSearchResults(
-                    onAction: viewModel.searchQuery.isNotEmpty
-                        ? _onSearchCleared
-                        : _clearAllFilters,
-                    actionLabel: viewModel.searchQuery.isNotEmpty
-                        ? 'Rensa sökning'
-                        : 'Rensa filter',
-                  ),
-          ),
-        ],
-      );
+      return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
+          // ✅ MIGRATION: StateWidget no recipes
+          ? StateWidget.noRecipes(
+              onAction: () => Navigator.pushNamed(context, '/laggTill'),
+            )
+          // ✅ MIGRATION: StateWidget no search results
+          : StateWidget.noSearchResults(
+              onAction: viewModel.searchQuery.isNotEmpty
+                  ? () => viewModel.updateSearch('')
+                  : viewModel.clearAllFilters,
+              actionLabel: viewModel.searchQuery.isNotEmpty
+                  ? 'Rensa sökning'
+                  : 'Rensa filter',
+            );
     }
 
     // Receptlista med RefreshIndicator som synkar om online
-    return Column(
-      children: [
-        statsWidget,
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              // Om online, synka först
-              if (offlineService.isOnline) {
-                await _syncWithOnline();
-              } else {
-                // Om offline, bara refresh från lokal cache
-                await viewModel.refresh();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('📵 Offline-läge - visar lokala recept'),
-                      backgroundColor: AppTheme.warningColor,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              }
-            },
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-              itemCount: recipes.length,
-              itemBuilder: (context, index) {
-                final recipe = recipes[index];
+    return RefreshIndicator(
+      onRefresh: () async {
+        // Om online, synka först
+        if (offlineService.isOnline) {
+          await _syncWithOnline();
+        } else {
+          // Om offline, bara refresh från lokal cache
+          await viewModel.refresh();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('📵 Offline-läge - visar lokala recept'),
+                backgroundColor: AppTheme.warningColor,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      },
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+        itemCount: recipes.length,
+        itemBuilder: (context, index) {
+          final recipe = recipes[index];
 
-                return Padding(
-                  key: ValueKey(recipe.id),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSm,
-                    vertical: AppTheme.spacingXs,
-                  ),
-                  child: ContentCard.recipe(
-                    recipe: recipe,
-                    onTap: () async {
-                      // Navigera till detaljer
-                      await Navigator.pushNamed(
-                        context,
-                        '/receptDetalj',
-                        arguments: recipe,
-                      );
-
-                      // Ingen refresh behövs - ViewModel lyssnar på RecipeService
-                    },
-                  ),
+          return Padding(
+            key: ValueKey(recipe.id),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingSm,
+              vertical: AppTheme.spacingXs,
+            ),
+            child: ContentCard.recipe(
+              recipe: recipe,
+              onTap: () async {
+                // Navigera till detaljer
+                await Navigator.pushNamed(
+                  context,
+                  '/receptDetalj',
+                  arguments: recipe,
                 );
+
+                // Ingen refresh behövs - ViewModel lyssnar på RecipeService
               },
             ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
