@@ -17,7 +17,7 @@ import '../widgets/main_layout_menu.dart';
 import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt EmptyState
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/menu_persistence_dialogs.dart';
-import '../widgets/shopping_list_selector.dart';
+import '../widgets/common/input_components.dart'; // ✅ NY IMPORT
 
 // Theme
 import '../theme/app_theme.dart';
@@ -168,7 +168,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  // ✅ UPPDATERAD: Menu till Shopping List integration
+  // ✅ MIGRERAD: Menu till Shopping List integration med InputComponents
   Future<void> _showShoppingListSelector() async {
     final viewModel = context.read<MenuViewModel>();
 
@@ -183,17 +183,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       return;
     }
 
-    // ✅ SKICKA MENY DATA TILL SHOPPING LIST SELECTOR
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => ShoppingListSelector(
-        menu: viewModel.menu, // ✅ SKICKA MENY DATA
-        onListSelected: () {
-          // Lista vald och ingredienser tillagda - stäng modal
-          Navigator.pop(context);
-        },
-      ),
+    // ✅ MIGRERAD: Använd InputComponents istället för showModalBottomSheet
+    await InputComponents.showListSelector(
+      context,
+      menu: viewModel.menu, // ✅ SKICKA MENY DATA
+      onListSelected: () {
+        // Lista vald och ingredienser tillagda - stäng modal
+        Navigator.pop(context);
+      },
     );
   }
 
@@ -359,7 +356,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         // ✅ UPPDATERAD: Floating action button för inköpslista
         floatingActionButton: viewModel.hasMenu
             ? FloatingActionButton.extended(
-                onPressed: _showShoppingListSelector, // ✅ NY METOD
+                onPressed: _showShoppingListSelector, // ✅ MIGRERAD METOD
                 icon: const Icon(Icons.shopping_cart),
                 label: const Text('Till inköpslista'),
                 backgroundColor: AppTheme.primaryColor,
