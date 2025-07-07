@@ -3,19 +3,19 @@
 /// 🔍 AI INFO BLOCK:
 /// Component: Social Components - KOMPLETT konsolidering av alla social widgets
 /// File: widgets/common/social_components.dart
-/// Quick Guide: Unified API för ALL social funktionalitet - avatars, dialogs, invitations, categories
+/// Quick Guide: Unified API för ALL social funktionalitet - avatars, dialogs, invitations, categories, collaborative features
 /// Dependencies IN: UserDisplayWidgets, FriendCategoryManager, Target widgets, AppTheme
-/// Dependencies OUT: Hela social systemet - 15 avatar användningar + alla dialogs + friend management
+/// Dependencies OUT: Hela social systemet - 15 avatar användningar + alla dialogs + friend management + collaborative editing
 /// Data flow: Centraliserad social API → Delegerar till specialiserade helpers → Konsistent styling
 /// State management: Stateless builders som delegerar till befintliga komponenter
-/// Purpose: Single source of truth för ALL social UI patterns med 100% funktionell kompatibilitet
+/// Purpose: Single source of truth för ALL social UI patterns med 100% funktionell kompatibilitet + collaborative features
 /// Common issues: Bevara all befintlig funktionalitet, AppTheme compliance, konsistenta callbacks
 /// Test coverage: Ärver från underliggande komponenter
 /// Performance: ⚡ Optimerad delegation utan overhead, cached components
 /// Analytics: ✅ Centraliserad social interaction tracking
 /// Code smells: ✅ Perfect separation, unified patterns, no duplication
 /// Connected to: FriendsViewModel, GroupInvitationService, AuthService, alla social views
-/// Used in phases: Fas 4.1 - Största widget konsolideringen i projektet
+/// Used in phases: Fas 4.1 - Största widget konsolideringen i projektet + collaborative editing
 
 import 'package:flutter/material.dart';
 import '../../models/friend_category.dart';
@@ -38,6 +38,7 @@ export '../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
 /// - ✅ 4 dialog widgets (create, edit, delete, remove)
 /// - ✅ FriendCategoryManager för komplex friend selection
 /// - ✅ Alla invitation target widgets för sharing
+/// - ✅ Collaborative editing indicators och live features
 /// - ✅ 100% AppTheme compliance och konsistenta patterns
 ///
 /// MIGRATION GUIDE:
@@ -341,6 +342,323 @@ class SocialComponents {
       backgroundColor: backgroundColor,
       textColor: textColor,
       padding: padding,
+    );
+  }
+
+  // ===== COLLABORATIVE EDITING INDICATORS =====
+
+  /// 🏷️ Compact badge för att visa att innehåll är delat/kollaborativt
+  static Widget collaborativeStatusBadge({
+    String text = 'Delat',
+    IconData icon = Icons.people,
+    Color? color,
+    EdgeInsets? padding,
+  }) {
+    final effectiveColor = color ?? AppTheme.primaryColor;
+
+    return Container(
+      padding: padding ??
+          EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingSm,
+            vertical: AppTheme.spacingXs,
+          ),
+      decoration: BoxDecoration(
+        color: effectiveColor.withValues(alpha: 0.1),
+        borderRadius: AppTheme.chipRadius,
+        border: Border.all(
+          color: effectiveColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: AppTheme.iconSizeInfo,
+            color: effectiveColor,
+          ),
+          SizedBox(width: AppTheme.spacingXs),
+          Text(
+            text,
+            style: AppTheme.captionStyle.copyWith(
+              color: effectiveColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📢 Större banner för collaborative context
+  static Widget collaborativeBanner({
+    required String title,
+    required String subtitle,
+    List<UserProfile>? participants,
+    int? totalParticipants,
+    Color? backgroundColor,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    final bgColor =
+        backgroundColor ?? AppTheme.primaryColor.withValues(alpha: 0.1);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppTheme.smallRadius,
+        child: Row(
+          children: [
+            Icon(
+              Icons.people,
+              color: AppTheme.primaryColor,
+              size: AppTheme.iconSizeAction,
+            ),
+            SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTheme.bodyStyle.copyWith(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: AppTheme.captionStyle.copyWith(
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Visa deltagare eller trailing widget
+            if (participants != null)
+              participantAvatars(
+                participants: participants,
+                maxVisible: 3,
+                totalCount: totalParticipants,
+                size: 24,
+              )
+            else if (trailing != null)
+              trailing,
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 👤 Visa real-time "X redigerar nu" indikator
+  static Widget liveEditIndicator({
+    required String editorName,
+    required String editingWhat,
+    Color? color,
+    bool isVisible = true,
+    Duration animationDuration = const Duration(milliseconds: 300),
+  }) {
+    if (!isVisible) return const SizedBox.shrink();
+
+    final indicatorColor = color ?? AppTheme.warningColor;
+
+    return TweenAnimationBuilder<double>(
+      duration: animationDuration,
+      tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
+      builder: (context, opacity, child) {
+        return Opacity(
+          opacity: opacity,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingSm,
+              vertical: AppTheme.spacingXs,
+            ),
+            decoration: BoxDecoration(
+              color: indicatorColor.withValues(alpha: 0.1),
+              borderRadius: AppTheme.chipRadius,
+              border: Border.all(
+                color: indicatorColor.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildPulsingDot(indicatorColor),
+                SizedBox(width: AppTheme.spacingXs),
+                Text(
+                  '$editorName redigerar $editingWhat',
+                  style: AppTheme.captionStyle.copyWith(
+                    color: indicatorColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 🌐 Visa connection status för collaborative content
+  static Widget collaborativeConnectionStatus({
+    required bool isOnline,
+    required String statusText,
+    String? statusEmoji,
+    bool showRetryButton = false,
+    VoidCallback? onRetry,
+  }) {
+    if (isOnline) {
+      // Minimal indikator när allt fungerar
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingSm,
+          vertical: AppTheme.spacingXs,
+        ),
+        decoration: BoxDecoration(
+          color: AppTheme.successColor.withValues(alpha: 0.1),
+          borderRadius: AppTheme.chipRadius,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: AppTheme.successColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: AppTheme.spacingXs),
+            Text(
+              'Online',
+              style: AppTheme.captionStyle.copyWith(
+                color: AppTheme.successColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Offline banner
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: AppTheme.errorColor.withValues(alpha: 0.1),
+        border: Border.all(
+          color: AppTheme.errorColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (statusEmoji != null) ...[
+            Text(statusEmoji, style: TextStyle(fontSize: 20)),
+            SizedBox(width: AppTheme.spacingSm),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Offline',
+                  style: AppTheme.bodyStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.errorColor,
+                  ),
+                ),
+                Text(
+                  statusText,
+                  style: AppTheme.captionStyle.copyWith(
+                    color: AppTheme.errorColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (showRetryButton && onRetry != null)
+            TextButton(
+              onPressed: onRetry,
+              child: Text(
+                'Försök igen',
+                style: AppTheme.buttonTextStyle.copyWith(
+                  color: AppTheme.errorColor,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ===== PARTICIPANT AVATARS (DELEGERAR TILL UserDisplayWidgets) =====
+  /// 👥 Visa deltagare som små avatars
+  static Widget participantAvatars({
+    required List<UserProfile> participants,
+    int maxVisible = 4,
+    int? totalCount,
+    double size = 32,
+    EdgeInsets? spacing,
+  }) {
+    final visibleParticipants = participants.take(maxVisible).toList();
+    final remaining = (totalCount ?? participants.length) - maxVisible;
+    final gap = spacing?.horizontal ?? AppTheme.spacingXs;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Visa synliga deltagare - DELEGERAR till UserDisplayWidgets
+        for (int i = 0; i < visibleParticipants.length; i++) ...[
+          if (i > 0) SizedBox(width: gap),
+          UserDisplayWidgets.avatar(
+            imageUrl: visibleParticipants[i].avatarUrl,
+            displayName: visibleParticipants[i].displayName,
+            size: _sizeToImageSize(size),
+          ),
+        ],
+
+        // Visa "+X" om det finns fler
+        if (remaining > 0) ...[
+          SizedBox(width: gap),
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppTheme.primaryColor,
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                '+$remaining',
+                style: TextStyle(
+                  fontSize: size * 0.35,
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -707,6 +1025,21 @@ class SocialComponents {
     );
   }
 
+  // ===== COLLABORATIVE HELPER WIDGETS =====
+  /// Pulsande punkt för live edit indicator
+  static Widget _buildPulsingDot(Color color) {
+    return _PulsingDot(color: color);
+  }
+
+  // ===== HELPER FUNCTIONS (DELEGERAR) =====
+  /// Konvertera double size till ImageSize enum
+  static ImageSize _sizeToImageSize(double size) {
+    if (size <= 32) return ImageSize.small;
+    if (size <= 48) return ImageSize.medium;
+    if (size <= 80) return ImageSize.large;
+    return ImageSize.extraLarge;
+  }
+
   // ===== UTILITY METHODS =====
 
   /// Generera initials från användarnamn
@@ -941,6 +1274,60 @@ extension SocialComponentsExtensions on SocialComponents {
 
 // ===== INTERNAL DIALOG WIDGETS =====
 // Dessa widgets används internt av SocialComponents och bör inte kallas direkt
+
+/// StatefulWidget för pulsande animation (ISOLERAD FUNKTIONALITET)
+class _PulsingDot extends StatefulWidget {
+  final Color color;
+  const _PulsingDot({required this.color});
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _controller.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
 /// Internal Create Group Dialog Widget
 class _CreateGroupDialog extends StatefulWidget {
