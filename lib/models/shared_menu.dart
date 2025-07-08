@@ -7,21 +7,21 @@ import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 
 /// 🔍 AI INFO BLOCK:
-/// Component: Shared Menu Model - Firebase First - FIXED med allowImport + DISMISS + isDismissed GETTER
+/// Component: Shared Menu Model - Firebase First - FIXED med allowImport + DISMISS + isDismissed GETTER + COLLABORATION
 /// File: models/shared_menu.dart
-/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner - ROBUST PARSING + IMPORT + DISMISS + GETTER
+/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner - ROBUST PARSING + IMPORT + DISMISS + GETTER + COLLABORATION
 /// Dependencies IN: cloud_firestore, firebase_auth, uuid, recipe.dart, flutter/foundation.dart
 /// Dependencies OUT: SocialRecipeService, menu sharing views
 /// Data flow: Firestore ↔ SharedMenu object ↔ Social UI
 /// State management: Immutable med copyWith pattern och cached menu data
-/// Purpose: Menydelning med komplett veckomeny, tracking, import och dismiss functionality + easy isDismissed check
-/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, allowImport getter, dismiss tracking, isDismissed getter added
+/// Purpose: Menydelning med komplett veckomeny, tracking, import, dismiss functionality, collaboration + easy isDismissed check
+/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, allowImport getter, dismiss tracking, isDismissed getter added, collaboration support
 /// Test coverage: 65%
 /// Performance: ⚡ Cached menu data för offline access, optimized queries
-/// Analytics: ✅ Menu sharing engagement tracking, dismiss analytics
-/// Code smells: ✅ Clean separation mellan sharing metadata och menu data, FIXED parsing + import + dismiss + getter
+/// Analytics: ✅ Menu sharing engagement tracking, dismiss analytics, collaboration metrics
+/// Code smells: ✅ Clean separation mellan sharing metadata och menu data, FIXED parsing + import + dismiss + getter + collaboration
 /// Connected to: Recipe, UserProfile, SocialRecipeService, menu views
-/// Used in phases: 18
+/// Used in phases: 18 + Collaboration
 
 class SharedMenu {
   final String id;
@@ -40,6 +40,7 @@ class SharedMenu {
   final List<String> importedByUserIds;
   final List<String>
       dismissedByUserIds; // 🆕 Who has dismissed it from their list
+  final bool allowCollaboration; // 🆕 Kollaborationsinställning för menyer
 
   SharedMenu({
     required this.id,
@@ -53,6 +54,7 @@ class SharedMenu {
     List<String>? viewedByUserIds,
     List<String>? importedByUserIds,
     List<String>? dismissedByUserIds, // 🆕 Optional parameter
+    this.allowCollaboration = false, // 🆕 Default: ej kollaborativ
   })  : sharedAt = sharedAt ?? DateTime.now(),
         totalRecipeCount = menuSnapshot.values.fold(
           0,
@@ -73,6 +75,7 @@ class SharedMenu {
     String? shareMessage,
     String? menuTitle,
     required Map<String, List<Recipe>> menuSnapshot,
+    bool allowCollaboration = false, // 🆕 Kollaborationsinställning för menyer
   }) {
     final title = menuTitle ?? '${sharedByDisplayName}s veckomeny';
 
@@ -85,6 +88,7 @@ class SharedMenu {
       shareMessage: shareMessage,
       menuTitle: title,
       menuSnapshot: menuSnapshot,
+      allowCollaboration: allowCollaboration, // 🆕 Skicka vidare parametern
     );
   }
 
@@ -95,6 +99,7 @@ class SharedMenu {
     List<String>? viewedByUserIds,
     List<String>? importedByUserIds,
     List<String>? dismissedByUserIds, // 🆕 Lägg till dismiss tracking
+    bool? allowCollaboration, // 🆕 Kollaborativ uppdatering
   }) {
     return SharedMenu._internal(
       id: id,
@@ -113,6 +118,7 @@ class SharedMenu {
       importedByUserIds: importedByUserIds ?? List.from(this.importedByUserIds),
       dismissedByUserIds:
           dismissedByUserIds ?? List.from(this.dismissedByUserIds), // 🆕
+      allowCollaboration: allowCollaboration ?? this.allowCollaboration, // 🆕
     );
   }
 
@@ -133,6 +139,7 @@ class SharedMenu {
     required this.viewedByUserIds,
     required this.importedByUserIds,
     required this.dismissedByUserIds, // 🆕
+    required this.allowCollaboration, // 🆕 LÄGG TILL DENNA RAD
   });
 
   /// Mark as viewed
@@ -285,6 +292,7 @@ class SharedMenu {
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
       'dismissedByUserIds': dismissedByUserIds, // 🆕 Spara dismiss data
+      'allowCollaboration': allowCollaboration, // 🆕 LÄGG TILL DENNA RAD
     };
   }
 
@@ -353,6 +361,8 @@ class SharedMenu {
         importedByUserIds: List<String>.from(data['importedByUserIds'] ?? []),
         dismissedByUserIds: List<String>.from(
             data['dismissedByUserIds'] ?? []), // 🆕 Läs dismiss data
+        allowCollaboration: data['allowCollaboration'] as bool? ??
+            false, // 🆕 LÄGG TILL DENNA RAD
       );
     } catch (e, stackTrace) {
       debugPrint('❌ Error parsing SharedMenu från doc ${doc.id}: $e');
@@ -420,6 +430,8 @@ class SharedMenu {
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
       'dismissedByUserIds': dismissedByUserIds, // 🆕 JSON support för dismiss
+      'allowCollaboration':
+          allowCollaboration, // 🆕 JSON support för collaboration
     };
   }
 
@@ -460,6 +472,8 @@ class SharedMenu {
       importedByUserIds: List<String>.from(json['importedByUserIds'] ?? []),
       dismissedByUserIds: List<String>.from(
           json['dismissedByUserIds'] ?? []), // 🆕 JSON parse för dismiss
+      allowCollaboration: json['allowCollaboration'] as bool? ??
+          false, // 🆕 JSON parse för collaboration
     );
   }
 

@@ -7,6 +7,7 @@ import '../models/recipe.dart';
 import '../models/recipe_comment.dart';
 import '../models/shared_recipe.dart';
 import '../models/shared_menu.dart';
+import '../models/user_profile.dart';
 import '../services/user_service.dart';
 import '../services/recipe_service.dart';
 import '../core/utils/logger.dart';
@@ -212,6 +213,7 @@ class SocialRecipeService extends ChangeNotifier {
     required Recipe recipe,
     required List<String> friendUserIds,
     String? message,
+    bool allowCollaboration = false, // ✅ NY: Kollaborationsinställning
   }) async {
     final currentUser = _userService.currentUserProfile;
     if (currentUser == null) {
@@ -228,7 +230,7 @@ class SocialRecipeService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Create shared recipe
+      // Create shared recipe med kollaborationsinställning
       final sharedRecipe = SharedRecipe.create(
         originalRecipeId: recipe.id,
         sharedByUserId: currentUser.uid,
@@ -239,6 +241,8 @@ class SocialRecipeService extends ChangeNotifier {
             ? ShareScope.individual
             : ShareScope.multiple,
         recipeSnapshot: recipe,
+        allowCollaboration:
+            allowCollaboration, // ✅ UPPDATERAT: Skicka collaboration flag
       );
 
       // Save to Firestore
@@ -246,8 +250,11 @@ class SocialRecipeService extends ChangeNotifier {
           .doc(sharedRecipe.id)
           .set(sharedRecipe.toFirestore());
 
+      // ✅ FÖRBÄTTRAD: Mer detaljerad loggning
+      final collaborationType =
+          allowCollaboration ? 'kollaborativt' : 'läsbart';
       AppLogger.success(
-        '✅ Recept "${recipe.title}" delat med ${friendUserIds.length} vänner',
+        '✅ Recept "${recipe.title}" delat som $collaborationType med ${friendUserIds.length} vänner',
       );
 
       // Send notifications to recipients
@@ -270,6 +277,8 @@ class SocialRecipeService extends ChangeNotifier {
     required List<String> friendUserIds,
     String? message,
     String? customTitle,
+    bool allowCollaboration =
+        false, // ✅ NY: Kollaborationsinställning för menyer
   }) async {
     final currentUser = _userService.currentUserProfile;
     if (currentUser == null) {
@@ -301,13 +310,17 @@ class SocialRecipeService extends ChangeNotifier {
         shareMessage: message,
         menuTitle: menuTitle,
         menuSnapshot: menu,
+        allowCollaboration:
+            allowCollaboration, // ✅ UPPDATERAT: Skicka collaboration flag
       );
 
       // Save to Firestore
       await _sharedMenusRef.doc(sharedMenu.id).set(sharedMenu.toFirestore());
 
+      // ✅ FÖRBÄTTRAD: Mer detaljerad loggning
+      final collaborationType = allowCollaboration ? 'kollaborativ' : 'läsbar';
       AppLogger.success(
-        '✅ Meny "$menuTitle" delad med ${friendUserIds.length} vänner',
+        '✅ Meny "$menuTitle" delad som $collaborationType med ${friendUserIds.length} vänner',
       );
 
       // Send notifications to recipients
@@ -654,6 +667,64 @@ class SocialRecipeService extends ChangeNotifier {
       String recipeId, String friendUserId) async {
     final sharedRecipeIds = await getRecipesSharedWithFriend(friendUserId);
     return sharedRecipeIds.contains(recipeId);
+  }
+
+  /// ✅ NY: Kontrollera om ett specifikt recept är delat av användaren
+  /// Används av CollaborativeStatusViewModel för att visa kollaborativ status
+  Future<bool> isRecipeSharedByUser(String recipeId, String userId) async {
+    try {
+      AppLogger.info(
+          '🔍 Kollar om recept $recipeId är delat av användare $userId');
+
+      // Sök efter recept som användaren har delat
+      final query = await _sharedRecipesRef
+          .where('originalRecipeId', isEqualTo: recipeId)
+          .where('sharedByUserId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      final isShared = query.docs.isNotEmpty;
+
+      if (isShared) {
+        AppLogger.info('✅ Recept $recipeId är delat av användaren');
+      } else {
+        AppLogger.info('ℹ️ Recept $recipeId är INTE delat av användaren');
+      }
+
+      return isShared;
+    } catch (e) {
+      AppLogger.error(
+          'Kunde inte kolla delningsstatus för recept $recipeId', e);
+      return false; // Safe fallback
+    }
+  }
+
+  /// ✅ NY: Kontrollera om en specifik meny är delad av användaren
+  /// Används av CollaborativeStatusViewModel för meny collaborative detection
+  Future<bool> isMenuSharedByUser(String menuId, String userId) async {
+    try {
+      AppLogger.info('🔍 Kollar om meny $menuId är delad av användare $userId');
+
+      // Sök efter meny som användaren har delat
+      final query = await _sharedMenusRef
+          .where('menuId', isEqualTo: menuId)
+          .where('sharedByUserId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      final isShared = query.docs.isNotEmpty;
+
+      if (isShared) {
+        AppLogger.info('✅ Meny $menuId är delad av användaren');
+      } else {
+        AppLogger.info('ℹ️ Meny $menuId är INTE delad av användaren');
+      }
+
+      return isShared;
+    } catch (e) {
+      AppLogger.error('Kunde inte kolla delningsstatus för meny $menuId', e);
+      return false; // Safe fallback
+    }
   }
 
   /// Helper: Skapa importerat recept med meny-attribution
@@ -1125,5 +1196,147 @@ class SocialRecipeService extends ChangeNotifier {
   /// Refresh all data
   Future<void> refresh() async {
     await _loadSharedContent();
+  }
+
+  // ===== ENHANCED PARTICIPANT LOADING =====
+  // 👇 LÄGG TILL DENNA KOD HÄR 👇
+
+  /// 👥 Hämta alla deltagare för ett kollaborativt recept
+  Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
+    try {
+      final participants = <UserProfile>[];
+      final userIds = <String>{};
+
+      // Samla alla user IDs från shared recipes
+      final sharedRecipes = _sharedWithMe
+          .where((recipe) => recipe.originalRecipeId == recipeId)
+          .toList();
+
+      for (final sharedRecipe in sharedRecipes) {
+        userIds.add(sharedRecipe.sharedByUserId);
+        userIds.addAll(sharedRecipe.sharedToUserIds);
+      }
+
+      // Hämta UserProfile för alla deltagare
+      for (final userId in userIds) {
+        try {
+          final userProfile = await _userService.getUserProfile(userId);
+          if (userProfile != null) {
+            participants.add(userProfile);
+          }
+        } catch (e) {
+          debugPrint('Could not load participant $userId: $e');
+        }
+      }
+
+      AppLogger.info(
+          '👥 Found ${participants.length} participants for recipe $recipeId');
+      return participants;
+    } catch (e) {
+      AppLogger.error('Error loading recipe participants: $e', e);
+      return [];
+    }
+  }
+
+  /// 👥 Hämta alla deltagare för en kollaborativ meny
+  Future<List<UserProfile>> getMenuParticipants(String menuId) async {
+    try {
+      final participants = <UserProfile>[];
+      final userIds = <String>{};
+
+      // Samla alla user IDs från shared menus
+      final sharedMenus =
+          _menusSharedWithMe.where((menu) => menu.id == menuId).toList();
+
+      for (final sharedMenu in sharedMenus) {
+        userIds.add(sharedMenu.sharedByUserId);
+        userIds.addAll(sharedMenu.sharedToUserIds);
+      }
+
+      // Hämta UserProfile för alla deltagare
+      for (final userId in userIds) {
+        try {
+          final userProfile = await _userService.getUserProfile(userId);
+          if (userProfile != null) {
+            participants.add(userProfile);
+          }
+        } catch (e) {
+          debugPrint('Could not load participant $userId: $e');
+        }
+      }
+
+      AppLogger.info(
+          '👥 Found ${participants.length} participants for menu $menuId');
+      return participants;
+    } catch (e) {
+      AppLogger.error('Error loading menu participants: $e', e);
+      return [];
+    }
+  }
+
+  /// 👥 Hämta alla deltagare för en kollaborativ inköpslista (framtida)
+  Future<List<UserProfile>> getShoppingListParticipants(String listId) async {
+    try {
+      // Implementeras när collaborative shopping lists är klart
+      AppLogger.info(
+          'Shopping list participants not yet implemented for $listId');
+      return [];
+    } catch (e) {
+      AppLogger.error('Error loading shopping list participants: $e', e);
+      return [];
+    }
+  }
+
+  /// 🔍 Kontrollera om inköpslista är kollaborativ (framtida)
+  Future<bool> isShoppingListSharedByUser(String listId, String userId) async {
+    try {
+      // Implementeras när collaborative shopping lists är klart
+      AppLogger.info('Shopping list sharing not yet implemented for $listId');
+      return false;
+    } catch (e) {
+      AppLogger.error(
+          'Error checking shopping list collaborative status: $e', e);
+      return false;
+    }
+  }
+
+  /// 🧪 ENDAST FÖR TESTING: Skapa test SharedRecipe
+  void createTestSharedRecipe(String recipeId) {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    final testSharedRecipe = SharedRecipe(
+      id: 'test-shared-${DateTime.now().millisecondsSinceEpoch}',
+      originalRecipeId: recipeId,
+      sharedByUserId: currentUserId,
+      sharedByDisplayName: 'Test User',
+      sharedToUserIds: ['friend1', 'friend2'],
+      shareMessage: 'Test delning',
+      scope: ShareScope.multiple,
+      recipeSnapshot: Recipe(
+        id: recipeId,
+        title: 'Test Recipe',
+        description: 'Test beskrivning',
+        ingredients: ['Test ingrediens'],
+        instructions: ['Test instruktion'],
+        imageUrls: [],
+        mealType: 'Middag',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      sharedAt: DateTime.now(),
+      viewCount: 0,
+      importCount: 0,
+      allowImport: true,
+      viewedByUserIds: [],
+      importedByUserIds: [],
+      dismissedByUserIds: [],
+    );
+
+    _sharedWithMe.add(testSharedRecipe);
+    notifyListeners();
+
+    debugPrint('🧪 Created test shared recipe for $recipeId');
+    debugPrint('🧪 Total shared recipes now: ${_sharedWithMe.length}');
   }
 }

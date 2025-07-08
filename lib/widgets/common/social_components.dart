@@ -21,12 +21,19 @@ import 'package:flutter/material.dart';
 import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../models/invitations/invitation_target.dart';
+import '../../models/recipe.dart';
 import '../../theme/app_theme.dart';
+import '../../core/injection.dart';
+import '../../services/social_recipe_service.dart';
 import '../user/user_display_widgets.dart';
 import 'utility_components.dart';
 import '../invitation_target/target_display_widgets.dart';
 import '../invitation_target/target_input_widgets.dart';
 import '../invitation_target/target_state_widgets.dart';
+import 'package:provider/provider.dart';
+import '../../models/permissions/edit_mode.dart';
+import '../../viewmodels/recipe_form_viewmodel.dart';
+import '../../viewmodels/collaborative_status_viewmodel.dart';
 
 // ✅ Re-export ImageSize för enklare imports
 export '../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
@@ -38,7 +45,7 @@ export '../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
 /// - ✅ 4 dialog widgets (create, edit, delete, remove)
 /// - ✅ FriendCategoryManager för komplex friend selection
 /// - ✅ Alla invitation target widgets för sharing
-/// - ✅ Collaborative editing indicators och live features
+/// - ✅ Collaborative editing indicators och live features MED RIKTIGA DELTAGARE
 /// - ✅ 100% AppTheme compliance och konsistenta patterns
 ///
 /// MIGRATION GUIDE:
@@ -55,18 +62,10 @@ class SocialComponents {
   // ===== USER DISPLAY & AVATARS =====
 
   /// Bygg användaravatar - HUVUDMETOD som ersätter UserDisplayWidgets.avatar()
-  ///
-  /// Denna metod hanterar ALLA 15 användningar av avatar() i projektet.
-  /// Stöder både UserProfile objekt och manuella parametrar för flexibilitet.
   static Widget avatar({
-    // Nya, föredragna parametrar
     UserProfile? user,
-
-    // Legacy-kompatibla parametrar för befintlig kod
     String? imageUrl,
     String? displayName,
-
-    // Styling och beteende
     ImageSize size = ImageSize.medium,
     VoidCallback? onTap,
     Color? borderColor,
@@ -77,7 +76,6 @@ class SocialComponents {
     bool isOnline = false,
     bool clickable = false,
   }) {
-    // Smart parameter resolution - använd user object om tillgängligt
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
     final effectiveDisplayName =
         user?.displayName ?? displayName ?? 'Okänd användare';
@@ -87,7 +85,7 @@ class SocialComponents {
       imageUrl: effectiveImageUrl,
       displayName: effectiveDisplayName,
       size: size,
-      onTap: clickable ? onTap : onTap, // Preserve exact behavior
+      onTap: clickable ? onTap : onTap,
       borderColor: borderColor,
       borderWidth: borderWidth,
       backgroundColor: backgroundColor,
@@ -390,15 +388,16 @@ class SocialComponents {
     );
   }
 
-  /// 📢 Större banner för collaborative context
+  /// 📢 Större banner för collaborative context - MED RIKTIGA DELTAGARE
   static Widget collaborativeBanner({
     required String title,
     required String subtitle,
-    List<UserProfile>? participants,
-    int? totalParticipants,
+    String? contentId,
+    String contentType = 'recipe',
     Color? backgroundColor,
     VoidCallback? onTap,
     Widget? trailing,
+    BuildContext? context, // Behövs för att hämta riktiga deltagare
   }) {
     final bgColor =
         backgroundColor ?? AppTheme.primaryColor.withValues(alpha: 0.1);
@@ -445,20 +444,240 @@ class SocialComponents {
                 ],
               ),
             ),
-            // Visa deltagare eller trailing widget
-            if (participants != null)
-              participantAvatars(
-                participants: participants,
+            // ✅ ANVÄND RIKTIGA DELTAGARE om context och contentId finns
+            if (context != null && contentId != null)
+              collaborativeParticipants(
+                context: context,
+                contentId: contentId,
+                contentType: contentType,
                 maxVisible: 3,
-                totalCount: totalParticipants,
-                size: 24,
+                avatarSize: 24,
               )
+            // ✅ FALLBACK till trailing widget
             else if (trailing != null)
-              trailing,
+              trailing
+            // ✅ SISTA FALLBACK - visa bara en ikon
+            else
+              Icon(
+                Icons.people_outline,
+                size: 24,
+                color: AppTheme.primaryColor,
+              ),
           ],
         ),
       ),
     );
+  }
+
+  // ===== SMART COLLABORATIVE STATUS WIDGETS =====
+
+  /// 🎨 AppBar med kollaborativ bakgrundsfärg och smart status detection
+  static PreferredSizeWidget collaborativeAppBar({
+    required BuildContext context,
+    required String contentId,
+    String contentType = 'recipe',
+    Recipe? recipe,
+    Map<String, List<Recipe>>? menuData,
+    String? title,
+    List<Widget>? actions,
+  }) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: Consumer<CollaborativeStatusViewModel>(
+        builder: (context, viewModel, child) {
+          // ✅ FIXAT: Hämta status object och använd .isCollaborative
+          final status = contentType == 'recipe'
+              ? viewModel.getRecipeCollaborativeStatus(contentId, recipe)
+              : viewModel.getMenuCollaborativeStatus(contentId, menuData);
+
+          final isCollaborative = status.isCollaborative; // ← Hämta bool
+
+          return AppBar(
+            title: Text(title ?? 'Redigera innehåll'),
+            backgroundColor: isCollaborative
+                ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                : null,
+            actions: [
+              // Kollaborativ badge om relevant
+              if (isCollaborative)
+                Padding(
+                  padding: EdgeInsets.only(right: AppTheme.spacingMd),
+                  child: Center(
+                    child: collaborativeStatusBadge(
+                      text: 'Delat',
+                      icon: Icons.people,
+                    ),
+                  ),
+                ),
+              // Andra actions
+              if (actions != null) ...actions,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// 🎗️ Smart kollaborativ banner med ViewModel integration
+  static Widget smartCollaborativeBanner({
+    required BuildContext context,
+    required String contentId,
+    String contentType = 'recipe',
+    Recipe? recipe,
+    Map<String, List<Recipe>>? menuData,
+    String? title,
+    String? subtitle,
+  }) {
+    return Consumer<CollaborativeStatusViewModel>(
+      builder: (context, viewModel, child) {
+        // ✅ FIXAT: Hämta status object och använd .isCollaborative
+        final status = contentType == 'recipe'
+            ? viewModel.getRecipeCollaborativeStatus(contentId, recipe)
+            : viewModel.getMenuCollaborativeStatus(contentId, menuData);
+
+        final isCollaborative = status.isCollaborative; // ← Hämta bool
+
+        if (!isCollaborative) return const SizedBox.shrink();
+
+        return collaborativeBanner(
+          title: title ?? 'Du redigerar tillsammans med andra',
+          subtitle:
+              subtitle ?? 'Ändringar synkas automatiskt med andra deltagare',
+          contentId: contentId,
+          contentType: contentType,
+          context: context,
+        );
+      },
+    );
+  }
+
+  /// 🔄 Force refresh för specifikt innehåll via ViewModel
+  static void refreshCollaborativeStatus(
+    BuildContext context,
+    String contentId, {
+    String contentType = 'recipe',
+  }) {
+    try {
+      final viewModel = context.read<CollaborativeStatusViewModel>();
+      if (contentType == 'recipe') {
+        viewModel.invalidateRecipeStatus(contentId);
+      } else {
+        viewModel.invalidateMenuStatus(contentId);
+      }
+    } catch (e) {
+      debugPrint('Could not refresh collaborative status: $e');
+    }
+  }
+
+  /// 👥 Hämta riktiga deltagare för kollaborativt innehåll
+  ///
+  /// Denna metod hämtar faktiska deltagare från SharedRecipe/SharedMenu
+  /// baserat på contentId och contentType
+  static Widget collaborativeParticipants({
+    required BuildContext context,
+    required String contentId,
+    String contentType = 'recipe',
+    int maxVisible = 3,
+    double avatarSize = 32,
+  }) {
+    return FutureBuilder<List<UserProfile>>(
+      future: _getRealParticipants(context, contentId, contentType),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Loading state - visa skeleton avatars
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+                2,
+                (index) => Container(
+                      width: avatarSize,
+                      height: avatarSize,
+                      margin: EdgeInsets.only(left: index > 0 ? 4 : 0),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                    )),
+          );
+        }
+
+        if (snapshot.hasError) {
+          // Error state - visa placeholder
+          return Icon(
+            Icons.people_outline,
+            size: avatarSize,
+            color: AppTheme.textSecondary,
+          );
+        }
+
+        final participants = snapshot.data ?? [];
+        if (participants.isEmpty) {
+          // Ingen deltagare - visa placeholder
+          return Icon(
+            Icons.person_outline,
+            size: avatarSize,
+            color: AppTheme.textSecondary,
+          );
+        }
+
+        // Visa riktiga deltagare
+        return participantAvatars(
+          participants: participants,
+          maxVisible: maxVisible,
+          totalCount: participants.length,
+          size: avatarSize,
+        );
+      },
+    );
+  }
+
+  /// 🔍 Hämta riktiga deltagare från Firebase - ENHANCED VERSION
+  static Future<List<UserProfile>> _getRealParticipants(
+    BuildContext context,
+    String contentId,
+    String contentType,
+  ) async {
+    try {
+      // Använd SocialRecipeService för optimerad participant loading
+      final socialRecipeService = sl<SocialRecipeService>();
+
+      debugPrint('🔍 Loading participants for $contentType: $contentId');
+
+      List<UserProfile> participants = [];
+
+      switch (contentType) {
+        case 'recipe':
+          participants =
+              await socialRecipeService.getRecipeParticipants(contentId);
+          break;
+
+        case 'menu':
+          participants =
+              await socialRecipeService.getMenuParticipants(contentId);
+          break;
+
+        case 'shopping_list':
+          participants =
+              await socialRecipeService.getShoppingListParticipants(contentId);
+          break;
+
+        default:
+          debugPrint('🔍 Unknown content type: $contentType');
+          return [];
+      }
+
+      debugPrint(
+          '🔍 Found ${participants.length} participants for $contentType $contentId');
+      for (final participant in participants) {
+        debugPrint(
+            '🔍 Participant: ${participant.displayName} (${participant.uid})');
+      }
+
+      return participants;
+    } catch (e) {
+      debugPrint('❌ Error loading participants for $contentId: $e');
+      return [];
+    }
   }
 
   /// 👤 Visa real-time "X redigerar nu" indikator
@@ -508,6 +727,65 @@ class SocialComponents {
           ),
         );
       },
+    );
+  }
+
+  /// 🔒 Permissions banner för kollaborativ redigering
+  static Widget permissionsBanner({
+    required BuildContext context,
+    required EditMode editMode,
+    VoidCallback? onTap,
+  }) {
+    final color = editMode.getColor(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppTheme.spacingMd),
+      margin: EdgeInsets.all(AppTheme.spacingSm),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: AppTheme.cardBorderRadius,
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppTheme.cardBorderRadius,
+        child: Row(
+          children: [
+            Icon(
+              editMode.icon,
+              color: color,
+              size: AppTheme.iconSizeAction,
+            ),
+            SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: Text(
+                editMode.description,
+                style: AppTheme.bodyStyle.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🔒 Smart permissions banner med ViewModel integration
+  static Widget smartPermissionsBanner({
+    required BuildContext context,
+    required RecipeFormViewModel viewModel,
+  }) {
+    if (viewModel.editMode == null) return const SizedBox.shrink();
+
+    return permissionsBanner(
+      context: context,
+      editMode: viewModel.editMode!,
     );
   }
 
@@ -616,7 +894,8 @@ class SocialComponents {
     EdgeInsets? spacing,
   }) {
     final visibleParticipants = participants.take(maxVisible).toList();
-    final remaining = (totalCount ?? participants.length) - maxVisible;
+    final effectiveTotalCount = totalCount ?? participants.length;
+    final remaining = effectiveTotalCount - maxVisible;
     final gap = spacing?.horizontal ?? AppTheme.spacingXs;
 
     return Row(

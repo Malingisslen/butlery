@@ -63,6 +63,7 @@ import '../viewmodels/group_invitations_viewmodel.dart';
 import '../viewmodels/create_group_viewmodel.dart';
 import '../viewmodels/recipe_selection_viewmodel.dart';
 import '../viewmodels/collaborative_shopping_viewmodel.dart';
+import '../viewmodels/collaborative_status_viewmodel.dart';
 
 // Models
 import '../models/recipe.dart';
@@ -308,6 +309,10 @@ Future<void> initializeDependencies() async {
         authService: sl<AuthService>(),
         groupInvitationService: sl<GroupInvitationService>(),
       ),
+    );
+
+    sl.registerFactory<CollaborativeStatusViewModel>(
+      () => CollaborativeStatusViewModel(),
     );
 
     debugPrint('✅ Alla social ViewModels registrerade');

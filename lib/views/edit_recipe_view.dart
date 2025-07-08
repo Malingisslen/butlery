@@ -5,16 +5,17 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
 import '../models/recipe.dart';
-import '../models/user_profile.dart'; // ✅ FIX: Lägg till UserProfile import
 import '../viewmodels/recipe_form_viewmodel.dart';
+import '../viewmodels/collaborative_status_viewmodel.dart';
 import '../widgets/common/utility_components.dart';
-import '../widgets/common/social_components.dart'; // ✅ FIX: Ändra till SocialComponents
+import '../widgets/common/social_components.dart';
 import '../widgets/image/universal_image_manager.dart';
 import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
+import '../services/social_recipe_service.dart';
 
-/// ✨ FIXAD REDIGERA RECEPT VY - Provider-problemet löst + alla imports korrekta
+/// ✨ KOMPLETT REDIGERA RECEPT VY - Med CollaborativeStatusViewModel integration
 class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
@@ -22,32 +23,37 @@ class EditRecipeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FIX: Skapa en MultiProvider som inkluderar både RecipeFormViewModel OCH AuthService
     return MultiProvider(
       providers: [
-        // AuthService måste vara tillgänglig för hela widget-trädet
-        Provider<AuthService>.value(value: sl<AuthService>()),
+        // AuthService
+        ChangeNotifierProvider<AuthService>.value(value: sl<AuthService>()),
 
-        // RecipeFormViewModel som consumer kan läsa
+        // RecipeFormViewModel
         ChangeNotifierProvider<RecipeFormViewModel>(
           create: (_) => RecipeFormViewModel(
             recipeService: sl(),
             analyticsService: sl(),
             storageService: sl(),
             imagePickerService: sl(),
-            authService:
-                sl<AuthService>(), // ✅ Använd service locator direkt här
+            authService: sl<AuthService>(),
             initialRecipe: recipe,
           ),
         ),
+
+        // ✅ NY: CollaborativeStatusViewModel
+        ChangeNotifierProvider<CollaborativeStatusViewModel>(
+          create: (_) => sl<CollaborativeStatusViewModel>(),
+        ),
       ],
-      child: const _EditRecipeViewContent(),
+      child: _EditRecipeViewContent(recipe: recipe),
     );
   }
 }
 
 class _EditRecipeViewContent extends StatefulWidget {
-  const _EditRecipeViewContent();
+  final Recipe recipe;
+
+  const _EditRecipeViewContent({required this.recipe});
 
   @override
   State<_EditRecipeViewContent> createState() => _EditRecipeViewContentState();
@@ -64,11 +70,39 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     if (mounted) {
       if (success) {
+        // ✅ Invalidate collaborative cache efter save
+        final collaborativeViewModel =
+            context.read<CollaborativeStatusViewModel>();
+        collaborativeViewModel.invalidateRecipeStatus(widget.recipe.id);
+
         UtilityComponents.showSuccessSnackbar(context, 'Ändringar sparade!');
         Navigator.pop(context, true);
       } else {
         UtilityComponents.showErrorSnackbar(
             context, viewModel.error ?? 'Kunde inte spara ändringar');
+      }
+    }
+  }
+
+// ✅ NY: Fork functionality för kollaborativ redigering
+  Future<void> _forkRecipe() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final viewModel = context.read<RecipeFormViewModel>();
+    final success = await viewModel.saveFork();
+
+    if (mounted) {
+      if (success) {
+        UtilityComponents.showSuccessSnackbar(
+          context,
+          'Din kopia av receptet sparades!',
+        );
+        Navigator.pop(context, true);
+      } else {
+        UtilityComponents.showErrorSnackbar(
+          context,
+          viewModel.error ?? 'Kunde inte spara din kopia',
+        );
       }
     }
   }
@@ -191,56 +225,59 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
-    // ✅ FIX: Nu läser vi AuthService från Provider istället för direkt context.read
     final authService = context.read<AuthService>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Redigera recept'),
-        // ✅ BONUS: Lägg till indikator om det är ett kollaborativt recept
-        backgroundColor: _isCollaborativeRecipe()
-            ? AppTheme.primaryColor.withValues(alpha: 0.1)
-            : null,
-        actions: [
-          // ✅ BONUS: Visa collaborative indicator
-          if (_isCollaborativeRecipe())
-            Padding(
-              padding: EdgeInsets.only(right: AppTheme.spacingMd),
-              child: Center(
-                child: SocialComponents.collaborativeStatusBadge(
-                  text: 'Delat',
-                  icon: Icons.people,
-                ),
+      // AppBar utan förändring
+      appBar: _buildAppBar(context),
+
+// ✅ ERSATT: Permissions-baserad bottom navigation bar
+      bottomNavigationBar: Consumer<RecipeFormViewModel>(
+        builder: (context, viewModel, child) {
+          // Visa bara knappar om vi har edit mode
+          if (viewModel.editMode == null) {
+            return Padding(
+              padding: AppTheme.screenPadding,
+              child: UtilityComponents.primaryButton(
+                context,
+                label: 'Spara ändringar',
+                icon: Icons.save,
+                onPressed: viewModel.isSaving || !viewModel.isValid
+                    ? null
+                    : _saveRecipe,
+                isLoading: viewModel.isSaving,
+                loadingText: 'Sparar...',
+                isExpanded: true,
               ),
+            );
+          }
+
+          return Padding(
+            padding: AppTheme.screenPadding,
+            child: UtilityComponents.permissionsActionButtons(
+              context: context,
+              editMode: viewModel.editMode!,
+              onSave:
+                  viewModel.isSaving || !viewModel.isValid ? null : _saveRecipe,
+              onFork: viewModel.isForking || !viewModel.isValid
+                  ? null
+                  : _forkRecipe,
+              isSaving: viewModel.isSaving,
+              isForking: viewModel.isForking,
+              isExpanded: true,
             ),
-        ],
+          );
+        },
       ),
-      bottomNavigationBar: Padding(
-        padding: AppTheme.screenPadding,
-        child: UtilityComponents.primaryButton(
-          context,
-          label: 'Spara ändringar',
-          icon: Icons.save,
-          onPressed:
-              viewModel.isSaving || !viewModel.isValid ? null : _saveRecipe,
-          isLoading: viewModel.isSaving,
-          loadingText: 'Sparar...',
-          isExpanded: true,
-        ),
-      ),
+
       body: Stack(
         children: [
-          // ✅ ÅTERANVÄNDBAR: Collaborative banner
+          // ✅ FIXAT: Banner + Content i Column för korrekt layout
           Column(
             children: [
-              if (_isCollaborativeRecipe())
-                SocialComponents.collaborativeBanner(
-                  title: 'Du redigerar tillsammans med andra',
-                  subtitle: 'Ändringar synkas automatiskt med andra deltagare',
-                  participants:
-                      _getMockParticipants(), // ✅ FIX: Ersätt med riktig data
-                  totalParticipants: 4,
-                ),
+              // ✅ UPPDATERAD: Smart collaborative banner OCH permissions banner
+              _buildSmartBanners(context),
+              // ✅ Resten av innehållet expanderar
               Expanded(
                 child: Padding(
                   padding: AppTheme.screenPadding,
@@ -254,10 +291,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                           decoration:
                               const InputDecoration(labelText: 'Måltidstyp'),
                           items: RecipeFormViewModel.mealTypes
-                              .map(
-                                (mt) => DropdownMenuItem(
-                                    value: mt, child: Text(mt)),
-                              )
+                              .map((mt) =>
+                                  DropdownMenuItem(value: mt, child: Text(mt)))
                               .toList(),
                           onChanged: (value) {
                             if (value != null) viewModel.setMealType(value);
@@ -265,7 +300,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                         ),
                         AppTheme.mediumGap,
 
-                        // Bildhantering med UniversalImageManager
+                        // Bildhantering
                         UniversalImageManager.recipeEdit(
                           imageUrls: viewModel.imageUrls,
                           userId: authService.currentUser?.uid ?? '',
@@ -306,8 +341,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                           initialValue: viewModel.portions?.toString() ?? '',
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
-                            labelText: 'Antal portioner',
-                          ),
+                              labelText: 'Antal portioner'),
                           onChanged: viewModel.setPortions,
                           validator: FormValidators.portions(),
                         ),
@@ -317,9 +351,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                         TextFormField(
                           initialValue: viewModel.timeMinutes?.toString() ?? '',
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Tid (minuter)',
-                          ),
+                          decoration:
+                              const InputDecoration(labelText: 'Tid (minuter)'),
                           onChanged: viewModel.setTimeMinutes,
                           validator: FormValidators.cookingTime(),
                         ),
@@ -359,8 +392,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                         TextFormField(
                           initialValue: viewModel.rating?.toString() ?? '',
                           keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
+                              decimal: true),
                           decoration:
                               const InputDecoration(labelText: 'Betyg (0–5)'),
                           onChanged: viewModel.setRating,
@@ -368,17 +400,15 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                         ),
                         AppTheme.mediumGap,
 
-                        // Source URL-fält
+                        // Source URL
                         TextFormField(
                           initialValue: viewModel.sourceUrl ?? '',
                           decoration: InputDecoration(
                             labelText: 'Källa (URL)',
                             hintText: 'https://exempel.com/recept',
                             helperText: 'Länk till originalreceptet',
-                            prefixIcon: Icon(
-                              Icons.link,
-                              size: AppTheme.iconSizeAction,
-                            ),
+                            prefixIcon:
+                                Icon(Icons.link, size: AppTheme.iconSizeAction),
                           ),
                           keyboardType: TextInputType.url,
                           onChanged: viewModel.setSourceUrl,
@@ -392,7 +422,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ],
           ),
 
-          // Loading overlay med UtilityComponents
+          // Loading overlay (över allt)
           if (viewModel.isSaving)
             UtilityComponents.loadingOverlay(
               isLoading: true,
@@ -403,62 +433,117 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  // ✅ BONUS: Helper för att kolla om det är kollaborativt recept
-  bool _isCollaborativeRecipe() {
-    // För nu returnerar vi false, men här kan du lägga till logik
-    // för att kolla om receptet är delat/kollaborativt
-    // Du kan till exempel kolla om recipe.sourceUrl innehåller sharing-info
-    // eller om det finns metadata som indikerar delning
-    return false; // TODO: Implementera check för kollaborativa recept
+  // ✅ NY: Smart AppBar med kollaborativ status
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: Consumer<CollaborativeStatusViewModel>(
+        builder: (context, collaborativeViewModel, child) {
+          // ✅ FIXAT: Använd nya API:et
+          final status = collaborativeViewModel.getRecipeCollaborativeStatus(
+            widget.recipe.id,
+            widget.recipe,
+          );
+
+          final isCollaborative = status.isCollaborative; // ← Hämta bool
+
+          return AppBar(
+            title: const Text('Redigera recept'),
+            backgroundColor: isCollaborative
+                ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                : null,
+            actions: [
+              if (isCollaborative)
+                Padding(
+                  padding: EdgeInsets.only(right: AppTheme.spacingMd),
+                  child: Center(
+                    child: SocialComponents.collaborativeStatusBadge(
+                      text: 'Delat',
+                      icon: Icons.people,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
-  // ✅ SOCIAL COMPONENTS: Mock data för demo - ersätt med riktig data senare
-  List<UserProfile> _getMockParticipants() {
-    return [
-      UserProfile(
-        uid: 'user1',
-        displayName: 'Anna',
-        email: 'anna@example.com',
-        bio: 'Gillar att baka',
-        avatarUrl: null,
-        isSearchable: true,
-        allowEmailSearch: false,
-        publicRecipeCount: 12,
-        friendsCount: 8,
-        joinedAt: DateTime.now().subtract(const Duration(days: 30)),
-        lastActiveAt: DateTime.now().subtract(const Duration(minutes: 5)),
-        isOnline: true,
-      ),
-      UserProfile(
-        uid: 'user2',
-        displayName: 'Erik',
-        email: 'erik@example.com',
-        bio: 'Matlagning är min passion',
-        avatarUrl: null,
-        isSearchable: true,
-        allowEmailSearch: false,
-        publicRecipeCount: 25,
-        friendsCount: 15,
-        joinedAt: DateTime.now().subtract(const Duration(days: 60)),
-        lastActiveAt: DateTime.now().subtract(const Duration(hours: 2)),
-        isOnline: false,
-      ),
-      UserProfile(
-        uid: 'user3',
-        displayName: 'Lisa',
-        email: 'lisa@example.com',
-        bio: 'Hemkock och mamma',
-        avatarUrl: null,
-        isSearchable: true,
-        allowEmailSearch: false,
-        publicRecipeCount: 7,
-        friendsCount: 12,
-        joinedAt: DateTime.now().subtract(const Duration(days: 15)),
-        lastActiveAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        isOnline: true,
-      ),
-      // Fler deltagare här...
-    ];
+// ✅ FÖRBÄTTRAD: Smart banners som visar både collaborative OCH permissions status
+  Widget _buildSmartBanners(BuildContext context) {
+    return Consumer2<CollaborativeStatusViewModel, RecipeFormViewModel>(
+      builder: (context, collaborativeViewModel, recipeViewModel, child) {
+        return Column(
+          children: [
+            // 1. Collaborative banner (om receptet är delat)
+            _buildCollaborativeBanner(context),
+
+            // 2. Permissions banner (visar edit mode)
+            SocialComponents.smartPermissionsBanner(
+              context: context,
+              viewModel: recipeViewModel,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCollaborativeBanner(BuildContext context) {
+    return Consumer<CollaborativeStatusViewModel>(
+      builder: (context, collaborativeViewModel, child) {
+        // 🔍 DEBUG: Kolla SocialRecipeService data
+        final socialService = sl<SocialRecipeService>();
+        debugPrint('🔍 === COLLABORATIVE DEBUG START ===');
+        debugPrint('🔍 Recipe ID we are checking: ${widget.recipe.id}');
+        debugPrint('🔍 Recipe title: "${widget.recipe.title}"');
+        debugPrint(
+            '🔍 Total shared recipes in service: ${socialService.sharedWithMe.length}');
+
+        if (socialService.sharedWithMe.isEmpty) {
+          debugPrint('🔍 ❌ NO shared recipes found - creating test data...');
+          socialService.createTestSharedRecipe(widget.recipe.id);
+          debugPrint('🔍 ✅ Test shared recipe created!');
+        }
+
+        for (final shared in socialService.sharedWithMe) {
+          debugPrint(
+              '🔍 Shared recipe: ${shared.originalRecipeId} by ${shared.sharedByUserId}');
+          if (shared.originalRecipeId == widget.recipe.id) {
+            debugPrint('🔍 ⭐ MATCH! This recipe IS shared!');
+          }
+        }
+
+        // ✅ FIXAT: Använd den nya API:et korrekt
+        final status = collaborativeViewModel.getRecipeCollaborativeStatus(
+          widget.recipe.id,
+          widget.recipe,
+        );
+
+        final isCollaborative =
+            status.isCollaborative; // ← Hämta bool från status
+
+        debugPrint(
+            '🔍 CollaborativeStatusViewModel says isCollaborative: $isCollaborative');
+        debugPrint('🔍 Participants: ${status.participants.length}');
+        debugPrint('🔍 === COLLABORATIVE DEBUG END ===');
+
+        if (!isCollaborative) {
+          debugPrint('🔍 ❌ No collaborative banner shown');
+          return const SizedBox.shrink();
+        }
+
+        debugPrint('🔍 ✅ Showing collaborative banner with real participants');
+        return SocialComponents.collaborativeBanner(
+          title: 'Du redigerar tillsammans med andra',
+          subtitle: 'Ändringar synkas automatiskt med andra deltagare',
+          context: context,
+          contentId: widget.recipe.id,
+          contentType: 'recipe',
+        );
+      },
+    );
   }
 
   Widget _buildDynamicList({

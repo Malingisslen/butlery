@@ -144,15 +144,11 @@ Firestore Database:
 - ⏳ SharedPreferences för inköpslista persistence
 - ⏳ Enhanced notification badges på avatar
 - ⏳ Real user data i friend_requests_view
-- **Estimated: 2-3 timmar**
-
-### **🎯 Optional Social Features (framtida):**
-
-#### **18.4: Enhanced Social Features**
 - ⏳ Comment threading UI i RecipeDetailView
-- ⏳ Push notifications för social events
-- ⏳ Activity feed för vänners aktiviteter
 - **Estimated: 4-5 timmar**
+
+#### **18.4: Delat del av avatar meny**
+- Vy man når från avataren där alla recept, menyer och inköpslistor som delas med användaren kan nås. En vy per kategori samt sökfunktion. 
 
 ---
 
