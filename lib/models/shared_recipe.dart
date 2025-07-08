@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
+import 'permissions/edit_mode.dart';
 
 /// 🔍 AI INFO BLOCK:
 /// Component: Shared Recipe Model - Firebase First - FIXED + DISMISS + isDismissed GETTER
@@ -39,6 +40,7 @@ class SharedRecipe {
   final String? shareMessage; // Optional message with share
   final ShareScope scope;
   final bool allowImport; // Can recipients import/copy
+  final bool allowCollaboration; // 🆕 Can recipients edit collaboratively
   final int viewCount; // How many times viewed
   final int importCount; // How many times imported
   final List<String> viewedByUserIds; // Who has viewed
@@ -59,6 +61,7 @@ class SharedRecipe {
     this.shareMessage,
     this.scope = ShareScope.individual,
     this.allowImport = true,
+    this.allowCollaboration = false, // 🆕 Default: ej kollaborativ
     this.viewCount = 0,
     this.importCount = 0,
     this.viewedByUserIds = const [],
@@ -76,6 +79,7 @@ class SharedRecipe {
     String? shareMessage,
     ShareScope? scope,
     bool allowImport = true,
+    bool allowCollaboration = false, // ✅ NY: Kollaborationsinställning
     required Recipe recipeSnapshot,
   }) {
     // Determine scope based on number of recipients
@@ -94,6 +98,8 @@ class SharedRecipe {
       shareMessage: shareMessage,
       scope: determinedScope,
       allowImport: allowImport,
+      allowCollaboration:
+          allowCollaboration, // ✅ UPPDATERAT: Skicka vidare parametern
       recipeSnapshot: recipeSnapshot,
     );
   }
@@ -105,6 +111,7 @@ class SharedRecipe {
     List<String>? viewedByUserIds,
     List<String>? importedByUserIds,
     List<String>? dismissedByUserIds, // 🆕 Lägg till dismiss tracking
+    bool? allowCollaboration, // 🆕
   }) {
     return SharedRecipe(
       id: id,
@@ -116,6 +123,7 @@ class SharedRecipe {
       shareMessage: shareMessage,
       scope: scope,
       allowImport: allowImport,
+      allowCollaboration: allowCollaboration ?? this.allowCollaboration, // 🆕
       viewCount: viewCount ?? this.viewCount,
       importCount: importCount ?? this.importCount,
       viewedByUserIds: viewedByUserIds ?? List.from(this.viewedByUserIds),
@@ -192,6 +200,25 @@ class SharedRecipe {
     return sharedByUserId == userId || isSharedTo(userId);
   }
 
+  /// 🆕 Kontrollera om användaren kan redigera receptet
+  bool canBeEditedBy(String userId) {
+    // Ägaren kan alltid redigera
+    if (sharedByUserId == userId) return true;
+
+    // Deltagare kan bara redigera om collaboration är tillåtet
+    if (allowCollaboration && sharedToUserIds.contains(userId)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// 🆕 Kontrollera om "Spara min kopia" ska visas
+  bool shouldShowForkOption(String userId) {
+    // Visa alltid för mottagare (oavsett collaborative eller inte)
+    return isSharedTo(userId) && sharedByUserId != userId;
+  }
+
   /// 🆕 Check if should be shown in user's shared list
   bool shouldBeShownTo(String userId) {
     return canBeViewedBy(userId) && !isDismissedBy(userId);
@@ -207,6 +234,23 @@ class SharedRecipe {
       sourceUrl: attributionText,
       // Reset sharing-specific metadata
     );
+  }
+
+  /// 🆕 Bestäm redigeringsläge för användaren
+  EditMode getEditModeFor(String userId) {
+    if (sharedByUserId == userId) {
+      return EditMode.owner; // Ägaren redigerar alltid original
+    }
+
+    if (allowCollaboration && sharedToUserIds.contains(userId)) {
+      return EditMode.collaborative; // Kollaborativ redigering
+    }
+
+    if (sharedToUserIds.contains(userId)) {
+      return EditMode.readOnlyWithFork; // Bara läsning + fork
+    }
+
+    return EditMode.noAccess;
   }
 
   /// Time ago text
@@ -238,6 +282,7 @@ class SharedRecipe {
       'shareMessage': shareMessage,
       'scope': scope.name,
       'allowImport': allowImport,
+      'allowCollaboration': allowCollaboration, // 🆕
       'viewCount': viewCount,
       'importCount': importCount,
       'viewedByUserIds': viewedByUserIds,
@@ -290,6 +335,7 @@ class SharedRecipe {
           orElse: () => ShareScope.individual,
         ),
         allowImport: data['allowImport'] as bool? ?? true,
+        allowCollaboration: data['allowCollaboration'] as bool? ?? false, // 🆕
         viewCount: data['viewCount'] as int? ?? 0,
         importCount: data['importCount'] as int? ?? 0,
         viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
@@ -351,6 +397,7 @@ class SharedRecipe {
       'shareMessage': shareMessage,
       'scope': scope.name,
       'allowImport': allowImport,
+      'allowCollaboration': allowCollaboration, // 🆕
       'viewCount': viewCount,
       'importCount': importCount,
       'viewedByUserIds': viewedByUserIds,

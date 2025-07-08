@@ -113,6 +113,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
   bool _isSharing = false;
   String? _errorMessage;
   String _searchQuery = '';
+  bool allowCollaboration = false;
 
   // Services
   late final SocialRecipeService _socialRecipeService;
@@ -842,6 +843,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       recipe: recipe,
       friendUserIds: _selectedFriendIds.toList(),
       message: message,
+      allowCollaboration: allowCollaboration,
     );
 
     if (!success) {
@@ -859,6 +861,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       menu: menu,
       friendUserIds: _selectedFriendIds.toList(),
       message: message,
+      allowCollaboration: allowCollaboration,
     );
 
     if (!success) {
