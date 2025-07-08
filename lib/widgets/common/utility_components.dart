@@ -27,6 +27,7 @@ import '../../services/friend_categories_service.dart';
 import '../../theme/app_theme.dart';
 import '../../core/utils/logger.dart';
 import 'state_widget.dart';
+import '../../models/permissions/edit_mode.dart';
 
 /// UtilityComponents - Den kompletta utility widget API:en
 ///
@@ -361,6 +362,196 @@ class UtilityComponents {
         subtitle: 'Snabbval via kategorier',
       ),
     );
+  }
+
+// ============================================================================
+  // === PERMISSIONS ACTION BUTTONS (NYA TILLÄGG FÖR KOLLABORATIV REDIGERING) ===
+  // ============================================================================
+
+  /// Action buttons baserat på användares permissions för kollaborativ redigering
+  ///
+  /// Visar olika knappar beroende på användarens rättigheter:
+  /// - Ägare: "Spara ändringar" (standard save)
+  /// - Collaborator: "Spara ändringar" + "Spara min kopia" (både save och fork)
+  /// - Viewer: "Spara min kopia" (endast fork)
+  static Widget permissionsActionButtons({
+    required BuildContext context,
+    required EditMode editMode,
+    VoidCallback? onSave,
+    VoidCallback? onFork,
+    bool isSaving = false,
+    bool isForking = false,
+    String? saveLabel,
+    String? forkLabel,
+    bool isExpanded = true,
+  }) {
+    // Dynamiska labels baserat på edit mode
+    final effectiveSaveLabel = saveLabel ?? _getSaveLabel(editMode);
+    final effectiveForkLabel = forkLabel ?? _getForkLabel(editMode);
+
+    switch (editMode) {
+      case EditMode.owner:
+        // Ägare: Endast "Spara ändringar"
+        return primaryButton(
+          context,
+          label: effectiveSaveLabel,
+          onPressed: isSaving ? null : onSave,
+          icon: Icons.save,
+          isLoading: isSaving,
+          loadingText: 'Sparar...',
+          isExpanded: isExpanded,
+        );
+
+      case EditMode.collaborative:
+        // Collaborator: Både "Spara ändringar" och "Spara min kopia"
+        return Column(
+          children: [
+            primaryButton(
+              context,
+              label: effectiveSaveLabel,
+              onPressed: isSaving ? null : onSave,
+              icon: Icons.save,
+              isLoading: isSaving,
+              loadingText: 'Sparar...',
+              isExpanded: isExpanded,
+            ),
+            AppTheme.smallGap,
+            outlinedButton(
+              context,
+              label: effectiveForkLabel,
+              onPressed: isForking ? null : onFork,
+              icon: Icons.content_copy,
+              isLoading: isForking,
+              loadingText: 'Skapar kopia...',
+              isExpanded: isExpanded,
+            ),
+          ],
+        );
+
+      case EditMode.readOnlyWithFork:
+        // Viewer: Endast "Spara min kopia"
+        return primaryButton(
+          context,
+          label: effectiveForkLabel,
+          onPressed: isForking ? null : onFork,
+          icon: Icons.content_copy,
+          isLoading: isForking,
+          loadingText: 'Skapar kopia...',
+          isExpanded: isExpanded,
+        );
+
+      case EditMode.noAccess:
+        // Ingen åtkomst: Ingen knapp
+        return Container(
+          padding: EdgeInsets.all(AppTheme.spacingMd),
+          decoration: BoxDecoration(
+            color: AppTheme.errorColor.withValues(alpha: 0.1),
+            borderRadius: AppTheme.mediumRadius,
+            border: Border.all(color: AppTheme.errorColor),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.block, color: AppTheme.errorColor),
+              AppTheme.smallHorizontalGap,
+              Text('Ingen åtkomst', style: AppTheme.errorTextStyle),
+            ],
+          ),
+        );
+    }
+  }
+
+  /// Horizontal layout för permissions buttons (för mindre skärmar)
+  static Widget permissionsActionButtonsHorizontal({
+    required BuildContext context,
+    required EditMode editMode,
+    VoidCallback? onSave,
+    VoidCallback? onFork,
+    bool isSaving = false,
+    bool isForking = false,
+    String? saveLabel,
+    String? forkLabel,
+  }) {
+    final effectiveSaveLabel = saveLabel ?? _getSaveLabel(editMode);
+    final effectiveForkLabel = forkLabel ?? _getForkLabel(editMode);
+
+    switch (editMode) {
+      case EditMode.owner:
+        return primaryButton(
+          context,
+          label: effectiveSaveLabel,
+          onPressed: isSaving ? null : onSave,
+          icon: Icons.save,
+          isLoading: isSaving,
+          isExpanded: true,
+        );
+
+      case EditMode.collaborative:
+        return Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: primaryButton(
+                context,
+                label: effectiveSaveLabel,
+                onPressed: isSaving ? null : onSave,
+                icon: Icons.save,
+                isLoading: isSaving,
+              ),
+            ),
+            AppTheme.smallHorizontalGap,
+            Expanded(
+              child: outlinedButton(
+                context,
+                label: 'Kopia',
+                onPressed: isForking ? null : onFork,
+                icon: Icons.content_copy,
+                isLoading: isForking,
+              ),
+            ),
+          ],
+        );
+
+      case EditMode.readOnlyWithFork:
+        return primaryButton(
+          context,
+          label: effectiveForkLabel,
+          onPressed: isForking ? null : onFork,
+          icon: Icons.content_copy,
+          isLoading: isForking,
+          isExpanded: true,
+        );
+
+      case EditMode.noAccess:
+        return SizedBox.shrink(); // Ingen knapp för ingen åtkomst
+    }
+  }
+
+  /// Helper för att få rätt save label baserat på edit mode
+  static String _getSaveLabel(EditMode editMode) {
+    switch (editMode) {
+      case EditMode.owner:
+        return 'Spara ändringar';
+      case EditMode.collaborative:
+        return 'Spara ändringar';
+      case EditMode.readOnlyWithFork:
+        return 'Spara min kopia'; // ReadOnly kan bara fork:a
+      case EditMode.noAccess:
+        return 'Ingen åtkomst'; // Används aldrig
+    }
+  }
+
+  /// Helper för att få rätt fork label baserat på edit mode
+  static String _getForkLabel(EditMode editMode) {
+    switch (editMode) {
+      case EditMode.owner:
+        return 'Spara som ny'; // Används sällan
+      case EditMode.collaborative:
+        return 'Spara min kopia';
+      case EditMode.readOnlyWithFork:
+        return 'Spara min kopia';
+      case EditMode.noAccess:
+        return 'Ingen åtkomst'; // Används aldrig
+    }
   }
 
   // ============================================================================

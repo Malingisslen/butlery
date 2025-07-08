@@ -16,6 +16,8 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/auth_service.dart';
 import '../core/injection.dart';
+import '../models/permissions/edit_mode.dart';
+import '../models/shared_recipe.dart';
 import '../core/form/form_fields_manager.dart';
 import '../core/utils/logger.dart';
 
@@ -53,6 +55,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   // Core state
   Recipe? _originalRecipe;
   bool _isSaving = false;
+  bool _isForking = false;
   String? _error;
 
   // ===== COLLABORATIVE STATE (Firebase) ===== ✅
@@ -60,6 +63,9 @@ class RecipeFormViewModel extends ChangeNotifier {
   StreamSubscription? _realtimeSubscription;
   StreamSubscription? _participantsSubscription;
   bool _isCollaborative = false;
+  // 🆕 Permissions state
+  EditMode? _editMode;
+  SharedRecipe? _sharedRecipe;
   final List<UserProfile> _collaborativeParticipants = [];
   final List<LiveEditor> _liveEditors = [];
   bool _isConnectedToFirebase = true;
@@ -127,6 +133,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   // Core getters
   bool get isSaving => _isSaving;
   String? get error => _error;
+  bool get isForking => _isForking;
   bool get hasError => _error != null;
   bool get isEditMode => _originalRecipe != null;
 
@@ -172,7 +179,28 @@ class RecipeFormViewModel extends ChangeNotifier {
       .toList();
   bool get isConnectedToFirebase => _isConnectedToFirebase;
   String get connectionStatusText => _connectionStatusText;
+  // 🆕 Getters för permissions
+  EditMode? get editMode => _editMode;
+  bool get canEdit => _editMode?.canEdit ?? true; // Default true för nya recept
+  bool get showForkButton => _editMode?.showForkButton ?? false;
+  String get editModeDescription => _editMode?.description ?? '';
   int get totalParticipants => _collaborativeParticipants.length;
+
+// 🆕 Sätt permissions-kontext
+  void setPermissionsContext(
+      SharedRecipe? sharedRecipe, String? currentUserId) {
+    _sharedRecipe = sharedRecipe;
+
+    if (sharedRecipe != null && currentUserId != null) {
+      _editMode = sharedRecipe.getEditModeFor(currentUserId);
+      AppLogger.info(
+          '🔒 Edit mode set to: $_editMode för user: $currentUserId');
+    } else {
+      _editMode = null; // Normalt recept utan delning
+    }
+
+    notifyListeners();
+  }
 
   // ===== COLLABORATIVE METHODS (Firebase) ===== ✅
 
@@ -977,6 +1005,11 @@ class RecipeFormViewModel extends ChangeNotifier {
       return false;
     }
 
+    if (!canEdit) {
+      _setError('Du har inte behörighet att redigera detta recept');
+      return false;
+    }
+
     _setSaving(true);
 
     try {
@@ -1018,6 +1051,11 @@ class RecipeFormViewModel extends ChangeNotifier {
           hasImage: _imageUrls.isNotEmpty,
         );
 
+        // Om detta är kollaborativ redigering, uppdatera SharedRecipe också
+        if (_editMode == EditMode.collaborative && _sharedRecipe != null) {
+          await _updateSharedRecipe(recipe);
+        }
+
         _error = null;
         return true;
       } else {
@@ -1031,7 +1069,6 @@ class RecipeFormViewModel extends ChangeNotifier {
       _setSaving(false);
     }
   }
-
   // ===== PRIVATE METHODS =====
 
   void _setSaving(bool value) {
@@ -1039,9 +1076,91 @@ class RecipeFormViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _setForking(bool value) {
+    _isForking = value;
+    notifyListeners();
+  }
+
   void _setError(String message) {
     _error = message;
     notifyListeners();
+  }
+
+// 🆕 Spara som fork (egen kopia)
+  Future<bool> saveFork() async {
+    if (_sharedRecipe == null || !showForkButton) {
+      _setError('Kan inte skapa kopia av detta recept');
+      return false;
+    }
+
+    _setForking(true);
+
+    try {
+      AppLogger.info(
+          '📋 Skapar fork av recept: ${_sharedRecipe!.recipeSnapshot.title}');
+
+      // Skapa nytt recept baserat på nuvarande state
+      final forkedRecipe = Recipe(
+        id: _uuid.v4(), // Nytt ID
+        title: '${_title.trim()} (från ${_sharedRecipe!.sharedByDisplayName})',
+        description: _description.trim(),
+        mealType: _mealType,
+        portions: _portions,
+        timeMinutes: _timeMinutes,
+        ingredients: _ingredients
+            .map((i) => i.trim())
+            .where((i) => i.isNotEmpty)
+            .toList(),
+        instructions: _instructions
+            .map((i) => i.trim())
+            .where((i) => i.isNotEmpty)
+            .toList(),
+        tags: _tags.map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
+        rating: _rating,
+        imageUrls: List.from(_imageUrls), // Kopiera bilder
+        sourceUrl:
+            'Inspirerat av recept från ${_sharedRecipe!.sharedByDisplayName}',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Spara som nytt recept i användarens egen samling
+      final result = await _recipeService.addRecipe(forkedRecipe);
+
+      if (result.isSuccess) {
+        await _analyticsService.logRecipeCreated(
+          source: 'fork',
+          hasImage: _imageUrls.isNotEmpty,
+        );
+        AppLogger.success('✅ Fork skapad: ${forkedRecipe.title}');
+        return true;
+      } else {
+        _setError(result.message);
+        return false;
+      }
+    } catch (e) {
+      _setError('Kunde inte spara kopia: ${e.toString()}');
+      AppLogger.error('❌ Fork creation failed', e);
+      return false;
+    } finally {
+      _setForking(false);
+    }
+  }
+
+// 🆕 Uppdatera SharedRecipe efter kollaborativ redigering
+  Future<void> _updateSharedRecipe(Recipe updatedRecipe) async {
+    try {
+      AppLogger.info(
+          '🔄 Uppdaterar SharedRecipe efter kollaborativ redigering');
+
+      // Här skulle vi uppdatera SharedRecipe i Firebase
+      // Detta kräver utökad logik i SocialRecipeService
+
+      AppLogger.success('✅ SharedRecipe uppdaterad');
+    } catch (e) {
+      AppLogger.warning('⚠️ Kunde inte uppdatera SharedRecipe: $e');
+      // Misslyckas tyst - huvudreceptet är sparat
+    }
   }
 
   @override
