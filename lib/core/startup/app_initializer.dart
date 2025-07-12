@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 // Services
@@ -110,6 +111,9 @@ class AppInitializer {
         debugPrint('✅ Firebase redan initierad (${Firebase.apps.length} apps)');
       }
 
+      // Initiera App Check för säkerhet
+      await _initializeAppCheck();
+
       // Utför Firestore-ping om användare är inloggad
       await _performFirestorePing();
     } on FirebaseException catch (e) {
@@ -122,6 +126,23 @@ class AppInitializer {
     } catch (e) {
       debugPrint('❌ Generellt Firebase-fel: $e');
       debugPrint('⚠️ Vissa Firebase-funktioner kanske inte fungerar');
+    }
+  }
+
+  /// Initierar Firebase App Check för säkerhet
+  static Future<void> _initializeAppCheck() async {
+    try {
+      await FirebaseAppCheck.instance.activate(
+        // För development/debug använd debug provider
+        // För production ska du använda rätt provider för varje plattform
+        androidProvider: AndroidProvider.debug,
+        appleProvider: AppleProvider.debug,
+        webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
+      );
+      debugPrint('✅ Firebase App Check aktiverat');
+    } catch (e) {
+      debugPrint('⚠️ App Check kunde inte aktiveras: $e');
+      debugPrint('⚠️ Fortsätter utan App Check (utvecklingsläge)');
     }
   }
 
