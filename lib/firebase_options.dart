@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBe9gCXL9iNWm-BQbMd1okjVedVN8e5JIE',
-    appId: '1:123359108218:web:26bf8ce40cdd7d8e016fc3',
-    messagingSenderId: '123359108218',
-    projectId: 'butlery-database',
-    authDomain: 'butlery-database.firebaseapp.com',
-    storageBucket: 'butlery-database.firebasestorage.app',
-    measurementId: 'G-3BG94M2KX9',
+    apiKey: 'AIzaSyAZV38BdC1VBes0N-oiLdk1yi5xS_xKZ8g',
+    appId: '1:976357691692:web:3e70520a0ac19514e4dc89',
+    messagingSenderId: '976357691692',
+    projectId: 'butlery-app-1',
+    authDomain: 'butlery-app-1.firebaseapp.com',
+    storageBucket: 'butlery-app-1.firebasestorage.app',
+    measurementId: 'G-8Z7NX2QXW5',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC8vKil6agqVFqU1UfnAkVA3XPq9BPd8Yw',
-    appId: '1:123359108218:android:e425e2e2b79a4b7a016fc3',
-    messagingSenderId: '123359108218',
-    projectId: 'butlery-database',
-    storageBucket: 'butlery-database.firebasestorage.app',
+    apiKey: 'AIzaSyBbmWnBxoQ4CYvvoMMFraZTRRD83qp8kew',
+    appId: '1:976357691692:android:4a2e41f5eb04e0c2e4dc89',
+    messagingSenderId: '976357691692',
+    projectId: 'butlery-app-1',
+    storageBucket: 'butlery-app-1.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyA6bix6FC1v6Dca-v2aCvOVbWEt_M4Rs44',
-    appId: '1:123359108218:ios:8d43baf7adbd6322016fc3',
-    messagingSenderId: '123359108218',
-    projectId: 'butlery-database',
-    storageBucket: 'butlery-database.firebasestorage.app',
+    apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
+    appId: '1:976357691692:ios:714dacad784ca7b7e4dc89',
+    messagingSenderId: '976357691692',
+    projectId: 'butlery-app-1',
+    storageBucket: 'butlery-app-1.firebasestorage.app',
     iosBundleId: 'com.example.butlery',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyA6bix6FC1v6Dca-v2aCvOVbWEt_M4Rs44',
-    appId: '1:123359108218:ios:8d43baf7adbd6322016fc3',
-    messagingSenderId: '123359108218',
-    projectId: 'butlery-database',
-    storageBucket: 'butlery-database.firebasestorage.app',
+    apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
+    appId: '1:976357691692:ios:714dacad784ca7b7e4dc89',
+    messagingSenderId: '976357691692',
+    projectId: 'butlery-app-1',
+    storageBucket: 'butlery-app-1.firebasestorage.app',
     iosBundleId: 'com.example.butlery',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBe9gCXL9iNWm-BQbMd1okjVedVN8e5JIE',
-    appId: '1:123359108218:web:0ea653801d91ed24016fc3',
-    messagingSenderId: '123359108218',
-    projectId: 'butlery-database',
-    authDomain: 'butlery-database.firebaseapp.com',
-    storageBucket: 'butlery-database.firebasestorage.app',
-    measurementId: 'G-RTZ9SQPR2V',
+    apiKey: 'AIzaSyAZV38BdC1VBes0N-oiLdk1yi5xS_xKZ8g',
+    appId: '1:976357691692:web:2b6a8efd2740a521e4dc89',
+    messagingSenderId: '976357691692',
+    projectId: 'butlery-app-1',
+    authDomain: 'butlery-app-1.firebaseapp.com',
+    storageBucket: 'butlery-app-1.firebasestorage.app',
+    measurementId: 'G-SK8VB3DFE0',
   );
+
 }

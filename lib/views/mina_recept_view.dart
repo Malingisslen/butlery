@@ -17,6 +17,7 @@ import '../../services/user_service.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
+import '../../core/constants/routes.dart';
 
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
@@ -224,6 +225,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               user: userService.currentUserProfile,
               size: ImageSize.medium,
               showStatus: true,
+              clickable: true,
+              onTap: () => LayoutComponents.showProfileMenu(
+                context,
+                userImageUrl: userService.currentUserProfile?.avatarUrl,
+                displayName: userService.currentUserProfile?.displayName ?? 'Användare',
+                email: userService.currentUserProfile?.email,
+                onEditProfile: () => Navigator.pushNamed(context, Routes.profileEdit),
+                onViewFriends: () => Navigator.pushNamed(context, Routes.friends),
+                onViewShared: () => Navigator.pushNamed(context, Routes.shared),
+                onViewNotifications: () => Navigator.pushNamed(context, Routes.friendRequests),
+              ),
             ),
             // ✅ TOTAL NOTIFICATION BADGE
             if (totalNotifications > 0)
