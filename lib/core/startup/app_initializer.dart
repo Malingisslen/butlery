@@ -31,45 +31,68 @@ import '../../firebase_options.dart';
 /// }
 /// ```
 class AppInitializer {
-  /// Huvudmetod som kör all app-initialization
+  static bool _isBackgroundInitialized = false;
+  static bool get isBackgroundInitialized => _isBackgroundInitialized;
+  /// 🚀 PERFORMANCE FIX: Critical initialization only (before runApp)
   ///
-  /// Kör dessa steg i ordning:
+  /// Kör bara absolut nödvändiga steg:
   /// 1. Flutter-bindningar
   /// 2. Svenska lokaliseringar
+  static Future<void> initializeCritical() async {
+    debugPrint('🚀 === BUTLERY APP INITIALIZATION START ===');
+
+    try {
+      // 1️⃣ Säkerställ Flutter-bindningar (KRITISKT)
+      await _initializeFlutterBindings();
+
+      // 2️⃣ Initiera svenska lokaliseringar (KRITISKT för UI)
+      await _initializeLocalization();
+
+      debugPrint('✅ Critical initialization complete - starting UI');
+    } catch (e, stackTrace) {
+      debugPrint('❌ KRITISKT FEL vid critical initialization: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow; // Critical errors should stop the app
+    }
+  }
+
+  /// 🚀 PERFORMANCE FIX: Background initialization (after runApp starts)
+  ///
+  /// Kör tunga steg i bakgrunden:
   /// 3. Firebase initialization
   /// 4. Analytics setup
   /// 5. Dependency Injection
   /// 6. Offline Service (Hive)
-  static Future<void> initialize() async {
-    debugPrint('🚀 === BUTLERY APP INITIALIZATION START ===');
-
+  static Future<void> initializeBackground() async {
     try {
-      // 1️⃣ Säkerställ Flutter-bindningar
-      await _initializeFlutterBindings();
-
-      // 2️⃣ Initiera svenska lokaliseringar
-      await _initializeLocalization();
-
-      // 3️⃣ Initiera Firebase
+      // 3️⃣ Initiera Firebase (TUNGT - kan köras i bakgrunden)
       await _initializeFirebase();
 
-      // 4️⃣ Initiera Analytics
+      // 4️⃣ Initiera Analytics (TUNGT - kan köras i bakgrunden)
       await _initializeAnalytics();
 
-      // 5️⃣ Initiera Dependency Injection
+      // 5️⃣ Initiera Dependency Injection (TUNGT - kan köras i bakgrunden)
       await _initializeDependencyInjection();
 
-      // 6️⃣ Initiera Offline Service
+      // 6️⃣ Initiera Offline Service (TUNGT - kan köras i bakgrunden)
       await _initializeOfflineService();
 
+      _isBackgroundInitialized = true;
       debugPrint('✅ === BUTLERY APP INITIALIZATION COMPLETE ===');
     } catch (e, stackTrace) {
-      debugPrint('❌ KRITISKT FEL vid app-initialization: $e');
+      debugPrint('❌ FEL vid background initialization: $e');
       debugPrint('Stack trace: $stackTrace');
 
-      // Låt appen fortsätta även vid fel, men logga allvarligt
+      // Background errors shouldn't crash the app, men logga allvarligt
       debugPrint('⚠️ Appen fortsätter med begränsad funktionalitet');
+      _isBackgroundInitialized = true; // Mark as "done" even on error
     }
+  }
+
+  /// @deprecated Use initializeCritical() and initializeBackground() instead
+  static Future<void> initialize() async {
+    await initializeCritical();
+    await initializeBackground();
   }
 
   /// 1️⃣ Säkerställer att Flutter-bindningar är klara
