@@ -41,6 +41,7 @@ class SocialRecipeService extends ChangeNotifier {
   List<SharedMenu> _menusSharedWithMe = [];
   final Map<String, List<RecipeComment>> _recipeComments = {};
   bool _isLoading = false;
+  bool _hasLoadedContent = false; // 🚀 Track if content has been loaded at least once
   String? _error;
 
   // Constants
@@ -68,6 +69,7 @@ class SocialRecipeService extends ChangeNotifier {
   }
 
   bool get isLoading => _isLoading;
+  bool get hasLoadedContent => _hasLoadedContent; // 🚀 Check if content has been loaded
   String? get error => _error;
   bool get hasError => _error != null;
   String? get currentUserId => _auth.currentUser?.uid;
@@ -147,15 +149,17 @@ class SocialRecipeService extends ChangeNotifier {
 
     _auth.authStateChanges().listen((user) {
       if (user != null) {
-        _loadSharedContent();
+        // 🚀 PERFORMANCE FIX: Delayed loading to prevent startup frame skipping
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          _loadSharedContent();
+        });
       } else {
         _clearAll();
       }
     });
 
-    if (_auth.currentUser != null) {
-      await _loadSharedContent();
-    }
+    // Note: No immediate loading here - auth listener will handle current user
+    AppLogger.info('🚀 SocialRecipeService initialized with delayed content loading via auth listener');
   }
 
   // ==================== 🆕 SHOPPING SHARE METOD ====================
@@ -1053,6 +1057,13 @@ class SocialRecipeService extends ChangeNotifier {
       return;
     }
 
+    // 🚀 PERFORMANCE FIX: Prevent concurrent loading
+    if (_isLoading) {
+      AppLogger.info('⏳ Shared content already loading - skipping duplicate request');
+      return;
+    }
+
+    _isLoading = true;
     AppLogger.info('🔄 Laddar delat innehåll för användare: $userId');
 
     try {
@@ -1066,13 +1077,17 @@ class SocialRecipeService extends ChangeNotifier {
         '📤 Shared content loading komplett: ${_sharedWithMe.length} recept, ${_menusSharedWithMe.length} menyer',
       );
 
+      _hasLoadedContent = true; // 🚀 Mark content as loaded
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Generellt fel vid laddning av delat innehåll', e);
       // Säkerställ att vi har tomma listor så UI inte kraschar
       _sharedWithMe = [];
       _menusSharedWithMe = [];
+      _hasLoadedContent = true; // 🚀 Mark as attempted even on error
       notifyListeners();
+    } finally {
+      _isLoading = false; // 🚀 Always reset loading state
     }
   }
 
@@ -1195,6 +1210,11 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// Refresh all data
   Future<void> refresh() async {
+    await _loadSharedContent();
+  }
+
+  /// 🚀 Force immediate loading for notification badges (bypasses delayed loading)
+  Future<void> loadImmediately() async {
     await _loadSharedContent();
   }
 

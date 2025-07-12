@@ -60,12 +60,16 @@ import 'views/social/create_shared_shopping_list_view.dart';
 import 'views/social/friend_profile_view.dart';
 
 // ✅ DRAMATISKT FÖRENKLAD main() funktion - NER FRÅN 693 RADER!
+// 🚀 PERFORMANCE FIX: Split initialization to prevent frame skipping
 Future<void> main() async {
-  // All initialization (Firebase, lokalisering, DI, services) sköts nu av AppInitializer
-  await AppInitializer.initialize();
+  // Only critical initialization before runApp to prevent UI blocking
+  await AppInitializer.initializeCritical();
 
-  // Starta appen
+  // Start app immediately for faster UI
   runApp(const ButleryApp());
+
+  // Complete remaining initialization in background
+  AppInitializer.initializeBackground();
 }
 
 class ButleryApp extends StatefulWidget {
@@ -79,10 +83,8 @@ class _ButleryAppState extends State<ButleryApp> {
   // Global key för navigation
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
-  // Analytics observer för route tracking
-  final FirebaseAnalyticsObserver _analyticsObserver =
-      AnalyticsService().observer ??
-          FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
+  // Analytics observer för route tracking - safe fallback during initialization
+  FirebaseAnalyticsObserver? _analyticsObserver;
 
   // Stream subscription för delningar
   late StreamSubscription<SharedMedia> _shareSubscription;
@@ -90,7 +92,30 @@ class _ButleryAppState extends State<ButleryApp> {
   @override
   void initState() {
     super.initState();
+    _waitForBackgroundInitialization();
+  }
+
+  /// Wait for background initialization to complete before setting up services
+  Future<void> _waitForBackgroundInitialization() async {
+    // Wait for background initialization to complete
+    while (!AppInitializer.isBackgroundInitialized) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    
+    // Now safe to initialize services
+    _initAnalyticsObserver();
     _initShareHandler();
+  }
+
+  /// Initialize analytics observer after background initialization
+  void _initAnalyticsObserver() {
+    try {
+      _analyticsObserver = AnalyticsService().observer ??
+          FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
+      setState(() {}); // Update UI with analytics observer
+    } catch (e) {
+      debugPrint('⚠️ Analytics observer initialization failed: $e');
+    }
   }
 
   /// Initierar share handler för att ta emot delningar från andra appar
@@ -163,18 +188,18 @@ class _ButleryAppState extends State<ButleryApp> {
       value: OfflineService(), // Singleton instance
       child: MaterialApp(
         navigatorKey: _navigatorKey, // Viktigt för global navigation
-        navigatorObservers: [_analyticsObserver], // Analytics tracking
+        navigatorObservers: _analyticsObserver != null ? [_analyticsObserver!] : [], // Analytics tracking (safe)
         title: 'Butlery',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
-        // Använd inte initialRoute, vi hanterar detta med AuthWrapper
-        home: const AuthWrapper(),
+        // Använd inte initialRoute, vi hanterar detta med InitializationWrapper
+        home: const InitializationWrapper(),
         onUnknownRoute: (settings) => _errorRoute(settings.name),
         onGenerateRoute: (settings) {
           try {
             switch (settings.name) {
               case '/':
-                return _route(const AuthWrapper(), settings);
+                return _route(const InitializationWrapper(), settings);
 
               case '/auth':
                 return _route(const AuthView(), settings);
@@ -501,6 +526,84 @@ class _ButleryAppState extends State<ButleryApp> {
 
 /// AuthWrapper lyssnar på auth state changes och visar rätt vy
 ///
+/// InitializationWrapper - väntar på bakgrundsinitiering innan AuthWrapper visas
+class InitializationWrapper extends StatefulWidget {
+  const InitializationWrapper({super.key});
+
+  @override
+  State<InitializationWrapper> createState() => _InitializationWrapperState();
+}
+
+class _InitializationWrapperState extends State<InitializationWrapper> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _waitForInitialization();
+  }
+
+  Future<void> _waitForInitialization() async {
+    // Wait for background initialization to complete
+    while (!AppInitializer.isBackgroundInitialized) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      // Show loading screen while waiting for Firebase initialization
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App-ikon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  borderRadius: AppTheme.roundRadius,
+                ),
+                child: Icon(
+                  Icons.restaurant_menu,
+                  size: AppTheme.iconSizeHero,
+                  color: Colors.white,
+                ),
+              ),
+              AppTheme.largeGap,
+              
+              // Loading indicator
+              const CircularProgressIndicator(),
+              AppTheme.mediumGap,
+              
+              // Loading text
+              Text(
+                'Startar Butlery...',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppTheme.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Background initialization complete - show AuthWrapper
+    return const AuthWrapper();
+  }
+}
+
 /// Detta är den centrala punkten för autentiseringsflödet:
 /// - Om användare är inloggad → MinaReceptView
 /// - Om användare är utloggad → AuthView

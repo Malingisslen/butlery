@@ -403,6 +403,13 @@ class MenuViewModel extends ChangeNotifier {
 
       final importedMenus = <SavedMenuInfo>[];
 
+      // 🚀 PERFORMANCE FIX: Skip loading imported menus if social content hasn't been loaded yet
+      // This prevents triggering Firebase queries during app startup
+      if (!_socialService.hasLoadedContent) {
+        AppLogger.info('🚀 Skipping imported menus - social content not loaded yet');
+        return [];
+      }
+
       // Hämta importerade menyer från social service
       for (final sharedMenu in _socialService.menusSharedWithMe) {
         if (sharedMenu.isImportedBy(currentUserId)) {
