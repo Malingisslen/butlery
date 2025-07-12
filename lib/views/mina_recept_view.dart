@@ -64,23 +64,29 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     });
   }
 
-  /// ✅ SÄKER metod för att ladda social data
+  /// ✅ SÄKER metod för att ladda social data - nu optimerad för att undvika dublettladdningar
   void _safeLoadSocialData() {
     try {
-      final friendsViewModel = context.read<FriendsViewModel>();
-      final sharedContentViewModel = context.read<SharedContentViewModel>();
+      // 🚀 PERFORMANCE FIX: Only refresh if content hasn't been loaded yet
+      // SocialRecipeService handles initial loading automatically via auth listener
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (!mounted) return;
+        
+        try {
+          final friendsViewModel = context.read<FriendsViewModel>();
+          final sharedContentViewModel = context.read<SharedContentViewModel>();
 
-      // ✅ SAFE: Kontrollera att ViewModels inte är disposed innan användning
-      if (mounted) {
-        AppLogger.info('🔄 Laddar social data för MinaReceptView...');
+          // Only refresh friends - SharedContentViewModel loads automatically via service
+          AppLogger.info('🔄 Refreshing friends data for MinaReceptView (delayed)...');
+          friendsViewModel.refresh();
 
-        friendsViewModel.refresh();
-        sharedContentViewModel.refresh();
-
-        AppLogger.success('✅ Social data laddar för MinaReceptView');
-      }
+          AppLogger.success('✅ Friends data refreshed for MinaReceptView (delayed)');
+        } catch (e) {
+          AppLogger.error('❌ Fel vid delayed friends data refresh i MinaReceptView', e);
+        }
+      });
     } catch (e) {
-      AppLogger.error('❌ Fel vid laddning av social data i MinaReceptView', e);
+      AppLogger.error('❌ Fel vid setup av delayed friends refresh i MinaReceptView', e);
     }
   }
 
