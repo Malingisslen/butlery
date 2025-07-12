@@ -1313,6 +1313,11 @@ class _ProfileMenuState extends State<_ProfileMenu> {
     try {
       final authService = sl<AuthService>();
       await authService.signOut();
+      
+      // Stäng profil-menyn och navigera till login
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/auth', (route) => false);
+      }
     } catch (e) {
       if (mounted) {
         _showError('Kunde inte logga ut: $e');

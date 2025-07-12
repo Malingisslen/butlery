@@ -20,6 +20,7 @@ dependencies:
   cloud_firestore: ^5.4.4
   firebase_storage: ^12.3.2
   firebase_analytics: ^11.3.3
+  firebase_app_check: ^0.3.2+7
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
