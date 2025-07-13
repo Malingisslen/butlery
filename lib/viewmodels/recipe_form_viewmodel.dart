@@ -16,6 +16,7 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/auth_service.dart';
 import '../core/injection.dart';
+import '../repositories/collaborative_recipe_repository.dart';
 import '../models/permissions/edit_mode.dart';
 import '../models/shared_recipe.dart';
 import '../core/form/form_fields_manager.dart';
@@ -28,7 +29,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
   final AuthService _authService;
-  final FirebaseFirestore _firestore;
+  final CollaborativeRecipeRepository _collaborativeRepository;
   final _uuid = const Uuid();
 
   // FormFieldsManagers för dynamiska fält
@@ -87,7 +88,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     StorageService? storageService,
     ImagePickerService? imagePickerService,
     AuthService? authService,
-    FirebaseFirestore? firestore,
+    CollaborativeRecipeRepository? collaborativeRepository,
     Recipe? initialRecipe,
     bool isTemplate = false,
   })  : _recipeService = recipeService ?? sl<RecipeService>(),
@@ -95,7 +96,8 @@ class RecipeFormViewModel extends ChangeNotifier {
         _storageService = storageService ?? sl<StorageService>(),
         _imagePickerService = imagePickerService ?? sl<ImagePickerService>(),
         _authService = authService ?? sl<AuthService>(),
-        _firestore = firestore ?? FirebaseFirestore.instance {
+        _collaborativeRepository =
+            collaborativeRepository ?? sl<CollaborativeRecipeRepository>() {
     _ingredientsManager = FormFieldsManager();
     _instructionsManager = FormFieldsManager();
     _tagsManager = FormFieldsManager();
@@ -207,11 +209,8 @@ class RecipeFormViewModel extends ChangeNotifier {
         ownerDisplayName: userDisplayName,
       );
 
-      // Spara till Firebase
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .set(_realtimeRecipe!.toFirestore());
+      // Spara till Firebase via repository
+      await _collaborativeRepository.createRealtimeRecipe(_realtimeRecipe!);
 
       // Sätt upp real-time listeners
       await _setupRealtimeListeners();
@@ -239,11 +238,8 @@ class RecipeFormViewModel extends ChangeNotifier {
       _realtimeRecipe =
           _realtimeRecipe!.addParticipant(userId, userDisplayName, permission);
 
-      // Spara till Firebase
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .update(_realtimeRecipe!.toFirestore());
+      // Spara till Firebase via repository
+      await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info('Användare inbjuden till collaboration: $userDisplayName');
     } catch (e) {
@@ -259,10 +255,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     try {
       _realtimeRecipe = _realtimeRecipe!.removeParticipant(userId);
 
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .update(_realtimeRecipe!.toFirestore());
+      await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info('Användare borttagen från collaboration: $userId');
     } catch (e) {
@@ -312,10 +305,8 @@ class RecipeFormViewModel extends ChangeNotifier {
     if (_realtimeRecipe == null) return;
 
     // Lyssna på RealtimeRecipe ändringar
-    _realtimeSubscription = _firestore
-        .collection('realtime_recipes')
-        .doc(_realtimeRecipe!.id)
-        .snapshots()
+    _realtimeSubscription = _collaborativeRepository
+        .watchRealtimeRecipe(_realtimeRecipe!.id)
         .listen(
       (doc) {
         if (doc.exists) {
@@ -331,12 +322,8 @@ class RecipeFormViewModel extends ChangeNotifier {
     );
 
     // Lyssna på presence/live editors
-    _participantsSubscription = _firestore
-        .collection('realtime_recipes')
-        .doc(_realtimeRecipe!.id)
-        .collection('presence')
-        .where('isActive', isEqualTo: true)
-        .snapshots()
+    _participantsSubscription = _collaborativeRepository
+        .watchActivePresence(_realtimeRecipe!.id)
         .listen(
       (snapshot) {
         _updateLiveEditors(snapshot);
@@ -419,7 +406,8 @@ class RecipeFormViewModel extends ChangeNotifier {
       _collaborativeParticipants.clear();
 
       for (final userId in participantIds) {
-        final userDoc = await _firestore.collection('users').doc(userId).get();
+        final userDoc =
+            await _collaborativeRepository.getUserDocument(userId);
         if (userDoc.exists) {
           final userProfile = UserProfile.fromFirestore(userDoc);
           _collaborativeParticipants.add(userProfile);
@@ -451,18 +439,17 @@ class RecipeFormViewModel extends ChangeNotifier {
     if (userId == null) return;
 
     try {
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .collection('presence')
-          .doc(userId)
-          .set({
-        'userId': userId,
-        'userDisplayName': userDisplayName,
-        'fieldName': fieldName,
-        'lastActive': FieldValue.serverTimestamp(),
-        'isActive': true,
-      });
+      await _collaborativeRepository.setPresence(
+        _realtimeRecipe!.id,
+        userId,
+        {
+          'userId': userId,
+          'userDisplayName': userDisplayName,
+          'fieldName': fieldName,
+          'lastActive': FieldValue.serverTimestamp(),
+          'isActive': true,
+        },
+      );
     } catch (e) {
       AppLogger.error('Fel vid presence update: $e');
     }
@@ -476,12 +463,11 @@ class RecipeFormViewModel extends ChangeNotifier {
     if (userId == null) return;
 
     try {
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .collection('presence')
-          .doc(userId)
-          .update({'isActive': false});
+      await _collaborativeRepository.updatePresence(
+        _realtimeRecipe!.id,
+        userId,
+        {'isActive': false},
+      );
     } catch (e) {
       AppLogger.error('Fel vid clear presence: $e');
     }
@@ -510,10 +496,8 @@ class RecipeFormViewModel extends ChangeNotifier {
 
     try {
       // Enkel test-query för att kontrollera Firebase connection
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .get()
+      await _collaborativeRepository
+          .fetchRealtimeRecipe(_realtimeRecipe!.id)
           .timeout(const Duration(seconds: 10));
 
       // Om vi kommer hit är vi anslutna
@@ -637,11 +621,8 @@ class RecipeFormViewModel extends ChangeNotifier {
         lastEditedByDisplayName: userDisplayName,
       );
 
-      // Spara till Firebase
-      await _firestore
-          .collection('realtime_recipes')
-          .doc(_realtimeRecipe!.id)
-          .update(_realtimeRecipe!.toFirestore());
+      // Spara till Firebase via repository
+      await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
     } catch (e) {
       AppLogger.error('Fel vid save till Firebase: $e');
     }

@@ -11,7 +11,6 @@ import '../core/events/group_events.dart';
 import '../repositories/friends_repository.dart';
 import '../repositories/user_repository.dart';
 
-
 class GroupInvitationService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;
   final UserRepository _userRepository;
@@ -86,6 +85,7 @@ class GroupInvitationService extends ChangeNotifier {
       debugPrint('🔍 DEBUG: No current user, skipping listener setup');
     }
   }
+}
 
   /// Sätt upp real-time listeners för inbjudningar
   void _setupRealtimeListeners() {
@@ -233,11 +233,11 @@ class GroupInvitationService extends ChangeNotifier {
         return false;
       }
 
-      // Hämta avsändarens namn (för UI-caching)
-      final fromUserName =
-          _userRepository.currentUserDisplayName ?? 'Okänd användare';
+     // Hämta avsändarens namn (för UI-caching)
+final fromUserName =
+    _userRepository.currentUserDisplayName ?? 'Okänd användare';
 
-      debugPrint('🔍 DEBUG: Creating invitation object');
+debugPrint('🔍 DEBUG: Creating invitation object');
 
       // Skapa inbjudan
       final invitation = GroupInvitation.create(

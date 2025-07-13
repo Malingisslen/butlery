@@ -1,7 +1,7 @@
 // lib/models/shared_menu.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
@@ -178,13 +178,15 @@ class SharedMenu {
   /// 🆕 Check if user has dismissed (dolt från sin lista)
   bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
 
-  /// ✅ FIXAT: Easy isDismissed getter för current user
-  bool get isDismissed {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) return false;
+/// ✅ FIXAT: Easy isDismissed getter för current user
+bool get isDismissed {
+  final currentUserId = FirebaseAuthRepository().currentUserId;
+  if (currentUserId == null) return false;
+  return isDismissedBy(currentUserId);
+}
 
-    return isDismissedBy(currentUserId);
-  }
+/// ✅ FIXAT: Check if dismissed by the provided user
+bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
 
   /// 🆕 Check if should be shown in user's shared list
   bool shouldBeShownTo(String userId) {
