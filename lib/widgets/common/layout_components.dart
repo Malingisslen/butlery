@@ -2,7 +2,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../repositories/firebase/firebase_auth_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -509,7 +509,7 @@ class _ProfileMenuState extends State<_ProfileMenu> {
 
   /// Profil header med användarinfo
   Widget _buildProfileHeader(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuthRepository().currentUser;
 
     return Container(
       width: double.infinity,
