@@ -20,6 +20,7 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
+import '../repositories/collaborative_recipe_repository.dart';
 
 // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
 import '../services/realtime_sync_service.dart';
@@ -161,12 +162,17 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<StorageService>(StorageService());
     sl.registerSingleton<ImagePickerService>(ImagePickerService());
     sl.registerSingleton<OfflineService>(OfflineService());
+    sl.registerSingleton<CollaborativeRecipeRepository>(
+        CollaborativeRecipeRepository());
     sl.registerSingleton<AnalyticsService>(AnalyticsService());
     debugPrint('✅ Alla core services registrerade');
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
-      () => UnifiedShoppingService(),
+      () => UnifiedShoppingService(
+        firestore: FirebaseFirestore.instance,
+        auth: FirebaseAuth.instance,
+      ),
     );
     debugPrint('✅ UnifiedShoppingService registrerad');
 
@@ -206,6 +212,7 @@ Future<void> initializeDependencies() async {
         storageService: sl<StorageService>(),
         imagePickerService: sl<ImagePickerService>(),
         authService: sl<AuthService>(),
+        collaborativeRepository: sl<CollaborativeRecipeRepository>(),
       ),
     );
 
