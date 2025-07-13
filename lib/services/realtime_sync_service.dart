@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:flutter/foundation.dart';
+import '../repositories/firestore_repository.dart';
 import '../models/realtime/realtime_resource.dart';
 import '../models/realtime/realtime_recipe.dart';
 import '../models/realtime/realtime_menu.dart';
@@ -54,8 +55,14 @@ class SyncError {
 /// - Permission management (det finns i modellerna)
 /// - Notification eller user experience
 class RealtimeSyncService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+  final FirestoreRepository _firestoreRepository;
+
+  RealtimeSyncService({
+    required FirestoreRepository firestoreRepository,
+  }) : _firestoreRepository = firestoreRepository;
+
+  RealtimeSyncService({required FirestoreRepository firestoreRepository})
+      : _firestoreRepository = firestoreRepository;
 
   // ===== CONNECTION STATE =====
   bool _isConnected = false;
@@ -121,7 +128,7 @@ class RealtimeSyncService extends ChangeNotifier {
   /// Starta övervakning av Firebase-anslutning
   void _startConnectionMonitoring() {
     // Lyssna på Firebase connection state via Firestore connectivity
-    _firestore.collection('connectivity_test').limit(1).snapshots().listen(
+    _firestoreRepository.connectivityStream().listen(
       (snapshot) {
         _setConnectionState(true);
       },
@@ -307,7 +314,7 @@ class RealtimeSyncService extends ChangeNotifier {
       }
 
       final docRef = _getResourceDocRef(resourceId);
-      await docRef.delete();
+      await _firestoreRepository.deleteDocument(docRef);
 
       // Rensa lokal cache
       _cachedResources.remove(resourceId);
@@ -376,8 +383,8 @@ class RealtimeSyncService extends ChangeNotifier {
   // ===== PRIVATE HELPER METHODS =====
 
   /// Hämta DocumentReference för en resurs
-  DocumentReference _getResourceDocRef(String resourceId) {
-    return _firestore.collection('realtime_resources').doc(resourceId);
+  DocumentReference<Map<String, dynamic>> _getResourceDocRef(String resourceId) {
+    return _firestoreRepository.realtimeResourceDoc(resourceId);
   }
 
   /// Parsa resurs från Firestore snapshot med type safety
@@ -413,7 +420,8 @@ class RealtimeSyncService extends ChangeNotifier {
   /// Hämta senaste version av resurs från Firebase
   Future<T> _getLatestResource<T extends RealtimeResource>(
       String resourceId) async {
-    final snapshot = await _getResourceDocRef(resourceId).get();
+    final snapshot =
+        await _firestoreRepository.getDocument(_getResourceDocRef(resourceId));
 
     if (!snapshot.exists) {
       throw SyncError(
@@ -450,8 +458,9 @@ class RealtimeSyncService extends ChangeNotifier {
 
   /// Utför själva uppdateringen till Firebase
   Future<void> _performUpdate(
-      DocumentReference docRef, RealtimeResource resource) async {
-    await docRef.set(resource.toFirestore(), SetOptions(merge: true));
+      DocumentReference<Map<String, dynamic>> docRef,
+      RealtimeResource resource) async {
+    await _firestoreRepository.setDocument(docRef, resource.toFirestore());
   }
 
   /// Stäng specifik listener
