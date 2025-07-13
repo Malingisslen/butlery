@@ -1,13 +1,12 @@
 // lib/services/friends_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/friends_repository.dart';
 import 'package:flutter/foundation.dart';
+import '../repositories/friends_repository.dart';
 import '../models/user_profile.dart';
 import '../models/friend_request.dart';
-import 'package:butlery/core/utils/logger.dart';
+import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
-
 
 class FriendsService extends ChangeNotifier {
   final FriendsRepository _repository;
@@ -34,10 +33,8 @@ class FriendsService extends ChangeNotifier {
   int get friendsCount => _friends.length;
   int get pendingRequestsCount => _incomingRequests.length;
 
-  /// Firestore references
-  CollectionReference get _friendRequestsRef =>
-      _repository.friendRequestsRef;
-
+  // Firestore references from repository
+  CollectionReference get _friendRequestsRef => _repository.friendRequestsRef;
   CollectionReference get _profilesRef => _repository.profilesRef;
 
   /// Initialize service
