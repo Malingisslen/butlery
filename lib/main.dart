@@ -7,6 +7,7 @@ import 'core/constants/routes.dart';
 
 // Firebase Analytics (för observer)
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'repositories/firebase/firebase_auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 // Share handling
@@ -157,7 +158,7 @@ class _ButleryAppState extends State<ButleryApp> {
     }
 
     // Kontrollera om användaren är inloggad
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuthRepository().currentUser;
     if (user == null) {
       debugPrint('⚠️ Användare ej inloggad - kan inte hantera delning');
       return;
@@ -613,7 +614,7 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: FirebaseAuthRepository().authStateChanges(),
       builder: (context, snapshot) {
         // Medan vi väntar på auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
