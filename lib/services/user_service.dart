@@ -1,26 +1,22 @@
 // lib/services/user_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/recipe_repository.dart';
+import '../repositories/user_repository.dart';
 import '../repositories/auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
 import '../core/error/error_handler.dart';
 
-
 class UserService extends ChangeNotifier {
-final RecipeRepository _recipeRepository;
-final AuthRepository _authRepository;
+  final UserRepository _repository;
+  final AuthRepository _authRepository;
 
-FirebaseFirestore get _firestore => _recipeRepository.firestore;
-FirebaseAuth get _auth => _authRepository.auth;
-
-UserService({
-  required RecipeRepository recipeRepository,
-  required AuthRepository authRepository,
-})  : _recipeRepository = recipeRepository,
-      _authRepository = authRepository;
+  UserService({
+    required UserRepository repository,
+    required AuthRepository authRepository,
+  })  : _repository = repository,
+        _authRepository = authRepository;
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
@@ -43,8 +39,7 @@ UserService({
   String? get currentUserId => _authRepository.currentUserId;
 
   /// Firestore references
-  CollectionReference get _profilesRef =>
-      _firestore.collection('public_profiles');
+  CollectionReference get _profilesRef => _repository.profilesRef;
 
   /// Initialize service och ladda current user profile
   Future<void> initialize() async {
@@ -261,7 +256,7 @@ UserService({
       final results = <UserProfile>[];
       final seenIds = <String>{};
       final currentUserId = _authRepository.currentUserId;
-
+      
       // Client-side filtrering
       for (final doc in nameQuery.docs) {
         try {
@@ -490,7 +485,7 @@ UserService({
     }
   }
 
-  /// Private methods - UPPDATERAD med auto-create
+   /// Private methods - UPPDATERAD med auto-create
   Future<void> _loadCurrentUserProfile() async {
     final user = _authRepository.currentUser;
     if (user == null) return;
