@@ -1,24 +1,23 @@
 // lib/services/friend_categories_service.dart - ✅ KOMPLETT FIXAD VERSION
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/friend_category.dart';
 import '../models/user_profile.dart';
 import '../services/friends_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
-
+import '../repositories/friends_repository.dart';
+import '../repositories/user_repository.dart';
 
 class FriendCategoriesService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FriendsRepository _friendsRepository;
+  final UserRepository _userRepository;
   final FriendsService _friendsService;
 
   // State
   List<FriendCategory> _categories = [];
-  final Map<String, List<UserProfile>> _categoryFriends =
-      {}; // categoryId -> friends
+  final Map<String, List<UserProfile>> _categoryFriends = {}; // categoryId -> friends
   bool _isLoading = false;
   String? _error;
 
@@ -26,8 +25,13 @@ class FriendCategoriesService extends ChangeNotifier {
   final Map<String, DateTime> _categoryFriendsTimestamps = {};
   static const int _cacheDurationMinutes = 15;
 
-  FriendCategoriesService({required FriendsService friendsService})
-      : _friendsService = friendsService;
+  FriendCategoriesService({
+    required FriendsService friendsService,
+    required FriendsRepository friendsRepository,
+    required UserRepository userRepository,
+  })  : _friendsService = friendsService,
+        _friendsRepository = friendsRepository,
+        _userRepository = userRepository;
 
   // ===== GETTERS =====
 
@@ -35,7 +39,7 @@ class FriendCategoriesService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
+  String? get currentUserId => _userRepository.currentUserId;
 
   /// Get categories sorted by sort order
   List<FriendCategory> get sortedCategories {
@@ -54,34 +58,23 @@ class FriendCategoriesService extends ChangeNotifier {
     return _categoryFriends[categoryId] ?? [];
   }
 
-  /// ✅ FIXAT: Firestore reference till user-specific subcollection
-  CollectionReference get _categoriesRef {
-    final userId = currentUserId;
-    if (userId == null) {
-      throw Exception('Användare inte inloggad');
-    }
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('friendCategories'); // ✅ RÄTT PATH för user-specific data!
-  }
-
   /// Initialize service
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar FriendCategoriesService...');
 
-    _auth.authStateChanges().listen((user) {
-      if (user != null) {
+    _userRepository.authStateChanges().listen((userId) {
+      if (userId != null) {
         _loadCategories();
       } else {
         _clearAll();
       }
     });
 
-    if (_auth.currentUser != null) {
+    if (_userRepository.currentUserId != null) {
       await _loadCategories();
     }
   }
+}
 
   /// ✅ FÖRBÄTTRAT: Create new category med korrekt Firebase path
   Future<bool> createCategory({
@@ -148,8 +141,7 @@ class FriendCategoriesService extends ChangeNotifier {
       AppLogger.info(
           '📁 Sparar kategori till: users/$userId/friendCategories/${category.id}');
 
-      // ✅ FIXAT: Save to user-specific subcollection
-      await _categoriesRef.doc(category.id).set(category.toFirestore());
+      await _friendsRepository.saveCategory(userId, category);
       AppLogger.success(
           '✅ Kategori sparad till Firebase: users/$userId/friendCategories/${category.id}');
 
@@ -242,10 +234,11 @@ class FriendCategoriesService extends ChangeNotifier {
         updatedAt: DateTime.now(),
       );
 
-      // ✅ FIXAT: Uppdatera i user-specific subcollection
-      await _categoriesRef
-          .doc(categoryId)
-          .update(updatedCategory.toFirestore());
+      await _friendsRepository.updateCategory(
+        userId,
+        categoryId,
+        updatedCategory.toFirestore(),
+      );
 
       // Uppdatera lokal cache
       final index = _categories.indexWhere((cat) => cat.id == categoryId);
@@ -303,8 +296,7 @@ class FriendCategoriesService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // ✅ FIXAT: Ta bort från user-specific subcollection
-      await _categoriesRef.doc(categoryId).delete();
+      await _friendsRepository.deleteCategory(userId, categoryId);
       AppLogger.success(
           '✅ Kategori borttagen från Firebase: users/$userId/friendCategories/$categoryId');
 
@@ -394,14 +386,7 @@ class FriendCategoriesService extends ChangeNotifier {
       AppLogger.info('🔄 Laddar kategorier för användare: $userId');
       AppLogger.info('📁 Path: users/$userId/friendCategories');
 
-      // ✅ KORREKT QUERY från user-specific subcollection
-      final query = await _categoriesRef.get();
-
-      final categories =
-          query.docs.map((doc) => FriendCategory.fromFirestore(doc)).toList();
-
-      // ✅ SORTERA I DART istället för Firestore för att undvika index-kravet
-      categories.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      final categories = await _friendsRepository.fetchCategories(userId);
 
       _categories = categories;
 
@@ -555,10 +540,11 @@ class FriendCategoriesService extends ChangeNotifier {
         updatedAt: DateTime.now(),
       );
 
-      // ✅ FIXAT: Uppdatera i user-specific subcollection
-      await _categoriesRef
-          .doc(categoryId)
-          .update(updatedCategory.toFirestore());
+      await _friendsRepository.updateCategory(
+        userId,
+        categoryId,
+        updatedCategory.toFirestore(),
+      );
 
       // Uppdatera lokal cache
       _categories[categoryIndex] = updatedCategory;
@@ -620,9 +606,11 @@ class FriendCategoriesService extends ChangeNotifier {
       );
 
       // ✅ FIXAT: Uppdatera i user-specific subcollection
-      await _categoriesRef
-          .doc(categoryId)
-          .update(updatedCategory.toFirestore());
+      await _friendsRepository.updateCategory(
+        userId,
+        categoryId,
+        updatedCategory.toFirestore(),
+      );
 
       // Uppdatera lokal cache
       _categories[categoryIndex] = updatedCategory;
