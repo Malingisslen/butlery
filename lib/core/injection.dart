@@ -12,6 +12,7 @@ import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/persistence_service.dart';
+import '../repositories/auth_repository.dart';
 import '../services/auth_service.dart';
 import '../services/share_service.dart';
 import '../services/storage_service.dart';
@@ -83,7 +84,12 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ SharedPreferences registrerad');
 
     // ==================== CORE SERVICES ====================
-    sl.registerSingleton<AuthService>(AuthService());
+    sl.registerSingleton<AuthRepository>(AuthRepository());
+    debugPrint('✅ AuthRepository registrerad');
+
+    sl.registerSingleton<AuthService>(
+      AuthService(authRepository: sl<AuthRepository>()),
+    );
     debugPrint('✅ AuthService registrerad');
 
     sl.registerSingleton<PersistenceService>(PersistenceService());
@@ -425,7 +431,7 @@ bool isRealtimeSyncReady() {
 /// Debug-funktion för att visa alla registrerade services
 void debugPrintRegisteredServices() {
   debugPrint('📋 Registrerade Services:');
-  debugPrint('  Core: AuthService, RecipeService, UserService');
+  debugPrint('  Core: AuthRepository, AuthService, RecipeService, UserService');
   debugPrint('  Social: FriendsService, SocialRecipeService');
   debugPrint(
       '  ✅ Realtime: RealtimeSyncService, RealtimeRecipeService, RealtimeMenuService (FAS 2+3)');
