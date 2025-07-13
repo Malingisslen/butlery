@@ -6,22 +6,6 @@ import '../friend_categories_service.dart';
 import '../friends_service.dart';
 import '../../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Group Invitation Expander - Expandera grupper till individuella användare
-/// File: services/invitations/group_invitation_expander.dart
-/// Quick Guide: SINGLE RESPONSIBILITY - bara expandera InvitationTarget grupper till users
-/// Dependencies IN: FriendCategoriesService, FriendsService, invitation models
-/// Dependencies OUT: InvitationService, delningsdialoggar som behöver grupp → user expansion
-/// Data flow: InvitationTarget groups → Expand to individual users → Individual invitations
-/// State management: Stateless utility service - ingen state tracking
-/// Purpose: SRP - bara gruppexpansion, ingen invitation logic eller UI concerns
-/// Common issues: Tomma grupper, användare som inte längre är vänner, dubbletter
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Efficient group lookups, cached friend data, minimal API calls
-/// Analytics: Group invitation patterns, expansion success rates
-/// Code smells: ✅ Pure utility service - single responsibility för gruppexpansion
-/// Connected to: InvitationService, Enhanced sharing dialogs, gruppbaserad delning
-/// Used in phases: Fas 2 (Gruppstöd) - Foundation för gruppinbjudningar
 
 /// Resultat av gruppexpansion
 class GroupExpansionResult {

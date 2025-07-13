@@ -5,22 +5,6 @@ import '../recipe.dart';
 import '../permissions/resource_permission.dart';
 import 'realtime_resource.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Recipe Model - Konkret implementation för gemensam receptredigering
-/// File: models/realtime/realtime_recipe.dart
-/// Quick Guide: Extends RealtimeResource med recipe-specifik funktionalitet - BARA data och business logic
-/// Dependencies IN: Recipe, RealtimeResource, ResourcePermission, cloud_firestore
-/// Dependencies OUT: RealtimeRecipeService, RealtimeRecipeViewModel, UI widgets
-/// Data flow: Recipe edits → RealtimeRecipe updates → Firebase sync → All participants
-/// State management: Immutable med copyWith, delegerar till Recipe för content
-/// Purpose: Wrapper som lägger till realtidskapacitet till befintliga Recipe objekt
-/// Common issues: Säkerställ att Recipe innehåll synkas korrekt, hantera samtidiga edits
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Minimal overhead, Recipe object cached för snabb access
-/// Analytics: Recipe collaboration patterns, edit frequency, user engagement
-/// Code smells: ✅ Clean delegation pattern, single responsibility för realtime metadata BARA
-/// Connected to: Recipe, RealtimeRecipeService, UI widgets (via separate widget files)
-/// Used in phases: Fas 2 (Recept realtidsredigering) - Foundation för recipe collaboration
 
 /// Realtidsresurs för gemensam receptredigering
 ///

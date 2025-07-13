@@ -3,22 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Recipe Comment Model - Firebase First
-/// File: models/recipe_comment.dart
-/// Quick Guide: Clean Firebase-only modell för receptkommentarer med threading
-/// Dependencies IN: cloud_firestore, uuid
-/// Dependencies OUT: SocialRecipeService, comment widgets
-/// Data flow: Firestore ↔ RecipeComment object ↔ Comment UI
-/// State management: Immutable med copyWith pattern
-/// Purpose: Threaded comments system för recept med social features
-/// Common issues: Reply depth limits, author data caching
-/// Test coverage: 75%
-/// Performance: ⚡ Optimized för threaded display, cached author data
-/// Analytics: ✅ Comment engagement tracking
-/// Code smells: ✅ Clean threading design med performance optimization
-/// Connected to: SocialRecipeService, Recipe, UserProfile, comment views
-/// Used in phases: 18
 
 class RecipeComment {
   final String id;

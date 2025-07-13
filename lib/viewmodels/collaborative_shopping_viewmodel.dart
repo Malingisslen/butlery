@@ -9,22 +9,6 @@ import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import '../theme/app_theme.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Collaborative Shopping ViewModel - Unified System Wrapper
-/// File: viewmodels/collaborative_shopping_viewmodel.dart
-/// Quick Guide: Wrapper runt UnifiedShoppingService för kollaborativ UI
-/// Dependencies IN: UnifiedShoppingService, UserService
-/// Dependencies OUT: Real-time collaborative shopping state
-/// Data flow: CollaborativeView → ViewModel → UnifiedShoppingService
-/// State management: ChangeNotifier med real-time updates
-/// Purpose: Specialiserat UI för kollaborativa listor med live-updates
-/// Common issues: ✅ LÖST: Real-time sync, medlemshantering, activity tracking
-/// Test coverage: 90% (enkelt att testa wrapper-logik)
-/// Performance: ⚡ Efficient real-time updates, smart state management
-/// Analytics: ✅ Complete collaboration analytics
-/// Code smells: ✅ Clean wrapper pattern
-/// Connected to: CollaborativeShoppingView, UnifiedShoppingService
-/// Used in phases: 18.4 (enhanced collaborative features)
 
 class CollaborativeShoppingViewModel extends ChangeNotifier {
   final UnifiedShoppingService _shoppingService;

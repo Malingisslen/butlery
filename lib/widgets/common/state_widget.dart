@@ -1,21 +1,5 @@
 // lib/widgets/state_widget.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: StateWidget - Universal state handler for all app states
-/// File: lib/widgets/state_widget.dart
-/// Quick Guide: Replaces multiple state widgets with one flexible component
-/// Dependencies IN: AppTheme, Flutter material, UtilityComponents
-/// Dependencies OUT: All views that need state display
-/// Data flow: State type + data → Visual representation
-/// State management: Stateless, receives state from parent
-/// Purpose: Centralized state UI with consistent design
-/// Common issues: Proper state type handling, theme compliance
-/// Test coverage: Unit tests for all state types
-/// Performance: Lightweight, no unnecessary rebuilds
-/// Analytics: State transitions can be logged
-/// Code smells: Clean, single responsibility
-/// Connected to: All ViewModels, Views, Services
-/// Used in phases: Core UI foundation
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';

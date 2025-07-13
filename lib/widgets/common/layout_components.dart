@@ -1,21 +1,5 @@
 // lib/widgets/common/layout_components.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Unified collection of layout widgets and navigation components
-/// File: widgets/common/layout_components.dart
-/// Quick Guide: Central hub for layout, navigation, and structural UI components
-/// Dependencies IN: AppTheme, MainLayoutMenu, ProfileMenuWidget, OfflineIndicator, MenuPersistenceDialogs
-/// Dependencies OUT: Used throughout views for consistent layout structure
-/// Data flow: User interactions → Layout components → Navigation/State changes
-/// State management: Stateless widgets with callback patterns to parent views
-/// Purpose: Consolidate layout widgets for consistency and reusability
-/// Common issues: Navigation state, theme consistency, responsive design
-/// Test coverage: Widget tests for each component + navigation flow tests
-/// Performance: Optimized rebuilds, efficient navigation, proper disposal
-/// Analytics: Navigation events, layout usage patterns, user flow tracking
-/// Code smells: Good - unified API, consistent styling, clear separation
-/// Connected to: All main views, navigation system, theme system
-/// Used in phases: Phase 3.1 - Layout Components Consolidation
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
