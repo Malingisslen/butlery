@@ -21,6 +21,12 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
+import '../repositories/firebase_user_repository.dart';
+import '../repositories/firebase_friends_repository.dart';
+import '../repositories/firebase_social_recipe_repository.dart';
+import '../repositories/user_repository.dart';
+import '../repositories/friends_repository.dart';
+import '../repositories/social_recipe_repository.dart';
 import '../repositories/collaborative_recipe_repository.dart';
 
 // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
@@ -126,13 +132,17 @@ debugPrint('✅ PersistenceService registrerad');
     debugPrint('✅ RealtimeMenuService registrerad');
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
-    sl.registerSingleton<UserService>(UserService(
-      recipeRepository: sl<RecipeRepository>(),
-      authRepository: sl<AuthRepository>(),
-    ));
+sl.registerSingleton<UserRepository>(FirebaseUserRepository());
+sl.registerSingleton<UserService>(
+  UserService(repository: sl<UserRepository>()),
+);
+
     debugPrint('✅ UserService registrerad');
 
-    sl.registerSingleton<FriendsService>(FriendsService());
+    sl.registerSingleton<FriendsRepository>(FirebaseFriendsRepository());
+    sl.registerSingleton<FriendsService>(
+      FriendsService(repository: sl<FriendsRepository>()),
+    );
     debugPrint('✅ FriendsService registrerad');
 
     sl.registerLazySingleton<FriendCategoriesService>(
@@ -183,8 +193,11 @@ debugPrint('✅ PersistenceService registrerad');
     debugPrint('✅ UnifiedShoppingService registrerad');
 
     // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
+    sl.registerSingleton<SocialRecipeRepository>(
+        FirebaseSocialRecipeRepository());
     sl.registerSingleton<SocialRecipeService>(
       SocialRecipeService(
+        repository: sl<SocialRecipeRepository>(),
         userService: sl<UserService>(),
         recipeService: sl<RecipeService>(),
         recipeRepository: sl<RecipeRepository>(),
