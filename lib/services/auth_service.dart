@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../repositories/auth_repository.dart';
 
 /// AuthService hanterar all autentisering med Firebase
 ///
@@ -9,8 +9,8 @@ import 'package:flutter/foundation.dart';
 /// - Tillhandahåller streams för auth state changes
 /// - Hanterar utloggning och lösenordsåterställning
 class AuthService extends ChangeNotifier {
-  // Firebase Auth instans - detta är vår koppling till Firebase
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Repository som hanterar all Firebase Auth-kommunikation
+  final AuthRepository _authRepository;
 
   // Aktuell inloggad användare (null om utloggad)
   User? _currentUser;
@@ -28,10 +28,11 @@ class AuthService extends ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
 
   /// Konstruktor - lyssnar på auth state changes
-  AuthService() {
+  AuthService({AuthRepository? authRepository})
+      : _authRepository = authRepository ?? AuthRepository() {
     // Lyssna på förändringar i autentiseringsstatus
     // Detta triggas när användare loggar in/ut
-    _auth.authStateChanges().listen((User? user) {
+    _authRepository.authStateChanges().listen((User? user) {
       _currentUser = user;
       notifyListeners(); // Meddela UI om förändringen
     });
@@ -50,15 +51,16 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Skapa användare i Firebase Auth
-      final UserCredential credential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      // Skapa användare via AuthRepository
+      final UserCredential credential = await _authRepository.createUser(
+        email: email,
+        password: password,
+      );
 
       // Uppdatera användarens display name
       if (credential.user != null) {
-        await credential.user!.updateDisplayName(displayName);
-        await credential.user!.reload(); // Ladda om för att få uppdaterad info
-        _currentUser = _auth.currentUser; // Hämta uppdaterad användare
+        await _authRepository.updateDisplayName(credential.user!, displayName);
+        _currentUser = _authRepository.currentUser; // Hämta uppdaterad användare
       }
 
       _setLoading(false);
@@ -88,8 +90,8 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Logga in användare
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      // Logga in användare via AuthRepository
+      await _authRepository.signIn(email: email, password: password);
 
       _setLoading(false);
       return true;
@@ -109,7 +111,7 @@ class AuthService extends ChangeNotifier {
   Future<void> signOut() async {
     try {
       _setLoading(true);
-      await _auth.signOut();
+      await _authRepository.signOut();
       _currentUser = null;
       _setLoading(false);
     } catch (e) {
@@ -125,7 +127,7 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      await _auth.sendPasswordResetEmail(email: email);
+      await _authRepository.sendPasswordResetEmail(email);
 
       _setLoading(false);
       return true;
@@ -157,8 +159,8 @@ class AuthService extends ChangeNotifier {
         return false;
       }
 
-      // Ta bort användaren
-      await _currentUser!.delete();
+      // Ta bort användaren via AuthRepository
+      await _authRepository.deleteCurrentUser();
       _currentUser = null;
 
       _setLoading(false);
