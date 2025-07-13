@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -174,7 +174,7 @@ class AppInitializer {
   /// Endast om användare är inloggad för att undvika onödiga fel
   static Future<void> _performFirestorePing() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
+      final currentUser = FirebaseAuthRepository().currentUser;
 
       if (currentUser == null) {
         debugPrint('ℹ️ Ingen användare inloggad, hoppar över Firestore-ping');
@@ -271,7 +271,7 @@ class AppInitializer {
       status['firebase'] = Firebase.apps.isNotEmpty;
 
       // Kontrollera Auth
-      status['auth'] = FirebaseAuth.instance.currentUser != null;
+      status['auth'] = FirebaseAuthRepository().currentUser != null;
 
       // Kontrollera DI
       try {
