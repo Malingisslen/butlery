@@ -1,7 +1,6 @@
 // lib/models/shared_recipe.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
@@ -171,13 +170,8 @@ class SharedRecipe {
   /// 🆕 Check if user has dismissed (dolt från sin lista)
   bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
 
-  /// ✅ FIXAT: Easy isDismissed getter för current user
-  bool get isDismissed {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) return false;
-
-    return isDismissedBy(currentUserId);
-  }
+  /// ✅ FIXAT: Check if dismissed by the provided user
+  bool isDismissed(String userId) => isDismissedBy(userId);
 
   /// Check if user can view this share
   bool canBeViewedBy(String userId) {
