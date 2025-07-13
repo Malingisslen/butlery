@@ -153,7 +153,10 @@ Future<void> initializeDependencies() async {
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
-      () => UnifiedShoppingService(),
+      () => UnifiedShoppingService(
+        firestore: FirebaseFirestore.instance,
+        auth: FirebaseAuth.instance,
+      ),
     );
     debugPrint('✅ UnifiedShoppingService registrerad');
 
