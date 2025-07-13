@@ -15,22 +15,6 @@ import '../../core/events/group_events.dart';
 import 'add_members_to_group_view.dart';
 import '../../services/auth_service.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Group Detail View - MIGRERAD TILL SocialComponents
-/// File: views/social/group_detail_view.dart
-/// Quick Guide: Gruppdetaljer med KORREKT behörighetskontroll och smart medlemshantering + unified social API
-/// Dependencies IN: FriendsViewModel, FriendCategoriesService, GroupInvitationService, AuthService, SocialComponents
-/// Dependencies OUT: Group management actions, member management, invitation tracking
-/// Data flow: Load group → Check permissions → Show appropriate actions → Handle member management
-/// State management: ✅ Event-baserad uppdatering med korrekt behörighetskontroll
-/// Purpose: Komplett gruppvy med KORREKT behörighetshantering för edit/delete/leave actions + unified social API
-/// Common issues: ✅ ALLA FIXADE: Behörighetskontroll, leave group, member permissions
-/// Test coverage: 85%
-/// Performance: ⚡ Optimerad med smart invitation loading + permission checks
-/// Analytics: ✅ Group viewing + invitation tracking + permission analytics
-/// Code smells: ✅ Clean code med tydlig behörighetslogik och säker medlemshantering + unified social patterns
-/// Connected to: FriendsViewModel, FriendCategoriesService, GroupInvitationService, AuthService, SocialComponents
-/// Used in phases: 18.6 - Komplett gruppvy med säker behörighetshantering + migrerad till unified social API
 
 class GroupDetailView extends StatefulWidget {
   final String groupId;

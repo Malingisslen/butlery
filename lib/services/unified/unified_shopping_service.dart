@@ -1,15 +1,5 @@
 // lib/services/unified/unified_shopping_service.dart
 
-/// AI INFO BLOCK:
-/// Component: Unified Shopping Service - CLEAN VERSION (utan migration)
-/// File: services/unified/unified_shopping_service.dart
-/// Quick Guide: Central service som hanterar ALL shopping funktionalitet
-/// Dependencies IN: Firebase, Hive, auth_service, offline_service
-/// Dependencies OUT: ChangeNotifier med lists, CRUD metoder, sync functionality
-/// Data flow: Firebase realtime <-> Service state <-> ViewModels -> UI
-/// State management: ChangeNotifier med List(UnifiedShoppingList) och loading states
-/// Purpose: Ersatt shopping_list_service, multi_shopping_list_service, social_shopping_service
-/// Used in phases: 18.3 (Unified Shopping Migration) - UTAN GAMMAL MIGRATION-KOD
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';

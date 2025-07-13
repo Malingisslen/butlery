@@ -1,21 +1,5 @@
 /// lib/widgets/common/input_components.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Unified collection of all input widgets for forms and user interaction
-/// File: widgets/common/input_components.dart
-/// Quick Guide: Central hub for all input widgets - editors, selectors, checkboxes, dialogs
-/// Dependencies IN: AppTheme, UnifiedShoppingViewModel, models (Recipe, UnifiedShoppingItem, etc)
-/// Dependencies OUT: Used throughout views for user input and data collection
-/// Data flow: User input → Components → Parent widgets → ViewModels → Services
-/// State management: Individual StatefulWidgets with callback patterns to parent
-/// Purpose: Consolidate all input widgets for consistency and reusability
-/// Common issues: Form validation, memory leaks from controllers, proper disposal
-/// Test coverage: Widget tests for each component + integration tests
-/// Performance: Optimized with debouncing, efficient rebuilds, proper dispose
-/// Analytics: Input events, form completion rates, user interaction patterns
-/// Code smells: Good - unified API, consistent styling, proper separation
-/// Connected to: All views that require user input, especially forms
-/// Used in phases: Phase 2.3 - Input Components Consolidation
 
 import 'dart:async';
 import 'package:flutter/material.dart';

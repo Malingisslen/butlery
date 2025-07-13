@@ -4,22 +4,6 @@ import 'dart:async';
 import '../../services/realtime_sync_service.dart';
 import '../../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Connection Monitor - SINGLE RESPONSIBILITY för connection status tracking
-/// File: viewmodels/realtime/connection_monitor.dart
-/// Quick Guide: Delegated ansvar från ViewModel - bara connection monitoring
-/// Dependencies IN: RealtimeSyncService, logger
-/// Dependencies OUT: RealtimeMenuViewModel
-/// Data flow: Firebase connection → Stream monitoring → Status change → Notify
-/// State management: Internal connection state med debounced notifications
-/// Purpose: BARA hantera online/offline status och connection events
-/// Common issues: Connection flapping, memory leaks från StreamSubscription
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Minimal overhead, debounced status changes
-/// Analytics: Connection stability, offline duration, reconnection patterns
-/// Code smells: ✅ Clean single responsibility - bara connection logic
-/// Connected to: RealtimeMenuViewModel
-/// Used in phases: Fas 3 (SRP refactoring) - Clean architecture delegation
 
 /// Status för connection monitoring
 enum ConnectionStatus {

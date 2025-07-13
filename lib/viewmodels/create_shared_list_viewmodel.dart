@@ -7,22 +7,6 @@ import '../services/user_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Create Shared List ViewModel - Unified Shopping Pattern
-/// File: viewmodels/create_shared_list_viewmodel.dart
-/// Quick Guide: 100% ren MVVM för collaborative shopping list creation
-/// Dependencies IN: UnifiedShoppingService, UserService
-/// Dependencies OUT: UI state för create shared list view
-/// Data flow: User actions → ViewModel state → UnifiedShoppingService
-/// State management: ChangeNotifier med complete form state management
-/// Purpose: Perfect MVVM separation - all business logic och UI state här
-/// Common issues: ✅ LÖST: Form validation, async operations, error handling
-/// Test coverage: 95% (ViewModels är lätta att testa)
-/// Performance: ⚡ Optimized state updates, efficient validation
-/// Analytics: ✅ Complete user interaction tracking
-/// Code smells: ✅ 100% clean MVVM - zero business logic i View
-/// Connected to: CreateSharedShoppingListView, UnifiedShoppingService
-/// Used in phases: 18.4
 
 class CreateSharedListViewModel extends ChangeNotifier {
   final UnifiedShoppingService _shoppingService;

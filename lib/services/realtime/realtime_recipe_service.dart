@@ -10,22 +10,6 @@ import '../auth_service.dart';
 import '../user_service.dart';
 import '../../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Recipe Service - Recipe-specifika operationer
-/// File: services/realtime/realtime_recipe_service.dart
-/// Quick Guide: SINGLE RESPONSIBILITY - bara recipe business logic för realtidsrecept
-/// Dependencies IN: RealtimeSyncService, AuthService, UserService, realtime models
-/// Dependencies OUT: RealtimeRecipeViewModel, recipe collaboration views
-/// Data flow: Recipe operations → RealtimeRecipe updates → RealtimeSyncService → Firebase
-/// State management: ChangeNotifier för recipe-specific events
-/// Purpose: SRP - bara recipe operations, delegerar synkronisering till RealtimeSyncService
-/// Common issues: Recipe validation, ingredient/instruction formatting, user context
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Efficient recipe operations, cached user info
-/// Analytics: Recipe collaboration patterns, edit frequency, feature usage
-/// Code smells: ✅ Clean delegation - bara recipe logic, ingen synkronisering
-/// Connected to: RealtimeSyncService, Recipe models, collaborative recipe views
-/// Used in phases: Fas 2 (Recipe + Gruppstöd) - Recipe-specific real-time operations
 
 /// Typ av recipe-operationer för analytics och logging
 enum RecipeOperationType {

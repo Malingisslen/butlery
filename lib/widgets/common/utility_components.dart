@@ -1,21 +1,5 @@
 /// lib/widgets/common/utility_components.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: UtilityComponents - Unified Utility Widget API
-/// File: lib/widgets/common/utility_components.dart
-/// Quick Guide: Konsoliderade utility widgets för actions, services och friend management
-/// Dependencies IN: ActionButton, RecipeServiceWidget, FriendCategoryManager, AppTheme
-/// Dependencies OUT: Views använde ActionButton, RecipeServiceWidget, FriendCategoryManager
-/// Data flow: Unified API för utility patterns → delegerar till optimerade implementationer
-/// State management: Delegerad till underliggande komponenter + lokal state för overlays
-/// Purpose: Final konsolidering av utility widgets för 90% widget konsolidering completion
-/// Common issues: Service state management, button loading states, friend selection UX
-/// Test coverage: 95%+ målsättning för alla utility methods
-/// Performance: ⚡ Optimerade delegate patterns, smart widget caching
-/// Analytics: Button usage tracking, service operation metrics, social interaction events
-/// Code smells: ✅ Clean delegation, AppTheme compliance, proper error boundaries
-/// Connected to: All views using utility patterns, service layers, social features
-/// Used in phases: 4.3 - Final Sprint - UtilityComponents (FAS 4.3 COMPLETION)
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

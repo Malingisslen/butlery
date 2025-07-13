@@ -9,22 +9,6 @@ import '../services/friends_service.dart';
 import '../services/user_service.dart';
 import '../core/utils/logger.dart'; // Fixad import
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Social Recipe Interaction ViewModel
-/// File: viewmodels/social_recipe_viewmodel.dart
-/// Quick Guide: Hanterar receptdelning, kommentarer och social interactions
-/// Dependencies IN: SocialRecipeService, FriendsService, UserService, Recipe
-/// Dependencies OUT: Recipe sharing views, comment widgets, social actions
-/// Data flow: Recipe → Share to friends → Comments → Social engagement
-/// State management: ChangeNotifier med sharing state och comments
-/// Purpose: Komplett social interaction för enskilda recept
-/// Common issues: Comment threading, sharing permissions, real-time updates
-/// Test coverage: 65%
-/// Performance: ⚡ Optimized comment loading, efficient sharing
-/// Analytics: ✅ Social engagement och sharing success tracking
-/// Code smells: ✅ Clean separation av concerns, robust error handling
-/// Connected to: Recipe models, social services, sharing views, comment widgets
-/// Used in phases: 18
 
 class SocialRecipeViewModel extends ChangeNotifier {
   final Recipe _recipe;
