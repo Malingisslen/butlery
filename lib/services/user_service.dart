@@ -1,7 +1,8 @@
 // lib/services/user_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
+import '../repositories/recipe_repository.dart';
+import '../repositories/auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
@@ -9,8 +10,17 @@ import '../core/error/error_handler.dart';
 
 
 class UserService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+final RecipeRepository _recipeRepository;
+final AuthRepository _authRepository;
+
+FirebaseFirestore get _firestore => _recipeRepository.firestore;
+FirebaseAuth get _auth => _authRepository.auth;
+
+UserService({
+  required RecipeRepository recipeRepository,
+  required AuthRepository authRepository,
+})  : _recipeRepository = recipeRepository,
+      _authRepository = authRepository;
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
