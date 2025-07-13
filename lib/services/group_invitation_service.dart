@@ -1,8 +1,6 @@
 // lib/services/group_invitation_service.dart - MED FIXAD acceptGroupInvitation
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/group_invitation.dart';
 import '../models/friend_category.dart';
@@ -10,11 +8,12 @@ import '../services/friend_categories_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 import '../core/events/group_events.dart';
-
+import '../repositories/friends_repository.dart';
+import '../repositories/user_repository.dart';
 
 class GroupInvitationService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FriendsRepository _friendsRepository;
+  final UserRepository _userRepository;
   final FriendCategoriesService _categoriesService;
 
   // State
@@ -24,12 +23,16 @@ class GroupInvitationService extends ChangeNotifier {
   String? _error;
 
   // Real-time listeners
-  StreamSubscription<QuerySnapshot>? _receivedInvitationsSubscription;
-  StreamSubscription<QuerySnapshot>? _sentInvitationsSubscription;
+  StreamSubscription<List<GroupInvitation>>? _receivedInvitationsSubscription;
+  StreamSubscription<List<GroupInvitation>>? _sentInvitationsSubscription;
 
   GroupInvitationService({
     required FriendCategoriesService categoriesService,
-  }) : _categoriesService = categoriesService {
+    required FriendsRepository friendsRepository,
+    required UserRepository userRepository,
+  })  : _categoriesService = categoriesService,
+        _friendsRepository = friendsRepository,
+        _userRepository = userRepository {
     debugPrint(
         '🔍 DEBUG: GroupInvitationService skapad med categoriesService: ${categoriesService.runtimeType}');
   }
@@ -43,7 +46,7 @@ class GroupInvitationService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
+  String? get currentUserId => _userRepository.currentUserId;
 
   /// Väntande mottagna inbjudningar
   List<GroupInvitation> get pendingReceivedInvitations =>
@@ -56,10 +59,6 @@ class GroupInvitationService extends ChangeNotifier {
   /// Antal väntande notifikationer
   int get pendingNotificationsCount => pendingReceivedInvitations.length;
 
-  /// Firestore-referens
-  CollectionReference get _invitationsRef =>
-      _firestore.collection('group_invitations');
-
   // ===== INITIALIZATION =====
 
   /// Initiera service med real-time listeners
@@ -67,25 +66,26 @@ class GroupInvitationService extends ChangeNotifier {
     debugPrint('🔍 DEBUG: GroupInvitationService.initialize() kallad');
     AppLogger.info('🔄 Initialiserar GroupInvitationService...');
 
-    _auth.authStateChanges().listen((user) {
-      debugPrint('🔍 DEBUG: Auth state changed - user: ${user?.uid}');
-      if (user != null) {
+    _userRepository.authStateChanges().listen((uid) {
+      debugPrint('🔍 DEBUG: Auth state changed - user: $uid');
+      if (uid != null) {
         _setupRealtimeListeners();
       } else {
         _clearAllData();
       }
     });
 
-    final currentUser = _auth.currentUser;
-    debugPrint('🔍 DEBUG: Current user at initialization: ${currentUser?.uid}');
+    final currentUserId = _userRepository.currentUserId;
+    debugPrint('🔍 DEBUG: Current user at initialization: $currentUserId');
 
-    if (currentUser != null) {
+    if (currentUserId != null) {
       debugPrint('🔍 DEBUG: Current user exists, setting up listeners');
       _setupRealtimeListeners();
     } else {
       debugPrint('🔍 DEBUG: No current user, skipping listener setup');
     }
   }
+}
 
   /// Sätt upp real-time listeners för inbjudningar
   void _setupRealtimeListeners() {
@@ -102,10 +102,8 @@ class GroupInvitationService extends ChangeNotifier {
     try {
       // Lyssna på mottagna inbjudningar
       debugPrint('🔍 DEBUG: Setting up RECEIVED invitations listener');
-      _receivedInvitationsSubscription = _invitationsRef
-          .where('toUserId', isEqualTo: userId)
-          .orderBy('sentAt', descending: true)
-          .snapshots()
+      _receivedInvitationsSubscription = _friendsRepository
+          .receivedInvitationsStream(userId)
           .listen(
         _handleReceivedInvitationsUpdate,
         onError: (error) {
@@ -116,10 +114,8 @@ class GroupInvitationService extends ChangeNotifier {
 
       // Lyssna på skickade inbjudningar
       debugPrint('🔍 DEBUG: Setting up SENT invitations listener');
-      _sentInvitationsSubscription = _invitationsRef
-          .where('fromUserId', isEqualTo: userId)
-          .orderBy('sentAt', descending: true)
-          .snapshots()
+      _sentInvitationsSubscription = _friendsRepository
+          .sentInvitationsStream(userId)
           .listen(
         _handleSentInvitationsUpdate,
         onError: (error) {
@@ -136,14 +132,12 @@ class GroupInvitationService extends ChangeNotifier {
   }
 
   /// Hantera uppdateringar för mottagna inbjudningar
-  void _handleReceivedInvitationsUpdate(QuerySnapshot snapshot) {
+  void _handleReceivedInvitationsUpdate(List<GroupInvitation> invitations) {
     try {
       debugPrint(
-          '🔍 DEBUG: Received invitations update - ${snapshot.docs.length} docs');
+          '🔍 DEBUG: Received invitations update - ${invitations.length} items');
 
-      _receivedInvitations = snapshot.docs
-          .map((doc) => GroupInvitation.fromFirestore(doc))
-          .toList();
+      _receivedInvitations = invitations;
 
       AppLogger.info(
           '📨 ${_receivedInvitations.length} mottagna inbjudningar uppdaterade');
@@ -157,14 +151,12 @@ class GroupInvitationService extends ChangeNotifier {
   }
 
   /// Hantera uppdateringar för skickade inbjudningar
-  void _handleSentInvitationsUpdate(QuerySnapshot snapshot) {
+  void _handleSentInvitationsUpdate(List<GroupInvitation> invitations) {
     try {
       debugPrint(
-          '🔍 DEBUG: Sent invitations update - ${snapshot.docs.length} docs');
+          '🔍 DEBUG: Sent invitations update - ${invitations.length} items');
 
-      _sentInvitations = snapshot.docs
-          .map((doc) => GroupInvitation.fromFirestore(doc))
-          .toList();
+      _sentInvitations = invitations;
 
       AppLogger.info(
           '📤 ${_sentInvitations.length} skickade inbjudningar uppdaterade');
@@ -241,11 +233,11 @@ class GroupInvitationService extends ChangeNotifier {
         return false;
       }
 
-      // Hämta avsändarens namn (för UI-caching)
-      final currentUser = _auth.currentUser;
-      final fromUserName = currentUser?.displayName ?? 'Okänd användare';
+     // Hämta avsändarens namn (för UI-caching)
+final fromUserName =
+    _userRepository.currentUserDisplayName ?? 'Okänd användare';
 
-      debugPrint('🔍 DEBUG: Creating invitation object');
+debugPrint('🔍 DEBUG: Creating invitation object');
 
       // Skapa inbjudan
       final invitation = GroupInvitation.create(
@@ -260,8 +252,7 @@ class GroupInvitationService extends ChangeNotifier {
 
       debugPrint('🔍 DEBUG: Saving invitation to Firestore: ${invitation.id}');
 
-      // Spara till Firestore
-      await _invitationsRef.doc(invitation.id).set(invitation.toFirestore());
+      await _friendsRepository.saveInvitation(invitation);
 
       // Trigga group event för att uppdatera UI
       GroupEventBus.groupUpdated();
@@ -327,15 +318,13 @@ class GroupInvitationService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Hämta inbjudan
-      final invitationDoc = await _invitationsRef.doc(invitationId).get();
-      if (!invitationDoc.exists) {
+      final invitation = await _friendsRepository.getInvitation(invitationId);
+      if (invitation == null) {
         debugPrint('🔍 DEBUG: Invitation document not found');
         _setError('Inbjudan hittades inte');
         return false;
       }
 
-      final invitation = GroupInvitation.fromFirestore(invitationDoc);
       debugPrint('🔍 DEBUG: Found invitation: ${invitation.groupName}');
 
       // Validera behörighet
@@ -353,23 +342,19 @@ class GroupInvitationService extends ChangeNotifier {
 
       // ✅ FÖRBÄTTRAT: Hämta originalgruppen från skaparen
       debugPrint('🔍 DEBUG: Fetching original group from creator...');
-      final originalGroupDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(invitation.fromUserId)
-          .collection('friendCategories')
-          .doc(invitation.groupId)
-          .get();
+      final originalGroup = await _friendsRepository.getCategory(
+        invitation.fromUserId,
+        invitation.groupId,
+      );
 
-      if (!originalGroupDoc.exists) {
+      if (originalGroup == null) {
         debugPrint(
             '🔍 DEBUG: Original group not found in creator\'s categories');
         _setError('Gruppen hittades inte hos skaparen');
         return false;
       }
 
-      final originalGroupData = originalGroupDoc.data()!;
-      final originalFriendIds =
-          List<String>.from(originalGroupData['friendUserIds'] ?? []);
+      final originalFriendIds = List<String>.from(originalGroup.friendUserIds);
 
       debugPrint('🔍 DEBUG: Original group members: $originalFriendIds');
       debugPrint('🔍 DEBUG: Adding new member: $userId');
@@ -383,7 +368,7 @@ class GroupInvitationService extends ChangeNotifier {
       debugPrint('🔍 DEBUG: Updated members list: $updatedFriendIds');
 
       // ✅ SUPER VIKTIG FIX: Behåll ORIGINAL ownerId!
-      final originalOwnerId = originalGroupData['ownerId'] as String;
+      final originalOwnerId = originalGroup.ownerId;
 
       debugPrint('🔍 DEBUG: Preserving original ownership:');
       debugPrint('   - Original ownerId: $originalOwnerId');
@@ -391,41 +376,31 @@ class GroupInvitationService extends ChangeNotifier {
 
       // ✅ FIXAT: Skapa grupp med ALLA medlemmar OCH korrekt ägare
       final newCategory = FriendCategory(
-        ownerId: originalOwnerId, // ✅ BEHÅLL ORIGINAL ÄGARE!
+        ownerId: originalOwnerId,
         id: invitation.groupId,
-        name: originalGroupData['name'] ?? invitation.groupName,
-        emoji: originalGroupData['emoji'] ?? invitation.groupEmoji,
-        description: originalGroupData['description'],
-        friendUserIds: updatedFriendIds, // ✅ ALLA medlemmar inkluderade!
-        createdAt: (originalGroupData['createdAt'] as Timestamp?)?.toDate() ??
-            DateTime.now(),
+        name: originalGroup.name,
+        emoji: originalGroup.emoji ?? invitation.groupEmoji,
+        description: originalGroup.description,
+        friendUserIds: updatedFriendIds,
+        createdAt: originalGroup.createdAt,
         updatedAt: DateTime.now(),
+        sortOrder: originalGroup.sortOrder,
+        isDefault: originalGroup.isDefault,
       );
 
       debugPrint('🔍 DEBUG: Creating local group with:');
       debugPrint('   - ${newCategory.friendUserIds.length} members');
       debugPrint('   - ownerId: ${newCategory.ownerId}');
 
-      // Skapa gruppen i användarens kategorier
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('friendCategories')
-          .doc(invitation.groupId)
-          .set(newCategory.toFirestore());
+      await _friendsRepository.createCategoryForUser(userId, newCategory);
 
       // ✅ NYTT: Uppdatera originalgruppen hos skaparen med ny medlem
       debugPrint('🔍 DEBUG: Updating original group with new member...');
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(invitation.fromUserId)
-          .collection('friendCategories')
-          .doc(invitation.groupId)
-          .update({
-        'friendUserIds': updatedFriendIds,
-        'friendCount': updatedFriendIds.length,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      await _friendsRepository.updateCategoryMembers(
+        invitation.fromUserId,
+        invitation.groupId,
+        updatedFriendIds,
+      );
 
       // Trigga group event
       GroupEventBus.memberAdded();
@@ -433,9 +408,10 @@ class GroupInvitationService extends ChangeNotifier {
 
       // Acceptera inbjudan
       final acceptedInvitation = invitation.accept();
-      await _invitationsRef
-          .doc(invitationId)
-          .update(acceptedInvitation.toFirestore());
+      await _friendsRepository.updateInvitation(
+        invitationId,
+        acceptedInvitation.toFirestore(),
+      );
       debugPrint('🔍 DEBUG: Invitation status updated to accepted');
 
       // Refresh categories service
@@ -474,15 +450,12 @@ class GroupInvitationService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Hämta inbjudan
-      final invitationDoc = await _invitationsRef.doc(invitationId).get();
-      if (!invitationDoc.exists) {
+      final invitation = await _friendsRepository.getInvitation(invitationId);
+      if (invitation == null) {
         debugPrint('🔍 DEBUG: Invitation document not found');
         _setError('Inbjudan hittades inte');
         return false;
       }
-
-      final invitation = GroupInvitation.fromFirestore(invitationDoc);
       debugPrint(
           '🔍 DEBUG: Found invitation to reject: ${invitation.groupName}');
 
@@ -501,9 +474,10 @@ class GroupInvitationService extends ChangeNotifier {
 
       // Avvisa inbjudan med korrekt status
       final rejectedInvitation = invitation.reject();
-      await _invitationsRef
-          .doc(invitationId)
-          .update(rejectedInvitation.toFirestore());
+      await _friendsRepository.updateInvitation(
+        invitationId,
+        rejectedInvitation.toFirestore(),
+      );
       debugPrint('🔍 DEBUG: Invitation status updated to rejected');
 
       // Trigga group event för UI-refresh
@@ -541,15 +515,12 @@ class GroupInvitationService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Hämta inbjudan
-      final invitationDoc = await _invitationsRef.doc(invitationId).get();
-      if (!invitationDoc.exists) {
+      final invitation = await _friendsRepository.getInvitation(invitationId);
+      if (invitation == null) {
         debugPrint('🔍 DEBUG: Invitation document not found for cancel');
         _setError('Inbjudan hittades inte');
         return false;
       }
-
-      final invitation = GroupInvitation.fromFirestore(invitationDoc);
       debugPrint('🔍 DEBUG: Cancelling invitation: ${invitation.groupName}');
 
       // Validera behörighet
@@ -559,11 +530,11 @@ class GroupInvitationService extends ChangeNotifier {
         return false;
       }
 
-      // Avbryt inbjudan
       final cancelledInvitation = invitation.cancel();
-      await _invitationsRef
-          .doc(invitationId)
-          .update(cancelledInvitation.toFirestore());
+      await _friendsRepository.updateInvitation(
+        invitationId,
+        cancelledInvitation.toFirestore(),
+      );
 
       // Trigga group event för UI-refresh
       GroupEventBus.groupUpdated();
@@ -594,20 +565,14 @@ class GroupInvitationService extends ChangeNotifier {
     try {
       // Ta bort inbjudningar äldre än 30 dagar
       final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
-      final oldInvitations = await _invitationsRef
-          .where('toUserId', isEqualTo: userId)
-          .where('createdAt', isLessThan: Timestamp.fromDate(cutoffDate))
-          .get();
+      final oldInvitations =
+          await _friendsRepository.oldInvitations(userId, cutoffDate);
 
-      final batch = FirebaseFirestore.instance.batch();
-      for (final doc in oldInvitations.docs) {
-        batch.delete(doc.reference);
-      }
-
-      if (oldInvitations.docs.isNotEmpty) {
-        await batch.commit();
+      if (oldInvitations.isNotEmpty) {
+        await _friendsRepository
+            .deleteDocuments(oldInvitations.map((d) => d.reference).toList());
         debugPrint(
-            '🔍 DEBUG: Cleaned up ${oldInvitations.docs.length} old invitations');
+            '🔍 DEBUG: Cleaned up ${oldInvitations.length} old invitations');
       }
     } catch (e) {
       debugPrint('🔍 DEBUG: Error cleaning up invitations: $e');
@@ -621,33 +586,22 @@ class GroupInvitationService extends ChangeNotifier {
     try {
       final now = Timestamp.now();
 
-      // Hämta utgångna inbjudningar
-      final expiredQuery = await _invitationsRef
-          .where('expiresAt', isLessThan: now)
-          .where('status', isEqualTo: GroupInvitationStatus.pending.name)
-          .get();
+      final expiredDocs = await _friendsRepository.expiredInvitations(now);
 
-      if (expiredQuery.docs.isEmpty) {
+      if (expiredDocs.isEmpty) {
         debugPrint('🔍 DEBUG: No expired invitations found');
         return;
       }
 
-      debugPrint(
-          '🔍 DEBUG: Found ${expiredQuery.docs.length} expired invitations');
+      debugPrint('🔍 DEBUG: Found ${expiredDocs.length} expired invitations');
 
-      // Uppdatera status till expired
-      final batch = _firestore.batch();
-      for (final doc in expiredQuery.docs) {
-        batch.update(doc.reference, {
-          'status': GroupInvitationStatus.expired.name,
-          'respondedAt': now,
-        });
-      }
+      await _friendsRepository.updateDocuments(expiredDocs, {
+        'status': GroupInvitationStatus.expired.name,
+        'respondedAt': now,
+      });
 
-      await batch.commit();
       debugPrint('🔍 DEBUG: Expired invitations cleanup completed');
-      AppLogger.info(
-          '🧹 ${expiredQuery.docs.length} utgångna inbjudningar rensade');
+      AppLogger.info('🧹 ${expiredDocs.length} utgångna inbjudningar rensade');
     } catch (e) {
       debugPrint('🔍 DEBUG: Error during cleanup: $e');
       AppLogger.error('Fel vid cleanup av utgångna inbjudningar', e);
@@ -662,14 +616,10 @@ class GroupInvitationService extends ChangeNotifier {
       debugPrint(
           '🔍 DEBUG: Checking for pending invitation: $groupId -> $toUserId');
 
-      final query = await _invitationsRef
-          .where('groupId', isEqualTo: groupId)
-          .where('toUserId', isEqualTo: toUserId)
-          .where('status', isEqualTo: GroupInvitationStatus.pending.name)
-          .limit(1)
-          .get();
-
-      final hasPending = query.docs.isNotEmpty;
+      final hasPending = await _friendsRepository.hasPendingInvitation(
+        groupId,
+        toUserId,
+      );
       debugPrint('🔍 DEBUG: Has pending invitation: $hasPending');
       return hasPending;
     } catch (e) {

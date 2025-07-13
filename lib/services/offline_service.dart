@@ -3,8 +3,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
 import '../repositories/firestore_repository.dart';
@@ -348,7 +348,7 @@ class OfflineService extends ChangeNotifier {
     );
 
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final userId = _firestoreRepository.currentUserId;
       if (userId == null) {
         AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
         return;

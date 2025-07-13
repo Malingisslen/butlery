@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../repositories/firestore_repository.dart';
 import '../models/realtime/realtime_resource.dart';
@@ -56,7 +56,10 @@ class SyncError {
 /// - Notification eller user experience
 class RealtimeSyncService extends ChangeNotifier {
   final FirestoreRepository _firestoreRepository;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  RealtimeSyncService({
+    required FirestoreRepository firestoreRepository,
+  }) : _firestoreRepository = firestoreRepository;
 
   RealtimeSyncService({required FirestoreRepository firestoreRepository})
       : _firestoreRepository = firestoreRepository;
@@ -99,7 +102,7 @@ class RealtimeSyncService extends ChangeNotifier {
   int get activeListenersCount => _activeListeners.length;
 
   /// Aktuell användare
-  String? get _currentUserId => _auth.currentUser?.uid;
+  String? get _currentUserId => _authRepository.currentUserId;
 
   // ===== INITIALIZATION =====
 
@@ -112,7 +115,7 @@ class RealtimeSyncService extends ChangeNotifier {
       _startConnectionMonitoring();
 
       // Lyssna på auth state changes
-      _auth.authStateChanges().listen(_onAuthStateChanged);
+      _authRepository.authStateChanges().listen(_onAuthStateChanged);
 
       AppLogger.success('✅ RealtimeSyncService initierad');
     } catch (e) {
