@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
+import '../repositories/auth_repository.dart';
 
 /// AuthService hanterar all autentisering med Firebase
 ///
@@ -10,8 +9,8 @@ import '../repositories/firebase/firebase_auth_repository.dart';
 /// - Tillhandahåller streams för auth state changes
 /// - Hanterar utloggning och lösenordsåterställning
 class AuthService extends ChangeNotifier {
-  // Wrapper around FirebaseAuth for easier testing and access
-  final FirebaseAuthRepository _authRepository;
+  final AuthRepository _authRepository;
+  FirebaseAuth get _auth => _authRepository.auth;
 
   // Aktuell inloggad användare (null om utloggad)
   User? _currentUser;
@@ -29,8 +28,8 @@ class AuthService extends ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
 
   /// Konstruktor - lyssnar på auth state changes
-  AuthService({FirebaseAuthRepository? authRepository})
-      : _authRepository = authRepository ?? FirebaseAuthRepository() {
+  AuthService({required AuthRepository authRepository})
+      : _authRepository = authRepository;
     // Lyssna på förändringar i autentiseringsstatus
     // Detta triggas när användare loggar in/ut
     _authRepository.authStateChanges().listen((User? user) {
