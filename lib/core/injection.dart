@@ -46,6 +46,8 @@ import '../services/friends_service.dart';
 import '../services/social_recipe_service.dart';
 import '../services/friend_categories_service.dart';
 import '../services/group_invitation_service.dart';
+import '../repositories/friends_repository.dart';
+import '../repositories/user_repository.dart';
 
 // ==================== CORE VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';
@@ -146,13 +148,20 @@ sl.registerSingleton<UserService>(
     debugPrint('✅ FriendsService registrerad');
 
     sl.registerLazySingleton<FriendCategoriesService>(
-      () => FriendCategoriesService(friendsService: sl<FriendsService>()),
+      () => FriendCategoriesService(
+        friendsService: sl<FriendsService>(),
+        friendsRepository: sl<FriendsRepository>(),
+        userRepository: sl<UserRepository>(),
+      ),
     );
     debugPrint('✅ FriendCategoriesService registrerad');
 
     sl.registerLazySingleton<GroupInvitationService>(
       () => GroupInvitationService(
-          categoriesService: sl<FriendCategoriesService>()),
+        categoriesService: sl<FriendCategoriesService>(),
+        friendsRepository: sl<FriendsRepository>(),
+        userRepository: sl<UserRepository>(),
+      ),
     );
     debugPrint('✅ GroupInvitationService registrerad');
 
