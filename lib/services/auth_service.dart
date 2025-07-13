@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../repositories/auth_repository.dart';
 
@@ -30,10 +29,10 @@ class AuthService extends ChangeNotifier {
 
   /// Konstruktor - lyssnar på auth state changes
   AuthService({required AuthRepository authRepository})
-      : _authRepository = authRepository {
+      : _authRepository = authRepository;
     // Lyssna på förändringar i autentiseringsstatus
     // Detta triggas när användare loggar in/ut
-    _auth.authStateChanges().listen((User? user) {
+    _authRepository.authStateChanges().listen((User? user) {
       _currentUser = user;
       notifyListeners(); // Meddela UI om förändringen
     });
@@ -53,14 +52,16 @@ class AuthService extends ChangeNotifier {
       _clearError();
 
       // Skapa användare i Firebase Auth
-      final UserCredential credential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final UserCredential credential = await _authRepository.register(
+        email: email,
+        password: password,
+      );
 
       // Uppdatera användarens display name
       if (credential.user != null) {
         await credential.user!.updateDisplayName(displayName);
         await credential.user!.reload(); // Ladda om för att få uppdaterad info
-        _currentUser = _auth.currentUser; // Hämta uppdaterad användare
+        _currentUser = _authRepository.currentUser; // Hämta uppdaterad användare
       }
 
       _setLoading(false);
@@ -91,7 +92,7 @@ class AuthService extends ChangeNotifier {
       _clearError();
 
       // Logga in användare
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _authRepository.signIn(email: email, password: password);
 
       _setLoading(false);
       return true;
@@ -111,7 +112,7 @@ class AuthService extends ChangeNotifier {
   Future<void> signOut() async {
     try {
       _setLoading(true);
-      await _auth.signOut();
+      await _authRepository.signOut();
       _currentUser = null;
       _setLoading(false);
     } catch (e) {
@@ -127,7 +128,7 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      await _auth.sendPasswordResetEmail(email: email);
+      await _authRepository.sendPasswordResetEmail(email);
 
       _setLoading(false);
       return true;
