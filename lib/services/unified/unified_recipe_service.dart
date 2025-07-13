@@ -4,7 +4,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../repositories/firebase/firebase_auth_repository.dart';
 import 'package:hive/hive.dart';
 import 'dart:convert';
 import '../../models/unified/unified_recipe.dart';
@@ -15,8 +15,15 @@ class UnifiedRecipeService extends ChangeNotifier {
   static const String _hiveBoxName = 'unified_recipes_cache';
   static const Duration _syncDebounce = Duration(seconds: 2);
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+final FirebaseFirestore _firestore;
+final FirebaseAuthRepository _authRepository;
+
+UnifiedRecipeService({
+  FirebaseFirestore? firestore,
+  FirebaseAuthRepository? authRepository,
+})  : _firestore = firestore ?? FirebaseFirestore.instance,
+      _authRepository = authRepository ?? FirebaseAuthRepository();
+
 
   // State
   final List<UnifiedRecipe> _recipes = [];
@@ -47,8 +54,9 @@ class UnifiedRecipeService extends ChangeNotifier {
   bool get isSyncing => _isSyncing;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
-  String? get currentUserDisplayName => _auth.currentUser?.displayName ?? 'Du';
+  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserDisplayName =>
+      _authRepository.currentUser?.displayName ?? 'Du';
 
   // ===== BACKWARDS COMPATIBILITY - för befintlig kod =====
 
@@ -92,7 +100,7 @@ class UnifiedRecipeService extends ChangeNotifier {
       await _loadCachedRecipes(box);
 
       // Lyssna på auth changes
-      _auth.authStateChanges().listen((user) {
+      _authRepository.authStateChanges().listen((user) {
         if (user != null) {
           _startFirebaseSync();
         } else {
@@ -102,7 +110,7 @@ class UnifiedRecipeService extends ChangeNotifier {
       });
 
       // Starta Firebase sync om inloggad
-      if (_auth.currentUser != null) {
+      if (_authRepository.currentUser != null) {
         _startFirebaseSync();
       }
 
@@ -593,7 +601,7 @@ class UnifiedRecipeService extends ChangeNotifier {
 
       // Restart Firebase sync to get latest data
       _stopFirebaseSync();
-      if (_auth.currentUser != null) {
+      if (_authRepository.currentUser != null) {
         _startFirebaseSync();
       }
 
