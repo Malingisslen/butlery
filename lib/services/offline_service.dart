@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'dart:async';
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
@@ -341,7 +341,7 @@ class OfflineService extends ChangeNotifier {
 
     try {
       // ✅ SÄKER: Direkt Firestore-integration utan RecipeService dependency
-      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final userId = FirebaseAuthRepository().currentUserId;
       if (userId == null) {
         AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
         return;
