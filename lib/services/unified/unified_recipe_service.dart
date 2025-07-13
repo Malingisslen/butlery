@@ -15,8 +15,14 @@ class UnifiedRecipeService extends ChangeNotifier {
   static const String _hiveBoxName = 'unified_recipes_cache';
   static const Duration _syncDebounce = Duration(seconds: 2);
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  UnifiedRecipeService({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
 
   // State
   final List<UnifiedRecipe> _recipes = [];
