@@ -11,22 +11,6 @@ import '../services/group_invitation_service.dart'; // ✅ NYTT: Import GroupInv
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Group Invitations ViewModel - UPPDATERAD med riktiga gruppinbjudningar
-/// File: viewmodels/group_invitations_viewmodel.dart
-/// Quick Guide: Kombinerar "tillgängliga grupper" och "mottagna inbjudningar" i samma ViewModel
-/// Dependencies IN: FriendCategoriesService, FriendsService, AuthService, GroupInvitationService
-/// Dependencies OUT: GroupInvitationsView, group join notifications, invitation responses
-/// Data flow: Load available groups + Load received invitations → Join/Accept/Reject → Update UI state
-/// State management: ChangeNotifier med loading, error, join states OCH invitation states
-/// Purpose: Hantera BÅDE gruppmedlemskap OCH riktiga gruppinbjudningar i samma vy
-/// Common issues: Permission validation, user authentication, group state syncing, invitation conflicts
-/// Test coverage: 90% (business logic är lätt att testa)
-/// Performance: ⚡ Cached group data, optimized member loading, real-time invitation updates
-/// Analytics: ✅ Group join actions tracking + invitation response tracking
-/// Code smells: ✅ Pure business logic, no UI dependencies, clean separation
-/// Connected to: FriendCategoriesService, FriendsService, AuthService, GroupInvitationService
-/// Used in phases: 18.4 - MVVM gruppinbjudningar (uppdaterad)
 
 class GroupInvitationsViewModel extends ChangeNotifier {
   final FriendCategoriesService _categoriesService;

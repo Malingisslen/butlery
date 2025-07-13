@@ -2,19 +2,6 @@
 // ✅ INGA backwards compatibility aliases - Clean & Efficient
 // ✅ 100% AppTheme - Optimerad performance utan funktionalitetsförlust
 
-/// 🔍 AI INFO BLOCK:
-/// Component: User Display Widgets - OPTIMERAD efter removal av legacy code
-/// File: widgets/user/user_display_widgets.dart
-/// Quick Guide: BARA display av användare - streamlined & efficient
-/// Dependencies IN: app_theme, cached_network_image
-/// Dependencies OUT: Alla views som visar användarinfo
-/// Data flow: User data → Optimerad rendering → Pure UI display
-/// State management: Stateless - optimerade rebuilds
-/// Purpose: Clean user display - NO legacy bloat, only essential functionality
-/// Performance: ⚡ 50% mindre kod, optimerad memory, snabbare rendering
-/// Code smells: ✅ ELIMINERADE - perfect separation, no duplication
-/// Connected to: AppTheme, optimized caching
-/// Used in phases: OPTIMERAD - Removal av legacy + performance boost
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';

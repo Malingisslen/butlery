@@ -10,22 +10,6 @@ import '../auth_service.dart';
 import '../user_service.dart';
 import '../../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Menu Service - UPPDATERAD för kategori-baserade menyer
-/// File: services/realtime/realtime_menu_service.dart
-/// Quick Guide: SINGLE RESPONSIBILITY - bara menu business logic för kategori-baserade realtidsmenyer
-/// Dependencies IN: RealtimeSyncService, AuthService, UserService, realtime models
-/// Dependencies OUT: RealtimeMenuViewModel, menu collaboration views
-/// Data flow: Menu operations → RealtimeMenu updates → RealtimeSyncService → Firebase
-/// State management: ChangeNotifier för menu-specific events
-/// Purpose: SRP - bara menu operations för kategorier, delegerar synkronisering till RealtimeSyncService
-/// Common issues: Category validation, recipe conflicts, concurrent editing
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Efficient category-based operations, cached user info
-/// Analytics: Menu collaboration patterns, category usage frequency, family planning
-/// Code smells: ✅ Clean delegation - bara menu logic, ingen synkronisering
-/// Connected to: RealtimeSyncService, kategori-baserade menu models, collaborative views
-/// Used in phases: Fas 3 (Menyer + Inköpslistor) - Category-specific real-time operations
 
 /// Typ av menu-operationer för analytics och logging
 enum MenuOperationType {

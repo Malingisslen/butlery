@@ -1,21 +1,5 @@
 // lib/widgets/common/search_filter_widget.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: SearchFilterWidget - Unified search and filter functionality
-/// File: widgets/common/search_filter_widget.dart
-/// Quick Guide: Combines search bar + filter chips + animations in ONE component
-/// Dependencies IN: AppTheme, ViewModels (for state)
-/// Dependencies OUT: Used by recipe/menu list views
-/// Data flow: User input → Widget state → ViewModel updates → UI refresh
-/// State management: Internal state for UI, ViewModel for business logic
-/// Purpose: Replaces separate search_bar.dart + filter_chips.dart
-/// Common issues: Ensure proper controller disposal
-/// Test coverage: 90% (critical for search/filter UX)
-/// Performance: Optimized rebuilds, efficient animations
-/// Analytics: Search queries, filter usage patterns
-/// Code smells: ✅ Single responsibility - search + filter cohesion
-/// Connected to: RecipeListViewModel, MenuViewModel
-/// Used in phases: Fas 2 - Widget consolidation
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';

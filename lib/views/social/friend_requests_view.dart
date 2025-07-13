@@ -10,22 +10,6 @@ import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../models/friend_request.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friend Requests Notification Center - MIGRERAD TILL SocialComponents
-/// File: views/social/friend_requests_view.dart
-/// Quick Guide: Dedikerad vy för alla typer av vänskapsförfrågningar med riktig användardata
-/// Dependencies IN: FriendsViewModel, SocialComponents (istället för UserAvatar)
-/// Dependencies OUT: Friend request management, notification badges
-/// Data flow: All friend requests → Load user profiles → Categorized display → Batch actions
-/// State management: Konsumerar FriendsViewModel med Provider
-/// Purpose: Centraliserad notifikationscenter för all friend request activity med riktiga användarnamn och bilder
-/// Common issues: Request state syncing, batch operation performance, user profile loading
-/// Test coverage: 70%
-/// Performance: ⚡ Optimized för stora mängder requests med cached user profiles
-/// Analytics: ✅ Request management actions tracking
-/// Code smells: ✅ Clean separation av request types, proper user data integration
-/// Connected to: FriendsViewModel, UserService, notification system, SocialComponents
-/// Used in phases: 18 - MIGRERAD till unified social API
 
 class FriendRequestsView extends StatelessWidget {
   const FriendRequestsView({super.key});

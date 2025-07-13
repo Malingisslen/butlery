@@ -1,21 +1,5 @@
 // lib/widgets/common/navigation_components.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: NavigationComponents - Unified navigation widgets for dialogs and realtime indicators
-/// File: lib/widgets/common/navigation_components.dart
-/// Quick Guide: Konsoliderade navigation widgets - recipe selectors + realtime indicators
-/// Dependencies IN: Recipe models, ViewModels, AppTheme, StateWidget, SearchFilterWidget
-/// Dependencies OUT: Various views, RealtimeMenuViewModel, recipe handlers
-/// Data flow: User interaction → Dialog/indicator → Callback/visual feedback
-/// State management: StatefulWidget för complex dialogs, Stateless för indicators
-/// Purpose: Centralized navigation patterns för konsistent UX
-/// Common issues: Dialog callback patterns, realtime indicator flicker
-/// Test coverage: Unit tests för selection logic, widget tests för UI
-/// Performance: Efficient dialogs med proper disposal, minimal realtime rebuilds
-/// Analytics: Dialog usage patterns, realtime collaboration metrics
-/// Code smells: Clean separation mellan recipe selection och realtime features
-/// Connected to: RecipeSelectionViewModel, MenuRecipeSelectionDialog, RealtimeMenuView
-/// Used in phases: Fas 3.2 (Navigation Konsolidering) - All navigation patterns unified
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

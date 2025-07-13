@@ -9,22 +9,6 @@ import '../models/realtime/realtime_recipe.dart';
 import '../models/realtime/realtime_menu.dart';
 import '../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Sync Service - Firebase Real-time Synkronisering
-/// File: services/realtime_sync_service.dart
-/// Quick Guide: Generisk real-time synkronisering för alla RealtimeResource typer
-/// Dependencies IN: cloud_firestore, firebase_auth, realtime models
-/// Dependencies OUT: RealtimeResource ViewModels, collaborative views
-/// Data flow: Firebase real-time → Stream updates → UI via ChangeNotifier
-/// State management: ChangeNotifier med connection tracking och conflict resolution
-/// Purpose: SINGLE RESPONSIBILITY - bara Firebase synkronisering, inget annat
-/// Common issues: Connection drops, simultaneous edits, permission validation
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Optimized listeners, smart conflict resolution, minimal data transfer
-/// Analytics: Connection stability, conflict rates, sync latency
-/// Code smells: ✅ Clean separation - bara synkronisering, inga business rules
-/// Connected to: Alla RealtimeResource subclasses, collaborative views
-/// Used in phases: Fas 2 (RealtimeSyncService) - Foundation för all real-time funktionalitet
 
 /// Typ av synkroniseringsfel för robust error handling
 enum SyncErrorType {
