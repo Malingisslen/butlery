@@ -5,22 +5,6 @@ import 'package:uuid/uuid.dart';
 import '../realtime/realtime_resource.dart';
 import 'invitation_target.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Invitation Model - Inbjudningssystem för gemensamma resurser
-/// File: models/invitations/realtime_invitation.dart
-/// Quick Guide: Modell för inbjudningar till realtidsresurser med gruppstöd
-/// Dependencies IN: RealtimeResourceType, InvitationTarget, AppTheme, cloud_firestore, uuid
-/// Dependencies OUT: InvitationService, inbjudnings-UI, notifikationer
-/// Data flow: Send invitation → Store → Real-time updates → Accept/Reject → Join resource
-/// State management: Immutable med state tracking och expiration logic
-/// Purpose: Komplett inbjudningssystem som stödjer både individuell och gruppdelning
-/// Common issues: Hantera expired invitations, duplicate invitations för samma user/resource
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Efficient queries med compound indexes, minimal data transfer
-/// Analytics: Invitation success rates, response times, group vs individual patterns
-/// Code smells: ✅ Single responsibility - bara invitation data och logic
-/// Connected to: InvitationService, delningsdialograr, RealtimeResource classes
-/// Used in phases: Fas 1 (Grundinfrastruktur) - Invitation foundation
 
 /// Status för inbjudningar
 enum RealtimeInvitationStatus {

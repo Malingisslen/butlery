@@ -10,22 +10,6 @@ import '../../core/injection.dart';
 import '../../services/social_recipe_service.dart';
 import '../../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: UniversalShareDialog - Universell delningsdialog för alla content-typer
-/// File: lib/widgets/universal_share_dialog.dart
-/// Quick Guide: EN dialog som ersätter alla 4 befintliga delningsdialog
-/// Dependencies IN: Recipe, UnifiedShoppingList, UserProfile, SocialRecipeService, AppTheme
-/// Dependencies OUT: RecipeDetailView, MenuView, ShoppingView
-/// Data flow: Content → Type detection → Appropriate logic → Share execution
-/// State management: StatefulWidget med dynamisk hantering baserat på content type
-/// Purpose: Eliminera code duplication + konsistent delning UX
-/// Common issues: Type safety, error handling, preserved state
-/// Test coverage: 0% (ny komponent som ersätter befintliga)
-/// Performance: ⚡ Samma prestanda som separata dialogs, mindre memory footprint
-/// Analytics: Centraliserad tracking för alla delningstyper
-/// Code smells: ✅ Clean architecture med generics och type safety
-/// Connected to: SocialRecipeService, delningslogik, content models
-/// Used in phases: Optimering - Sammanslagning av duplicerad delningsfunktionalitet
 
 /// Typ av innehåll som kan delas
 enum ShareContentType {

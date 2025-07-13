@@ -1,21 +1,5 @@
 /// lib/viewmodels/collaborative_status_viewmodel.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Enhanced Collaborative Status Management ViewModel
-/// File: lib/viewmodels/collaborative_status_viewmodel.dart
-/// Quick Guide: Skalbar hantering av kollaborativ status för alla content-typer
-/// Dependencies IN: SocialRecipeService, AuthService, Content models
-/// Dependencies OUT: All edit views, detail views, status widgets
-/// Data flow: Content ID + Type → Service check → Cached status → UI updates
-/// State management: ChangeNotifier med generic caching system
-/// Purpose: Single responsibility för collaborative detection med framtidssäker arkitektur
-/// Common issues: Network delays, service unavailability, cache invalidation
-/// Test coverage: Unit testable med mocked services
-/// Performance: Aggressive caching, batch operations, minimal Firebase calls
-/// Analytics: Comprehensive collaborative interaction tracking
-/// Code smells: Clean separation, SOLID principles, reusable patterns
-/// Connected to: SocialRecipeService, all content views, collaborative widgets
-/// Used in phases: 18.3+ - Unified collaborative system för alla content-typer
 
 import 'package:flutter/foundation.dart';
 import '../services/social_recipe_service.dart';

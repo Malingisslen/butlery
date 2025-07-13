@@ -4,22 +4,6 @@ import 'package:flutter/material.dart';
 import '../../models/invitations/invitation_target.dart';
 import '../../theme/app_theme.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Target State Widgets - UI komponenter för olika states av InvitationTarget
-/// File: widgets/invitation_target/target_state_widgets.dart
-/// Quick Guide: Widget builders för loading, error, empty states - använder BARA AppTheme
-/// Dependencies IN: InvitationTarget, AppTheme
-/// Dependencies OUT: UI screens, dialogs, lists
-/// Data flow: State information → Widget builders → Styled state components
-/// State management: Stateless widgets som visar olika tillstånd
-/// Purpose: Separation of concerns - state UI komponenter använder centraliserad AppTheme
-/// Common issues: Ensure consistent state messaging and styling
-/// Test coverage: 0% (UI widgets)
-/// Performance: ⚡ Efficient rendering, static widgets
-/// Analytics: N/A - UI widgets
-/// Code smells: ✅ Single responsibility - bara state visning med AppTheme
-/// Connected to: InvitationTarget, AppTheme, various UI screens
-/// Used in phases: Fas 1 (Grundinfrastruktur) - UI foundation
 
 /// Widget builders för olika states av InvitationTarget komponenter
 ///

@@ -8,22 +8,6 @@ import '../models/friend_request.dart';
 import 'package:butlery/core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friends Management Service
-/// File: services/friends_service.dart
-/// Quick Guide: Hanterar vänskaper, förfrågningar och mutual friends
-/// Dependencies IN: cloud_firestore, firebase_auth, user_profile.dart, friend_request.dart
-/// Dependencies OUT: Friends lists, request notifications, social features
-/// Data flow: Send request → Accept/Reject → Mutual friends → Social access
-/// State management: ChangeNotifier med friends och requests lists
-/// Purpose: Complete friends system med notifications och permissions
-/// Common issues: Duplicate requests, permission management, cleanup
-/// Test coverage: 70%
-/// Performance: ⚡ Optimized queries, friend count tracking
-/// Analytics: ✅ Friend actions och success rates tracking
-/// Code smells: ✅ Clean state management, robust error handling
-/// Connected to: UserService, NotificationService, all social features
-/// Used in phases: 18
 
 class FriendsService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

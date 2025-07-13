@@ -7,22 +7,6 @@ import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 import 'permissions/edit_mode.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Shared Recipe Model - Firebase First - FIXED + DISMISS + isDismissed GETTER
-/// File: models/shared_recipe.dart
-/// Quick Guide: Clean Firebase-only modell för delade recept mellan vänner - ROBUST PARSING + DISMISS + GETTER
-/// Dependencies IN: cloud_firestore, firebase_auth, uuid, recipe.dart, flutter/foundation.dart
-/// Dependencies OUT: SocialRecipeService, sharing views
-/// Data flow: Firestore ↔ SharedRecipe object ↔ Social UI
-/// State management: Immutable med copyWith pattern och cached recipe data
-/// Purpose: Receptdelning med tracking, import och dismiss functionality + easy isDismissed check
-/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, dismiss tracking, isDismissed getter added
-/// Test coverage: 70%
-/// Performance: ⚡ Cached recipe data för offline access
-/// Analytics: ✅ Sharing engagement, import success och dismiss tracking
-/// Code smells: ✅ Clean separation between sharing metadata och recipe data, FIXED parsing + dismiss + getter
-/// Connected to: Recipe, UserProfile, SocialRecipeService, sharing views
-/// Used in phases: 18
 
 enum ShareScope {
   individual, // Delad till specifik person

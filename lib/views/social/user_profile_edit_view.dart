@@ -9,22 +9,6 @@ import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/validators/form_validators.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: User Profile Edit Interface
-/// File: views/social/user_profile_edit_view.dart
-/// Quick Guide: Komplett profil-redigering med avatar upload och privacy settings
-/// Dependencies IN: UserProfileViewModel, UserAvatar, form validators
-/// Dependencies OUT: Navigation tillbaka med sparade ändringar
-/// Data flow: Load current profile → Edit form → Validation → Avatar upload → Save
-/// State management: Konsumerar UserProfileViewModel med Provider
-/// Purpose: Fullständig profil-management med elegant UX
-/// Common issues: Avatar upload timing, form validation, unsaved changes
-/// Test coverage: 60%
-/// Performance: ⚡ Optimerad med smart loading states
-/// Analytics: ✅ Profile edit tracking via ViewModel
-/// Code smells: ✅ Clean separation med ViewModel
-/// Connected to: UserProfileViewModel, UserAvatar widget
-/// Used in phases: 18
 
 class UserProfileEditView extends StatelessWidget {
   const UserProfileEditView({super.key});
