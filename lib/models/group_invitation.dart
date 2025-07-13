@@ -3,22 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Group Invitation Model - Notifikationssystem för gruppinbjudningar
-/// File: models/group_invitation.dart
-/// Quick Guide: Hanterar inbjudningar till grupper separat från vänskapsförfrågningar
-/// Dependencies IN: cloud_firestore, uuid
-/// Dependencies OUT: NotificationService, group invitation UI
-/// Data flow: Send invitation → Notification → Accept/Reject → Join group
-/// State management: Immutable med status tracking
-/// Purpose: Separat system för gruppinbjudningar med notifikationer
-/// Common issues: Expired invitations, duplicate invitations, permission checks
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Minimal serialization, efficient queries
-/// Analytics: 📊 Invitation success rates tracking
-/// Code smells: ✅ Clean state machine design
-/// Connected to: GroupInvitationService, NotificationService, group views
-/// Used in phases: 18.6 - Notifikationssystem
 
 enum GroupInvitationStatus {
   pending, // Väntande inbjudan

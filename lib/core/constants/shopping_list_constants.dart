@@ -1,21 +1,5 @@
 // lib/core/constants/shopping_list_constants.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Shopping List Constants
-/// File: core/constants/shopping_list_constants.dart
-/// Quick Guide: Centraliserade konstanter för shopping list
-/// Dependencies IN: None
-/// Dependencies OUT: Used by shopping list widgets
-/// Data flow: Static constants
-/// State management: N/A
-/// Purpose: Eliminera magic numbers och centralisera värden
-/// Common issues: N/A
-/// Test coverage: N/A
-/// Performance: ⚡ Compile-time constants
-/// Analytics: N/A
-/// Code smells: ✅ Clean constants definition
-/// Connected to: All shopping list components
-/// Used in phases: Shopping list feature
 
 class ShoppingListConstants {
   // Förhindra instansiering

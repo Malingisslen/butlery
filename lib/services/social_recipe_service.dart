@@ -13,22 +13,6 @@ import '../services/recipe_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Social Recipe Management Service - PRODUCTION READY + DISMISS FEATURES + SHOPPING SHARE
-/// File: services/social_recipe_service.dart
-/// Quick Guide: Hanterar receptdelning, kommentarer, social interactions, dismiss functionality OCH shopping share - KOMPLETT
-/// Dependencies IN: cloud_firestore, firebase_auth, recipe models, user_service
-/// Dependencies OUT: Social features, sharing views, comment system, dismiss management, shopping share
-/// Data flow: Share recipe → Store with metadata → Comments → Import/Dismiss to collection + Shopping share
-/// State management: ChangeNotifier med shared content, comments och dismiss tracking
-/// Purpose: Complete social recipe system med sharing, commenting och user-friendly dismiss + shopping share - PRODUCTION READY
-/// Common issues: ✅ LÖST: Nullable spread operator, allowImport getter, type safety, dismiss tracking, shopping share
-/// Test coverage: 65%
-/// Performance: ⚡ Optimized queries med pagination, batch operations, efficient dismiss filtering
-/// Analytics: ✅ Social engagement, sharing success, dismiss vs import tracking, shopping engagement
-/// Code smells: ✅ Clean separation of concerns, robust error handling, user-friendly dismiss, shopping share, PRODUCTION READY
-/// Connected to: RecipeService, UserService, comment widgets, sharing views, dismiss UI, shopping share dialog
-/// Used in phases: 18 + Shopping Share
 
 class SocialRecipeService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

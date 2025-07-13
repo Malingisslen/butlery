@@ -5,19 +5,6 @@ import '../../viewmodels/collaborative_shopping_viewmodel.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Collaborative Shopping View - MVVM + UnifiedShopping Compliant
-/// File: views/social/collaborative_shopping_view.dart
-/// Quick Guide: Real-time collaborative shopping med unified system backend
-/// Dependencies IN: CollaborativeShoppingViewModel, AppTheme
-/// Dependencies OUT: Collaborative shopping UI med complete MVVM pattern
-/// Data flow: View → ViewModel → UnifiedShoppingService, pure UI rendering
-/// State management: ChangeNotifierProvider med ViewModel
-/// Purpose: MVVM-compliant collaborative shopping experience
-/// Common issues: ✅ LÖST: Proper separation, AppTheme usage, unified backend
-/// Performance: ⚡ Optimized rendering, efficient state management
-/// Connected to: CollaborativeShoppingViewModel, UnifiedShoppingService
-/// Used in phases: 18.4
 
 class CollaborativeShoppingView extends StatefulWidget {
   final String listId;

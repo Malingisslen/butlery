@@ -1,21 +1,5 @@
 // lib/models/unified/unified_shopping_item.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Unified Shopping Item Model - FÖRBÄTTRAD FORMATERING
-/// File: models/unified/unified_shopping_item.dart
-/// Quick Guide: Smart formatering av mängd och enhet + förbättrad displayText
-/// Dependencies IN: cloud_firestore, uuid
-/// Dependencies OUT: UnifiedShoppingService, alla shopping UI-komponenter
-/// Data flow: Recipe ingredients → UnifiedShoppingItem → UI rendering → Firebase sync
-/// State management: Immutable data class med copyWith pattern
-/// Purpose: Enhetlig representation av shopping items med SMART FORMATERING
-/// Common issues: Inga onödiga decimaler, korrekt enhetsvisning
-/// Test coverage: 0% (förbättring av befintlig komponent)
-/// Performance: ⚡ Optimerad serialization, effektiv state management
-/// Analytics: ✅ Shopping item interactions tracking
-/// Code smells: ✅ Clean unified design med smart formatering
-/// Connected to: UnifiedShoppingService, alla shopping views, Firebase
-/// Used in phases: 18.3 (Unified Shopping Migration) + UI förbättringar
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';

@@ -8,22 +8,6 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: User Profile Management ViewModel
-/// File: viewmodels/user_profile_viewmodel.dart
-/// Quick Guide: Hanterar profil-redigering, avatar upload och privacy settings
-/// Dependencies IN: UserService, StorageService, ImagePickerService
-/// Dependencies OUT: Profile edit views, settings views
-/// Data flow: Current profile → Edit form → Validation → Service update → UI refresh
-/// State management: ChangeNotifier med form state och loading states
-/// Purpose: Komplett profil-management med avatar och privacy controls
-/// Common issues: Avatar upload timing, displayName validation, form state
-/// Test coverage: 70%
-/// Performance: ⚡ Avatar caching, optimized form updates
-/// Analytics: ✅ Profile edit actions tracking
-/// Code smells: ✅ Clean separation från service concerns
-/// Connected to: UserService, edit profile views, settings views
-/// Used in phases: 18
 
 class UserProfileViewModel extends ChangeNotifier {
   final UserService _userService;

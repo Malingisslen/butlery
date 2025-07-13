@@ -6,22 +6,6 @@ import '../models/user_profile.dart';
 import '../services/social_recipe_service.dart';
 import '../services/friends_service.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: ShoppingShareViewModel - FIXED för UnifiedShoppingList
-/// File: lib/viewmodels/shopping_share_viewmodel.dart
-/// Quick Guide: Business logic för social delning av inköpslistor - FIXAD VERSION
-/// Dependencies IN: SocialRecipeService, FriendsService
-/// Dependencies OUT: ShoppingShareDialog
-/// Data flow: Dialog → ViewModel → Services → Firebase
-/// State management: ChangeNotifier för UI-uppdateringar
-/// Purpose: Separera business logic från UI för shopping sharing
-/// Common issues: ✅ FIXAT: Använder rätt metoder och modeller
-/// Test coverage: Bör testas för olika användarscenarier
-/// Performance: Lazy loading av vänner, caching av delningshistorik
-/// Analytics: Spåra delningsfrekvens och framgång
-/// Code smells: Inga - följer rent MVVM mönster
-/// Connected to: ShoppingShareDialog, SocialRecipeService, FriendsService
-/// Used in phases: 4 (Social funktioner för inköpslistor)
 
 class ShoppingShareViewModel extends ChangeNotifier {
   final SocialRecipeService _socialRecipeService;
