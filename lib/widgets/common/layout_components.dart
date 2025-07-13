@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Core & Theme
 import '../../theme/app_theme.dart';
@@ -431,10 +434,15 @@ class _ProfileMenuState extends State<_ProfileMenu> {
       await friendsViewModel.refresh();
 
       final socialService = sl<SocialRecipeService>();
-      final newSharedItems = socialService.recipesSharedWithMe
-              .where((r) => !r.isDismissed)
-              .length +
-          socialService.menusSharedWithMe.where((m) => !m.isDismissed).length;
+      final currentUserId = sl<AuthService>().currentUser?.uid;
+      final newSharedItems = currentUserId == null
+          ? 0
+          : socialService.recipesSharedWithMe
+                  .where((r) => !r.isDismissed(currentUserId))
+                  .length +
+              socialService.menusSharedWithMe
+                  .where((m) => !m.isDismissed(currentUserId))
+                  .length;
 
       if (mounted) {
         setState(() {
@@ -507,9 +515,10 @@ class _ProfileMenuState extends State<_ProfileMenu> {
     );
   }
 
-  /// Profil header med användarinfo
-  Widget _buildProfileHeader(BuildContext context) {
-    final user = FirebaseAuthRepository().currentUser;
+/// Profil header med användarinfo
+Widget _buildProfileHeader(BuildContext context) {
+  final user = FirebaseAuthRepository().currentUser;
+
 
     return Container(
       width: double.infinity,
