@@ -6,18 +6,28 @@ library;
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../repositories/auth_repository.dart';
+import '../repositories/recipe_repository.dart';
 
 // ==================== CORE SERVICES ====================
 import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/persistence_service.dart';
+import '../repositories/auth_repository.dart';
 import '../services/auth_service.dart';
 import '../services/share_service.dart';
 import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
+import '../repositories/firebase_user_repository.dart';
+import '../repositories/firebase_friends_repository.dart';
+import '../repositories/firebase_social_recipe_repository.dart';
+import '../repositories/user_repository.dart';
+import '../repositories/friends_repository.dart';
+import '../repositories/social_recipe_repository.dart';
+import '../repositories/collaborative_recipe_repository.dart';
 
 // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
 import '../services/realtime_sync_service.dart';
@@ -84,12 +94,22 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<SharedPreferences>(sharedPreferences);
     debugPrint('✅ SharedPreferences registrerad');
 
-    // ==================== CORE SERVICES ====================
-    sl.registerSingleton<AuthService>(AuthService());
-    debugPrint('✅ AuthService registrerad');
+    // ==================== REPOSITORIES ====================
+    sl.registerSingleton<AuthRepository>(FirebaseAuthRepository());
+    sl.registerSingleton<RecipeRepository>(FirebaseRecipeRepository());
+    debugPrint('✅ Repositories registrerade');
 
-    sl.registerSingleton<PersistenceService>(PersistenceService());
-    debugPrint('✅ PersistenceService registrerad');
+   // ==================== CORE SERVICES ====================
+sl.registerSingleton<AuthRepository>(AuthRepository());
+debugPrint('✅ AuthRepository registrerad');
+
+sl.registerSingleton<AuthService>(
+  AuthService(authRepository: sl<AuthRepository>()),
+);
+debugPrint('✅ AuthService registrerad');
+
+sl.registerSingleton<PersistenceService>(PersistenceService());
+debugPrint('✅ PersistenceService registrerad');
 
     // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
     sl.registerSingleton<RealtimeSyncService>(RealtimeSyncService());
@@ -114,13 +134,17 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ RealtimeMenuService registrerad');
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
-    sl.registerSingleton<UserService>(UserService());
+sl.registerSingleton<UserRepository>(FirebaseUserRepository());
+sl.registerSingleton<UserService>(
+  UserService(repository: sl<UserRepository>()),
+);
+
     debugPrint('✅ UserService registrerad');
 
-    sl.registerSingleton<UserRepository>(UserRepository());
-    sl.registerSingleton<FriendsRepository>(FriendsRepository());
-
-    sl.registerSingleton<FriendsService>(FriendsService());
+    sl.registerSingleton<FriendsRepository>(FirebaseFriendsRepository());
+    sl.registerSingleton<FriendsService>(
+      FriendsService(repository: sl<FriendsRepository>()),
+    );
     debugPrint('✅ FriendsService registrerad');
 
     sl.registerLazySingleton<FriendCategoriesService>(
@@ -151,7 +175,10 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ GroupInvitationExpander registrerad');
 
     // ==================== EXISTING SERVICES ====================
-    sl.registerSingleton<RecipeService>(RecipeService());
+    sl.registerSingleton<RecipeService>(RecipeService(
+      recipeRepository: sl<RecipeRepository>(),
+      authRepository: sl<AuthRepository>(),
+    ));
     debugPrint('✅ RecipeService registrerad');
 
     sl.registerSingleton<MenuService>(MenuService());
@@ -160,20 +187,30 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<StorageService>(StorageService());
     sl.registerSingleton<ImagePickerService>(ImagePickerService());
     sl.registerSingleton<OfflineService>(OfflineService());
+    sl.registerSingleton<CollaborativeRecipeRepository>(
+        CollaborativeRecipeRepository());
     sl.registerSingleton<AnalyticsService>(AnalyticsService());
     debugPrint('✅ Alla core services registrerade');
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
-      () => UnifiedShoppingService(),
+      () => UnifiedShoppingService(
+        firestore: FirebaseFirestore.instance,
+        auth: FirebaseAuth.instance,
+      ),
     );
     debugPrint('✅ UnifiedShoppingService registrerad');
 
     // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
+    sl.registerSingleton<SocialRecipeRepository>(
+        FirebaseSocialRecipeRepository());
     sl.registerSingleton<SocialRecipeService>(
       SocialRecipeService(
+        repository: sl<SocialRecipeRepository>(),
         userService: sl<UserService>(),
         recipeService: sl<RecipeService>(),
+        recipeRepository: sl<RecipeRepository>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ SocialRecipeService registrerad');
@@ -203,6 +240,7 @@ Future<void> initializeDependencies() async {
         storageService: sl<StorageService>(),
         imagePickerService: sl<ImagePickerService>(),
         authService: sl<AuthService>(),
+        collaborativeRepository: sl<CollaborativeRecipeRepository>(),
       ),
     );
 
@@ -437,7 +475,7 @@ bool isRealtimeSyncReady() {
 /// Debug-funktion för att visa alla registrerade services
 void debugPrintRegisteredServices() {
   debugPrint('📋 Registrerade Services:');
-  debugPrint('  Core: AuthService, RecipeService, UserService');
+  debugPrint('  Core: AuthRepository, AuthService, RecipeService, UserService');
   debugPrint('  Social: FriendsService, SocialRecipeService');
   debugPrint(
       '  ✅ Realtime: RealtimeSyncService, RealtimeRecipeService, RealtimeMenuService (FAS 2+3)');

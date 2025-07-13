@@ -1,5 +1,6 @@
 // lib/services/friend_categories_service.dart - ✅ KOMPLETT FIXAD VERSION
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/friend_category.dart';
 import '../models/user_profile.dart';
@@ -9,7 +10,6 @@ import '../core/error/error_handler.dart';
 import '../repositories/friends_repository.dart';
 import '../repositories/user_repository.dart';
 
-
 class FriendCategoriesService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;
   final UserRepository _userRepository;
@@ -17,8 +17,7 @@ class FriendCategoriesService extends ChangeNotifier {
 
   // State
   List<FriendCategory> _categories = [];
-  final Map<String, List<UserProfile>> _categoryFriends =
-      {}; // categoryId -> friends
+  final Map<String, List<UserProfile>> _categoryFriends = {}; // categoryId -> friends
   bool _isLoading = false;
   String? _error;
 
@@ -59,8 +58,6 @@ class FriendCategoriesService extends ChangeNotifier {
     return _categoryFriends[categoryId] ?? [];
   }
 
-
-
   /// Initialize service
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar FriendCategoriesService...');
@@ -77,6 +74,7 @@ class FriendCategoriesService extends ChangeNotifier {
       await _loadCategories();
     }
   }
+}
 
   /// ✅ FÖRBÄTTRAT: Create new category med korrekt Firebase path
   Future<bool> createCategory({

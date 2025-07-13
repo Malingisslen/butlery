@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/friend_category.dart';
 import '../models/group_invitation.dart';
 
 class FriendsRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) {
     return _firestore.collection('users').doc(userId).collection('friendCategories');
@@ -51,6 +53,10 @@ class FriendsRepository {
 
   CollectionReference<Map<String, dynamic>> get _invitationsRef =>
       _firestore.collection('group_invitations');
+
+  Stream<User?> authStateChanges() => _auth.authStateChanges();
+
+  User? get currentUser => _auth.currentUser;
 
   Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) {
     return _invitationsRef
