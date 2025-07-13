@@ -1,14 +1,15 @@
-import "package:firebase_auth/firebase_auth.dart";
+import 'package:firebase_auth/firebase_auth.dart';
 
-abstract class AuthRepository {
-  FirebaseAuth get auth;
-  String? get currentUserId;
-}
+/// Simple wrapper around [FirebaseAuth] to expose authentication state
+/// without requiring consumers to import firebase packages.
+class AuthRepository {
+  final FirebaseAuth _auth;
 
-class FirebaseAuthRepository implements AuthRepository {
-  @override
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  AuthRepository({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
 
-  @override
-  String? get currentUserId => auth.currentUser?.uid;
+  /// Stream of authentication state changes.
+  Stream<User?> authStateChanges() => _auth.authStateChanges();
+
+  /// Current authenticated user's id, or `null` if not logged in.
+  String? get currentUserId => _auth.currentUser?.uid;
 }
