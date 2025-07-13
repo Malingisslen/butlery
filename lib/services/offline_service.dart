@@ -3,24 +3,32 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
+import '../repositories/firestore_repository.dart';
 
 /// Service för offline-funktionalitet med Hive - USER-SPECIFIC VERSION
 class OfflineService extends ChangeNotifier {
   // Singleton pattern
   static final OfflineService _instance = OfflineService._internal();
-  factory OfflineService() => _instance;
-  OfflineService._internal();
+  factory OfflineService({FirestoreRepository? firestoreRepository}) {
+    _instance._firestoreRepository =
+        firestoreRepository ?? _instance._firestoreRepository;
+    return _instance;
+  }
+  OfflineService._internal() {
+    _firestoreRepository = FirestoreRepository();
+  }
 
   // Hive boxes
   static const String _recipeBoxName = 'recipes_offline';
   static const String _syncQueueBoxName = 'sync_queue';
   late Box<Recipe> _recipeBox;
   late Box<String> _syncQueueBox;
+
+  late FirestoreRepository _firestoreRepository;
 
   // Connectivity
   final Connectivity _connectivity = Connectivity();
@@ -340,17 +348,14 @@ class OfflineService extends ChangeNotifier {
     );
 
     try {
-      // ✅ SÄKER: Direkt Firestore-integration utan RecipeService dependency
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null) {
         AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
         return;
       }
 
-      final userRecipesRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('recipes');
+      final userRecipesRef =
+          _firestoreRepository.userRecipesCollection(userId);
 
       final pendingIds = _syncQueueBox.values.toList();
       int successCount = 0;
@@ -364,8 +369,10 @@ class OfflineService extends ChangeNotifier {
           if (recipe != null && recipe.needsSync) {
             AppLogger.info('📤 Synkar recept: ${recipe.title}');
 
-            // ✅ DIREKT FIRESTORE: Använd Firestore direkt istället för RecipeService
-            await userRecipesRef.doc(recipe.id).set(recipe.toFirestore());
+            await _firestoreRepository.setDocument(
+              userRecipesRef.doc(recipe.id),
+              recipe.toFirestore(),
+            );
 
             // ✅ SÄKER: Synkningen lyckades
             recipe.isModifiedOffline = false;
