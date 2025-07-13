@@ -6,6 +6,8 @@ library;
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../repositories/auth_repository.dart';
+import '../repositories/recipe_repository.dart';
 
 // ==================== CORE SERVICES ====================
 import '../services/recipe_service.dart';
@@ -82,8 +84,13 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<SharedPreferences>(sharedPreferences);
     debugPrint('✅ SharedPreferences registrerad');
 
+    // ==================== REPOSITORIES ====================
+    sl.registerSingleton<AuthRepository>(FirebaseAuthRepository());
+    sl.registerSingleton<RecipeRepository>(FirebaseRecipeRepository());
+    debugPrint('✅ Repositories registrerade');
+
     // ==================== CORE SERVICES ====================
-    sl.registerSingleton<AuthService>(AuthService());
+    sl.registerSingleton<AuthService>(AuthService(authRepository: sl<AuthRepository>()));
     debugPrint('✅ AuthService registrerad');
 
     sl.registerSingleton<PersistenceService>(PersistenceService());
@@ -112,7 +119,10 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ RealtimeMenuService registrerad');
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
-    sl.registerSingleton<UserService>(UserService());
+    sl.registerSingleton<UserService>(UserService(
+      recipeRepository: sl<RecipeRepository>(),
+      authRepository: sl<AuthRepository>(),
+    ));
     debugPrint('✅ UserService registrerad');
 
     sl.registerSingleton<FriendsService>(FriendsService());
@@ -139,7 +149,10 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ GroupInvitationExpander registrerad');
 
     // ==================== EXISTING SERVICES ====================
-    sl.registerSingleton<RecipeService>(RecipeService());
+    sl.registerSingleton<RecipeService>(RecipeService(
+      recipeRepository: sl<RecipeRepository>(),
+      authRepository: sl<AuthRepository>(),
+    ));
     debugPrint('✅ RecipeService registrerad');
 
     sl.registerSingleton<MenuService>(MenuService());
@@ -162,6 +175,8 @@ Future<void> initializeDependencies() async {
       SocialRecipeService(
         userService: sl<UserService>(),
         recipeService: sl<RecipeService>(),
+        recipeRepository: sl<RecipeRepository>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ SocialRecipeService registrerad');
