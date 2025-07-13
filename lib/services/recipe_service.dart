@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
@@ -14,7 +14,7 @@ import 'package:uuid/uuid.dart';
 /// RecipeService hanterar all receptlogik med Firestore OCH offline-support
 class RecipeService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
   final OfflineService _offlineService = OfflineService();
 
   // Lokala variabler
@@ -30,7 +30,7 @@ class RecipeService extends ChangeNotifier {
   String? get lastError => _lastError;
 
   /// Nuvarande användarens ID
-  String? get _userId => _auth.currentUser?.uid;
+  String? get _userId => _authRepository.currentUserId;
 
   /// Firestore-referens till användarens recept
   CollectionReference<Map<String, dynamic>>? get _userRecipesRef {
@@ -48,7 +48,7 @@ class RecipeService extends ChangeNotifier {
     debugPrint('🔥 RecipeService constructor called');
 
     // Enhanced auth state listener med komplett cleanup
-    _auth.authStateChanges().listen((user) async {
+    _authRepository.authStateChanges().listen((user) async {
       debugPrint('🔥 Auth state changed: ${user?.email}');
 
       if (user == null) {
@@ -700,7 +700,7 @@ class RecipeService extends ChangeNotifier {
 
       // 4. Rensa offline cache för säkerhets skull (optional)
       try {
-        final userId = _auth.currentUser?.uid;
+        final userId = _authRepository.currentUserId;
         if (userId != null) {
           await _offlineService.clearUserData(userId);
           debugPrint('✅ Offline cache cleared for user: $userId');
@@ -737,7 +737,7 @@ class RecipeService extends ChangeNotifier {
       await Future.delayed(const Duration(milliseconds: 500));
 
       // 3. Verifiera att användaren fortfarande är inloggad
-      if (_auth.currentUser?.uid != userId) {
+      if (_authRepository.currentUserId != userId) {
         debugPrint('⚠️ User changed during setup, aborting');
         return;
       }

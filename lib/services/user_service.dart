@@ -1,7 +1,7 @@
 // lib/services/user_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
@@ -10,7 +10,7 @@ import '../core/error/error_handler.dart';
 
 class UserService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
@@ -30,7 +30,7 @@ class UserService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// Firestore references
   CollectionReference get _profilesRef =>
@@ -41,7 +41,7 @@ class UserService extends ChangeNotifier {
     AppLogger.info('🔄 Initialiserar UserService...');
 
     // Lyssna på auth state changes
-    _auth.authStateChanges().listen((user) {
+    _authRepository.authStateChanges().listen((user) {
       if (user != null) {
         _loadCurrentUserProfile();
       } else {
@@ -53,7 +53,7 @@ class UserService extends ChangeNotifier {
     });
 
     // Load current user if already authenticated
-    if (_auth.currentUser != null) {
+    if (_authRepository.currentUser != null) {
       await _loadCurrentUserProfile();
     }
   }
@@ -66,7 +66,7 @@ class UserService extends ChangeNotifier {
     bool? isSearchable,
     bool? allowEmailSearch,
   }) async {
-    final user = _auth.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) {
       _setError('Ingen användare inloggad');
       return null;
@@ -148,7 +148,7 @@ class UserService extends ChangeNotifier {
 
       final results = <UserProfile>[];
       final seenIds = <String>{};
-      final currentUserId = _auth.currentUser?.uid;
+      final currentUserId = _authRepository.currentUserId;
 
       // ⚡ SNABB: Search by displayNameLower (server-side indexerad sökning)
       try {
@@ -250,7 +250,7 @@ class UserService extends ChangeNotifier {
 
       final results = <UserProfile>[];
       final seenIds = <String>{};
-      final currentUserId = _auth.currentUser?.uid;
+      final currentUserId = _authRepository.currentUserId;
 
       // Client-side filtrering
       for (final doc in nameQuery.docs) {
@@ -482,7 +482,7 @@ class UserService extends ChangeNotifier {
 
   /// Private methods - UPPDATERAD med auto-create
   Future<void> _loadCurrentUserProfile() async {
-    final user = _auth.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) return;
 
     try {

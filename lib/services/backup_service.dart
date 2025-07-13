@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../models/recipe.dart';
@@ -28,7 +28,7 @@ class BackupService {
         'butlery_backup': {
           'version': '1.0',
           'exported_at': DateTime.now().toIso8601String(),
-          'user_email': FirebaseAuth.instance.currentUser?.email,
+          'user_email': FirebaseAuthRepository().currentUser?.email,
           'recipe_count': recipes.length,
           'recipes': recipes.map((r) => r.toJson()).toList(),
         },
