@@ -447,3 +447,9 @@ Alla social views under `views/social/` plus integrationer i befintliga vyer.
 - Uppdaterade befintliga models
 
 **Total ökning: 47+ nya komponenter för social platform! 🚀**
+## 📦 Repository Migration Summary
+
+- Projektet flyttades till detta repositorium med komplett Flutter + Firebase setup.
+- Alla gamla src-filer lades under `lib/` och nya services introducerades.
+- CI för testkörningar lades till via `.github/workflows/test.yml`.
+- Se `docs/REPO_MIGRATION.md` för full historik.
