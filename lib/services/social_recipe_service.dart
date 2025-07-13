@@ -1,7 +1,7 @@
 // lib/services/social_recipe_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/social_recipe_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../models/recipe_comment.dart';
@@ -15,8 +15,7 @@ import '../core/error/error_handler.dart';
 
 
 class SocialRecipeService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final SocialRecipeRepository _repository;
   final UserService _userService;
   final RecipeService _recipeService;
 
@@ -33,9 +32,11 @@ class SocialRecipeService extends ChangeNotifier {
   static const int _sharedRecipesLimit = 20;
 
   SocialRecipeService({
+    required SocialRecipeRepository repository,
     required UserService userService,
     required RecipeService recipeService,
-  })  : _userService = userService,
+  })  : _repository = repository,
+        _userService = userService,
         _recipeService = recipeService;
 
   // ===== GETTERS =====
@@ -46,7 +47,7 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// ✅ FIXAT: Getters för UserAvatar notification badge
   List<SharedRecipe> get recipesSharedWithMe {
-    final currentUserId = _auth.currentUser?.uid;
+    final currentUserId = _repository.currentUser?.uid;
     if (currentUserId == null) return [];
 
     return _sharedWithMe;
@@ -56,7 +57,7 @@ class SocialRecipeService extends ChangeNotifier {
   bool get hasLoadedContent => _hasLoadedContent; // 🚀 Check if content has been loaded
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
+  String? get currentUserId => _repository.currentUser?.uid;
 
   /// 🆕 Get visible (non-dismissed) shared recipes för användaren
   List<SharedRecipe> getVisibleSharedRecipes(String userId) {
@@ -119,19 +120,19 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// Firestore references
   CollectionReference get _sharedRecipesRef =>
-      _firestore.collection('shared_recipes');
+      _repository.sharedRecipesRef;
 
   CollectionReference get _sharedMenusRef =>
-      _firestore.collection('shared_menus');
+      _repository.sharedMenusRef;
 
   CollectionReference get _recipeCommentsRef =>
-      _firestore.collection('recipe_comments');
+      _repository.recipeCommentsRef;
 
   /// Initialize service
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar SocialRecipeService...');
 
-    _auth.authStateChanges().listen((user) {
+    _repository.authStateChanges().listen((user) {
       if (user != null) {
         // 🚀 PERFORMANCE FIX: Delayed loading to prevent startup frame skipping
         Future.delayed(const Duration(milliseconds: 1000), () {
@@ -180,8 +181,7 @@ class SocialRecipeService extends ChangeNotifier {
       };
 
       // Spara i Firestore under shared_content collection
-      await _firestore
-          .collection('shared_content')
+      await _repository.sharedContentRef
           .doc(sharedContentId)
           .set(sharedContent);
 
@@ -622,7 +622,7 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// ✅ NY: Hämta recept-ID:n som redan delats med en specifik vän
   Future<Set<String>> getRecipesSharedWithFriend(String friendUserId) async {
-    final currentUserId = _auth.currentUser?.uid;
+    final currentUserId = _repository.currentUser?.uid;
     if (currentUserId == null) return {};
 
     try {
@@ -1306,7 +1306,7 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// 🧪 ENDAST FÖR TESTING: Skapa test SharedRecipe
   void createTestSharedRecipe(String recipeId) {
-    final currentUserId = _auth.currentUser?.uid;
+    final currentUserId = _repository.currentUser?.uid;
     if (currentUserId == null) return;
 
     final testSharedRecipe = SharedRecipe(
