@@ -3,7 +3,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../repositories/recipe_repository.dart';
+import '../repositories/auth_repository.dart'
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
@@ -13,9 +15,11 @@ import 'package:uuid/uuid.dart';
 
 /// RecipeService hanterar all receptlogik med Firestore OCH offline-support
 class RecipeService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
-  final OfflineService _offlineService = OfflineService();
+final RecipeRepository _recipeRepository;
+final AuthRepository _authRepository;
+final OfflineService _offlineService = OfflineService();
+  FirebaseFirestore get _firestore => _recipeRepository.firestore;
+  FirebaseAuth get _auth => _authRepository.auth;
 
   // Lokala variabler
   List<Recipe> _recipes = [];
@@ -44,7 +48,11 @@ class RecipeService extends ChangeNotifier {
   }
 
   /// Constructor - startar lyssnare om användare är inloggad - FIXED AUTH HANDLING
-  RecipeService() {
+  RecipeService({
+    required RecipeRepository recipeRepository,
+    required AuthRepository authRepository,
+  })  : _recipeRepository = recipeRepository,
+        _authRepository = authRepository {
     debugPrint('🔥 RecipeService constructor called');
 
     // Enhanced auth state listener med komplett cleanup

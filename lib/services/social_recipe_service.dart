@@ -1,7 +1,8 @@
 // lib/services/social_recipe_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
+import '../repositories/recipe_repository.dart';
+import '../repositories/auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../models/recipe_comment.dart';
@@ -13,12 +14,15 @@ import '../services/recipe_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
-
 class SocialRecipeService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
-  final UserService _userService;
-  final RecipeService _recipeService;
+final RecipeRepository _recipeRepository;
+final AuthRepository _authRepository;
+final UserService _userService;
+final RecipeService _recipeService;
+
+FirebaseFirestore get _firestore => _recipeRepository.firestore;
+FirebaseAuth get _auth => _authRepository.auth;
+
 
   // State
   List<SharedRecipe> _sharedWithMe = [];
@@ -35,8 +39,12 @@ class SocialRecipeService extends ChangeNotifier {
   SocialRecipeService({
     required UserService userService,
     required RecipeService recipeService,
+    required RecipeRepository recipeRepository,
+    required AuthRepository authRepository,
   })  : _userService = userService,
-        _recipeService = recipeService;
+        _recipeService = recipeService,
+        _recipeRepository = recipeRepository,
+        _authRepository = authRepository;
 
   // ===== GETTERS =====
 
