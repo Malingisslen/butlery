@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/group_invitation.dart';
 import '../models/friend_category.dart';
@@ -14,7 +14,7 @@ import '../core/events/group_events.dart';
 
 class GroupInvitationService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
   final FriendCategoriesService _categoriesService;
 
   // State
@@ -43,7 +43,7 @@ class GroupInvitationService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// Väntande mottagna inbjudningar
   List<GroupInvitation> get pendingReceivedInvitations =>
@@ -67,7 +67,7 @@ class GroupInvitationService extends ChangeNotifier {
     debugPrint('🔍 DEBUG: GroupInvitationService.initialize() kallad');
     AppLogger.info('🔄 Initialiserar GroupInvitationService...');
 
-    _auth.authStateChanges().listen((user) {
+    _authRepository.authStateChanges().listen((user) {
       debugPrint('🔍 DEBUG: Auth state changed - user: ${user?.uid}');
       if (user != null) {
         _setupRealtimeListeners();
@@ -76,7 +76,7 @@ class GroupInvitationService extends ChangeNotifier {
       }
     });
 
-    final currentUser = _auth.currentUser;
+    final currentUser = _authRepository.currentUser;
     debugPrint('🔍 DEBUG: Current user at initialization: ${currentUser?.uid}');
 
     if (currentUser != null) {
@@ -242,7 +242,7 @@ class GroupInvitationService extends ChangeNotifier {
       }
 
       // Hämta avsändarens namn (för UI-caching)
-      final currentUser = _auth.currentUser;
+      final currentUser = _authRepository.currentUser;
       final fromUserName = currentUser?.displayName ?? 'Okänd användare';
 
       debugPrint('🔍 DEBUG: Creating invitation object');
