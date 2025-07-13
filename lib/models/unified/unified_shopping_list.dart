@@ -1,15 +1,5 @@
 // lib/models/unified/unified_shopping_list.dart
 
-/// AI INFO BLOCK:
-/// Component: Unified Shopping List Model - KOMPLETT MED fromJson
-/// File: models/unified/unified_shopping_list.dart
-/// Quick Guide: Enhetlig listmodell som ersätter ShoppingList och SharedShoppingList
-/// Dependencies IN: cloud_firestore, uuid, unified_shopping_item.dart
-/// Dependencies OUT: UnifiedShoppingService, alla shopping UI-komponenter
-/// Data flow: User actions -> List updates -> Firebase sync -> UI refresh
-/// State management: Immutable data class med copyWith pattern
-/// Purpose: Central representation av shopping lists med ALLA features
-/// Used in phases: 18.3 (Unified Shopping Migration) - NU MED CACHE SUPPORT
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';

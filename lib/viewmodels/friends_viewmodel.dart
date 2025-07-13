@@ -9,22 +9,6 @@ import '../services/user_service.dart';
 import '../services/friend_categories_service.dart';
 import '../core/utils/logger.dart'; // ✅ NYTT: För AppLogger
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friends Management ViewModel med gruppstöd
-/// File: viewmodels/friends_viewmodel.dart
-/// Quick Guide: Hanterar vänlista, sök användare, vänskapsförfrågningar + UserProfile-cache + GRUPPER
-/// Dependencies IN: FriendsService, UserService, FriendCategoriesService
-/// Dependencies OUT: Friends views, user search, request notifications, group management
-/// Data flow: Search users → Send requests → Accept/Reject → Friends list + User profile caching + Group management
-/// State management: ChangeNotifier med search state, friends data, user profile cache OCH group state
-/// Purpose: Komplett vänhantering med sök och request-management + effektiv användardata-cache + grupphantering
-/// Common issues: ✅ FIXAT: Dispose-säker listener hantering, search performance, request state syncing
-/// Test coverage: 75%
-/// Performance: ⚡ Cached search results, optimized friends loading, efficient user profile batching, cached groups
-/// Analytics: ✅ Friend actions, search behavior tracking OCH group usage
-/// Code smells: ✅ Clean separation mellan search, friends logic, user profile management OCH group logic
-/// Connected to: FriendsService, UserService, FriendCategoriesService, friends views, search views, group views
-/// Used in phases: 18, 18.4
 
 class FriendsViewModel extends ChangeNotifier {
   final FriendsService _friendsService;

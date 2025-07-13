@@ -9,22 +9,6 @@ import '../../widgets/common/state_widget.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Group Invitations View - 100% MVVM + AppTheme Design (KORRIGERAD)
-/// File: views/social/group_invitations_view.dart
-/// Quick Guide: Gruppinbjudningar med fullständig MVVM-separation och korrigerad AppTheme-design
-/// Dependencies IN: GroupInvitationsViewModel, AppTheme design system
-/// Dependencies OUT: Gruppmedlemskap via ViewModel
-/// Data flow: View → ViewModel → Services → Firebase
-/// State management: Provider pattern med ChangeNotifier ViewModel
-/// Purpose: Clean UI som bara visar data från ViewModel
-/// Common issues: N/A - Pure UI logic
-/// Test coverage: 80% (UI testing med mocked ViewModel)
-/// Performance: ⚡ Pure UI, inga direkta service calls
-/// Analytics: ✅ UI interactions via ViewModel
-/// Code smells: ✅ 100% MVVM separation, endast AppTheme styling
-/// Connected to: GroupInvitationsViewModel
-/// Used in phases: 18.4 - MVVM gruppinbjudningar
 
 class GroupInvitationsView extends StatelessWidget {
   const GroupInvitationsView({super.key});

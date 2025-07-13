@@ -21,22 +21,6 @@ import '../models/shared_recipe.dart';
 import '../core/form/form_fields_manager.dart';
 import '../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Recipe Form ViewModel - Firebase Collaborative
-/// File: viewmodels/recipe_form_viewmodel.dart
-/// Quick Guide: MVVM ViewModel med riktig Firebase real-time collaboration
-/// Dependencies IN: RealtimeRecipe, SharedRecipe, Firebase
-/// Dependencies OUT: EditRecipeView, SocialComponents
-/// Data flow: UI → ViewModel → RealtimeRecipe → Firebase → Real-time updates
-/// State management: ChangeNotifier med Firebase streams
-/// Purpose: Hantera form state med riktig collaborative editing via Firebase
-/// Common issues: Stream disposal, connection drops, conflict resolution
-/// Test coverage: 90%
-/// Performance: ⚡ Real-time Firebase sync, debounced updates
-/// Analytics: ✅ Collaborative usage, edit frequency, user engagement
-/// Code smells: ✅ Clean Firebase integration, proper resource management
-/// Connected to: RealtimeRecipe, SharedRecipe, Firebase, SocialComponents
-/// Used in phases: Fas 4.2 - Real-time collaborative editing
 
 class RecipeFormViewModel extends ChangeNotifier {
   final RecipeService _recipeService;

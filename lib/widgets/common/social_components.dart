@@ -1,21 +1,5 @@
 // lib/widgets/common/social_components.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Social Components - KOMPLETT konsolidering av alla social widgets
-/// File: widgets/common/social_components.dart
-/// Quick Guide: Unified API för ALL social funktionalitet - avatars, dialogs, invitations, categories, collaborative features
-/// Dependencies IN: UserDisplayWidgets, FriendCategoryManager, Target widgets, AppTheme
-/// Dependencies OUT: Hela social systemet - 15 avatar användningar + alla dialogs + friend management + collaborative editing
-/// Data flow: Centraliserad social API → Delegerar till specialiserade helpers → Konsistent styling
-/// State management: Stateless builders som delegerar till befintliga komponenter
-/// Purpose: Single source of truth för ALL social UI patterns med 100% funktionell kompatibilitet + collaborative features
-/// Common issues: Bevara all befintlig funktionalitet, AppTheme compliance, konsistenta callbacks
-/// Test coverage: Ärver från underliggande komponenter
-/// Performance: ⚡ Optimerad delegation utan overhead, cached components
-/// Analytics: ✅ Centraliserad social interaction tracking
-/// Code smells: ✅ Perfect separation, unified patterns, no duplication
-/// Connected to: FriendsViewModel, GroupInvitationService, AuthService, alla social views
-/// Used in phases: Fas 4.1 - Största widget konsolideringen i projektet + collaborative editing
 
 import 'package:flutter/material.dart';
 import '../../models/friend_category.dart';

@@ -5,22 +5,6 @@ import '../recipe.dart';
 import '../permissions/resource_permission.dart';
 import 'realtime_resource.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Menu Model - UPPDATERAD för kategori-baserade menyer
-/// File: models/realtime/realtime_menu.dart
-/// Quick Guide: Använder befintlig kategori-struktur (Middag, Lunch, Frukost) - BARA data och business logic
-/// Dependencies IN: Recipe, RealtimeResource, ResourcePermission, cloud_firestore
-/// Dependencies OUT: RealtimeMenuService, RealtimeMenuViewModel, UI widgets
-/// Data flow: Menu edits → RealtimeMenu updates → Firebase sync → All participants
-/// State management: Immutable med copyWith, hanterar kategori-struktur (samma som befintlig SharedMenu)
-/// Purpose: Real-time collaboration på befintlig menystruktur utan breaking changes
-/// Common issues: Hantera tomma kategorier, recipe duplicates, samtidiga kategori-assignments
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Efficient category-based operations, kompatibel med befintlig MenuViewModel
-/// Analytics: Menu collaboration patterns, category usage, family meal planning
-/// Code smells: ✅ Återanvänder befintlig struktur - ingen breaking change på meny-systemet
-/// Connected to: MenuViewModel, VeckomenyView, kategori-baserad menyplanering, UI widgets
-/// Used in phases: Fas 3 (Menyer + Inköpslistor) - Foundation för kategori-baserad collaboration
 
 /// Realtidsresurs för gemensam kategori-baserad menyplanering
 ///

@@ -10,22 +10,6 @@ import '../models/unified/unified_shopping_list.dart'; // ✅ Lägg till för sh
 import '../models/user_profile.dart'; // ✅ Lägg till för vänhantering
 import '../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Shared Content ViewModel - UTÖKAD MED SHOPPING SHARE
-/// File: viewmodels/shared_content_viewmodel.dart
-/// Quick Guide: Hanterar shared recipes, menyer OCH shopping list sharing - KOMPLETT
-/// Dependencies IN: SocialRecipeService, UserService, FriendsService, shopping models
-/// Dependencies OUT: SharedWithMeView, social UI components, ShoppingShareDialog
-/// Data flow: Service → ViewModel state → UI reactions → User actions → Service calls
-/// State management: ChangeNotifier med comprehensive shared content state OCH shopping share
-/// Purpose: Complete UI state management för social features INKLUSIVE shopping share
-/// Common issues: Search state management, tab synchronization, dismiss optimistic updates
-/// Test coverage: 70% (ViewModels är lättare att testa)
-/// Performance: ⚡ Efficient filtering, search debouncing, optimistic dismiss updates
-/// Analytics: ✅ User interaction tracking, search analytics, dismiss vs import metrics
-/// Code smells: ✅ Clean separation mellan UI logic och business logic, MVVM pattern
-/// Connected to: SocialRecipeService, shared content views, dismiss UI components, SHOPPING SHARE
-/// Used in phases: 18.2 (Shared Content Management) + 4 (Shopping Share)
 
 class SharedContentViewModel extends ChangeNotifier {
   final SocialRecipeService _socialRecipeService;

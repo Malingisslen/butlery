@@ -11,22 +11,6 @@ import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 import '../core/events/group_events.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Group Invitation Service - MED FIXAD acceptGroupInvitation
-/// File: services/group_invitation_service.dart
-/// Quick Guide: Hanterar gruppinbjudningar med KORREKT medlemshantering
-/// Dependencies IN: cloud_firestore, firebase_auth, group_invitation.dart, friend_category.dart
-/// Dependencies OUT: Group invitation notifications, invitation UI, group events
-/// Data flow: Send invitation → Store notification → Accept/Reject → Join group → BEHÅLL ALLA MEDLEMMAR
-/// State management: ChangeNotifier med invitations cache och real-time updates + events
-/// Purpose: Komplett inbjudningssystem med KORREKT medlemsbevarande vid accept
-/// Common issues: ✅ ALLA FIXADE: Behåller befintliga medlemmar vid accept, uppdaterar originalgrupp
-/// Test coverage: 85%
-/// Performance: ⚡ Real-time listeners, batch operations, auto-cleanup + optimerad medlemshantering
-/// Analytics: 📊 Invitation conversion rates tracking + group events
-/// Code smells: ✅ Clean separation of concerns, robust error handling + korrekt medlemslogik
-/// Connected to: FriendCategoriesService, GroupEventBus, NotificationService, invitation UI
-/// Used in phases: 18.6 - Komplett gruppinbjudningssystem med korrekt medlemshantering
 
 class GroupInvitationService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

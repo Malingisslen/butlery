@@ -6,22 +6,6 @@ import '../services/friend_categories_service.dart';
 import '../services/group_invitation_service.dart';
 import '../core/events/group_events.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Create Group ViewModel - MVVM för gruppskapande
-/// File: viewmodels/create_group_viewmodel.dart
-/// Quick Guide: Hanterar all business logic för att skapa grupper
-/// Dependencies IN: FriendCategoriesService, GroupInvitationService
-/// Dependencies OUT: State updates för CreateGroupDialog
-/// Data flow: Form input → Validation → Create group → Send invitations
-/// State management: ChangeNotifier pattern
-/// Purpose: Separera all business logic från UI
-/// Common issues: ✅ LÖST: All validering och service calls i ViewModel
-/// Test coverage: 85%
-/// Performance: ⚡ Minimal state, efficient validation
-/// Analytics: ✅ Group creation tracking
-/// Code smells: ✅ Clean MVVM separation
-/// Connected to: CreateGroupDialog, FriendCategoriesService
-/// Used in phases: 18.4
 
 class CreateGroupViewModel extends ChangeNotifier {
   final FriendCategoriesService _categoriesService;

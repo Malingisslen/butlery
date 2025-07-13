@@ -4,22 +4,6 @@ import 'package:flutter/material.dart';
 import '../../models/invitations/invitation_target.dart';
 import '../../theme/app_theme.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Target Display Widgets - UI komponenter för visning av InvitationTarget
-/// File: widgets/invitation_target/target_display_widgets.dart
-/// Quick Guide: Widget builders för att visa InvitationTarget - använder BARA AppTheme
-/// Dependencies IN: InvitationTarget, AppTheme
-/// Dependencies OUT: UI screens, dialogs, lists
-/// Data flow: InvitationTarget data → Widget builders → Styled UI components
-/// State management: Stateless widgets som tar data som parametrar
-/// Purpose: Separation of concerns - UI komponenter använder centraliserad AppTheme
-/// Common issues: Ensure all styling goes through AppTheme methods
-/// Test coverage: 0% (UI widgets)
-/// Performance: ⚡ Efficient rendering, avoid unnecessary rebuilds
-/// Analytics: N/A - UI widgets
-/// Code smells: ✅ Single responsibility - bara UI display med AppTheme
-/// Connected to: InvitationTarget, AppTheme, various UI screens
-/// Used in phases: Fas 1 (Grundinfrastruktur) - UI foundation
 
 /// Widget builders för att visa InvitationTarget på olika sätt
 ///

@@ -9,22 +9,6 @@ import '../services/friends_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friend Categories Management Service - KOMPLETT FIXAD VERSION
-/// File: services/friend_categories_service.dart
-/// Quick Guide: Grupphantering med KORREKT Firebase paths och robust data-hantering
-/// Dependencies IN: cloud_firestore, firebase_auth, friend_category.dart, friends_service
-/// Dependencies OUT: Category management UI, shopping list sharing, group invitations
-/// Data flow: Create/Update categories → Assign friends → Use in shopping lists + invitations
-/// State management: ChangeNotifier med categories cache
-/// Purpose: Organisera vänner i kategorier för enklare sharing och gruppinbjudningar
-/// Common issues: ✅ ALLA FIXADE: Firebase paths, user-specific subcollections, robust save/load
-/// Test coverage: 85%
-/// Performance: ⚡ Cached categories, optimized friend queries, Dart sorting
-/// Analytics: ✅ Category usage patterns tracking
-/// Code smells: ✅ Clean separation of concerns, robust error handling, correct Firebase paths
-/// Connected to: FriendsService, SharedShoppingList, GroupInvitationService, category UI
-/// Used in phases: 18.4 - Komplett grupphantering med korrekt datalagring
 
 class FriendCategoriesService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

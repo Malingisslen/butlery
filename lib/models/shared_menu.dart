@@ -6,22 +6,6 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
 import 'recipe.dart'; // Import existing Recipe model
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Shared Menu Model - Firebase First - FIXED med allowImport + DISMISS + isDismissed GETTER + COLLABORATION
-/// File: models/shared_menu.dart
-/// Quick Guide: Clean Firebase-only modell för delade veckomeny mellan vänner - ROBUST PARSING + IMPORT + DISMISS + GETTER + COLLABORATION
-/// Dependencies IN: cloud_firestore, firebase_auth, uuid, recipe.dart, flutter/foundation.dart
-/// Dependencies OUT: SocialRecipeService, menu sharing views
-/// Data flow: Firestore ↔ SharedMenu object ↔ Social UI
-/// State management: Immutable med copyWith pattern och cached menu data
-/// Purpose: Menydelning med komplett veckomeny, tracking, import, dismiss functionality, collaboration + easy isDismissed check
-/// Common issues: ✅ LÖST: MockDocumentSnapshot type cast, robust parsing, allowImport getter, dismiss tracking, isDismissed getter added, collaboration support
-/// Test coverage: 65%
-/// Performance: ⚡ Cached menu data för offline access, optimized queries
-/// Analytics: ✅ Menu sharing engagement tracking, dismiss analytics, collaboration metrics
-/// Code smells: ✅ Clean separation mellan sharing metadata och menu data, FIXED parsing + import + dismiss + getter + collaboration
-/// Connected to: Recipe, UserProfile, SocialRecipeService, menu views
-/// Used in phases: 18 + Collaboration
 
 class SharedMenu {
   final String id;

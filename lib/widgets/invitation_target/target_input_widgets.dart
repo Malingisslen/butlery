@@ -5,22 +5,6 @@ import '../../models/invitations/invitation_target.dart';
 import '../../theme/app_theme.dart';
 import 'target_display_widgets.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Target Input Widgets - UI komponenter för input/selection av InvitationTarget
-/// File: widgets/invitation_target/target_input_widgets.dart
-/// Quick Guide: Widget builders för att välja och hantera InvitationTarget input - använder BARA AppTheme
-/// Dependencies IN: InvitationTarget, AppTheme, TargetDisplayWidgets
-/// Dependencies OUT: UI screens, dialogs, forms
-/// Data flow: User input → Widget callbacks → Parent state updates → Re-render
-/// State management: Stateless widgets som kommunicerar via callbacks
-/// Purpose: Separation of concerns - input komponenter använder centraliserad AppTheme
-/// Common issues: Ensure proper callback handling and state updates
-/// Test coverage: 0% (UI widgets)
-/// Performance: ⚡ Efficient rendering, avoid unnecessary rebuilds
-/// Analytics: N/A - UI widgets
-/// Code smells: ✅ Single responsibility - bara input handling med AppTheme
-/// Connected to: TargetDisplayWidgets, InvitationTarget, various input forms
-/// Used in phases: Fas 1 (Grundinfrastruktur) - UI foundation
 
 /// Widget builders för att hantera InvitationTarget input och selection
 ///

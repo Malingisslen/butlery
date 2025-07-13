@@ -8,22 +8,6 @@ import '../services/friend_categories_service.dart';
 import '../services/group_invitation_service.dart'; // ✅ NYTT: Importera GroupInvitationService
 import '../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Add Members to Group ViewModel - KOMPLETT med riktiga gruppinbjudningar + DEBUG
-/// File: viewmodels/add_members_to_group_viewmodel.dart
-/// Quick Guide: Använder GroupInvitationService för riktiga gruppinbjudningar med omfattande debug
-/// Dependencies IN: FriendsService, FriendCategoriesService, GroupInvitationService
-/// Dependencies OUT: AddMembersToGroupView, GroupInvitation notifications
-/// Data flow: Load available friends → Select members → Send GROUP invitations → Handle responses
-/// State management: ChangeNotifier med search, selection, invitation state
-/// Purpose: Skickar RIKTIGA gruppinbjudningar som mottagaren kan acceptera/avvisa + DEBUG
-/// Common issues: Duplicate invitations, permission checking, network failures
-/// Test coverage: 0% (uppdaterad komponent med debug)
-/// Performance: ⚡ Cached friend lists, optimized search, batch operations
-/// Analytics: 📊 Group invitation actions tracking
-/// Code smells: ✅ Nu använder rätt service för gruppinbjudningar + debug output
-/// Connected to: FriendsService, FriendCategoriesService, GroupInvitationService
-/// Used in phases: 18.5 - Avancerad medlemshantering med riktiga inbjudningar + DEBUG
 
 class AddMembersToGroupViewModel extends ChangeNotifier {
   final FriendsService _friendsService;

@@ -3,22 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../permissions/resource_permission.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Resource Base Model - Grundklass för alla realtidsresurser
-/// File: models/realtime/realtime_resource.dart
-/// Quick Guide: Abstract base class som definierar gemensam realtidsmetadata - BARA data och business logic
-/// Dependencies IN: ResourcePermission, cloud_firestore
-/// Dependencies OUT: RealtimeRecipe, RealtimeMenu, RealtimeShoppingList, UI widgets
-/// Data flow: Subclasses extend → Shared metadata handling → Firebase sync
-/// State management: Immutable base class med common properties
-/// Purpose: DRY principle - gemensam realtidslogik för alla resurser
-/// Common issues: Säkerställ att subclasses implementerar alla required methods
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Minimal overhead, shared efficient serialization
-/// Analytics: Tracking av edit frequency och collaboration patterns
-/// Code smells: ✅ Clean abstract base - single responsibility för metadata BARA
-/// Connected to: Alla realtidsmodeller, RealtimeSyncService, PermissionService
-/// Used in phases: Fas 1 (Grundinfrastruktur) - Foundation för all realtidsdata
 
 /// Typ av realtidsresurs för serialization och routing
 enum RealtimeResourceType {

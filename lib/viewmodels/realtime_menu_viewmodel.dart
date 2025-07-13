@@ -13,22 +13,6 @@ import 'realtime/optimistic_update_manager.dart';
 import 'realtime/participant_tracker.dart';
 import 'realtime/connection_monitor.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Menu ViewModel - UPPDATERAD för kategori-baserade menyer
-/// File: viewmodels/realtime_menu_viewmodel.dart
-/// Quick Guide: Clean ViewModel som delegerar specifika ansvarsområden för kategori-struktur
-/// Dependencies IN: RealtimeMenuService, RealtimeSyncService, AuthService, delegated managers
-/// Dependencies OUT: RealtimeMenuView, collaborative menu widgets
-/// Data flow: UI events → ViewModel → Service → Firebase → Live updates → UI
-/// State management: ChangeNotifier med delegated responsibilities för clean separation
-/// Purpose: BARA hantera UI state för kategori-baserade menyer och koordinera mellan UI och services
-/// Common issues: Connection drops, permission changes, concurrent category edits
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Delegated optimization via managers, minimal ViewModel overhead
-/// Analytics: UI interaction patterns, category usage, collaborative editing
-/// Code smells: ✅ Clean SRP - delegerar till specialized managers för kategorier
-/// Connected to: RealtimeMenuService, specialized managers, category-based collaborative UI
-/// Used in phases: Fas 3 (SRP refactoring) - Clean architecture för kategori-menyer
 
 /// Status för realtidsmeny-operationer
 enum RealtimeMenuStatus {
