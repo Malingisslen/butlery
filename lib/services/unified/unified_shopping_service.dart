@@ -16,8 +16,15 @@ class UnifiedShoppingService extends ChangeNotifier {
   static const String _activeListKey = 'active_list_id';
   static const Duration _syncDebounce = Duration(seconds: 2);
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+final FirebaseFirestore _firestore;
+final FirebaseAuthRepository _authRepository;
+
+UnifiedRecipeService({
+  FirebaseFirestore? firestore,
+  FirebaseAuthRepository? authRepository,
+})  : _firestore = firestore ?? FirebaseFirestore.instance,
+      _authRepository = authRepository ?? FirebaseAuthRepository();
+
 
   // State
   final List<UnifiedShoppingList> _lists = [];
