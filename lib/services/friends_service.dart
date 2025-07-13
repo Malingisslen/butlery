@@ -1,17 +1,18 @@
 // lib/services/friends_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:flutter/foundation.dart';
+import '../repositories/friends_repository.dart';
 import '../models/user_profile.dart';
 import '../models/friend_request.dart';
-import 'package:butlery/core/utils/logger.dart';
+import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
-
 class FriendsService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+  final FriendsRepository _repository;
+
+  FriendsService({required FriendsRepository repository})
+      : _repository = repository;
 
   // State
   List<UserProfile> _friends = [];
@@ -28,22 +29,19 @@ class FriendsService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => _repository.currentUser?.uid;
   int get friendsCount => _friends.length;
   int get pendingRequestsCount => _incomingRequests.length;
 
-  /// Firestore references
-  CollectionReference get _friendRequestsRef =>
-      _firestore.collection('friend_requests');
-
-  CollectionReference get _profilesRef =>
-      _firestore.collection('public_profiles');
+  // Firestore references from repository
+  CollectionReference get _friendRequestsRef => _repository.friendRequestsRef;
+  CollectionReference get _profilesRef => _repository.profilesRef;
 
   /// Initialize service
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar FriendsService...');
 
-    _authRepository.authStateChanges().listen((user) {
+    _repository.authStateChanges().listen((user) {
       if (user != null) {
         _loadFriends();
         _loadFriendRequests();
@@ -55,7 +53,7 @@ class FriendsService extends ChangeNotifier {
       }
     });
 
-    if (_authRepository.currentUser != null) {
+    if (_repository.currentUser != null) {
       await _loadFriends();
       await _loadFriendRequests();
     }
@@ -297,7 +295,7 @@ class FriendsService extends ChangeNotifier {
     try {
       // Get other user's friends
       final otherUserFriendsRef =
-          _firestore.collection('users').doc(otherUserId).collection('friends');
+          _repository.userFriendsCollection(otherUserId);
 
       final otherFriendsQuery = await otherUserFriendsRef.get();
       final otherFriendIds =
@@ -323,8 +321,7 @@ class FriendsService extends ChangeNotifier {
     if (userId == null) return;
 
     try {
-      final friendsRef =
-          _firestore.collection('users').doc(userId).collection('friends');
+      final friendsRef = _repository.userFriendsCollection(userId);
 
       final snapshot = await friendsRef.get();
       final friendIds = snapshot.docs.map((doc) => doc.id).toList();
@@ -381,10 +378,8 @@ class FriendsService extends ChangeNotifier {
 
   Future<bool> _areAlreadyFriends(String userId1, String userId2) async {
     try {
-      final friendDoc = await _firestore
-          .collection('users')
-          .doc(userId1)
-          .collection('friends')
+      final friendDoc = await _repository
+          .userFriendsCollection(userId1)
           .doc(userId2)
           .get();
 
@@ -410,23 +405,17 @@ class FriendsService extends ChangeNotifier {
   }
 
   Future<void> _addMutualFriends(String userId1, String userId2) async {
-    final batch = _firestore.batch();
+    final batch = _repository.batch();
 
     // Add user2 to user1's friends
-    final user1FriendRef = _firestore
-        .collection('users')
-        .doc(userId1)
-        .collection('friends')
-        .doc(userId2);
+    final user1FriendRef =
+        _repository.userFriendsCollection(userId1).doc(userId2);
 
     batch.set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
 
     // Add user1 to user2's friends
-    final user2FriendRef = _firestore
-        .collection('users')
-        .doc(userId2)
-        .collection('friends')
-        .doc(userId1);
+    final user2FriendRef =
+        _repository.userFriendsCollection(userId2).doc(userId1);
 
     batch.set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
 
@@ -442,20 +431,14 @@ class FriendsService extends ChangeNotifier {
   }
 
   Future<void> _removeMutualFriends(String userId1, String userId2) async {
-    final batch = _firestore.batch();
+    final batch = _repository.batch();
 
     // Remove from both friends collections
-    final user1FriendRef = _firestore
-        .collection('users')
-        .doc(userId1)
-        .collection('friends')
-        .doc(userId2);
+    final user1FriendRef =
+        _repository.userFriendsCollection(userId1).doc(userId2);
 
-    final user2FriendRef = _firestore
-        .collection('users')
-        .doc(userId2)
-        .collection('friends')
-        .doc(userId1);
+    final user2FriendRef =
+        _repository.userFriendsCollection(userId2).doc(userId1);
 
     batch.delete(user1FriendRef);
     batch.delete(user2FriendRef);
