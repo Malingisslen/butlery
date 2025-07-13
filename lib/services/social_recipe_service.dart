@@ -1,18 +1,20 @@
 // lib/services/social_recipe_service.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/social_recipe_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../repositories/social_recipe_repository.dart';
+import '../services/user_service.dart';
+import '../services/recipe_service.dart';
+
 import '../models/recipe.dart';
 import '../models/recipe_comment.dart';
 import '../models/shared_recipe.dart';
 import '../models/shared_menu.dart';
 import '../models/user_profile.dart';
-import '../services/user_service.dart';
-import '../services/recipe_service.dart';
+
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
-
 
 class SocialRecipeService extends ChangeNotifier {
   final SocialRecipeRepository _repository;
@@ -24,7 +26,7 @@ class SocialRecipeService extends ChangeNotifier {
   List<SharedMenu> _menusSharedWithMe = [];
   final Map<String, List<RecipeComment>> _recipeComments = {};
   bool _isLoading = false;
-  bool _hasLoadedContent = false; // 🚀 Track if content has been loaded at least once
+  bool _hasLoadedContent = false;
   String? _error;
 
   // Constants
@@ -49,12 +51,11 @@ class SocialRecipeService extends ChangeNotifier {
   List<SharedRecipe> get recipesSharedWithMe {
     final currentUserId = _repository.currentUser?.uid;
     if (currentUserId == null) return [];
-
     return _sharedWithMe;
   }
 
   bool get isLoading => _isLoading;
-  bool get hasLoadedContent => _hasLoadedContent; // 🚀 Check if content has been loaded
+  bool get hasLoadedContent => _hasLoadedContent;
   String? get error => _error;
   bool get hasError => _error != null;
   String? get currentUserId => _repository.currentUser?.uid;
@@ -63,13 +64,6 @@ class SocialRecipeService extends ChangeNotifier {
   List<SharedRecipe> getVisibleSharedRecipes(String userId) {
     return _sharedWithMe
         .where((recipe) => recipe.shouldBeShownTo(userId))
-        .toList();
-  }
-
-  /// 🆕 Get visible (non-dismissed) shared menus för användaren
-  List<SharedMenu> getVisibleSharedMenus(String userId) {
-    return _menusSharedWithMe
-        .where((menu) => menu.shouldBeShownTo(userId))
         .toList();
   }
 
@@ -142,6 +136,7 @@ class SocialRecipeService extends ChangeNotifier {
         _clearAll();
       }
     });
+  }
 
     // Note: No immediate loading here - auth listener will handle current user
     AppLogger.info('🚀 SocialRecipeService initialized with delayed content loading via auth listener');
@@ -622,7 +617,7 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// ✅ NY: Hämta recept-ID:n som redan delats med en specifik vän
   Future<Set<String>> getRecipesSharedWithFriend(String friendUserId) async {
-    final currentUserId = _repository.currentUser?.uid;
+    final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null) return {};
 
     try {
@@ -630,7 +625,7 @@ class SocialRecipeService extends ChangeNotifier {
           '🔍 Kollar vilka recept som redan delats med vän: $friendUserId');
 
       // Sök efter recept som vi redan delat med denna vän
-      final query = await _sharedRecipesRef
+      final query = await _repository.sharedRecipesRef
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('sharedToUserIds', arrayContains: friendUserId)
           .get();
@@ -1306,7 +1301,7 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// 🧪 ENDAST FÖR TESTING: Skapa test SharedRecipe
   void createTestSharedRecipe(String recipeId) {
-    final currentUserId = _repository.currentUser?.uid;
+    final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null) return;
 
     final testSharedRecipe = SharedRecipe(
