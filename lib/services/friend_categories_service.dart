@@ -1,7 +1,7 @@
 // lib/services/friend_categories_service.dart - ✅ KOMPLETT FIXAD VERSION
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/friend_category.dart';
 import '../models/user_profile.dart';
@@ -12,7 +12,7 @@ import '../core/error/error_handler.dart';
 
 class FriendCategoriesService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
   final FriendsService _friendsService;
 
   // State
@@ -35,7 +35,7 @@ class FriendCategoriesService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// Get categories sorted by sort order
   List<FriendCategory> get sortedCategories {
@@ -70,7 +70,7 @@ class FriendCategoriesService extends ChangeNotifier {
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar FriendCategoriesService...');
 
-    _auth.authStateChanges().listen((user) {
+    _authRepository.authStateChanges().listen((user) {
       if (user != null) {
         _loadCategories();
       } else {
@@ -78,7 +78,7 @@ class FriendCategoriesService extends ChangeNotifier {
       }
     });
 
-    if (_auth.currentUser != null) {
+    if (_authRepository.currentUser != null) {
       await _loadCategories();
     }
   }
