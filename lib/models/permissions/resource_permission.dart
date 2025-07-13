@@ -1,21 +1,5 @@
 // lib/models/permissions/resource_permission.dart
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Resource Permission Model - Behörighetshantering för realtidsresurser
-/// File: models/permissions/resource_permission.dart
-/// Quick Guide: Definierar behörighetstyper och helper-funktioner för realtidsresurser
-/// Dependencies IN: N/A (standalone enum och helper class)
-/// Dependencies OUT: RealtimeResource, RealtimeRecipe, RealtimeMenu, permission services
-/// Data flow: Permission checks → Helper methods → Boolean results för UI/logic
-/// State management: Stateless enum med utility functions
-/// Purpose: Centraliserad behörighetslogik för alla realtidsresurser
-/// Common issues: Säkerställ att owner alltid har full behörighet
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Lightweight enum operations, no overhead
-/// Analytics: Permission usage patterns, collaboration levels
-/// Code smells: ✅ Single responsibility - bara permission logic
-/// Connected to: Alla realtidsmodeller, invitation system, sharing dialogs
-/// Used in phases: Fas 1 (Grundinfrastruktur) - Foundation för all access control
 
 /// Behörighetstyper för realtidsresurser
 enum ResourcePermission {

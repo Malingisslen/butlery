@@ -3,22 +3,6 @@
 import '../user_profile.dart';
 import '../friend_category.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Invitation Target Model - Stödjer både individuell och gruppdelning
-/// File: models/invitations/invitation_target.dart
-/// Quick Guide: Ren datamodell för inbjudningsmål - BARA data och business logic
-/// Dependencies IN: UserProfile, FriendCategory
-/// Dependencies OUT: InvitationService, TargetDisplayWidgets (UI konsumerar denna data)
-/// Data flow: UI target selection → InvitationTarget → Firebase invitation → Individual users
-/// State management: Immutable data class med factory constructors
-/// Purpose: Enhetlig representation av både individuella och grupp-mål för inbjudningar
-/// Common issues: Säkerställ att gruppmedlemmar expanderas korrekt
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Efficient serialization, minimal overhead
-/// Analytics: N/A - data model
-/// Code smells: ✅ Single responsibility - bara data representation
-/// Connected to: InvitationService, TargetDisplayWidgets
-/// Used in phases: Fas 1 (Grundinfrastruktur) - Gruppstöd foundation
 
 /// Typ av inbjudningsmål
 enum InvitationTargetType {

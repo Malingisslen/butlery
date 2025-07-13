@@ -3,22 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friend Request Model - Firebase First
-/// File: models/friend_request.dart
-/// Quick Guide: Clean Firebase-only modell för vänskapsförfrågningar
-/// Dependencies IN: cloud_firestore, uuid
-/// Dependencies OUT: FriendsService, friend request UI
-/// Data flow: Firestore ↔ FriendRequest object ↔ UI components
-/// State management: Immutable med copyWith pattern
-/// Purpose: Hanterar vänskapsförfrågningar med status tracking
-/// Common issues: Expired requests cleanup, duplicate requests
-/// Test coverage: 80%
-/// Performance: ⚡ Minimal serialization, indexed queries
-/// Analytics: ✅ Request success rates tracking
-/// Code smells: ✅ Clean state machine design
-/// Connected to: FriendsService, UserProfile, request notification views
-/// Used in phases: 18
 
 enum FriendRequestStatus { pending, accepted, rejected, cancelled, expired }
 

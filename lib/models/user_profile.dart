@@ -2,22 +2,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: User Profile Model - Firebase First
-/// File: models/user_profile.dart
-/// Quick Guide: Clean Firebase-only modell för användarprofilsn
-/// Dependencies IN: cloud_firestore
-/// Dependencies OUT: UserService, alla social features
-/// Data flow: Firestore ↔ UserProfile object ↔ UI components
-/// State management: Immutable med copyWith pattern
-/// Purpose: Central användarmodell för social platform
-/// Common issues: Email privacy, displayName uniqueness
-/// Test coverage: 85%
-/// Performance: ⚡ Minimal serialization overhead
-/// Analytics: ✅ Implicit tracking via services
-/// Code smells: ✅ Clean Firebase-first design
-/// Connected to: AuthService, FriendsService, alla social views
-/// Used in phases: 18
 
 class UserProfile {
   final String uid;

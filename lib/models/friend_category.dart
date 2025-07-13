@@ -3,22 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Friend Category Model - Social Shopping Foundation
-/// File: models/friend_category.dart
-/// Quick Guide: Kategorisering av vänner för social shopping lists
-/// Dependencies IN: cloud_firestore, uuid
-/// Dependencies OUT: FriendCategoriesService, social shopping views
-/// Data flow: Firestore ↔ FriendCategory object ↔ Category management UI
-/// State management: Immutable med copyWith pattern
-/// Purpose: Organisera vänner i kategorier för enklare shopping list sharing
-/// Common issues: Category name uniqueness, empty categories cleanup
-/// Test coverage: 80%
-/// Performance: ⚡ Minimal serialization, efficient category queries
-/// Analytics: ✅ Category usage tracking
-/// Code smells: ✅ Clean immutable design
-/// Connected to: FriendsService, SharedShoppingList, category management UI
-/// Used in phases: 18.4
 
 class FriendCategory {
   final String id;

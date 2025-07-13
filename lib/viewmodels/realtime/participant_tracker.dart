@@ -4,22 +4,6 @@ import 'package:flutter/foundation.dart';
 import '../../models/realtime/realtime_menu.dart';
 import '../../core/utils/logger.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: Participant Tracker - SINGLE RESPONSIBILITY för participant activity tracking
-/// File: viewmodels/realtime/participant_tracker.dart
-/// Quick Guide: Delegated ansvar från ViewModel - bara participant management
-/// Dependencies IN: RealtimeMenu model, logger
-/// Dependencies OUT: RealtimeMenuViewModel
-/// Data flow: Menu update → Extract participant data → Activity tracking → Notify
-/// State management: Internal participant state med auto-cleanup
-/// Purpose: BARA hantera deltagares aktivitet och online status
-/// Common issues: Stale participant data, memory growth från old activity
-/// Test coverage: 0% (ny komponent)
-/// Performance: ⚡ Automatic cleanup av old activity, minimal memory footprint
-/// Analytics: Participant engagement patterns, collaboration frequency
-/// Code smells: ✅ Clean single responsibility - bara participant logic
-/// Connected to: RealtimeMenuViewModel
-/// Used in phases: Fas 3 (SRP refactoring) - Clean architecture delegation
 
 /// Data för en deltagares aktivitet
 class ParticipantActivity {

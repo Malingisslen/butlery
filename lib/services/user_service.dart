@@ -7,22 +7,6 @@ import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
 import '../core/error/error_handler.dart';
 
-/// 🔍 AI INFO BLOCK:
-/// Component: User Management Service
-/// File: services/user_service.dart
-/// Quick Guide: Hanterar användarprofilsn, sök och offentlig data med cache
-/// Dependencies IN: cloud_firestore, firebase_auth, user_profile.dart
-/// Dependencies OUT: Alla social features, profile views
-/// Data flow: Auth → Profile creation → Search → Social interactions
-/// State management: ChangeNotifier med profile cache
-/// Purpose: Central hub för användarhantering och discovery
-/// Common issues: Profile sync med Auth, search performance
-/// Test coverage: 75%
-/// Performance: ⚡ Cached profiles, optimized queries
-/// Analytics: ✅ Profile operations tracking
-/// Code smells: ✅ Clean separation från Auth concerns
-/// Connected to: AuthService, alla social services
-/// Used in phases: 18
 
 class UserService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
