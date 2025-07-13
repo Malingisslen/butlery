@@ -4,7 +4,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../repositories/firebase/firebase_auth_repository.dart';
 import 'package:hive/hive.dart';
 import 'dart:convert';
 import '../../models/unified/unified_shopping_item.dart';
@@ -16,8 +16,15 @@ class UnifiedShoppingService extends ChangeNotifier {
   static const String _activeListKey = 'active_list_id';
   static const Duration _syncDebounce = Duration(seconds: 2);
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+final FirebaseFirestore _firestore;
+final FirebaseAuthRepository _authRepository;
+
+UnifiedRecipeService({
+  FirebaseFirestore? firestore,
+  FirebaseAuthRepository? authRepository,
+})  : _firestore = firestore ?? FirebaseFirestore.instance,
+      _authRepository = authRepository ?? FirebaseAuthRepository();
+
 
   // State
   final List<UnifiedShoppingList> _lists = [];
@@ -55,8 +62,9 @@ class UnifiedShoppingService extends ChangeNotifier {
   bool get isSyncing => _isSyncing;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _auth.currentUser?.uid;
-  String? get currentUserDisplayName => _auth.currentUser?.displayName ?? 'Du';
+  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserDisplayName =>
+      _authRepository.currentUser?.displayName ?? 'Du';
 
   // ===== INITIALIZATION - FÖRENKLAD UTAN MIGRATION =====
 
@@ -86,7 +94,7 @@ class UnifiedShoppingService extends ChangeNotifier {
       await _loadCachedLists(box);
 
       // Lyssna på auth changes
-      _auth.authStateChanges().listen((user) {
+      _authRepository.authStateChanges().listen((user) {
         if (user != null) {
           _startFirebaseSync();
         } else {
@@ -96,7 +104,7 @@ class UnifiedShoppingService extends ChangeNotifier {
       });
 
       // Starta Firebase sync om inloggad
-      if (_auth.currentUser != null) {
+      if (_authRepository.currentUser != null) {
         _startFirebaseSync();
       }
 

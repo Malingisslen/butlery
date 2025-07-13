@@ -44,6 +44,16 @@ class RecipeService extends ChangeNotifier {
     _authRepository.authStateChanges().listen((_) async {
       final userId = _authRepository.currentUserId;
       debugPrint('🔥 Auth state changed: $userId');
+      // TODO: starta/stäng prenumeration på recept
+    });
+  }
+
+  // Du kan lägga till metoder som:
+  // - fetchUserRecipes()
+  // - fetchArchiveRecipes()
+  // - subscribeToUserRecipes()
+  // osv – och låta RecipeRepository sköta Firestore-åtkomsten.
+}
 
       if (userId == null) {
         // LOGOUT: Komplett cleanup

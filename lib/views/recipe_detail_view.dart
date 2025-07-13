@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
@@ -767,7 +767,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   Builder(
                     builder: (context) {
                       final userService = sl<UserService>();
-                      final authUser = FirebaseAuth.instance.currentUser;
+                      final authUser = FirebaseAuthRepository().currentUser;
 
                       return Container(
                         padding: EdgeInsets.all(AppTheme.spacingSm),
