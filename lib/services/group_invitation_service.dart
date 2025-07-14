@@ -10,10 +10,12 @@ import '../core/error/error_handler.dart';
 import '../core/events/group_events.dart';
 import '../repositories/interfaces/friends_repository.dart';
 import '../repositories/interfaces/user_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
 
 class GroupInvitationService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;
   final UserRepository _userRepository;
+  final AuthRepository _authRepository;
   final FriendCategoriesService _categoriesService;
 
   // State
@@ -30,9 +32,11 @@ class GroupInvitationService extends ChangeNotifier {
     required FriendCategoriesService categoriesService,
     required FriendsRepository friendsRepository,
     required UserRepository userRepository,
+    required AuthRepository authRepository,
   })  : _categoriesService = categoriesService,
         _friendsRepository = friendsRepository,
-        _userRepository = userRepository {
+        _userRepository = userRepository,
+        _authRepository = authRepository {
     debugPrint(
         '🔍 DEBUG: GroupInvitationService skapad med categoriesService: ${categoriesService.runtimeType}');
   }
@@ -46,7 +50,7 @@ class GroupInvitationService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _userRepository.currentUserId;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// Väntande mottagna inbjudningar
   List<GroupInvitation> get pendingReceivedInvitations =>
@@ -66,7 +70,8 @@ class GroupInvitationService extends ChangeNotifier {
     debugPrint('🔍 DEBUG: GroupInvitationService.initialize() kallad');
     AppLogger.info('🔄 Initialiserar GroupInvitationService...');
 
-    _userRepository.authStateChanges().listen((uid) {
+    _authRepository.authStateChanges().listen((user) {
+      final uid = user?.uid;
       debugPrint('🔍 DEBUG: Auth state changed - user: $uid');
       if (uid != null) {
         _setupRealtimeListeners();
@@ -75,7 +80,7 @@ class GroupInvitationService extends ChangeNotifier {
       }
     });
 
-    final currentUserId = _userRepository.currentUserId;
+    final currentUserId = _authRepository.currentUserId;
     debugPrint('🔍 DEBUG: Current user at initialization: $currentUserId');
 
     if (currentUserId != null) {
@@ -233,8 +238,8 @@ class GroupInvitationService extends ChangeNotifier {
       }
 
      // Hämta avsändarens namn (för UI-caching)
-final fromUserName =
-    _userRepository.currentUserDisplayName ?? 'Okänd användare';
+    final fromUserName =
+        _authRepository.getCurrentUser()?.displayName ?? 'Okänd användare';
 
 debugPrint('🔍 DEBUG: Creating invitation object');
 
