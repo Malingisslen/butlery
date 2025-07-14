@@ -4,9 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
+import '../interfaces/friends_repository.dart';
 
 /// Repository handling friend requests and friends collections in Firestore.
-class FirebaseFriendsRepository {
+class FirebaseFriendsRepository implements FriendsRepository {
   FirebaseFriendsRepository({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
@@ -25,14 +26,75 @@ class FirebaseFriendsRepository {
   CollectionReference<Map<String, dynamic>> get _profilesRef =>
       _firestore.collection('public_profiles');
 
+  @override
+  Future<UserProfile> create(UserProfile profile) async {
+    await _profilesRef.doc(profile.uid).set(profile.toFirestore());
+    return profile;
+  }
+
+  @override
+  Future<UserProfile?> read(String id) async {
+    final doc = await _profilesRef.doc(id).get();
+    if (!doc.exists) return null;
+    return UserProfile.fromFirestore(doc);
+  }
+
+  @override
+  Future<List<UserProfile>> readAll() async {
+    final snap = await _profilesRef.get();
+    return snap.docs.map(UserProfile.fromFirestore).toList();
+  }
+
+  @override
+  Future<void> update(UserProfile profile) async {
+    await _profilesRef.doc(profile.uid).update(profile.toFirestore());
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    await _profilesRef.doc(id).delete();
+  }
+
   /// Send a new friend request.
   Future<void> sendRequest(FriendRequest request) async {
     await _friendRequestsRef.doc(request.id).set(request.toFirestore());
   }
 
+  @override
+  Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
+    final fromId = _auth.currentUser?.uid;
+    if (fromId == null) return false;
+    final exists = await requestExists(fromId, toUserId);
+    if (exists) return false;
+    final request = FriendRequest.create(
+      fromUserId: fromId,
+      toUserId: toUserId,
+      message: message,
+    );
+    await sendRequest(request);
+    return true;
+  }
+
   /// Update an existing friend request document.
   Future<void> updateRequest(FriendRequest request) async {
     await _friendRequestsRef.doc(request.id).update(request.toFirestore());
+  }
+
+  @override
+  Future<bool> acceptFriendRequest(String requestId) async {
+    final req = await fetchRequest(requestId);
+    if (req == null) return false;
+    await updateRequest(req.accept());
+    await addMutualFriends(req.fromUserId, req.toUserId);
+    return true;
+  }
+
+  @override
+  Future<bool> rejectFriendRequest(String requestId) async {
+    final req = await fetchRequest(requestId);
+    if (req == null) return false;
+    await updateRequest(req.reject());
+    return true;
   }
 
   /// Fetch a friend request by id.
@@ -95,10 +157,40 @@ class FirebaseFriendsRepository {
     await batch.commit();
   }
 
+  @override
+  Future<bool> removeFriend(String friendUserId) async {
+    final current = _auth.currentUser?.uid;
+    if (current == null) return false;
+    await removeMutualFriends(current, friendUserId);
+    return true;
+  }
+
   /// Retrieve friend ids for a user.
   Future<List<String>> fetchFriendIds(String userId) async {
     final snapshot = await _userFriendsRef(userId).get();
     return snapshot.docs.map((d) => d.id).toList();
+  }
+
+  @override
+  Future<List<FriendRequest>> getIncomingRequests() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return [];
+    final snap = await _friendRequestsRef
+        .where('toUserId', isEqualTo: uid)
+        .where('status', isEqualTo: FriendRequestStatus.pending.name)
+        .get();
+    return snap.docs.map(FriendRequest.fromFirestore).toList();
+  }
+
+  @override
+  Future<List<FriendRequest>> getSentRequests() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return [];
+    final snap = await _friendRequestsRef
+        .where('fromUserId', isEqualTo: uid)
+        .where('status', isEqualTo: FriendRequestStatus.pending.name)
+        .get();
+    return snap.docs.map(FriendRequest.fromFirestore).toList();
   }
 
   /// Retrieve user profiles for a list of ids.

@@ -3,9 +3,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/unified/unified_shopping_list.dart';
+import '../../models/unified/unified_shopping_item.dart';
+import '../interfaces/shopping_repository.dart';
 
 /// Repository for handling shopping lists stored in Firestore.
-class FirebaseShoppingRepository {
+class FirebaseShoppingRepository implements ShoppingRepository {
   FirebaseShoppingRepository({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
@@ -15,11 +17,85 @@ class FirebaseShoppingRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
+  String? _activeListId;
+
   CollectionReference<Map<String, dynamic>> _personalListsRef(String userId) =>
       _firestore.collection('users').doc(userId).collection('unified_shopping_lists');
 
   CollectionReference<Map<String, dynamic>> get _sharedListsRef =>
       _firestore.collection('unified_shared_shopping_lists');
+
+  @override
+  Future<UnifiedShoppingList> create(UnifiedShoppingList list) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception('No authenticated user');
+    await _personalListsRef(uid).doc(list.id).set(list.toFirestore());
+    return list;
+  }
+
+  @override
+  Future<UnifiedShoppingList?> read(String id) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+    final doc = await _personalListsRef(uid).doc(id).get();
+    if (!doc.exists) return null;
+    return UnifiedShoppingList.fromFirestore(doc);
+  }
+
+  @override
+  Future<List<UnifiedShoppingList>> readAll() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return [];
+    final snap = await _personalListsRef(uid).get();
+    return snap.docs.map(UnifiedShoppingList.fromFirestore).toList();
+  }
+
+  @override
+  Future<void> update(UnifiedShoppingList list) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception('No authenticated user');
+    await _personalListsRef(uid).doc(list.id).update(list.toFirestore());
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception('No authenticated user');
+    await _personalListsRef(uid).doc(id).delete();
+  }
+
+  @override
+  Future<void> setActiveList(String listId) async {
+    _activeListId = listId;
+  }
+
+  @override
+  Future<UnifiedShoppingList?> getActiveList() async {
+    if (_activeListId == null) return null;
+    return read(_activeListId!);
+  }
+
+  @override
+  Future<void> addItem(String listId, UnifiedShoppingItem item) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception('No authenticated user');
+    await _personalListsRef(uid)
+        .doc(listId)
+        .collection('items')
+        .doc(item.id)
+        .set(item.toFirestore());
+  }
+
+  @override
+  Future<void> removeItem(String listId, String itemId) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception('No authenticated user');
+    await _personalListsRef(uid)
+        .doc(listId)
+        .collection('items')
+        .doc(itemId)
+        .delete();
+  }
 
   /// Create or update a personal list for the current user.
   Future<void> savePersonalList(UnifiedShoppingList list) async {
