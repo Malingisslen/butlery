@@ -50,6 +50,7 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   /// Create or update the current user's profile.
+  @override
   Future<void> saveProfile(UserProfile profile) async {
     final data = profile.toFirestore();
     data['displayNameLower'] = profile.displayName.toLowerCase();
@@ -57,6 +58,7 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
+  @override
   Future<UserProfile?> fetchProfile(String userId) async {
     final doc = await _profilesRef.doc(userId).get();
     if (!doc.exists) return null;
@@ -64,6 +66,7 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   /// Fetch multiple profiles in batches (Firestore limit 10 per query).
+  @override
   Future<List<UserProfile>> fetchProfiles(List<String> userIds) async {
     if (userIds.isEmpty) return [];
 
@@ -84,6 +87,7 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   /// Update profile statistics such as friend count or recipe count.
+  @override
   Future<void> updateProfileStats(
     String userId, {
     int? friendsCount,
@@ -99,6 +103,7 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   /// Update the online status for a user.
+  @override
   Future<void> updateOnlineStatus(String userId, bool isOnline) async {
     await _profilesRef.doc(userId).update({
       'isOnline': isOnline,

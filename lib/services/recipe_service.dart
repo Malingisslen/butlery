@@ -6,7 +6,6 @@ import '../models/recipe.dart';
 import '../models/recipe_change.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
-import '../core/error/failures.dart';
 import 'offline_service.dart';
 import 'package:uuid/uuid.dart';
 import '../repositories/interfaces/recipe_repository.dart';

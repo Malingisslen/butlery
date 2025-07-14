@@ -28,7 +28,6 @@ class UserService extends ChangeNotifier {
 
   // Constants
   static const int _cacheDurationMinutes = 30;
-  static const int _searchLimit = 20;
 
   // Getters
   UserProfile? get currentUserProfile => _currentUserProfile;
