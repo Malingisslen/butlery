@@ -1,4 +1,4 @@
-import '../repository.dart';
+import 'repository.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../models/unified/unified_shopping_item.dart';
 

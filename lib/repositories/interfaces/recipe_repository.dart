@@ -1,4 +1,4 @@
-import '../repository.dart';
+import 'repository.dart';
 import '../../models/recipe.dart';
 
 abstract class RecipeRepository extends Repository<Recipe> {
