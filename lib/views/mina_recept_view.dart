@@ -74,6 +74,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         try {
           final friendsViewModel = context.read<FriendsViewModel>();
+
           // Only refresh friends - SharedContentViewModel loads automatically via service
           AppLogger.info(
               '🔄 Refreshing friends data for MinaReceptView (delayed)...');
