@@ -8,10 +8,12 @@ import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 import '../repositories/interfaces/friends_repository.dart';
 import '../repositories/interfaces/user_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
 
 class FriendCategoriesService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;
   final UserRepository _userRepository;
+  final AuthRepository _authRepository;
   final FriendsService _friendsService;
 
   // State
@@ -28,9 +30,11 @@ class FriendCategoriesService extends ChangeNotifier {
     required FriendsService friendsService,
     required FriendsRepository friendsRepository,
     required UserRepository userRepository,
+    required AuthRepository authRepository,
   })  : _friendsService = friendsService,
         _friendsRepository = friendsRepository,
-        _userRepository = userRepository;
+        _userRepository = userRepository,
+        _authRepository = authRepository;
 
   // ===== GETTERS =====
 
@@ -38,7 +42,7 @@ class FriendCategoriesService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _userRepository.currentUserId;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// Get categories sorted by sort order
   List<FriendCategory> get sortedCategories {
@@ -61,7 +65,8 @@ class FriendCategoriesService extends ChangeNotifier {
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar FriendCategoriesService...');
 
-    _userRepository.authStateChanges().listen((userId) {
+    _authRepository.authStateChanges().listen((user) {
+      final userId = user?.uid;
       if (userId != null) {
         _loadCategories();
       } else {
@@ -69,7 +74,7 @@ class FriendCategoriesService extends ChangeNotifier {
       }
     });
 
-    if (_userRepository.currentUserId != null) {
+    if (_authRepository.currentUserId != null) {
       await _loadCategories();
     }
   }
