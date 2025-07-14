@@ -1,6 +1,5 @@
 // lib/services/user_service.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -38,8 +37,6 @@ class UserService extends ChangeNotifier {
   bool get hasError => _error != null;
   String? get currentUserId => _authRepository.currentUserId;
 
-  /// Firestore references
-  CollectionReference get _profilesRef => _repository.profilesRef;
 
   /// Initialize service och ladda current user profile
   Future<void> initialize() async {
@@ -82,7 +79,7 @@ class UserService extends ChangeNotifier {
       _clearError();
 
       // Check if profile exists
-      final existingProfile = await _getProfileFromFirestore(user.uid);
+      final existingProfile = await _repository.fetchProfile(user.uid);
 
       UserProfile profile;
       if (existingProfile != null) {
@@ -114,13 +111,8 @@ class UserService extends ChangeNotifier {
         );
       }
 
-// ✅ NYTT: Skapa Firestore data med displayNameLower
-      final firestoreData = profile.toFirestore();
-      firestoreData['displayNameLower'] =
-          displayName.toLowerCase(); // ⚡ SNABB SÖKNING
-
-// Save to Firestore
-      await _profilesRef.doc(user.uid).set(firestoreData);
+      // Save via repository
+      await _repository.saveProfile(profile);
 
       // Update cache
       _currentUserProfile = profile;
@@ -148,86 +140,12 @@ class UserService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final normalizedQuery = query.trim().toLowerCase();
-      AppLogger.info('🔍 Söker användare: "$normalizedQuery"');
+      final results = await _repository.searchProfiles(query);
 
-      final results = <UserProfile>[];
-      final seenIds = <String>{};
-      final currentUserId = _authRepository.currentUserId;
-
-      // ⚡ SNABB: Search by displayNameLower (server-side indexerad sökning)
-      try {
-        final nameQuery = await _profilesRef
-            .where('isSearchable', isEqualTo: true)
-            .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
-            .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
-            .limit(_searchLimit)
-            .get();
-
-        // Add results from name search
-        for (final doc in nameQuery.docs) {
-          try {
-            // Skippa current user
-            if (doc.id == currentUserId) continue;
-
-            final profile = UserProfile.fromFirestore(doc);
-            if (!seenIds.contains(profile.uid)) {
-              results.add(profile);
-              seenIds.add(profile.uid);
-              // Cache the profile
-              _profileCache[profile.uid] = profile;
-              _cacheTimestamps[profile.uid] = DateTime.now();
-            }
-          } catch (e) {
-            AppLogger.warning('⚠️ Kunde inte parsa profil ${doc.id}: $e');
-          }
-        }
-
-        AppLogger.success(
-            '⚡ Snabb sökning: ${results.length} användare hittades');
-      } catch (e) {
-        // Fallback till långsam sökning om displayNameLower saknas
-        AppLogger.warning(
-            '⚠️ Snabb sökning misslyckades, försöker långsam sökning: $e');
-        return await _searchUsersSlowFallback(query);
+      for (final profile in results) {
+        _profileCache[profile.uid] = profile;
+        _cacheTimestamps[profile.uid] = DateTime.now();
       }
-
-      // ⚡ SNABB: Search by email om query ser ut som email OCH vi behöver fler resultat
-      if (normalizedQuery.contains('@') && results.length < 5) {
-        final emailQuery = await _profilesRef
-            .where('allowEmailSearch', isEqualTo: true)
-            .where('email', isEqualTo: normalizedQuery)
-            .limit(5)
-            .get();
-
-        for (final doc in emailQuery.docs) {
-          try {
-            // Skippa current user
-            if (doc.id == currentUserId) continue;
-
-            final profile = UserProfile.fromFirestore(doc);
-            if (!seenIds.contains(profile.uid)) {
-              results.add(profile);
-              seenIds.add(profile.uid);
-              _profileCache[profile.uid] = profile;
-              _cacheTimestamps[profile.uid] = DateTime.now();
-            }
-          } catch (e) {
-            AppLogger.warning('⚠️ Kunde inte parsa email-profil ${doc.id}: $e');
-          }
-        }
-      }
-
-      // Sortera results - exakta matches först, sedan alfabetiskt
-      results.sort((a, b) {
-        final aExact = a.displayName.toLowerCase() == normalizedQuery;
-        final bExact = b.displayName.toLowerCase() == normalizedQuery;
-
-        if (aExact && !bExact) return -1;
-        if (!aExact && bExact) return 1;
-
-        return a.displayName.compareTo(b.displayName);
-      });
 
       return results;
     } catch (e) {
@@ -237,95 +155,6 @@ class UserService extends ChangeNotifier {
       return [];
     } finally {
       _setLoading(false);
-    }
-  }
-
-  /// Fallback sökning för när displayNameLower saknas
-  Future<List<UserProfile>> _searchUsersSlowFallback(String query) async {
-    final normalizedQuery = query.trim().toLowerCase();
-    AppLogger.info('🐌 Kör långsam sökning för: "$normalizedQuery"');
-
-    try {
-      // Hämta fler användare för client-side filtrering
-      final nameQuery = await _profilesRef
-          .where('isSearchable', isEqualTo: true)
-          .orderBy('displayName')
-          .limit(100) // Större limit för filtrering
-          .get();
-
-      final results = <UserProfile>[];
-      final seenIds = <String>{};
-      final currentUserId = _authRepository.currentUserId;
-      
-      // Client-side filtrering
-      for (final doc in nameQuery.docs) {
-        try {
-          if (doc.id == currentUserId) continue;
-
-          final profile = UserProfile.fromFirestore(doc);
-
-          // Client-side case-insensitive matching
-          final displayNameMatch =
-              profile.displayName.toLowerCase().contains(normalizedQuery);
-
-          if (displayNameMatch && !seenIds.contains(profile.uid)) {
-            results.add(profile);
-            seenIds.add(profile.uid);
-            _profileCache[profile.uid] = profile;
-            _cacheTimestamps[profile.uid] = DateTime.now();
-
-            // Begränsa resultat för prestanda
-            if (results.length >= _searchLimit) break;
-          }
-        } catch (e) {
-          AppLogger.warning('⚠️ Kunde inte parsa profil ${doc.id}: $e');
-        }
-      }
-
-      // Email search om nödvändigt
-      if (normalizedQuery.contains('@') && results.length < 5) {
-        final emailQuery = await _profilesRef
-            .where('allowEmailSearch', isEqualTo: true)
-            .where('email', isEqualTo: normalizedQuery)
-            .limit(5)
-            .get();
-
-        for (final doc in emailQuery.docs) {
-          try {
-            if (doc.id == currentUserId) continue;
-
-            final profile = UserProfile.fromFirestore(doc);
-            if (!seenIds.contains(profile.uid)) {
-              results.add(profile);
-              seenIds.add(profile.uid);
-              _profileCache[profile.uid] = profile;
-              _cacheTimestamps[profile.uid] = DateTime.now();
-            }
-          } catch (e) {
-            AppLogger.warning('⚠️ Kunde inte parsa email-profil ${doc.id}: $e');
-          }
-        }
-      }
-
-      // Sortera results
-      results.sort((a, b) {
-        final aExact = a.displayName.toLowerCase() == normalizedQuery;
-        final bExact = b.displayName.toLowerCase() == normalizedQuery;
-
-        if (aExact && !bExact) return -1;
-        if (!aExact && bExact) return 1;
-
-        return a.displayName.compareTo(b.displayName);
-      });
-
-      AppLogger.info(
-          '🐌 Långsam sökning: ${results.length} användare hittades');
-      return results;
-    } catch (e) {
-      final failure = ErrorHandler.handleError(e);
-      AppLogger.error('❌ Även långsam sökning misslyckades: $e');
-      _setError(failure.message);
-      return [];
     }
   }
 
@@ -343,9 +172,9 @@ class UserService extends ChangeNotifier {
       }
     }
 
-    // Fetch from Firestore
+    // Fetch from repository
     try {
-      final profile = await _getProfileFromFirestore(userId);
+      final profile = await _getProfileFromRepository(userId);
       if (profile != null) {
         _profileCache[userId] = profile;
         _cacheTimestamps[userId] = DateTime.now();
@@ -382,25 +211,13 @@ class UserService extends ChangeNotifier {
       }
     }
 
-    // Fetch uncached profiles in batches (Firestore limit: 10)
-    const batchSize = 10;
-    for (int i = 0; i < uncachedIds.length; i += batchSize) {
-      final batch = uncachedIds.skip(i).take(batchSize).toList();
-
+    if (uncachedIds.isNotEmpty) {
       try {
-        final query = await _profilesRef
-            .where(FieldPath.documentId, whereIn: batch)
-            .get();
-
-        for (final doc in query.docs) {
-          try {
-            final profile = UserProfile.fromFirestore(doc);
-            results.add(profile);
-            _profileCache[profile.uid] = profile;
-            _cacheTimestamps[profile.uid] = DateTime.now();
-          } catch (e) {
-            AppLogger.warning('⚠️ Kunde inte parsa profil ${doc.id}: $e');
-          }
+        final fetched = await _repository.fetchProfiles(uncachedIds);
+        for (final profile in fetched) {
+          results.add(profile);
+          _profileCache[profile.uid] = profile;
+          _cacheTimestamps[profile.uid] = DateTime.now();
         }
       } catch (e) {
         AppLogger.error('❌ Kunde inte hämta profilbatch: $e');
@@ -416,10 +233,7 @@ class UserService extends ChangeNotifier {
     if (userId == null || _currentUserProfile == null) return;
 
     try {
-      await _profilesRef.doc(userId).update({
-        'isOnline': isOnline,
-        'lastActiveAt': FieldValue.serverTimestamp(),
-      });
+      await _repository.updateOnlineStatus(userId, isOnline);
 
       _currentUserProfile = _currentUserProfile!.copyWith(
         isOnline: isOnline,
@@ -449,7 +263,11 @@ class UserService extends ChangeNotifier {
       }
 
       if (updates.isNotEmpty) {
-        await _profilesRef.doc(userId).update(updates);
+        await _repository.updateProfileStats(
+          userId,
+          friendsCount: friendsCount,
+          publicRecipeCount: publicRecipeCount,
+        );
 
         _currentUserProfile = _currentUserProfile!.copyWith(
           friendsCount: friendsCount,
@@ -469,16 +287,7 @@ class UserService extends ChangeNotifier {
     if (displayName.trim().isEmpty) return false;
 
     try {
-      final query = await _profilesRef
-          .where('displayName', isEqualTo: displayName.trim())
-          .limit(1)
-          .get();
-
-      // Available if no documents found, or if the only document is current user
-      if (query.docs.isEmpty) return true;
-
-      final existingDoc = query.docs.first;
-      return existingDoc.id == currentUserId;
+      return await _repository.isDisplayNameAvailable(displayName);
     } catch (e) {
       AppLogger.error('❌ Kunde inte kontrollera displayName: $e');
       return false;
@@ -491,7 +300,7 @@ class UserService extends ChangeNotifier {
     if (user == null) return;
 
     try {
-      _currentUserProfile = await _getProfileFromFirestore(user.uid);
+      _currentUserProfile = await _repository.fetchProfile(user.uid);
 
       // NY: Om profil inte finns, skapa en automatiskt
       if (_currentUserProfile == null && user.email != null) {
@@ -533,15 +342,11 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  Future<UserProfile?> _getProfileFromFirestore(String userId) async {
+  Future<UserProfile?> _getProfileFromRepository(String userId) async {
     try {
-      final doc = await _profilesRef.doc(userId).get();
-      if (doc.exists) {
-        return UserProfile.fromFirestore(doc);
-      }
-      return null;
+      return await _repository.fetchProfile(userId);
     } catch (e) {
-      AppLogger.error('❌ Kunde inte hämta profil från Firestore $userId: $e');
+      AppLogger.error('❌ Kunde inte hämta profil $userId: $e');
       return null;
     }
   }

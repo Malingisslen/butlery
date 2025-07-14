@@ -98,6 +98,14 @@ class FirebaseFriendsRepository implements FriendsRepository {
     return true;
   }
 
+  @override
+  Future<bool> cancelFriendRequest(String requestId) async {
+    final req = await fetchRequest(requestId);
+    if (req == null) return false;
+    await updateRequest(req.cancel());
+    return true;
+  }
+
   /// Fetch a friend request by id.
   Future<FriendRequest?> fetchRequest(String requestId) async {
     final doc = await _friendRequestsRef.doc(requestId).get();
@@ -106,6 +114,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   }
 
   /// Check if a pending request already exists between two users.
+  @override
   Future<bool> requestExists(String fromUserId, String toUserId) async {
     final query = await _friendRequestsRef
         .where('fromUserId', isEqualTo: fromUserId)
@@ -117,12 +126,14 @@ class FirebaseFriendsRepository implements FriendsRepository {
   }
 
   /// Check if users are already friends.
+  @override
   Future<bool> areFriends(String userId1, String userId2) async {
     final doc = await _userFriendsRef(userId1).doc(userId2).get();
     return doc.exists;
   }
 
   /// Add users to each other's friends collections and update counts.
+  @override
   Future<void> addMutualFriends(String userId1, String userId2) async {
     final batch = _firestore.batch();
 
@@ -141,6 +152,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   }
 
   /// Remove users from each other's friends collections and update counts.
+  @override
   Future<void> removeMutualFriends(String userId1, String userId2) async {
     final batch = _firestore.batch();
 
@@ -167,6 +179,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   }
 
   /// Retrieve friend ids for a user.
+  @override
   Future<List<String>> fetchFriendIds(String userId) async {
     final snapshot = await _userFriendsRef(userId).get();
     return snapshot.docs.map((d) => d.id).toList();
@@ -195,6 +208,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   }
 
   /// Retrieve user profiles for a list of ids.
+  @override
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
     if (userIds.isEmpty) return [];
     const batchSize = 10;

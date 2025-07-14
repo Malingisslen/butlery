@@ -51,7 +51,9 @@ class FirebaseUserRepository implements UserRepository {
 
   /// Create or update the current user's profile.
   Future<void> saveProfile(UserProfile profile) async {
-    await _profilesRef.doc(profile.uid).set(profile.toFirestore());
+    final data = profile.toFirestore();
+    data['displayNameLower'] = profile.displayName.toLowerCase();
+    await _profilesRef.doc(profile.uid).set(data);
   }
 
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
