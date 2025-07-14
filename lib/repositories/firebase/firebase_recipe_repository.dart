@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../interfaces/auth_repository.dart';
 import '../interfaces/recipe_repository.dart';
 import '../../models/recipe.dart';
+import '../../models/recipe_change.dart';
 
 class FirebaseRecipeRepository implements RecipeRepository {
   final FirebaseFirestore _firestore;
@@ -87,5 +89,58 @@ class FirebaseRecipeRepository implements RecipeRepository {
       batch.set(ref.doc(recipe.id), recipe.toFirestore());
     }
     await batch.commit();
+  }
+
+  @override
+  StreamSubscription subscribeToUserRecipes(
+    String userId,
+    void Function(List<RecipeChange>) onData, {
+    Function? onError,
+  }) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('recipes')
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .listen((snapshot) {
+      final changes = snapshot.docChanges.map((change) {
+        final recipe = Recipe.fromFirestore(change.doc);
+        final type = switch (change.type) {
+          DocumentChangeType.added => RecipeChangeType.added,
+          DocumentChangeType.modified => RecipeChangeType.modified,
+          DocumentChangeType.removed => RecipeChangeType.removed,
+        };
+        return RecipeChange(type: type, recipe: recipe);
+      }).toList();
+
+      if (changes.isNotEmpty) onData(changes);
+    }, onError: onError);
+  }
+
+  @override
+  Future<List<Recipe>> fetchArchiveRecipes() async {
+    final snap = await _firestore.collection('butlery_archive').get();
+    return snap.docs.map(Recipe.fromFirestore).toList();
+  }
+
+  @override
+  Future<Recipe> fetchArchiveRecipe(String id) async {
+    final doc = await _firestore.collection('butlery_archive').doc(id).get();
+    if (!doc.exists) {
+      throw Exception('Archive recipe not found');
+    }
+    return Recipe.fromFirestore(doc);
+  }
+
+  @override
+  Future<List<Recipe>> fetchUserRecipes(String userId) async {
+    final snap = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('recipes')
+        .orderBy('updatedAt', descending: true)
+        .get();
+    return snap.docs.map(Recipe.fromFirestore).toList();
   }
 }
