@@ -171,12 +171,12 @@ class SharedRecipe {
   /// 🆕 Check if user has dismissed (dolt från sin lista)
   bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
 
-/// ✅ FIXAT: Easy isDismissed getter för current user
-bool get isDismissed {
-  final currentUserId = FirebaseAuthRepository().currentUserId;
-  if (currentUserId == null) return false;
-  return isDismissedBy(currentUserId);
-}
+  /// ✅ FIXAT: Easy isDismissed getter för current user
+  bool get isDismissed {
+    final currentUserId = FirebaseAuthRepository().currentUserId;
+    if (currentUserId == null) return false;
+    return isDismissedBy(currentUserId);
+  }
 
   /// Check if user can view this share
   bool canBeViewedBy(String userId) {
