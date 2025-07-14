@@ -1,6 +1,5 @@
 // lib/services/friends_service.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../repositories/interfaces/friends_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
@@ -38,9 +37,6 @@ class FriendsService extends ChangeNotifier {
   int get friendsCount => _friends.length;
   int get pendingRequestsCount => _incomingRequests.length;
 
-  // Firestore references from repository
-  CollectionReference get _friendRequestsRef => _repository.friendRequestsRef;
-  CollectionReference get _profilesRef => _repository.profilesRef;
 
   /// Initialize service
   Future<void> initialize() async {
@@ -93,21 +89,14 @@ class FriendsService extends ChangeNotifier {
         return false;
       }
 
-      // Create friend request
-      final request = FriendRequest.create(
-        fromUserId: fromUserId,
-        toUserId: toUserId,
-        message: message,
-      );
-
-      await _friendRequestsRef.doc(request.id).set(request.toFirestore());
-
-      // Add to sent requests
-      _sentRequests.add(request);
-
-      AppLogger.success('✅ Vänförfrågan skickad till $toUserId');
-      notifyListeners();
-      return true;
+      final success =
+          await _repository.sendFriendRequest(toUserId, message: message);
+      if (success) {
+        await _loadFriendRequests();
+        AppLogger.success('✅ Vänförfrågan skickad till $toUserId');
+        notifyListeners();
+      }
+      return success;
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
       AppLogger.error('Kunde inte skicka vänförfrågan', e);
@@ -130,42 +119,14 @@ class FriendsService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Get the request
-      final requestDoc = await _friendRequestsRef.doc(requestId).get();
-      if (!requestDoc.exists) {
-        _setError('Vänförfrågan hittades inte');
-        return false;
+      final success = await _repository.acceptFriendRequest(requestId);
+      if (success) {
+        await _loadFriendRequests();
+        await _loadFriends();
+        AppLogger.success('✅ Vänförfrågan accepterad');
+        notifyListeners();
       }
-
-      final request = FriendRequest.fromFirestore(requestDoc);
-      if (request.toUserId != userId) {
-        _setError('Du kan bara acceptera förfrågningar skickade till dig');
-        return false;
-      }
-
-      if (!request.isPending) {
-        _setError('Vänförfrågan är inte längre aktiv');
-        return false;
-      }
-
-      // Update request status
-      final acceptedRequest = request.accept();
-      await _friendRequestsRef
-          .doc(requestId)
-          .update(acceptedRequest.toFirestore());
-
-      // Add to both users' friends lists
-      await _addMutualFriends(request.fromUserId, request.toUserId);
-
-      // Remove from incoming requests
-      _incomingRequests.removeWhere((r) => r.id == requestId);
-
-      // Reload friends list
-      await _loadFriends();
-
-      AppLogger.success('✅ Vänförfrågan accepterad från ${request.fromUserId}');
-      notifyListeners();
-      return true;
+      return success;
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
       AppLogger.error('Kunde inte acceptera vänförfrågan', e);
@@ -188,31 +149,13 @@ class FriendsService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Get the request
-      final requestDoc = await _friendRequestsRef.doc(requestId).get();
-      if (!requestDoc.exists) {
-        _setError('Vänförfrågan hittades inte');
-        return false;
+      final success = await _repository.rejectFriendRequest(requestId);
+      if (success) {
+        await _loadFriendRequests();
+        AppLogger.info('❌ Vänförfrågan avvisad');
+        notifyListeners();
       }
-
-      final request = FriendRequest.fromFirestore(requestDoc);
-      if (request.toUserId != userId) {
-        _setError('Du kan bara avvisa förfrågningar skickade till dig');
-        return false;
-      }
-
-      // Update request status
-      final rejectedRequest = request.reject();
-      await _friendRequestsRef
-          .doc(requestId)
-          .update(rejectedRequest.toFirestore());
-
-      // Remove from incoming requests
-      _incomingRequests.removeWhere((r) => r.id == requestId);
-
-      AppLogger.info('❌ Vänförfrågan avvisad från ${request.fromUserId}');
-      notifyListeners();
-      return true;
+      return success;
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
       AppLogger.error('Kunde inte avvisa vänförfrågan', e);
@@ -235,8 +178,11 @@ class FriendsService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Remove from both users' friends lists
-      await _removeMutualFriends(userId, friendUserId);
+      final success = await _repository.removeFriend(friendUserId);
+      if (!success) {
+        _setError('Kunde inte ta bort vän');
+        return false;
+      }
 
       // Remove from local list
       _friends.removeWhere((f) => f.uid == friendUserId);
@@ -260,18 +206,13 @@ class FriendsService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Update request status to cancelled
-      await _friendRequestsRef.doc(requestId).update({
-        'status': FriendRequestStatus.cancelled.name,
-        'respondedAt': FieldValue.serverTimestamp(),
-      });
-
-      // Remove from sent requests
-      _sentRequests.removeWhere((r) => r.id == requestId);
-
-      AppLogger.info('🚫 Skickad vänförfrågan avbruten');
-      notifyListeners();
-      return true;
+      final success = await _repository.cancelFriendRequest(requestId);
+      if (success) {
+        await _loadFriendRequests();
+        AppLogger.info('🚫 Skickad vänförfrågan avbruten');
+        notifyListeners();
+      }
+      return success;
     } catch (e) {
       final failure = ErrorHandler.handleError(e);
       AppLogger.error('Kunde inte avbryta vänförfrågan', e);
@@ -285,7 +226,7 @@ class FriendsService extends ChangeNotifier {
   /// Check if two users are friends
   Future<bool> areFriends(String userId1, String userId2) async {
     try {
-      return await _areAlreadyFriends(userId1, userId2);
+      return await _repository.areFriends(userId1, userId2);
     } catch (e) {
       AppLogger.error('Kunde inte kontrollera vänskap', e);
       return false;
@@ -299,12 +240,8 @@ class FriendsService extends ChangeNotifier {
 
     try {
       // Get other user's friends
-      final otherUserFriendsRef =
-          _repository.userFriendsCollection(otherUserId);
-
-      final otherFriendsQuery = await otherUserFriendsRef.get();
       final otherFriendIds =
-          otherFriendsQuery.docs.map((doc) => doc.id).toSet();
+          (await _repository.fetchFriendIds(otherUserId)).toSet();
 
       // Find mutual friends
       final mutualFriendIds = _friends
@@ -326,14 +263,9 @@ class FriendsService extends ChangeNotifier {
     if (userId == null) return;
 
     try {
-      final friendsRef = _repository.userFriendsCollection(userId);
-
-      final snapshot = await friendsRef.get();
-      final friendIds = snapshot.docs.map((doc) => doc.id).toList();
-
+      final friendIds = await _repository.fetchFriendIds(userId);
       if (friendIds.isNotEmpty) {
-        // Fetch friend profiles in batches
-        _friends = await _getUserProfilesBatch(friendIds);
+        _friends = await _repository.fetchFriendProfiles(friendIds);
       } else {
         _friends = [];
       }
@@ -351,26 +283,10 @@ class FriendsService extends ChangeNotifier {
 
     try {
       // Load incoming requests
-      final incomingQuery = await _friendRequestsRef
-          .where('toUserId', isEqualTo: userId)
-          .where('status', isEqualTo: FriendRequestStatus.pending.name)
-          .get();
-
-      _incomingRequests = incomingQuery.docs
-          .map((doc) => FriendRequest.fromFirestore(doc))
-          .where((req) => !req.isExpired)
-          .toList();
+      _incomingRequests = await _repository.getIncomingRequests();
 
       // Load sent requests
-      final sentQuery = await _friendRequestsRef
-          .where('fromUserId', isEqualTo: userId)
-          .where('status', isEqualTo: FriendRequestStatus.pending.name)
-          .get();
-
-      _sentRequests = sentQuery.docs
-          .map((doc) => FriendRequest.fromFirestore(doc))
-          .where((req) => !req.isExpired)
-          .toList();
+      _sentRequests = await _repository.getSentRequests();
 
       AppLogger.info(
         '📨 ${_incomingRequests.length} inkommande, ${_sentRequests.length} skickade förfrågningar',
@@ -383,12 +299,7 @@ class FriendsService extends ChangeNotifier {
 
   Future<bool> _areAlreadyFriends(String userId1, String userId2) async {
     try {
-      final friendDoc = await _repository
-          .userFriendsCollection(userId1)
-          .doc(userId2)
-          .get();
-
-      return friendDoc.exists;
+      return await _repository.areFriends(userId1, userId2);
     } catch (e) {
       return false;
     }
@@ -396,97 +307,12 @@ class FriendsService extends ChangeNotifier {
 
   Future<bool> _requestExists(String fromUserId, String toUserId) async {
     try {
-      final query = await _friendRequestsRef
-          .where('fromUserId', isEqualTo: fromUserId)
-          .where('toUserId', isEqualTo: toUserId)
-          .where('status', isEqualTo: FriendRequestStatus.pending.name)
-          .limit(1)
-          .get();
-
-      return query.docs.isNotEmpty;
+      return await _repository.requestExists(fromUserId, toUserId);
     } catch (e) {
       return false;
     }
   }
 
-  Future<void> _addMutualFriends(String userId1, String userId2) async {
-    final batch = _repository.batch();
-
-    // Add user2 to user1's friends
-    final user1FriendRef =
-        _repository.userFriendsCollection(userId1).doc(userId2);
-
-    batch.set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
-
-    // Add user1 to user2's friends
-    final user2FriendRef =
-        _repository.userFriendsCollection(userId2).doc(userId1);
-
-    batch.set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
-
-    // Update friend counts in profiles
-    final user1ProfileRef = _profilesRef.doc(userId1);
-    final user2ProfileRef = _profilesRef.doc(userId2);
-
-    batch.update(user1ProfileRef, {'friendsCount': FieldValue.increment(1)});
-
-    batch.update(user2ProfileRef, {'friendsCount': FieldValue.increment(1)});
-
-    await batch.commit();
-  }
-
-  Future<void> _removeMutualFriends(String userId1, String userId2) async {
-    final batch = _repository.batch();
-
-    // Remove from both friends collections
-    final user1FriendRef =
-        _repository.userFriendsCollection(userId1).doc(userId2);
-
-    final user2FriendRef =
-        _repository.userFriendsCollection(userId2).doc(userId1);
-
-    batch.delete(user1FriendRef);
-    batch.delete(user2FriendRef);
-
-    // Update friend counts in profiles
-    final user1ProfileRef = _profilesRef.doc(userId1);
-    final user2ProfileRef = _profilesRef.doc(userId2);
-
-    batch.update(user1ProfileRef, {'friendsCount': FieldValue.increment(-1)});
-
-    batch.update(user2ProfileRef, {'friendsCount': FieldValue.increment(-1)});
-
-    await batch.commit();
-  }
-
-  Future<List<UserProfile>> _getUserProfilesBatch(List<String> userIds) async {
-    if (userIds.isEmpty) return [];
-
-    final profiles = <UserProfile>[];
-    const batchSize = 10; // Firestore whereIn limit
-
-    for (int i = 0; i < userIds.length; i += batchSize) {
-      final batch = userIds.skip(i).take(batchSize).toList();
-
-      try {
-        final query = await _profilesRef
-            .where(FieldPath.documentId, whereIn: batch)
-            .get();
-
-        for (final doc in query.docs) {
-          try {
-            profiles.add(UserProfile.fromFirestore(doc));
-          } catch (e) {
-            AppLogger.warning('Kunde inte parsa vänprofil ${doc.id}: $e');
-          }
-        }
-      } catch (e) {
-        AppLogger.error('Kunde inte hämta profilbatch', e);
-      }
-    }
-
-    return profiles;
-  }
 
   void _setLoading(bool loading) {
     _isLoading = loading;
