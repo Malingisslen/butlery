@@ -144,7 +144,8 @@ debugPrint('✅ PersistenceService registrerad');
     debugPrint('✅ RealtimeMenuService registrerad');
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
-sl.registerSingleton<UserRepository>(FirebaseUserRepository());
+sl.registerSingleton<UserRepository>(
+    FirebaseUserRepository(authRepository: sl<AuthRepository>()));
 sl.registerSingleton<UserService>(
   UserService(
     repository: sl<UserRepository>(),
@@ -154,9 +155,13 @@ sl.registerSingleton<UserService>(
 
     debugPrint('✅ UserService registrerad');
 
-    sl.registerSingleton<FriendsRepository>(FirebaseFriendsRepository());
+    sl.registerSingleton<FriendsRepository>(
+        FirebaseFriendsRepository(authRepository: sl<AuthRepository>()));
     sl.registerSingleton<FriendsService>(
-      FriendsService(repository: sl<FriendsRepository>()),
+      FriendsService(
+        repository: sl<FriendsRepository>(),
+        authRepository: sl<AuthRepository>(),
+      ),
     );
     debugPrint('✅ FriendsService registrerad');
 
@@ -225,6 +230,7 @@ debugPrint('✅ Alla core services registrerade');
         repository: sl<SocialRecipeRepository>(),
         userService: sl<UserService>(),
         recipeService: sl<RecipeService>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ SocialRecipeService registrerad');

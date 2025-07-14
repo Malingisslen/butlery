@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../repositories/interfaces/social_recipe_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
 import '../services/user_service.dart';
 import '../services/recipe_service.dart';
 
@@ -20,6 +21,7 @@ class SocialRecipeService extends ChangeNotifier {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final RecipeService _recipeService;
+  final AuthRepository _authRepository;
 
   // State
   List<SharedRecipe> _sharedWithMe = [];
@@ -37,9 +39,11 @@ class SocialRecipeService extends ChangeNotifier {
     required SocialRecipeRepository repository,
     required UserService userService,
     required RecipeService recipeService,
+    required AuthRepository authRepository,
   })  : _repository = repository,
         _userService = userService,
-        _recipeService = recipeService;
+        _recipeService = recipeService,
+        _authRepository = authRepository;
 
   // ===== GETTERS =====
 
@@ -49,7 +53,7 @@ class SocialRecipeService extends ChangeNotifier {
 
   /// ✅ FIXAT: Getters för UserAvatar notification badge
   List<SharedRecipe> get recipesSharedWithMe {
-    final currentUserId = _repository.currentUser?.uid;
+    final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null) return [];
     return _sharedWithMe;
   }
@@ -58,7 +62,7 @@ class SocialRecipeService extends ChangeNotifier {
   bool get hasLoadedContent => _hasLoadedContent;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _repository.currentUser?.uid;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// 🆕 Get visible (non-dismissed) shared recipes för användaren
   List<SharedRecipe> getVisibleSharedRecipes(String userId) {
