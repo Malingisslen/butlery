@@ -56,6 +56,46 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  User? get currentUser => _currentUser;
+
+  @override
+  Future<UserCredential> createUser(String email, String password) async {
+    addUser(email, password);
+    _currentUser = FakeUser(uid: email, email: email);
+    _controller.add(_currentUser);
+    return FakeUserCredential(_currentUser);
+  }
+
+  @override
+  Future<void> updateDisplayName(User user, String displayName) {
+    return user.updateDisplayName(displayName);
+  }
+
+  @override
+  Future<void> signIn({required String email, required String password}) async {
+    await login(email, password);
+  }
+
+  @override
+  Future<void> signOut() async {
+    await logout();
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    // no-op in mock
+  }
+
+  @override
+  Future<void> deleteCurrentUser() async {
+    if (_currentUser != null) {
+      _users.remove(_currentUser!.uid);
+      _currentUser = null;
+      _controller.add(null);
+    }
+  }
+
+  @override
   Future<UserCredential> login(String email, String password) async {
     final stored = _users[email];
     if (stored != null && stored == password) {
