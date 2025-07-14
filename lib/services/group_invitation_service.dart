@@ -85,7 +85,6 @@ class GroupInvitationService extends ChangeNotifier {
       debugPrint('🔍 DEBUG: No current user, skipping listener setup');
     }
   }
-}
 
   /// Sätt upp real-time listeners för inbjudningar
   void _setupRealtimeListeners() {
