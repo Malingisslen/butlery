@@ -19,6 +19,9 @@ import 'package:provider/provider.dart';
 // ✅ NY IMPORT: AppInitializer (ersätter 100+ rader initialization-kod)
 import 'core/startup/app_initializer.dart';
 
+// Dependency Injection
+import 'core/injection.dart';
+
 // Services
 import 'services/offline_service.dart';
 import 'services/analytics_service.dart';
@@ -185,8 +188,26 @@ class _ButleryAppState extends State<ButleryApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Safety check: Only access services after DI is initialized
+    if (!AppInitializer.isBackgroundInitialized) {
+      return MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Initialiserar Butlery...'),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
     return ChangeNotifierProvider<OfflineService>.value(
-      value: OfflineService(), // Singleton instance
+      value: sl<OfflineService>(), // Get from dependency injection
       child: MaterialApp(
         navigatorKey: _navigatorKey, // Viktigt för global navigation
         navigatorObservers: _analyticsObserver != null ? [_analyticsObserver!] : [], // Analytics tracking (safe)

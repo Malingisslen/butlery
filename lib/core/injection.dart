@@ -32,7 +32,6 @@ import '../repositories/interfaces/friends_repository.dart';
 import '../repositories/interfaces/social_recipe_repository.dart';
 import '../repositories/collaborative_recipe_repository.dart';
 
-
 // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
 import '../services/realtime_sync_service.dart';
 import '../services/realtime/realtime_recipe_service.dart';
@@ -103,15 +102,15 @@ Future<void> initializeDependencies() async {
     );
     debugPrint('✅ Repositories registrerade');
 
-   // ==================== CORE SERVICES ====================
+    // ==================== CORE SERVICES ====================
 
-sl.registerSingleton<AuthService>(
-  AuthService(authRepository: sl<AuthRepository>()),
-);
-debugPrint('✅ AuthService registrerad');
+    sl.registerSingleton<AuthService>(
+      AuthService(authRepository: sl<AuthRepository>()),
+    );
+    debugPrint('✅ AuthService registrerad');
 
-sl.registerSingleton<PersistenceService>(PersistenceService());
-debugPrint('✅ PersistenceService registrerad');
+    sl.registerSingleton<PersistenceService>(PersistenceService());
+    debugPrint('✅ PersistenceService registrerad');
 
     // ==================== REPOSITORIES ====================
     sl.registerSingleton<FirestoreRepository>(FirestoreRepository());
@@ -145,14 +144,14 @@ debugPrint('✅ PersistenceService registrerad');
     debugPrint('✅ RealtimeMenuService registrerad');
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
-sl.registerSingleton<UserRepository>(
-    FirebaseUserRepository(authRepository: sl<AuthRepository>()));
-sl.registerSingleton<UserService>(
-  UserService(
-    repository: sl<UserRepository>(),
-    authRepository: sl<AuthRepository>(),
-  ),
-);
+    sl.registerSingleton<UserRepository>(
+        FirebaseUserRepository(authRepository: sl<AuthRepository>()));
+    sl.registerSingleton<UserService>(
+      UserService(
+        repository: sl<UserRepository>(),
+        authRepository: sl<AuthRepository>(),
+      ),
+    );
 
     debugPrint('✅ UserService registrerad');
 
@@ -170,7 +169,6 @@ sl.registerSingleton<UserService>(
       () => FriendCategoriesService(
         friendsService: sl<FriendsService>(),
         friendsRepository: sl<FriendsRepository>(),
-        userRepository: sl<UserRepository>(),
         authRepository: sl<AuthRepository>(),
       ),
     );
@@ -180,7 +178,6 @@ sl.registerSingleton<UserService>(
       () => GroupInvitationService(
         categoriesService: sl<FriendCategoriesService>(),
         friendsRepository: sl<FriendsRepository>(),
-        userRepository: sl<UserRepository>(),
         authRepository: sl<AuthRepository>(),
       ),
     );
@@ -196,28 +193,28 @@ sl.registerSingleton<UserService>(
     debugPrint('✅ GroupInvitationExpander registrerad');
 
     // ==================== EXISTING SERVICES ====================
-sl.registerSingleton<RecipeService>(RecipeService(
-  recipeRepository: sl<RecipeRepository>(),
-  authRepository: sl<AuthRepository>(),
-));
-debugPrint('✅ RecipeService registrerad');
+    sl.registerSingleton<RecipeService>(RecipeService(
+      recipeRepository: sl<RecipeRepository>(),
+      authRepository: sl<AuthRepository>(),
+    ));
+    debugPrint('✅ RecipeService registrerad');
 
-sl.registerSingleton<MenuService>(MenuService());
-sl.registerSingleton<SearchService>(SearchService());
-sl.registerSingleton<ShareService>(ShareService());
-sl.registerSingleton<StorageService>(StorageService());
-sl.registerSingleton<ImagePickerService>(ImagePickerService());
-sl.registerSingleton<OfflineService>(
-  OfflineService(
-    firestoreRepository: sl<FirestoreRepository>(),
-    authRepository: sl<AuthRepository>(),
-  ),
-);
-sl.registerSingleton<CollaborativeRecipeRepository>(
-  CollaborativeRecipeRepository(),
-);
-sl.registerSingleton<AnalyticsService>(AnalyticsService());
-debugPrint('✅ Alla core services registrerade');
+    sl.registerSingleton<MenuService>(MenuService());
+    sl.registerSingleton<SearchService>(SearchService());
+    sl.registerSingleton<ShareService>(ShareService());
+    sl.registerSingleton<StorageService>(StorageService());
+    sl.registerSingleton<ImagePickerService>(ImagePickerService());
+    sl.registerSingleton<OfflineService>(
+      OfflineService(
+        firestoreRepository: sl<FirestoreRepository>(),
+        authRepository: sl<AuthRepository>(),
+      ),
+    );
+    sl.registerSingleton<CollaborativeRecipeRepository>(
+      CollaborativeRecipeRepository(),
+    );
+    sl.registerSingleton<AnalyticsService>(AnalyticsService());
+    debugPrint('✅ Alla core services registrerade');
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
