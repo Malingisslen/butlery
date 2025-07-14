@@ -511,6 +511,12 @@ class FriendCategoriesService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
+      final userId = currentUserId;
+      if (userId == null) {
+        _setError('Du måste vara inloggad');
+        return false;
+      }
+
       AppLogger.info('🔄 Tar bort vän $friendUserId från kategori $categoryId');
 
       // Hitta kategorin
@@ -574,6 +580,12 @@ class FriendCategoriesService extends ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
+
+      final userId = currentUserId;
+      if (userId == null) {
+        _setError('Du måste vara inloggad');
+        return false;
+      }
 
       AppLogger.info(
           '🔄 Lägger till vän $friendUserId till kategori $categoryId');
