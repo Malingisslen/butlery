@@ -178,9 +178,6 @@ bool get isDismissed {
   return isDismissedBy(currentUserId);
 }
 
-/// ✅ FIXAT: Check if dismissed by the provided user
-bool isDismissedBy(String userId) => dismissedByUserIds.contains(userId);
-
   /// Check if user can view this share
   bool canBeViewedBy(String userId) {
     return sharedByUserId == userId || isSharedTo(userId);
