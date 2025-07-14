@@ -1,6 +1,9 @@
 import 'repository.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
+import '../../models/friend_category.dart';
+import '../../models/group_invitation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class FriendsRepository extends Repository<UserProfile> {
   /// Send a friend request to another user
@@ -41,4 +44,66 @@ abstract class FriendsRepository extends Repository<UserProfile> {
 
   /// Cancel a previously sent friend request
   Future<bool> cancelFriendRequest(String requestId);
+
+  // ===== Category methods =====
+
+  /// Save a new category for the given user
+  Future<void> saveCategory(String userId, FriendCategory category);
+
+  /// Update an existing category with provided data
+  Future<void> updateCategory(
+      String userId, String categoryId, Map<String, dynamic> data);
+
+  /// Delete a category for the given user
+  Future<void> deleteCategory(String userId, String categoryId);
+
+  /// Fetch all categories for a user
+  Future<List<FriendCategory>> fetchCategories(String userId);
+
+  /// Create a category for another user (used when joining groups)
+  Future<void> createCategoryForUser(String userId, FriendCategory category);
+
+  /// Update only the members list of a category
+  Future<void> updateCategoryMembers(
+      String userId, String categoryId, List<String> memberIds);
+
+  /// Get a single category by id for a user
+  Future<FriendCategory?> getCategory(String userId, String categoryId);
+
+  // ===== Invitation methods =====
+
+  /// Stream of received invitations for a user
+  Stream<List<GroupInvitation>> receivedInvitationsStream(String userId);
+
+  /// Stream of sent invitations for a user
+  Stream<List<GroupInvitation>> sentInvitationsStream(String userId);
+
+  /// Fetch a single invitation by id
+  Future<GroupInvitation?> getInvitation(String invitationId);
+
+  /// Save a new invitation
+  Future<void> saveInvitation(GroupInvitation invitation);
+
+  /// Update an invitation document
+  Future<void> updateInvitation(
+      String invitationId, Map<String, dynamic> data);
+
+  /// Get document references for invitations that have expired
+  Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
+      DateTime now);
+
+  /// Get old invitations older than given cutoff for a user
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
+      String userId, DateTime cutoffDate);
+
+  /// Delete a list of documents
+  Future<void> deleteDocuments(List<DocumentReference<Map<String, dynamic>>> refs);
+
+  /// Update a list of documents with the provided data
+  Future<void> updateDocuments(
+      List<DocumentReference<Map<String, dynamic>>> refs,
+      Map<String, dynamic> data);
+
+  /// Check if there is a pending invitation for user and group
+  Future<bool> hasPendingInvitation(String groupId, String toUserId);
 }
