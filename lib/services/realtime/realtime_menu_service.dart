@@ -87,7 +87,7 @@ class RealtimeMenuService extends ChangeNotifier {
   MenuOperationError? get lastError => _lastError;
 
   /// Aktuell användare
-  String? get _currentUserId => _authService.currentUser?.uid;
+  String? get _currentUserId => _authService.currentUserId;
 
   /// Aktuell användarens display name
   String get _currentUserDisplayName =>
