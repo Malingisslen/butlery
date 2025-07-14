@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 
