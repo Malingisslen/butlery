@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/group_invitation.dart';
 import '../models/friend_category.dart';
 import '../services/friend_categories_service.dart';
