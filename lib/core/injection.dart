@@ -8,13 +8,14 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/recipe_repository.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
+import '../repositories/firebase/firebase_recipe_repository.dart';
 
 // ==================== CORE SERVICES ====================
 import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/persistence_service.dart';
-import '../repositories/auth_repository.dart';
 import '../services/auth_service.dart';
 import '../services/share_service.dart';
 import '../services/storage_service.dart';
@@ -103,8 +104,6 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ Repositories registrerade');
 
    // ==================== CORE SERVICES ====================
-sl.registerSingleton<AuthRepository>(AuthRepository());
-debugPrint('✅ AuthRepository registrerad');
 
 sl.registerSingleton<AuthService>(
   AuthService(authRepository: sl<AuthRepository>()),
@@ -145,7 +144,10 @@ debugPrint('✅ PersistenceService registrerad');
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
 sl.registerSingleton<UserRepository>(FirebaseUserRepository());
 sl.registerSingleton<UserService>(
-  UserService(repository: sl<UserRepository>()),
+  UserService(
+    repository: sl<UserRepository>(),
+    authRepository: sl<AuthRepository>(),
+  ),
 );
 
     debugPrint('✅ UserService registrerad');
@@ -221,8 +223,6 @@ debugPrint('✅ Alla core services registrerade');
         repository: sl<SocialRecipeRepository>(),
         userService: sl<UserService>(),
         recipeService: sl<RecipeService>(),
-        recipeRepository: sl<RecipeRepository>(),
-        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ SocialRecipeService registrerad');
