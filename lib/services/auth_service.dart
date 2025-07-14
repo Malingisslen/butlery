@@ -53,10 +53,8 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final UserCredential credential = await _authRepository.createUser(
-        email: email,
-        password: password,
-      );
+      final UserCredential credential =
+          await _authRepository.createUser(email, password);
 
       if (credential.user != null) {
         await _authRepository.updateDisplayName(credential.user!, displayName);
