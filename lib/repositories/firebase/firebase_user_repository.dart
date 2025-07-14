@@ -3,9 +3,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/user_profile.dart';
+import '../interfaces/user_repository.dart';
 
 /// Repository for user profile data stored in the `public_profiles` collection.
-class FirebaseUserRepository {
+class FirebaseUserRepository implements UserRepository {
   FirebaseUserRepository({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
@@ -17,6 +18,35 @@ class FirebaseUserRepository {
 
   CollectionReference<Map<String, dynamic>> get _profilesRef =>
       _firestore.collection('public_profiles');
+
+  @override
+  Future<UserProfile> create(UserProfile profile) async {
+    await _profilesRef.doc(profile.uid).set(profile.toFirestore());
+    return profile;
+  }
+
+  @override
+  Future<UserProfile?> read(String id) async {
+    final doc = await _profilesRef.doc(id).get();
+    if (!doc.exists) return null;
+    return UserProfile.fromFirestore(doc);
+  }
+
+  @override
+  Future<List<UserProfile>> readAll() async {
+    final snapshot = await _profilesRef.get();
+    return snapshot.docs.map(UserProfile.fromFirestore).toList();
+  }
+
+  @override
+  Future<void> update(UserProfile profile) async {
+    await _profilesRef.doc(profile.uid).update(profile.toFirestore());
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    await _profilesRef.doc(id).delete();
+  }
 
   /// Create or update the current user's profile.
   Future<void> saveProfile(UserProfile profile) async {
@@ -74,7 +104,9 @@ class FirebaseUserRepository {
   }
 
   /// Search for users by display name or email.
-  Future<List<UserProfile>> searchProfiles(String query, {int limit = 20}) async {
+  @override
+  Future<List<UserProfile>> searchProfiles(String query) async {
+    const int limit = 20;
     if (query.trim().isEmpty) return [];
     final normalizedQuery = query.trim().toLowerCase();
     final results = <UserProfile>[];
@@ -144,6 +176,7 @@ class FirebaseUserRepository {
   }
 
   /// Check if a display name is available (case sensitive).
+  @override
   Future<bool> isDisplayNameAvailable(String displayName) async {
     final query = await _profilesRef
         .where('displayName', isEqualTo: displayName.trim())
