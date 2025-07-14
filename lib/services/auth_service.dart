@@ -27,6 +27,7 @@ class AuthService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _currentUser != null;
+  String? get currentUserId => _authRepository.currentUserId;
 
   /// Konstruktor - lyssnar på auth state changes
   AuthService({AuthRepository? authRepository})

@@ -11,6 +11,9 @@ abstract class AuthRepository {
   /// Retrieve the currently signed in user, if any
   User? getCurrentUser();
 
+  /// Convenience getter for the currently authenticated user's id
+  String? get currentUserId;
+
   /// Stream of auth state changes
   Stream<User?> authStateChanges();
 }

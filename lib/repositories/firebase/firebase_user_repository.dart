@@ -1,7 +1,8 @@
 // lib/repositories/firebase/firebase_user_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../interfaces/auth_repository.dart';
+import 'firebase_auth_repository.dart';
 import '../../models/user_profile.dart';
 import '../interfaces/user_repository.dart';
 
@@ -9,12 +10,12 @@ import '../interfaces/user_repository.dart';
 class FirebaseUserRepository implements UserRepository {
   FirebaseUserRepository({
     FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
+    AuthRepository? authRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+        _authRepository = authRepository ?? FirebaseAuthRepository();
 
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final AuthRepository _authRepository;
 
   CollectionReference<Map<String, dynamic>> get _profilesRef =>
       _firestore.collection('public_profiles');
@@ -111,7 +112,7 @@ class FirebaseUserRepository implements UserRepository {
     final normalizedQuery = query.trim().toLowerCase();
     final results = <UserProfile>[];
     final seen = <String>{};
-    final currentUserId = _auth.currentUser?.uid;
+    final currentUserId = _authRepository.currentUserId;
 
     try {
       final nameQuery = await _profilesRef
@@ -183,7 +184,7 @@ class FirebaseUserRepository implements UserRepository {
         .limit(1)
         .get();
     if (query.docs.isEmpty) return true;
-    final currentId = _auth.currentUser?.uid;
+    final currentId = _authRepository.currentUserId;
     return query.docs.first.id == currentId;
   }
 }
