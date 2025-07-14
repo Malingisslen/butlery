@@ -13,6 +13,7 @@ class FirebaseAuthRepository implements AuthRepository {
   Stream<User?> authStateChanges() => _firebaseAuth.authStateChanges();
 
   /// Currently signed in user.
+  @override
   User? get currentUser => _firebaseAuth.currentUser;
 
   @override
@@ -23,38 +24,53 @@ class FirebaseAuthRepository implements AuthRepository {
   String? get currentUserId => _firebaseAuth.currentUser?.uid;
 
   /// Sign in with email and password.
-  Future<UserCredential> signIn({
+  @override
+  Future<void> signIn({
     required String email,
     required String password,
-  }) {
-    return _firebaseAuth.signInWithEmailAndPassword(
+  }) async {
+    await _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
   @override
-  Future<UserCredential> login(String email, String password) =>
-      signIn(email: email, password: password);
+  Future<UserCredential> login(String email, String password) {
+    return _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
 
   /// Register a new account with email and password.
-  Future<UserCredential> register({
-    required String email,
-    required String password,
-  }) {
+  @override
+  Future<UserCredential> createUser(String email, String password) {
     return _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
+  @override
+  Future<void> updateDisplayName(User user, String displayName) {
+    return user.updateDisplayName(displayName);
+  }
+
   /// Send a password reset email to the given address.
+  @override
   Future<void> sendPasswordResetEmail(String email) {
     return _firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
   /// Sign out the current user.
+  @override
   Future<void> signOut() => _firebaseAuth.signOut();
+
+  @override
+  Future<void> deleteCurrentUser() async {
+    await _firebaseAuth.currentUser?.delete();
+  }
 
   @override
   Future<void> logout() => signOut();
