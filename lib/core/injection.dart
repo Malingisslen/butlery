@@ -171,6 +171,7 @@ sl.registerSingleton<UserService>(
         friendsService: sl<FriendsService>(),
         friendsRepository: sl<FriendsRepository>(),
         userRepository: sl<UserRepository>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ FriendCategoriesService registrerad');
@@ -180,6 +181,7 @@ sl.registerSingleton<UserService>(
         categoriesService: sl<FriendCategoriesService>(),
         friendsRepository: sl<FriendsRepository>(),
         userRepository: sl<UserRepository>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ GroupInvitationService registrerad');
