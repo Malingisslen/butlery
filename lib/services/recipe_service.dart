@@ -8,8 +8,8 @@ import '../core/error/error_handler.dart';
 import '../core/error/failures.dart';
 import 'offline_service.dart';
 import 'package:uuid/uuid.dart';
-import '../repositories/recipe_repository.dart';
-import '../repositories/auth_repository.dart';
+import '../repositories/interfaces/recipe_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
 
 /// RecipeService hanterar all receptlogik med Firestore OCH offline-support
 class RecipeService extends ChangeNotifier {
