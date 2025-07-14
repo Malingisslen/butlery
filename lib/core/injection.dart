@@ -208,7 +208,10 @@ sl.registerSingleton<ShareService>(ShareService());
 sl.registerSingleton<StorageService>(StorageService());
 sl.registerSingleton<ImagePickerService>(ImagePickerService());
 sl.registerSingleton<OfflineService>(
-  OfflineService(firestoreRepository: sl<FirestoreRepository>()),
+  OfflineService(
+    firestoreRepository: sl<FirestoreRepository>(),
+    authRepository: sl<AuthRepository>(),
+  ),
 );
 sl.registerSingleton<CollaborativeRecipeRepository>(
   CollaborativeRecipeRepository(),

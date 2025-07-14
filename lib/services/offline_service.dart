@@ -8,18 +8,25 @@ import 'dart:async';
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
 import '../repositories/firestore_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 
 /// Service för offline-funktionalitet med Hive - USER-SPECIFIC VERSION
 class OfflineService extends ChangeNotifier {
   // Singleton pattern
   static final OfflineService _instance = OfflineService._internal();
-  factory OfflineService({FirestoreRepository? firestoreRepository}) {
+  factory OfflineService({
+    FirestoreRepository? firestoreRepository,
+    AuthRepository? authRepository,
+  }) {
     _instance._firestoreRepository =
         firestoreRepository ?? _instance._firestoreRepository;
+    _instance._authRepository = authRepository ?? _instance._authRepository;
     return _instance;
   }
   OfflineService._internal() {
     _firestoreRepository = FirestoreRepository();
+    _authRepository = FirebaseAuthRepository();
   }
 
   // Hive boxes
@@ -29,6 +36,7 @@ class OfflineService extends ChangeNotifier {
   late Box<String> _syncQueueBox;
 
   late FirestoreRepository _firestoreRepository;
+  late AuthRepository _authRepository;
 
   // Connectivity
   final Connectivity _connectivity = Connectivity();
@@ -348,7 +356,7 @@ class OfflineService extends ChangeNotifier {
     );
 
     try {
-      final userId = _firestoreRepository.currentUserId;
+      final userId = _authRepository.currentUserId;
       if (userId == null) {
         AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
         return;
