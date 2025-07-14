@@ -45,15 +45,6 @@ class RecipeService extends ChangeNotifier {
       final userId = _authRepository.currentUserId;
       debugPrint('🔥 Auth state changed: $userId');
       // TODO: starta/stäng prenumeration på recept
-    });
-  }
-
-  // Du kan lägga till metoder som:
-  // - fetchUserRecipes()
-  // - fetchArchiveRecipes()
-  // - subscribeToUserRecipes()
-  // osv – och låta RecipeRepository sköta Firestore-åtkomsten.
-}
 
       if (userId == null) {
         // LOGOUT: Komplett cleanup
@@ -68,6 +59,12 @@ class RecipeService extends ChangeNotifier {
       }
     });
   }
+
+  // Du kan lägga till metoder som:
+  // - fetchUserRecipes()
+  // - fetchArchiveRecipes()
+  // - subscribeToUserRecipes()
+  // osv – och låta RecipeRepository sköta Firestore-åtkomsten.
 
   /// Enhanced initialize med better user checking
   Future<void> initialize() async {
