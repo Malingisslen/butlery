@@ -1,6 +1,5 @@
 // lib/services/friend_categories_service.dart - ✅ KOMPLETT FIXAD VERSION
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/friend_category.dart';
 import '../models/user_profile.dart';
