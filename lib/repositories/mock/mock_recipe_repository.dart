@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../interfaces/recipe_repository.dart';
 import '../../models/recipe.dart';
+import '../../models/recipe_change.dart';
 import 'in_memory_repository.dart';
 
 /// In-memory implementation of [RecipeRepository] for tests.
@@ -44,6 +45,22 @@ class MockRecipeRepository extends InMemoryRepository<Recipe>
   }
 
   @override
+  StreamSubscription subscribeToUserRecipes(
+    String userId,
+    void Function(List<RecipeChange>) onData, {
+    Function? onError,
+  }) {
+    return watchRecipes(userId).listen(
+      (recipes) => onData(
+        recipes
+            .map((r) => RecipeChange(type: RecipeChangeType.added, recipe: r))
+            .toList(),
+      ),
+      onError: onError,
+    );
+  }
+
+  @override
   Future<List<Recipe>> searchRecipes(String query) async {
     final lower = query.toLowerCase();
     return items.values
@@ -58,4 +75,19 @@ class MockRecipeRepository extends InMemoryRepository<Recipe>
     }
     _emit();
   }
+
+  @override
+  Future<List<Recipe>> fetchArchiveRecipes() async => items.values.toList();
+
+  @override
+  Future<Recipe> fetchArchiveRecipe(String id) async {
+    final recipe = items[id];
+    if (recipe == null) {
+      throw Exception('Recipe not found');
+    }
+    return recipe;
+  }
+
+  @override
+  Future<List<Recipe>> fetchUserRecipes(String userId) async => items.values.toList();
 }
