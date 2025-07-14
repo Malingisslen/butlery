@@ -74,7 +74,6 @@ class FriendCategoriesService extends ChangeNotifier {
       await _loadCategories();
     }
   }
-}
 
   /// ✅ FÖRBÄTTRAT: Create new category med korrekt Firebase path
   Future<bool> createCategory({
