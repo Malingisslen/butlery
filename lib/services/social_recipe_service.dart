@@ -136,7 +136,6 @@ class SocialRecipeService extends ChangeNotifier {
         _clearAll();
       }
     });
-  }
 
     // Note: No immediate loading here - auth listener will handle current user
     AppLogger.info('🚀 SocialRecipeService initialized with delayed content loading via auth listener');
