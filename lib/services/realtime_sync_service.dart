@@ -2,7 +2,8 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../repositories/firestore_repository.dart';
 import '../models/realtime/realtime_resource.dart';
@@ -56,13 +57,13 @@ class SyncError {
 /// - Notification eller user experience
 class RealtimeSyncService extends ChangeNotifier {
   final FirestoreRepository _firestoreRepository;
+  final AuthRepository _authRepository;
 
   RealtimeSyncService({
     required FirestoreRepository firestoreRepository,
-  }) : _firestoreRepository = firestoreRepository;
-
-  RealtimeSyncService({required FirestoreRepository firestoreRepository})
-      : _firestoreRepository = firestoreRepository;
+    required AuthRepository authRepository,
+  })  : _firestoreRepository = firestoreRepository,
+        _authRepository = authRepository;
 
   // ===== CONNECTION STATE =====
   bool _isConnected = false;
