@@ -86,4 +86,48 @@ class MockFriendsRepository extends InMemoryRepository<UserProfile>
   @override
   Future<List<FriendRequest>> getSentRequests() async =>
       List.unmodifiable(_sentList(currentUserId));
+
+  @override
+  Future<bool> requestExists(String fromUserId, String toUserId) async {
+    return _sentList(fromUserId)
+        .any((r) => r.toUserId == toUserId && r.isPending);
+  }
+
+  @override
+  Future<bool> areFriends(String userId1, String userId2) async {
+    return _friendSet(userId1).contains(userId2);
+  }
+
+  @override
+  Future<void> addMutualFriends(String userId1, String userId2) async {
+    _friendSet(userId1).add(userId2);
+    _friendSet(userId2).add(userId1);
+  }
+
+  @override
+  Future<void> removeMutualFriends(String userId1, String userId2) async {
+    _friendSet(userId1).remove(userId2);
+    _friendSet(userId2).remove(userId1);
+  }
+
+  @override
+  Future<List<String>> fetchFriendIds(String userId) async {
+    return List.unmodifiable(_friendSet(userId));
+  }
+
+  @override
+  Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
+    return [
+      for (final id in userIds)
+        if (items.containsKey(id)) items[id]!
+    ];
+  }
+
+  @override
+  Future<bool> cancelFriendRequest(String requestId) async {
+    final req = _findRequest(requestId);
+    if (req == null) return false;
+    _replaceRequest(req.cancel());
+    return true;
+  }
 }
