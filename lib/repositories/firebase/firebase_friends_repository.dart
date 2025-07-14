@@ -5,6 +5,8 @@ import '../interfaces/auth_repository.dart';
 import 'firebase_auth_repository.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
+import '../../models/friend_category.dart';
+import '../../models/group_invitation.dart';
 import '../interfaces/friends_repository.dart';
 
 /// Repository handling friend requests and friends collections in Firestore.
@@ -26,6 +28,12 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   CollectionReference<Map<String, dynamic>> get _profilesRef =>
       _firestore.collection('public_profiles');
+
+  CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
+      _firestore.collection('users').doc(userId).collection('friendCategories');
+
+  CollectionReference<Map<String, dynamic>> get _invitationsRef =>
+      _firestore.collection('group_invitations');
 
   @override
   Future<UserProfile> create(UserProfile profile) async {
@@ -243,6 +251,141 @@ class FirebaseFriendsRepository implements FriendsRepository {
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map(FriendRequest.fromFirestore).toList());
+  }
+
+  // ===== Category methods =====
+
+  @override
+  Future<void> saveCategory(String userId, FriendCategory category) {
+    return _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+  }
+
+  @override
+  Future<void> updateCategory(
+      String userId, String categoryId, Map<String, dynamic> data) {
+    return _categoriesRef(userId).doc(categoryId).update(data);
+  }
+
+  @override
+  Future<void> deleteCategory(String userId, String categoryId) {
+    return _categoriesRef(userId).doc(categoryId).delete();
+  }
+
+  @override
+  Future<List<FriendCategory>> fetchCategories(String userId) async {
+    final snap = await _categoriesRef(userId).get();
+    return snap.docs.map(FriendCategory.fromFirestore).toList();
+  }
+
+  @override
+  Future<void> createCategoryForUser(String userId, FriendCategory category) {
+    return _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+  }
+
+  @override
+  Future<void> updateCategoryMembers(
+      String userId, String categoryId, List<String> memberIds) {
+    return _categoriesRef(userId).doc(categoryId).update({
+      'friendUserIds': memberIds,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future<FriendCategory?> getCategory(String userId, String categoryId) async {
+    final doc = await _categoriesRef(userId).doc(categoryId).get();
+    if (!doc.exists) return null;
+    return FriendCategory.fromFirestore(doc);
+  }
+
+  // ===== Invitation methods =====
+
+  @override
+  Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) {
+    return _invitationsRef
+        .where('toUserId', isEqualTo: userId)
+        .orderBy('sentAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map(GroupInvitation.fromFirestore).toList());
+  }
+
+  @override
+  Stream<List<GroupInvitation>> sentInvitationsStream(String userId) {
+    return _invitationsRef
+        .where('fromUserId', isEqualTo: userId)
+        .orderBy('sentAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map(GroupInvitation.fromFirestore).toList());
+  }
+
+  @override
+  Future<GroupInvitation?> getInvitation(String invitationId) async {
+    final doc = await _invitationsRef.doc(invitationId).get();
+    if (!doc.exists) return null;
+    return GroupInvitation.fromFirestore(doc);
+  }
+
+  @override
+  Future<void> saveInvitation(GroupInvitation invitation) {
+    return _invitationsRef.doc(invitation.id).set(invitation.toFirestore());
+  }
+
+  @override
+  Future<void> updateInvitation(
+      String invitationId, Map<String, dynamic> data) {
+    return _invitationsRef.doc(invitationId).update(data);
+  }
+
+  @override
+  Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
+      DateTime now) async {
+    final query = await _invitationsRef
+        .where('status', isEqualTo: GroupInvitationStatus.pending.name)
+        .where('expiresAt', isLessThanOrEqualTo: Timestamp.fromDate(now))
+        .get();
+    return query.docs.map((d) => d.reference).toList();
+  }
+
+  @override
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
+      String userId, DateTime cutoffDate) async {
+    final query = await _invitationsRef
+        .where('toUserId', isEqualTo: userId)
+        .where('sentAt', isLessThan: Timestamp.fromDate(cutoffDate))
+        .get();
+    return query.docs;
+  }
+
+  @override
+  Future<void> deleteDocuments(
+      List<DocumentReference<Map<String, dynamic>>> refs) async {
+    final batch = _firestore.batch();
+    for (final ref in refs) {
+      batch.delete(ref);
+    }
+    await batch.commit();
+  }
+
+  @override
+  Future<void> updateDocuments(
+      List<DocumentReference<Map<String, dynamic>>> refs,
+      Map<String, dynamic> data) async {
+    final batch = _firestore.batch();
+    for (final ref in refs) {
+      batch.update(ref, data);
+    }
+    await batch.commit();
+  }
+
+  @override
+  Future<bool> hasPendingInvitation(String groupId, String toUserId) async {
+    final query = await _invitationsRef
+        .where('groupId', isEqualTo: groupId)
+        .where('toUserId', isEqualTo: toUserId)
+        .where('status', isEqualTo: GroupInvitationStatus.pending.name)
+        .limit(1)
+        .get();
+    return query.docs.isNotEmpty;
   }
 }
 
