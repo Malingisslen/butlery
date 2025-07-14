@@ -4,7 +4,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../repositories/firebase/firebase_auth_repository.dart';
+import '../../repositories/interfaces/auth_repository.dart';
+import '../../repositories/firestore_repository.dart';
 import 'package:hive/hive.dart';
 import 'dart:convert';
 import '../../models/unified/unified_shopping_item.dart';
@@ -16,14 +17,15 @@ class UnifiedShoppingService extends ChangeNotifier {
   static const String _activeListKey = 'active_list_id';
   static const Duration _syncDebounce = Duration(seconds: 2);
 
-final FirebaseFirestore _firestore;
-final FirebaseAuthRepository _authRepository;
+final FirestoreRepository _firestoreRepository;
+final AuthRepository _authRepository;
+FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
-UnifiedRecipeService({
-  FirebaseFirestore? firestore,
-  FirebaseAuthRepository? authRepository,
-})  : _firestore = firestore ?? FirebaseFirestore.instance,
-      _authRepository = authRepository ?? FirebaseAuthRepository();
+UnifiedShoppingService({
+  required FirestoreRepository firestoreRepository,
+  required AuthRepository authRepository,
+})  : _firestoreRepository = firestoreRepository,
+      _authRepository = authRepository;
 
 
   // State
@@ -64,7 +66,7 @@ UnifiedRecipeService({
   bool get hasError => _error != null;
   String? get currentUserId => _authRepository.currentUserId;
   String? get currentUserDisplayName =>
-      _authRepository.currentUser?.displayName ?? 'Du';
+      _authRepository.getCurrentUser()?.displayName ?? 'Du';
 
   // ===== INITIALIZATION - FÖRENKLAD UTAN MIGRATION =====
 
@@ -104,7 +106,7 @@ UnifiedRecipeService({
       });
 
       // Starta Firebase sync om inloggad
-      if (_authRepository.currentUser != null) {
+      if (_authRepository.getCurrentUser() != null) {
         _startFirebaseSync();
       }
 
