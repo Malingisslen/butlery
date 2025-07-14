@@ -71,22 +71,24 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       // SocialRecipeService handles initial loading automatically via auth listener
       Future.delayed(const Duration(milliseconds: 1500), () {
         if (!mounted) return;
-        
+
         try {
           final friendsViewModel = context.read<FriendsViewModel>();
-          final sharedContentViewModel = context.read<SharedContentViewModel>();
-
           // Only refresh friends - SharedContentViewModel loads automatically via service
-          AppLogger.info('🔄 Refreshing friends data for MinaReceptView (delayed)...');
+          AppLogger.info(
+              '🔄 Refreshing friends data for MinaReceptView (delayed)...');
           friendsViewModel.refresh();
 
-          AppLogger.success('✅ Friends data refreshed for MinaReceptView (delayed)');
+          AppLogger.success(
+              '✅ Friends data refreshed for MinaReceptView (delayed)');
         } catch (e) {
-          AppLogger.error('❌ Fel vid delayed friends data refresh i MinaReceptView', e);
+          AppLogger.error(
+              '❌ Fel vid delayed friends data refresh i MinaReceptView', e);
         }
       });
     } catch (e) {
-      AppLogger.error('❌ Fel vid setup av delayed friends refresh i MinaReceptView', e);
+      AppLogger.error(
+          '❌ Fel vid setup av delayed friends refresh i MinaReceptView', e);
     }
   }
 
@@ -235,12 +237,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               onTap: () => LayoutComponents.showProfileMenu(
                 context,
                 userImageUrl: userService.currentUserProfile?.avatarUrl,
-                displayName: userService.currentUserProfile?.displayName ?? 'Användare',
+                displayName:
+                    userService.currentUserProfile?.displayName ?? 'Användare',
                 email: userService.currentUserProfile?.email,
-                onEditProfile: () => Navigator.pushNamed(context, Routes.profileEdit),
-                onViewFriends: () => Navigator.pushNamed(context, Routes.friends),
+                onEditProfile: () =>
+                    Navigator.pushNamed(context, Routes.profileEdit),
+                onViewFriends: () =>
+                    Navigator.pushNamed(context, Routes.friends),
                 onViewShared: () => Navigator.pushNamed(context, Routes.shared),
-                onViewNotifications: () => Navigator.pushNamed(context, Routes.friendRequests),
+                onViewNotifications: () =>
+                    Navigator.pushNamed(context, Routes.friendRequests),
               ),
             ),
             // ✅ TOTAL NOTIFICATION BADGE
