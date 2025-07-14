@@ -36,7 +36,8 @@ class FakeUserCredential implements UserCredential {
   @override
   AuthCredential? get credential => null;
 
-  @override
+  // `operationType` is not defined on older Firebase versions, so we
+  // omit the override to avoid analyzer warnings.
   String? get operationType => null;
 
   @override

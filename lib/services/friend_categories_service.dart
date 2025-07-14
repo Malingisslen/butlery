@@ -7,12 +7,10 @@ import '../services/friends_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 import '../repositories/interfaces/friends_repository.dart';
-import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 
 class FriendCategoriesService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;
-  final UserRepository _userRepository;
   final AuthRepository _authRepository;
   final FriendsService _friendsService;
 
@@ -29,11 +27,9 @@ class FriendCategoriesService extends ChangeNotifier {
   FriendCategoriesService({
     required FriendsService friendsService,
     required FriendsRepository friendsRepository,
-    required UserRepository userRepository,
     required AuthRepository authRepository,
   })  : _friendsService = friendsService,
         _friendsRepository = friendsRepository,
-        _userRepository = userRepository,
         _authRepository = authRepository;
 
   // ===== GETTERS =====

@@ -9,12 +9,10 @@ import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 import '../core/events/group_events.dart';
 import '../repositories/interfaces/friends_repository.dart';
-import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 
 class GroupInvitationService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;
-  final UserRepository _userRepository;
   final AuthRepository _authRepository;
   final FriendCategoriesService _categoriesService;
 
@@ -31,11 +29,9 @@ class GroupInvitationService extends ChangeNotifier {
   GroupInvitationService({
     required FriendCategoriesService categoriesService,
     required FriendsRepository friendsRepository,
-    required UserRepository userRepository,
     required AuthRepository authRepository,
   })  : _categoriesService = categoriesService,
         _friendsRepository = friendsRepository,
-        _userRepository = userRepository,
         _authRepository = authRepository {
     debugPrint(
         '🔍 DEBUG: GroupInvitationService skapad med categoriesService: ${categoriesService.runtimeType}');
