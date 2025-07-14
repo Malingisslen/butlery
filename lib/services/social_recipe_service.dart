@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../repositories/social_recipe_repository.dart';
+import '../repositories/interfaces/social_recipe_repository.dart';
 import '../services/user_service.dart';
 import '../services/recipe_service.dart';
 
