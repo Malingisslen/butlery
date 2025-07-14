@@ -50,8 +50,6 @@ import '../services/friends_service.dart';
 import '../services/social_recipe_service.dart';
 import '../services/friend_categories_service.dart';
 import '../services/group_invitation_service.dart';
-import '../repositories/interfaces/friends_repository.dart';
-import '../repositories/interfaces/user_repository.dart';
 
 // ==================== CORE VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';
