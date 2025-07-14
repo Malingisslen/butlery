@@ -6,8 +6,8 @@ library;
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../repositories/auth_repository.dart';
-import '../repositories/recipe_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
+import '../repositories/interfaces/recipe_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import '../repositories/firebase/firebase_recipe_repository.dart';
 
@@ -24,12 +24,12 @@ import '../services/offline_service.dart';
 import '../services/analytics_service.dart';
 
 import '../repositories/firestore_repository.dart';
-import '../repositories/firebase_user_repository.dart';
-import '../repositories/firebase_friends_repository.dart';
-import '../repositories/firebase_social_recipe_repository.dart';
-import '../repositories/user_repository.dart';
-import '../repositories/friends_repository.dart';
-import '../repositories/social_recipe_repository.dart';
+import '../repositories/firebase/firebase_user_repository.dart';
+import '../repositories/firebase/firebase_friends_repository.dart';
+import '../repositories/firebase/firebase_social_recipe_repository.dart';
+import '../repositories/interfaces/user_repository.dart';
+import '../repositories/interfaces/friends_repository.dart';
+import '../repositories/interfaces/social_recipe_repository.dart';
 import '../repositories/collaborative_recipe_repository.dart';
 
 
@@ -50,8 +50,8 @@ import '../services/friends_service.dart';
 import '../services/social_recipe_service.dart';
 import '../services/friend_categories_service.dart';
 import '../services/group_invitation_service.dart';
-import '../repositories/friends_repository.dart';
-import '../repositories/user_repository.dart';
+import '../repositories/interfaces/friends_repository.dart';
+import '../repositories/interfaces/user_repository.dart';
 
 // ==================== CORE VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';

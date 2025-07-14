@@ -1,8 +1,8 @@
 // lib/services/user_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/user_repository.dart';
-import '../repositories/auth_repository.dart';
+import '../repositories/interfaces/user_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
