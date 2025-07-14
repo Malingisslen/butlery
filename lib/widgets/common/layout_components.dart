@@ -438,10 +438,10 @@ class _ProfileMenuState extends State<_ProfileMenu> {
       final newSharedItems = currentUserId == null
           ? 0
           : socialService.recipesSharedWithMe
-                  .where((r) => !r.isDismissed(currentUserId))
+                  .where((r) => !r.isDismissedBy(currentUserId))
                   .length +
               socialService.menusSharedWithMe
-                  .where((m) => !m.isDismissed(currentUserId))
+                  .where((m) => !m.isDismissedBy(currentUserId))
                   .length;
 
       if (mounted) {
