@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../repositories/auth_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
+import '../repositories/firebase/firebase_auth_repository.dart';
 
 /// AuthService hanterar all autentisering med Firebase
 ///
@@ -29,7 +30,7 @@ class AuthService extends ChangeNotifier {
 
   /// Konstruktor - lyssnar på auth state changes
   AuthService({AuthRepository? authRepository})
-      : _authRepository = authRepository ?? AuthRepository() {
+      : _authRepository = authRepository ?? FirebaseAuthRepository() {
     // Lyssna på förändringar i autentiseringsstatus
     _authRepository.authStateChanges().listen((User? user) {
       _currentUser = user;
