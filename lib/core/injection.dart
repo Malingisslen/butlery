@@ -100,7 +100,9 @@ Future<void> initializeDependencies() async {
 
     // ==================== REPOSITORIES ====================
     sl.registerSingleton<AuthRepository>(FirebaseAuthRepository());
-    sl.registerSingleton<RecipeRepository>(FirebaseRecipeRepository());
+    sl.registerSingleton<RecipeRepository>(
+      FirebaseRecipeRepository(authRepository: sl<AuthRepository>()),
+    );
     debugPrint('✅ Repositories registrerade');
 
    // ==================== CORE SERVICES ====================
