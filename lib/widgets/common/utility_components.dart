@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/recipe_service.dart';
+import '../../core/injection.dart';
 import '../../models/recipe.dart';
 import '../../models/friend_category.dart';
 import '../../viewmodels/friends_viewmodel.dart';
@@ -667,10 +668,11 @@ class _RecipeServiceConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final recipeService = sl<RecipeService>();
     return ListenableBuilder(
-      listenable: RecipeService(),
+      listenable: recipeService,
       builder: (context, _) {
-        return builder(context, RecipeService(), null);
+        return builder(context, recipeService, null);
       },
     );
   }
