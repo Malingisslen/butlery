@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../auth_repository.dart';
+import '../interfaces/auth_repository.dart';
 import '../interfaces/recipe_repository.dart';
 import '../../models/recipe.dart';
 

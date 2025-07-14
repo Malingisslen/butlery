@@ -7,8 +7,8 @@ import '../models/user_profile.dart';
 import '../services/friends_service.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
-import '../repositories/friends_repository.dart';
-import '../repositories/user_repository.dart';
+import '../repositories/interfaces/friends_repository.dart';
+import '../repositories/interfaces/user_repository.dart';
 
 class FriendCategoriesService extends ChangeNotifier {
   final FriendsRepository _friendsRepository;

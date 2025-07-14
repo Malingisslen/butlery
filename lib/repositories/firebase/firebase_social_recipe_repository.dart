@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'social_recipe_repository.dart';
+import '../interfaces/social_recipe_repository.dart';
 
 class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
   final FirebaseFirestore _firestore;

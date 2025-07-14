@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import '../repositories/friends_repository.dart';
+import '../repositories/interfaces/friends_repository.dart';
 import '../models/user_profile.dart';
 import '../models/friend_request.dart';
 import '../core/utils/logger.dart';
