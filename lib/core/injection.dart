@@ -219,8 +219,8 @@ debugPrint('✅ Alla core services registrerade');
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
       () => UnifiedShoppingService(
-        firestore: FirebaseFirestore.instance,
-        auth: FirebaseAuth.instance,
+        firestoreRepository: sl<FirestoreRepository>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
     debugPrint('✅ UnifiedShoppingService registrerad');
