@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/group_invitation.dart';
 import '../models/friend_category.dart';
 import '../services/friend_categories_service.dart';
@@ -584,7 +583,7 @@ debugPrint('🔍 DEBUG: Creating invitation object');
     debugPrint('🔍 DEBUG: cleanupExpiredInvitations started');
 
     try {
-      final now = Timestamp.now();
+      final now = DateTime.now();
 
       final expiredDocs = await _friendsRepository.expiredInvitations(now);
 
