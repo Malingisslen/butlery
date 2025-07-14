@@ -1,6 +1,9 @@
 import '../interfaces/friends_repository.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
+import '../../models/friend_category.dart';
+import '../../models/group_invitation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'in_memory_repository.dart';
 
 /// In-memory implementation of [FriendsRepository] for tests.
@@ -13,6 +16,17 @@ class MockFriendsRepository extends InMemoryRepository<UserProfile>
   final Map<String, Set<String>> _friends = {};
   final Map<String, List<FriendRequest>> _incoming = {};
   final Map<String, List<FriendRequest>> _sent = {};
+  final Map<String, Map<String, FriendCategory>> _categories = {};
+  final Map<String, GroupInvitation> _invitations = {};
+
+  Map<String, FriendCategory> _categoryMap(String userId) =>
+      _categories.putIfAbsent(userId, () => <String, FriendCategory>{});
+
+  Iterable<GroupInvitation> _receivedInvitations(String userId) =>
+      _invitations.values.where((i) => i.toUserId == userId);
+
+  Iterable<GroupInvitation> _sentInvitations(String userId) =>
+      _invitations.values.where((i) => i.fromUserId == userId);
 
   Set<String> _friendSet(String userId) =>
       _friends.putIfAbsent(userId, () => <String>{});
@@ -129,5 +143,133 @@ class MockFriendsRepository extends InMemoryRepository<UserProfile>
     if (req == null) return false;
     _replaceRequest(req.cancel());
     return true;
+  }
+
+  // ===== Category methods =====
+
+  @override
+  Future<void> saveCategory(String userId, FriendCategory category) async {
+    _categoryMap(userId)[category.id] = category;
+  }
+
+  @override
+  Future<void> updateCategory(
+      String userId, String categoryId, Map<String, dynamic> data) async {
+    final map = _categoryMap(userId);
+    final existing = map[categoryId];
+    if (existing != null) {
+      map[categoryId] = existing.copyWith(
+        name: data['name'] as String?,
+        description: data['description'] as String?,
+        emoji: data['emoji'] as String?,
+        friendUserIds:
+            (data['friendUserIds'] as List?)?.cast<String>() ?? existing.friendUserIds,
+        sortOrder: data['sortOrder'] as int?,
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteCategory(String userId, String categoryId) async {
+    _categoryMap(userId).remove(categoryId);
+  }
+
+  @override
+  Future<List<FriendCategory>> fetchCategories(String userId) async {
+    return _categoryMap(userId).values.toList();
+  }
+
+  @override
+  Future<void> createCategoryForUser(String userId, FriendCategory category) async {
+    await saveCategory(userId, category);
+  }
+
+  @override
+  Future<void> updateCategoryMembers(
+      String userId, String categoryId, List<String> memberIds) async {
+    final map = _categoryMap(userId);
+    final existing = map[categoryId];
+    if (existing != null) {
+      map[categoryId] = existing.copyWith(friendUserIds: memberIds);
+    }
+  }
+
+  @override
+  Future<FriendCategory?> getCategory(String userId, String categoryId) async {
+    return _categoryMap(userId)[categoryId];
+  }
+
+  // ===== Invitation methods =====
+
+  @override
+  Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) async* {
+    yield _receivedInvitations(userId).toList();
+  }
+
+  @override
+  Stream<List<GroupInvitation>> sentInvitationsStream(String userId) async* {
+    yield _sentInvitations(userId).toList();
+  }
+
+  @override
+  Future<GroupInvitation?> getInvitation(String invitationId) async {
+    return _invitations[invitationId];
+  }
+
+  @override
+  Future<void> saveInvitation(GroupInvitation invitation) async {
+    _invitations[invitation.id] = invitation;
+  }
+
+  @override
+  Future<void> updateInvitation(
+      String invitationId, Map<String, dynamic> data) async {
+    final existing = _invitations[invitationId];
+    if (existing != null) {
+      _invitations[invitationId] = existing.copyWith(
+        status: data['status'] != null
+            ? GroupInvitationStatus.values.firstWhere(
+                (e) => e.name == data['status'],
+                orElse: () => existing.status,
+              )
+            : existing.status,
+        respondedAt: data['respondedAt'] as DateTime? ?? existing.respondedAt,
+      );
+    }
+  }
+
+  @override
+  Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
+      DateTime now) async {
+    // Not used in mock - return empty list
+    return [];
+  }
+
+  @override
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
+      String userId, DateTime cutoffDate) async {
+    // Not used in mock - return empty list
+    return [];
+  }
+
+  @override
+  Future<void> deleteDocuments(
+      List<DocumentReference<Map<String, dynamic>>> refs) async {
+    // no-op in mock
+  }
+
+  @override
+  Future<void> updateDocuments(
+      List<DocumentReference<Map<String, dynamic>>> refs,
+      Map<String, dynamic> data) async {
+    // no-op in mock
+  }
+
+  @override
+  Future<bool> hasPendingInvitation(String groupId, String toUserId) async {
+    return _invitations.values.any((i) =>
+        i.groupId == groupId &&
+        i.toUserId == toUserId &&
+        i.status == GroupInvitationStatus.pending);
   }
 }
