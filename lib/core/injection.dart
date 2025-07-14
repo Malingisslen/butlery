@@ -121,7 +121,10 @@ debugPrint('✅ PersistenceService registrerad');
 
     // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
     sl.registerSingleton<RealtimeSyncService>(
-      RealtimeSyncService(firestoreRepository: sl<FirestoreRepository>()),
+      RealtimeSyncService(
+        firestoreRepository: sl<FirestoreRepository>(),
+        authRepository: sl<AuthRepository>(),
+      ),
     );
     debugPrint('✅ RealtimeSyncService registrerad');
 
