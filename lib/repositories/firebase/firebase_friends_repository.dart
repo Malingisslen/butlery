@@ -1,7 +1,8 @@
 // lib/repositories/firebase/firebase_friends_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../interfaces/auth_repository.dart';
+import 'firebase_auth_repository.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
 import '../interfaces/friends_repository.dart';
@@ -10,12 +11,12 @@ import '../interfaces/friends_repository.dart';
 class FirebaseFriendsRepository implements FriendsRepository {
   FirebaseFriendsRepository({
     FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
+    AuthRepository? authRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+        _authRepository = authRepository ?? FirebaseAuthRepository();
 
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final AuthRepository _authRepository;
 
   CollectionReference<Map<String, dynamic>> get _friendRequestsRef =>
       _firestore.collection('friend_requests');
@@ -62,7 +63,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
-    final fromId = _auth.currentUser?.uid;
+    final fromId = _authRepository.currentUserId;
     if (fromId == null) return false;
     final exists = await requestExists(fromId, toUserId);
     if (exists) return false;
@@ -159,7 +160,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<bool> removeFriend(String friendUserId) async {
-    final current = _auth.currentUser?.uid;
+    final current = _authRepository.currentUserId;
     if (current == null) return false;
     await removeMutualFriends(current, friendUserId);
     return true;
@@ -173,7 +174,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<List<FriendRequest>> getIncomingRequests() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) return [];
     final snap = await _friendRequestsRef
         .where('toUserId', isEqualTo: uid)
@@ -184,7 +185,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<List<FriendRequest>> getSentRequests() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) return [];
     final snap = await _friendRequestsRef
         .where('fromUserId', isEqualTo: uid)

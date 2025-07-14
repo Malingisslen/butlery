@@ -1,7 +1,8 @@
 // lib/repositories/firebase/firebase_shopping_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../interfaces/auth_repository.dart';
+import 'firebase_auth_repository.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../models/unified/unified_shopping_item.dart';
 import '../interfaces/shopping_repository.dart';
@@ -10,12 +11,12 @@ import '../interfaces/shopping_repository.dart';
 class FirebaseShoppingRepository implements ShoppingRepository {
   FirebaseShoppingRepository({
     FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
+    AuthRepository? authRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+        _authRepository = authRepository ?? FirebaseAuthRepository();
 
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final AuthRepository _authRepository;
 
   String? _activeListId;
 
@@ -27,7 +28,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   @override
   Future<UnifiedShoppingList> create(UnifiedShoppingList list) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) throw Exception('No authenticated user');
     await _personalListsRef(uid).doc(list.id).set(list.toFirestore());
     return list;
@@ -35,7 +36,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   @override
   Future<UnifiedShoppingList?> read(String id) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) return null;
     final doc = await _personalListsRef(uid).doc(id).get();
     if (!doc.exists) return null;
@@ -44,7 +45,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   @override
   Future<List<UnifiedShoppingList>> readAll() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) return [];
     final snap = await _personalListsRef(uid).get();
     return snap.docs.map(UnifiedShoppingList.fromFirestore).toList();
@@ -52,14 +53,14 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   @override
   Future<void> update(UnifiedShoppingList list) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) throw Exception('No authenticated user');
     await _personalListsRef(uid).doc(list.id).update(list.toFirestore());
   }
 
   @override
   Future<void> delete(String id) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) throw Exception('No authenticated user');
     await _personalListsRef(uid).doc(id).delete();
   }
@@ -77,7 +78,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   @override
   Future<void> addItem(String listId, UnifiedShoppingItem item) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) throw Exception('No authenticated user');
     await _personalListsRef(uid)
         .doc(listId)
@@ -88,7 +89,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   @override
   Future<void> removeItem(String listId, String itemId) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) throw Exception('No authenticated user');
     await _personalListsRef(uid)
         .doc(listId)
@@ -99,7 +100,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   /// Create or update a personal list for the current user.
   Future<void> savePersonalList(UnifiedShoppingList list) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) return;
     await _personalListsRef(uid).doc(list.id).set(list.toFirestore(), SetOptions(merge: true));
   }
@@ -111,7 +112,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   /// Delete a personal list.
   Future<void> deletePersonalList(String listId) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) return;
     await _personalListsRef(uid).doc(listId).delete();
   }
@@ -123,7 +124,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   /// Fetch all personal lists for the current user.
   Stream<List<UnifiedShoppingList>> personalListsStream() {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) {
       return const Stream.empty();
     }
@@ -134,7 +135,7 @@ class FirebaseShoppingRepository implements ShoppingRepository {
 
   /// Fetch collaborative lists where the current user is a member.
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() {
-    final uid = _auth.currentUser?.uid;
+    final uid = _authRepository.currentUserId;
     if (uid == null) {
       return const Stream.empty();
     }

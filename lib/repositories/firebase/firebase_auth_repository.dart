@@ -19,6 +19,7 @@ class FirebaseAuthRepository implements AuthRepository {
   User? getCurrentUser() => _firebaseAuth.currentUser;
 
   /// Convenience getter for the current user id.
+  @override
   String? get currentUserId => _firebaseAuth.currentUser?.uid;
 
   /// Sign in with email and password.

@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../repositories/interfaces/friends_repository.dart';
+import '../repositories/interfaces/auth_repository.dart';
 import '../models/user_profile.dart';
 import '../models/friend_request.dart';
 import '../core/utils/logger.dart';
@@ -10,9 +11,13 @@ import '../core/error/error_handler.dart';
 
 class FriendsService extends ChangeNotifier {
   final FriendsRepository _repository;
+  final AuthRepository _authRepository;
 
-  FriendsService({required FriendsRepository repository})
-      : _repository = repository;
+  FriendsService({
+    required FriendsRepository repository,
+    required AuthRepository authRepository,
+  })  : _repository = repository,
+        _authRepository = authRepository;
 
   // State
   List<UserProfile> _friends = [];
@@ -29,7 +34,7 @@ class FriendsService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _repository.currentUser?.uid;
+  String? get currentUserId => _authRepository.currentUserId;
   int get friendsCount => _friends.length;
   int get pendingRequestsCount => _incomingRequests.length;
 
@@ -41,7 +46,7 @@ class FriendsService extends ChangeNotifier {
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar FriendsService...');
 
-    _repository.authStateChanges().listen((user) {
+    _authRepository.authStateChanges().listen((user) {
       if (user != null) {
         _loadFriends();
         _loadFriendRequests();
@@ -53,7 +58,7 @@ class FriendsService extends ChangeNotifier {
       }
     });
 
-    if (_repository.currentUser != null) {
+    if (_authRepository.getCurrentUser() != null) {
       await _loadFriends();
       await _loadFriendRequests();
     }
