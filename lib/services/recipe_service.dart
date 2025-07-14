@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
+import '../models/recipe_change.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 import '../core/error/failures.dart';
@@ -238,7 +239,7 @@ class RecipeService extends ChangeNotifier {
       // Om online och inloggad, synka till Firestore via repository
       if (_offlineService.isOnline && _userId != null) {
         try {
-          await _recipeRepository.addRecipe(_userId!, recipe);
+          await _recipeRepository.create(recipe);
           AppLogger.success('✅ Recept "${recipe.title}" synkat till molnet');
         } catch (e) {
           AppLogger.warning('⚠️ Kunde inte synka till molnet, sparad lokalt');
@@ -280,7 +281,7 @@ class RecipeService extends ChangeNotifier {
       // Om online och inloggad, synka till Firestore
       if (_offlineService.isOnline && _userId != null) {
         try {
-          await _recipeRepository.updateRecipe(_userId!, recipe);
+          await _recipeRepository.update(recipe);
 
           // Markera som synkad efter lyckad uppladdning
           recipe.isModifiedOffline = false;
@@ -330,7 +331,7 @@ class RecipeService extends ChangeNotifier {
       // Om online och inloggad, ta bort från Firestore
       if (_offlineService.isOnline && _userId != null) {
         try {
-          await _recipeRepository.deleteRecipe(_userId!, id);
+          await _recipeRepository.delete(id);
           AppLogger.success('✅ Recept borttaget från molnet');
         } catch (e) {
           AppLogger.warning('⚠️ Kunde inte ta bort från molnet');
@@ -568,7 +569,7 @@ class RecipeService extends ChangeNotifier {
         if (recipe.needsSync) {
           try {
             // Synka till Firestore via repository
-            await _recipeRepository.addRecipe(userId, recipe);
+            await _recipeRepository.create(recipe);
 
             // Markera som synkad direkt på objektet
             recipe.isModifiedOffline = false;
