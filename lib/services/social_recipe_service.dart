@@ -71,6 +71,13 @@ class SocialRecipeService extends ChangeNotifier {
         .toList();
   }
 
+  /// 🆕 Get visible (non-dismissed) shared menus for the user
+  List<SharedMenu> getVisibleSharedMenus(String userId) {
+    return _menusSharedWithMe
+        .where((menu) => menu.shouldBeShownTo(userId))
+        .toList();
+  }
+
   /// 🆕 Public method för att markera recept som läst (används av ViewModel)
   Future<void> markSharedRecipeAsViewed(String recipeId, String userId) async {
     try {
