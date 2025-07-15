@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 // ViewModels
 import '../viewmodels/unified_shopping_viewmodel.dart';
+import '../viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Models
 import '../models/unified/unified_shopping_item.dart';
@@ -515,6 +516,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       context: context,
       builder: (context) => UniversalShareDialog.shoppingList(
         shoppingList: _viewModel.activeList!,
+        viewModel: sl<UniversalShareDialogViewModel>(),
         initialMessage: "Kolla min inköpslista!",
         availableFriends: availableFriends,
       ),

@@ -14,6 +14,7 @@ import '../services/recipe_service.dart';
 import '../services/analytics_service.dart';
 import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
+import '../widgets/image/image_picker_dialogs.dart';
 import '../services/auth_service.dart';
 import '../core/injection.dart';
 import '../repositories/collaborative_recipe_repository.dart';
@@ -742,7 +743,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       selectedSource = source;
     } else {
       final dialogSource =
-          await _imagePickerService.showImageSourceDialog(context);
+          await ImagePickerDialogs.showImageSourceDialog(context);
       if (dialogSource == null) return;
       selectedSource = dialogSource;
     }
@@ -753,7 +754,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     final progressController = StreamController<UploadProgress>();
 
     if (context.mounted) {
-      _imagePickerService.showDetailedUploadDialog(
+      ImagePickerDialogs.showDetailedUploadDialog(
         context,
         progressStream: progressController.stream,
       );
@@ -795,7 +796,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       AppLogger.error('Fel vid bilduppladdning: $e');
       if (context.mounted) {
         Navigator.of(context).pop();
-        _imagePickerService.showImageError(
+        ImagePickerDialogs.showImageError(
           context,
           'Kunde inte ladda upp bild: ${e.toString()}',
         );
@@ -812,7 +813,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     final remainingSlots = maxImages - _imageUrls.length;
 
     if (remainingSlots <= 0) {
-      _imagePickerService.showImageError(
+      ImagePickerDialogs.showImageError(
         context,
         'Du kan max ha $maxImages bilder per recept',
       );
@@ -828,7 +829,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     final progressController = StreamController<UploadProgress>();
 
     if (context.mounted) {
-      _imagePickerService.showDetailedUploadDialog(
+      ImagePickerDialogs.showDetailedUploadDialog(
         context,
         progressStream: progressController.stream,
       );
@@ -888,7 +889,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       AppLogger.error('Fel vid uppladdning av flera bilder: $e');
       if (context.mounted) {
         Navigator.of(context).pop();
-        _imagePickerService.showImageError(
+        ImagePickerDialogs.showImageError(
           context,
           'Kunde inte ladda upp alla bilder: $e',
         );

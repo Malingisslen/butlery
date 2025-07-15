@@ -16,6 +16,7 @@ import '../invitation_target/target_input_widgets.dart';
 import '../invitation_target/target_state_widgets.dart';
 import 'package:provider/provider.dart';
 import '../../models/permissions/edit_mode.dart';
+import '../permissions/edit_mode_ui_helper.dart';
 import '../../viewmodels/recipe_form_viewmodel.dart';
 import '../../viewmodels/collaborative_status_viewmodel.dart';
 
@@ -720,7 +721,7 @@ class SocialComponents {
     required EditMode editMode,
     VoidCallback? onTap,
   }) {
-    final color = editMode.getColor(context);
+    final color = EditModeUIHelper.getColor(editMode, context);
 
     return Container(
       width: double.infinity,
@@ -740,7 +741,7 @@ class SocialComponents {
         child: Row(
           children: [
             Icon(
-              editMode.icon,
+              EditModeUIHelper.getIcon(editMode),
               color: color,
               size: AppTheme.iconSizeAction,
             ),

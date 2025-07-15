@@ -53,6 +53,7 @@ dependencies:
   path_provider: ^2.1.4
   file_picker: ^8.1.2
   path: ^1.9.0
+  flutter_dotenv: ^5.1.0     # För säker API key hantering
 
   # ==================== PARSING & PROCESSING ====================
   html: ^0.15.4
@@ -83,3 +84,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  # Assets
+  assets:
+    - .env

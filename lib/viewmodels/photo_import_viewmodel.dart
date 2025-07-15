@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// ViewModel för foto-OCR import
 /// Stödjer både kamera och galleri
@@ -14,9 +15,9 @@ class PhotoImportViewModel extends ChangeNotifier {
   bool _isProcessing = false;
   String? _error;
 
-  // API-konfiguration
-  static const String _ocrApiKey = 'K86932882588957';
-  static const String _ocrApiUrl = 'https://api.ocr.space/parse/image';
+  // API-konfiguration - nu säkert från environment
+  String get _ocrApiKey => dotenv.env['OCR_API_KEY'] ?? '';
+  String get _ocrApiUrl => dotenv.env['OCR_API_URL'] ?? 'https://api.ocr.space/parse/image';
 
   // Getters
   Uint8List? get imageBytes => _imageBytes;

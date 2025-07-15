@@ -1,7 +1,8 @@
 // lib/viewmodels/menu_viewmodel.dart
 // ✅ INTEGRERAD med social import support
 
-import 'package:flutter/material.dart'; // För Icons i SavedMenuInfo
+import 'package:flutter/foundation.dart';
+import '../constants/icon_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/recipe.dart';
@@ -544,16 +545,17 @@ class SavedMenuInfo {
     return 'Av $originalAuthor';
   }
 
-  IconData get statusIcon {
-    if (isOwned) return Icons.restaurant_menu;
-    if (isModified) return Icons.auto_fix_high;
-    return Icons.person;
+  IconType get statusIcon {
+    if (isOwned) return IconType.restaurantMenu;
+    if (isModified) return IconType.autoFixHigh;
+    return IconType.person;
   }
 
-  Color get attributionColor {
-    if (isOwned) return const Color(0xFF4A7C93);
-    if (isModified) return const Color(0xFF60A5FA);
-    return const Color(0xFF6B7280);
+  // Color should be handled by UI layer - this is just for data identification
+  String get attributionColorType {
+    if (isOwned) return 'owned';
+    if (isModified) return 'modified';
+    return 'shared';
   }
 }
 

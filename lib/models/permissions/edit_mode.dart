@@ -1,8 +1,5 @@
 /// lib/models/permissions/edit_mode.dart
 
-import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
-
 enum EditMode {
   owner, // Äger receptet - kan alltid redigera original
   collaborative, // Kollaborativ redigering - ändringar synkas
@@ -26,32 +23,6 @@ extension EditModeExtension on EditMode {
         return 'Skrivskyddat - du kan spara din egen kopia';
       case EditMode.noAccess:
         return 'Ingen åtkomst';
-    }
-  }
-
-  Color getColor(BuildContext context) {
-    switch (this) {
-      case EditMode.owner:
-        return AppTheme.primaryColor;
-      case EditMode.collaborative:
-        return AppTheme.successColor;
-      case EditMode.readOnlyWithFork:
-        return AppTheme.warningColor;
-      case EditMode.noAccess:
-        return AppTheme.errorColor;
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case EditMode.owner:
-        return Icons.edit;
-      case EditMode.collaborative:
-        return Icons.people;
-      case EditMode.readOnlyWithFork:
-        return Icons.visibility;
-      case EditMode.noAccess:
-        return Icons.block;
     }
   }
 }
