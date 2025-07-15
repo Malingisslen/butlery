@@ -158,18 +158,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               content: Row(
                 children: [
                   SizedBox(
-                    width: 20,
-                    height: 20,
+                    width: AppTheme.iconSize20,
+                    height: AppTheme.iconSize20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.neutralLight),
                     ),
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(width: AppTheme.spacingMd),
                   Text('Synkroniserar...'),
                 ],
               ),
-              duration: Duration(seconds: 30),
+              duration: AppTheme.wait30s,
             ),
           );
         }
@@ -187,7 +187,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             const SnackBar(
               content: Text('✅ Synkronisering klar!'),
               backgroundColor: AppTheme.successColor,
-              duration: Duration(seconds: 2),
+              duration: AppTheme.wait2s,
             ),
           );
         }
@@ -256,13 +256,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 top: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: EdgeInsets.all(AppTheme.spacingXs),
                   decoration: BoxDecoration(
                     color: AppTheme.errorColor,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).colorScheme.surface,
-                      width: 2,
+                      width: AppTheme.strokeWidth2,
                     ),
                   ),
                   constraints: const BoxConstraints(
@@ -271,9 +271,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ),
                   child: Text(
                     totalNotifications > 99 ? '99+' : '$totalNotifications',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
+                    style: AppTheme.microText.copyWith(
+                      color: AppTheme.neutralLight,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -329,8 +328,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     right: 0,
                     top: 0,
                     child: Container(
-                      width: 8,
-                      height: 8,
+                      width: AppTheme.spacingSm,
+                      height: AppTheme.spacingSm,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.error,
                         shape: BoxShape.circle,
@@ -520,7 +519,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               const SnackBar(
                 content: Text('📵 Offline-läge - visar lokala recept'),
                 backgroundColor: AppTheme.warningColor,
-                duration: Duration(seconds: 2),
+                duration: AppTheme.wait2s,
               ),
             );
           }

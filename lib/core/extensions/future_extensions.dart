@@ -2,11 +2,12 @@
 
 import 'dart:async';
 import '../error/failures.dart';
+import '../../theme/app_theme.dart';
 
 extension FutureTimeout<T> on Future<T> {
   /// Lägger till timeout med custom error handling
   Future<T> withTimeout({
-    Duration duration = const Duration(seconds: 30),
+    Duration duration = AppTheme.wait30s,
     String? timeoutMessage,
   }) {
     return timeout(
@@ -24,7 +25,7 @@ extension FutureTimeout<T> on Future<T> {
   /// Kort timeout för snabba operationer
   Future<T> withShortTimeout() {
     return withTimeout(
-      duration: const Duration(seconds: 5),
+      duration: AppTheme.wait5s,
       timeoutMessage:
           'Operationen tog för lång tid. Kontrollera din internetanslutning.',
     );
@@ -33,7 +34,7 @@ extension FutureTimeout<T> on Future<T> {
   /// Lång timeout för uppladdningar eller nedladdningar
   Future<T> withLongTimeout() {
     return withTimeout(
-      duration: const Duration(minutes: 2),
+      duration: AppTheme.wait2m,
       timeoutMessage:
           'Operationen avbröts efter 2 minuter. Försök igen med en mindre fil.',
     );

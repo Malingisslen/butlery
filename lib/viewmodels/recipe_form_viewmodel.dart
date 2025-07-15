@@ -22,6 +22,7 @@ import '../models/permissions/edit_mode.dart';
 import '../models/shared_recipe.dart';
 import '../core/form/form_fields_manager.dart';
 import '../core/utils/logger.dart';
+import '../theme/app_theme.dart';
 
 
 class RecipeFormViewModel extends ChangeNotifier {
@@ -426,7 +427,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     if (_realtimeRecipe == null) return;
 
     // Heartbeat var 30 sekund
-    _presenceTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _presenceTimer = Timer.periodic(AppTheme.wait30s, (timer) {
       _updatePresence('heartbeat');
     });
   }
@@ -499,7 +500,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       // Enkel test-query för att kontrollera Firebase connection
       await _collaborativeRepository
           .fetchRealtimeRecipe(_realtimeRecipe!.id)
-          .timeout(const Duration(seconds: 10));
+          .timeout(AppTheme.wait10s);
 
       // Om vi kommer hit är vi anslutna
       if (!_isConnectedToFirebase) {
@@ -883,7 +884,7 @@ class RecipeFormViewModel extends ChangeNotifier {
         ),
       );
 
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(AppTheme.wait1s);
       AppLogger.info('$uploadedCount bilder uppladdade');
     } catch (e) {
       AppLogger.error('Fel vid uppladdning av flera bilder: $e');

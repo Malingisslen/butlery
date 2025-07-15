@@ -82,8 +82,8 @@ class _AuthViewState extends State<AuthView> {
       children: [
         // App-ikon (kan ersättas med logotyp senare)
         Container(
-          width: 80,
-          height: 80,
+          width: AppTheme.avatarSizeLarge,
+          height: AppTheme.avatarSizeLarge,
           decoration: BoxDecoration(
             color: AppTheme.primaryColor,
             borderRadius: AppTheme.roundRadius,
@@ -91,7 +91,7 @@ class _AuthViewState extends State<AuthView> {
           child: Icon(
             Icons.restaurant_menu,
             size: AppTheme.iconSizeHero,
-            color: Colors.white,
+            color: AppTheme.neutralLight,
           ),
         ),
         AppTheme.mediumGap,

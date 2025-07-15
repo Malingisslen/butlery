@@ -304,21 +304,21 @@ class _UserProfileEditViewContentState
               if (viewModel.isUploadingAvatar)
                 Positioned.fill(
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.black54,
+                      color: AppTheme.overlay,
                     ),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppTheme.smallLoadingIndicator(color: Colors.white),
+                          AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight),
                           SizedBox(height: AppTheme.spacingXs),
                           Text(
                             'Laddar upp...',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.white,
+                                      color: AppTheme.neutralLight,
                                     ),
                           ),
                         ],
@@ -565,10 +565,10 @@ class _UserProfileEditViewContentState
                     size: AppTheme.iconSizeInfo,
                   ),
                   SizedBox(width: AppTheme.spacingXs),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Du har osparade ändringar',
-                      style: TextStyle(fontSize: 12),
+                      style: AppTheme.smallText,
                     ),
                   ),
                 ],

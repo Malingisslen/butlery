@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
 import '../services/content_detector_service.dart';
+import '../theme/app_theme.dart';
 
 /// Resultat från extraktion
 class ExtractionResult {
@@ -38,7 +39,7 @@ class SocialMediaExtractor {
   bool _isDisposed = false;
 
   // Timeout för extraktion - ÖKAD TILL 15 SEKUNDER
-  static const Duration _extractionTimeout = Duration(seconds: 15);
+  static const Duration _extractionTimeout = AppTheme.wait15s;
 
   /// Platform-specifika selektorer (lätt att uppdatera)
   static const Map<SourcePlatform, List<String>> _platformSelectors = {
@@ -152,8 +153,8 @@ class SocialMediaExtractor {
             // Extrahera efter kort fördröjning - ÖKAD TILL 3 SEKUNDER FÖR INSTAGRAM
             final delay =
                 platform == SourcePlatform.instagram
-                    ? const Duration(seconds: 3)
-                    : const Duration(seconds: 2);
+                    ? AppTheme.wait3s
+                    : AppTheme.wait2s;
 
             Future.delayed(delay, () async {
               if (!completer.isCompleted &&
@@ -370,7 +371,7 @@ class SocialMediaExtractor {
       debugPrint('Klick resultat: $clickResult');
 
       // Vänta för att texten ska expandera - ÖKAD VÄNTETID
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(AppTheme.wait3s);
     } catch (e) {
       debugPrint('⚠️ Kunde inte klicka på mer-knappen: $e');
     }

@@ -94,14 +94,14 @@ class NavigationComponents {
     required String statusDescription,
     required String statusEmoji,
     bool showText = false,
-    EdgeInsets padding = const EdgeInsets.all(8),
+    EdgeInsets? padding,
   }) {
     return _RealtimeStatusWidget(
       isOnline: isOnline,
       statusDescription: statusDescription,
       statusEmoji: statusEmoji,
       showText: showText,
-      padding: padding,
+      padding: padding ?? AppTheme.padding8,
     );
   }
 
@@ -345,10 +345,10 @@ class _RecipeSelectorDialog extends StatelessWidget {
         SnackBar(
           content: Text(
             shareMessage,
-            style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+            style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
           ),
           backgroundColor: AppTheme.successColor,
-          duration: const Duration(seconds: 3),
+          duration: AppTheme.wait3s,
         ),
       );
     } else if (!success && context.mounted) {
@@ -356,10 +356,10 @@ class _RecipeSelectorDialog extends StatelessWidget {
         SnackBar(
           content: Text(
             viewModel.error ?? 'Kunde inte dela recept',
-            style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+            style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
           ),
           backgroundColor: AppTheme.errorColor,
-          duration: const Duration(seconds: 3),
+          duration: AppTheme.wait3s,
         ),
       );
     }
@@ -659,9 +659,9 @@ class _RecipeListItem extends StatelessWidget {
                 style: isAlreadyShared
                     ? AppTheme.captionStyle.copyWith(
                         color: AppTheme.sharedRecipeIconColor,
-                        fontSize: 11,
+                        fontSize: AppTheme.microText.fontSize,
                       )
-                    : AppTheme.captionStyle.copyWith(fontSize: 11),
+                    : AppTheme.captionStyle.copyWith(fontSize: AppTheme.microText.fontSize),
               ),
             ],
             if (recipe.portions != null) ...[
@@ -683,9 +683,9 @@ class _RecipeListItem extends StatelessWidget {
                 style: isAlreadyShared
                     ? AppTheme.captionStyle.copyWith(
                         color: AppTheme.sharedRecipeIconColor,
-                        fontSize: 11,
+                        fontSize: AppTheme.microText.fontSize,
                       )
-                    : AppTheme.captionStyle.copyWith(fontSize: 11),
+                    : AppTheme.captionStyle.copyWith(fontSize: AppTheme.microText.fontSize),
               ),
             ],
           ],
@@ -793,7 +793,7 @@ class _MenuRecipeListItem extends StatelessWidget {
               SizedBox(width: AppTheme.spacingXxs),
               Text(
                 '${recipe.timeMinutes} min',
-                style: AppTheme.captionStyle.copyWith(fontSize: 11),
+                style: AppTheme.captionStyle.copyWith(fontSize: AppTheme.microText.fontSize),
               ),
             ],
             if (recipe.portions != null) ...[
@@ -810,7 +810,7 @@ class _MenuRecipeListItem extends StatelessWidget {
               SizedBox(width: AppTheme.spacingXxs),
               Text(
                 '${recipe.portions} port',
-                style: AppTheme.captionStyle.copyWith(fontSize: 11),
+                style: AppTheme.captionStyle.copyWith(fontSize: AppTheme.microText.fontSize),
               ),
             ],
           ],
@@ -875,7 +875,7 @@ class _EditIndicatorWidgetState extends State<_EditIndicatorWidget>
     );
 
     _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: AppTheme.wait2s,
       vsync: this,
     );
 
@@ -950,7 +950,7 @@ class _EditIndicatorWidgetState extends State<_EditIndicatorWidget>
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppTheme.smallText.fontSize,
                     color: color,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1059,7 +1059,7 @@ class _ParticipantListWidget extends StatelessWidget {
           AppTheme.tinyGap,
           Text(
             '$onlineCount online',
-            style: AppTheme.successTextStyle.copyWith(fontSize: 12),
+            style: AppTheme.successTextStyle.copyWith(fontSize: AppTheme.smallText.fontSize),
           ),
         ],
       ),
@@ -1181,14 +1181,14 @@ class _RealtimeStatusWidget extends StatelessWidget {
   final String statusDescription;
   final String statusEmoji;
   final bool showText;
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
 
   const _RealtimeStatusWidget({
     required this.isOnline,
     required this.statusDescription,
     required this.statusEmoji,
     this.showText = false,
-    this.padding = const EdgeInsets.all(8),
+    this.padding,
   });
 
   @override
@@ -1196,7 +1196,7 @@ class _RealtimeStatusWidget extends StatelessWidget {
     return Tooltip(
       message: statusDescription,
       child: Container(
-        padding: padding,
+        padding: padding ?? AppTheme.padding8,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1205,7 +1205,7 @@ class _RealtimeStatusWidget extends StatelessWidget {
               child: Text(
                 statusEmoji,
                 key: ValueKey(statusEmoji),
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: AppTheme.bodyStyle.fontSize),
               ),
             ),
             if (showText) ...[
@@ -1216,10 +1216,10 @@ class _RealtimeStatusWidget extends StatelessWidget {
                   statusDescription,
                   key: ValueKey(statusDescription),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppTheme.smallText.fontSize,
                     color: isOnline
                         ? Theme.of(context).colorScheme.onSurface
-                        : Colors.red,
+                        : AppTheme.errorColor,
                     fontWeight: isOnline ? FontWeight.normal : FontWeight.bold,
                   ),
                 ),
@@ -1253,10 +1253,10 @@ class _RealtimeStatusBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
-      color: Colors.red.withValues(alpha: 0.1),
+      color: AppTheme.errorColor.withValues(alpha: 0.1),
       child: Row(
         children: [
-          Text(statusEmoji, style: const TextStyle(fontSize: 20)),
+          Text(statusEmoji, style: TextStyle(fontSize: AppTheme.iconSizeInfo.toDouble())),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1267,10 +1267,10 @@ class _RealtimeStatusBanner extends StatelessWidget {
                   'Offline',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.red.shade700,
+                    color: AppTheme.errorColor,
                   ),
                 ),
-                Text(statusDescription, style: const TextStyle(fontSize: 14)),
+                Text(statusDescription, style: TextStyle(fontSize: AppTheme.bodyStyle.fontSize)),
               ],
             ),
           ),

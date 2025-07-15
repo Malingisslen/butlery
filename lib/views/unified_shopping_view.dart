@@ -13,12 +13,12 @@ import '../models/user_profile.dart';
 
 // Widgets - MIGRATED: Using LayoutComponents
 import '../widgets/common/layout_components.dart';
-import '../widgets/common/state_widget.dart';
-import '../widgets/common/universal_share_dialog.dart';
-import '../widgets/common/input_components.dart';
 
 // Theme
 import '../theme/app_theme.dart';
+import '../widgets/common/state_widget.dart';
+import '../widgets/common/universal_share_dialog.dart';
+import '../widgets/common/input_components.dart';
 
 // Core
 import '../core/injection.dart';
@@ -102,7 +102,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                     child: IconButton(
                       icon: Icon(
                         viewModel.isOnline ? Icons.cloud_done : Icons.cloud_off,
-                        color: viewModel.isOnline ? Colors.green : Colors.grey,
+                        color: viewModel.isOnline ? AppTheme.successColor : AppTheme.neutralMedium,
                       ),
                       onPressed: () => _showSyncStatus(viewModel),
                       tooltip: viewModel.isOnline ? 'Online' : 'Offline',
@@ -116,16 +116,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _showAddItemDialog(),
           backgroundColor: AppTheme.primaryColor,
-          foregroundColor: Colors.white,
+          foregroundColor: AppTheme.neutralLight,
           elevation: AppTheme.elevationHigh,
           icon: AppTheme.actionIcon(
             context,
             Icons.add,
-            color: Colors.white,
+            color: AppTheme.neutralLight,
           ),
           label: Text(
             'Lägg till vara',
-            style: AppTheme.buttonTextStyle.copyWith(color: Colors.white),
+            style: AppTheme.buttonTextStyle.copyWith(color: AppTheme.neutralLight),
           ),
         ),
         body: Consumer<UnifiedShoppingViewModel>(
@@ -153,12 +153,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Widget _buildListHeader(UnifiedShoppingViewModel viewModel) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: AppTheme.screenPadding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.neutralLight,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.2),
+            color: AppTheme.neutralMedium.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -173,16 +173,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: AppTheme.neutralLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppTheme.neutralMedium.withValues(alpha: 0.3)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: viewModel.activeList?.id,
                 hint: const Text('Välj lista'),
                 isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
+                icon: Icon(Icons.arrow_drop_down, color: AppTheme.neutralMedium),
                 onChanged: (listId) {
                   if (listId != null) {
                     viewModel.setActiveList(listId);
@@ -245,7 +245,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: AppTheme.screenPadding,
       children: [
         // Aktiva artiklar - grupperade per kategori
         ...activeItemsByCategory.entries
@@ -296,10 +296,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               Text(
                 category,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: AppTheme.bodyStyle.fontSize,
                   fontWeight: FontWeight.w600,
                   color: isCompleted
-                      ? Colors.grey.shade600
+                      ? AppTheme.neutralMedium
                       : AppTheme.primaryColor,
                 ),
               ),
@@ -307,17 +307,17 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: (isCompleted ? Colors.grey : AppTheme.primaryColor)
+                  color: (isCompleted ? AppTheme.neutralMedium : AppTheme.primaryColor)
                       .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${items.length}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppTheme.smallText.fontSize,
                     fontWeight: FontWeight.w500,
                     color: isCompleted
-                        ? Colors.grey.shade600
+                        ? AppTheme.neutralMedium
                         : AppTheme.primaryColor,
                   ),
                 ),
@@ -371,7 +371,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     return Icon(
       iconData,
       size: 18,
-      color: isCompleted ? Colors.grey.shade600 : AppTheme.primaryColor,
+      color: isCompleted ? AppTheme.neutralMedium : AppTheme.primaryColor,
     );
   }
 
@@ -381,7 +381,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         Icon(
           Icons.check_circle,
           size: 20,
-          color: Colors.green.shade600,
+          color: AppTheme.successColor,
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -391,16 +391,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               Text(
                 'Inhandlade varor',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: AppTheme.bodyStyle.fontSize,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.neutralMedium,
                 ),
               ),
               Text(
                 '${viewModel.boughtItems} varor',
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
+                  fontSize: AppTheme.smallText.fontSize,
+                  color: AppTheme.neutralMedium,
                 ),
               ),
             ],
@@ -408,10 +408,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         ),
         TextButton.icon(
           onPressed: () => _clearBoughtItemsWithConfirmation(viewModel),
-          icon: Icon(Icons.delete, size: 18, color: Colors.grey.shade600),
+          icon: Icon(Icons.delete, size: 18, color: AppTheme.neutralMedium),
           label: Text(
             'Töm',
-            style: TextStyle(color: Colors.grey.shade600),
+            style: TextStyle(color: AppTheme.neutralMedium),
           ),
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -435,7 +435,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         ),
         child: const Icon(
           Icons.delete,
-          color: Colors.white,
+          color: AppTheme.neutralLight,
         ),
       ),
       onDismissed: (direction) {
@@ -459,7 +459,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
+          contentPadding: AppTheme.screenPadding,
           leading: Checkbox(
             value: item.bought,
             onChanged: (_) => viewModel.toggleItemBought(item.id),
@@ -473,12 +473,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
             style: item.bought
                 ? TextStyle(
                     decoration: TextDecoration.lineThrough,
-                    color: Colors.grey.shade500,
-                    fontSize: 16,
+                    color: AppTheme.neutralMedium,
+                    fontSize: AppTheme.bodyStyle.fontSize,
                   )
-                : const TextStyle(
+                : TextStyle(
                     fontWeight: FontWeight.w500,
-                    fontSize: 16,
+                    fontSize: AppTheme.bodyStyle.fontSize,
                   ),
           ),
           trailing: item.bought
@@ -486,7 +486,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               : IconButton(
                   icon: Icon(
                     Icons.edit,
-                    color: Colors.grey.shade400,
+                    color: AppTheme.neutralMedium,
                     size: 20,
                   ),
                   onPressed: () => _showEditItemDialog(item),
@@ -758,7 +758,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         duration: AppTheme.animationDurationDelay,
         action: SnackBarAction(
           label: 'OK',
-          textColor: Colors.white,
+          textColor: AppTheme.neutralLight,
           onPressed: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },

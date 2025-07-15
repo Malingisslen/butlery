@@ -563,12 +563,12 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
         statusText = 'Avböjd';
         break;
       case FriendRequestStatus.expired:
-        statusColor = Colors.grey;
+        statusColor = AppTheme.neutralMedium;
         statusIcon = Icons.timer_off;
         statusText = 'Utgången';
         break;
       default:
-        statusColor = Colors.grey;
+        statusColor = AppTheme.neutralMedium;
         statusIcon = Icons.help;
         statusText = 'Okänd status';
     }

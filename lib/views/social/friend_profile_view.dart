@@ -21,7 +21,7 @@ class FriendProfileView extends StatelessWidget {
       appBar: AppBar(
         title: Text(friend.displayName),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.neutralLight,
       ),
       body: SingleChildScrollView(
         padding: AppTheme.screenPadding,

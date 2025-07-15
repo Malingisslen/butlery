@@ -423,7 +423,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                              AppTheme.neutralLight,
                             ),
                           ),
                         ),
@@ -431,7 +431,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                         Text(
                           'Skickar...',
                           style: AppTheme.buttonTextStyle.copyWith(
-                            color: Colors.white,
+                            color: AppTheme.neutralLight,
                           ),
                         ),
                       ],
@@ -439,7 +439,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                   : Text(
                       'Skicka ${viewModel.selectedCount} inbjudningar',
                       style: AppTheme.buttonTextStyle.copyWith(
-                        color: Colors.white,
+                        color: AppTheme.neutralLight,
                       ),
                     ),
             ),

@@ -356,7 +356,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             // Loading overlay
             if (viewModel.isDeleting)
               Container(
-                color: Colors.black26,
+                color: AppTheme.overlayLight,
                 child: Center(
                   child: Container(
                     padding: AppTheme.cardPadding,
@@ -420,18 +420,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               children: List.generate(5, (i) {
                 final rating = viewModel.recipe.rating!;
                 if (i + 1 <= rating) {
-                  return Icon(Icons.star, color: AppTheme.starColor, size: 20);
+                  return Icon(Icons.star, color: AppTheme.starColor, size: AppTheme.iconSize20);
                 } else if (i + 0.5 <= rating) {
                   return Icon(
                     Icons.star_half,
                     color: AppTheme.starColor,
-                    size: 20,
+                    size: AppTheme.iconSize20,
                   );
                 }
                 return Icon(
                   Icons.star_border,
                   color: AppTheme.starColor,
-                  size: 20,
+                  size: AppTheme.iconSize20,
                 );
               }),
             ),
@@ -612,9 +612,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   child: Center(
                     child: Text(
                       '${index + 1}',
-                      style: TextStyle(
+                      style: AppTheme.smallText.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -773,7 +772,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
                       return Container(
                         padding: EdgeInsets.all(AppTheme.spacingSm),
-                        color: Colors.yellow[100],
+                        color: AppTheme.warningLight,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1137,9 +1136,9 @@ class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.dark,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppTheme.transparent,
         elevation: 0,
         title: Text('${_currentIndex + 1} / ${widget.imageUrls.length}'),
       ),

@@ -31,24 +31,24 @@ class ImagePickerDialogs {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: AppTheme.padding20,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
+              width: AppTheme.avatarSizeMedium,
               height: 5,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: Colors.grey[400],
+                color: AppTheme.neutralMedium,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            const Text(
+            Text(
               'Välj bildkälla',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: AppTheme.displaySmall.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppTheme.spacingLg),
             ListTile(
               leading: const Icon(Icons.camera_alt, size: 28),
               title: const Text('Ta foto'),
@@ -70,7 +70,7 @@ class ImagePickerDialogs {
                 Navigator.pop(context, ImageSource.gallery);
               },
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppTheme.spacingLg),
           ],
         ),
       ),

@@ -616,7 +616,7 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
           onPressed: () => Navigator.of(context).pop(selectedTargets),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryColor,
-            foregroundColor: Colors.white,
+            foregroundColor: AppTheme.neutralLight,
             shape: RoundedRectangleBorder(
               borderRadius: AppTheme.mediumRadius,
             ),
@@ -624,7 +624,7 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
           child: Text(
             'Välj (${selectedTargets.length})',
             style: AppTheme.buttonTextStyle.copyWith(
-              color: Colors.white,
+              color: AppTheme.neutralLight,
             ),
           ),
         ),

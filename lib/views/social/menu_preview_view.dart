@@ -441,7 +441,7 @@ class MenuPreviewView extends StatelessWidget {
         SnackBar(
           content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
           backgroundColor: AppTheme.successColor,
-          duration: const Duration(seconds: 3),
+          duration: AppTheme.wait3s,
         ),
       );
 

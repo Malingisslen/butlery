@@ -475,7 +475,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   child: Center(
                     child: Text(
                       invitation.groupEmoji,
-                      style: const TextStyle(fontSize: 20),
+                      style: AppTheme.displaySmall,
                     ),
                   ),
                 ),
@@ -568,7 +568,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
           child: Text(
             group.emoji ?? '👥',
-            style: const TextStyle(fontSize: 20),
+            style: AppTheme.displaySmall,
           ),
         ),
         title: Text(

@@ -99,7 +99,7 @@ class InputComponents {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.transparent,
       builder: (context) => _ShoppingListSelector(
         onListSelected: onListSelected,
         menu: menu,
@@ -966,7 +966,7 @@ class _PortionScalerState extends State<_PortionScaler>
     required VoidCallback? onPressed,
   }) {
     return Material(
-      color: Colors.transparent,
+      color: AppTheme.transparent,
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -1441,7 +1441,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
             children: [
               Text(
                 list.syncStatusEmoji,
-                style: AppTheme.captionStyle.copyWith(fontSize: 10),
+                style: AppTheme.captionStyle.copyWith(fontSize: AppTheme.microText.fontSize),
               ),
               AppTheme.tinyGap,
               Text(
@@ -1634,7 +1634,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
               content: Text(
                   'Lade till ${ingredientItems.length} ingredienser från menyn'),
               backgroundColor: AppTheme.successColor,
-              duration: const Duration(seconds: 3),
+              duration: AppTheme.wait3s,
             ),
           );
         }
@@ -1785,7 +1785,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Listnamn krävs',
-                style: AppTheme.bodyStyle.copyWith(color: Colors.white)),
+                style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight)),
             backgroundColor: AppTheme.warningColor,
           ),
         );
@@ -1799,7 +1799,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Lista "$name" skapad!',
-                  style: AppTheme.bodyStyle.copyWith(color: Colors.white)),
+                  style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight)),
               backgroundColor: AppTheme.successColor,
             ),
           );
@@ -1812,7 +1812,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
             SnackBar(
               content: Text(
                 'Kunde inte skapa lista: ${viewModel.error ?? "Okänt fel"}',
-                style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+                style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
               ),
               backgroundColor: AppTheme.errorColor,
             ),
@@ -1882,7 +1882,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
               success
                   ? 'Lista omdöpt till "$result"'
                   : 'Kunde inte byta namn: ${viewModel.error ?? "Okänt fel"}',
-              style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+              style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
             ),
             backgroundColor:
                 success ? AppTheme.successColor : AppTheme.errorColor,
@@ -1900,7 +1900,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
       SnackBar(
         content: Text(
           'Lista exporterad! ${exportText.length} tecken',
-          style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+          style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
         ),
         backgroundColor: AppTheme.successColor,
       ),
@@ -1950,7 +1950,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
               success
                   ? 'Lista "${list.name}" borttagen'
                   : 'Kunde inte ta bort lista: ${viewModel.error ?? "Okänt fel"}',
-              style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+              style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
             ),
             backgroundColor:
                 success ? AppTheme.successColor : AppTheme.errorColor,

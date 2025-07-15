@@ -9,6 +9,7 @@ import '../services/realtime/realtime_menu_service.dart';
 import '../services/realtime_sync_service.dart';
 import '../services/auth_service.dart';
 import '../core/utils/logger.dart';
+import '../theme/app_theme.dart';
 import 'realtime/optimistic_update_manager.dart';
 import 'realtime/participant_tracker.dart';
 import 'realtime/connection_monitor.dart';
@@ -386,7 +387,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
       AppLogger.info('🤖 Regenererar kategori: $categoryName');
 
       // Placeholder - här skulle du anropa AI-service för att generera nya recept
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(AppTheme.wait2s);
 
       // När AI-integration är klar:
       // final newRecipes = await _aiService.generateRecipesForCategory(categoryName);

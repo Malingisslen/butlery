@@ -127,7 +127,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         const SnackBar(
           content: Text('Veckomeny delad!'),
           backgroundColor: AppTheme.successColor,
-          duration: Duration(seconds: 2),
+          duration: AppTheme.wait2s,
         ),
       );
     }
@@ -327,7 +327,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             // Loading overlay
             if (viewModel.isGenerating)
               Container(
-                color: Colors.black26,
+                color: AppTheme.overlayLight,
                 child: Center(
                   child: Container(
                     padding: AppTheme.cardPadding,

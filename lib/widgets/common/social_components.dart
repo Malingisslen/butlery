@@ -830,7 +830,7 @@ class SocialComponents {
       child: Row(
         children: [
           if (statusEmoji != null) ...[
-            Text(statusEmoji, style: TextStyle(fontSize: 20)),
+            Text(statusEmoji, style: TextStyle(fontSize: AppTheme.iconSizeInfo.toDouble())),
             SizedBox(width: AppTheme.spacingSm),
           ],
           Expanded(
@@ -1557,7 +1557,7 @@ class _PulsingDotState extends State<_PulsingDot>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 1),
+      duration: AppTheme.wait1s,
       vsync: this,
     );
     _animation = Tween<double>(begin: 0.5, end: 1.0).animate(
@@ -1799,7 +1799,7 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
             child: FilledButton(
               onPressed: _isCreating ? null : _createGroup,
               child: _isCreating
-                  ? AppTheme.smallLoadingIndicator(color: Colors.white)
+                  ? AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight)
                   : const Text('Skapa grupp'),
             ),
           ),
@@ -1822,7 +1822,7 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
 
     try {
       // Simulera gruppskaping - här skulle du använda din service
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(AppTheme.wait1s);
 
       if (mounted) {
         // Skapa mock FriendCategory för att returnera
@@ -2077,7 +2077,7 @@ class _EditGroupDialogState extends State<_EditGroupDialog> {
             child: FilledButton(
               onPressed: _isSaving ? null : _saveChanges,
               child: _isSaving
-                  ? AppTheme.smallLoadingIndicator(color: Colors.white)
+                  ? AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight)
                   : const Text('Spara ändringar'),
             ),
           ),
@@ -2091,7 +2091,7 @@ class _EditGroupDialogState extends State<_EditGroupDialog> {
 
     try {
       // Simulera sparande
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(AppTheme.wait1s);
 
       if (mounted) {
         // Skapa uppdaterat group objekt
@@ -2168,7 +2168,7 @@ class _DeleteGroupDialogState extends State<_DeleteGroupDialog> {
                     ),
                     child: Center(
                         child: Text(widget.group.emoji ?? '👥',
-                            style: const TextStyle(fontSize: 20))),
+                            style: TextStyle(fontSize: AppTheme.iconSizeInfo.toDouble()))),
                   ),
                   AppTheme.mediumHorizontalGap,
                   Expanded(
@@ -2229,7 +2229,7 @@ class _DeleteGroupDialogState extends State<_DeleteGroupDialog> {
               (_isDeleting || !_confirmationChecked) ? null : _deleteGroup,
           style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
           child: _isDeleting
-              ? AppTheme.smallLoadingIndicator(color: Colors.white)
+              ? AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight)
               : const Text('Ta bort grupp'),
         ),
       ],
@@ -2241,7 +2241,7 @@ class _DeleteGroupDialogState extends State<_DeleteGroupDialog> {
 
     try {
       // Simulera borttagning
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(AppTheme.wait1s);
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -2345,7 +2345,7 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
           onPressed: _isRemoving ? null : _removeMember,
           style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
           child: _isRemoving
-              ? AppTheme.smallLoadingIndicator(color: Colors.white)
+              ? AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight)
               : const Text('Ta bort medlem'),
         ),
       ],
@@ -2357,7 +2357,7 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
 
     try {
       // Simulera medlemsborttagning
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(AppTheme.wait1s);
 
       if (mounted) {
         Navigator.pop(context, true);

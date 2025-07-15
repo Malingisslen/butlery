@@ -11,11 +11,12 @@ import 'dart:convert';
 import '../../models/unified/unified_shopping_item.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../core/utils/logger.dart';
+import '../../theme/app_theme.dart';
 
 class UnifiedShoppingService extends ChangeNotifier {
   static const String _hiveBoxName = 'unified_shopping_lists_cache';
   static const String _activeListKey = 'active_list_id';
-  static const Duration _syncDebounce = Duration(seconds: 2);
+  static const Duration _syncDebounce = AppTheme.wait2s;
 
 final FirestoreRepository _firestoreRepository;
 final AuthRepository _authRepository;
