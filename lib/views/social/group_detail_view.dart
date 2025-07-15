@@ -224,7 +224,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
                   child: Center(
                     child: Text(
                       group.emoji ?? '👥',
-                      style: const TextStyle(fontSize: 32),
+                      style: AppTheme.displayLarge,
                     ),
                   ),
                 ),
@@ -446,7 +446,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1),
+                  border: Border.all(color: AppTheme.neutralLight, width: 1),
                 ),
               ),
             ),
@@ -1029,8 +1029,8 @@ class _GroupDetailViewState extends State<GroupDetailView> {
         title: Text(_group!.name),
         actions: [
           if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: AppTheme.screenPadding,
               child: SizedBox(
                 width: 20,
                 height: 20,

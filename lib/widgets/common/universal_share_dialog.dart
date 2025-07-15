@@ -139,7 +139,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       value: widget.viewModel,
       child: Consumer<UniversalShareDialogViewModel>(
         builder: (context, viewModel, child) => Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.transparent,
       child: Container(
         constraints: BoxConstraints(
           maxWidth:
@@ -152,7 +152,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           borderRadius: AppTheme.largeRadius, // ✅ AppTheme radius
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: AppTheme.overlay.withValues(alpha: 0.1),
               blurRadius: AppTheme.elevationHigh * 2.5, // ✅ AppTheme elevation
               offset: Offset(
                   0, AppTheme.elevationMedium + 6), // ✅ AppTheme elevation
@@ -467,7 +467,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                     .colorScheme
                     .primaryContainer
                     .withValues(alpha: 0.3)
-                : Colors.transparent,
+                : AppTheme.transparent,
             child: InkWell(
               onTap:
                   widget.viewModel.isSharing ? null : () => _toggleFriendSelection(friend.uid),

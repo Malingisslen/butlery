@@ -787,7 +787,7 @@ class _SkeletonBoxState extends State<_SkeletonBox>
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [Colors.grey[300]!, Colors.grey[100]!, Colors.grey[300]!],
+          colors: [AppTheme.neutralMedium, AppTheme.neutralLight, AppTheme.neutralMedium],
           stops: const [0.0, 0.5, 1.0],
           transform: _GradientRotation(_shimmerController),
         ),

@@ -160,7 +160,7 @@ class GroupInvitationsView extends StatelessWidget {
                       group.emoji ?? '👥',
                       // ✅ KORRIGERAT: Använd befintlig textStyle och lägg till emoji-specifika egenskaper
                       style: AppTheme.cardTitleStyle.copyWith(
-                        fontSize: 24,
+                        fontSize: AppTheme.displayMedium.fontSize,
                         fontWeight: FontWeight.normal,
                       ),
                     ),
@@ -200,13 +200,13 @@ class GroupInvitationsView extends StatelessWidget {
                       ? Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            AppTheme.smallLoadingIndicator(color: Colors.white),
+                            AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight),
                             // ✅ KORRIGERAT: Använd tinyHorizontalGap som finns
                             SizedBox(width: AppTheme.spacingXs),
                             Text(
                               'Går med...',
                               style: AppTheme.buttonTextStyle.copyWith(
-                                color: Colors.white,
+                                color: AppTheme.neutralLight,
                               ),
                             ),
                           ],
@@ -214,7 +214,7 @@ class GroupInvitationsView extends StatelessWidget {
                       : Text(
                           'Gå med',
                           style: AppTheme.buttonTextStyle.copyWith(
-                            color: Colors.white,
+                            color: AppTheme.neutralLight,
                           ),
                         ),
                 ),
@@ -370,7 +370,7 @@ class GroupInvitationsView extends StatelessWidget {
             style: AppTheme.primaryButtonStyle,
             child: Text(
               'Gå med',
-              style: AppTheme.buttonTextStyle.copyWith(color: Colors.white),
+              style: AppTheme.buttonTextStyle.copyWith(color: AppTheme.neutralLight),
             ),
           ),
         ],

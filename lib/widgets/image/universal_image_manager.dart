@@ -643,20 +643,19 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
+                color: AppTheme.overlay.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(6.0),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.collections,
-                      size: 12.0, color: Colors.white),
+                      size: 12.0, color: AppTheme.neutralLight),
                   const SizedBox(width: 2.0),
                   Text(
                     '${widget.imageUrls!.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10.0,
+                    style: AppTheme.microText.copyWith(
+                      color: AppTheme.neutralLight,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -702,9 +701,9 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Bilder',
-              style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
+              style: AppTheme.bodyStyle.copyWith(fontWeight: FontWeight.w500),
             ),
             if (widget.canEdit &&
                 imageUrls.isNotEmpty &&
@@ -837,7 +836,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
                     'Huvudbild',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: 12.0,
+                      fontSize: AppTheme.smallText.fontSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -854,14 +853,13 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
+                color: AppTheme.overlay.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(12.0),
               ),
               child: Text(
                 '${index + 1} / ${widget.imageUrls!.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.0,
+                style: AppTheme.smallText.copyWith(
+                  color: AppTheme.neutralLight,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -914,7 +912,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
     final isPrimary = currentIndex == 0;
 
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: AppTheme.padding8,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8.0),
@@ -997,7 +995,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
                   label,
                   style: TextStyle(
                     color: foregroundColor,
-                    fontSize: 12.0,
+                    fontSize: AppTheme.smallText.fontSize,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
@@ -1075,12 +1073,12 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
                       child: Container(
                         padding: const EdgeInsets.all(4.0),
                         decoration: const BoxDecoration(
-                          color: Colors.red,
+                          color: AppTheme.errorColor,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: AppTheme.neutralLight,
                           size: 16.0,
                         ),
                       ),
@@ -1167,8 +1165,8 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentIndex == index
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.5),
+                        ? AppTheme.neutralLight
+                        : AppTheme.neutralLight.withValues(alpha: 0.5),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x4D000000),
@@ -1190,14 +1188,13 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
+                color: AppTheme.overlay.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(6.0),
               ),
               child: Text(
                 '${_currentIndex + 1}/${imageUrls.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.0,
+                style: AppTheme.smallText.copyWith(
+                  color: AppTheme.neutralLight,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1231,14 +1228,14 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       width: _imageWidth,
       height: _imageHeight,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppTheme.neutralMedium,
         borderRadius: widget.config.borderRadius,
       ),
       child: Center(
         child: Icon(
           icon,
           size: (_imageWidth * 0.4).clamp(16.0, 48.0),
-          color: Colors.grey[600],
+          color: AppTheme.neutralDark,
         ),
       ),
     );
@@ -1250,7 +1247,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       width: _imageWidth,
       height: _imageHeight,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppTheme.neutralMedium,
         borderRadius: widget.config.borderRadius,
       ),
       child: Center(
@@ -1269,7 +1266,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       width: _imageWidth,
       height: _imageHeight,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppTheme.neutralMedium,
         borderRadius: widget.config.borderRadius,
       ),
       child: Column(
@@ -1278,7 +1275,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
           Icon(
             Icons.broken_image,
             size: (_imageWidth * 0.3).clamp(16.0, 32.0),
-            color: Colors.grey[600],
+            color: AppTheme.neutralDark,
           ),
           if (_imageWidth > 60.0) ...[
             const SizedBox(height: 2.0),
@@ -1286,7 +1283,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
               'Bild saknas',
               style: TextStyle(
                 fontSize: (_imageWidth * 0.12).clamp(8.0, 12.0),
-                color: Colors.grey[600],
+                color: AppTheme.neutralDark,
               ),
             ),
           ],

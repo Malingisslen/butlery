@@ -46,7 +46,7 @@ class TargetDisplayWidgets {
       ),
       decoration: decoration,
       child: Material(
-        color: Colors.transparent,
+        color: AppTheme.transparent,
         child: InkWell(
           onTap: isDisabled ? null : onTap,
           borderRadius: AppTheme.largeRadius,
@@ -88,7 +88,7 @@ class TargetDisplayWidgets {
         border: Border.all(color: AppTheme.dividerColor),
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppTheme.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: AppTheme.chipRadius,
@@ -100,7 +100,7 @@ class TargetDisplayWidgets {
                 // Emoji
                 Text(
                   target.displayEmoji,
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: AppTheme.bodyStyle.fontSize),
                 ),
                 const SizedBox(width: 4),
 
@@ -203,7 +203,7 @@ class TargetDisplayWidgets {
           if (showEmoji) ...[
             Text(
               target.displayEmoji,
-              style: const TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: AppTheme.smallText.fontSize),
             ),
             const SizedBox(width: 4),
           ],
@@ -244,7 +244,7 @@ class TargetDisplayWidgets {
     return Container(
       decoration: decoration,
       child: Material(
-        color: Colors.transparent,
+        color: AppTheme.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: AppTheme.largeRadius,
@@ -256,7 +256,7 @@ class TargetDisplayWidgets {
                 // Emoji
                 Text(
                   target.displayEmoji,
-                  style: const TextStyle(fontSize: 32),
+                  style: TextStyle(fontSize: AppTheme.displayLarge.fontSize),
                 ),
                 const SizedBox(width: 8),
 
@@ -432,7 +432,7 @@ class TargetDisplayWidgets {
       child: Center(
         child: Text(
           target.displayEmoji,
-          style: const TextStyle(fontSize: 20),
+          style: TextStyle(fontSize: AppTheme.iconSizeInfo.toDouble()),
         ),
       ),
     );
@@ -450,7 +450,7 @@ class TargetDisplayWidgets {
       child: Center(
         child: Text(
           target.displayEmoji,
-          style: const TextStyle(fontSize: 16),
+          style: TextStyle(fontSize: AppTheme.bodyStyle.fontSize),
         ),
       ),
     );

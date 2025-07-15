@@ -230,7 +230,7 @@ class UtilityComponents {
     }
 
     final overlay = Container(
-      color: overlayColor ?? Colors.black.withValues(alpha: 0.3),
+      color: overlayColor ?? AppTheme.overlay.withValues(alpha: 0.3),
       child: Center(
         child: Container(
           padding: AppTheme.cardPadding,
@@ -554,14 +554,14 @@ class UtilityComponents {
             Expanded(
               child: Text(
                 message,
-                style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+                style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
               ),
             ),
           ],
         ),
         backgroundColor: AppTheme.successColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: AppTheme.wait3s,
       ),
     );
   }
@@ -577,14 +577,14 @@ class UtilityComponents {
             Expanded(
               child: Text(
                 message,
-                style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+                style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
               ),
             ),
           ],
         ),
         backgroundColor: AppTheme.errorColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
+        duration: AppTheme.snackbarDuration,
       ),
     );
   }
@@ -604,14 +604,14 @@ class UtilityComponents {
             Expanded(
               child: Text(
                 message,
-                style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+                style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
               ),
             ),
           ],
         ),
         backgroundColor: AppTheme.warningColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
+        duration: AppTheme.snackbarDuration,
       ),
     );
   }
@@ -869,7 +869,7 @@ class _FriendCategoryManagerWidgetState
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Colors.white.withValues(alpha: 0.8)
+                          ? AppTheme.neutralLight.withValues(alpha: 0.8)
                           : Theme.of(context)
                               .colorScheme
                               .primary
@@ -990,7 +990,7 @@ class _FriendCategoryManagerWidgetState
                           vertical: AppTheme.spacingXxs,
                         ),
                         activeColor: Theme.of(context).colorScheme.primary,
-                        checkColor: Colors.white,
+                        checkColor: AppTheme.neutralLight,
                       ),
                     );
                   },
@@ -1020,7 +1020,7 @@ class _FriendCategoryManagerWidgetState
             ),
             child: Icon(
               Icons.group,
-              color: Colors.white,
+              color: AppTheme.neutralLight,
               size: AppTheme.iconSizeInfo,
             ),
           ),

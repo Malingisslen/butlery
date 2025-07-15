@@ -314,7 +314,7 @@ class _CreateSharedShoppingListViewState
                     ? () => _createSharedList(context, viewModel)
                     : null,
                 icon: viewModel.isCreating
-                    ? AppTheme.smallLoadingIndicator(color: Colors.white)
+                    ? AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight)
                     : const Icon(Icons.group_add),
                 label: Text(viewModel.createButtonText),
               ),

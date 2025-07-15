@@ -10,10 +10,11 @@ import 'dart:convert';
 import '../../models/unified/unified_recipe.dart';
 import '../../models/recipe.dart'; // För backwards compatibility
 import '../../core/utils/logger.dart';
+import '../../theme/app_theme.dart';
 
 class UnifiedRecipeService extends ChangeNotifier {
   static const String _hiveBoxName = 'unified_recipes_cache';
-  static const Duration _syncDebounce = Duration(seconds: 2);
+  static const Duration _syncDebounce = AppTheme.wait2s;
 
 final FirebaseFirestore _firestore;
 final FirebaseAuthRepository _authRepository;

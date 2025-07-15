@@ -110,7 +110,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                   right: 6,
                   top: 6,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(AppTheme.spacingXs),
                     decoration: BoxDecoration(
                       color: AppTheme.errorColor,
                       shape: BoxShape.circle,
@@ -121,9 +121,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                     ),
                     child: Text(
                       '${viewModel.totalUnreadCount}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                      style: AppTheme.smallText.copyWith(
+                        color: AppTheme.neutralLight,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -208,9 +207,9 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                       ),
                       child: Text(
                         '${viewModel.unreadRecipesCount}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
+                        style: TextStyle(
+                          color: AppTheme.neutralLight,
+                          fontSize: AppTheme.microText.fontSize,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -237,9 +236,9 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                       ),
                       child: Text(
                         '${viewModel.unreadMenusCount}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
+                        style: TextStyle(
+                          color: AppTheme.neutralLight,
+                          fontSize: AppTheme.microText.fontSize,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -255,7 +254,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
           ),
           labelColor: Theme.of(context).colorScheme.onPrimary,
           unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          dividerColor: Colors.transparent,
+          dividerColor: AppTheme.transparent,
         ),
       ),
     );

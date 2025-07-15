@@ -170,7 +170,7 @@ class UserDisplayWidgets {
 
     return onTap != null
         ? Material(
-            color: Colors.transparent,
+            color: AppTheme.transparent,
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(avatarSize / 2),

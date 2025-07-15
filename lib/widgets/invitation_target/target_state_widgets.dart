@@ -172,7 +172,7 @@ class TargetStateWidgets {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.errorColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.neutralLight,
                 shape: RoundedRectangleBorder(
                   borderRadius: AppTheme.mediumRadius,
                 ),
@@ -470,7 +470,7 @@ class TargetStateWidgets {
               onPressed: onContinue,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.successColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.neutralLight,
                 shape: RoundedRectangleBorder(
                   borderRadius: AppTheme.mediumRadius,
                 ),
@@ -478,7 +478,7 @@ class TargetStateWidgets {
               child: Text(
                 'Fortsätt',
                 style: AppTheme.buttonTextStyle.copyWith(
-                  color: Colors.white,
+                  color: AppTheme.neutralLight,
                 ),
               ),
             ),
@@ -614,7 +614,7 @@ class TargetStateWidgets {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.warningColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.neutralLight,
                 shape: RoundedRectangleBorder(
                   borderRadius: AppTheme.mediumRadius,
                 ),
@@ -669,7 +669,7 @@ class TargetStateWidgets {
               onPressed: onAction,
               style: ElevatedButton.styleFrom(
                 backgroundColor: stateColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.neutralLight,
                 shape: RoundedRectangleBorder(
                   borderRadius: AppTheme.mediumRadius,
                 ),
@@ -677,7 +677,7 @@ class TargetStateWidgets {
               child: Text(
                 actionLabel,
                 style: AppTheme.buttonTextStyle.copyWith(
-                  color: Colors.white,
+                  color: AppTheme.neutralLight,
                 ),
               ),
             ),

@@ -599,7 +599,7 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
                 child: Icon(
                   Icons.restaurant_menu,
                   size: AppTheme.iconSizeHero,
-                  color: Colors.white,
+                  color: AppTheme.neutralLight,
                 ),
               ),
               AppTheme.largeGap,
@@ -656,7 +656,7 @@ class AuthWrapper extends StatelessWidget {
                     child: Icon(
                       Icons.restaurant_menu,
                       size: AppTheme.iconSizeHero,
-                      color: Colors.white,
+                      color: AppTheme.neutralLight,
                     ),
                   ),
                   AppTheme.largeGap,

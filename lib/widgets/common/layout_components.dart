@@ -111,7 +111,7 @@ class LayoutComponents {
   }) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.transparent,
       isScrollControlled: true,
       builder: (context) => LayoutComponents.profileMenu(
         userImageUrl: userImageUrl,
@@ -343,14 +343,14 @@ class _OfflineIndicator extends StatelessWidget {
             children: [
               Icon(
                 Icons.wifi_off,
-                color: Colors.white,
+                color: AppTheme.neutralLight,
                 size: AppTheme.iconSizeSmall,
               ),
               AppTheme.smallHorizontalGap,
               Text(
                 message ?? 'Offline-läge - Ändringar sparas lokalt',
                 style: AppTheme.bodyStyle.copyWith(
-                  color: Colors.white,
+                  color: AppTheme.neutralLight,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -737,7 +737,7 @@ Widget _buildProfileHeader(BuildContext context) {
           Text(
             'Social',
             style: AppTheme.sectionTitleStyle.copyWith(
-              fontSize: 18,
+              fontSize: AppTheme.displaySmall.fontSize,
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
@@ -804,7 +804,7 @@ Widget _buildProfileHeader(BuildContext context) {
           Text(
             'Data & Backup',
             style: AppTheme.sectionTitleStyle.copyWith(
-              fontSize: 18,
+              fontSize: AppTheme.displaySmall.fontSize,
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
@@ -979,7 +979,7 @@ Widget _buildProfileHeader(BuildContext context) {
                             ? '99+'
                             : notificationCount.toString(),
                         style: AppTheme.chipOnPrimaryTextStyle.copyWith(
-                          fontSize: 11,
+                          fontSize: AppTheme.microText.fontSize,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -1044,7 +1044,7 @@ Widget _buildProfileHeader(BuildContext context) {
       child: Text(
         label,
         style: AppTheme.chipOnPrimaryTextStyle.copyWith(
-          fontSize: 10,
+          fontSize: AppTheme.microText.fontSize,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -1211,16 +1211,16 @@ Widget _buildProfileHeader(BuildContext context) {
       messenger.showSnackBar(SnackBar(
         content: Text(
           '${result.recipeCount} recept sparade!\n${result.message}',
-          style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+          style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
         ),
         backgroundColor: AppTheme.successColor,
-        duration: const Duration(seconds: 4),
+        duration: AppTheme.snackbarDuration,
       ));
     } else {
       messenger.showSnackBar(SnackBar(
         content: Text(
           result.message,
-          style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+          style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
         ),
         backgroundColor: AppTheme.errorColor,
       ));
@@ -1264,7 +1264,7 @@ Widget _buildProfileHeader(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
         message,
-        style: AppTheme.bodyStyle.copyWith(color: Colors.white),
+        style: AppTheme.bodyStyle.copyWith(color: AppTheme.neutralLight),
       ),
       backgroundColor: AppTheme.errorColor,
     ));
@@ -1291,7 +1291,7 @@ Widget _buildProfileHeader(BuildContext context) {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.neutralLight,
             ),
             child: Text('Logga ut', style: AppTheme.buttonTextStyle),
           ),
@@ -1378,7 +1378,7 @@ class _SaveMenuDialogState extends State<_SaveMenuDialog> {
             SnackBar(
               content: Text(message),
               backgroundColor: AppTheme.successColor,
-              duration: const Duration(seconds: 3),
+              duration: AppTheme.wait3s,
             ),
           );
         } else {
@@ -1841,7 +1841,7 @@ class _LoadMenuBottomSheet extends StatelessWidget {
                   'Ursprunglig författare: ${menuInfo.originalAuthor}',
                   style: AppTheme.captionStyle.copyWith(
                     color: SavedMenuUIHelper.getAttributionColor(menuInfo),
-                    fontSize: 10,
+                    fontSize: AppTheme.microText.fontSize,
                   ),
                 ),
               ],
@@ -1920,7 +1920,7 @@ class _LoadMenuBottomSheet extends StatelessWidget {
           SnackBar(
             content: Text('Meny "${menuInfo.name}" laddad!'),
             backgroundColor: AppTheme.successColor,
-            duration: const Duration(seconds: 2),
+            duration: AppTheme.wait2s,
           ),
         );
       } else {
@@ -1944,7 +1944,7 @@ class _LoadMenuBottomSheet extends StatelessWidget {
           SnackBar(
             content: Text('Meny "${menuInfo.name}" markerad som modifierad!'),
             backgroundColor: AppTheme.accentColor,
-            duration: const Duration(seconds: 2),
+            duration: AppTheme.wait2s,
           ),
         );
       } else {

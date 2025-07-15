@@ -3,6 +3,7 @@
 import 'dart:async';
 import '../../services/realtime_sync_service.dart';
 import '../../core/utils/logger.dart';
+import '../../theme/app_theme.dart';
 
 
 /// Status för connection monitoring
@@ -82,7 +83,7 @@ class ConnectionMonitor {
 
     // Debounce rapid connection changes (ignorera flapping)
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(seconds: 2), () {
+    _debounceTimer = Timer(AppTheme.wait2s, () {
       _processConnectionChange(wasOnline, isOnline, isConnected);
     });
   }

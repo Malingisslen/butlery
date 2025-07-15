@@ -225,11 +225,11 @@ class _PhotoImportViewContent extends StatelessWidget {
                 right: AppTheme.spacingSm,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black54,
+                    color: AppTheme.overlay,
                     borderRadius: AppTheme.mediumRadius,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.white),
+                    icon: const Icon(Icons.clear, color: AppTheme.neutralLight),
                     onPressed: viewModel.clearAll,
                     tooltip: 'Ta bort bild',
                   ),
@@ -248,7 +248,7 @@ class _PhotoImportViewContent extends StatelessWidget {
         borderRadius: AppTheme.largeRadius,
         border: Border.all(
           color: Theme.of(context).colorScheme.outline,
-          width: 2,
+          width: AppTheme.strokeWidth2,
           style: BorderStyle.solid,
         ),
       ),

@@ -300,6 +300,43 @@ class AppTheme {
   static const Color errorColor = _error;
   static const Color dividerColor = _divider;
   static const Color navBarColor = _darkNavy;
+  
+  // ===== SEMANTIC COLOR ALIASES (NYA KONSTANTER) =====
+  
+  static const Color neutralLight = _cardWhite;        // Alias för Colors.white
+  static const Color neutralMedium = _textMedium;      // Alias för Colors.grey.shade600
+  static const Color neutralDark = _textDark;          // Alias för mörk neutral färg
+  
+  // ===== EXTENDED COLOR PALETTE (COMPLETE SYSTEM) =====
+  
+  // Grays & Neutrals (full spectrum)
+  static const Color neutral50 = Color(0xFFF9FAFB);
+  static const Color neutral100 = Color(0xFFF3F4F6);
+  static const Color neutral200 = Color(0xFFE5E7EB);
+  static const Color neutral300 = Color(0xFFD1D5DB);
+  static const Color neutral400 = Color(0xFF9CA3AF);
+  static const Color neutral500 = Color(0xFF6B7280);
+  static const Color neutral600 = Color(0xFF4B5563);
+  static const Color neutral700 = Color(0xFF374151);
+  static const Color neutral800 = Color(0xFF1F2937);
+  static const Color neutral900 = Color(0xFF111827);
+  
+  // Semantic Colors (for common usage)
+  static const Color overlay = Color(0x80000000);        // black54
+  static const Color overlayLight = Color(0x40000000);   // black26
+  static const Color transparent = Color(0x00000000);
+  static const Color pure = Color(0xFFFFFFFF);           // Pure white
+  static const Color dark = Color(0xFF000000);           // Pure black
+  
+  // Status Colors Extended
+  static const Color info = Color(0xFF3B82F6);
+  static const Color warningLight = Color(0xFFFEF3C7);   // yellow[100]
+  static const Color successDark = Color(0xFF047857);    // green.shade600
+  
+  // Interactive States
+  static const Color disabled = Color(0xFFD1D5DB);
+  static const Color hover = Color(0xFFF3F4F6);
+  static const Color pressed = Color(0xFFE5E7EB);
 
   // ===== FORMATERINGS-SYMBOLER (för ShareService etc.) =====
 
@@ -325,11 +362,50 @@ class AppTheme {
   static const double spacingXxs = 2.0; // För mycket små mellanrum
   static const double spacingHuge = 64.0; // För stora section-separatorer
 
+  // ===== AVATAR SIZES (NYA KONSTANTER) =====
+  
+  static const double avatarSizeSmall = 24.0;  // Små avatarer
+  static const double avatarSizeMedium = 40.0; // Medium avatarer 
+  static const double avatarSizeLarge = 80.0;  // Stora avatarer
+
 // ===== ANIMATION DURATIONS ===== <-- LÄGG TILL DETTA HÄR
   static const Duration animationDurationFast = Duration(milliseconds: 100);
   static const Duration animationDurationMedium = Duration(milliseconds: 150);
   static const Duration animationDurationSlow = Duration(milliseconds: 300);
   static const Duration animationDurationDelay = Duration(milliseconds: 500);
+  
+  // ===== SNACKBAR DURATION (NYA KONSTANTER) =====
+  
+  static const Duration snackbarDuration = Duration(seconds: 4); // Standard snackbar duration
+  
+  // ===== COMPREHENSIVE DURATION SYSTEM =====
+  
+  // Animation Durations
+  static const Duration instant = Duration(milliseconds: 0);
+  static const Duration veryFast = Duration(milliseconds: 100);
+  static const Duration fast = Duration(milliseconds: 200);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 500);
+  static const Duration verySlow = Duration(milliseconds: 800);
+  
+  // Timing Durations (common wait times)
+  static const Duration wait1s = Duration(seconds: 1);
+  static const Duration wait2s = Duration(seconds: 2);
+  static const Duration wait3s = Duration(seconds: 3);
+  static const Duration wait5s = Duration(seconds: 5);
+  static const Duration wait10s = Duration(seconds: 10);
+  static const Duration wait15s = Duration(seconds: 15);
+  static const Duration wait30s = Duration(seconds: 30);
+  static const Duration wait2m = Duration(minutes: 2);
+  
+  // Sync & Debounce Durations
+  static const Duration syncDebounce = Duration(seconds: 2);
+  static const Duration debounceStandard = Duration(milliseconds: 300);
+  
+  // Timeout Durations
+  static const Duration timeoutShort = Duration(seconds: 3);
+  static const Duration timeoutMedium = Duration(seconds: 10);
+  static const Duration timeoutLong = Duration(seconds: 30);
 
   // ===== SEMANTISKA SPACING KOMBINATIONER =====
 
@@ -354,6 +430,11 @@ class AppTheme {
       EdgeInsets.all(spacingLg); // 24px - för section padding
   static EdgeInsets get cardPadding =>
       EdgeInsets.all(spacingMd); // 16px - för card padding
+  
+  // ===== SPECIFIKA EDGE INSETS (NYA KONSTANTER) =====
+  
+  static EdgeInsets get padding8 => EdgeInsets.all(spacingSm); // 8px
+  static EdgeInsets get padding20 => EdgeInsets.all(20.0); // 20px - specifik för vissa användningsfall
   static EdgeInsets get listItemPadding => EdgeInsets.symmetric(
         // För list items
         horizontal: spacingMd,
@@ -403,6 +484,37 @@ class AppTheme {
   static const double iconSizeLarge = iconSizeDisplay;
   static const double iconSizeXLarge = iconSizeHero;
   static const double iconSizeXXLarge = iconSizeEmptyState;
+  
+  // ===== COMPREHENSIVE SIZE SYSTEM (NYA TILLÄGG) =====
+  
+  // Complete Icon Size Range
+  static const double iconSize12 = 12.0;
+  static const double iconSize14 = 14.0;
+  static const double iconSize16 = 16.0;
+  static const double iconSize18 = 18.0;
+  static const double iconSize20 = 20.0;
+  static const double iconSize24 = 24.0;
+  static const double iconSize28 = 28.0;
+  static const double iconSize32 = 32.0;
+  static const double iconSize48 = 48.0;
+  static const double iconSize64 = 64.0;
+  
+  // Component Sizes
+  static const double dividerThickness = 1.0;
+  static const double strokeWidth2 = 2.0;
+  static const double strokeWidth4 = 4.0;
+  static const double strokeWidth8 = 8.0;
+  
+  // Layout Dimensions
+  static const double layoutSmall = 200.0;
+  static const double layoutMedium = 300.0;
+  static const double layoutLarge = 400.0;
+  static const double layoutXLarge = 500.0;
+  
+  // Widget Specific Sizes
+  static const double progressIndicatorSize = 20.0;
+  static const double switchWidth = 40.0;
+  static const double switchHeight = 24.0;
 
   // ===== ELEVATION KONSTANTER (NYA TILLÄGG) =====
 
@@ -790,6 +902,62 @@ class AppTheme {
         color: _textMedium,
         height: 1.4,
       );
+
+  // ===== COMPLETE TEXT STYLE SYSTEM (NYA TILLÄGG) =====
+  
+  /// Micro Text (10px) - för små labels och metadata
+  static TextStyle get microText => const TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w500,
+    color: _textMedium,
+    height: 1.2,
+  );
+  
+  /// Small Text (12px) - för mindre text
+  static TextStyle get smallText => const TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    color: _textMedium,
+    height: 1.3,
+  );
+  
+  /// Large Display Text (20px) - för section headers
+  static TextStyle get displaySmall => const TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: _textDark,
+    height: 1.2,
+  );
+  
+  /// Large Display Text (24px) - för större rubriker
+  static TextStyle get displayMedium => const TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+    color: _textDark,
+    height: 1.1,
+  );
+  
+  /// Extra Large Display Text (32px) - för huvudrubriker
+  static TextStyle get displayLarge => const TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+    color: _textDark,
+    height: 1.1,
+  );
+  
+  // ===== TEXT STYLE HELPERS =====
+  
+  /// Helper method för färgad text
+  static TextStyle withColor(TextStyle style, Color color) =>
+      style.copyWith(color: color);
+      
+  /// Helper method för bold text
+  static TextStyle withWeight(TextStyle style, FontWeight weight) =>
+      style.copyWith(fontWeight: weight);
+      
+  /// Helper method för storlek
+  static TextStyle withSize(TextStyle style, double size) =>
+      style.copyWith(fontSize: size);
 // ===== TEXT STYLES FÖR REDAN DELADE RECEPT (✨ NYTT TILLÄGG) =====
 
   /// Text style för redan delade recepttitlar

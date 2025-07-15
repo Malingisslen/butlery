@@ -10,6 +10,7 @@ import '../core/utils/logger.dart';
 import '../repositories/firestore_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
+import '../theme/app_theme.dart';
 
 /// Service för offline-funktionalitet med Hive - USER-SPECIFIC VERSION
 class OfflineService extends ChangeNotifier {
@@ -437,7 +438,7 @@ class OfflineService extends ChangeNotifier {
         AppLogger.info(
             '⏰ Alla sync-försök misslyckades, väntar 30s innan retry...');
         // Schedule retry efter 30 sekunder
-        Timer(const Duration(seconds: 30), () {
+        Timer(AppTheme.wait30s, () {
           if (_isOnline && _syncQueueBox.isNotEmpty) {
             AppLogger.info('🔄 Retry-försök startar...');
             _syncPendingChanges();

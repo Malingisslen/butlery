@@ -368,7 +368,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                 color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: AppTheme.overlay.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -450,7 +450,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
           Text(
             title,
             style: AppTheme.sectionTitleStyle.copyWith(
-              fontSize: 16,
+              fontSize: AppTheme.bodyStyle.fontSize,
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
