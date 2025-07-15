@@ -27,6 +27,7 @@ import '../../viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'state_widget.dart';
+import 'saved_menu_ui_helper.dart';
 
 /// 🏗️ UNIFIED LAYOUT COMPONENTS
 /// Samlar alla layout-relaterade widgets för konsistent design och enklare underhåll
@@ -1765,10 +1766,10 @@ class _LoadMenuBottomSheet extends StatelessWidget {
     return ListTile(
       contentPadding: AppTheme.cardPadding,
       leading: CircleAvatar(
-        backgroundColor: menuInfo.attributionColor.withValues(alpha: 0.1),
+        backgroundColor: SavedMenuUIHelper.getAttributionColor(menuInfo).withValues(alpha: 0.1),
         child: Icon(
-          menuInfo.statusIcon,
-          color: menuInfo.attributionColor,
+          SavedMenuUIHelper.getStatusIconData(menuInfo),
+          color: SavedMenuUIHelper.getAttributionColor(menuInfo),
         ),
       ),
       title: Row(
@@ -1789,16 +1790,16 @@ class _LoadMenuBottomSheet extends StatelessWidget {
               vertical: AppTheme.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: menuInfo.attributionColor.withValues(alpha: 0.1),
+              color: SavedMenuUIHelper.getAttributionColor(menuInfo).withValues(alpha: 0.1),
               borderRadius: AppTheme.chipRadius,
               border: Border.all(
-                color: menuInfo.attributionColor.withValues(alpha: 0.3),
+                color: SavedMenuUIHelper.getAttributionColor(menuInfo).withValues(alpha: 0.3),
               ),
             ),
             child: Text(
               menuInfo.attribution,
               style: AppTheme.chipLabelStyle.copyWith(
-                color: menuInfo.attributionColor,
+                color: SavedMenuUIHelper.getAttributionColor(menuInfo),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1833,13 +1834,13 @@ class _LoadMenuBottomSheet extends StatelessWidget {
                 Icon(
                   Icons.person,
                   size: 12,
-                  color: menuInfo.attributionColor,
+                  color: SavedMenuUIHelper.getAttributionColor(menuInfo),
                 ),
                 SizedBox(width: AppTheme.spacingXs),
                 Text(
                   'Ursprunglig författare: ${menuInfo.originalAuthor}',
                   style: AppTheme.captionStyle.copyWith(
-                    color: menuInfo.attributionColor,
+                    color: SavedMenuUIHelper.getAttributionColor(menuInfo),
                     fontSize: 10,
                   ),
                 ),

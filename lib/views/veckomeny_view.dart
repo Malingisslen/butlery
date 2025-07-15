@@ -10,6 +10,7 @@ import '../models/user_profile.dart';
 
 // ViewModels
 import '../viewmodels/menu_viewmodel.dart';
+import '../viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Widgets - MIGRATED: Using LayoutComponents
 import '../widgets/common/content_card.dart';
@@ -158,6 +159,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       context: context,
       builder: (context) => UniversalShareDialog.menu(
         menu: menuViewModel.menu,
+        viewModel: sl<UniversalShareDialogViewModel>(),
         initialMessage: "Kolla min veckomeny!",
         availableFriends: availableFriends,
       ),

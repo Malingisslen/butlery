@@ -12,6 +12,7 @@ import '../widgets/common/input_components.dart';
 import '../widgets/image/universal_image_manager.dart' as img;
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/common/social_components.dart';
+import '../viewmodels/universal_share_dialog_viewmodel.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 import '../services/share_service.dart';
@@ -162,6 +163,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       context: context,
       builder: (context) => UniversalShareDialog.recipe(
         recipe: socialViewModel.recipe,
+        viewModel: sl<UniversalShareDialogViewModel>(),
         initialMessage: "Kolla detta recept!",
         availableFriends: socialViewModel.friends,
       ),

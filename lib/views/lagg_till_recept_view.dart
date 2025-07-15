@@ -1,38 +1,10 @@
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../widgets/common/layout_components.dart';
 import '../widgets/common/utility_components.dart';
+import '../services/dialog_service.dart';
 import '../theme/app_theme.dart';
-
-// Exit dialog funktion
-Future<void> _showExitDialog(BuildContext context) async {
-  final shouldExit = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Avsluta Butlery?'),
-      content: const Text('Vill du verkligen avsluta appen?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Avbryt'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.errorColor,
-          ),
-          child: const Text('Avsluta'),
-        ),
-      ],
-    ),
-  );
-
-  if (shouldExit == true && context.mounted) {
-    SystemNavigator.pop();
-  }
-}
 
 /// ✨ 100% THEME-CENTRALISERAD LÄGG TILL RECEPT VY - MIGRERAD TILL UtilityComponents
 class LaggTillReceptView extends StatelessWidget {
@@ -48,7 +20,7 @@ class LaggTillReceptView extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop) {
-          _showExitDialog(context);
+          DialogService.showExitDialogAndExit(context);
         }
       },
       child: LayoutComponents.mainMenu(

@@ -6,9 +6,8 @@ import '../../models/recipe.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../models/user_profile.dart';
 import '../../theme/app_theme.dart';
-import '../../core/injection.dart';
-import '../../services/social_recipe_service.dart';
-import '../../core/utils/logger.dart';
+import '../../viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 
 /// Typ av innehåll som kan delas
@@ -31,11 +30,13 @@ class UniversalShareDialog extends StatefulWidget {
   final ShareContentType contentType;
   final String? initialMessage;
   final List<UserProfile>? availableFriends;
+  final UniversalShareDialogViewModel viewModel;
 
   const UniversalShareDialog({
     super.key,
     required this.content,
     required this.contentType,
+    required this.viewModel,
     this.initialMessage,
     this.availableFriends,
   });
@@ -43,12 +44,14 @@ class UniversalShareDialog extends StatefulWidget {
   /// Factory constructors för type safety
   factory UniversalShareDialog.recipe({
     required Recipe recipe,
+    required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
   }) {
     return UniversalShareDialog(
       content: recipe,
       contentType: ShareContentType.recipe,
+      viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
     );
@@ -56,12 +59,14 @@ class UniversalShareDialog extends StatefulWidget {
 
   factory UniversalShareDialog.menu({
     required Map<String, List<Recipe>> menu,
+    required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
   }) {
     return UniversalShareDialog(
       content: menu,
       contentType: ShareContentType.menu,
+      viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
     );
@@ -69,12 +74,14 @@ class UniversalShareDialog extends StatefulWidget {
 
   factory UniversalShareDialog.shoppingList({
     required UnifiedShoppingList shoppingList,
+    required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
   }) {
     return UniversalShareDialog(
       content: shoppingList,
       contentType: ShareContentType.shoppingList,
+      viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
     );
@@ -94,20 +101,12 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
   // Delningsstate
   ShareMode _selectedMode = ShareMode.staticCopy;
   final Set<String> _selectedFriendIds = {};
-  bool _isSharing = false;
-  String? _errorMessage;
   String _searchQuery = '';
   bool allowCollaboration = false;
-
-  // Services
-  late final SocialRecipeService _socialRecipeService;
 
   @override
   void initState() {
     super.initState();
-
-    // Initiera services
-    _socialRecipeService = sl<SocialRecipeService>();
 
     // Initiera controllers
     if (widget.initialMessage != null) {
@@ -136,7 +135,10 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
+    return ChangeNotifierProvider.value(
+      value: widget.viewModel,
+      child: Consumer<UniversalShareDialogViewModel>(
+        builder: (context, viewModel, child) => Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
         constraints: BoxConstraints(
@@ -171,6 +173,8 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
             // Action buttons
             _buildActionButtons(),
           ],
+        ),
+      ),
         ),
       ),
     );
@@ -281,7 +285,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           ),
           value: ShareMode.staticCopy,
           groupValue: _selectedMode,
-          onChanged: _isSharing
+          onChanged: widget.viewModel.isSharing
               ? null
               : (value) {
                   setState(() {
@@ -299,7 +303,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           ),
           value: ShareMode.realtime,
           groupValue: _selectedMode,
-          onChanged: _isSharing
+          onChanged: widget.viewModel.isSharing
               ? null
               : (value) {
                   setState(() {
@@ -333,7 +337,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           ),
           maxLines: 2,
           maxLength: 200,
-          enabled: !_isSharing,
+          enabled: !widget.viewModel.isSharing,
         ),
       ],
     );
@@ -359,7 +363,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
               ),
               contentPadding: AppTheme.inputPadding, // ✅ AppTheme padding
             ),
-            enabled: !_isSharing,
+            enabled: !widget.viewModel.isSharing,
           ),
           AppTheme.mediumGap, // ✅ AppTheme gap
         ],
@@ -374,7 +378,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
             const Spacer(),
             if (friends.length > 1) ...[
               TextButton(
-                onPressed: _isSharing
+                onPressed: widget.viewModel.isSharing
                     ? null
                     : () {
                         setState(() {
@@ -466,7 +470,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                 : Colors.transparent,
             child: InkWell(
               onTap:
-                  _isSharing ? null : () => _toggleFriendSelection(friend.uid),
+                  widget.viewModel.isSharing ? null : () => _toggleFriendSelection(friend.uid),
               child: Padding(
                 padding: AppTheme.listItemPadding, // ✅ AppTheme padding
                 child: Row(
@@ -517,7 +521,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                     // Checkbox
                     Checkbox(
                       value: isSelected,
-                      onChanged: _isSharing
+                      onChanged: widget.viewModel.isSharing
                           ? null
                           : (_) => _toggleFriendSelection(friend.uid),
                       activeColor: AppTheme.primaryColor, // ✅ AppTheme color
@@ -624,7 +628,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
           ],
 
           // Error message
-          if (_errorMessage != null) ...[
+          if (widget.viewModel.hasError) ...[
             Container(
               margin: EdgeInsets.only(bottom: AppTheme.spacingSm),
               padding: EdgeInsets.all(AppTheme.spacingSm),
@@ -636,7 +640,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                   AppTheme.smallHorizontalGap, // ✅ AppTheme gap
                   Expanded(
                     child: Text(
-                      _errorMessage!,
+                      widget.viewModel.errorMessage!,
                       style: AppTheme.errorTextStyle, // ✅ AppTheme style
                     ),
                   ),
@@ -661,7 +665,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                 child: FilledButton.icon(
                   onPressed: _canShare ? _handleShare : null,
                   style: AppTheme.primaryButtonStyle, // ✅ AppTheme style
-                  icon: _isSharing
+                  icon: widget.viewModel.isSharing
                       ? SizedBox(
                           width: AppTheme.iconSizeAction, // ✅ AppTheme size
                           height: AppTheme.iconSizeAction, // ✅ AppTheme size
@@ -672,7 +676,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                         )
                       : const Icon(Icons.send),
                   label: Text(
-                    _isSharing ? 'Delar...' : _getShareButtonText(),
+                    widget.viewModel.isSharing ? 'Delar...' : _getShareButtonText(),
                   ),
                 ),
               ),
@@ -756,12 +760,10 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
       widget.contentType == ShareContentType.recipe ||
       widget.contentType == ShareContentType.menu;
 
-  bool get _canShare => _selectedFriendIds.isNotEmpty && !_isSharing;
+  bool get _canShare => _selectedFriendIds.isNotEmpty && !widget.viewModel.isSharing;
 
   void _clearError() {
-    setState(() {
-      _errorMessage = null;
-    });
+    widget.viewModel.clearError();
   }
 
   void _toggleFriendSelection(String friendId) {
@@ -778,106 +780,51 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
   Future<void> _handleShare() async {
     if (!_canShare) return;
 
-    setState(() {
-      _isSharing = true;
-      _errorMessage = null;
-    });
+    widget.viewModel.clearError();
 
-    try {
-      switch (widget.contentType) {
-        case ShareContentType.recipe:
-          await _shareRecipe();
-          break;
-        case ShareContentType.menu:
-          await _shareMenu();
-          break;
-        case ShareContentType.shoppingList:
-          await _shareShoppingList();
-          break;
-      }
+    bool success = false;
+    final message = _messageController.text.trim().isNotEmpty
+        ? _messageController.text.trim()
+        : null;
 
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '${_getContentTypeName().capitalize()} delat framgångsrikt!'),
-            backgroundColor: AppTheme.successColor, // ✅ AppTheme color
-          ),
+    switch (widget.contentType) {
+      case ShareContentType.recipe:
+        success = await widget.viewModel.shareRecipe(
+          recipe: widget.content as Recipe,
+          friendUserIds: _selectedFriendIds.toList(),
+          message: message,
+          allowCollaboration: allowCollaboration,
         );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Kunde inte dela: $e';
-      });
-    } finally {
-      setState(() {
-        _isSharing = false;
-      });
+        break;
+      case ShareContentType.menu:
+        success = await widget.viewModel.shareMenu(
+          menu: widget.content as Map<String, List<Recipe>>,
+          friendUserIds: _selectedFriendIds.toList(),
+          message: message,
+          allowCollaboration: allowCollaboration,
+        );
+        break;
+      case ShareContentType.shoppingList:
+        success = await widget.viewModel.shareShoppingList(
+          shoppingList: widget.content as UnifiedShoppingList,
+          friendUserIds: _selectedFriendIds.toList(),
+          message: message,
+        );
+        break;
+    }
+
+    if (success && mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '${_getContentTypeName().capitalize()} delat framgångsrikt!'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
     }
   }
 
-  Future<void> _shareRecipe() async {
-    final recipe = widget.content as Recipe;
-    final message = _messageController.text.trim().isNotEmpty
-        ? _messageController.text.trim()
-        : null;
-
-    final success = await _socialRecipeService.shareRecipeToFriends(
-      recipe: recipe,
-      friendUserIds: _selectedFriendIds.toList(),
-      message: message,
-      allowCollaboration: allowCollaboration,
-    );
-
-    if (!success) {
-      throw Exception(_socialRecipeService.error ?? 'Okänt fel');
-    }
-  }
-
-  Future<void> _shareMenu() async {
-    final menu = widget.content as Map<String, List<Recipe>>;
-    final message = _messageController.text.trim().isNotEmpty
-        ? _messageController.text.trim()
-        : null;
-
-    final success = await _socialRecipeService.shareMenuToFriends(
-      menu: menu,
-      friendUserIds: _selectedFriendIds.toList(),
-      message: message,
-      allowCollaboration: allowCollaboration,
-    );
-
-    if (!success) {
-      throw Exception(_socialRecipeService.error ?? 'Okänt fel');
-    }
-  }
-
-  Future<void> _shareShoppingList() async {
-    final shoppingList = widget.content as UnifiedShoppingList;
-    final message = _messageController.text.trim().isNotEmpty
-        ? _messageController.text.trim()
-        : null;
-
-    // ✅ Proper logging istället för print
-    AppLogger.info(
-        '📋 Delar inköpslista: ${shoppingList.name} med ${_selectedFriendIds.length} vänner');
-
-    if (message != null) {
-      AppLogger.info('💬 Meddelande: $message');
-    }
-
-    // För shopping lists skulle vi använda en annan service
-    // Placeholder implementation med proper delay
-    await Future.delayed(AppTheme.animationDurationSlow); // ✅ AppTheme duration
-
-    // Simulera framgång
-    if (_selectedFriendIds.isEmpty) {
-      throw Exception('Inga vänner valda');
-    }
-
-    AppLogger.success('✅ Inköpslista delad framgångsrikt');
-  }
 }
 
 // Helper extension för string capitalization

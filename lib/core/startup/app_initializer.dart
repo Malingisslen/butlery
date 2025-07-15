@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Services
 import '../../services/offline_service.dart';
@@ -37,7 +38,8 @@ class AppInitializer {
   ///
   /// Kör bara absolut nödvändiga steg:
   /// 1. Flutter-bindningar
-  /// 2. Svenska lokaliseringar
+  /// 2. Environment variables
+  /// 3. Svenska lokaliseringar
   static Future<void> initializeCritical() async {
     debugPrint('🚀 === BUTLERY APP INITIALIZATION START ===');
 
@@ -45,7 +47,10 @@ class AppInitializer {
       // 1️⃣ Säkerställ Flutter-bindningar (KRITISKT)
       await _initializeFlutterBindings();
 
-      // 2️⃣ Initiera svenska lokaliseringar (KRITISKT för UI)
+      // 2️⃣ Ladda environment variables (KRITISKT för API-säkerhet)
+      await _initializeEnvironmentVariables();
+
+      // 3️⃣ Initiera svenska lokaliseringar (KRITISKT för UI)
       await _initializeLocalization();
 
       debugPrint('✅ Critical initialization complete - starting UI');
@@ -106,7 +111,19 @@ class AppInitializer {
     }
   }
 
-  /// 2️⃣ Initierar svenska lokaliseringar för datum och formatering
+  /// 2️⃣ Laddar environment variables för säker API-hantering
+  static Future<void> _initializeEnvironmentVariables() async {
+    try {
+      await dotenv.load(fileName: '.env');
+      debugPrint('✅ Environment variables laddade');
+    } catch (e) {
+      debugPrint('❌ Kunde inte ladda .env fil: $e');
+      debugPrint('ℹ️ Fortsätter utan environment variables');
+      // Inte kritiskt - appen fungerar utan API-keys
+    }
+  }
+
+  /// 3️⃣ Initierar svenska lokaliseringar för datum och formatering
   static Future<void> _initializeLocalization() async {
     try {
       // Initiera svenska först
