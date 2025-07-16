@@ -30,7 +30,7 @@ import '../../models/user_profile.dart';
 import '../../models/friend_category.dart';
 import '../../models/group_invitation.dart';
 import '../../core/utils/logger.dart';
-import '../../theme/app_theme.dart';
+import '../../core/mixins/firebase_sync_mixin.dart';
 
 // Feature interfaces
 import 'operations/friends_management_operations.dart';
@@ -38,15 +38,11 @@ import 'operations/friends_categories_operations.dart';
 import 'operations/friends_invitations_operations.dart';
 
 /// Unified Friends Service with feature interfaces
-class UnifiedFriendsService extends ChangeNotifier {
+class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserProfile> {
   static const String _hiveBoxBaseName = 'unified_friends_cache';
-  // ignore: unused_field
-  static const Duration _syncDebounce = AppTheme.wait2s;
-
   // Dependencies
-  final FirestoreRepository _firestoreRepository;
+  final FirestoreRepository firestoreRepository;
   final AuthRepository _authRepository;
-  FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   // Feature interfaces
   late final FriendsManagementOperations _managementOps;
@@ -66,23 +62,13 @@ class UnifiedFriendsService extends ChangeNotifier {
 
   bool _isInitialized = false;
   bool _isLoading = false;
-  bool _isSyncing = false;
   String? _error;
-
-  // Firebase listeners
-  StreamSubscription<QuerySnapshot>? _friendsSubscription;
-  StreamSubscription<QuerySnapshot>? _incomingRequestsSubscription;
-  StreamSubscription<QuerySnapshot>? _outgoingRequestsSubscription;
-  StreamSubscription<QuerySnapshot>? _categoriesSubscription;
-  StreamSubscription<QuerySnapshot>? _invitationsSubscription;
-  Timer? _syncDebounceTimer;
 
   // Constructor
   UnifiedFriendsService({
-    required FirestoreRepository firestoreRepository,
+    required this.firestoreRepository,
     required AuthRepository authRepository,
-  })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository {
+  })  : _authRepository = authRepository {
     // Initialize feature interfaces
     _managementOps = FriendsManagementOperations(this);
     _categoriesOps = FriendsCategoriesOperations(this);
@@ -111,7 +97,6 @@ class UnifiedFriendsService extends ChangeNotifier {
 
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
-  bool get isSyncing => _isSyncing;
   String? get error => _error;
   bool get hasError => _error != null;
 
@@ -179,7 +164,12 @@ class UnifiedFriendsService extends ChangeNotifier {
   }
 
 
+  @override
   String? get currentUserId => _authRepository.currentUserId;
+  
+  @override
+  FirebaseFirestore get firestore => firestoreRepository.firestore;
+  
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'You';
 
@@ -204,7 +194,7 @@ class UnifiedFriendsService extends ChangeNotifier {
       // Configure Firestore for emulator if needed
       if (kDebugMode) {
         try {
-          _firestore.settings = const Settings(
+          firestore.settings = const Settings(
             persistenceEnabled: true,
             cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
           );
@@ -222,19 +212,17 @@ class UnifiedFriendsService extends ChangeNotifier {
       // Initialize default categories
       await _initializeDefaultCategories();
 
-      // Listen to auth changes
+      // Listen to auth changes using mixin
       _authRepository.authStateChanges().listen((user) {
-        if (user != null) {
-          _startFirebaseSync();
-        } else {
-          _stopFirebaseSync();
+        onAuthStateChanged(user?.uid);
+        if (user == null) {
           _clearAll();
         }
       });
 
-      // Start Firebase sync if logged in
+      // Start Firebase sync if logged in using mixin
       if (_authRepository.getCurrentUser() != null) {
-        _startFirebaseSync();
+        startFirebaseSync();
       }
 
       _isInitialized = true;
@@ -315,7 +303,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('friend_requests')
           .doc(request.id)
           .set(request.toFirestore(), SetOptions(merge: true));
@@ -330,7 +318,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ignore: unused_element
   Future<void> _updateFriendRequestStatus(FriendRequest request) async {
     try {
-      await _firestore
+      await firestore
           .collection('friend_requests')
           .doc(request.id)
           .update({'status': request.status.toString().split('.').last});
@@ -346,7 +334,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friends')
@@ -373,7 +361,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friends')
@@ -392,7 +380,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friend_categories')
@@ -411,7 +399,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friend_categories')
@@ -430,7 +418,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friend_category_relationships')
@@ -454,7 +442,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      final doc = await _firestore
+      final doc = await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friend_category_relationships')
@@ -485,7 +473,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .update({'blockedUsers': _blockedUsers.toList()});
@@ -595,7 +583,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ignore: unused_element
   Future<void> _updateInvitationStatus(GroupInvitation invitation) async {
     try {
-      await _firestore
+      await firestore
           .collection('group_invitations')
           .doc(invitation.id)
           .update({
@@ -707,163 +695,147 @@ class UnifiedFriendsService extends ChangeNotifier {
     }
   }
 
-  /// Start Firebase sync
-  void _startFirebaseSync() {
-    if (currentUserId == null) return;
-
-    AppLogger.info('🔄 Starting Firebase sync for friends data...');
-
-    try {
-      // Friends subscription
-      _friendsSubscription = _firestore
+  // ===== FIREBASE SYNC MIXIN IMPLEMENTATION =====
+  
+  @override
+  List<SyncCollection> get syncCollections => [
+    SyncCollection(
+      name: 'friends',
+      query: () => firestore
           .collection('users')
-          .doc(currentUserId)
-          .collection('friends')
-          .snapshots()
-          .listen(_handleFriendsSnapshot);
-
-      // Categories subscription
-      _categoriesSubscription = _firestore
+          .doc(currentUserId!)
+          .collection('friends'),
+      onAdded: (doc) => _handleFriendsChange(doc, DocumentChangeType.added),
+      onModified: (doc) => _handleFriendsChange(doc, DocumentChangeType.modified),
+      onRemoved: (doc) => _handleFriendsChange(doc, DocumentChangeType.removed),
+      onError: (error) => _setError('Friends sync error: $error'),
+    ),
+    SyncCollection(
+      name: 'friend_categories',
+      query: () => firestore
           .collection('users')
-          .doc(currentUserId)
-          .collection('friend_categories')
-          .snapshots()
-          .listen(_handleCategoriesSnapshot);
-
-      // Incoming requests subscription
-      _incomingRequestsSubscription = _firestore
+          .doc(currentUserId!)
+          .collection('friend_categories'),
+      onAdded: (doc) => _handleCategoriesChange(doc, DocumentChangeType.added),
+      onModified: (doc) => _handleCategoriesChange(doc, DocumentChangeType.modified),
+      onRemoved: (doc) => _handleCategoriesChange(doc, DocumentChangeType.removed),
+      onError: (error) => _setError('Categories sync error: $error'),
+    ),
+    SyncCollection(
+      name: 'incoming_requests',
+      query: () => firestore
           .collection('friend_requests')
-          .where('toUserId', isEqualTo: currentUserId)
-          .where('status', isEqualTo: 'pending')
-          .snapshots()
-          .listen(_handleIncomingRequestsSnapshot);
-
-      // Outgoing requests subscription
-      _outgoingRequestsSubscription = _firestore
+          .where('toUserId', isEqualTo: currentUserId!)
+          .where('status', isEqualTo: 'pending'),
+      onAdded: (doc) => _handleIncomingRequestsChange(doc, DocumentChangeType.added),
+      onModified: (doc) => _handleIncomingRequestsChange(doc, DocumentChangeType.modified),
+      onRemoved: (doc) => _handleIncomingRequestsChange(doc, DocumentChangeType.removed),
+      onError: (error) => _setError('Incoming requests sync error: $error'),
+    ),
+    SyncCollection(
+      name: 'outgoing_requests',
+      query: () => firestore
           .collection('friend_requests')
-          .where('fromUserId', isEqualTo: currentUserId)
-          .where('status', isEqualTo: 'pending')
-          .snapshots()
-          .listen(_handleOutgoingRequestsSnapshot);
+          .where('fromUserId', isEqualTo: currentUserId!)
+          .where('status', isEqualTo: 'pending'),
+      onAdded: (doc) => _handleOutgoingRequestsChange(doc, DocumentChangeType.added),
+      onModified: (doc) => _handleOutgoingRequestsChange(doc, DocumentChangeType.modified),
+      onRemoved: (doc) => _handleOutgoingRequestsChange(doc, DocumentChangeType.removed),
+      onError: (error) => _setError('Outgoing requests sync error: $error'),
+    ),
+  ];
+  
+  @override
+  Future<void> syncItemToFirebase(String itemId) async {
+    // Friends don't have individual sync items like shopping lists
+    // This is handled by the collection-level sync
+    AppLogger.debug('Friends sync handled at collection level');
+  }
 
-      // Load friend-category relationships from Firebase
-      _loadFriendCategoryRelationshipsFromFirebase();
+  // Firebase sync now handled by mixin - removed manual subscription management
 
-      AppLogger.success('✅ Firebase sync started for friends');
+  /// Handle friends document changes
+  void _handleFriendsChange(DocumentSnapshot doc, DocumentChangeType changeType) {
+    try {
+      final data = doc.data() as Map<String, dynamic>;
+      final friend = UserProfile(
+        uid: doc.id,
+        displayName: data['displayName'] as String? ?? '',
+        email: data['email'] as String? ?? '',
+        avatarUrl: data['avatarUrl'] as String?,
+        bio: data['bio'] as String?,
+        joinedAt: data['joinedAt'] != null ? (data['joinedAt'] as Timestamp).toDate() : DateTime.now(),
+        lastActiveAt: data['lastActiveAt'] != null ? (data['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
+      );
+
+      switch (changeType) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          _updateLocalFriend(friend);
+          break;
+        case DocumentChangeType.removed:
+          _removeLocalFriend(friend.uid);
+          break;
+      }
     } catch (e) {
-      AppLogger.error('❌ Failed to start Firebase sync: $e');
+      AppLogger.error('Failed to handle friends change: $e');
     }
   }
 
-  /// Stop Firebase sync
-  void _stopFirebaseSync() {
-    _friendsSubscription?.cancel();
-    _categoriesSubscription?.cancel();
-    _incomingRequestsSubscription?.cancel();
-    _outgoingRequestsSubscription?.cancel();
-    _invitationsSubscription?.cancel();
-
-    _friendsSubscription = null;
-    _categoriesSubscription = null;
-    _incomingRequestsSubscription = null;
-    _outgoingRequestsSubscription = null;
-    _invitationsSubscription = null;
-  }
-
-  /// Handle friends snapshot
-  void _handleFriendsSnapshot(QuerySnapshot snapshot) {
+  /// Handle categories document changes
+  void _handleCategoriesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      for (final change in snapshot.docChanges) {
-        final data = change.doc.data() as Map<String, dynamic>;
-        final friend = UserProfile(
-          uid: change.doc.id,
-          displayName: data['displayName'] as String? ?? '',
-          email: data['email'] as String? ?? '',
-          avatarUrl: data['avatarUrl'] as String?,
-          bio: data['bio'] as String?,
-          joinedAt: data['joinedAt'] != null ? (data['joinedAt'] as Timestamp).toDate() : DateTime.now(),
-          lastActiveAt: data['lastActiveAt'] != null ? (data['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
-        );
+      final category = FriendCategory.fromFirestore(doc);
 
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalFriend(friend);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalFriend(friend.uid);
-            break;
-        }
+      switch (changeType) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          _updateLocalCategory(category);
+          break;
+        case DocumentChangeType.removed:
+          _removeLocalCategory(category.id);
+          break;
       }
-      notifyListeners();
     } catch (e) {
-      AppLogger.error('Failed to handle friends snapshot: $e');
+      AppLogger.error('Failed to handle categories change: $e');
     }
   }
 
-  /// Handle categories snapshot
-  void _handleCategoriesSnapshot(QuerySnapshot snapshot) {
+  /// Handle incoming requests document changes
+  void _handleIncomingRequestsChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      for (final change in snapshot.docChanges) {
-        final category = FriendCategory.fromFirestore(change.doc);
+      final request = FriendRequest.fromFirestore(doc);
 
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalCategory(category);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalCategory(category.id);
-            break;
-        }
+      switch (changeType) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          _updateLocalIncomingRequest(request);
+          break;
+        case DocumentChangeType.removed:
+          _removeLocalIncomingRequest(request.id);
+          break;
       }
-      notifyListeners();
     } catch (e) {
-      AppLogger.error('Failed to handle categories snapshot: $e');
+      AppLogger.error('Failed to handle incoming requests change: $e');
     }
   }
 
-  /// Handle incoming requests snapshot
-  void _handleIncomingRequestsSnapshot(QuerySnapshot snapshot) {
+  /// Handle outgoing requests document changes
+  void _handleOutgoingRequestsChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      for (final change in snapshot.docChanges) {
-        final request = FriendRequest.fromFirestore(change.doc);
+      final request = FriendRequest.fromFirestore(doc);
 
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalIncomingRequest(request);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalIncomingRequest(request.id);
-            break;
-        }
+      switch (changeType) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          _updateLocalOutgoingRequest(request);
+          break;
+        case DocumentChangeType.removed:
+          _removeLocalOutgoingRequest(request.id);
+          break;
       }
-      notifyListeners();
     } catch (e) {
-      AppLogger.error('Failed to handle incoming requests snapshot: $e');
-    }
-  }
-
-  /// Handle outgoing requests snapshot
-  void _handleOutgoingRequestsSnapshot(QuerySnapshot snapshot) {
-    try {
-      for (final change in snapshot.docChanges) {
-        final request = FriendRequest.fromFirestore(change.doc);
-
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalOutgoingRequest(request);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalOutgoingRequest(request.id);
-            break;
-        }
-      }
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('Failed to handle outgoing requests snapshot: $e');
+      AppLogger.error('Failed to handle outgoing requests change: $e');
     }
   }
 
@@ -949,7 +921,6 @@ class UnifiedFriendsService extends ChangeNotifier {
     _sentInvitations.clear();
     _blockedUsers.clear();
     _isLoading = false;
-    _isSyncing = false;
     _error = null;
     notifyListeners();
   }
@@ -982,9 +953,9 @@ class UnifiedFriendsService extends ChangeNotifier {
       notifyListeners();
       
       // Restart Firebase sync to get latest data
-      _stopFirebaseSync();
+      stopFirebaseSync();
       if (_authRepository.getCurrentUser() != null) {
-        _startFirebaseSync();
+        startFirebaseSync();
       }
       
       _isLoading = false;
@@ -1027,8 +998,8 @@ class UnifiedFriendsService extends ChangeNotifier {
         'createdAt': DateTime.now().toIso8601String(),
       };
       
-      final docRef = _firestoreRepository.collection('invitations').doc(invitation.id);
-      await _firestoreRepository.setDocument(docRef, invitationData);
+      final docRef = firestoreRepository.collection('invitations').doc(invitation.id);
+      await firestoreRepository.setDocument(docRef, invitationData);
 
       AppLogger.info('Invitation stored in Firebase: ${invitation.id}');
     } catch (e) {
@@ -1239,7 +1210,7 @@ class UnifiedFriendsService extends ChangeNotifier {
 
       // Sync incoming requests
       for (final request in _incomingRequests) {
-        await _firestore
+        await firestore
             .collection('users')
             .doc(currentUser.uid)
             .collection('friend_requests')
@@ -1251,7 +1222,7 @@ class UnifiedFriendsService extends ChangeNotifier {
 
       // Sync outgoing requests
       for (final request in _outgoingRequests) {
-        await _firestore
+        await firestore
             .collection('users')
             .doc(currentUser.uid)
             .collection('friend_requests')
@@ -1273,7 +1244,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ignore: unused_element
   Future<List<UserProfile>> _getFriendsOfUser(String userId) async {
     try {
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('users')
           .doc(userId)
           .collection('friends')
@@ -1300,7 +1271,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ignore: unused_element
   Future<List<UserProfile>> _getRecentCollaborators(String userId) async {
     try {
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('unified_collaborative_recipes')
           .where('memberPermissions.$userId', isNotEqualTo: null)
           .where('updatedAt', isGreaterThan: DateTime.now().subtract(const Duration(days: 30)))
@@ -1340,7 +1311,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ignore: unused_element
   Future<List<UserProfile>> _getRecentShoppingCollaborators(String userId) async {
     try {
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('unified_collaborative_shopping_lists')
           .where('memberPermissions.$userId', isNotEqualTo: null)
           .where('updatedAt', isGreaterThan: DateTime.now().subtract(const Duration(days: 30)))
@@ -1379,7 +1350,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   /// Get user profile by ID
   Future<UserProfile?> _getUserProfile(String userId) async {
     try {
-      final doc = await _firestore
+      final doc = await firestore
           .collection('users')
           .doc(userId)
           .get();
@@ -1399,10 +1370,11 @@ class UnifiedFriendsService extends ChangeNotifier {
     return _friends.any((friend) => friend.uid == userId);
   }
 
+  // Error handling methods already exist in the class
+
   @override
   void dispose() {
-    _stopFirebaseSync();
-    _syncDebounceTimer?.cancel();
+    stopFirebaseSync();
     super.dispose();
   }
 }

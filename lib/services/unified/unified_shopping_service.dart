@@ -11,19 +11,18 @@ import 'dart:convert';
 import '../../models/unified/unified_shopping_item.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../core/utils/logger.dart';
-import '../../theme/app_theme.dart';
+import '../../core/mixins/firebase_sync_mixin.dart';
 import 'operations/personal_shopping_operations.dart';
 import 'operations/collaborative_shopping_operations.dart';
 import 'operations/shopping_share_operations.dart';
 
-class UnifiedShoppingService extends ChangeNotifier {
+class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<UnifiedShoppingList> {
   // Feature interfaces
   late final PersonalShoppingOperations _personalOps;
   late final CollaborativeShoppingOperations _collaborativeOps;
   late final ShoppingShareOperations _shareOps;
   static const String _hiveBoxBaseName = 'unified_shopping_lists_cache';
   static const String _activeListKey = 'active_list_id';
-  static const Duration _syncDebounce = AppTheme.wait2s;
 
 final FirestoreRepository _firestoreRepository;
 final AuthRepository _authRepository;
@@ -46,17 +45,7 @@ UnifiedShoppingService({
   String? _activeListId;
   bool _isInitialized = false;
   bool _isLoading = false;
-  bool _isSyncing = false;
   String? _error;
-
-  // Firebase listeners
-  final Map<String, StreamSubscription<DocumentSnapshot>> _listListeners = {};
-  StreamSubscription<QuerySnapshot>? _personalListsSubscription;
-  StreamSubscription<QuerySnapshot>? _collaborativeListsSubscription;
-  Timer? _syncDebounceTimer;
-
-  // Sync queue for offline operations
-  final Set<String> _pendingSyncListIds = {};
 
   // Feature interface getters
   PersonalShoppingOperations get personal => _personalOps;
@@ -82,12 +71,54 @@ UnifiedShoppingService({
   bool get hasLists => _lists.isNotEmpty;
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
-  bool get isSyncing => _isSyncing;
   String? get error => _error;
   bool get hasError => _error != null;
+  @override
   String? get currentUserId => _authRepository.currentUserId;
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'Du';
+
+  // ===== FIREBASE SYNC MIXIN IMPLEMENTATION =====
+
+  @override
+  FirebaseFirestore get firestore => _firestore;
+
+  @override
+  List<SyncCollection> get syncCollections => [
+    SyncCollection(
+      name: 'personal_shopping_lists',
+      query: () => _firestore
+          .collection('users')
+          .doc(currentUserId!)
+          .collection('unified_shopping_lists'),
+      onAdded: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
+      onModified: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
+      onRemoved: (doc) => _removeLocalList(doc.id),
+      onError: (error) => _setError('Personal lists sync error: $error'),
+    ),
+    SyncCollection(
+      name: 'collaborative_shopping_lists',
+      query: () => _firestore
+          .collection('unified_shared_shopping_lists')
+          .where('memberPermissions.$currentUserId', isNotEqualTo: null),
+      onAdded: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
+      onModified: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
+      onRemoved: (doc) => _removeLocalList(doc.id),
+      onError: (error) => _setError('Collaborative lists sync error: $error'),
+    ),
+  ];
+
+  @override
+  Future<void> syncItemToFirebase(String itemId) async {
+    final list = _lists.where((l) => l.id == itemId).firstOrNull;
+    if (list == null) return;
+
+    if (list.isPersonal) {
+      await _syncPersonalListToFirebase(list);
+    } else if (list.isCollaborative) {
+      await _syncCollaborativeListToFirebase(list);
+    }
+  }
 
   /// Get user-specific Hive box name for secure caching
   String get _userSpecificBoxName {
@@ -122,19 +153,17 @@ UnifiedShoppingService({
       // Ladda cached data först (offline-first)
       await _loadCachedLists(box);
 
-      // Lyssna på auth changes
+      // Lyssna på auth changes using mixin
       _authRepository.authStateChanges().listen((user) {
-        if (user != null) {
-          _startFirebaseSync();
-        } else {
-          _stopFirebaseSync();
+        onAuthStateChanged(user?.uid);
+        if (user == null) {
           _clearAll();
         }
       });
 
-      // Starta Firebase sync om inloggad
+      // Starta Firebase sync om inloggad using mixin
       if (_authRepository.getCurrentUser() != null) {
-        _startFirebaseSync();
+        startFirebaseSync();
       }
 
       _isInitialized = true;
@@ -176,8 +205,8 @@ UnifiedShoppingService({
       // Spara till cache
       await _saveToCache(newList);
 
-      // Synka till Firebase
-      _scheduleSyncForList(newList.id);
+      // Synka till Firebase using mixin
+      scheduleSyncForItem(newList.id);
 
       AppLogger.success('✅ Personlig lista "$name" skapad');
       return newList.id;
@@ -235,8 +264,8 @@ UnifiedShoppingService({
       // Spara till cache
       await _saveToCache(newList);
 
-      // Synka till Firebase (collaborative lists använder annan collection)
-      _scheduleSyncForList(newList.id);
+      // Synka till Firebase using mixin (collaborative lists använder annan collection)
+      scheduleSyncForItem(newList.id);
 
       AppLogger.success(
           '✅ Kollaborativ lista "$name" skapad med ${memberIds.length} medlemmar');
@@ -589,8 +618,8 @@ UnifiedShoppingService({
       // Spara till cache
       await _saveToCache(updatedList);
 
-      // Schemalägg synk (debounced)
-      _scheduleSyncForList(updatedList.id);
+      // Schemalägg synk using mixin (debounced)
+      scheduleSyncForItem(updatedList.id);
 
       return true;
     } catch (e) {
@@ -600,48 +629,16 @@ UnifiedShoppingService({
     }
   }
 
-  void _scheduleSyncForList(String listId) {
-    _pendingSyncListIds.add(listId);
-
-    // Avbryt tidigare timer
-    _syncDebounceTimer?.cancel();
-
-    // Starta ny timer
-    _syncDebounceTimer = Timer(_syncDebounce, () {
-      _syncPendingLists();
-    });
-  }
-
   void _scheduleDeleteForList(String listId, bool isCollaborative) {
     // För borttagning, gör direkt utan debounce
     _deleteListFromFirebase(listId, isCollaborative);
   }
 
-  Future<void> _syncPendingLists() async {
-    if (_pendingSyncListIds.isEmpty || currentUserId == null) return;
-
-    final listsToSync = List<String>.from(_pendingSyncListIds);
-    _pendingSyncListIds.clear();
-
-    for (final listId in listsToSync) {
-      try {
-        final list = _lists.where((l) => l.id == listId).firstOrNull;
-        if (list == null) continue;
-
-        if (list.isCollaborative) {
-          await _syncCollaborativeListToFirebase(list);
-        } else {
-          await _syncListToFirebase(list);
-        }
-      } catch (e) {
-        AppLogger.error('Kunde inte synka lista $listId: $e');
-      }
-    }
-  }
+  // Old sync methods removed - now handled by FirebaseSyncMixin
 
   // ===== FIREBASE SYNC METHODS =====
 
-  Future<void> _syncListToFirebase(UnifiedShoppingList list) async {
+  Future<void> _syncPersonalListToFirebase(UnifiedShoppingList list) async {
     if (currentUserId == null) return;
 
     try {
@@ -652,9 +649,9 @@ UnifiedShoppingService({
           .doc(list.id)
           .set(list.toFirestore(), SetOptions(merge: true));
 
-      AppLogger.debug('Lista synkad: ${list.name}');
+      AppLogger.debug('Personal lista synkad: ${list.name}');
     } catch (e) {
-      AppLogger.error('Firebase synk-fel för lista ${list.id}: $e');
+      AppLogger.error('Firebase synk-fel för personal lista ${list.id}: $e');
     }
   }
 
@@ -675,96 +672,9 @@ UnifiedShoppingService({
     }
   }
 
-  void _startFirebaseSync() {
-    if (currentUserId == null) return;
+  // Firebase sync methods removed - now handled by FirebaseSyncMixin
 
-    AppLogger.info('🔄 Startar Firebase sync för unified data...');
-
-    try {
-      // Personal lists
-      _personalListsSubscription = _firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('unified_shopping_lists')
-          .snapshots()
-          .listen(
-        _handlePersonalListsSnapshot,
-        onError: (error) {
-          AppLogger.error('Personal lists snapshot error: $error');
-        },
-      );
-
-      // Collaborative lists
-      _collaborativeListsSubscription = _firestore
-          .collection('unified_shared_shopping_lists')
-          .where('memberPermissions.$currentUserId', isNotEqualTo: null)
-          .snapshots()
-          .listen(
-        _handleCollaborativeListsSnapshot,
-        onError: (error) {
-          AppLogger.error('Collaborative lists snapshot error: $error');
-        },
-      );
-
-      AppLogger.success('✅ Firebase sync startat');
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte starta Firebase sync: $e');
-    }
-  }
-
-  void _stopFirebaseSync() {
-    _personalListsSubscription?.cancel();
-    _collaborativeListsSubscription?.cancel();
-    _personalListsSubscription = null;
-    _collaborativeListsSubscription = null;
-
-    for (final listener in _listListeners.values) {
-      listener.cancel();
-    }
-    _listListeners.clear();
-  }
-
-  void _handlePersonalListsSnapshot(QuerySnapshot snapshot) {
-    try {
-      for (final change in snapshot.docChanges) {
-        final list = UnifiedShoppingList.fromFirestore(change.doc);
-
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalList(list);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalList(list.id);
-            break;
-        }
-      }
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('Fel vid hantering av personal lists snapshot: $e');
-    }
-  }
-
-  void _handleCollaborativeListsSnapshot(QuerySnapshot snapshot) {
-    try {
-      for (final change in snapshot.docChanges) {
-        final list = UnifiedShoppingList.fromFirestore(change.doc);
-
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalList(list);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalList(list.id);
-            break;
-        }
-      }
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('Fel vid hantering av collaborative lists snapshot: $e');
-    }
-  }
+  // Snapshot handlers removed - now handled by FirebaseSyncMixin collection handlers
 
   void _updateLocalList(UnifiedShoppingList updatedList) {
     final index = _lists.indexWhere((l) => l.id == updatedList.id);
@@ -880,15 +790,13 @@ UnifiedShoppingService({
     _lists.clear();
     _activeListId = null;
     _isLoading = false;
-    _isSyncing = false;
     _error = null;
     notifyListeners();
   }
 
   @override
   void dispose() {
-    _stopFirebaseSync();
-    _syncDebounceTimer?.cancel();
+    stopFirebaseSync();
     super.dispose();
   }
 }

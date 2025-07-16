@@ -27,7 +27,7 @@ import 'dart:convert';
 import '../../models/unified/unified_recipe.dart';
 import '../../models/recipe.dart'; // För backwards compatibility
 import '../../core/utils/logger.dart';
-import '../../theme/app_theme.dart';
+import '../../core/mixins/firebase_sync_mixin.dart';
 
 // Feature interfaces
 import 'operations/personal_recipe_operations.dart';
@@ -35,9 +35,8 @@ import 'operations/social_recipe_operations.dart';
 import 'operations/realtime_recipe_operations.dart';
 import 'types/recipe_types.dart';
 
-class UnifiedRecipeService extends ChangeNotifier {
+class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<UnifiedRecipe> {
   static const String _hiveBoxBaseName = 'unified_recipes_cache';
-  static const Duration _syncDebounce = AppTheme.wait2s;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
@@ -72,16 +71,7 @@ class UnifiedRecipeService extends ChangeNotifier {
   final List<UnifiedRecipe> _recipes = [];
   bool _isInitialized = false;
   bool _isLoading = false;
-  bool _isSyncing = false;
   String? _error;
-
-  // Firebase listeners
-  StreamSubscription<QuerySnapshot>? _personalRecipesSubscription;
-  StreamSubscription<QuerySnapshot>? _collaborativeRecipesSubscription;
-  Timer? _syncDebounceTimer;
-
-  // Sync queue for offline operations
-  final Set<String> _pendingSyncRecipeIds = {};
 
   // ===== GETTERS - Same API as your existing RecipeService =====
 
@@ -94,10 +84,14 @@ class UnifiedRecipeService extends ChangeNotifier {
   bool get hasRecipes => _recipes.isNotEmpty;
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
-  bool get isSyncing => _isSyncing;
   String? get error => _error;
   bool get hasError => _error != null;
+  
+  @override
   String? get currentUserId => _authRepository.currentUserId;
+  
+  @override
+  FirebaseFirestore get firestore => _firestore;
   String? get currentUserDisplayName =>
       _authRepository.currentUser?.displayName ?? 'Du';
 
@@ -133,7 +127,7 @@ class UnifiedRecipeService extends ChangeNotifier {
       // Firestore configuration för emulator
       if (kDebugMode) {
         try {
-          _firestore.settings = const Settings(
+          firestore.settings = const Settings(
             persistenceEnabled: true,
             cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
           );
@@ -159,19 +153,17 @@ class UnifiedRecipeService extends ChangeNotifier {
       // Ladda cached data först (offline-first)
       await _loadCachedRecipes(box);
 
-      // Lyssna på auth changes
+      // Lyssna på auth changes using mixin
       _authRepository.authStateChanges().listen((user) {
-        if (user != null) {
-          _startFirebaseSync();
-        } else {
-          _stopFirebaseSync();
+        onAuthStateChanged(user?.uid);
+        if (user == null) {
           _clearAll();
         }
       });
 
-      // Starta Firebase sync om inloggad
+      // Starta Firebase sync om inloggad using mixin
       if (_authRepository.currentUser != null) {
-        _startFirebaseSync();
+        startFirebaseSync();
       }
 
       _isInitialized = true;
@@ -660,9 +652,9 @@ class UnifiedRecipeService extends ChangeNotifier {
       await _loadCachedRecipes(box);
 
       // Restart Firebase sync to get latest data
-      _stopFirebaseSync();
+      stopFirebaseSync();
       if (_authRepository.currentUser != null) {
-        _startFirebaseSync();
+        startFirebaseSync();
       }
 
       _isLoading = false;
@@ -677,15 +669,8 @@ class UnifiedRecipeService extends ChangeNotifier {
   // ===== PRIVATE SYNC METHODS =====
 
   void _scheduleSyncForRecipe(String recipeId) {
-    _pendingSyncRecipeIds.add(recipeId);
-
-    // Avbryt tidigare timer
-    _syncDebounceTimer?.cancel();
-
-    // Starta ny timer
-    _syncDebounceTimer = Timer(_syncDebounce, () {
-      _syncPendingRecipes();
-    });
+    // Use mixin's debounced sync method
+    scheduleSyncForItem(recipeId);
   }
 
   void _scheduleDeleteForRecipe(String recipeId, bool isCollaborative) {
@@ -693,27 +678,7 @@ class UnifiedRecipeService extends ChangeNotifier {
     _deleteRecipeFromFirebase(recipeId, isCollaborative);
   }
 
-  Future<void> _syncPendingRecipes() async {
-    if (_pendingSyncRecipeIds.isEmpty || currentUserId == null) return;
-
-    final recipesToSync = List<String>.from(_pendingSyncRecipeIds);
-    _pendingSyncRecipeIds.clear();
-
-    for (final recipeId in recipesToSync) {
-      try {
-        final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-        if (recipe == null) continue;
-
-        if (recipe.isCollaborative) {
-          await _syncCollaborativeRecipeToFirebase(recipe);
-        } else {
-          await _syncRecipeToFirebase(recipe);
-        }
-      } catch (e) {
-        AppLogger.error('Kunde inte synka recept $recipeId: $e');
-      }
-    }
-  }
+  // Sync pending recipes now handled by mixin's processSyncItems method
 
   // ===== FIREBASE SYNC METHODS =====
 
@@ -721,7 +686,7 @@ class UnifiedRecipeService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(currentUserId)
           .collection('unified_recipes')
@@ -738,7 +703,7 @@ class UnifiedRecipeService extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
-      await _firestore
+      await firestore
           .collection('unified_collaborative_recipes')
           .doc(recipe.id)
           .set(recipe.toFirestore(), SetOptions(merge: true));
@@ -750,90 +715,81 @@ class UnifiedRecipeService extends ChangeNotifier {
     }
   }
 
-  void _startFirebaseSync() {
-    if (currentUserId == null) return;
-
-    AppLogger.info('🔄 Startar Firebase sync för unified recipes...');
-
-    try {
-      // Personal recipes
-      _personalRecipesSubscription = _firestore
+  // ===== FIREBASE SYNC MIXIN IMPLEMENTATION =====
+  
+  @override
+  List<SyncCollection> get syncCollections => [
+    SyncCollection(
+      name: 'personal_recipes',
+      query: () => firestore
           .collection('users')
-          .doc(currentUserId)
-          .collection('unified_recipes')
-          .snapshots()
-          .listen(
-        _handlePersonalRecipesSnapshot,
-        onError: (error) {
-          AppLogger.error('Personal recipes snapshot error: $error');
-        },
-      );
-
-      // Collaborative recipes
-      _collaborativeRecipesSubscription = _firestore
+          .doc(currentUserId!)
+          .collection('unified_recipes'),
+      onAdded: (doc) => _handlePersonalRecipesChange(doc, DocumentChangeType.added),
+      onModified: (doc) => _handlePersonalRecipesChange(doc, DocumentChangeType.modified),
+      onRemoved: (doc) => _handlePersonalRecipesChange(doc, DocumentChangeType.removed),
+      onError: (error) => _setError('Personal recipes sync error: $error'),
+    ),
+    SyncCollection(
+      name: 'collaborative_recipes',
+      query: () => firestore
           .collection('unified_collaborative_recipes')
-          .where('memberPermissions.$currentUserId', isNotEqualTo: null)
-          .snapshots()
-          .listen(
-        _handleCollaborativeRecipesSnapshot,
-        onError: (error) {
-          AppLogger.error('Collaborative recipes snapshot error: $error');
-        },
-      );
+          .where('memberPermissions.$currentUserId', isNotEqualTo: null),
+      onAdded: (doc) => _handleCollaborativeRecipesChange(doc, DocumentChangeType.added),
+      onModified: (doc) => _handleCollaborativeRecipesChange(doc, DocumentChangeType.modified),
+      onRemoved: (doc) => _handleCollaborativeRecipesChange(doc, DocumentChangeType.removed),
+      onError: (error) => _setError('Collaborative recipes sync error: $error'),
+    ),
+  ];
+  
+  @override
+  Future<void> syncItemToFirebase(String itemId) async {
+    final recipe = _recipes.where((r) => r.id == itemId).firstOrNull;
+    if (recipe == null) return;
 
-      AppLogger.success('✅ Firebase sync startat för recipes');
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte starta Firebase sync: $e');
+    if (recipe.isCollaborative) {
+      await _syncCollaborativeRecipeToFirebase(recipe);
+    } else {
+      await _syncRecipeToFirebase(recipe);
     }
   }
 
-  void _stopFirebaseSync() {
-    _personalRecipesSubscription?.cancel();
-    _collaborativeRecipesSubscription?.cancel();
-    _personalRecipesSubscription = null;
-    _collaborativeRecipesSubscription = null;
-  }
+  // Firebase sync now handled by mixin - removed manual subscription management
 
-  void _handlePersonalRecipesSnapshot(QuerySnapshot snapshot) {
+  void _handlePersonalRecipesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      for (final change in snapshot.docChanges) {
-        final recipe = UnifiedRecipe.fromFirestore(change.doc);
+      final recipe = UnifiedRecipe.fromFirestore(doc);
 
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalRecipe(recipe);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalRecipe(recipe.id);
-            break;
-        }
+      switch (changeType) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          _updateLocalRecipe(recipe);
+          break;
+        case DocumentChangeType.removed:
+          _removeLocalRecipe(recipe.id);
+          break;
       }
-      notifyListeners();
     } catch (e) {
-      AppLogger.error('Fel vid hantering av personal recipes snapshot: $e');
+      AppLogger.error('Fel vid hantering av personal recipes change: $e');
     }
   }
 
-  void _handleCollaborativeRecipesSnapshot(QuerySnapshot snapshot) {
+  void _handleCollaborativeRecipesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      for (final change in snapshot.docChanges) {
-        final recipe = UnifiedRecipe.fromFirestore(change.doc);
+      final recipe = UnifiedRecipe.fromFirestore(doc);
 
-        switch (change.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            _updateLocalRecipe(recipe);
-            break;
-          case DocumentChangeType.removed:
-            _removeLocalRecipe(recipe.id);
-            break;
-        }
+      switch (changeType) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          _updateLocalRecipe(recipe);
+          break;
+        case DocumentChangeType.removed:
+          _removeLocalRecipe(recipe.id);
+          break;
       }
-      notifyListeners();
     } catch (e) {
       AppLogger.error(
-          'Fel vid hantering av collaborative recipes snapshot: $e');
+          'Fel vid hantering av collaborative recipes change: $e');
     }
   }
 
@@ -911,12 +867,12 @@ class UnifiedRecipeService extends ChangeNotifier {
       String recipeId, bool isCollaborative) async {
     try {
       if (isCollaborative) {
-        await _firestore
+        await firestore
             .collection('unified_collaborative_recipes')
             .doc(recipeId)
             .delete();
       } else {
-        await _firestore
+        await firestore
             .collection('users')
             .doc(currentUserId)
             .collection('unified_recipes')
@@ -944,15 +900,15 @@ class UnifiedRecipeService extends ChangeNotifier {
   void _clearAll() {
     _recipes.clear();
     _isLoading = false;
-    _isSyncing = false;
     _error = null;
     notifyListeners();
   }
 
+  // Error handling methods already exist in the class
+
   @override
   void dispose() {
-    _stopFirebaseSync();
-    _syncDebounceTimer?.cancel();
+    stopFirebaseSync();
     super.dispose();
   }
 }
