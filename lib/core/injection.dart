@@ -326,7 +326,6 @@ Future<void> initializeDependencies() async {
       () => FriendsViewModel(
         friendsService: sl<UnifiedFriendsService>(),
         userService: sl<UserService>(),
-        permissionService: sl<PermissionService>(),
       ),
     );
 
