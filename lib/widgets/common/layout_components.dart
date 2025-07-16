@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
+import '../../core/validators/form_validators.dart';
 
 // Services
 import '../../services/auth_service.dart';
@@ -1515,12 +1516,7 @@ class _SaveMenuDialogState extends State<_SaveMenuDialog> {
         prefixIcon: Icon(Icons.edit),
         border: OutlineInputBorder(),
       ),
-      validator: (value) {
-        if (value?.trim().isEmpty ?? true) {
-          return 'Ange ett namn för menyn';
-        }
-        return null;
-      },
+      validator: FormValidators.nonEmptyText('Namn på meny'),
       onFieldSubmitted: (_) => _saveMenu(),
     );
   }

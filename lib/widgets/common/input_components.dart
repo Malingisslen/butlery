@@ -12,6 +12,7 @@ import '../../models/recipe.dart';
 import '../../viewmodels/unified_shopping_viewmodel.dart';
 import '../../utils/text_utils.dart';
 import '../../core/utils/logger.dart';
+import '../../core/validators/form_validators.dart';
 import 'state_widget.dart';
 
 /// 🎯 UNIFIED INPUT COMPONENTS
@@ -350,12 +351,7 @@ class _AddUnifiedShoppingItemDialogState
                   contentPadding: AppTheme.inputPadding,
                 ),
                 textCapitalization: TextCapitalization.sentences,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Ange artikelnamn';
-                  }
-                  return null;
-                },
+                validator: FormValidators.shoppingItemName(),
               ),
               AppTheme.mediumGap,
 
@@ -384,18 +380,7 @@ class _AddUnifiedShoppingItemDialogState
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ange antal';
-                        }
-                        final amount = double.tryParse(
-                          value.replaceAll(',', '.'),
-                        );
-                        if (amount == null || amount <= 0) {
-                          return 'Ogiltigt antal';
-                        }
-                        return null;
-                      },
+                      validator: FormValidators.shoppingItemAmount(),
                     ),
                   ),
                   AppTheme.smallHorizontalGap,

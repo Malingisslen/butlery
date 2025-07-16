@@ -5,10 +5,6 @@ import 'package:flutter/material.dart';
 /// Centraliserade validators för formulär - Uppdaterad med social features
 class FormValidators {
   /// Regex patterns
-  static final RegExp _emailRegex = RegExp(
-    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-  );
-
   static final RegExp _urlRegex = RegExp(
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
   );
@@ -74,18 +70,6 @@ class FormValidators {
     };
   }
 
-  /// Email validator
-  static FormFieldValidator<String> email() {
-    return (value) {
-      if (value == null || value.isEmpty) return null;
-
-      if (!_emailRegex.hasMatch(value)) {
-        return 'Ange en giltig e-postadress';
-      }
-
-      return null;
-    };
-  }
 
   /// URL validator
   static FormFieldValidator<String> url() {
@@ -220,6 +204,171 @@ class FormValidators {
         if (result != null) return result;
       }
       return null;
+    };
+  }
+
+  // ===== DUPLICATED VALIDATION PATTERNS =====
+
+  /// Auth validation - Name field (from auth_view.dart)
+  static FormFieldValidator<String> authName() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return 'Namn krävs';
+      }
+      if (value.length < 2) {
+        return 'Namnet måste vara minst 2 tecken';
+      }
+      return null;
+    };
+  }
+
+  /// Auth validation - Email field (from auth_view.dart)
+  static FormFieldValidator<String> authEmail() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return 'Email krävs';
+      }
+      // Enkel email-validering - same as auth_view.dart
+      if (!value.contains('@') || !value.contains('.')) {
+        return 'Ange en giltig e-postadress';
+      }
+      return null;
+    };
+  }
+
+  /// Auth validation - Password field (from auth_view.dart)
+  static FormFieldValidator<String> authPassword({bool isSignUp = false}) {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return 'Lösenord krävs';
+      }
+      if (isSignUp && value.length < 6) {
+        return 'Lösenordet måste vara minst 6 tecken';
+      }
+      return null;
+    };
+  }
+
+  /// Shopping item validation - Name field (from input_components.dart)
+  static FormFieldValidator<String> shoppingItemName() {
+    return (value) {
+      if (value == null || value.trim().isEmpty) {
+        return 'Ange artikelnamn';
+      }
+      return null;
+    };
+  }
+
+  /// Shopping item validation - Amount field (from input_components.dart)
+  static FormFieldValidator<String> shoppingItemAmount() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return 'Ange antal';
+      }
+      final amount = double.tryParse(value.replaceAll(',', '.'));
+      if (amount == null || amount <= 0) {
+        return 'Ogiltigt antal';
+      }
+      return null;
+    };
+  }
+
+  /// Recipe validation - Tags field (from skriv_sjalv_recept_view.dart)
+  static FormFieldValidator<String> recipeTags() {
+    return (value) {
+      if (value == null || value.isEmpty) return null;
+      
+      final tags = value.split(',').map((tag) => tag.trim()).toList();
+      for (final tag in tags) {
+        if (tag.isEmpty) continue;
+        if (tag.length < 2) {
+          return 'Varje tagg måste vara minst 2 tecken';
+        }
+        if (tag.length > 20) {
+          return 'Varje tagg får vara max 20 tecken';
+        }
+      }
+      return null;
+    };
+  }
+
+  /// Generic text field validation - Non-empty with trim
+  static FormFieldValidator<String> nonEmptyText(String fieldName) {
+    return (value) {
+      if (value == null || value.trim().isEmpty) {
+        return '$fieldName får inte vara tomt';
+      }
+      return null;
+    };
+  }
+
+
+
+
+  /// Password strength validation
+  static FormFieldValidator<String> strongPassword() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return 'Lösenord krävs';
+      }
+      
+      if (value.length < 8) {
+        return 'Lösenordet måste vara minst 8 tecken';
+      }
+      
+      if (!value.contains(RegExp(r'[A-Z]'))) {
+        return 'Lösenordet måste innehålla minst en stor bokstav';
+      }
+      
+      if (!value.contains(RegExp(r'[a-z]'))) {
+        return 'Lösenordet måste innehålla minst en liten bokstav';
+      }
+      
+      if (!value.contains(RegExp(r'[0-9]'))) {
+        return 'Lösenordet måste innehålla minst en siffra';
+      }
+      
+      return null;
+    };
+  }
+
+  /// Conditional validation - only validate if condition is met
+  static FormFieldValidator<String> conditional({
+    required bool condition,
+    required FormFieldValidator<String> validator,
+  }) {
+    return (value) {
+      if (condition) {
+        return validator(value);
+      }
+      return null;
+    };
+  }
+
+  /// Recipe source URL validation - allows Butlery system URLs or validates as normal URL
+  static FormFieldValidator<String> recipeSourceUrl() {
+    return (value) {
+      if (value == null || value.isEmpty) return null;
+      
+      // Allow Butlery system URLs (shared/imported content)
+      if (value.startsWith('Delad från') ||
+          value.startsWith('Importerad från') ||
+          value.contains('Butlery')) {
+        return null;
+      }
+      
+      // For other URLs, validate as normal URL
+      return url()(value);
+    };
+  }
+
+  /// Optional validation - only validate if value is not empty
+  static FormFieldValidator<String> optional(FormFieldValidator<String> validator) {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return null;
+      }
+      return validator(value);
     };
   }
 
