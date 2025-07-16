@@ -8,7 +8,7 @@ import 'dart:convert';
 import '../models/recipe.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/menu_service.dart';
-import '../services/user_service.dart'; // ✅ NY IMPORT
+import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 
@@ -17,7 +17,6 @@ import '../core/utils/logger.dart';
 class MenuViewModel extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
-  final UserService _userService; // ✅ NY SERVICE
 
   // BEFINTLIG State
   Map<String, List<Recipe>> _menu = {};
@@ -31,10 +30,8 @@ class MenuViewModel extends ChangeNotifier {
   MenuViewModel({
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
-    UserService? userService, // ✅ NY PARAMETER
   })  : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
-        _menuService = menuService ?? sl<MenuService>(),
-        _userService = userService ?? sl<UserService>() {
+        _menuService = menuService ?? sl<MenuService>() {
     // ✅ NY INIT
 
     // Lyssna på ändringar från UnifiedRecipeService
@@ -394,7 +391,7 @@ class MenuViewModel extends ChangeNotifier {
   /// ✅ NY: Ladda importerade menyer från social service
   Future<List<SavedMenuInfo>> _loadImportedMenus() async {
     try {
-      final currentUserId = _userService.currentUserProfile?.uid;
+      final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
       final importedMenus = <SavedMenuInfo>[];
@@ -446,7 +443,7 @@ class MenuViewModel extends ChangeNotifier {
 
       if (sharedMenu == null) return null;
 
-      final currentUserId = _userService.currentUserProfile?.uid;
+      final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null || !sharedMenu.isImportedBy(currentUserId)) {
         return null;
       }

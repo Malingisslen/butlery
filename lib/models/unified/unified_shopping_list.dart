@@ -195,37 +195,8 @@ class UnifiedShoppingList {
     return DateTime.now().difference(lastActivityAt!).inHours < 24;
   }
 
-  // ===== PERMISSION METHODS - samma som du har idag =====
-
-  bool hasPermission(String userId, SharedListPermission requiredPermission) {
-    if (isPersonal) return userId == ownerId;
-
-    final userPermission = memberPermissions[userId];
-    if (userPermission == null) return false;
-
-    // Admin can do everything
-    if (userPermission == SharedListPermission.admin) return true;
-
-    switch (requiredPermission) {
-      case SharedListPermission.view:
-        return true; // Any member can view
-      case SharedListPermission.edit:
-        return userPermission == SharedListPermission.edit ||
-            userPermission == SharedListPermission.admin;
-      case SharedListPermission.admin:
-        return userPermission == SharedListPermission.admin;
-    }
-  }
-
-  bool canUserView(String userId) =>
-      hasPermission(userId, SharedListPermission.view);
-  bool canUserEdit(String userId) =>
-      hasPermission(userId, SharedListPermission.edit);
-  bool canUserManage(String userId) =>
-      hasPermission(userId, SharedListPermission.admin);
-  bool isMember(String userId) =>
-      isPersonal ? userId == ownerId : memberPermissions.containsKey(userId);
-  bool isOwner(String userId) => ownerId == userId;
+  // ===== PERMISSION METHODS - REMOVED: Use PermissionService instead =====
+  // All permission methods have been migrated to PermissionService for centralized permission management
 
   // ===== UPDATE METHODS - samma patterns =====
 

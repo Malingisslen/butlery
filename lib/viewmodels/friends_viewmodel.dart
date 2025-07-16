@@ -7,6 +7,7 @@ import '../models/friend_request.dart';
 import '../models/friend_category.dart';
 import '../services/unified/unified_friends_service.dart';
 import '../services/user_service.dart';
+import '../services/permission_service.dart';
 import '../core/utils/logger.dart'; // ✅ NYTT: För AppLogger
 
 /// Represents the friendship status between two users
@@ -27,6 +28,7 @@ enum FriendshipStatus {
 class FriendsViewModel extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
+  final PermissionService _permissionService;
 
   // ✅ NYTT: Dispose-säkerhet
   bool _isDisposed = false;
@@ -51,8 +53,10 @@ class FriendsViewModel extends ChangeNotifier {
   FriendsViewModel({
     required UnifiedFriendsService friendsService,
     required UserService userService,
+    required PermissionService permissionService,
   })  : _friendsService = friendsService,
-        _userService = userService {
+        _userService = userService,
+        _permissionService = permissionService {
     // ✅ NYTT
     // ✅ VIKTIGT: Registrera listeners vid skapandet
     AppLogger.info('🔄 Registrerar ViewModel listeners...');
@@ -274,8 +278,7 @@ class FriendsViewModel extends ChangeNotifier {
 
   /// Check if user can be added as friend
   bool canSendFriendRequest(String userId) {
-    final currentUserId = _userService.currentUserId;
-    if (currentUserId == null || currentUserId == userId) return false;
+    if (!_permissionService.isAuthenticated || _permissionService.currentUserId == userId) return false;
 
     final status = getFriendshipStatus(userId);
     return status == FriendshipStatus.none;

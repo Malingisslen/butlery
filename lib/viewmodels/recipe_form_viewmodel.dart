@@ -15,8 +15,8 @@ import '../services/unified/types/recipe_types.dart';
 import '../services/analytics_service.dart';
 import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
+import '../services/permission_service.dart';
 import '../widgets/image/image_picker_dialogs.dart';
-import '../services/auth_service.dart';
 import '../core/injection.dart';
 import '../repositories/collaborative_recipe_repository.dart';
 import '../models/permissions/edit_mode.dart';
@@ -31,7 +31,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   final AnalyticsService _analyticsService;
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
-  final AuthService _authService;
+  final PermissionService _permissionService;
   final CollaborativeRecipeRepository _collaborativeRepository;
   final _uuid = const Uuid();
 
@@ -90,7 +90,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     AnalyticsService? analyticsService,
     StorageService? storageService,
     ImagePickerService? imagePickerService,
-    AuthService? authService,
+    PermissionService? permissionService,
     CollaborativeRecipeRepository? collaborativeRepository,
     Recipe? initialRecipe,
     bool isTemplate = false,
@@ -98,7 +98,7 @@ class RecipeFormViewModel extends ChangeNotifier {
         _analyticsService = analyticsService ?? sl<AnalyticsService>(),
         _storageService = storageService ?? sl<StorageService>(),
         _imagePickerService = imagePickerService ?? sl<ImagePickerService>(),
-        _authService = authService ?? sl<AuthService>(),
+        _permissionService = permissionService ?? sl<PermissionService>(),
         _collaborativeRepository =
             collaborativeRepository ?? sl<CollaborativeRecipeRepository>() {
     _ingredientsManager = FormFieldsManager();
@@ -201,8 +201,8 @@ class RecipeFormViewModel extends ChangeNotifier {
       AppLogger.info(
           'Aktiverar Firebase collaborative mode för recept: ${_originalRecipe!.id}');
 
-      final userId = _authService.currentUser?.uid;
-      final userDisplayName = _authService.currentUser?.displayName ?? 'Okänd';
+      final userId = _permissionService.currentUserId;
+      final userDisplayName = _permissionService.currentUser?.displayName ?? 'Okänd';
       if (userId == null) throw Exception('Ingen inloggad användare');
 
       // Skapa RealtimeRecipe från nuvarande recipe
@@ -343,7 +343,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       final updatedRealtimeRecipe = RealtimeRecipe.fromFirestore(doc);
 
       // Uppdatera bara om det kommer från annan användare
-      final currentUserId = _authService.currentUser?.uid;
+      final currentUserId = _permissionService.currentUserId;
       if (updatedRealtimeRecipe.lastEditedBy != currentUserId) {
         _realtimeRecipe = updatedRealtimeRecipe;
         _syncFormFromRealtimeRecipe();
@@ -382,7 +382,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       final userId = data['userId'] as String;
 
       // Filtrera bort oss själva
-      if (userId != _authService.currentUser?.uid) {
+      if (userId != _permissionService.currentUserId) {
         _liveEditors.add(LiveEditor(
           userId: userId,
           userDisplayName: data['userDisplayName'] as String? ?? 'Okänd',
@@ -437,8 +437,8 @@ class RecipeFormViewModel extends ChangeNotifier {
   Future<void> _updatePresence(String fieldName) async {
     if (_realtimeRecipe == null) return;
 
-    final userId = _authService.currentUser?.uid;
-    final userDisplayName = _authService.currentUser?.displayName ?? 'Okänd';
+    final userId = _permissionService.currentUserId;
+    final userDisplayName = _permissionService.currentUser?.displayName ?? 'Okänd';
     if (userId == null) return;
 
     try {
@@ -462,7 +462,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   Future<void> _clearPresence() async {
     if (_realtimeRecipe == null) return;
 
-    final userId = _authService.currentUser?.uid;
+    final userId = _permissionService.currentUserId;
     if (userId == null) return;
 
     try {
@@ -598,8 +598,8 @@ class RecipeFormViewModel extends ChangeNotifier {
     if (_realtimeRecipe == null) return;
 
     try {
-      final userId = _authService.currentUser?.uid;
-      final userDisplayName = _authService.currentUser?.displayName ?? 'Okänd';
+      final userId = _permissionService.currentUserId;
+      final userDisplayName = _permissionService.currentUser?.displayName ?? 'Okänd';
       if (userId == null) return;
 
       // Uppdatera RealtimeRecipe med nuvarande form data
@@ -765,7 +765,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     try {
       progressController.add(UploadProgress(0, 1, 'Komprimerar bild...'));
 
-      final userId = _authService.currentUser?.uid;
+      final userId = _permissionService.currentUserId;
       if (userId == null) {
         throw Exception('Ingen inloggad användare');
       }
@@ -838,7 +838,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     }
 
     try {
-      final userId = _authService.currentUser?.uid;
+      final userId = _permissionService.currentUserId;
       if (userId == null) {
         throw Exception('Ingen inloggad användare');
       }

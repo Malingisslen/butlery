@@ -6,7 +6,8 @@ import '../models/user_profile.dart';
 import '../models/recipe_comment.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/unified/unified_friends_service.dart';
-import '../services/user_service.dart';
+import '../services/permission_service.dart';
+import '../core/injection.dart';
 import '../core/utils/logger.dart'; // Fixad import
 
 
@@ -14,7 +15,6 @@ class SocialRecipeViewModel extends ChangeNotifier {
   final Recipe _recipe;
   final UnifiedRecipeService _recipeService;
   final UnifiedFriendsService _friendsService;
-  final UserService _userService;
 
   // Comments state
   List<RecipeComment> _comments = [];
@@ -35,11 +35,9 @@ class SocialRecipeViewModel extends ChangeNotifier {
     required Recipe recipe,
     required UnifiedRecipeService recipeService,
     required UnifiedFriendsService friendsService,
-    required UserService userService,
   })  : _recipe = recipe,
         _recipeService = recipeService,
-        _friendsService = friendsService,
-        _userService = userService {
+        _friendsService = friendsService {
     _loadComments();
     _recipeService.addListener(_onSocialServiceChanged);
     _friendsService.addListener(_onFriendsServiceChanged);
@@ -64,7 +62,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
   bool get isReplying => _replyToCommentId != null;
 
   List<UserProfile> get friends => _friendsService.friendsList;
-  UserProfile? get currentUser => _userService.currentUserProfile;
+  UserProfile? get currentUser => sl<PermissionService>().currentUser;
 
   // Comment filtering
   List<RecipeComment> get topLevelComments =>
@@ -256,13 +254,13 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   /// Check if current user can edit comment
   bool canEditComment(RecipeComment comment) {
-    final currentUserId = _userService.currentUserId;
+    final currentUserId = sl<PermissionService>().currentUserId;
     return currentUserId != null && comment.canBeEditedBy(currentUserId);
   }
 
   /// Check if current user has liked comment
   bool hasLikedComment(RecipeComment comment) {
-    final currentUserId = _userService.currentUserId;
+    final currentUserId = sl<PermissionService>().currentUserId;
     return currentUserId != null && comment.isLikedBy(currentUserId);
   }
 

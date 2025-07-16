@@ -34,6 +34,8 @@ import 'operations/personal_recipe_operations.dart';
 import 'operations/social_recipe_operations.dart';
 import 'operations/realtime_recipe_operations.dart';
 import 'types/recipe_types.dart';
+import '../permission_service.dart';
+import '../../core/injection.dart';
 
 class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<UnifiedRecipe> {
   static const String _hiveBoxBaseName = 'unified_recipes_cache';
@@ -88,7 +90,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
   bool get hasError => _error != null;
   
   @override
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => sl<PermissionService>().currentUserId;
   
   @override
   FirebaseFirestore get firestore => _firestore;
@@ -190,7 +192,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     List<String>? tags,
     String? sourceUrl,
   }) async {
-    if (currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       _setError('Du måste vara inloggad');
       return null;
     }
@@ -255,7 +257,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    if (currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       _setError('Du måste vara inloggad');
       return null;
     }
@@ -392,8 +394,8 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     }
 
     // Check permissions for collaborative recipes
-    if (recipe.isCollaborative && currentUserId != null) {
-      if (!recipe.canBeEditedBy(currentUserId!)) {
+    if (recipe.isCollaborative) {
+      if (!sl<PermissionService>().canEditRecipe(recipe.id)) {
         _setError('Du har inte behörighet att redigera detta recept');
         return false;
       }
@@ -521,7 +523,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     if (recipe == null || recipe.isPersonal) return false;
 
     // Check admin permission
-    if (currentUserId != null && !recipe.canManageMembersBy(currentUserId!)) {
+    if (!sl<PermissionService>().canManageRecipeMembers(recipe.id)) {
       _setError('Du har inte behörighet att lägga till medlemmar');
       return false;
     }
@@ -535,7 +537,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     if (recipe == null || recipe.isPersonal) return false;
 
     // Check admin permission
-    if (currentUserId != null && !recipe.canManageMembersBy(currentUserId!)) {
+    if (!sl<PermissionService>().canManageRecipeMembers(recipe.id)) {
       _setError('Du har inte behörighet att ta bort medlemmar');
       return false;
     }
@@ -550,7 +552,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     if (recipe == null || recipe.isPersonal) return false;
 
     // Check admin permission
-    if (currentUserId != null && !recipe.canManageMembersBy(currentUserId!)) {
+    if (!sl<PermissionService>().canManageRecipeMembers(recipe.id)) {
       _setError('Du har inte behörighet att ändra behörigheter');
       return false;
     }

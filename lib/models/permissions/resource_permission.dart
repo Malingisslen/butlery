@@ -129,6 +129,17 @@ class ResourcePermissionHelper {
 
     return (hierarchy[permission1] ?? 0) > (hierarchy[permission2] ?? 0);
   }
+}
+
+/// Extension for ResourcePermission to add static method access
+extension ResourcePermissionExtension on ResourcePermission {
+  /// Static method to check if one permission is higher than another
+  static bool isHigherPermission(
+    ResourcePermission permission1,
+    ResourcePermission permission2,
+  ) {
+    return ResourcePermissionHelper.isHigherPermission(permission1, permission2);
+  }
 
   /// Få den högsta behörigheten från en lista
   static ResourcePermission getHighestPermission(

@@ -5,14 +5,14 @@ import '../models/friend_category.dart';
 import '../models/user_profile.dart';
 import '../models/group_invitation.dart';
 import '../services/unified/unified_friends_service.dart';
-import '../services/auth_service.dart';
+import '../services/permission_service.dart';
+import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
 
 class GroupInvitationsViewModel extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
-  final AuthService _authService;
 
   // ===== STATE =====
   List<FriendCategory> _availableGroups = [];
@@ -27,9 +27,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
   GroupInvitationsViewModel({
     required UnifiedFriendsService friendsService,
-    required AuthService authService,
-  })  : _friendsService = friendsService,
-        _authService = authService {
+  })  : _friendsService = friendsService {
     _initializeData();
   }
 
@@ -76,7 +74,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   bool get hasError => _error != null;
 
   /// Aktuell användare
-  String? get _currentUserId => _authService.currentUser?.uid;
+  String? get _currentUserId => sl<PermissionService>().currentUserId;
 
   /// Kombinerat "har något att visa" state
   bool get hasContent =>

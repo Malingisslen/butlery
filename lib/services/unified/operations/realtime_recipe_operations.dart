@@ -19,6 +19,8 @@ import 'dart:async';
 import '../../../models/unified/unified_recipe.dart';
 import '../../../models/realtime/realtime_recipe.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/injection.dart';
+import '../../../services/permission_service.dart';
 
 /// Realtime recipe operations feature interface
 /// 
@@ -95,7 +97,7 @@ class RealtimeRecipeOperations {
         return false;
       }
 
-      if (_parent.currentUserId == null || !recipe.canBeEditedBy(_parent.currentUserId!)) {
+      if (!sl<PermissionService>().canEditRecipe(recipe.id)) {
         AppLogger.error('Cannot start realtime editing: No edit permission');
         return false;
       }
@@ -148,7 +150,7 @@ class RealtimeRecipeOperations {
       final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) return false;
 
-      if (_parent.currentUserId == null || !recipe.canBeEditedBy(_parent.currentUserId!)) {
+      if (_parent.currentUserId == null || !sl<PermissionService>().canEditRecipe(recipeId)) {
         AppLogger.error('No permission to edit recipe');
         return false;
       }
@@ -251,7 +253,7 @@ class RealtimeRecipeOperations {
   /// Show user presence in recipe (who's viewing/editing)
   Future<bool> showPresence(String recipeId) async {
     try {
-      if (_parent.currentUserId == null) return false;
+      if (!sl<PermissionService>().isAuthenticated) return false;
       
       // This would update presence information
       AppLogger.info('Showing presence for user in recipe: $recipeId');
@@ -265,7 +267,7 @@ class RealtimeRecipeOperations {
   /// Hide user presence in recipe
   Future<bool> hidePresence(String recipeId) async {
     try {
-      if (_parent.currentUserId == null) return false;
+      if (!sl<PermissionService>().isAuthenticated) return false;
       
       // This would update presence information
       AppLogger.info('Hiding presence for user in recipe: $recipeId');

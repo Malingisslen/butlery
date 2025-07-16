@@ -8,6 +8,8 @@ import '../models/permissions/resource_permission.dart';
 import '../services/realtime/realtime_menu_service.dart';
 import '../services/realtime_sync_service.dart';
 import '../services/auth_service.dart';
+import '../services/permission_service.dart';
+import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import '../theme/app_theme.dart';
 import 'realtime/optimistic_update_manager.dart';
@@ -28,7 +30,6 @@ enum RealtimeMenuStatus {
 /// ViewModel för kategori-baserade realtidsmenyer - REFAKTORERAD enligt SRP
 class RealtimeMenuViewModel extends ChangeNotifier {
   final RealtimeMenuService _menuService;
-  final AuthService _authService;
 
   // ===== DELEGATED RESPONSIBILITIES (SRP) =====
   late final OptimisticUpdateManager _optimisticManager;
@@ -49,8 +50,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     required RealtimeMenuService menuService,
     required RealtimeSyncService syncService,
     required AuthService authService,
-  })  : _menuService = menuService,
-        _authService = authService {
+  })  : _menuService = menuService {
     // Initialisera delegated managers
     _optimisticManager = OptimisticUpdateManager(onUpdated: notifyListeners);
     _participantTracker = ParticipantTracker(onUpdated: notifyListeners);
@@ -91,14 +91,15 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   bool get hasUnsavedChanges => _optimisticManager.hasChanges;
 
   /// Aktuell användare
-  String? get currentUserId => _authService.currentUser?.uid;
+  String? get currentUserId => sl<PermissionService>().currentUserId;
 
   /// Kan nuvarande användare redigera?
-  bool get canEdit => _currentMenu?.canUserEdit(currentUserId ?? '') ?? false;
+  bool get canEdit => _currentMenu != null && 
+      sl<PermissionService>().canEditRecipe(_currentMenu!.id);
 
   /// Kan nuvarande användare hantera deltagare?
-  bool get canManageParticipants =>
-      _currentMenu?.canUserManagePermissions(currentUserId ?? '') ?? false;
+  bool get canManageParticipants => _currentMenu != null && 
+      sl<PermissionService>().canInviteToRecipe(_currentMenu!.id);
 
   /// Antal aktiva deltagare (delegerat)
   int get activeParticipantCount => _participantTracker.activeCount;

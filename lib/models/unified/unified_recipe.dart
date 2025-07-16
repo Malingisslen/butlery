@@ -194,32 +194,8 @@ class UnifiedRecipe {
   /// Get currently active editors
   List<String> get currentActiveEditors => activeEditorIds ?? [];
 
-  /// Check if user has specific permission
-  bool hasPermission(String userId, RecipePermission permission) {
-    if (userId == ownerId) return true; // Owner has all permissions
-    if (isPersonal) return userId == ownerId;
-
-    final userPermission = memberPermissions?[userId];
-    if (userPermission == null) return false;
-
-    switch (permission) {
-      case RecipePermission.view:
-        return true; // All members can view
-      case RecipePermission.edit:
-        return userPermission == RecipePermission.edit ||
-            userPermission == RecipePermission.admin;
-      case RecipePermission.admin:
-        return userPermission == RecipePermission.admin;
-    }
-  }
-
-  /// Check if user can edit this recipe
-  bool canBeEditedBy(String userId) =>
-      hasPermission(userId, RecipePermission.edit);
-
-  /// Check if user can manage members
-  bool canManageMembersBy(String userId) =>
-      hasPermission(userId, RecipePermission.admin);
+  // ===== PERMISSION METHODS - REMOVED: Use PermissionService instead =====
+  // All permission methods have been migrated to PermissionService for centralized permission management
 
   // ===== CONTENT MANIPULATION =====
 

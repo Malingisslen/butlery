@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/user_profile.dart';
 import '../services/user_service.dart';
+import '../services/permission_service.dart';
 import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../core/utils/logger.dart';
+import '../core/injection.dart';
 
 
 class UserProfileViewModel extends ChangeNotifier {
@@ -57,7 +59,7 @@ class UserProfileViewModel extends ChangeNotifier {
   String? get displayNameError => _displayNameError;
   String? get bioError => _bioError;
 
-  UserProfile? get currentProfile => _userService.currentUserProfile;
+  UserProfile? get currentProfile => sl<PermissionService>().currentUser;
   bool get hasProfile => currentProfile != null;
 
   // Validation
@@ -113,7 +115,7 @@ class UserProfileViewModel extends ChangeNotifier {
       }
 
       // Get current user ID
-      final userId = _userService.currentUserId;
+      final userId = sl<PermissionService>().currentUserId;
       if (userId == null) {
         _setError('Ingen användare inloggad');
         return false;

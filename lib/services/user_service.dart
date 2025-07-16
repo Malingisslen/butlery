@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
 import '../core/error/error_handler.dart';
+import 'permission_service.dart';
+import '../core/injection.dart';
 
 class UserService extends ChangeNotifier {
   final UserRepository _repository;
@@ -34,7 +36,7 @@ class UserService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => sl<PermissionService>().currentUserId;
 
 
   /// Initialize service och ladda current user profile

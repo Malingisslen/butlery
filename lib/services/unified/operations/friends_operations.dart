@@ -18,6 +18,8 @@
 import '../../../models/user_profile.dart';
 import '../../../models/friend_request.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/injection.dart';
+import '../../../services/permission_service.dart';
 
 /// Friends operations feature interface
 /// 
@@ -36,7 +38,7 @@ class FriendsOperations {
 
   /// Send friend request to user
   Future<bool> sendRequest(String userId) async {
-    if (_parent.currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       AppLogger.warning('Cannot send friend request: User not logged in');
       return false;
     }

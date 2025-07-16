@@ -3,14 +3,13 @@
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../services/unified/unified_shopping_service.dart';
-import '../services/user_service.dart';
+import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 
 
 class CreateSharedListViewModel extends ChangeNotifier {
   final UnifiedShoppingService _shoppingService;
-  final UserService _userService;
 
   // Form state
   String _title = '';
@@ -24,9 +23,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
 
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
-    UserService? userService,
-  })  : _shoppingService = shoppingService ?? sl<UnifiedShoppingService>(),
-        _userService = userService ?? sl<UserService>();
+  })  : _shoppingService = shoppingService ?? sl<UnifiedShoppingService>();
 
   // ===== GETTERS (UI State) =====
 
@@ -138,7 +135,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
     }
 
     // Kontrollera att användaren har en profil
-    if (_userService.currentUserProfile == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       _setError('Du måste skapa en profil först');
       return null;
     }
