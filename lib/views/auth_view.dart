@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../core/injection.dart';
 import '../theme/app_theme.dart';
+import '../widgets/common/state_widget.dart';
 
 /// AuthView hanterar login och registrering
 ///
@@ -288,7 +289,10 @@ class _AuthViewState extends State<AuthView> {
 
   /// Error-meddelande
   Widget _buildErrorMessage(String message) {
-    return AppTheme.errorContainer(context, message);
+    return StateWidget.error(
+      message: message,
+      onAction: () => context.read<AuthViewModel>().clearError(),
+    );
   }
 
   /// Submit-knapp

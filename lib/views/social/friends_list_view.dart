@@ -210,12 +210,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
 
     if (viewModel.friends.isEmpty) {
-      return StateWidget.empty(
-        title: 'Inga vänner än',
-        subtitle:
-            'Sök efter användare och skicka vänskapsförfrågningar för att bygga ditt nätverk!',
-        icon: Icons.people_outline,
-      );
+      return StateWidget.noFriends();
     }
 
     return RefreshIndicator(
@@ -269,8 +264,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     if (_searchQuery.isEmpty) {
       return StateWidget.empty(
         title: 'Sök efter nya vänner',
-        subtitle:
-            'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
+        subtitle: 'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
         icon: Icons.search,
       );
     }

@@ -12,6 +12,7 @@ import '../widgets/common/input_components.dart';
 import '../widgets/image/universal_image_manager.dart' as img;
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/common/social_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../viewmodels/universal_share_dialog_viewmodel.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
@@ -364,16 +365,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       color: AppTheme.cardColor,
                       borderRadius: AppTheme.largeRadius,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppTheme.mediumLoadingIndicator(),
-                        AppTheme.smallGap,
-                        Text(
-                          'Tar bort recept...',
-                          style: AppTheme.subtitleStyle,
-                        ),
-                      ],
+                    child: StateWidget.loading(
+                      message: 'Tar bort recept...',
                     ),
                   ),
                 ),

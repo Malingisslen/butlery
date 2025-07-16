@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/photo_import_viewmodel.dart';
 import '../widgets/common/utility_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
@@ -145,7 +146,10 @@ class _PhotoImportViewContent extends StatelessWidget {
 
             // Error container
             if (viewModel.hasError) ...[
-              AppTheme.errorContainer(context, viewModel.error!),
+              StateWidget.error(
+                message: viewModel.error!,
+                onAction: () => viewModel.clearError(),
+              ),
               AppTheme.mediumGap,
             ],
 
@@ -190,15 +194,8 @@ class _PhotoImportViewContent extends StatelessWidget {
       return Container(
         height: AppTheme.imageHeightMedium,
         decoration: AppTheme.cardDecoration,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AppTheme.mediumLoadingIndicator(),
-              AppTheme.smallGap,
-              Text('Bearbetar bild...', style: AppTheme.subtitleStyle),
-            ],
-          ),
+        child: StateWidget.loading(
+          message: 'Bearbetar bild...',
         ),
       );
     }
@@ -252,24 +249,10 @@ class _PhotoImportViewContent extends StatelessWidget {
           style: BorderStyle.solid,
         ),
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_photo_alternate,
-              size: AppTheme.iconSizeHero,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            AppTheme.smallGap,
-            Text('Ingen bild vald', style: AppTheme.subtitleStyle),
-            AppTheme.tinyGap,
-            Text(
-              'Tryck på knappen ovan för att välja',
-              style: AppTheme.captionStyle,
-            ),
-          ],
-        ),
+      child: StateWidget.empty(
+        title: 'Ingen bild vald',
+        subtitle: 'Tryck på knappen ovan för att välja',
+        icon: Icons.add_photo_alternate,
       ),
     );
   }

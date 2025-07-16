@@ -10,7 +10,8 @@
       "Bash(flutter build:*)",
       "Bash(/mnt/c/tools/flutter/bin/flutter analyze)",
       "Bash(/mnt/c/tools/flutter/bin/flutter analyze --no-pub)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/url_import_viewmodel.dart';
+import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
@@ -109,7 +110,9 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
             // Error visning
             if (viewModel.hasError) ...[
               AppTheme.mediumGap,
-              AppTheme.errorContainer(context, viewModel.error!),
+              StateWidget.error(
+                message: viewModel.error!,
+              ),
             ],
 
             // Extraherad text
