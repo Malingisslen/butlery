@@ -6,6 +6,7 @@ import '../viewmodels/auth_viewmodel.dart';
 import '../core/injection.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/state_widget.dart';
+import '../core/validators/form_validators.dart';
 
 /// AuthView hanterar login och registrering
 ///
@@ -187,15 +188,7 @@ class _AuthViewState extends State<AuthView> {
         hintText: 'Ange ditt namn',
         prefixIcon: Icon(Icons.person_outline, size: AppTheme.iconSizeAction),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Namn krävs';
-        }
-        if (value.length < 2) {
-          return 'Namnet måste vara minst 2 tecken';
-        }
-        return null;
-      },
+      validator: FormValidators.authName(),
       onFieldSubmitted: (_) {
         FocusScope.of(context).requestFocus(_emailFocus);
       },
@@ -215,16 +208,7 @@ class _AuthViewState extends State<AuthView> {
         hintText: 'din.email@exempel.se',
         prefixIcon: Icon(Icons.email_outlined, size: AppTheme.iconSizeAction),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email krävs';
-        }
-        // Enkel email-validering
-        if (!value.contains('@') || !value.contains('.')) {
-          return 'Ange en giltig email-adress';
-        }
-        return null;
-      },
+      validator: FormValidators.authEmail(),
       onFieldSubmitted: (_) {
         FocusScope.of(context).requestFocus(_passwordFocus);
       },
@@ -254,15 +238,7 @@ class _AuthViewState extends State<AuthView> {
           onPressed: viewModel.togglePasswordVisibility,
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Lösenord krävs';
-        }
-        if (!viewModel.isLoginMode && value.length < 6) {
-          return 'Lösenordet måste vara minst 6 tecken';
-        }
-        return null;
-      },
+      validator: FormValidators.authPassword(isSignUp: !viewModel.isLoginMode),
       onFieldSubmitted: (_) => _handleSubmit(viewModel),
     );
   }

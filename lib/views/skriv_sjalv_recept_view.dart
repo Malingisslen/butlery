@@ -350,15 +350,7 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return null;
-                      if (value.startsWith('Delad från') ||
-                          value.startsWith('Importerad från') ||
-                          value.contains('Butlery')) {
-                        return null;
-                      }
-                      return FormValidators.url()(value);
-                    },
+                    validator: FormValidators.recipeSourceUrl(),
                   ),
                 ],
               ),
