@@ -18,6 +18,8 @@
 import '../../../models/unified/unified_shopping_item.dart';
 import '../../../models/unified/unified_shopping_list.dart';
 import '../../../core/utils/logger.dart';
+import '../../permission_service.dart';
+import '../../../core/injection.dart';
 
 /// Collaborative shopping operations feature interface
 /// 
@@ -71,19 +73,22 @@ class CollaborativeShoppingOperations {
 
   /// Get collaborative lists where current user is owner
   List<UnifiedShoppingList> getOwnedLists() {
-    if (_parent.currentUserId == null) return [];
+    final permissionService = sl<PermissionService>();
+    if (!permissionService.isAuthenticated) return [];
     
     return _parent.collaborativeLists
-        .where((list) => list.ownerId == _parent.currentUserId)
+        .where((list) => permissionService.isShoppingListOwner(list.id))
         .toList();
   }
 
   /// Get collaborative lists where current user is member (not owner)
   List<UnifiedShoppingList> getSharedWithMe() {
-    if (_parent.currentUserId == null) return [];
+    final permissionService = sl<PermissionService>();
+    if (!permissionService.isAuthenticated) return [];
     
     return _parent.collaborativeLists
-        .where((list) => list.ownerId != _parent.currentUserId)
+        .where((list) => !permissionService.isShoppingListOwner(list.id) && 
+                        permissionService.canViewShoppingList(list.id))
         .toList();
   }
 
@@ -129,7 +134,7 @@ class CollaborativeShoppingOperations {
     }
     
     // Check if current user is owner
-    if (collaborativeList.ownerId != _parent.currentUserId) {
+    if (!sl<PermissionService>().isShoppingListOwner(collaborativeList.id)) {
       AppLogger.error('Cannot convert: Only owner can convert to personal');
       return null;
     }
@@ -214,7 +219,7 @@ class CollaborativeShoppingOperations {
     }
     
     // Cannot remove owner
-    if (list.ownerId == userId) {
+    if (sl<PermissionService>().isShoppingListOwner(listId) && sl<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot remove owner from list');
       return false;
     }
@@ -257,7 +262,7 @@ class CollaborativeShoppingOperations {
     }
     
     // Cannot change owner permission
-    if (list.ownerId == userId) {
+    if (sl<PermissionService>().isShoppingListOwner(listId) && sl<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot change owner permission');
       return false;
     }
@@ -297,13 +302,13 @@ class CollaborativeShoppingOperations {
       return false;
     }
     
-    if (_parent.currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       AppLogger.error('Cannot leave: User not authenticated');
       return false;
     }
     
     // Owner cannot leave, must transfer ownership or delete
-    if (list.ownerId == _parent.currentUserId) {
+    if (sl<PermissionService>().isShoppingListOwner(listId)) {
       AppLogger.error('Owner cannot leave list. Transfer ownership or delete list.');
       return false;
     }
@@ -492,58 +497,41 @@ class CollaborativeShoppingOperations {
 
   /// Check if current user can edit list
   bool canEdit(String listId) {
-    final list = getListById(listId);
-    if (list == null || _parent.currentUserId == null) return false;
-    
-    // Owner can always edit
-    if (list.ownerId == _parent.currentUserId) return true;
-    
-    // Check member permissions
-    final permission = list.memberPermissions[_parent.currentUserId!];
-    return permission == SharedListPermission.edit;
+    return sl<PermissionService>().canEditShoppingList(listId);
   }
 
   /// Check if current user can view list
   bool canView(String listId) {
-    final list = getListById(listId);
-    if (list == null || _parent.currentUserId == null) return false;
-    
-    // Owner can always view
-    if (list.ownerId == _parent.currentUserId) return true;
-    
-    // Check if user is member
-    return list.memberPermissions.containsKey(_parent.currentUserId!);
+    return sl<PermissionService>().canViewShoppingList(listId);
   }
 
   /// Check if current user can manage members
   bool canManageMembers(String listId) {
-    final list = getListById(listId);
-    if (list == null || _parent.currentUserId == null) return false;
-    
-    // Only owner can manage members
-    return list.ownerId == _parent.currentUserId;
+    return sl<PermissionService>().canManageShoppingList(listId);
   }
 
   /// Check if current user can delete list
   bool canDelete(String listId) {
-    final list = getListById(listId);
-    if (list == null || _parent.currentUserId == null) return false;
-    
-    // Only owner can delete
-    return list.ownerId == _parent.currentUserId;
+    return sl<PermissionService>().canDeleteShoppingList(listId);
   }
 
   /// Get current user's permission for list
   SharedListPermission? getUserPermission(String listId) {
     final list = getListById(listId);
-    if (list == null || _parent.currentUserId == null) return null;
+    if (list == null || !sl<PermissionService>().isAuthenticated) return null;
     
-    // Owner has full permissions
-    if (list.ownerId == _parent.currentUserId) {
+    // Use PermissionService to check permissions
+    final permissionService = sl<PermissionService>();
+    
+    if (permissionService.canManageShoppingList(listId)) {
+      return SharedListPermission.admin;
+    } else if (permissionService.canEditShoppingList(listId)) {
       return SharedListPermission.edit;
+    } else if (permissionService.canViewShoppingList(listId)) {
+      return SharedListPermission.view;
     }
     
-    return list.memberPermissions[_parent.currentUserId!];
+    return null;
   }
 
   // ===== NOTIFICATION HELPERS =====

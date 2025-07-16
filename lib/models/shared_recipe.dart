@@ -183,29 +183,7 @@ class SharedRecipe {
     return sharedByUserId == userId || isSharedTo(userId);
   }
 
-  /// 🆕 Kontrollera om användaren kan redigera receptet
-  bool canBeEditedBy(String userId) {
-    // Ägaren kan alltid redigera
-    if (sharedByUserId == userId) return true;
 
-    // Deltagare kan bara redigera om collaboration är tillåtet
-    if (allowCollaboration && sharedToUserIds.contains(userId)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /// 🆕 Kontrollera om "Spara min kopia" ska visas
-  bool shouldShowForkOption(String userId) {
-    // Visa alltid för mottagare (oavsett collaborative eller inte)
-    return isSharedTo(userId) && sharedByUserId != userId;
-  }
-
-  /// 🆕 Check if should be shown in user's shared list
-  bool shouldBeShownTo(String userId) {
-    return canBeViewedBy(userId) && !isDismissedBy(userId);
-  }
 
   /// Create recipe with proper attribution for import
   Recipe createImportRecipe({required String newOwnerId}) {

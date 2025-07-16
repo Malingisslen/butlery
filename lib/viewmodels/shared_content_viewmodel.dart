@@ -2,19 +2,19 @@
 
 import 'package:flutter/foundation.dart';
 import '../services/social_recipe_service.dart';
-import '../services/user_service.dart';
+import '../services/permission_service.dart';
 import '../services/unified/unified_friends_service.dart';
 import '../services/unified/unified_shopping_service.dart';
 import '../models/shared_recipe.dart';
 import '../models/shared_menu.dart';
 import '../models/unified/unified_shopping_list.dart'; // ✅ Lägg till för shopping
 import '../models/user_profile.dart';
+import '../core/injection.dart';
 import '../core/utils/logger.dart';
 
 
 class SharedContentViewModel extends ChangeNotifier {
   final SocialRecipeService _socialRecipeService;
-  final UserService _userService;
   final UnifiedFriendsService _friendsService;
   final UnifiedShoppingService _shoppingService;
 
@@ -40,11 +40,9 @@ class SharedContentViewModel extends ChangeNotifier {
 
   SharedContentViewModel({
     required SocialRecipeService socialRecipeService,
-    required UserService userService,
     required UnifiedFriendsService friendsService,
     required UnifiedShoppingService shoppingService,
   })  : _socialRecipeService = socialRecipeService,
-        _userService = userService,
         _friendsService = friendsService,
         _shoppingService = shoppingService {
     // ✅ Initiera
@@ -108,7 +106,7 @@ class SharedContentViewModel extends ChangeNotifier {
   int get totalSharedMenus => visibleSharedMenus.length;
 
   int get unreadRecipesCount {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     if (currentUserId == null) return 0;
 
     return visibleSharedRecipes
@@ -117,7 +115,7 @@ class SharedContentViewModel extends ChangeNotifier {
   }
 
   int get unreadMenusCount {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     if (currentUserId == null) return 0;
 
     return visibleSharedMenus
@@ -161,7 +159,7 @@ class SharedContentViewModel extends ChangeNotifier {
   }
 
   void _updateVisibleContent() {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     if (currentUserId == null) {
       _visibleSharedRecipes = [];
       _visibleSharedMenus = [];
@@ -364,17 +362,17 @@ class SharedContentViewModel extends ChangeNotifier {
 
   // Read status management
   bool isRecipeRead(SharedRecipe sharedRecipe) {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     return currentUserId != null && sharedRecipe.isViewedBy(currentUserId);
   }
 
   bool isMenuRead(SharedMenu sharedMenu) {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     return currentUserId != null && sharedMenu.isViewedBy(currentUserId);
   }
 
   Future<void> markRecipeAsRead(SharedRecipe sharedRecipe) async {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     if (currentUserId == null || sharedRecipe.isViewedBy(currentUserId)) {
       return;
     }
@@ -400,7 +398,7 @@ class SharedContentViewModel extends ChangeNotifier {
   }
 
   Future<void> markMenuAsRead(SharedMenu sharedMenu) async {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     if (currentUserId == null || sharedMenu.isViewedBy(currentUserId)) {
       return;
     }
@@ -426,12 +424,12 @@ class SharedContentViewModel extends ChangeNotifier {
 
   // Import status management
   bool isRecipeImported(SharedRecipe sharedRecipe) {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     return currentUserId != null && sharedRecipe.isImportedBy(currentUserId);
   }
 
   bool isMenuImported(SharedMenu sharedMenu) {
-    final currentUserId = _userService.currentUserProfile?.uid;
+    final currentUserId = sl<PermissionService>().currentUserId;
     return currentUserId != null && sharedMenu.isImportedBy(currentUserId);
   }
 
@@ -445,7 +443,7 @@ class SharedContentViewModel extends ChangeNotifier {
           await _socialRecipeService.importSharedRecipe(sharedRecipe.id);
 
       if (success) {
-        final currentUserId = _userService.currentUserProfile?.uid;
+        final currentUserId = sl<PermissionService>().currentUserId;
         if (currentUserId != null) {
           final index =
               _visibleSharedRecipes.indexWhere((r) => r.id == sharedRecipe.id);
@@ -479,7 +477,7 @@ class SharedContentViewModel extends ChangeNotifier {
           await _socialRecipeService.importSharedMenu(sharedMenu.id);
 
       if (success) {
-        final currentUserId = _userService.currentUserProfile?.uid;
+        final currentUserId = sl<PermissionService>().currentUserId;
         if (currentUserId != null) {
           final index =
               _visibleSharedMenus.indexWhere((m) => m.id == sharedMenu.id);

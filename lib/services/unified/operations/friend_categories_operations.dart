@@ -18,6 +18,8 @@
 import '../../../models/user_profile.dart';
 import '../../../models/friend_category.dart';
 import '../../../core/utils/logger.dart';
+import '../../permission_service.dart';
+import '../../../core/injection.dart';
 
 /// Friend categories operations feature interface
 /// 
@@ -41,7 +43,7 @@ class FriendCategoriesOperations {
     bool isPrivate = false,
     List<String>? initialMemberIds,
   }) async {
-    if (_parent.currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       AppLogger.warning('Cannot create category: User not logged in');
       return null;
     }
@@ -289,7 +291,7 @@ class FriendCategoriesOperations {
 
   /// Get categories where current user is a member
   List<FriendCategory> getMemberCategories() {
-    if (_parent.currentUserId == null) return [];
+    if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.categoriesList
         .where((category) => category.memberIds.contains(_parent.currentUserId))
@@ -376,13 +378,12 @@ class FriendCategoriesOperations {
 
   bool _canEditCategory(FriendCategory category) {
     // Can edit if owner or has edit permissions
-    return category.ownerId == _parent.currentUserId;
-    // TODO: Add more granular permissions when implemented
+    return sl<PermissionService>().isGroupAdmin(category.id);
   }
 
   bool _canDeleteCategory(FriendCategory category) {
     // Can delete if owner
-    return category.ownerId == _parent.currentUserId;
+    return sl<PermissionService>().canDeleteGroup(category.id);
   }
 
   // TODO: Add public/private category support when needed

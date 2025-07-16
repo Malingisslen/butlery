@@ -11,7 +11,7 @@ import '../widgets/common/state_widget.dart';
 import '../widgets/image/universal_image_manager.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
-import '../services/auth_service.dart';
+import '../services/permission_service.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -31,7 +31,6 @@ class SkrivSjalvReceptView extends StatelessWidget {
         analyticsService: sl(),
         storageService: sl(),
         imagePickerService: sl(),
-        authService: sl(),
         initialRecipe: initialRecipe,
         isTemplate: isTemplate,
       ),
@@ -231,7 +230,7 @@ class _SkrivSjalvReceptViewContentState
                     onAddImage: viewModel.addImageUrl,
                     onRemoveImage: viewModel.removeImageAt,
                     onSetPrimary: viewModel.setPrimaryImage,
-                    userId: context.read<AuthService>().currentUser?.uid ?? "",
+                    userId: sl<PermissionService>().currentUserId ?? "",
                     onPickImage: () => _pickImage(viewModel),
                     maxImages: 5,
                   ),

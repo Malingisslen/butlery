@@ -12,7 +12,7 @@ import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/events/group_events.dart';
 import 'add_members_to_group_view.dart';
-import '../../services/auth_service.dart';
+import '../../services/permission_service.dart';
 
 
 class GroupDetailView extends StatefulWidget {
@@ -134,7 +134,8 @@ class _GroupDetailViewState extends State<GroupDetailView> {
   void _debugGroupInfo() {
     if (_group == null) return;
 
-    final currentUserId = sl<AuthService>().currentUser?.uid;
+    final permissionService = sl<PermissionService>();
+    final currentUserId = permissionService.currentUserId;
     debugPrint('🔍 DEBUG: Group info för ${_group!.name}:');
     debugPrint('   - ownerId: ${_group!.ownerId}');
     debugPrint('   - createdBy: ${_group!.createdBy}');
@@ -142,11 +143,11 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     debugPrint('   - friendCount: ${_group!.friendCount}');
     debugPrint('   - current userId: $currentUserId');
 
-    // Kontrollera behörigheter
-    debugPrint('   - Är jag ägare? ${_group!.ownerId == currentUserId}');
-    debugPrint('   - Är jag skapare? ${_group!.createdBy == currentUserId}');
-    debugPrint(
-        '   - Är jag medlem? ${_group!.friendUserIds.contains(currentUserId)}');
+    // Kontrollera behörigheter med PermissionService
+    debugPrint('   - Är jag ägare? ${permissionService.isOwner(_group!.ownerId)}');
+    debugPrint('   - Är jag skapare? ${permissionService.isOwner(_group!.createdBy)}');
+    debugPrint('   - Är jag admin? ${permissionService.isGroupAdmin(_group!.id)}');
+    debugPrint('   - Är jag medlem? ${_group!.friendUserIds.contains(currentUserId)}');
   }
 
   Future<void> _refreshData() async {
@@ -293,16 +294,15 @@ class _GroupDetailViewState extends State<GroupDetailView> {
   }
 
   Widget _buildMemberCard(UserProfile member) {
-    final currentUserId = sl<AuthService>().currentUser?.uid;
+    final permissionService = sl<PermissionService>();
+    final currentUserId = permissionService.currentUserId;
     final isCurrentUser = currentUserId == member.uid;
-    final isCurrentUserAdmin =
-        currentUserId == _group?.createdBy || currentUserId == _group?.ownerId;
-    final isMemberAdmin =
-        member.uid == _group?.createdBy || member.uid == _group?.ownerId;
+    final isCurrentUserAdmin = permissionService.isGroupAdmin(_group!.id);
+    final isMemberAdmin = permissionService.isGroupAdmin(_group!.id) && member.uid == _group!.createdBy;
 
-    // ✅ FIXAD LOGIK: Endast admin kan ta bort andra, alla kan lämna själva
-    final canRemoveMember =
-        isCurrentUser || (isCurrentUserAdmin && !isMemberAdmin);
+    // ✅ FIXAD LOGIK: Använd PermissionService för att kontrollera behörigheter
+    final canRemoveMember = isCurrentUser || 
+        permissionService.canRemoveFromGroup(_group!.id, member.uid);
 
     return Card(
       child: ListTile(
@@ -675,7 +675,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     );
 
     if (result == true && mounted) {
-      final isCurrentUser = sl<AuthService>().currentUser?.uid == member.uid;
+      final isCurrentUser = sl<PermissionService>().currentUserId == member.uid;
 
       if (isCurrentUser) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -733,9 +733,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
   /// Visa både medlemmar och pending inbjudningar
   Widget _buildMembersSection(List<UserProfile> members) {
-    final currentUserId = sl<AuthService>().currentUser?.uid;
-    final canAddMembers =
-        currentUserId == _group?.createdBy || currentUserId == _group?.ownerId;
+    final canAddMembers = _group != null && sl<PermissionService>().canInviteToGroup(_group!.id);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,18 +818,13 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
   /// ✅ FIXAD: Action buttons med behörighetskontroll
   Widget _buildActionButtons(FriendCategory group) {
-    final currentUserId = sl<AuthService>().currentUser?.uid;
-    final isOwner = currentUserId == group.ownerId;
-    final isCreator = currentUserId == group.createdBy;
-    final canEditGroup =
-        isOwner || isCreator; // Kan redigera om man äger eller skapade gruppen
+    final permissionService = sl<PermissionService>();
+    final canEditGroup = permissionService.isGroupAdmin(group.id);
 
     debugPrint('🔍 DEBUG: Permission check för action buttons:');
-    debugPrint('   - currentUserId: $currentUserId');
+    debugPrint('   - currentUserId: ${permissionService.currentUserId}');
     debugPrint('   - group.ownerId: ${group.ownerId}');
     debugPrint('   - group.createdBy: ${group.createdBy}');
-    debugPrint('   - isOwner: $isOwner');
-    debugPrint('   - isCreator: $isCreator');
     debugPrint('   - canEditGroup: $canEditGroup');
 
     return Column(
@@ -876,8 +869,8 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
   /// ✅ NYTT: Lägg till metod för att lämna grupp
   Future<void> _leaveGroup(FriendCategory group) async {
-    final currentUserId = sl<AuthService>().currentUser?.uid;
-    if (currentUserId == null) return;
+    final currentUserId = sl<PermissionService>().currentUserId;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     final shouldLeave = await showDialog<bool>(
       context: context,
@@ -903,7 +896,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     if (shouldLeave == true && mounted) {
       final categoriesService = sl<UnifiedFriendsService>();
       final success = await categoriesService.categories.removeFriendFromCategory(
-        friendId: currentUserId,
+        friendId: currentUserId!,
         categoryId: group.id,
       );
 
@@ -921,15 +914,13 @@ class _GroupDetailViewState extends State<GroupDetailView> {
 
   /// ✅ FIXAD: AppBar popup menu med STRIKT behörighetskontroll
   Widget _buildAppBarPopupMenu(FriendCategory group) {
-    final currentUserId = sl<AuthService>().currentUser?.uid;
-    final isOwner = currentUserId == group.ownerId;
-    final isCreator = currentUserId == group.createdBy;
-    final canEdit = isOwner || isCreator;
-    final canAddMembers = canEdit; // Bara admin kan lägga till medlemmar
+    final permissionService = sl<PermissionService>();
+    final isOwner = permissionService.isGroupAdmin(group.id);
+    final canEdit = isOwner;
+    final canAddMembers = permissionService.canInviteToGroup(group.id);
 
     debugPrint('🔍 DEBUG: AppBar popup permissions:');
     debugPrint('   - isOwner: $isOwner');
-    debugPrint('   - isCreator: $isCreator');
     debugPrint('   - canEdit: $canEdit');
     debugPrint('   - canAddMembers: $canAddMembers');
 

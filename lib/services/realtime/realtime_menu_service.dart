@@ -7,7 +7,8 @@ import '../../models/recipe.dart';
 import '../../models/permissions/resource_permission.dart';
 import '../realtime_sync_service.dart';
 import '../auth_service.dart';
-import '../user_service.dart';
+import '../permission_service.dart';
+import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
 
 
@@ -63,7 +64,6 @@ class MenuOperationError {
 class RealtimeMenuService extends ChangeNotifier {
   final RealtimeSyncService _syncService;
   final AuthService _authService;
-  final UserService _userService;
 
   // State för menu-specifika operationer
   bool _isProcessing = false;
@@ -73,10 +73,8 @@ class RealtimeMenuService extends ChangeNotifier {
   RealtimeMenuService({
     required RealtimeSyncService syncService,
     required AuthService authService,
-    required UserService userService,
   })  : _syncService = syncService,
-        _authService = authService,
-        _userService = userService;
+        _authService = authService;
 
   // ===== GETTERS =====
 
@@ -91,7 +89,7 @@ class RealtimeMenuService extends ChangeNotifier {
 
   /// Aktuell användarens display name
   String get _currentUserDisplayName =>
-      _userService.currentUserProfile?.displayName ?? 'Okänd användare';
+      sl<PermissionService>().currentUser?.displayName ?? 'Okänd användare';
 
   /// Få kategori-namn från aktuell meny
   List<String> get categoryNames => _currentMenu?.categories ?? [];

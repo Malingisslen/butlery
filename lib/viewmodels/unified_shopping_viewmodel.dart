@@ -7,6 +7,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import '../services/unified/unified_shopping_service.dart';
+import '../services/permission_service.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../models/unified/unified_shopping_list.dart';
 
@@ -49,7 +50,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
   bool get allItemsBought => activeList?.allItemsBought ?? false;
 
   // User info
-  String? get currentUserId => _shoppingService.currentUserId;
+  String? get currentUserId => GetIt.instance<PermissionService>().currentUserId;
   String? get currentUserDisplayName => _shoppingService.currentUserDisplayName;
 
   UnifiedShoppingViewModel() {
@@ -68,7 +69,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
       await _shoppingService.initialize();
 
       // Om inga listor finns, skapa en default lista
-      if (!hasLists && _shoppingService.currentUserId != null) {
+      if (!hasLists && GetIt.instance<PermissionService>().currentUserId != null) {
         await createPersonalList('Min Inköpslista');
       }
     } catch (e) {
@@ -299,14 +300,13 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
   /// Kontrollera om användaren kan redigera aktiv lista
   bool get canEditActiveList {
     if (activeList == null || currentUserId == null) return false;
-    return activeList!.hasPermission(currentUserId!, SharedListPermission.edit);
+    return GetIt.instance<PermissionService>().canEditShoppingList(activeList!.id);
   }
 
   /// Kontrollera om användaren kan hantera aktiv lista
   bool get canManageActiveList {
     if (activeList == null || currentUserId == null) return false;
-    return activeList!
-        .hasPermission(currentUserId!, SharedListPermission.admin);
+    return GetIt.instance<PermissionService>().canManageShoppingList(activeList!.id);
   }
 
   /// Få medlemmar i aktiv lista

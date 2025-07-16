@@ -12,6 +12,8 @@ import '../../models/unified/unified_shopping_item.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../core/utils/logger.dart';
 import '../../core/mixins/firebase_sync_mixin.dart';
+import '../permission_service.dart';
+import '../../core/injection.dart';
 import 'operations/personal_shopping_operations.dart';
 import 'operations/collaborative_shopping_operations.dart';
 import 'operations/shopping_share_operations.dart';
@@ -74,7 +76,7 @@ UnifiedShoppingService({
   String? get error => _error;
   bool get hasError => _error != null;
   @override
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => sl<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'Du';
 
@@ -179,7 +181,7 @@ UnifiedShoppingService({
 
   Future<String?> createPersonalList(String name,
       {List<UnifiedShoppingItem>? items}) async {
-    if (currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       _setError('Du måste vara inloggad');
       return null;
     }
@@ -227,7 +229,7 @@ UnifiedShoppingService({
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
   }) async {
-    if (currentUserId == null) {
+    if (!sl<PermissionService>().isAuthenticated) {
       _setError('Du måste vara inloggad');
       return null;
     }

@@ -7,6 +7,7 @@ import '../models/unified/unified_shopping_list.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
+import '../services/permission_service.dart';
 import '../theme/app_theme.dart';
 
 
@@ -48,9 +49,11 @@ class CollaborativeShoppingViewModel extends ChangeNotifier {
   String get listDescription => _currentList?.description ?? '';
   bool get hasDescription => listDescription.isNotEmpty;
 
-  // Permission checks
-  bool get canEdit => _currentList?.isCollaborative ?? false;
-  bool get canView => hasData;
+  // Permission checks using PermissionService
+  bool get canEdit => _currentList != null && 
+      sl<PermissionService>().canEditShoppingList(_currentList!.id);
+  bool get canView => _currentList != null && 
+      sl<PermissionService>().canViewShoppingList(_currentList!.id);
 
   // Progress tracking
   int get totalItems => _currentList?.totalItems ?? 0;

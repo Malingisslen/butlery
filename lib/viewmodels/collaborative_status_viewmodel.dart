@@ -2,7 +2,7 @@
 
 
 import 'package:flutter/foundation.dart';
-import '../services/auth_service.dart';
+import '../services/permission_service.dart';
 import '../services/social_recipe_service.dart';
 import '../models/recipe.dart';
 import '../models/user_profile.dart';
@@ -52,7 +52,6 @@ class CollaborativeStatus {
 /// Skalbar system för att hantera kollaborativ status över alla content-typer
 /// med robust caching, batch operations och comprehensive error handling
 class CollaborativeStatusViewModel extends ChangeNotifier {
-  final AuthService _authService;
   final SocialRecipeService _socialRecipeService;
 
   // ===== GENERIC CACHING SYSTEM =====
@@ -69,14 +68,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
   // ===== CONSTRUCTOR =====
 
   CollaborativeStatusViewModel({
-    AuthService? authService,
     SocialRecipeService? socialRecipeService,
-  })  : _authService = authService ?? sl<AuthService>(),
-        _socialRecipeService = socialRecipeService ?? sl<SocialRecipeService>();
+  })  : _socialRecipeService = socialRecipeService ?? sl<SocialRecipeService>();
 
   // ===== PUBLIC GETTERS =====
 
-  String? get currentUserId => _authService.currentUser?.uid;
+  String? get currentUserId => sl<PermissionService>().currentUserId;
 
   /// Hämta cached status för content
   CollaborativeStatus? getCachedStatus(

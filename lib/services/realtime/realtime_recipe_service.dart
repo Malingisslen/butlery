@@ -6,8 +6,7 @@ import '../../models/realtime/realtime_resource.dart';
 import '../../models/recipe.dart';
 import '../../models/permissions/resource_permission.dart';
 import '../realtime_sync_service.dart';
-import '../auth_service.dart';
-import '../user_service.dart';
+import '../permission_service.dart';
 import '../../core/utils/logger.dart';
 
 
@@ -62,8 +61,7 @@ class RecipeOperationError {
 /// - Permission management (det finns i modellerna)
 class RealtimeRecipeService extends ChangeNotifier {
   final RealtimeSyncService _syncService;
-  final AuthService _authService;
-  final UserService _userService;
+  final PermissionService _permissionService;
 
   // State för recipe-specifika operationer
   bool _isProcessing = false;
@@ -71,11 +69,9 @@ class RealtimeRecipeService extends ChangeNotifier {
 
   RealtimeRecipeService({
     required RealtimeSyncService syncService,
-    required AuthService authService,
-    required UserService userService,
+    required PermissionService permissionService,
   })  : _syncService = syncService,
-        _authService = authService,
-        _userService = userService;
+        _permissionService = permissionService;
 
   // ===== GETTERS =====
 
@@ -85,12 +81,10 @@ class RealtimeRecipeService extends ChangeNotifier {
   /// Senaste recipe operation error
   RecipeOperationError? get lastError => _lastError;
 
-  /// Aktuell användare
-  String? get _currentUserId => _authService.currentUserId;
 
   /// Aktuell användarens display name
   String get _currentUserDisplayName =>
-      _userService.currentUserProfile?.displayName ?? 'Okänd användare';
+      _permissionService.currentUser?.displayName ?? 'Okänd användare';
 
   // ===== CORE RECIPE OPERATIONS =====
 
@@ -102,13 +96,13 @@ class RealtimeRecipeService extends ChangeNotifier {
     List<String>? editorUserIds,
     List<String>? viewerUserIds,
   }) async {
-    final userId = _currentUserId;
-    if (userId == null) {
+    if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: RecipeOperationType.createFromExisting,
         message: 'Användare inte inloggad',
       );
     }
+    final userId = _permissionService.currentUserId!;
 
     _setProcessing(true);
     _clearError();
@@ -187,7 +181,7 @@ class RealtimeRecipeService extends ChangeNotifier {
         timeMinutes: timeMinutes,
         rating: rating,
         tags: tags,
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -212,7 +206,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       operationName: 'lägga till ingrediens',
       updateFunction: (recipe) => recipe.addIngredient(
         ingredient: ingredient.trim(),
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -237,7 +231,7 @@ class RealtimeRecipeService extends ChangeNotifier {
         }
         return recipe.removeIngredient(
           index: index,
-          editedBy: _currentUserId!,
+          editedBy: _permissionService.currentUserId!,
           editedByDisplayName: _currentUserDisplayName,
         );
       },
@@ -267,7 +261,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       operationName: 'uppdatera ingredienser',
       updateFunction: (recipe) => recipe.updateIngredients(
         ingredients: validIngredients,
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -292,7 +286,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       operationName: 'lägga till instruktion',
       updateFunction: (recipe) => recipe.addInstruction(
         instruction: instruction.trim(),
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -317,7 +311,7 @@ class RealtimeRecipeService extends ChangeNotifier {
         }
         return recipe.removeInstruction(
           index: index,
-          editedBy: _currentUserId!,
+          editedBy: _permissionService.currentUserId!,
           editedByDisplayName: _currentUserDisplayName,
         );
       },
@@ -347,7 +341,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       operationName: 'uppdatera instruktioner',
       updateFunction: (recipe) => recipe.updateInstructions(
         instructions: validInstructions,
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -372,7 +366,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       operationName: 'lägga till bild',
       updateFunction: (recipe) => recipe.addImage(
         imageUrl: imageUrl.trim(),
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -397,7 +391,7 @@ class RealtimeRecipeService extends ChangeNotifier {
         }
         return recipe.removeImage(
           index: index,
-          editedBy: _currentUserId!,
+          editedBy: _permissionService.currentUserId!,
           editedByDisplayName: _currentUserDisplayName,
         );
       },
@@ -421,7 +415,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       operationName: 'uppdatera bilder',
       updateFunction: (recipe) => recipe.updateImages(
         imageUrls: validImageUrls,
-        editedBy: _currentUserId!,
+        editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
@@ -484,14 +478,14 @@ class RealtimeRecipeService extends ChangeNotifier {
   ///
   /// Använder RealtimeRecipe.createPersonalCopy för att skapa en vanlig Recipe
   Recipe createPersonalCopy(RealtimeRecipe realtimeRecipe) {
-    final userId = _currentUserId;
-    if (userId == null) {
+    if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: RecipeOperationType.createFromExisting,
         message: 'Användare inte inloggad',
         resourceId: realtimeRecipe.id,
       );
     }
+    final userId = _permissionService.currentUserId!;
 
     AppLogger.info('📋 Skapar personlig kopia av: ${realtimeRecipe.title}');
 
@@ -517,8 +511,7 @@ class RealtimeRecipeService extends ChangeNotifier {
     required String operationName,
     required RealtimeRecipe Function(RealtimeRecipe) updateFunction,
   }) async {
-    final userId = _currentUserId;
-    if (userId == null) {
+    if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: operation,
         message: 'Användare inte inloggad',
@@ -544,8 +537,8 @@ class RealtimeRecipeService extends ChangeNotifier {
         );
       }
 
-      // Kontrollera behörighet (från modellen, inte business logic här)
-      if (!currentRecipe.canUserEdit(userId)) {
+      // Kontrollera behörighet via PermissionService
+      if (!_permissionService.canEditRecipe(resourceId)) {
         throw RecipeOperationError(
           operation: operation,
           message: 'Ingen redigeringsbehörighet',
@@ -608,8 +601,7 @@ class RealtimeRecipeService extends ChangeNotifier {
 
   /// Ta bort realtidsrecept helt
   Future<void> deleteRealtimeRecipe(String resourceId) async {
-    final userId = _currentUserId;
-    if (userId == null) {
+    if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant, // Närmaste operation
         message: 'Användare inte inloggad',

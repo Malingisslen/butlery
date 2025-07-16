@@ -31,6 +31,8 @@ import '../../models/friend_category.dart';
 import '../../models/group_invitation.dart';
 import '../../core/utils/logger.dart';
 import '../../core/mixins/firebase_sync_mixin.dart';
+import '../permission_service.dart';
+import '../../core/injection.dart';
 
 // Feature interfaces
 import 'operations/friends_management_operations.dart';
@@ -165,7 +167,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
 
 
   @override
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => sl<PermissionService>().currentUserId;
   
   @override
   FirebaseFirestore get firestore => firestoreRepository.firestore;
@@ -300,7 +302,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to sync friend request to Firebase
   // ignore: unused_element
   Future<void> _syncFriendRequestToFirebase(FriendRequest request) async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -331,7 +333,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
 
   /// Internal method to sync friend to Firebase
   Future<void> _syncFriendToFirebase(UserProfile friend) async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -358,7 +360,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to remove friend from Firebase
   // ignore: unused_element
   Future<void> _removeFriendFromFirebase(String friendId) async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -377,7 +379,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to sync category to Firebase
   // ignore: unused_element
   Future<void> _syncCategoryToFirebase(FriendCategory category) async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -396,7 +398,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to delete category from Firebase
   // ignore: unused_element
   Future<void> _deleteCategoryFromFirebase(String categoryId) async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -415,7 +417,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to sync friend-category relationships to Firebase
   // ignore: unused_element
   Future<void> _syncFriendCategoryRelationshipsToFirebase() async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -439,7 +441,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to load friend-category relationships from Firebase
   // ignore: unused_element
   Future<void> _loadFriendCategoryRelationshipsFromFirebase() async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       final doc = await firestore
@@ -470,7 +472,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Internal method to sync blocked users to Firebase
   // ignore: unused_element
   Future<void> _syncBlockedUsersToFirebase() async {
-    if (currentUserId == null) return;
+    if (!sl<PermissionService>().isAuthenticated) return;
 
     try {
       await firestore
@@ -656,7 +658,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Initialize default categories
   Future<void> _initializeDefaultCategories() async {
     if (_categories.isEmpty) {
-      final currentUserId = _authRepository.currentUserId;
+      final currentUserId = sl<PermissionService>().currentUserId;
       final defaultCategories = [
         FriendCategory(
           id: 'default_family',

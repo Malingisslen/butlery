@@ -17,6 +17,8 @@
 
 import '../../../models/unified/unified_recipe.dart';
 import '../../../core/utils/logger.dart';
+import '../../permission_service.dart';
+import '../../../core/injection.dart';
 
 /// Social recipe operations feature interface
 /// 
@@ -199,7 +201,7 @@ class SocialRecipeOperations {
 
   /// Get recipes shared with current user
   List<UnifiedRecipe> getSharedWithMe() {
-    if (_parent.currentUserId == null) return [];
+    if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.collaborativeRecipes
         .where((r) => r.ownerId != _parent.currentUserId)
@@ -208,22 +210,20 @@ class SocialRecipeOperations {
 
   /// Get recipes owned by current user that are shared
   List<UnifiedRecipe> getSharedByMe() {
-    if (_parent.currentUserId == null) return [];
+    if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.collaborativeRecipes
-        .where((r) => r.ownerId == _parent.currentUserId)
+        .where((r) => sl<PermissionService>().isRecipeOwner(r.id))
         .toList();
   }
 
   /// Get recipes by specific user (if accessible)
   List<UnifiedRecipe> getRecipesByUser(String userId) {
-    if (_parent.currentUserId == null) return [];
+    if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.recipes
-        .where((r) => r.ownerId == userId && (
-          r.isPersonal && r.ownerId == _parent.currentUserId ||
-          r.isCollaborative && r.canBeViewedBy(_parent.currentUserId!)
-        ))
+        .where((r) => sl<PermissionService>().isOwner(r.ownerId) && 
+          sl<PermissionService>().canViewRecipe(r.id))
         .toList();
   }
 
@@ -333,35 +333,22 @@ class SocialRecipeOperations {
 
   /// Check if current user can edit recipe
   bool canEdit(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || _parent.currentUserId == null) return false;
-    
-    return recipe.canBeEditedBy(_parent.currentUserId!);
+    return sl<PermissionService>().canEditRecipe(recipeId);
   }
 
   /// Check if current user can view recipe
   bool canView(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || _parent.currentUserId == null) return false;
-    
-    return recipe.canBeViewedBy(_parent.currentUserId!);
+    return sl<PermissionService>().canViewRecipe(recipeId);
   }
 
   /// Check if current user can manage members
   bool canManageMembers(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || _parent.currentUserId == null) return false;
-    
-    return recipe.canManageMembersBy(_parent.currentUserId!);
+    return sl<PermissionService>().canInviteToRecipe(recipeId);
   }
 
   /// Check if current user can delete recipe
   bool canDelete(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || _parent.currentUserId == null) return false;
-    
-    // Only owner can delete
-    return recipe.ownerId == _parent.currentUserId;
+    return sl<PermissionService>().canDeleteRecipe(recipeId);
   }
 }
 

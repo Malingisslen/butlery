@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
 import '../services/social_recipe_service.dart';
+import '../services/permission_service.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../viewmodels/collaborative_status_viewmodel.dart';
@@ -36,7 +37,6 @@ class EditRecipeView extends StatelessWidget {
             analyticsService: sl(),
             storageService: sl(),
             imagePickerService: sl(),
-            authService: sl<AuthService>(),
             initialRecipe: recipe,
           ),
         ),
@@ -226,7 +226,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
-    final authService = context.read<AuthService>();
 
     return Scaffold(
       // AppBar utan förändring
@@ -304,7 +303,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                         // Bildhantering
                         UniversalImageManager.recipeEdit(
                           imageUrls: viewModel.imageUrls,
-                          userId: authService.currentUser?.uid ?? '',
+                          userId: sl<PermissionService>().currentUserId ?? '',
                           onAddImage: viewModel.addImageUrl,
                           onRemoveImage: viewModel.removeImageAt,
                           onSetPrimary: viewModel.setPrimaryImage,

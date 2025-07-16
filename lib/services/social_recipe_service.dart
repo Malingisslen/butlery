@@ -7,15 +7,15 @@ import '../models/shared_menu.dart';
 import '../models/user_profile.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/user_service.dart';
+import '../services/permission_service.dart';
 import '../repositories/interfaces/social_recipe_repository.dart';
-import '../repositories/interfaces/auth_repository.dart';
 import '../core/utils/logger.dart';
 
 class SocialRecipeService extends ChangeNotifier {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
-  final AuthRepository _authRepository;
+  final PermissionService _permissionService;
 
   // State
   List<SharedRecipe> _sharedRecipes = [];
@@ -27,11 +27,11 @@ class SocialRecipeService extends ChangeNotifier {
     required SocialRecipeRepository repository,
     required UserService userService,
     required UnifiedRecipeService recipeService,
-    required AuthRepository authRepository,
+    required PermissionService permissionService,
   })  : _repository = repository,
         _userService = userService,
         _recipeService = recipeService,
-        _authRepository = authRepository;
+        _permissionService = permissionService;
 
   // Getters
   List<SharedRecipe> get sharedRecipes => List.unmodifiable(_sharedRecipes);
@@ -61,8 +61,8 @@ class SocialRecipeService extends ChangeNotifier {
   }
 
   Future<void> _loadSharedContent() async {
-    final currentUserId = _authRepository.currentUserId;
-    if (currentUserId == null) return;
+    if (!_permissionService.isAuthenticated) return;
+    final currentUserId = _permissionService.currentUserId!;
 
     try {
       _sharedRecipes = await _repository.getSharedRecipes(currentUserId);
@@ -143,9 +143,8 @@ class SocialRecipeService extends ChangeNotifier {
 
       if (success != null) {
         // Mark as imported
-        final currentUserId = _authRepository.currentUserId;
-        if (currentUserId != null) {
-          await _repository.markSharedRecipeAsImported(recipeId, currentUserId);
+        if (_permissionService.isAuthenticated) {
+          await _repository.markSharedRecipeAsImported(recipeId, _permissionService.currentUserId!);
         }
         AppLogger.success('Recipe imported successfully');
         return true;
@@ -183,9 +182,8 @@ class SocialRecipeService extends ChangeNotifier {
 
       if (allImported) {
         // Mark as imported
-        final currentUserId = _authRepository.currentUserId;
-        if (currentUserId != null) {
-          await _repository.markSharedMenuAsImported(menuId, currentUserId);
+        if (_permissionService.isAuthenticated) {
+          await _repository.markSharedMenuAsImported(menuId, _permissionService.currentUserId!);
         }
         AppLogger.success('Menu imported successfully');
         return true;
@@ -200,12 +198,11 @@ class SocialRecipeService extends ChangeNotifier {
   // Dismiss shared recipe
   Future<bool> dismissSharedRecipe(String recipeId) async {
     try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
+      if (!_permissionService.isAuthenticated) {
         _error = 'User not authenticated';
         return false;
       }
-      await _repository.dismissSharedRecipe(recipeId, currentUserId);
+      await _repository.dismissSharedRecipe(recipeId, _permissionService.currentUserId!);
       AppLogger.info('Recipe dismissed');
       return true;
     } catch (e) {
@@ -218,12 +215,11 @@ class SocialRecipeService extends ChangeNotifier {
   // Dismiss shared menu
   Future<bool> dismissSharedMenu(String menuId) async {
     try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
+      if (!_permissionService.isAuthenticated) {
         _error = 'User not authenticated';
         return false;
       }
-      await _repository.dismissSharedMenu(menuId, currentUserId);
+      await _repository.dismissSharedMenu(menuId, _permissionService.currentUserId!);
       AppLogger.info('Menu dismissed');
       return true;
     } catch (e) {
@@ -236,12 +232,11 @@ class SocialRecipeService extends ChangeNotifier {
   // Undismiss shared recipe
   Future<bool> undismissSharedRecipe(String recipeId) async {
     try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
+      if (!_permissionService.isAuthenticated) {
         AppLogger.error('User not authenticated');
         return false;
       }
-      await _repository.undismissSharedRecipe(recipeId, currentUserId);
+      await _repository.undismissSharedRecipe(recipeId, _permissionService.currentUserId!);
       AppLogger.info('Recipe restored');
       return true;
     } catch (e) {
@@ -253,12 +248,11 @@ class SocialRecipeService extends ChangeNotifier {
   // Undismiss shared menu
   Future<bool> undismissSharedMenu(String menuId) async {
     try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
+      if (!_permissionService.isAuthenticated) {
         AppLogger.error('User not authenticated');
         return false;
       }
-      await _repository.undismissSharedMenu(menuId, currentUserId);
+      await _repository.undismissSharedMenu(menuId, _permissionService.currentUserId!);
       AppLogger.info('Menu restored');
       return true;
     } catch (e) {
@@ -274,13 +268,12 @@ class SocialRecipeService extends ChangeNotifier {
     required Map<String, dynamic> contentData,
   }) async {
     try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
+      if (!_permissionService.isAuthenticated) {
         AppLogger.error('User not authenticated');
         throw Exception('User not authenticated');
       }
       await _repository.shareContent(
-        fromUserId: currentUserId,
+        fromUserId: _permissionService.currentUserId!,
         toUserId: friendId,
         contentType: contentType,
         contentData: contentData,
