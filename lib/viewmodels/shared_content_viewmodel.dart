@@ -3,18 +3,20 @@
 import 'package:flutter/foundation.dart';
 import '../services/social_recipe_service.dart';
 import '../services/user_service.dart';
-import '../services/friends_service.dart'; // ✅ Lägg till för shopping share
+import '../services/unified/unified_friends_service.dart';
+import '../services/unified/unified_shopping_service.dart';
 import '../models/shared_recipe.dart';
 import '../models/shared_menu.dart';
 import '../models/unified/unified_shopping_list.dart'; // ✅ Lägg till för shopping
-import '../models/user_profile.dart'; // ✅ Lägg till för vänhantering
+import '../models/user_profile.dart';
 import '../core/utils/logger.dart';
 
 
 class SharedContentViewModel extends ChangeNotifier {
   final SocialRecipeService _socialRecipeService;
   final UserService _userService;
-  final FriendsService _friendsService; // ✅ Lägg till för shopping share
+  final UnifiedFriendsService _friendsService;
+  final UnifiedShoppingService _shoppingService;
 
   // ==================== BEFINTLIG STATE ====================
   // Search and filtering state
@@ -39,10 +41,12 @@ class SharedContentViewModel extends ChangeNotifier {
   SharedContentViewModel({
     required SocialRecipeService socialRecipeService,
     required UserService userService,
-    required FriendsService friendsService, // ✅ Lägg till parameter
+    required UnifiedFriendsService friendsService,
+    required UnifiedShoppingService shoppingService,
   })  : _socialRecipeService = socialRecipeService,
         _userService = userService,
-        _friendsService = friendsService {
+        _friendsService = friendsService,
+        _shoppingService = shoppingService {
     // ✅ Initiera
     _initialize();
   }
@@ -220,7 +224,7 @@ class SharedContentViewModel extends ChangeNotifier {
   /// ✅ Ladda vänner för shopping share functionality
   Future<void> _loadFriendsForSharing() async {
     try {
-      _availableFriends = List.from(_friendsService.friends);
+      _availableFriends = _friendsService.management.getAllFriends();
       AppLogger.info(
           '👥 Laddade ${_availableFriends.length} vänner för shopping share');
     } catch (e) {
@@ -295,17 +299,23 @@ class SharedContentViewModel extends ChangeNotifier {
             : 'Kolla in min inköpslista!',
         'sharedAt': DateTime.now().toIso8601String(),
       };
+      
+      AppLogger.debug('Share data prepared: ${shareData['itemCount']} items');
 
-      // Dela med varje vald vän
+      // Dela med varje vald vän via UnifiedShoppingService
       bool allSuccessful = true;
       for (final friendId in _selectedFriendIds) {
         try {
-          await _socialRecipeService.shareContent(
-            friendId: friendId,
-            contentType: 'shopping_list',
-            contentData: shareData,
+          final success = await _shoppingService.sharing.shareListWithFriend(
+            shoppingList.id,
+            friendId,
           );
-          AppLogger.info('   ✅ Delad med vän: $friendId');
+          if (success) {
+            AppLogger.info('   ✅ Delad med vän: $friendId');
+          } else {
+            AppLogger.error('   ❌ Misslyckades med vän $friendId', 'Sharing failed');
+            allSuccessful = false;
+          }
         } catch (e) {
           AppLogger.error('   ❌ Misslyckades med vän $friendId', e);
           allSuccessful = false;

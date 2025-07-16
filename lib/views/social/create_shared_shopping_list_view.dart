@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/create_shared_list_viewmodel.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/friend_categories_service.dart';
+import '../../services/unified/unified_friends_service.dart';
 import '../../widgets/common/utility_components.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
@@ -63,7 +63,7 @@ class _CreateSharedShoppingListViewState
           create: (_) => sl<FriendsViewModel>(),
         ),
         ChangeNotifierProvider.value(
-          value: sl<FriendCategoriesService>(),
+          value: sl<UnifiedFriendsService>(),
         ),
       ],
       child: Consumer<CreateSharedListViewModel>(

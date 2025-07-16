@@ -3,21 +3,17 @@
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../models/user_profile.dart';
-import '../services/recipe_service.dart';
-import '../services/social_recipe_service.dart';
+import '../services/unified/unified_recipe_service.dart';
 
 /// ViewModel för receptval och delning med vänner
 class RecipeSelectionViewModel extends ChangeNotifier {
-  final RecipeService _recipeService;
-  final SocialRecipeService _socialRecipeService;
+  final UnifiedRecipeService _recipeService;
   final UserProfile targetFriend;
 
   RecipeSelectionViewModel({
-    required RecipeService recipeService,
-    required SocialRecipeService socialRecipeService,
+    required UnifiedRecipeService recipeService,
     required this.targetFriend,
-  })  : _recipeService = recipeService,
-        _socialRecipeService = socialRecipeService;
+  })  : _recipeService = recipeService;
 
   // State
   List<Recipe> _allRecipes = [];
@@ -62,12 +58,12 @@ class RecipeSelectionViewModel extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Ladda alla recept
-      _allRecipes = await _recipeService.getUserRecipes();
+      // Ladda alla recept (using legacy compatibility)
+      _allRecipes = _recipeService.legacyRecipes;
 
       // ✅ NY: Kolla vilka som redan delats med denna vän
-      _alreadySharedRecipeIds = await _socialRecipeService
-          .getRecipesSharedWithFriend(targetFriend.uid);
+      // TODO: Implement getRecipesSharedWithFriend in social feature interface
+      _alreadySharedRecipeIds = <String>{}; // For now, empty set
 
       _filteredRecipes = List.from(_allRecipes);
 
@@ -140,12 +136,15 @@ class RecipeSelectionViewModel extends ChangeNotifier {
       bool allSuccessful = true;
 
       for (final recipe in recipesToShare) {
-        final success = await _socialRecipeService.shareRecipeToFriends(
-          recipe: recipe,
-          friendUserIds: [targetFriend.uid], // Lista med en vän
-          message: null, // Inget meddelande för nu
+        final memberDisplayNames = {targetFriend.uid: targetFriend.displayName};
+        
+        final sharedRecipeId = await _recipeService.social.shareRecipe(
+          recipeId: recipe.id,
+          memberIds: [targetFriend.uid],
+          memberDisplayNames: memberDisplayNames,
         );
 
+        final success = sharedRecipeId != null;
         if (!success) {
           allSuccessful = false;
           // Vi fortsätter med nästa recept även om ett misslyckas

@@ -1,8 +1,26 @@
+/// 🔍 AI INFO BLOCK:
+/// Component: Archive Import ViewModel - Updated for Phase 5 feature interfaces
+/// File: lib/viewmodels/archive_import_viewmodel.dart
+/// Quick Guide: Handles recipe import from Butlery archive using personal recipe operations
+/// Dependencies IN: UnifiedRecipeService.personal, SearchService, archived recipes data
+/// Dependencies OUT: Used by archive import views and import workflows
+/// Data flow: UI -> ViewModel -> Personal Recipe Operations -> UnifiedRecipeService
+/// State management: ChangeNotifier with import state and filtering logic
+/// Purpose: Import recipes from Butlery archive with filtering and batch operations
+/// Common issues: Import validation, bulk operations, filtering performance
+/// Test coverage: ViewModel tests with mocked services
+/// Performance: Cached filtering, batch import operations
+/// Analytics: Import events, recipe selection patterns
+/// Code smells: None - follows MVVM pattern with import strategy
+/// Connected to: Archive import views, Personal recipe operations
+/// Used in phases: Phase 5 - Service Consolidation (updated for feature interfaces)
+
 // lib/viewmodels/archive_import_viewmodel.dart
+// ✅ PHASE 5 VERSION: Updated to use personal recipe operations interface
 
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
-import '../services/recipe_service.dart';
+import '../services/unified/unified_recipe_service.dart';
 import '../services/search_service.dart';
 import '../data/archived_recipes.dart' as archive;
 import '../core/injection.dart';
@@ -11,7 +29,7 @@ enum TimeFilter { all, under15, under30, under60 }
 
 /// ViewModel för import från arkiv
 class ArchiveImportViewModel extends ChangeNotifier {
-  final RecipeService _recipeService;
+  final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
 
   // State
@@ -29,9 +47,9 @@ class ArchiveImportViewModel extends ChangeNotifier {
   Set<String>? _lastSelectedTags;
 
   ArchiveImportViewModel({
-    RecipeService? recipeService,
+    UnifiedRecipeService? recipeService,
     SearchService? searchService,
-  }) : _recipeService = recipeService ?? sl<RecipeService>(),
+  }) : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
        _searchService = searchService ?? sl<SearchService>();
 
   // ===== GETTERS =====
@@ -130,14 +148,14 @@ class ArchiveImportViewModel extends ChangeNotifier {
               ) // NY! Sätt sourceUrl
               .toList();
 
-      final result = await _recipeService.addMultipleRecipes(toImport);
+      final result = await _recipeService.personal.addMultipleRecipes(toImport);
 
       if (result.isSuccess) {
         _error = null;
         _selectedRecipeIds.clear();
         notifyListeners();
       } else {
-        _setError(result.message);
+        _setError(result.message ?? 'Import misslyckades');
       }
     } catch (e) {
       _setError('Import misslyckades: ${e.toString()}');
@@ -157,14 +175,14 @@ class ArchiveImportViewModel extends ChangeNotifier {
                 (r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'),
               ) // HÄR är ändringen!
               .toList();
-      final result = await _recipeService.addMultipleRecipes(toImport);
+      final result = await _recipeService.personal.addMultipleRecipes(toImport);
 
       if (result.isSuccess) {
         _error = null;
         _selectedRecipeIds.clear();
         notifyListeners();
       } else {
-        _setError(result.message);
+        _setError(result.message ?? 'Import misslyckades');
       }
     } catch (e) {
       _setError('Import misslyckades: ${e.toString()}');

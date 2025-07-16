@@ -54,6 +54,7 @@ dependencies:
   file_picker: ^8.1.2
   path: ^1.9.0
   flutter_dotenv: ^5.1.0     # För säker API key hantering
+  package_info_plus: ^8.0.2  # För att hämta app version och build info
 
   # ==================== PARSING & PROCESSING ====================
   html: ^0.15.4

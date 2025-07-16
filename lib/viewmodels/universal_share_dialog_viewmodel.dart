@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../models/unified/unified_shopping_list.dart';
 import '../services/social_recipe_service.dart';
+import '../services/unified/unified_shopping_service.dart';
 import '../core/utils/logger.dart';
 
 /// ViewModel for UniversalShareDialog
 /// Handles business logic for sharing content with friends
 class UniversalShareDialogViewModel extends ChangeNotifier {
   final SocialRecipeService _socialRecipeService;
+  final UnifiedShoppingService _shoppingService;
 
   // State
   bool _isSharing = false;
@@ -17,7 +19,9 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
 
   UniversalShareDialogViewModel({
     required SocialRecipeService socialRecipeService,
-  }) : _socialRecipeService = socialRecipeService;
+    required UnifiedShoppingService shoppingService,
+  }) : _socialRecipeService = socialRecipeService,
+       _shoppingService = shoppingService;
 
   // Getters
   bool get isSharing => _isSharing;
@@ -40,17 +44,10 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      final success = await _socialRecipeService.shareRecipeToFriends(
-        recipe: recipe,
-        friendUserIds: friendUserIds,
-        message: message,
-        allowCollaboration: allowCollaboration,
+      await _socialRecipeService.shareRecipeToFriends(
+        recipe.id,
+        friendUserIds,
       );
-
-      if (!success) {
-        _setError(_socialRecipeService.error ?? 'Okänt fel');
-        return false;
-      }
 
       return true;
     } catch (e) {
@@ -65,6 +62,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
   Future<bool> shareMenu({
     required Map<String, List<Recipe>> menu,
     required List<String> friendUserIds,
+    String? menuId,
     String? message,
     bool allowCollaboration = false,
   }) async {
@@ -77,21 +75,19 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      final success = await _socialRecipeService.shareMenuToFriends(
-        menu: menu,
-        friendUserIds: friendUserIds,
-        message: message,
-        allowCollaboration: allowCollaboration,
+      // Generate menu ID if not provided
+      final actualMenuId = menuId ?? _generateMenuId(menu);
+      
+      await _socialRecipeService.shareMenuToFriends(
+        actualMenuId,
+        friendUserIds,
       );
 
-      if (!success) {
-        _setError(_socialRecipeService.error ?? 'Okänt fel');
-        return false;
-      }
-
+      AppLogger.success('Menu shared successfully with ${friendUserIds.length} friends');
       return true;
     } catch (e) {
       _setError('Kunde inte dela meny: $e');
+      AppLogger.error('Failed to share menu: $e');
       return false;
     } finally {
       _setSharing(false);
@@ -121,11 +117,24 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
         AppLogger.info('💬 Meddelande: $message');
       }
 
-      // Simulate sharing - in real implementation, this would use a shopping service
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Use UnifiedShoppingService for sharing
+      bool allSuccessful = true;
+      for (final friendId in friendUserIds) {
+        final success = await _shoppingService.sharing.shareListWithFriend(
+          shoppingList.id,
+          friendId,
+        );
+        if (!success) {
+          allSuccessful = false;
+        }
+      }
 
-      AppLogger.success('✅ Inköpslista delad framgångsrikt');
-      return true;
+      if (allSuccessful) {
+        AppLogger.success('✅ Inköpslista delad framgångsrikt');
+        return true;
+      } else {
+        throw Exception('Några delningar misslyckades');
+      }
     } catch (e) {
       _setError('Kunde inte dela inköpslista: $e');
       return false;
@@ -153,5 +162,19 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
   void _clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Generate a unique menu ID based on menu content
+  String _generateMenuId(Map<String, List<Recipe>> menu) {
+    // Create a deterministic ID based on menu content
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final recipeCount = menu.values.fold<int>(0, (sum, recipes) => sum + recipes.length);
+    final dayCount = menu.keys.length;
+    
+    // Generate ID: timestamp_dayCount_recipeCount
+    final menuId = 'menu_${timestamp}_${dayCount}d_${recipeCount}r';
+    
+    AppLogger.info('Generated menu ID: $menuId for menu with $dayCount days and $recipeCount recipes');
+    return menuId;
   }
 }

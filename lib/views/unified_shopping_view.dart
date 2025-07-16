@@ -26,7 +26,7 @@ import '../core/utils/logger.dart';
 
 // Services
 import '../services/share_service.dart';
-import '../services/friends_service.dart';
+import '../services/unified/unified_friends_service.dart';
 
 class UnifiedShoppingView extends StatefulWidget {
   const UnifiedShoppingView({super.key});
@@ -505,8 +505,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     List<UserProfile> availableFriends = [];
 
     try {
-      final friendsService = sl<FriendsService>();
-      availableFriends = friendsService.friends;
+      final friendsService = sl<UnifiedFriendsService>();
+      availableFriends = friendsService.management.getAllFriends().map((friend) => UserProfile(
+        uid: friend.uid,
+        displayName: friend.displayName,
+        email: friend.email,
+        avatarUrl: friend.avatarUrl,
+        bio: friend.bio,
+        joinedAt: DateTime.now(),
+        lastActiveAt: DateTime.now(),
+      )).toList();
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte hämta vänner för shopping sharing: $e');
       availableFriends = [];

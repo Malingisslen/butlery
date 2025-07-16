@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
-import '../services/recipe_service.dart';
+import '../services/unified/unified_recipe_service.dart';
 import '../services/analytics_service.dart';
 import '../core/injection.dart';
 
@@ -10,7 +10,7 @@ import '../core/injection.dart';
 /// Hanterar visning och borttagning av recept
 /// UPPDATERAD för flera bilder
 class RecipeDetailViewModel extends ChangeNotifier {
-  final RecipeService _recipeService;
+  final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
 
   Recipe _recipe;
@@ -19,12 +19,12 @@ class RecipeDetailViewModel extends ChangeNotifier {
 
   RecipeDetailViewModel({
     required Recipe recipe,
-    RecipeService? recipeService,
+    UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
   }) : _recipe = recipe,
-       _recipeService = recipeService ?? sl<RecipeService>(),
+       _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
        _analyticsService = analyticsService ?? sl<AnalyticsService>() {
-    // Lyssna på RecipeService för uppdateringar
+    // Lyssna på UnifiedRecipeService för uppdateringar
     _recipeService.addListener(_onRecipeServiceUpdate);
   }
 
@@ -64,15 +64,15 @@ class RecipeDetailViewModel extends ChangeNotifier {
     _error = null;
 
     try {
-      final result = await _recipeService.deleteRecipe(_recipe.id);
+      final success = await _recipeService.deleteRecipe(_recipe.id);
 
-      if (result.isSuccess) {
+      if (success) {
         // Logga analytics - använd Firebase Analytics direkt för nu
         // TODO: Lägg till dedikerad metod i AnalyticsService för recipe_deleted
 
         return true;
       } else {
-        _error = result.message;
+        _error = _recipeService.error ?? 'Kunde inte ta bort recept';
         return false;
       }
     } catch (e) {
@@ -89,7 +89,7 @@ class RecipeDetailViewModel extends ChangeNotifier {
       // Uppdatera receptet med ny lastCookedAt
       final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
 
-      final result = await _recipeService.updateRecipe(updatedRecipe);
+      final result = await _recipeService.updateLegacyRecipe(updatedRecipe);
 
       if (result.isSuccess) {
         _recipe = updatedRecipe;

@@ -52,13 +52,12 @@ class FriendCategory {
     );
   }
 
-  /// ✅ FIXAD: Create copy with updated values (inkluderar friendCount)
+  /// Create copy with updated values
   FriendCategory copyWith({
     String? name,
     String? description,
     String? emoji,
     List<String>? friendUserIds,
-    int? friendCount, // ✅ LAGT TILL
     DateTime? updatedAt,
     int? sortOrder,
     bool? isDefault,
@@ -117,6 +116,9 @@ class FriendCategory {
   int get friendCount => friendUserIds.length;
   bool get isEmpty => friendUserIds.isEmpty;
   bool get isNotEmpty => friendUserIds.isNotEmpty;
+
+  /// Compatibility getter for operations that expect memberIds
+  List<String> get memberIds => friendUserIds;
 
   /// ✅ LAGT TILL: Alias för ownerId för kompatibilitet med permissions
   String get createdBy => ownerId;

@@ -5,15 +5,23 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../models/recipe.dart';
+import '../services/import/import_manager.dart';
 
 /// ViewModel för foto-OCR import
-/// Stödjer både kamera och galleri
+/// Now using ImportManager for text processing
 class PhotoImportViewModel extends ChangeNotifier {
+  final ImportManager _importManager;
+
   // State
   Uint8List? _imageBytes;
   String _ocrText = '';
   bool _isProcessing = false;
   String? _error;
+  Recipe? _parsedRecipe;
+
+  PhotoImportViewModel({required ImportManager importManager})
+      : _importManager = importManager;
 
   // API-konfiguration - nu säkert från environment
   String get _ocrApiKey => dotenv.env['OCR_API_KEY'] ?? '';
@@ -27,6 +35,8 @@ class PhotoImportViewModel extends ChangeNotifier {
   bool get hasError => _error != null;
   bool get hasImage => _imageBytes != null;
   bool get hasOcrResult => _ocrText.isNotEmpty;
+  Recipe? get parsedRecipe => _parsedRecipe;
+  bool get hasParsedRecipe => _parsedRecipe != null;
 
   /// Ta bild från kamera och kör OCR
   Future<void> pickImageFromCamera() async {
@@ -78,6 +88,15 @@ class PhotoImportViewModel extends ChangeNotifier {
       }
 
       _ocrText = text;
+      
+      // Process OCR text through ImportManager
+      if (text.isNotEmpty) {
+        final importResult = await _importManager.autoImport(text);
+        if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
+          _parsedRecipe = importResult.importedRecipes.first;
+        }
+      }
+      
       _error = null;
     } catch (e) {
       _setError(e.toString());
@@ -137,6 +156,29 @@ class PhotoImportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Parse current OCR text to recipe
+  Future<bool> parseOcrText() async {
+    if (_ocrText.isEmpty) return false;
+
+    try {
+      _setProcessing(true);
+      final result = await _importManager.autoImport(_ocrText);
+      
+      if (result.isSuccess && result.importedRecipes.isNotEmpty) {
+        _parsedRecipe = result.importedRecipes.first;
+        return true;
+      } else {
+        _setError(result.error ?? 'Could not parse recipe from OCR text');
+        return false;
+      }
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setProcessing(false);
+    }
+  }
+
   /// Rensa fel
   void clearError() {
     _error = null;
@@ -148,6 +190,7 @@ class PhotoImportViewModel extends ChangeNotifier {
     _imageBytes = null;
     _ocrText = '';
     _error = null;
+    _parsedRecipe = null;
   }
 
   void _setProcessing(bool value) {

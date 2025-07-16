@@ -1,29 +1,71 @@
+/// 🔍 AI INFO BLOCK:
+/// Component: Unified Recipe Service - Consolidated service with feature interfaces
+/// File: lib/services/unified/unified_recipe_service.dart
+/// Quick Guide: Main recipe service with separated feature interfaces for personal, social, and realtime operations
+/// Dependencies IN: Firebase, Hive, UnifiedRecipe model, Feature operations
+/// Dependencies OUT: Used by all recipe ViewModels through feature interfaces
+/// Data flow: ViewModels -> Feature Interfaces -> UnifiedRecipeService -> Firebase/Cache
+/// State management: ChangeNotifier with optimistic updates and offline sync
+/// Purpose: Single consolidated service for all recipe operations with clean separation
+/// Common issues: Offline/online sync, permission validation, conflict resolution
+/// Test coverage: Unit tests for all operations and feature interfaces
+/// Performance: Optimistic updates with debounced Firebase sync
+/// Analytics: Recipe operations, collaboration events, import/export usage
+/// Code smells: Large file - separated into feature interfaces for maintainability
+/// Connected to: All recipe ViewModels, Import strategies, Social features
+/// Used in phases: Phase 5 - Service Consolidation
+
 // lib/services/unified/unified_recipe_service.dart
-// ✅ FIXAD VERSION: description_collaborative -> descriptionCollaborative
+// ✅ ENHANCED VERSION: Feature interface separation for Phase 5 consolidation
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:convert';
 import '../../models/unified/unified_recipe.dart';
 import '../../models/recipe.dart'; // För backwards compatibility
 import '../../core/utils/logger.dart';
 import '../../theme/app_theme.dart';
 
+// Feature interfaces
+import 'operations/personal_recipe_operations.dart';
+import 'operations/social_recipe_operations.dart';
+import 'operations/realtime_recipe_operations.dart';
+import 'types/recipe_types.dart';
+
 class UnifiedRecipeService extends ChangeNotifier {
-  static const String _hiveBoxName = 'unified_recipes_cache';
+  static const String _hiveBoxBaseName = 'unified_recipes_cache';
   static const Duration _syncDebounce = AppTheme.wait2s;
 
-final FirebaseFirestore _firestore;
-final FirebaseAuthRepository _authRepository;
+  final FirebaseFirestore _firestore;
+  final FirebaseAuthRepository _authRepository;
 
-UnifiedRecipeService({
-  FirebaseFirestore? firestore,
-  FirebaseAuthRepository? authRepository,
-})  : _firestore = firestore ?? FirebaseFirestore.instance,
-      _authRepository = authRepository ?? FirebaseAuthRepository();
+  // ===== FEATURE INTERFACES - Phase 5 Enhancement =====
+  
+  /// Personal recipe operations - handles personal recipe CRUD, import/export
+  late final PersonalRecipeOperations personal;
+  
+  /// Social recipe operations - handles sharing, collaboration, member management
+  late final SocialRecipeOperations social;
+  
+  /// Realtime recipe operations - handles real-time collaborative editing
+  late final RealtimeRecipeOperations realtime;
+
+  UnifiedRecipeService({
+    FirebaseFirestore? firestore,
+    FirebaseAuthRepository? authRepository,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _authRepository = authRepository ?? FirebaseAuthRepository() {
+    
+    // Initialize feature interfaces
+    personal = PersonalRecipeOperations(this);
+    social = SocialRecipeOperations(this);
+    realtime = RealtimeRecipeOperations(this);
+    
+    AppLogger.info('✅ UnifiedRecipeService initialized with feature interfaces');
+  }
 
 
   // State
@@ -58,6 +100,12 @@ UnifiedRecipeService({
   String? get currentUserId => _authRepository.currentUserId;
   String? get currentUserDisplayName =>
       _authRepository.currentUser?.displayName ?? 'Du';
+
+  /// Get user-specific Hive box name for secure caching
+  String get _userSpecificBoxName {
+    final userId = currentUserId;
+    return userId != null ? '${_hiveBoxBaseName}_$userId' : _hiveBoxBaseName;
+  }
 
   // ===== BACKWARDS COMPATIBILITY - för befintlig kod =====
 
@@ -94,8 +142,19 @@ UnifiedRecipeService({
         }
       }
 
+      // Ensure Hive is initialized before opening boxes
+      try {
+        if (!Hive.isBoxOpen(_userSpecificBoxName)) {
+          // Initialize Hive if not already done
+          await Hive.initFlutter();
+        }
+      } catch (e) {
+        // Hive might already be initialized, continue
+        AppLogger.debug('Hive already initialized or initialization skipped: $e');
+      }
+
       // Öppna Hive box för caching
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
 
       // Ladda cached data först (offline-first)
       await _loadCachedRecipes(box);
@@ -597,7 +656,7 @@ UnifiedRecipeService({
       _recipes.clear();
 
       // Reload from cache first
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
       await _loadCachedRecipes(box);
 
       // Restart Firebase sync to get latest data
@@ -788,6 +847,12 @@ UnifiedRecipeService({
     _saveToCache(updatedRecipe);
   }
 
+  /// Public method for feature interfaces to update local recipe
+  void updateLocalRecipe(UnifiedRecipe updatedRecipe) {
+    _updateLocalRecipe(updatedRecipe);
+    notifyListeners();
+  }
+
   void _removeLocalRecipe(String recipeId) {
     _recipes.removeWhere((r) => r.id == recipeId);
     _removeFromCache(recipeId);
@@ -822,7 +887,7 @@ UnifiedRecipeService({
 
   Future<void> _saveToCache(UnifiedRecipe recipe) async {
     try {
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
       final recipeData = recipe.toJson();
       final recipeJson = jsonEncode(recipeData);
       await box.put(recipe.id, recipeJson);
@@ -834,7 +899,7 @@ UnifiedRecipeService({
 
   Future<void> _removeFromCache(String recipeId) async {
     try {
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
       await box.delete(recipeId);
       AppLogger.debug('Recept borttaget från cache: $recipeId');
     } catch (e) {
@@ -893,17 +958,4 @@ UnifiedRecipeService({
 }
 
 // ===== LEGACY COMPATIBILITY =====
-
-/// Result class för legacy compatibility
-class RecipeOperationResult {
-  final bool isSuccess;
-  final String? message;
-
-  RecipeOperationResult._(this.isSuccess, this.message);
-
-  factory RecipeOperationResult.success([String? message]) =>
-      RecipeOperationResult._(true, message);
-
-  factory RecipeOperationResult.failure(String message) =>
-      RecipeOperationResult._(false, message);
-}
+// RecipeOperationResult moved to types/recipe_types.dart to avoid duplication

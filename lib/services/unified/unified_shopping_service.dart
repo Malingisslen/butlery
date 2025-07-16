@@ -12,9 +12,16 @@ import '../../models/unified/unified_shopping_item.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../core/utils/logger.dart';
 import '../../theme/app_theme.dart';
+import 'operations/personal_shopping_operations.dart';
+import 'operations/collaborative_shopping_operations.dart';
+import 'operations/shopping_share_operations.dart';
 
 class UnifiedShoppingService extends ChangeNotifier {
-  static const String _hiveBoxName = 'unified_shopping_lists_cache';
+  // Feature interfaces
+  late final PersonalShoppingOperations _personalOps;
+  late final CollaborativeShoppingOperations _collaborativeOps;
+  late final ShoppingShareOperations _shareOps;
+  static const String _hiveBoxBaseName = 'unified_shopping_lists_cache';
   static const String _activeListKey = 'active_list_id';
   static const Duration _syncDebounce = AppTheme.wait2s;
 
@@ -26,7 +33,12 @@ UnifiedShoppingService({
   required FirestoreRepository firestoreRepository,
   required AuthRepository authRepository,
 })  : _firestoreRepository = firestoreRepository,
-      _authRepository = authRepository;
+      _authRepository = authRepository {
+    // Initialize feature interfaces
+    _personalOps = PersonalShoppingOperations(this);
+    _collaborativeOps = CollaborativeShoppingOperations(this);
+    _shareOps = ShoppingShareOperations(this);
+  }
 
 
   // State
@@ -45,6 +57,14 @@ UnifiedShoppingService({
 
   // Sync queue for offline operations
   final Set<String> _pendingSyncListIds = {};
+
+  // Feature interface getters
+  PersonalShoppingOperations get personal => _personalOps;
+  CollaborativeShoppingOperations get collaborative => _collaborativeOps;
+  ShoppingShareOperations get share => _shareOps;
+  
+  /// Compatibility getter for legacy code
+  ShoppingShareOperations get sharing => _shareOps;
 
   // ===== GETTERS =====
 
@@ -69,6 +89,12 @@ UnifiedShoppingService({
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'Du';
 
+  /// Get user-specific Hive box name for secure caching
+  String get _userSpecificBoxName {
+    final userId = currentUserId;
+    return userId != null ? '${_hiveBoxBaseName}_$userId' : _hiveBoxBaseName;
+  }
+
   // ===== INITIALIZATION - FÖRENKLAD UTAN MIGRATION =====
 
   Future<void> initialize() async {
@@ -91,7 +117,7 @@ UnifiedShoppingService({
       }
 
       // Öppna Hive box för caching
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
 
       // Ladda cached data först (offline-first)
       await _loadCachedLists(box);
@@ -291,7 +317,7 @@ UnifiedShoppingService({
       _activeListId = listId;
 
       // Spara aktiv lista ID
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
       await box.put(_activeListKey, listId);
 
       notifyListeners();
@@ -477,8 +503,9 @@ UnifiedShoppingService({
     return buffer.toString();
   }
 
-  // ===== PRIVATE METHODS =====
+  // ===== INTERNAL METHODS FOR FEATURE INTERFACES =====
 
+  /// Internal method for feature interfaces to update lists
   Future<bool> _updateList(UnifiedShoppingList updatedList) async {
     try {
       final index = _lists.indexWhere((list) => list.id == updatedList.id);
@@ -727,7 +754,7 @@ UnifiedShoppingService({
 
   Future<void> _saveToCache(UnifiedShoppingList list) async {
     try {
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
       final listData = list.toJson();
       final listJson = jsonEncode(listData);
       await box.put(list.id, listJson);
@@ -739,7 +766,7 @@ UnifiedShoppingService({
 
   Future<void> _removeFromCache(String listId) async {
     try {
-      final box = await Hive.openBox<String>(_hiveBoxName);
+      final box = await Hive.openBox<String>(_userSpecificBoxName);
       await box.delete(listId);
       AppLogger.debug('Lista borttagen från cache: $listId');
     } catch (e) {

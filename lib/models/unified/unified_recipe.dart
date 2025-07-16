@@ -363,7 +363,7 @@ class UnifiedRecipe {
   UnifiedRecipe setUserActive(String userId) {
     if (isPersonal) return this;
 
-    final updatedActiveEditors = [...(activeEditorIds ?? [])];
+    final updatedActiveEditors = <String>[...(activeEditorIds ?? [])];
     if (!updatedActiveEditors.contains(userId)) {
       updatedActiveEditors.add(userId);
     }
@@ -381,7 +381,7 @@ class UnifiedRecipe {
   UnifiedRecipe setUserInactive(String userId) {
     if (isPersonal) return this;
 
-    final updatedActiveEditors = [...(activeEditorIds ?? [])];
+    final updatedActiveEditors = <String>[...(activeEditorIds ?? [])];
     updatedActiveEditors.remove(userId);
 
     return copyWith(

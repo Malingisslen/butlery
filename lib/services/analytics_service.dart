@@ -41,6 +41,9 @@ class AnalyticsService {
   /// Hämta navigation observer för MaterialApp
   FirebaseAnalyticsObserver? get observer => _observer;
 
+  /// Hämta Firebase Analytics instance
+  FirebaseAnalytics get analytics => _analytics;
+
   // ==================== IMPORT & EXTRAKTION TRACKING ====================
 
   /// Logga när en import startar

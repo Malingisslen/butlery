@@ -2,14 +2,12 @@
 
 import 'package:flutter/foundation.dart';
 import '../core/injection.dart';
-import '../services/friend_categories_service.dart';
-import '../services/group_invitation_service.dart';
+import '../services/unified/unified_friends_service.dart';
 import '../core/events/group_events.dart';
 
 
 class CreateGroupViewModel extends ChangeNotifier {
-  final FriendCategoriesService _categoriesService;
-  final GroupInvitationService _groupInvitationService;
+  final UnifiedFriendsService _friendsService;
 
   // Form state
   String _name = '';
@@ -23,11 +21,8 @@ class CreateGroupViewModel extends ChangeNotifier {
   String? _nameError;
 
   CreateGroupViewModel({
-    FriendCategoriesService? categoriesService,
-    GroupInvitationService? groupInvitationService,
-  })  : _categoriesService = categoriesService ?? sl<FriendCategoriesService>(),
-        _groupInvitationService =
-            groupInvitationService ?? sl<GroupInvitationService>();
+    UnifiedFriendsService? friendsService,
+  })  : _friendsService = friendsService ?? sl<UnifiedFriendsService>();
 
   // Getters
   String get name => _name;
@@ -69,7 +64,7 @@ class CreateGroupViewModel extends ChangeNotifier {
   void _validateName() {
     if (_name.trim().isEmpty) {
       _nameError = 'Gruppnamn krävs';
-    } else if (!_categoriesService.isCategoryNameAvailable(_name.trim())) {
+    } else if (_friendsService.categories.getCategoryByName(_name.trim()) != null) {
       _nameError = 'Det här gruppnamnet finns redan';
     } else {
       _nameError = null;
@@ -90,21 +85,21 @@ class CreateGroupViewModel extends ChangeNotifier {
       // Steg 1: Skapa tom grupp
       debugPrint('🔍 DEBUG: Skapar tom grupp "${_name.trim()}"');
 
-      final success = await _categoriesService.createCategory(
+      final categoryId = await _friendsService.categories.createCategory(
         name: _name.trim(),
         description: _description.trim().isEmpty ? null : _description.trim(),
-        emoji: _emoji,
-        friendUserIds: null, // Tom grupp
+        icon: _emoji,
+        initialMemberIds: null, // Tom grupp
       );
 
-      if (!success) {
-        throw Exception(_categoriesService.error ?? 'Kunde inte skapa grupp');
+      if (categoryId == null) {
+        throw Exception(_friendsService.error ?? 'Kunde inte skapa grupp');
       }
 
       // Steg 2: Hämta skapad grupp
-      final createdGroup = _categoriesService.categories
-          .where((group) => group.name == _name.trim())
-          .lastOrNull;
+      final createdGroup = _friendsService.categories.getAllCategories()
+          .where((group) => group.id == categoryId)
+          .firstOrNull;
 
       if (createdGroup == null) {
         throw Exception('Kunde inte hitta den skapade gruppen');
@@ -118,18 +113,36 @@ class CreateGroupViewModel extends ChangeNotifier {
         debugPrint(
             '🔍 DEBUG: Skickar inbjudningar till ${_selectedFriendIds.length} vänner');
 
-        final invitationResults =
-            await _groupInvitationService.sendBulkGroupInvitations(
-          groupId: createdGroup.id,
-          toUserIds: _selectedFriendIds.toList(),
-          personalMessage:
-              'Hej! Jag bjuder in dig till min nya grupp "${createdGroup.name}". Välkommen! 😊',
-        );
+        final invitationResults = <String, bool>{};
+        for (final friendId in _selectedFriendIds.toList()) {
+          final friend = _friendsService.management.getFriendById(friendId);
+          if (friend != null) {
+            // Use actual email if available, otherwise skip invitation
+            if (friend.email.isNotEmpty && friend.email.contains('@')) {
+              final success = await _friendsService.invitations.sendEmailInvitation(
+                email: friend.email,
+                customMessage: 'Hej! Jag bjuder in dig till min nya grupp "${createdGroup.name}". Välkommen! 😊',
+              );
+              invitationResults[friendId] = success;
+            } else {
+              debugPrint('🔍 DEBUG: Cannot send invitation to ${friend.displayName}: No valid email available');
+              invitationResults[friendId] = false;
+            }
+          } else {
+            invitationResults[friendId] = false;
+          }
+        }
 
         invitationsSent =
             invitationResults.values.where((success) => success).length;
         debugPrint(
             '🔍 DEBUG: $invitationsSent av ${_selectedFriendIds.length} inbjudningar skickade');
+        
+        // Log invitation results for user feedback
+        final failedInvitations = _selectedFriendIds.length - invitationsSent;
+        if (failedInvitations > 0) {
+          debugPrint('🔍 DEBUG: $failedInvitations invitations failed - email service not implemented');
+        }
       }
 
       // Trigga event

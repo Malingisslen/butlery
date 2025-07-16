@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 // Models
 import '../models/recipe.dart';
 import '../models/user_profile.dart';
+import '../models/shared_menu.dart';
 
 // ViewModels
 import '../viewmodels/menu_viewmodel.dart';
@@ -28,11 +29,13 @@ import '../core/utils/logger.dart';
 
 // Services
 import '../services/share_service.dart';
-import '../services/friends_service.dart';
+import '../services/unified/unified_friends_service.dart';
 
 /// ✨ MIGRATED VY MED LAYOUTCOMPONENTS
 class VeckomenyView extends StatelessWidget {
-  const VeckomenyView({super.key});
+  final SharedMenu? sharedMenu;
+  
+  const VeckomenyView({super.key, this.sharedMenu});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +56,7 @@ class _VeckomenyViewContent extends StatefulWidget {
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
   final ShareService _shareService = sl<ShareService>();
-  final FriendsService _friendsService = sl<FriendsService>();
+  final UnifiedFriendsService _friendsService = sl<UnifiedFriendsService>();
 
   @override
   void initState() {
