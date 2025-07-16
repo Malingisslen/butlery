@@ -209,7 +209,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Widget _buildMainContent(UnifiedShoppingViewModel viewModel) {
     if (viewModel.isLoading) {
       return StateWidget.loading(
-          message: 'Laddar inköpslistor...'); // ✅ MIGRATION
+        message: 'Laddar inköpslistor...',
+      );
     }
 
     if (viewModel.hasError) {
@@ -223,8 +224,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     }
 
     if (!viewModel.hasItems) {
-      return StateWidget
-          .noShoppingList(); // ✅ MIGRATION: StateWidget istället för EmptyState
+      return StateWidget.noShoppingList();
     }
 
     return _buildCategorizedItemsList(viewModel);

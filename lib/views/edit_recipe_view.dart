@@ -10,6 +10,7 @@ import '../viewmodels/recipe_form_viewmodel.dart';
 import '../viewmodels/collaborative_status_viewmodel.dart';
 import '../widgets/common/utility_components.dart';
 import '../widgets/common/social_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../widgets/image/universal_image_manager.dart';
 import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
@@ -424,9 +425,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
           // Loading overlay (över allt)
           if (viewModel.isSaving)
-            UtilityComponents.loadingOverlay(
-              isLoading: true,
-              loadingMessage: 'Uppdaterar recept...',
+            Container(
+              color: AppTheme.overlayLight,
+              child: Center(
+                child: StateWidget.loading(
+                  message: 'Uppdaterar recept...',
+                ),
+              ),
             ),
         ],
       ),

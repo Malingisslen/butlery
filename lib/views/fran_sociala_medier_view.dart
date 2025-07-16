@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/text_import_viewmodel.dart';
 import '../views/skriv_sjalv_recept_view.dart';
 import '../widgets/common/utility_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../theme/app_theme.dart';
 import '../core/injection.dart';
 
@@ -177,7 +178,9 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
             // Error message
             if (viewModel.hasError) ...[
               AppTheme.smallGap,
-              AppTheme.errorContainer(context, viewModel.error!),
+              StateWidget.error(
+                message: viewModel.error!,
+              ),
             ],
           ],
         ),

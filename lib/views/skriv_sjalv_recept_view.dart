@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_theme.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/common/utility_components.dart';
+import '../widgets/common/state_widget.dart';
 import '../widgets/image/universal_image_manager.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
@@ -365,11 +366,15 @@ class _SkrivSjalvReceptViewContentState
             ),
           ),
 
-          // Loading overlay med UtilityComponents
+          // Loading overlay med StateWidget
           if (viewModel.isSaving)
-            UtilityComponents.loadingOverlay(
-              isLoading: true,
-              loadingMessage: 'Sparar recept...',
+            Container(
+              color: AppTheme.overlayLight,
+              child: Center(
+                child: StateWidget.loading(
+                  message: 'Sparar recept...',
+                ),
+              ),
             ),
         ],
       ),

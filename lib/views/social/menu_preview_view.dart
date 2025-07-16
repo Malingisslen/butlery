@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../widgets/common/social_components.dart';
+import '../../widgets/common/state_widget.dart';
 import '../../models/shared_menu.dart';
 import '../../models/recipe.dart';
 import '../../theme/app_theme.dart';
@@ -211,23 +212,9 @@ class MenuPreviewView extends StatelessWidget {
       return SliverToBoxAdapter(
         child: Container(
           padding: AppTheme.screenPadding,
-          child: Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.restaurant_outlined,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                SizedBox(height: AppTheme.spacingMd),
-                Text(
-                  'Inga recept i menyn',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
+          child: StateWidget.empty(
+            title: 'Inga recept i menyn',
+            icon: Icons.restaurant_outlined,
           ),
         ),
       );

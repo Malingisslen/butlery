@@ -444,13 +444,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   Widget _buildMenuContent(MenuViewModel viewModel) {
     if (!viewModel.hasMenu) {
-      // ✅ MIGRATION: StateWidget empty state
-      return StateWidget.empty(
-        title: 'Ingen meny genererad ännu',
-        subtitle:
-            'Skriv vad du vill ha och tryck på knappen ovan\n\nTips: Använd mapp-ikonen för att ladda en sparad meny!',
-        icon: Icons.restaurant_menu,
-      );
+      return StateWidget.noMenu();
     }
 
     return ListView(

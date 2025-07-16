@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/collaborative_shopping_viewmodel.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
+import '../../widgets/common/state_widget.dart';
 
 
 class CollaborativeShoppingView extends StatefulWidget {
@@ -89,34 +90,29 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   Widget _buildBody(
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
     if (viewModel.isLoading && !viewModel.hasData) {
-      return _buildLoadingState(context);
+      return StateWidget.loading(
+        message: 'Laddar gemensam lista...',
+      );
+    }
+
+    if (viewModel.hasError) {
+      return StateWidget.error(
+        message: viewModel.error!,
+        onAction: () {
+          viewModel.clearError();
+          viewModel.refresh();
+        },
+      );
     }
 
     if (!viewModel.hasData) {
       return _buildNotFoundState(context);
     }
 
-    if (viewModel.hasError) {
-      return _buildErrorState(context, viewModel);
-    }
-
     return _buildListContent(context, viewModel);
   }
 
   // ===== STATES =====
-
-  Widget _buildLoadingState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AppTheme.mediumLoadingIndicator(),
-          AppTheme.mediumGap,
-          Text('Laddar gemensam lista...', style: AppTheme.subtitleStyle),
-        ],
-      ),
-    );
-  }
 
   Widget _buildNotFoundState(BuildContext context) {
     return Center(
@@ -153,29 +149,6 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     );
   }
 
-  Widget _buildErrorState(
-      BuildContext context, CollaborativeShoppingViewModel viewModel) {
-    return Center(
-      child: Padding(
-        padding: AppTheme.screenPadding,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppTheme.errorContainer(context, viewModel.error!),
-            AppTheme.mediumGap,
-            ElevatedButton.icon(
-              onPressed: () {
-                viewModel.clearError();
-                viewModel.refresh();
-              },
-              icon: Icon(Icons.refresh),
-              label: Text('Försök igen'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ===== CONTENT =====
 
@@ -433,35 +406,12 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
   Widget _buildEmptyItemsState(
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
-    return Center(
-      child: Padding(
-        padding: AppTheme.screenPadding,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.shopping_cart_outlined,
-              size: AppTheme.iconSizeEmptyState,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            AppTheme.mediumGap,
-            Text(
-              'Inga artiklar än',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            AppTheme.smallGap,
-            Text(
-              viewModel.canEdit
-                  ? 'Lägg till den första artikeln ovan'
-                  : 'Väntar på att andra lägger till artiklar',
-              style: AppTheme.subtitleStyle,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return StateWidget.empty(
+      title: 'Inga artiklar än',
+      subtitle: viewModel.canEdit
+          ? 'Lägg till den första artikeln ovan'
+          : 'Väntar på att andra lägger till artiklar',
+      icon: Icons.shopping_cart_outlined,
     );
   }
 
