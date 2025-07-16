@@ -176,21 +176,21 @@ class SocialRecipeViewModel extends ChangeNotifier {
       _isPostingComment = true;
       notifyListeners();
 
-      // TODO: Implement comment functionality through UnifiedRecipeService social operations
-      // final success = await _socialRecipeService.addComment(
-      //   recipeId: _recipe.id,
-      //   text: _newCommentText.trim(),
-      //   parentCommentId: _replyToCommentId,
-      // );
-      final success = false; // Placeholder until social features implemented
+      // Implement comment functionality through UnifiedRecipeService social operations
+      final success = await _recipeService.social.addComment(
+        recipeId: _recipe.id,
+        comment: _newCommentText.trim(),
+      );
 
-      // TODO: Handle success case when implemented
-      // if (success) {
-      //   _newCommentText = '';
-      //   _replyToCommentId = null;
-      //   await _loadComments(); // Refresh comments
-      //   AppLogger.success('✅ Kommentar postad');
-      // }
+      // Handle success case
+      if (success) {
+        _newCommentText = '';
+        _replyToCommentId = null;
+        await _loadComments(); // Refresh comments
+        AppLogger.success('✅ Kommentar postad');
+      } else {
+        AppLogger.error('❌ Kunde inte posta kommentar');
+      }
 
       return success;
     } catch (e) {
