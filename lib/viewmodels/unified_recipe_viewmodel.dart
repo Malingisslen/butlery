@@ -29,11 +29,12 @@ import 'package:get_it/get_it.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
+import '../core/permissions/permission_mixins.dart';
 import '../services/unified/types/recipe_types.dart' show RecipeOperationResult;
 import '../models/unified/unified_recipe.dart';
 import '../models/recipe.dart'; // För backwards compatibility
 
-class UnifiedRecipeViewModel extends ChangeNotifier {
+class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, RecipePermissionMixin {
   final UnifiedRecipeService _recipeService =
       GetIt.instance<UnifiedRecipeService>();
 
@@ -69,7 +70,9 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
   bool get hasCollaborativeRecipes => collaborativeRecipes.isNotEmpty;
 
   // User info
+  @override
   String? get currentUserId => _recipeService.currentUserId;
+  @override
   String? get currentUserDisplayName => _recipeService.currentUserDisplayName;
 
   // Statistics
@@ -466,8 +469,8 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     if (currentUserId == null) return [];
 
     return recipes.where((recipe) {
-      if (recipe.isPersonal) return sl<PermissionService>().isRecipeOwner(recipe.id);
-      return sl<PermissionService>().canEditRecipe(recipe.id);
+      if (recipe.isPersonal) return isRecipeOwner(recipe.id);
+      return canEditRecipe(recipe.id);
     }).toList();
   }
 
@@ -519,24 +522,9 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
 
   // ===== COLLABORATIVE FEATURES =====
 
-  /// Kontrollera om användaren kan redigera specifikt recept
-  bool canEditRecipe(String recipeId) {
-    return GetIt.instance<PermissionService>().canEditRecipe(recipeId);
-  }
-
   /// Kontrollera om användaren kan hantera medlemmar i specifikt recept
   bool canManageRecipeMembers(String recipeId) {
-    return GetIt.instance<PermissionService>().canInviteToRecipe(recipeId);
-  }
-
-  /// Kontrollera om användaren kan visa specifikt recept
-  bool canViewRecipe(String recipeId) {
-    return GetIt.instance<PermissionService>().canViewRecipe(recipeId);
-  }
-
-  /// Kontrollera om användaren kan ta bort specifikt recept
-  bool canDeleteRecipe(String recipeId) {
-    return GetIt.instance<PermissionService>().canDeleteRecipe(recipeId);
+    return sl<PermissionService>().canInviteToRecipe(recipeId);
   }
 
   /// Få aktiva editorer för specifikt recept

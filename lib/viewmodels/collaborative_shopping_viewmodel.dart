@@ -7,11 +7,11 @@ import '../models/unified/unified_shopping_list.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
-import '../services/permission_service.dart';
+import '../core/permissions/permission_mixins.dart';
 import '../theme/app_theme.dart';
 
 
-class CollaborativeShoppingViewModel extends ChangeNotifier {
+class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionMixin, ShoppingListPermissionMixin {
   final UnifiedShoppingService _shoppingService;
   final String listId;
 
@@ -49,11 +49,11 @@ class CollaborativeShoppingViewModel extends ChangeNotifier {
   String get listDescription => _currentList?.description ?? '';
   bool get hasDescription => listDescription.isNotEmpty;
 
-  // Permission checks using PermissionService
+  // Permission checks using ShoppingListPermissionMixin
   bool get canEdit => _currentList != null && 
-      sl<PermissionService>().canEditShoppingList(_currentList!.id);
+      canEditShoppingList(_currentList!.id);
   bool get canView => _currentList != null && 
-      sl<PermissionService>().canViewShoppingList(_currentList!.id);
+      canViewShoppingList(_currentList!.id);
 
   // Progress tracking
   int get totalItems => _currentList?.totalItems ?? 0;
