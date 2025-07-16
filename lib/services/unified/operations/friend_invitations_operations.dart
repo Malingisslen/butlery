@@ -18,6 +18,7 @@
 import '../../../models/user_profile.dart';
 import '../../../core/utils/logger.dart';
 import 'friends_operations.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Friend invitations operations feature interface
 /// 
@@ -331,11 +332,24 @@ class FriendInvitationsOperations {
       
       final shareText = '$message\n\nDownload: $inviteLink';
 
-      // TODO: Implement platform-specific sharing
-      // For now, just log the action
-      AppLogger.info('Sharing invitation: $shareText');
-      
-      return true;
+      // Use platform-specific sharing
+      try {
+        final result = await Share.share(
+          shareText,
+          subject: 'Join me on Butlery!',
+        );
+        
+        if (result.status == ShareResultStatus.success) {
+          AppLogger.success('Successfully shared invitation');
+          return true;
+        } else {
+          AppLogger.warning('Share cancelled or failed: ${result.status}');
+          return false;
+        }
+      } catch (e) {
+        AppLogger.error('Platform sharing failed: $e');
+        return false;
+      }
     } catch (e) {
       AppLogger.error('Error sharing app invitation', e);
       return false;

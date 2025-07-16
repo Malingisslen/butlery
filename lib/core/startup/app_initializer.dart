@@ -12,6 +12,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 // Services
 import '../../services/offline_service.dart';
 import '../../services/analytics_service.dart';
+import '../../services/deep_link_service.dart';
 
 // Dependency Injection
 import '../injection.dart';
@@ -88,6 +89,9 @@ class AppInitializer {
 
       // 6️⃣ Initiera Offline Service (TUNGT - kan köras i bakgrunden)
       await _initializeOfflineService();
+
+      // 7️⃣ Initiera Deep Link Service (LÄTT - kan köras i bakgrunden)
+      await _initializeDeepLinkService();
 
       _isBackgroundInitialized = true;
       debugPrint('✅ === BUTLERY APP INITIALIZATION COMPLETE ===');
@@ -307,6 +311,18 @@ class AppInitializer {
       debugPrint('❌ Fel vid Offline Service initialization: $e');
       debugPrint('ℹ️ Offline-funktioner kommer inte fungera');
       // Offline-stöd är inte kritiskt - appen fungerar online
+    }
+  }
+
+  /// 7️⃣ Initierar Deep Link Service
+  static Future<void> _initializeDeepLinkService() async {
+    try {
+      await DeepLinkService.initializeDynamicLinks();
+      debugPrint('✅ Deep Link Service initierad');
+    } catch (e) {
+      debugPrint('❌ Fel vid Deep Link Service initialization: $e');
+      debugPrint('ℹ️ Deep linking kommer inte fungera fullt ut');
+      // Deep linking är inte kritiskt - appen fungerar utan det
     }
   }
 

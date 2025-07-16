@@ -179,6 +179,41 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
     return await _shoppingService.removeItemFromActiveList(itemId);
   }
 
+  /// Restore a deleted item to the active list
+  Future<bool> restoreItem(UnifiedShoppingItem item) async {
+    return await _shoppingService.addItemToActiveList(
+      name: item.name,
+      amount: item.amount,
+      unit: item.unit,
+      category: item.category,
+      note: item.note,
+      priority: item.priority,
+    );
+  }
+
+  /// Update an existing item in the active list
+  Future<bool> updateItem({
+    required String itemId,
+    String? name,
+    double? quantity,
+    String? unit,
+    String? category,
+    String? notes,
+    double? estimatedPrice,
+    int? priority,
+  }) async {
+    return await _shoppingService.updateItemInActiveList(
+      itemId: itemId,
+      name: name,
+      quantity: quantity,
+      unit: unit,
+      category: category,
+      notes: notes,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+    );
+  }
+
   /// ✅ NY: Ta bort artikel (alias för kompatibilitet)
   Future<bool> removeItemFromActiveList(String itemId) async {
     return await removeItem(itemId);

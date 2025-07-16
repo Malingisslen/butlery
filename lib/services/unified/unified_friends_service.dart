@@ -20,8 +20,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../repositories/interfaces/auth_repository.dart';
+import '../deep_link_service.dart';
 import '../../repositories/firestore_repository.dart';
 import '../../models/friend_request.dart';
 import '../../models/user_profile.dart';
@@ -570,14 +572,19 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ignore: unused_element
   Future<String> _createInvitationLink(GroupInvitation invitation) async {
     try {
-      // TODO: Implement proper deep linking with Firebase Dynamic Links or similar
-      // For now, return a placeholder URL that would work with proper implementation
+      // Use the deep link service to generate a proper invitation link
+      final invitationLink = DeepLinkService.generateFriendInvitationLink(
+        invitationId: invitation.id,
+        fromUserId: invitation.fromUserId,
+        customMessage: invitation.personalMessage,
+      );
       
-      AppLogger.warning('⚠️ Deep link generation not implemented yet');
-      AppLogger.info('Would create invitation link for group ${invitation.groupName}');
+      AppLogger.info('Generated invitation link: $invitationLink');
       
-      // Return placeholder URL that would work with proper deep linking
-      return 'https://butlery.app/invite/${invitation.id}';
+      // Store the invitation in Firebase for validation
+      await _storeInvitationInFirebase(invitation, invitationLink);
+      
+      return invitationLink;
     } catch (e) {
       AppLogger.error('Failed to create invitation link: $e');
       return '';
@@ -992,9 +999,11 @@ class UnifiedFriendsService extends ChangeNotifier {
 
   /// Generate invitation link with unique ID
   String _generateInvitationLink(String invitationId) {
-    // For production, this would be your app's deep link URL
-    const baseUrl = 'https://butlery.app/invite';
-    return '$baseUrl?id=$invitationId';
+    // Use the deep link service to generate a proper invitation link
+    return DeepLinkService.generateFriendInvitationLink(
+      invitationId: invitationId,
+      fromUserId: currentUserId ?? '',
+    );
   }
 
   /// Store invitation in Firebase for tracking and validation
@@ -1107,13 +1116,29 @@ class UnifiedFriendsService extends ChangeNotifier {
   /// Launch URL helper method
   Future<bool> _launchUrl(String url) async {
     try {
-      // For now, we'll use a simple approach that should work on most platforms
-      // In production, you would import url_launcher package
-      AppLogger.info('Would launch URL: $url');
+      AppLogger.info('Launching URL: $url');
       
-      // For development/testing, we simulate success
-      // TODO: Import and use url_launcher package for production
-      return true;
+      // Parse the URL to ensure it's valid
+      final uri = Uri.parse(url);
+      
+      // Check if the URL can be launched
+      if (await canLaunchUrl(uri)) {
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        
+        if (launched) {
+          AppLogger.success('Successfully launched URL: $url');
+          return true;
+        } else {
+          AppLogger.error('Failed to launch URL: $url');
+          return false;
+        }
+      } else {
+        AppLogger.error('Cannot launch URL: $url');
+        return false;
+      }
     } catch (e) {
       AppLogger.error('Failed to launch URL: $e');
       return false;
@@ -1182,6 +1207,196 @@ class UnifiedFriendsService extends ChangeNotifier {
       AppLogger.error('Failed to create SMS URL: $e');
       return false;
     }
+  }
+
+  // ===== BLOCKING SUPPORT METHODS =====
+
+  /// Remove all friend requests between current user and specified user
+  // ignore: unused_element
+  Future<void> _removeAllRequestsWithUser(String userId) async {
+    try {
+      // Remove incoming requests from this user
+      _incomingRequests.removeWhere((request) => request.fromUserId == userId);
+      
+      // Remove outgoing requests to this user
+      _outgoingRequests.removeWhere((request) => request.toUserId == userId);
+      
+      // Sync to Firebase
+      await _syncRequestsToFirebase();
+      
+      AppLogger.debug('Removed all requests with user: $userId');
+    } catch (e) {
+      AppLogger.error('Failed to remove requests with user: $e');
+    }
+  }
+
+
+  /// Sync friend requests to Firebase
+  Future<void> _syncRequestsToFirebase() async {
+    try {
+      final currentUser = _authRepository.getCurrentUser();
+      if (currentUser == null) return;
+
+      // Sync incoming requests
+      for (final request in _incomingRequests) {
+        await _firestore
+            .collection('users')
+            .doc(currentUser.uid)
+            .collection('friend_requests')
+            .doc('incoming')
+            .collection('requests')
+            .doc(request.id)
+            .set(request.toJson());
+      }
+
+      // Sync outgoing requests
+      for (final request in _outgoingRequests) {
+        await _firestore
+            .collection('users')
+            .doc(currentUser.uid)
+            .collection('friend_requests')
+            .doc('outgoing')
+            .collection('requests')
+            .doc(request.id)
+            .set(request.toJson());
+      }
+
+      AppLogger.debug('Synced friend requests to Firebase');
+    } catch (e) {
+      AppLogger.error('Failed to sync friend requests to Firebase: $e');
+    }
+  }
+
+  // ===== FRIEND SUGGESTIONS SUPPORT METHODS =====
+
+  /// Get friends of a specific user (for mutual friends suggestions)
+  // ignore: unused_element
+  Future<List<UserProfile>> _getFriendsOfUser(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('friends')
+          .get();
+
+      final friends = <UserProfile>[];
+      for (final doc in snapshot.docs) {
+        try {
+          final userProfile = UserProfile.fromJson(doc.data());
+          friends.add(userProfile);
+        } catch (e) {
+          AppLogger.debug('Could not parse friend profile: $e');
+        }
+      }
+
+      return friends;
+    } catch (e) {
+      AppLogger.error('Failed to get friends of user $userId: $e');
+      return [];
+    }
+  }
+
+  /// Get recent collaborators from recipe sharing
+  // ignore: unused_element
+  Future<List<UserProfile>> _getRecentCollaborators(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('unified_collaborative_recipes')
+          .where('memberPermissions.$userId', isNotEqualTo: null)
+          .where('updatedAt', isGreaterThan: DateTime.now().subtract(const Duration(days: 30)))
+          .limit(20)
+          .get();
+
+      final collaborators = <UserProfile>[];
+      for (final doc in snapshot.docs) {
+        try {
+          final data = doc.data();
+          final memberPermissions = data['memberPermissions'] as Map<String, dynamic>?;
+          
+          if (memberPermissions != null) {
+            for (final memberId in memberPermissions.keys) {
+              if (memberId != userId && !isFriend(memberId)) {
+                // Get user profile for this member
+                final userProfile = await _getUserProfile(memberId);
+                if (userProfile != null) {
+                  collaborators.add(userProfile);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          AppLogger.debug('Could not parse collaborative recipe: $e');
+        }
+      }
+
+      return collaborators;
+    } catch (e) {
+      AppLogger.error('Failed to get recent collaborators: $e');
+      return [];
+    }
+  }
+
+  /// Get recent shopping collaborators
+  // ignore: unused_element
+  Future<List<UserProfile>> _getRecentShoppingCollaborators(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('unified_collaborative_shopping_lists')
+          .where('memberPermissions.$userId', isNotEqualTo: null)
+          .where('updatedAt', isGreaterThan: DateTime.now().subtract(const Duration(days: 30)))
+          .limit(20)
+          .get();
+
+      final collaborators = <UserProfile>[];
+      for (final doc in snapshot.docs) {
+        try {
+          final data = doc.data();
+          final memberPermissions = data['memberPermissions'] as Map<String, dynamic>?;
+          
+          if (memberPermissions != null) {
+            for (final memberId in memberPermissions.keys) {
+              if (memberId != userId && !isFriend(memberId)) {
+                // Get user profile for this member
+                final userProfile = await _getUserProfile(memberId);
+                if (userProfile != null) {
+                  collaborators.add(userProfile);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          AppLogger.debug('Could not parse collaborative shopping list: $e');
+        }
+      }
+
+      return collaborators;
+    } catch (e) {
+      AppLogger.error('Failed to get recent shopping collaborators: $e');
+      return [];
+    }
+  }
+
+  /// Get user profile by ID
+  Future<UserProfile?> _getUserProfile(String userId) async {
+    try {
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (doc.exists) {
+        return UserProfile.fromJson(doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      AppLogger.error('Failed to get user profile for $userId: $e');
+      return null;
+    }
+  }
+
+  /// Check if user is a friend
+  bool isFriend(String userId) {
+    return _friends.any((friend) => friend.uid == userId);
   }
 
   @override

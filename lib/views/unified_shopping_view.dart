@@ -446,7 +446,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
             action: SnackBarAction(
               label: 'Ångra',
               onPressed: () {
-                // TODO: Implementera undo functionality
+                // Restore the deleted item
+                viewModel.restoreItem(item);
               },
             ),
           ),
@@ -574,24 +575,22 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Future<void> _editItemFromDialog(
       String itemId, UnifiedShoppingItem editedItem) async {
     try {
-      // TODO: Implementera edit-funktionalitet i ViewModel
-      // För nu, ta bort gamla och lägg till ny
-      final removed = await _viewModel.removeItem(itemId);
-      if (removed) {
-        final success = await _viewModel.addItem(
-          name: editedItem.name,
-          amount: editedItem.amount,
-          unit: editedItem.unit,
-          category: editedItem.category,
-        );
+      // Use the proper update method
+      final success = await _viewModel.updateItem(
+        itemId: itemId,
+        name: editedItem.name,
+        quantity: editedItem.amount,
+        unit: editedItem.unit,
+        category: editedItem.category,
+        notes: editedItem.note,
+        estimatedPrice: editedItem.estimatedPrice,
+        priority: editedItem.priority,
+      );
 
-        if (success) {
-          _showSuccessSnackBar('${editedItem.name} uppdaterad!');
-        } else {
-          _showErrorSnackBar('Kunde inte uppdatera ${editedItem.name}');
-        }
+      if (success) {
+        _showSuccessSnackBar('${editedItem.name} uppdaterad!');
       } else {
-        _showErrorSnackBar('Kunde inte ta bort gamla ${editedItem.name}');
+        _showErrorSnackBar('Kunde inte uppdatera ${editedItem.name}');
       }
     } catch (e) {
       _showErrorSnackBar('Fel vid uppdatering: $e');

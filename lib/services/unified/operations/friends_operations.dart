@@ -125,22 +125,55 @@ class FriendsOperations {
 
   /// Block user (removes friendship and prevents new requests)
   Future<bool> blockUser(String userId) async {
-    // First remove as friend if they are one
-    if (isFriend(userId)) {
-      await removeFriend(userId);
-    }
+    try {
+      // First remove as friend if they are one
+      if (isFriend(userId)) {
+        await removeFriend(userId);
+      }
 
-    // TODO: Implement blocking functionality
-    // This would prevent the user from sending friend requests
-    AppLogger.info('Block user functionality to be implemented: $userId');
-    return true;
+      // Add to blocked users set
+      _parent._blockedUsers.add(userId);
+      
+      // Remove any pending friend requests
+      await _parent._removeAllRequestsWithUser(userId);
+      
+      // Save to Firebase
+      await _parent._syncBlockedUsersToFirebase();
+      
+      // Notify listeners
+      _parent.notifyListeners();
+      
+      AppLogger.success('Successfully blocked user: $userId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to block user: $e');
+      return false;
+    }
   }
 
   /// Unblock user
   Future<bool> unblockUser(String userId) async {
-    // TODO: Implement unblocking functionality
-    AppLogger.info('Unblock user functionality to be implemented: $userId');
-    return true;
+    try {
+      // Remove from blocked users set
+      final removed = _parent._blockedUsers.remove(userId);
+      
+      if (!removed) {
+        AppLogger.warning('User was not blocked: $userId');
+        return false;
+      }
+      
+      // Save to Firebase
+      await _parent._syncBlockedUsersToFirebase();
+      
+      // Notify listeners
+      _parent.notifyListeners();
+      
+      AppLogger.success('Successfully unblocked user: $userId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to unblock user: $e');
+      return false;
+    }
   }
 
   // ===== USER SEARCH AND DISCOVERY =====
@@ -182,16 +215,89 @@ class FriendsOperations {
   /// Get suggested friends (mutual friends, contacts, etc.)
   Future<List<UserProfile>> getSuggestedFriends() async {
     try {
-      // TODO: Implement friend suggestions based on:
-      // - Mutual friends
-      // - Contact list (if permission granted)
-      // - Recent interactions
-      // - Common interests/groups
+      final suggestions = <UserProfile>[];
+      final currentUserId = _parent.currentUserId;
       
-      AppLogger.info('Friend suggestions to be implemented');
-      return [];
+      if (currentUserId == null) {
+        return suggestions;
+      }
+
+      // Get mutual friends suggestions
+      final mutualFriends = await _getMutualFriendsSuggestions(currentUserId);
+      suggestions.addAll(mutualFriends);
+
+      // Get suggestions from recent interactions
+      final recentInteractions = await _getRecentInteractionsSuggestions(currentUserId);
+      suggestions.addAll(recentInteractions);
+
+      // Remove duplicates and filter out existing friends, blocked users, and pending requests
+      final uniqueSuggestions = <String, UserProfile>{};
+      for (final suggestion in suggestions) {
+        if (!uniqueSuggestions.containsKey(suggestion.uid) &&
+            !isFriend(suggestion.uid) &&
+            !_parent._blockedUsers.contains(suggestion.uid) &&
+            !hasPendingRequestTo(suggestion.uid) &&
+            !hasPendingRequestFrom(suggestion.uid)) {
+          uniqueSuggestions[suggestion.uid] = suggestion;
+        }
+      }
+
+      final result = uniqueSuggestions.values.toList();
+      AppLogger.info('Found ${result.length} friend suggestions');
+      return result;
     } catch (e) {
       AppLogger.error('Error getting friend suggestions', e);
+      return [];
+    }
+  }
+
+  /// Get mutual friends suggestions
+  Future<List<UserProfile>> _getMutualFriendsSuggestions(String currentUserId) async {
+    try {
+      final suggestions = <UserProfile>[];
+      final myFriends = _parent.friendsList;
+      
+      // For each of my friends, get their friends
+      for (final friend in myFriends) {
+        try {
+          // Get friend's friends (this would need to be implemented in the service)
+          final friendsFriends = await _parent._getFriendsOfUser(friend.uid);
+          
+          // Add their friends as potential suggestions
+          for (final friendOfFriend in friendsFriends) {
+            if (friendOfFriend.uid != currentUserId && 
+                !isFriend(friendOfFriend.uid)) {
+              suggestions.add(friendOfFriend);
+            }
+          }
+        } catch (e) {
+          AppLogger.debug('Could not get friends for user ${friend.uid}: $e');
+        }
+      }
+      
+      return suggestions;
+    } catch (e) {
+      AppLogger.error('Error getting mutual friends suggestions', e);
+      return [];
+    }
+  }
+
+  /// Get suggestions from recent interactions
+  Future<List<UserProfile>> _getRecentInteractionsSuggestions(String currentUserId) async {
+    try {
+      final suggestions = <UserProfile>[];
+      
+      // Get users from recent collaborative recipes
+      final recentCollaborators = await _parent._getRecentCollaborators(currentUserId);
+      suggestions.addAll(recentCollaborators);
+      
+      // Get users from recent shopping list collaborations
+      final recentShoppingCollaborators = await _parent._getRecentShoppingCollaborators(currentUserId);
+      suggestions.addAll(recentShoppingCollaborators);
+      
+      return suggestions;
+    } catch (e) {
+      AppLogger.error('Error getting recent interactions suggestions', e);
       return [];
     }
   }

@@ -426,6 +426,74 @@ UnifiedShoppingService({
     }
   }
 
+  /// Update an item in the active list
+  Future<bool> updateItemInActiveList({
+    required String itemId,
+    String? name,
+    double? quantity,
+    String? unit,
+    String? category,
+    String? notes,
+    double? estimatedPrice,
+    int? priority,
+  }) async {
+    if (activeList == null) {
+      _setError('Ingen aktiv lista');
+      return false;
+    }
+
+    try {
+      if (activeList!.isPersonal) {
+        // Use personal operations for personal lists
+        return await _personalOps.updateItem(
+          listId: activeList!.id,
+          itemId: itemId,
+          name: name,
+          amount: quantity,
+          unit: unit,
+          category: category,
+          note: notes,
+          estimatedPrice: estimatedPrice,
+          priority: priority,
+        );
+      } else {
+        // For collaborative lists, we need to implement the method
+        // For now, use the fallback approach of remove and add
+        final item = activeList!.items.where((i) => i.id == itemId).firstOrNull;
+        if (item == null) {
+          _setError('Artikel hittades inte');
+          return false;
+        }
+
+        // Create updated item
+        final updatedItem = item.copyWith(
+          name: name ?? item.name,
+          amount: quantity ?? item.amount,
+          unit: unit ?? item.unit,
+          category: category ?? item.category,
+          note: notes ?? item.note,
+          estimatedPrice: estimatedPrice ?? item.estimatedPrice,
+          priority: priority ?? item.priority,
+        );
+
+        // Remove old item and add updated one
+        final removedList = activeList!.removeItem(
+          itemId,
+          userId: currentUserId,
+          userDisplayName: currentUserDisplayName,
+        );
+        
+        final updatedList = removedList.addItem(updatedItem);
+        
+        return await _updateList(updatedList);
+      }
+    } catch (e) {
+      AppLogger.error('❌ Kunde inte uppdatera artikel: $e');
+      _setError('Kunde inte uppdatera artikel: $e');
+      return false;
+    }
+  }
+
   Future<bool> clearBoughtItems() async {
     if (activeList == null) {
       _setError('Ingen aktiv lista');
