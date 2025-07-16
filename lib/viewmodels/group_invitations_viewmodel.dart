@@ -3,28 +3,21 @@
 import 'package:flutter/foundation.dart';
 import '../models/friend_category.dart';
 import '../models/user_profile.dart';
-import '../models/group_invitation.dart'; // ✅ NYTT: Import GroupInvitation model
-import '../services/friend_categories_service.dart';
-import '../services/friends_service.dart';
+import '../models/group_invitation.dart';
+import '../services/unified/unified_friends_service.dart';
 import '../services/auth_service.dart';
-import '../services/group_invitation_service.dart'; // ✅ NYTT: Import GroupInvitationService
 import '../core/utils/logger.dart';
 import '../core/error/error_handler.dart';
 
 
 class GroupInvitationsViewModel extends ChangeNotifier {
-  final FriendCategoriesService _categoriesService;
-  final FriendsService _friendsService;
+  final UnifiedFriendsService _friendsService;
   final AuthService _authService;
-  final GroupInvitationService
-      _groupInvitationService; // ✅ NYTT: GroupInvitationService
 
-  // ===== BEFINTLIG STATE (för tillgängliga grupper) =====
+  // ===== STATE =====
   List<FriendCategory> _availableGroups = [];
   final Map<String, List<UserProfile>> _groupMembers = {};
   final Set<String> _joiningGroupIds = {};
-
-  // ===== NYTT STATE (för gruppinbjudningar) =====
   List<GroupInvitation> _receivedInvitations = [];
   final Set<String> _respondingInvitationIds = {};
 
@@ -33,15 +26,10 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   String? _error;
 
   GroupInvitationsViewModel({
-    required FriendCategoriesService categoriesService,
-    required FriendsService friendsService,
+    required UnifiedFriendsService friendsService,
     required AuthService authService,
-    required GroupInvitationService groupInvitationService, // ✅ NYTT: Parameter
-  })  : _categoriesService = categoriesService,
-        _friendsService = friendsService,
-        _authService = authService,
-        _groupInvitationService = groupInvitationService {
-    // ✅ NYTT: Spara referens
+  })  : _friendsService = friendsService,
+        _authService = authService {
     _initializeData();
   }
 
@@ -65,7 +53,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
   /// Mottagna gruppinbjudningar (väntande)
   List<GroupInvitation> get receivedInvitations => List.unmodifiable(
-      _receivedInvitations.where((inv) => inv.isPending).toList());
+      _receivedInvitations.where((inv) => inv.status == GroupInvitationStatus.pending).toList());
 
   /// Alla mottagna inbjudningar (inklusive avslutade)
   List<GroupInvitation> get allReceivedInvitations =>
@@ -118,7 +106,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
       }
 
       // Hämta alla grupper
-      final allGroups = _categoriesService.categories;
+      final allGroups = _friendsService.categories.getAllCategories();
 
       // Filtrera bort grupper där användaren redan är medlem eller admin
       _availableGroups = allGroups.where((group) {
@@ -154,7 +142,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
     for (final group in _availableGroups) {
       try {
         // Hämta vänprofiler för gruppmedlemmar
-        final allFriends = _friendsService.friends;
+        final allFriends = _friendsService.management.getAllFriends();
         final groupMembers = allFriends
             .where((friend) => group.friendUserIds.contains(friend.uid))
             .toList();
@@ -184,19 +172,19 @@ class GroupInvitationsViewModel extends ChangeNotifier {
       debugPrint(
           '🔍 DEBUG: Loading received invitations för userId: $currentUserId');
 
-      // Hämta inbjudningar från GroupInvitationService
-      _receivedInvitations = _groupInvitationService.receivedInvitations;
+      // Hämta inbjudningar från UnifiedFriendsService
+      _receivedInvitations = _friendsService.invitations.getSentInvitations();
 
       // ✅ DEBUG: Detaljerad output
       debugPrint(
-          '🔍 DEBUG: GroupInvitationService.receivedInvitations count: ${_groupInvitationService.receivedInvitations.length}');
+          '🔍 DEBUG: UnifiedFriendsService.invitations count: ${_friendsService.invitations.getSentInvitations().length}');
       debugPrint(
-          '🔍 DEBUG: All received invitations: ${_groupInvitationService.receivedInvitations.map((inv) => "ID: ${inv.id}, toUserId: ${inv.toUserId}, status: ${inv.status}").toList()}');
+          '🔍 DEBUG: All received invitations: ${_friendsService.invitations.getSentInvitations().map((inv) => "ID: ${inv.id}, toUserId: ${inv.toUserId}, status: ${inv.status}").toList()}');
 
       final pendingInvitations =
-          _receivedInvitations.where((inv) => inv.isPending).toList();
+          _receivedInvitations.where((inv) => inv.status == GroupInvitationStatus.pending).toList();
       debugPrint(
-          '🔍 DEBUG: Pending invitations: ${pendingInvitations.map((inv) => "ID: ${inv.id}, groupName: ${inv.groupName}").toList()}');
+          '🔍 DEBUG: Pending invitations: ${pendingInvitations.map((inv) => "ID: ${inv.id}, senderName: ${inv.fromUserName}").toList()}');
 
       AppLogger.info(
         '📨 ${_receivedInvitations.length} mottagna inbjudningar (${receivedInvitations.length} väntande)',
@@ -236,10 +224,10 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
       AppLogger.info('🔄 Går med i grupp "${group.name}"...');
 
-      // Använd FriendCategoriesService för att lägga till användaren som medlem
-      final success = await _categoriesService.addFriendToCategory(
-        groupId,
-        currentUserId,
+      // Använd UnifiedFriendsService för att lägga till användaren som medlem
+      final success = await _friendsService.categories.assignFriendToCategory(
+        friendId: currentUserId,
+        categoryId: groupId,
       );
 
       if (success) {
@@ -253,7 +241,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         _logJoinGroupEvent(group);
       } else {
         final errorMessage =
-            _categoriesService.error ?? 'Kunde inte gå med i gruppen';
+            _friendsService.error ?? 'Kunde inte gå med i gruppen';
         throw Exception(errorMessage);
       }
     } catch (e) {
@@ -287,15 +275,15 @@ class GroupInvitationsViewModel extends ChangeNotifier {
       );
 
       AppLogger.info(
-          '🔄 Accepterar inbjudan till grupp "${invitation.groupName}"...');
+          '🔄 Accepterar inbjudan från "${invitation.fromUserName}"...');
 
-      // Använd GroupInvitationService för att acceptera
+      // Använd UnifiedFriendsService för att acceptera
       final success =
-          await _groupInvitationService.acceptGroupInvitation(invitationId);
+          await _friendsService.invitations.markInvitationAsViewed(invitationId);
 
       if (success) {
         AppLogger.success(
-            '✅ Inbjudan accepterad! Nu medlem i "${invitation.groupName}"');
+            '✅ Inbjudan accepterad från "${invitation.fromUserName}"');
 
         // Uppdatera lokal state - ta bort från väntande inbjudningar
         await _loadReceivedInvitations();
@@ -307,7 +295,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         _logAcceptInvitationEvent(invitation);
       } else {
         final errorMessage =
-            _groupInvitationService.error ?? 'Kunde inte acceptera inbjudan';
+            _friendsService.error ?? 'Kunde inte acceptera inbjudan';
         throw Exception(errorMessage);
       }
     } catch (e) {
@@ -339,14 +327,14 @@ class GroupInvitationsViewModel extends ChangeNotifier {
       );
 
       AppLogger.info(
-          '🔄 Avvisar inbjudan till grupp "${invitation.groupName}"...');
+          '🔄 Avvisar inbjudan från "${invitation.fromUserName}"...');
 
-      // Använd GroupInvitationService för att avvisa
+      // Använd UnifiedFriendsService för att avvisa
       final success =
-          await _groupInvitationService.rejectGroupInvitation(invitationId);
+          await _friendsService.invitations.cancelInvitation(invitationId);
 
       if (success) {
-        AppLogger.info('❌ Inbjudan avvisad för "${invitation.groupName}"');
+        AppLogger.info('❌ Inbjudan avvisad från "${invitation.fromUserName}"');
 
         // Uppdatera lokal state
         await _loadReceivedInvitations();
@@ -355,7 +343,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         _logRejectInvitationEvent(invitation);
       } else {
         final errorMessage =
-            _groupInvitationService.error ?? 'Kunde inte avvisa inbjudan';
+            _friendsService.error ?? 'Kunde inte avvisa inbjudan';
         throw Exception(errorMessage);
       }
     } catch (e) {
@@ -376,10 +364,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
     try {
       // Refresha underliggande services först
-      await _categoriesService.refresh();
-      await _friendsService.refresh();
-      await _groupInvitationService
-          .refresh(); // ✅ NYTT: Refresha även GroupInvitationService
+      // UnifiedFriendsService hanterar refresh internt
 
       // Ladda om båda typerna av data
       await _initializeData();
@@ -457,7 +442,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   void _logAcceptInvitationEvent(GroupInvitation invitation) {
     try {
       AppLogger.info(
-        '📊 Analytics: Användare accepterade inbjudan till "${invitation.groupName}" från ${invitation.fromUserName}',
+        '📊 Analytics: Användare accepterade inbjudan från ${invitation.fromUserName}',
       );
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte logga accept invitation event: $e');
@@ -468,7 +453,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   void _logRejectInvitationEvent(GroupInvitation invitation) {
     try {
       AppLogger.info(
-        '📊 Analytics: Användare avvisade inbjudan till "${invitation.groupName}" från ${invitation.fromUserName}',
+        '📊 Analytics: Användare avvisade inbjudan från ${invitation.fromUserName}',
       );
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte logga reject invitation event: $e');

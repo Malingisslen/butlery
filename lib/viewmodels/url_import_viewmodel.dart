@@ -3,15 +3,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../utils/recipe_scraper.dart';
+import '../models/recipe.dart';
+import '../services/import/import_manager.dart';
 
 /// ViewModel för URL-baserad receptimport
-/// Nu med stöd för att spara sourceUrl
+/// Now using ImportManager for text processing
 class UrlImportViewModel extends ChangeNotifier {
+  final ImportManager _importManager;
+
   // State
   String _url = '';
   String _extractedText = '';
   bool _isLoading = false;
   String? _error;
+  Recipe? _parsedRecipe;
+
+  UrlImportViewModel({required ImportManager importManager})
+      : _importManager = importManager;
 
   // Getters
   String get url => _url;
@@ -21,8 +29,10 @@ class UrlImportViewModel extends ChangeNotifier {
   bool get hasError => _error != null;
   bool get hasExtractedText => _extractedText.isNotEmpty;
   bool get canFetch => _url.trim().isNotEmpty && _isValidUrl(_url);
+  Recipe? get parsedRecipe => _parsedRecipe;
+  bool get hasParsedRecipe => _parsedRecipe != null;
 
-  // NY! Getter för att få den rensade URL:en som sourceUrl
+  // Getter för att få den rensade URL:en som sourceUrl
   String? get sourceUrl => _url.trim().isNotEmpty ? _url.trim() : null;
 
   /// Uppdatera URL
@@ -73,6 +83,14 @@ class UrlImportViewModel extends ChangeNotifier {
 
       if (_extractedText.isEmpty) {
         throw Exception('Ingen receptdata kunde extraheras från sidan.');
+      }
+
+      // Process extracted text through ImportManager
+      final importResult = await _importManager.autoImport(_extractedText);
+      if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
+        _parsedRecipe = importResult.importedRecipes.first.copyWith(
+          sourceUrl: trimmedUrl,
+        );
       }
     } catch (e) {
       _setError(e.toString());
@@ -151,11 +169,37 @@ class UrlImportViewModel extends ChangeNotifier {
     }
   }
 
+  /// Parse current extracted text to recipe
+  Future<bool> parseExtractedText() async {
+    if (_extractedText.isEmpty) return false;
+
+    try {
+      _setLoading(true);
+      final result = await _importManager.autoImport(_extractedText);
+      
+      if (result.isSuccess && result.importedRecipes.isNotEmpty) {
+        _parsedRecipe = result.importedRecipes.first.copyWith(
+          sourceUrl: sourceUrl,
+        );
+        return true;
+      } else {
+        _setError(result.error ?? 'Could not parse recipe from extracted text');
+        return false;
+      }
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Rensa all state
   void clearAll() {
     _url = '';
     _extractedText = '';
     _error = null;
+    _parsedRecipe = null;
     notifyListeners();
   }
 

@@ -5,7 +5,11 @@
       "Bash(find:*)",
       "Bash(rg:*)",
       "Bash(flutter analyze:*)",
-      "Bash(dart analyze:*)"
+      "Bash(dart analyze:*)",
+      "Bash(rm:*)",
+      "Bash(flutter build:*)",
+      "Bash(/mnt/c/tools/flutter/bin/flutter analyze)",
+      "Bash(/mnt/c/tools/flutter/bin/flutter analyze --no-pub)"
     ],
     "deny": []
   }

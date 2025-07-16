@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
+import '../services/social_recipe_service.dart';
 import '../models/recipe.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../viewmodels/collaborative_status_viewmodel.dart';
@@ -13,7 +14,6 @@ import '../widgets/image/universal_image_manager.dart';
 import '../theme/app_theme.dart';
 import '../core/validators/form_validators.dart';
 import '../core/injection.dart';
-import '../services/social_recipe_service.dart';
 
 /// ✨ KOMPLETT REDIGERA RECEPT VY - Med CollaborativeStatusViewModel integration
 class EditRecipeView extends StatelessWidget {
@@ -493,20 +493,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   Widget _buildCollaborativeBanner(BuildContext context) {
     return Consumer<CollaborativeStatusViewModel>(
       builder: (context, collaborativeViewModel, child) {
-        // 🔍 DEBUG: Kolla SocialRecipeService data
+        // Collaborative status check
+
         final socialService = sl<SocialRecipeService>();
-        debugPrint('🔍 === COLLABORATIVE DEBUG START ===');
-        debugPrint('🔍 Recipe ID we are checking: ${widget.recipe.id}');
-        debugPrint('🔍 Recipe title: "${widget.recipe.title}"');
-        debugPrint(
-            '🔍 Total shared recipes in service: ${socialService.sharedWithMe.length}');
-
-        if (socialService.sharedWithMe.isEmpty) {
-          debugPrint('🔍 ❌ NO shared recipes found - creating test data...');
-          socialService.createTestSharedRecipe(widget.recipe.id);
-          debugPrint('🔍 ✅ Test shared recipe created!');
-        }
-
         for (final shared in socialService.sharedWithMe) {
           debugPrint(
               '🔍 Shared recipe: ${shared.originalRecipeId} by ${shared.sharedByUserId}');

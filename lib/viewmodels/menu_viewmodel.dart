@@ -6,9 +6,8 @@ import '../constants/icon_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/recipe.dart';
-import '../services/recipe_service.dart';
+import '../services/unified/unified_recipe_service.dart';
 import '../services/menu_service.dart';
-import '../services/social_recipe_service.dart';
 import '../services/user_service.dart'; // ✅ NY IMPORT
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
@@ -16,9 +15,8 @@ import '../core/utils/logger.dart';
 /// ViewModel för VeckomenyView
 /// ✅ INTEGRERAD med social import för seamless menu management
 class MenuViewModel extends ChangeNotifier {
-  final RecipeService _recipeService;
+  final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
-  final SocialRecipeService _socialService;
   final UserService _userService; // ✅ NY SERVICE
 
   // BEFINTLIG State
@@ -31,21 +29,16 @@ class MenuViewModel extends ChangeNotifier {
   List<SavedMenuInfo> _savedMenus = [];
 
   MenuViewModel({
-    RecipeService? recipeService,
+    UnifiedRecipeService? recipeService,
     MenuService? menuService,
-    SocialRecipeService? socialService,
     UserService? userService, // ✅ NY PARAMETER
-  })  : _recipeService = recipeService ?? sl<RecipeService>(),
+  })  : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
         _menuService = menuService ?? sl<MenuService>(),
-        _socialService = socialService ?? sl<SocialRecipeService>(),
         _userService = userService ?? sl<UserService>() {
     // ✅ NY INIT
 
-    // Lyssna på ändringar från RecipeService
+    // Lyssna på ändringar från UnifiedRecipeService
     _recipeService.addListener(_onRecipesChanged);
-
-    // ✅ NY: Lyssna på social service för import-updates
-    _socialService.addListener(_onSocialContentChanged);
 
     // Ladda kombinerade menyer vid start
     _loadAllMenus();
@@ -62,7 +55,7 @@ class MenuViewModel extends ChangeNotifier {
   int get totalRecipeCount =>
       _menu.values.fold(0, (sum, recipes) => sum + recipes.length);
 
-  List<Recipe> get availableRecipes => _recipeService.recipes;
+  List<Recipe> get availableRecipes => _recipeService.legacyRecipes;
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 
   // ✅ UPPDATERAD: Kombinerade menyer
@@ -188,12 +181,14 @@ class MenuViewModel extends ChangeNotifier {
           selectedFriendIds != null &&
           selectedFriendIds.isNotEmpty) {
         try {
-          await _socialService.shareMenuToFriends(
-            menu: savedMenu.menu,
-            friendUserIds: selectedFriendIds,
-            message: shareMessage?.trim(),
-            customTitle: savedMenu.name,
-          );
+          // TODO: Implement social sharing through UnifiedFriendsService
+          // await _socialService.shareMenuToFriends(
+          //   menu: savedMenu.menu,
+          //   friendUserIds: selectedFriendIds,
+          //   message: shareMessage?.trim(),
+          //   customTitle: savedMenu.name,
+          // );
+          debugPrint('Social sharing not yet implemented');
 
           AppLogger.success(
               '✅ Meny sparad OCH delad med ${selectedFriendIds.length} vänner: $menuName');
@@ -404,15 +399,17 @@ class MenuViewModel extends ChangeNotifier {
 
       final importedMenus = <SavedMenuInfo>[];
 
+      // TODO: Implement social menu loading through UnifiedFriendsService
       // 🚀 PERFORMANCE FIX: Skip loading imported menus if social content hasn't been loaded yet
       // This prevents triggering Firebase queries during app startup
-      if (!_socialService.hasLoadedContent) {
-        AppLogger.info('🚀 Skipping imported menus - social content not loaded yet');
-        return [];
-      }
+      // if (!_socialService.hasLoadedContent) {
+      //   AppLogger.info('🚀 Skipping imported menus - social content not loaded yet');
+      //   return [];
+      // }
 
       // Hämta importerade menyer från social service
-      for (final sharedMenu in _socialService.menusSharedWithMe) {
+      const List<dynamic> sharedMenus = []; // Placeholder until social features implemented
+      for (final sharedMenu in sharedMenus) {
         if (sharedMenu.isImportedBy(currentUserId)) {
           importedMenus.add(SavedMenuInfo(
             key:
@@ -440,10 +437,12 @@ class MenuViewModel extends ChangeNotifier {
     try {
       if (!menuKey.startsWith('imported_menu_')) return null;
 
-      final sharedMenuId = menuKey.replaceFirst('imported_menu_', '');
-      final sharedMenu = _socialService.menusSharedWithMe
-          .where((m) => m.id == sharedMenuId)
-          .firstOrNull;
+      // TODO: Implement social menu lookup through UnifiedFriendsService
+      // final sharedMenuId = menuKey.replaceFirst('imported_menu_', '');
+      // final sharedMenu = _socialService.menusSharedWithMe
+      //     .where((m) => m.id == sharedMenuId)
+      //     .firstOrNull;
+      const dynamic sharedMenu = null; // Placeholder until social features implemented
 
       if (sharedMenu == null) return null;
 
@@ -471,11 +470,11 @@ class MenuViewModel extends ChangeNotifier {
     }
   }
 
-  /// ✅ NY: Listener för social content ändringar
-  void _onSocialContentChanged() {
-    // När social content ändras (t.ex. ny import), uppdatera meny-listan
-    _loadAllMenus();
-  }
+  // TODO: Implement social content listener when social features are ready
+  // void _onSocialContentChanged() {
+  //   // När social content ändras (t.ex. ny import), uppdatera meny-listan
+  //   _loadAllMenus();
+  // }
 
   // ===== BEFINTLIGA PRIVATE METHODS =====
   void _setGenerating(bool value) {
@@ -511,7 +510,8 @@ class MenuViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _recipeService.removeListener(_onRecipesChanged);
-    _socialService.removeListener(_onSocialContentChanged); // ✅ NY CLEANUP
+    // TODO: Remove social service listener when implemented
+    // _socialService.removeListener(_onSocialContentChanged); // ✅ NY CLEANUP
     super.dispose();
   }
 }

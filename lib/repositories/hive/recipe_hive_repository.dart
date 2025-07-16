@@ -25,14 +25,17 @@ class RecipeHiveRepository extends BaseHiveRepository<Recipe> {
   RecipeHiveRepository() : super('recipes');
 
   @override
-  Future<void> init() async {
+  Future<void> init({String? userId}) async {
     // Registrera adapter om nödvändigt
     if (!Hive.isAdapterRegistered(0)) {
       Hive.registerAdapter(RecipeAdapter());
     }
-    await super.init();
+    await super.init(userId: userId);
   }
 
-  // TODO: Använd user-specifika nycklar för komplett offline-stöd
+  /// Initialiserar med aktuell användares ID för säker user-specifik cache
+  Future<void> initWithUser(String userId) async {
+    await init(userId: userId);
+  }
 }
 

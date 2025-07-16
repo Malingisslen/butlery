@@ -7,6 +7,7 @@ import '../../repositories/firebase/firebase_auth_repository.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 // Services
 import '../../services/offline_service.dart';
@@ -14,7 +15,13 @@ import '../../services/analytics_service.dart';
 
 // Dependency Injection
 import '../injection.dart';
-import '../../services/recipe_service.dart';
+import '../../services/unified/unified_recipe_service.dart';
+import '../../services/unified/unified_friends_service.dart';
+import '../../repositories/interfaces/auth_repository.dart';
+import '../../repositories/firestore_repository.dart';
+import '../../services/auth_service.dart';
+import '../../services/user_service.dart';
+import '../../services/persistence_service.dart';
 
 // Firebase config
 import '../../firebase_options.dart';
@@ -198,6 +205,10 @@ class AppInitializer {
         return;
       }
 
+      // Get actual package info
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+
       // Skapa en test-ping till användarens collection
       final doc = FirebaseFirestore.instance
           .collection('users')
@@ -207,8 +218,7 @@ class AppInitializer {
 
       await doc.set({
         'checkedAt': FieldValue.serverTimestamp(),
-        'appVersion':
-            'TODO: Hämta från package info', // TODO: Få från package info
+        'appVersion': appVersion,
       });
 
       final snapshot = await doc.get();
@@ -251,16 +261,39 @@ class AppInitializer {
   /// Validerar att kritiska services kan skapas
   static Future<void> _validateCriticalServices() async {
     try {
-      // Testa RecipeService (mest kritisk)
-      sl<RecipeService>();
-      debugPrint('✅ RecipeService hämtad från DI');
+      // Validate core repositories (most critical)
+      sl<AuthRepository>();
+      debugPrint('✅ AuthRepository validation passed');
 
-      // TODO: Lägg till fler service-valideringar här
-      // final authService = sl<AuthService>();
-      // debugPrint('✅ AuthService hämtad från DI');
+      sl<FirestoreRepository>();
+      debugPrint('✅ FirestoreRepository validation passed');
+
+      // Validate core services
+      sl<AuthService>();
+      debugPrint('✅ AuthService validation passed');
+
+      sl<UserService>();
+      debugPrint('✅ UserService validation passed');
+
+      // Validate unified services (phase 5 critical services)
+      sl<UnifiedRecipeService>();
+      debugPrint('✅ UnifiedRecipeService validation passed');
+
+      sl<UnifiedFriendsService>();
+      debugPrint('✅ UnifiedFriendsService validation passed');
+
+      // Validate utility services
+      sl<PersistenceService>();
+      debugPrint('✅ PersistenceService validation passed');
+
+      sl<OfflineService>();
+      debugPrint('✅ OfflineService validation passed');
+
+      debugPrint('✅ All critical services validated successfully');
     } catch (e) {
-      debugPrint('❌ Service validation misslyckades: $e');
-      rethrow; // Om services inte fungerar är det kritiskt
+      debugPrint('❌ CRITICAL: Service validation failed: $e');
+      debugPrint('❌ App cannot continue without these services');
+      rethrow; // Critical failure - app cannot function
     }
   }
 
@@ -292,7 +325,7 @@ class AppInitializer {
 
       // Kontrollera DI
       try {
-        sl<RecipeService>();
+        sl<UnifiedRecipeService>();
         status['dependency_injection'] = true;
       } catch (e) {
         status['dependency_injection'] = false;

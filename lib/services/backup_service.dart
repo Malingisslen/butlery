@@ -8,7 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import '../models/recipe.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
-import 'recipe_service.dart';
+import 'unified/unified_recipe_service.dart';
 
 /// Service som hanterar backup och restore av recept
 class BackupService {
@@ -16,8 +16,8 @@ class BackupService {
   Future<BackupResult> exportToFile() async {
     try {
       // Hämta alla recept
-      final recipeService = sl<RecipeService>();
-      final recipes = await recipeService.getAllRecipes();
+      final recipeService = sl<UnifiedRecipeService>();
+      final recipes = recipeService.legacyRecipes;
 
       if (recipes.isEmpty) {
         return BackupResult.error('Inga recept att exportera');
@@ -186,7 +186,7 @@ class BackupService {
       final recipesJson = backupData['recipes'] as List;
 
       // Importera recept
-      final recipeService = sl<RecipeService>();
+      final recipeService = sl<UnifiedRecipeService>();
       int successCount = 0;
       int skipCount = 0;
       final errors = <String>[];
@@ -199,7 +199,7 @@ class BackupService {
           // Kolla om receptet redan finns (baserat på titel)
           final existingRecipes = recipeService.recipes;
           final alreadyExists = existingRecipes.any(
-            (r) => r.title.toLowerCase() == recipe.title.toLowerCase(),
+            (r) => r.name.toLowerCase() == recipe.title.toLowerCase(),
           );
 
           if (alreadyExists) {
@@ -223,7 +223,7 @@ class BackupService {
             sourceUrl: 'Importerat från backup ${_formatDate(DateTime.now())}',
           );
 
-          await recipeService.createRecipe(newRecipe);
+          await recipeService.personal.addLegacyRecipe(newRecipe);
           successCount++;
         } catch (e) {
           skipCount++;

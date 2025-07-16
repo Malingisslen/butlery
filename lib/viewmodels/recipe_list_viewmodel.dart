@@ -2,14 +2,14 @@
 
 import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
-import '../services/recipe_service.dart';
+import '../services/unified/unified_recipe_service.dart';
 import '../services/search_service.dart';
 import '../core/injection.dart';
 
 /// ViewModel för MinaReceptView
 /// Hanterar all business logic för receptlistan
 class RecipeListViewModel extends ChangeNotifier {
-  final RecipeService _recipeService;
+  final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
 
   // Search & Sort state
@@ -32,11 +32,11 @@ class RecipeListViewModel extends ChangeNotifier {
   Set<String>? _lastRatingFilters;
 
   RecipeListViewModel({
-    RecipeService? recipeService,
+    UnifiedRecipeService? recipeService,
     SearchService? searchService,
-  }) : _recipeService = recipeService ?? sl<RecipeService>(),
+  }) : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
        _searchService = searchService ?? sl<SearchService>() {
-    // Lyssna på ändringar från RecipeService
+    // Lyssna på ändringar från UnifiedRecipeService
     _recipeService.addListener(_onRecipesChanged);
   }
 
@@ -44,7 +44,7 @@ class RecipeListViewModel extends ChangeNotifier {
 
   List<Recipe> get recipes => _getFilteredAndSortedRecipes();
   bool get isLoading => _recipeService.isLoading;
-  String? get error => _recipeService.lastError;
+  String? get error => _recipeService.error;
   bool get hasError => _recipeService.hasError;
 
   String get searchQuery => _searchQuery;
@@ -129,7 +129,7 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Ta bort recept
   Future<void> deleteRecipe(String recipeId) async {
     await _recipeService.deleteRecipe(recipeId);
-    // RecipeService hanterar notifications, vi behöver inte göra något här
+    // UnifiedRecipeService hanterar notifications, vi behöver inte göra något här
     return;
   }
 
@@ -157,7 +157,7 @@ class RecipeListViewModel extends ChangeNotifier {
       return _cachedFilteredRecipes!;
     }
 
-    var filtered = List<Recipe>.from(_recipeService.recipes);
+    var filtered = List<Recipe>.from(_recipeService.legacyRecipes);
 
     // Applicera tidsfilter
     if (_activeTimeFilters.isNotEmpty) {

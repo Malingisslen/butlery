@@ -1,15 +1,15 @@
 // lib/viewmodels/shopping_share_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/unified/unified_shopping_list.dart'; // ✅ Rätt model
+import '../models/unified/unified_shopping_list.dart';
 import '../models/user_profile.dart';
-import '../services/social_recipe_service.dart';
-import '../services/friends_service.dart';
+import '../services/unified/unified_shopping_service.dart';
+import '../services/unified/unified_friends_service.dart';
 
 
 class ShoppingShareViewModel extends ChangeNotifier {
-  final SocialRecipeService _socialRecipeService;
-  final FriendsService _friendsService;
+  final UnifiedShoppingService _shoppingService;
+  final UnifiedFriendsService _friendsService;
 
   // ==================== STATE PROPERTIES ====================
 
@@ -24,9 +24,9 @@ class ShoppingShareViewModel extends ChangeNotifier {
   // ==================== CONSTRUCTOR ====================
 
   ShoppingShareViewModel({
-    required SocialRecipeService socialRecipeService,
-    required FriendsService friendsService,
-  })  : _socialRecipeService = socialRecipeService,
+    required UnifiedShoppingService shoppingService,
+    required UnifiedFriendsService friendsService,
+  })  : _shoppingService = shoppingService,
         _friendsService = friendsService;
 
   // ==================== GETTERS ====================
@@ -159,19 +159,24 @@ class ShoppingShareViewModel extends ChangeNotifier {
             : 'Kolla in min inköpslista!',
         'sharedAt': DateTime.now().toIso8601String(),
       };
+      
+      debugPrint('Share data prepared: ${shareData['itemCount']} items');
 
-      // Dela med varje vald vän via befintlig metod
+      // Dela med varje vald vän via UnifiedShoppingService
       bool allSuccessful = true;
       for (final friendId in _selectedFriendIds) {
         try {
-          // ✅ Använd befintlig shareContent metod
-          await _socialRecipeService.shareContent(
-            friendId: friendId,
-            contentType: 'shopping_list',
-            contentData: shareData,
+          final success = await _shoppingService.sharing.shareListWithFriend(
+            shoppingList.id,
+            friendId,
           );
 
-          debugPrint('   ✅ Delad med vän: $friendId');
+          if (success) {
+            debugPrint('   ✅ Delad med vän: $friendId');
+          } else {
+            debugPrint('   ❌ Misslyckades med vän $friendId');
+            allSuccessful = false;
+          }
         } catch (e) {
           debugPrint('   ❌ Misslyckades med vän $friendId: $e');
           allSuccessful = false;
@@ -224,8 +229,7 @@ class ShoppingShareViewModel extends ChangeNotifier {
 
   Future<void> _loadFriends() async {
     try {
-      // ✅ Använd befintlig friends property från service
-      _friends = List.from(_friendsService.friends);
+      _friends = _friendsService.management.getAllFriends();
       debugPrint('   → Laddade ${_friends.length} vänner');
     } catch (e) {
       debugPrint('   ❌ Kunde inte ladda vänner: $e');

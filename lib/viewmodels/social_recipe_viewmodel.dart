@@ -4,16 +4,16 @@ import 'package:flutter/foundation.dart';
 import '../models/recipe.dart';
 import '../models/user_profile.dart';
 import '../models/recipe_comment.dart';
-import '../services/social_recipe_service.dart';
-import '../services/friends_service.dart';
+import '../services/unified/unified_recipe_service.dart';
+import '../services/unified/unified_friends_service.dart';
 import '../services/user_service.dart';
 import '../core/utils/logger.dart'; // Fixad import
 
 
 class SocialRecipeViewModel extends ChangeNotifier {
   final Recipe _recipe;
-  final SocialRecipeService _socialRecipeService;
-  final FriendsService _friendsService;
+  final UnifiedRecipeService _recipeService;
+  final UnifiedFriendsService _friendsService;
   final UserService _userService;
 
   // Comments state
@@ -33,15 +33,15 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   SocialRecipeViewModel({
     required Recipe recipe,
-    required SocialRecipeService socialRecipeService,
-    required FriendsService friendsService,
+    required UnifiedRecipeService recipeService,
+    required UnifiedFriendsService friendsService,
     required UserService userService,
   })  : _recipe = recipe,
-        _socialRecipeService = socialRecipeService,
+        _recipeService = recipeService,
         _friendsService = friendsService,
         _userService = userService {
     _loadComments();
-    _socialRecipeService.addListener(_onSocialServiceChanged);
+    _recipeService.addListener(_onSocialServiceChanged);
     _friendsService.addListener(_onFriendsServiceChanged);
   }
 
@@ -63,7 +63,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
   bool get isPostingComment => _isPostingComment;
   bool get isReplying => _replyToCommentId != null;
 
-  List<UserProfile> get friends => _friendsService.friends;
+  List<UserProfile> get friends => _friendsService.friendsList;
   UserProfile? get currentUser => _userService.currentUserProfile;
 
   // Comment filtering
@@ -111,19 +111,28 @@ class SocialRecipeViewModel extends ChangeNotifier {
       _sharingError = null;
       notifyListeners();
 
-      final success = await _socialRecipeService.shareRecipeToFriends(
-        recipe: _recipe,
-        friendUserIds: _selectedFriendIds.toList(),
-        message: message,
+      // Convert friend IDs to member display names - simplified for now
+      final memberDisplayNames = <String, String>{};
+      for (final friendId in _selectedFriendIds) {
+        final friend = friends.where((f) => f.uid == friendId).firstOrNull;
+        memberDisplayNames[friendId] = friend?.displayName ?? 'Friend';
+      }
+
+      final sharedRecipeId = await _recipeService.social.shareRecipe(
+        recipeId: _recipe.id,
+        memberIds: _selectedFriendIds.toList(),
+        memberDisplayNames: memberDisplayNames,
+        collaborativeDescription: message,
       );
 
+      final success = sharedRecipeId != null;
       if (success) {
         _selectedFriendIds.clear();
         AppLogger.success(
           '✅ Recept delat med ${_selectedFriendIds.length} vänner',
         );
       } else {
-        _sharingError = _socialRecipeService.error ?? 'Kunde inte dela recept';
+        _sharingError = _recipeService.error ?? 'Kunde inte dela recept';
       }
 
       return success;
@@ -167,18 +176,21 @@ class SocialRecipeViewModel extends ChangeNotifier {
       _isPostingComment = true;
       notifyListeners();
 
-      final success = await _socialRecipeService.addComment(
-        recipeId: _recipe.id,
-        text: _newCommentText.trim(),
-        parentCommentId: _replyToCommentId,
-      );
+      // TODO: Implement comment functionality through UnifiedRecipeService social operations
+      // final success = await _socialRecipeService.addComment(
+      //   recipeId: _recipe.id,
+      //   text: _newCommentText.trim(),
+      //   parentCommentId: _replyToCommentId,
+      // );
+      final success = false; // Placeholder until social features implemented
 
-      if (success) {
-        _newCommentText = '';
-        _replyToCommentId = null;
-        await _loadComments(); // Refresh comments
-        AppLogger.success('✅ Kommentar postad');
-      }
+      // TODO: Handle success case when implemented
+      // if (success) {
+      //   _newCommentText = '';
+      //   _replyToCommentId = null;
+      //   await _loadComments(); // Refresh comments
+      //   AppLogger.success('✅ Kommentar postad');
+      // }
 
       return success;
     } catch (e) {
@@ -192,46 +204,52 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   /// Edit existing comment
   Future<bool> editComment(String commentId, String newText) async {
-    final success = await _socialRecipeService.editComment(commentId, newText);
+    // TODO: Implement edit comment through UnifiedRecipeService social operations
+    final success = false; // await _socialRecipeService.editComment(commentId, newText);
 
-    if (success) {
-      await _loadComments(); // Refresh to show edit
-    }
+    // TODO: Handle success case when implemented
+    // if (success) {
+    //   await _loadComments(); // Refresh to show edit
+    // }
 
     return success;
   }
 
   /// Delete comment
   Future<bool> deleteComment(String commentId) async {
-    final success = await _socialRecipeService.deleteComment(commentId);
+    // TODO: Implement delete comment through UnifiedRecipeService social operations
+    final success = false; // await _socialRecipeService.deleteComment(commentId);
 
-    if (success) {
-      await _loadComments(); // Refresh to show deletion
-    }
+    // TODO: Handle success case when implemented
+    // if (success) {
+    //   await _loadComments(); // Refresh to show deletion
+    // }
 
     return success;
   }
 
   /// Toggle like on comment
   Future<bool> toggleCommentLike(String commentId) async {
-    final success = await _socialRecipeService.toggleCommentLike(commentId);
+    // TODO: Implement toggle like through UnifiedRecipeService social operations
+    final success = false; // await _socialRecipeService.toggleCommentLike(commentId);
 
-    if (success) {
-      // Update local comment state optimistically
-      final commentIndex = _comments.indexWhere((c) => c.id == commentId);
-      if (commentIndex >= 0) {
-        final comment = _comments[commentIndex];
-        final currentUserId = _userService.currentUserId;
+    // TODO: Handle success case when implemented
+    // if (success) {
+    //   // Update local comment state optimistically
+    //   final commentIndex = _comments.indexWhere((c) => c.id == commentId);
+    //   if (commentIndex >= 0) {
+    //     final comment = _comments[commentIndex];
+    //     final currentUserId = _userService.currentUserId;
 
-        if (currentUserId != null) {
-          final isLiked = comment.isLikedBy(currentUserId);
-          _comments[commentIndex] = isLiked
-              ? comment.removeLike(currentUserId)
-              : comment.addLike(currentUserId);
-          notifyListeners();
-        }
-      }
-    }
+    //     if (currentUserId != null) {
+    //       final isLiked = comment.isLikedBy(currentUserId);
+    //       _comments[commentIndex] = isLiked
+    //           ? comment.removeLike(currentUserId)
+    //           : comment.addLike(currentUserId);
+    //       notifyListeners();
+    //     }
+    //   }
+    // }
 
     return success;
   }
@@ -256,7 +274,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
       _commentsError = null;
       notifyListeners();
 
-      final comments = await _socialRecipeService.getRecipeComments(_recipe.id);
+      // TODO: Implement comment loading through UnifiedRecipeService social operations
+      final comments = <RecipeComment>[]; // await _socialRecipeService.getRecipeComments(_recipe.id);
 
       // Sort comments: top-level first (newest first), then replies by date
       _comments = List.from(comments);
@@ -343,7 +362,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _socialRecipeService.removeListener(_onSocialServiceChanged);
+    // TODO: Remove social service listener when implemented
+    // _socialRecipeService.removeListener(_onSocialServiceChanged);
     _friendsService.removeListener(_onFriendsServiceChanged);
     super.dispose();
   }

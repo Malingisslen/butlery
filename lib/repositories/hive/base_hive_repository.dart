@@ -19,17 +19,20 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 /// Bas-klass för Hive-repositories med generisk CRUD-logik.
 abstract class BaseHiveRepository<T> {
-  /// Namnet på Hive-boxen
+  /// Namnet på Hive-boxen (bas namn)
   final String boxName;
 
   /// Öppnad Hive-box
   Box<T>? _box;
 
+  // Removed unused _currentUserId field
+
   BaseHiveRepository(this.boxName);
 
-  /// Initialiserar boxen om den inte redan är öppen
-  Future<void> init() async {
-    _box ??= await Hive.openBox<T>(boxName);
+  /// Initialiserar boxen med user-specifik nyckel
+  Future<void> init({String? userId}) async {
+    final userSpecificBoxName = userId != null ? '${boxName}_$userId' : boxName;
+    _box ??= await Hive.openBox<T>(userSpecificBoxName);
   }
 
   /// Accessor för den öppna boxen
@@ -57,5 +60,22 @@ abstract class BaseHiveRepository<T> {
 
   /// Stänger boxen
   Future<void> dispose() async => _box?.close();
+
+  /// Byter till en ny användares cache
+  Future<void> switchUser(String? newUserId) async {
+    // Stäng nuvarande box
+    await _box?.close();
+    _box = null;
+    
+    // Öppna ny box för den nya användaren
+    await init(userId: newUserId);
+  }
+
+  /// Rensar cachen för den aktuella användaren
+  Future<void> clearUserCache() async {
+    if (_box != null) {
+      await _box!.clear();
+    }
+  }
 }
 

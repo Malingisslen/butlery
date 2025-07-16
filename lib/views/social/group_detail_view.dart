@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/friend_categories_service.dart';
-import '../../services/group_invitation_service.dart';
+import '../../services/unified/unified_friends_service.dart';
 import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../models/group_invitation.dart';
@@ -65,7 +64,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
           _loadGroupData();
           break;
         case GroupEventType.deleted:
-          final categoriesService = sl<FriendCategoriesService>();
+          final categoriesService = sl<UnifiedFriendsService>();
           final currentGroup =
               categoriesService.getCategoryById(widget.groupId);
           if (currentGroup == null) {
@@ -87,9 +86,9 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     });
 
     try {
-      final categoriesService = sl<FriendCategoriesService>();
+      final categoriesService = sl<UnifiedFriendsService>();
       final friendsViewModel = sl<FriendsViewModel>();
-      final groupInvitationService = sl<GroupInvitationService>();
+      final groupInvitationService = sl<UnifiedFriendsService>();
 
       // Force refresh: Säkerställ att vi har senaste datan
       await groupInvitationService.refresh();
@@ -107,10 +106,12 @@ class _GroupDetailViewState extends State<GroupDetailView> {
             .toList();
 
         // Hämta pending inbjudningar för denna grupp
-        _pendingInvitations = groupInvitationService.sentInvitations
-            .where((invitation) =>
-                invitation.groupId == widget.groupId && invitation.isPending)
-            .toList();
+        // TODO: Implement proper group invitation fetching
+        _pendingInvitations = [];
+        // _pendingInvitations = groupInvitationService.invitations.getAllInvitations()
+        //     .where((invitation) =>
+        //         invitation.groupId == widget.groupId && invitation.isPending)
+        //     .toList();
 
         debugPrint(
             '🔍 DEBUG: Efter refresh - Laddade ${_members.length} medlemmar och ${_pendingInvitations.length} väntande inbjudningar');
@@ -149,9 +150,9 @@ class _GroupDetailViewState extends State<GroupDetailView> {
   }
 
   Future<void> _refreshData() async {
-    final categoriesService = sl<FriendCategoriesService>();
+    final categoriesService = sl<UnifiedFriendsService>();
     final friendsViewModel = sl<FriendsViewModel>();
-    final groupInvitationService = sl<GroupInvitationService>();
+    final groupInvitationService = sl<UnifiedFriendsService>();
 
     await Future.wait([
       categoriesService.refresh(),
@@ -523,7 +524,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     );
 
     if (shouldCancel == true && mounted) {
-      final groupInvitationService = sl<GroupInvitationService>();
+      final groupInvitationService = sl<UnifiedFriendsService>();
       final success =
           await groupInvitationService.cancelSentInvitation(invitation.id);
 
@@ -535,10 +536,10 @@ class _GroupDetailViewState extends State<GroupDetailView> {
           ),
         );
         _loadGroupData(); // Uppdatera vyn
-      } else if (mounted && groupInvitationService.hasError) {
+      } else if (mounted && groupInvitationService.invitations.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fel: ${groupInvitationService.error}'),
+            content: Text('Fel: ${groupInvitationService.invitations.error}'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -900,10 +901,10 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     );
 
     if (shouldLeave == true && mounted) {
-      final categoriesService = sl<FriendCategoriesService>();
-      final success = await categoriesService.removeFriendFromCategory(
-        group.id,
-        currentUserId,
+      final categoriesService = sl<UnifiedFriendsService>();
+      final success = await categoriesService.categories.removeFriendFromCategory(
+        friendId: currentUserId,
+        categoryId: group.id,
       );
 
       if (success && mounted) {

@@ -423,12 +423,21 @@ class _ProfileMenuState extends State<_ProfileMenu> {
   @override
   void initState() {
     super.initState();
-    _loadNotificationCounts();
+    // Defer loading until after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadNotificationCounts();
+    });
   }
 
   /// Ladda notification-räknare
   Future<void> _loadNotificationCounts() async {
+    if (!mounted) return; // Check if widget is still mounted
+    
     try {
+      setState(() {
+        _isLoading = true;
+      });
+      
       final friendsViewModel = sl<FriendsViewModel>();
       await friendsViewModel.refresh();
 
@@ -447,10 +456,16 @@ class _ProfileMenuState extends State<_ProfileMenu> {
         setState(() {
           _pendingRequestsCount = friendsViewModel.pendingRequestsCount;
           _sharedItemsCount = newSharedItems;
+          _isLoading = false;
         });
       }
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte ladda notification-räknare: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

@@ -12,7 +12,6 @@ import '../repositories/firebase/firebase_auth_repository.dart';
 import '../repositories/firebase/firebase_recipe_repository.dart';
 
 // ==================== CORE SERVICES ====================
-import '../services/recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/search_service.dart';
 import '../services/persistence_service.dart';
@@ -38,17 +37,17 @@ import '../services/realtime/realtime_recipe_service.dart';
 import '../services/realtime/realtime_menu_service.dart';
 
 // ==================== INVITATION SERVICES (FAS 2) ====================
-import '../services/invitations/group_invitation_expander.dart';
+// import '../services/invitations/group_invitation_expander.dart'; // Removed - no longer needed
 
-// ==================== UNIFIED SHOPPING SYSTEM ====================
+// ==================== UNIFIED SYSTEMS ====================
 import '../services/unified/unified_shopping_service.dart';
+import '../services/unified/unified_recipe_service.dart';
+import '../services/unified/unified_friends_service.dart';
+import '../services/import/import_manager.dart';
 
 // ==================== SOCIAL SERVICES ====================
 import '../services/user_service.dart';
-import '../services/friends_service.dart';
 import '../services/social_recipe_service.dart';
-import '../services/friend_categories_service.dart';
-import '../services/group_invitation_service.dart';
 
 // ==================== CORE VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';
@@ -60,6 +59,7 @@ import '../viewmodels/photo_import_viewmodel.dart';
 import '../viewmodels/url_import_viewmodel.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
+import '../viewmodels/unified_recipe_viewmodel.dart';
 
 // ==================== UNIFIED SHOPPING VIEWMODELS ====================
 import '../viewmodels/unified_shopping_viewmodel.dart';
@@ -77,6 +77,7 @@ import '../viewmodels/create_group_viewmodel.dart';
 import '../viewmodels/recipe_selection_viewmodel.dart';
 import '../viewmodels/collaborative_shopping_viewmodel.dart';
 import '../viewmodels/collaborative_status_viewmodel.dart';
+import '../viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Models
 import '../models/recipe.dart';
@@ -157,47 +158,31 @@ Future<void> initializeDependencies() async {
 
     sl.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: sl<AuthRepository>()));
-    sl.registerSingleton<FriendsService>(
-      FriendsService(
-        repository: sl<FriendsRepository>(),
-        authRepository: sl<AuthRepository>(),
-      ),
-    );
-    debugPrint('✅ FriendsService registrerad');
+    
 
-    sl.registerLazySingleton<FriendCategoriesService>(
-      () => FriendCategoriesService(
-        friendsService: sl<FriendsService>(),
-        friendsRepository: sl<FriendsRepository>(),
-        authRepository: sl<AuthRepository>(),
-      ),
-    );
-    debugPrint('✅ FriendCategoriesService registrerad');
 
-    sl.registerLazySingleton<GroupInvitationService>(
-      () => GroupInvitationService(
-        categoriesService: sl<FriendCategoriesService>(),
-        friendsRepository: sl<FriendsRepository>(),
-        authRepository: sl<AuthRepository>(),
-      ),
-    );
-    debugPrint('✅ GroupInvitationService registrerad');
 
     // ==================== INVITATION SERVICES (FAS 2) ====================
-    sl.registerLazySingleton<GroupInvitationExpander>(
-      () => GroupInvitationExpander(
-        categoriesService: sl<FriendCategoriesService>(),
-        friendsService: sl<FriendsService>(),
-      ),
-    );
-    debugPrint('✅ GroupInvitationExpander registrerad');
 
     // ==================== EXISTING SERVICES ====================
-    sl.registerSingleton<RecipeService>(RecipeService(
-      recipeRepository: sl<RecipeRepository>(),
+
+    // ==================== UNIFIED RECIPE SYSTEM (PHASE 5) ====================
+    sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
+      authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
+    ));
+    debugPrint('✅ UnifiedRecipeService registrerad');
+
+    sl.registerLazySingleton<ImportManager>(
+      () => ImportManager(sl<UnifiedRecipeService>().personal),
+    );
+    debugPrint('✅ ImportManager registrerad');
+
+    // ==================== UNIFIED FRIENDS SYSTEM (PHASE 5) ====================
+    sl.registerSingleton<UnifiedFriendsService>(UnifiedFriendsService(
+      firestoreRepository: sl<FirestoreRepository>(),
       authRepository: sl<AuthRepository>(),
     ));
-    debugPrint('✅ RecipeService registrerad');
+    debugPrint('✅ UnifiedFriendsService registrerad');
 
     sl.registerSingleton<MenuService>(MenuService());
     sl.registerSingleton<SearchService>(SearchService());
@@ -228,37 +213,34 @@ Future<void> initializeDependencies() async {
     // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
     sl.registerSingleton<SocialRecipeRepository>(
         FirebaseSocialRecipeRepository());
-    sl.registerSingleton<SocialRecipeService>(
-      SocialRecipeService(
-        repository: sl<SocialRecipeRepository>(),
-        userService: sl<UserService>(),
-        recipeService: sl<RecipeService>(),
-        authRepository: sl<AuthRepository>(),
-      ),
-    );
-    debugPrint('✅ SocialRecipeService registrerad');
+    
+    sl.registerSingleton<SocialRecipeService>(SocialRecipeService(
+      repository: sl<SocialRecipeRepository>(),
+      userService: sl<UserService>(),
+      recipeService: sl<UnifiedRecipeService>(),
+      authRepository: sl<AuthRepository>(),
+    ));
 
     // ==================== CORE VIEWMODELS ====================
 
     sl.registerFactory<RecipeListViewModel>(
       () => RecipeListViewModel(
-        recipeService: sl<RecipeService>(),
+        recipeService: sl<UnifiedRecipeService>(),
         searchService: sl<SearchService>(),
       ),
     );
 
     sl.registerFactory<MenuViewModel>(
       () => MenuViewModel(
-        recipeService: sl<RecipeService>(),
+        recipeService: sl<UnifiedRecipeService>(),
         menuService: sl<MenuService>(),
-        socialService: sl<SocialRecipeService>(),
         userService: sl<UserService>(),
       ),
     );
 
     sl.registerFactory<RecipeFormViewModel>(
       () => RecipeFormViewModel(
-        recipeService: sl<RecipeService>(),
+        recipeService: sl<UnifiedRecipeService>(),
         analyticsService: sl<AnalyticsService>(),
         storageService: sl<StorageService>(),
         imagePickerService: sl<ImagePickerService>(),
@@ -268,14 +250,20 @@ Future<void> initializeDependencies() async {
     );
 
     // Import ViewModels
-    sl.registerFactory<TextImportViewModel>(() => TextImportViewModel());
-    sl.registerFactory<PhotoImportViewModel>(() => PhotoImportViewModel());
-    sl.registerFactory<UrlImportViewModel>(() => UrlImportViewModel());
+    sl.registerFactory<TextImportViewModel>(
+      () => TextImportViewModel(importManager: sl<ImportManager>()),
+    );
+    sl.registerFactory<PhotoImportViewModel>(
+      () => PhotoImportViewModel(importManager: sl<ImportManager>()),
+    );
+    sl.registerFactory<UrlImportViewModel>(
+      () => UrlImportViewModel(importManager: sl<ImportManager>()),
+    );
     sl.registerFactory<AuthViewModel>(() => AuthViewModel());
 
     sl.registerFactory<ArchiveImportViewModel>(
       () => ArchiveImportViewModel(
-        recipeService: sl<RecipeService>(),
+        recipeService: sl<UnifiedRecipeService>(),
         searchService: sl<SearchService>(),
       ),
     );
@@ -283,10 +271,16 @@ Future<void> initializeDependencies() async {
     sl.registerFactoryParam<RecipeDetailViewModel, Recipe, void>(
       (recipe, _) => RecipeDetailViewModel(
         recipe: recipe,
-        recipeService: sl<RecipeService>(),
+        recipeService: sl<UnifiedRecipeService>(),
         analyticsService: sl<AnalyticsService>(),
       ),
     );
+
+    // ==================== UNIFIED RECIPE VIEWMODELS (PHASE 5) ====================
+    sl.registerFactory<UnifiedRecipeViewModel>(
+      () => UnifiedRecipeViewModel(),
+    );
+    debugPrint('✅ UnifiedRecipeViewModel registrerad');
 
     debugPrint('✅ Alla befintliga ViewModels registrerade');
 
@@ -298,8 +292,8 @@ Future<void> initializeDependencies() async {
 
     sl.registerFactory<ShoppingShareViewModel>(
       () => ShoppingShareViewModel(
-        socialRecipeService: sl<SocialRecipeService>(),
-        friendsService: sl<FriendsService>(),
+        shoppingService: sl<UnifiedShoppingService>(),
+        friendsService: sl<UnifiedFriendsService>(),
       ),
     );
     debugPrint('✅ ShoppingShareViewModel registrerad');
@@ -324,33 +318,30 @@ Future<void> initializeDependencies() async {
 
     sl.registerLazySingleton<FriendsViewModel>(
       () => FriendsViewModel(
-        friendsService: sl<FriendsService>(),
+        friendsService: sl<UnifiedFriendsService>(),
         userService: sl<UserService>(),
-        categoriesService: sl<FriendCategoriesService>(),
       ),
     );
 
     sl.registerFactoryParam<SocialRecipeViewModel, Recipe, void>(
       (recipe, _) => SocialRecipeViewModel(
         recipe: recipe,
-        socialRecipeService: sl<SocialRecipeService>(),
-        friendsService: sl<FriendsService>(),
+        recipeService: sl<UnifiedRecipeService>(),
+        friendsService: sl<UnifiedFriendsService>(),
         userService: sl<UserService>(),
       ),
     );
 
     sl.registerFactoryParam<RecipeSelectionViewModel, UserProfile, void>(
       (targetFriend, _) => RecipeSelectionViewModel(
-        recipeService: sl<RecipeService>(),
-        socialRecipeService: sl<SocialRecipeService>(),
+        recipeService: sl<UnifiedRecipeService>(),
         targetFriend: targetFriend,
       ),
     );
 
     sl.registerFactory<CreateGroupViewModel>(
       () => CreateGroupViewModel(
-        categoriesService: sl<FriendCategoriesService>(),
-        groupInvitationService: sl<GroupInvitationService>(),
+        friendsService: sl<UnifiedFriendsService>(),
       ),
     );
 
@@ -358,7 +349,8 @@ Future<void> initializeDependencies() async {
       () => SharedContentViewModel(
         socialRecipeService: sl<SocialRecipeService>(),
         userService: sl<UserService>(),
-        friendsService: sl<FriendsService>(),
+        friendsService: sl<UnifiedFriendsService>(),
+        shoppingService: sl<UnifiedShoppingService>(),
       ),
     );
 
@@ -369,23 +361,26 @@ Future<void> initializeDependencies() async {
     sl.registerFactoryParam<AddMembersToGroupViewModel, String, void>(
       (groupId, _) => AddMembersToGroupViewModel(
         groupId: groupId,
-        friendsService: sl<FriendsService>(),
-        categoriesService: sl<FriendCategoriesService>(),
-        groupInvitationService: sl<GroupInvitationService>(),
+        friendsService: sl<UnifiedFriendsService>(),
       ),
     );
 
     sl.registerFactory<GroupInvitationsViewModel>(
       () => GroupInvitationsViewModel(
-        categoriesService: sl<FriendCategoriesService>(),
-        friendsService: sl<FriendsService>(),
+        friendsService: sl<UnifiedFriendsService>(),
         authService: sl<AuthService>(),
-        groupInvitationService: sl<GroupInvitationService>(),
       ),
     );
 
     sl.registerFactory<CollaborativeStatusViewModel>(
       () => CollaborativeStatusViewModel(),
+    );
+
+    sl.registerFactory<UniversalShareDialogViewModel>(
+      () => UniversalShareDialogViewModel(
+        socialRecipeService: sl<SocialRecipeService>(),
+        shoppingService: sl<UnifiedShoppingService>(),
+      ),
     );
 
     debugPrint('✅ Alla social ViewModels registrerade');
@@ -394,8 +389,8 @@ Future<void> initializeDependencies() async {
 
     debugPrint('🔄 Initialiserar core services...');
 
-    await sl<RecipeService>().initialize();
-    debugPrint('✅ RecipeService initierad');
+    await sl<UnifiedRecipeService>().initialize();
+    debugPrint('✅ UnifiedRecipeService initierad');
 
     await sl<OfflineService>().initialize();
     debugPrint('✅ OfflineService initierad');
@@ -410,17 +405,15 @@ Future<void> initializeDependencies() async {
     await sl<UserService>().initialize();
     debugPrint('✅ UserService initierad');
 
-    await sl<FriendsService>().initialize();
-    debugPrint('✅ FriendsService initierad');
-
-    await sl<FriendCategoriesService>().initialize();
-    debugPrint('✅ FriendCategoriesService initierad');
-
-    await sl<GroupInvitationService>().initialize();
-    debugPrint('✅ GroupInvitationService initierad');
+    
+    await sl<UnifiedFriendsService>().initialize();
+    debugPrint('✅ UnifiedFriendsService initierad');
 
     await sl<SocialRecipeService>().initialize();
     debugPrint('✅ SocialRecipeService initierad');
+
+
+
 
     // ==================== UNIFIED SHOPPING INITIALIZATION ====================
 
@@ -433,16 +426,13 @@ Future<void> initializeDependencies() async {
 
     // Validera att alla kritiska services är registrerade
     sl<AuthService>();
-    sl<RecipeService>();
+    sl<UnifiedRecipeService>();
     sl<RealtimeSyncService>(); // ✅ NYTT: Validera RealtimeSyncService
     sl<RealtimeRecipeService>(); // ✅ NYTT: Validera RealtimeRecipeService
     sl<RealtimeMenuService>(); // ✅ NYTT: Validera RealtimeMenuService
-    sl<GroupInvitationExpander>(); // ✅ NYTT: Validera GroupInvitationExpander
     sl<UserService>();
-    sl<FriendsService>();
+    sl<UnifiedFriendsService>();
     sl<SocialRecipeService>();
-    sl<FriendCategoriesService>();
-    sl<GroupInvitationService>();
 
     // Test ViewModels
     sl<RecipeListViewModel>();
@@ -499,7 +489,7 @@ bool isRealtimeSyncReady() {
 void debugPrintRegisteredServices() {
   debugPrint('📋 Registrerade Services:');
   debugPrint('  Core: AuthRepository, AuthService, RecipeService, UserService');
-  debugPrint('  Social: FriendsService, SocialRecipeService');
+  debugPrint('  Social: UnifiedFriendsService, UnifiedRecipeService.social');
   debugPrint(
       '  ✅ Realtime: RealtimeSyncService, RealtimeRecipeService, RealtimeMenuService (FAS 2+3)');
   debugPrint('  ✅ Invitations: GroupInvitationExpander (FAS 2)');

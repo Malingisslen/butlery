@@ -10,7 +10,8 @@ import '../models/recipe.dart';
 import '../models/user_profile.dart';
 import '../models/realtime/realtime_recipe.dart';
 import '../models/permissions/resource_permission.dart';
-import '../services/recipe_service.dart';
+import '../services/unified/unified_recipe_service.dart';
+import '../services/unified/types/recipe_types.dart';
 import '../services/analytics_service.dart';
 import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
@@ -26,7 +27,7 @@ import '../theme/app_theme.dart';
 
 
 class RecipeFormViewModel extends ChangeNotifier {
-  final RecipeService _recipeService;
+  final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
@@ -85,7 +86,7 @@ class RecipeFormViewModel extends ChangeNotifier {
   static const int maxImages = 5;
 
   RecipeFormViewModel({
-    RecipeService? recipeService,
+    UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
     StorageService? storageService,
     ImagePickerService? imagePickerService,
@@ -93,7 +94,7 @@ class RecipeFormViewModel extends ChangeNotifier {
     CollaborativeRecipeRepository? collaborativeRepository,
     Recipe? initialRecipe,
     bool isTemplate = false,
-  })  : _recipeService = recipeService ?? sl<RecipeService>(),
+  })  : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
         _analyticsService = analyticsService ?? sl<AnalyticsService>(),
         _storageService = storageService ?? sl<StorageService>(),
         _imagePickerService = imagePickerService ?? sl<ImagePickerService>(),
@@ -1004,12 +1005,12 @@ class RecipeFormViewModel extends ChangeNotifier {
       RecipeOperationResult result;
 
       if (isEditMode) {
-        result = await _recipeService.updateRecipe(recipe);
-        if (!result.isSuccess && result.message.contains('not-found')) {
-          result = await _recipeService.addRecipe(recipe);
+        result = await _recipeService.personal.updateLegacyRecipe(recipe);
+        if (!result.isSuccess && result.message?.contains('not-found') == true) {
+          result = await _recipeService.personal.addLegacyRecipe(recipe);
         }
       } else {
-        result = await _recipeService.addRecipe(recipe);
+        result = await _recipeService.personal.addLegacyRecipe(recipe);
       }
 
       if (result.isSuccess) {
@@ -1026,7 +1027,7 @@ class RecipeFormViewModel extends ChangeNotifier {
         _error = null;
         return true;
       } else {
-        _setError(result.message);
+        _setError(_recipeService.error ?? 'Unknown error occurred');
         return false;
       }
     } catch (e) {
@@ -1092,7 +1093,7 @@ class RecipeFormViewModel extends ChangeNotifier {
       );
 
       // Spara som nytt recept i användarens egen samling
-      final result = await _recipeService.addRecipe(forkedRecipe);
+      final result = await _recipeService.personal.addLegacyRecipe(forkedRecipe);
 
       if (result.isSuccess) {
         await _analyticsService.logRecipeCreated(
@@ -1102,7 +1103,7 @@ class RecipeFormViewModel extends ChangeNotifier {
         AppLogger.success('✅ Fork skapad: ${forkedRecipe.title}');
         return true;
       } else {
-        _setError(result.message);
+        _setError(_recipeService.error ?? 'Unknown error occurred');
         return false;
       }
     } catch (e) {

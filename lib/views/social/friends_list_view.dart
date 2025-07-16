@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/group_invitation_service.dart';
+import '../../services/unified/unified_friends_service.dart';
 import '../../models/group_invitation.dart';
 import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
@@ -14,7 +14,6 @@ import '../../core/injection.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
 import '../../models/friend_category.dart';
-import '../../services/friend_categories_service.dart';
 import 'group_detail_view.dart';
 
 class FriendsListView extends StatelessWidget {
@@ -25,7 +24,7 @@ class FriendsListView extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
-        ChangeNotifierProvider.value(value: sl<GroupInvitationService>()),
+        ChangeNotifierProvider.value(value: sl<UnifiedFriendsService>()),
       ],
       child: const _FriendsListViewContent(),
     );
@@ -89,11 +88,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<FriendsViewModel, GroupInvitationService>(
-      builder: (context, viewModel, groupInvitationService, child) {
-        final categoriesService = sl<FriendCategoriesService>();
+    return Consumer2<FriendsViewModel, UnifiedFriendsService>(
+      builder: (context, viewModel, friendsService, child) {
         final pendingInvitationsCount =
-            groupInvitationService.pendingNotificationsCount;
+            friendsService.sentInvitations.where((inv) => inv.status == GroupInvitationStatus.pending).length;
 
         return LayoutComponents.mainMenu(
           currentIndex: null,
@@ -130,7 +128,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       backgroundColor: AppTheme.warningColor,
                       child: const Icon(Icons.group),
                     ),
-                    text: 'Grupper (${categoriesService.categories.length})',
+                    text: 'Grupper (${friendsService.categories.categoriesList.length})',
                   ),
                 ],
               ),
@@ -187,8 +185,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       _buildFriendsTab(viewModel),
                       _buildRequestsTab(viewModel),
                       _buildSearchTab(viewModel),
-                      _buildGroupsTab(
-                          categoriesService, groupInvitationService),
+                      _buildGroupsTab(friendsService),
                     ],
                   ),
                 ),
@@ -298,16 +295,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     );
   }
 
-  Widget _buildGroupsTab(FriendCategoriesService categoriesService,
-      GroupInvitationService groupInvitationService) {
+  Widget _buildGroupsTab(UnifiedFriendsService friendsService) {
     return AnimatedBuilder(
-      animation: Listenable.merge([categoriesService, groupInvitationService]),
+      animation: friendsService,
       builder: (context, child) {
-        final groups = categoriesService.categories;
+        final groups = friendsService.categories.categoriesList;
         final pendingInvitations =
-            groupInvitationService.pendingReceivedInvitations;
+            friendsService.invitations.pendingReceivedInvitations;
 
-        if (categoriesService.isLoading &&
+        if (friendsService.isLoading &&
             groups.isEmpty &&
             pendingInvitations.isEmpty) {
           return StateWidget.loading(message: 'Laddar grupper...');
@@ -316,8 +312,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         return RefreshIndicator(
           onRefresh: () async {
             await Future.wait([
-              categoriesService.refresh(),
-              groupInvitationService.refresh(),
+              friendsService.categories.refresh(),
+              friendsService.invitations.refresh(),
             ]);
           },
           child: CustomScrollView(
@@ -369,7 +365,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           vertical: AppTheme.spacingXs,
                         ),
                         child: _buildInvitationCard(
-                            invitation, groupInvitationService),
+                            invitation, friendsService),
                       );
                     },
                     childCount: pendingInvitations.length,
@@ -421,7 +417,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           horizontal: AppTheme.spacingMd,
                           vertical: AppTheme.spacingXs,
                         ),
-                        child: _buildGroupCard(group, categoriesService),
+                        child: _buildGroupCard(group, friendsService),
                       );
                     },
                     childCount: groups.length,
@@ -448,7 +444,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildInvitationCard(
-      GroupInvitation invitation, GroupInvitationService service) {
+      GroupInvitation invitation, UnifiedFriendsService service) {
     return Card(
       color: AppTheme.warningColor.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
@@ -529,7 +525,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: service.isLoading
+                    onPressed: service.invitations.isLoading
                         ? null
                         : () => _rejectInvitation(invitation.id, service),
                     style: OutlinedButton.styleFrom(
@@ -542,7 +538,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(
-                    onPressed: service.isLoading
+                    onPressed: service.invitations.isLoading
                         ? null
                         : () => _acceptInvitation(invitation.id, service),
                     style: FilledButton.styleFrom(
@@ -560,7 +556,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildGroupCard(
-      FriendCategory group, FriendCategoriesService categoriesService) {
+      FriendCategory group, UnifiedFriendsService friendsService) {
     return Card(
       child: ListTile(
         onTap: () => _navigateToGroupDetail(group),
@@ -891,8 +887,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   // Invitation actions
   Future<void> _acceptInvitation(
-      String invitationId, GroupInvitationService service) async {
-    final success = await service.acceptGroupInvitation(invitationId);
+      String invitationId, UnifiedFriendsService service) async {
+    final success = await service.invitations.acceptGroupInvitation(invitationId);
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -903,10 +899,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       );
       final viewModel = context.read<FriendsViewModel>();
       viewModel.refresh();
-    } else if (mounted && service.hasError) {
+    } else if (mounted && service.invitations.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fel: ${service.error}'),
+          content: Text('Fel: ${service.invitations.error}'),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -914,8 +910,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Future<void> _rejectInvitation(
-      String invitationId, GroupInvitationService service) async {
-    final success = await service.rejectGroupInvitation(invitationId);
+      String invitationId, UnifiedFriendsService service) async {
+    final success = await service.invitations.rejectGroupInvitation(invitationId);
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -924,10 +920,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           backgroundColor: AppTheme.warningColor,
         ),
       );
-    } else if (mounted && service.hasError) {
+    } else if (mounted && service.invitations.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fel: ${service.error}'),
+          content: Text('Fel: ${service.invitations.error}'),
           backgroundColor: AppTheme.errorColor,
         ),
       );

@@ -1,13 +1,33 @@
+/// 🔍 AI INFO BLOCK:
+/// Component: Unified Recipe ViewModel - Updated for Phase 5 feature interfaces
+/// File: lib/viewmodels/unified_recipe_viewmodel.dart
+/// Quick Guide: Main recipe ViewModel using feature interfaces from UnifiedRecipeService
+/// Dependencies IN: UnifiedRecipeService with feature interfaces
+/// Dependencies OUT: Used by recipe list views and related UI components
+/// Data flow: UI -> ViewModel -> Feature Interfaces -> UnifiedRecipeService
+/// State management: ChangeNotifier with reactive getters from service
+/// Purpose: UI state management for all recipe operations with clean interface separation
+/// Common issues: Loading states, error handling, reactive updates
+/// Test coverage: ViewModel tests with mocked service interfaces
+/// Performance: Reactive getters, efficient state updates
+/// Analytics: Recipe view events, user interaction tracking
+/// Code smells: None - follows MVVM pattern with clean separation
+/// Connected to: Recipe views, UnifiedRecipeService feature interfaces
+/// Used in phases: Phase 5 - Service Consolidation (updated for feature interfaces)
+
 // lib/viewmodels/unified_recipe_viewmodel.dart
-// ✅ FINAL VERSION: Med alla fixes och allRecipes getter
+// ✅ PHASE 5 VERSION: Updated to use feature interfaces
 
 /// 🧠 UNIFIED RECIPE VIEWMODEL
-/// Ersätter recipe_list_viewmodel.dart med alla features
-/// Kopplar samman UI med UnifiedRecipeService
+/// Updated for Phase 5: Uses feature interfaces for clean separation
+/// Personal operations: service.personal.*
+/// Social operations: service.social.*
+/// Realtime operations: service.realtime.*
 
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import '../services/unified/unified_recipe_service.dart';
+import '../services/unified/types/recipe_types.dart' show RecipeOperationResult;
 import '../models/unified/unified_recipe.dart';
 import '../models/recipe.dart'; // För backwards compatibility
 
@@ -74,7 +94,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== RECIPE MANAGEMENT - samma metoder som din befintliga ViewModel =====
+  // ===== PERSONAL RECIPE OPERATIONS (Phase 5: Feature Interface) =====
 
   Future<bool> createPersonalRecipe({
     required String name,
@@ -91,7 +111,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
   }) async {
     if (name.trim().isEmpty) return false;
 
-    final recipeId = await _recipeService.createPersonalRecipe(
+    final recipeId = await _recipeService.personal.createRecipe(
       name: name.trim(),
       description: description,
       ingredients: ingredients,
@@ -108,6 +128,8 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     return recipeId != null;
   }
 
+  // ===== SOCIAL RECIPE OPERATIONS (Phase 5: Feature Interface) =====
+
   Future<bool> createCollaborativeRecipe({
     required String name,
     required List<String> memberIds,
@@ -122,8 +144,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     double? rating,
     List<String>? tags,
     String? sourceUrl,
-    String?
-        descriptionCollaborative, // ✅ FIX: Ändrat från description_collaborative
+    String? descriptionCollaborative,
     bool allowGuestViewing = false,
     bool allowMemberInvites = true,
     List<String>? categoryIds,
@@ -144,8 +165,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
       rating: rating,
       tags: tags,
       sourceUrl: sourceUrl,
-      descriptionCollaborative:
-          descriptionCollaborative, // ✅ FIX: Ändrat från description_collaborative
+      descriptionCollaborative: descriptionCollaborative,
       allowGuestViewing: allowGuestViewing,
       allowMemberInvites: allowMemberInvites,
       categoryIds: categoryIds,
@@ -154,34 +174,73 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     return recipeId != null;
   }
 
+  /// Share a personal recipe with other users
+  Future<String?> shareRecipe({
+    required String recipeId,
+    required List<String> memberIds,
+    required Map<String, String> memberDisplayNames,
+    String? collaborativeDescription,
+    bool allowGuestViewing = false,
+    bool allowMemberInvites = true,
+    List<String>? categoryIds,
+  }) async {
+    return await _recipeService.social.shareRecipe(
+      recipeId: recipeId,
+      memberIds: memberIds,
+      memberDisplayNames: memberDisplayNames,
+      collaborativeDescription: collaborativeDescription,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      categoryIds: categoryIds,
+    );
+  }
+
+  /// Convert collaborative recipe back to personal
+  Future<String?> makeRecipePersonal(String collaborativeRecipeId) async {
+    return await _recipeService.social.makeRecipePersonal(collaborativeRecipeId);
+  }
+
   Future<bool> updateRecipe(UnifiedRecipe recipe) async {
-    return await _recipeService.updateRecipe(recipe);
+    // Route to appropriate interface based on recipe type
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.updateRecipe(recipe);
+    } else {
+      return await _recipeService.updateRecipe(recipe); // Fallback to main service
+    }
   }
 
   Future<bool> deleteRecipe(String recipeId) async {
-    return await _recipeService.deleteRecipe(recipeId);
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    // Route to appropriate interface based on recipe type
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.deleteRecipe(recipeId);
+    } else {
+      return await _recipeService.deleteRecipe(recipeId); // Fallback to main service
+    }
   }
 
   // ===== LEGACY COMPATIBILITY METHODS =====
 
   /// För befintlig kod som använder Recipe model
   Future<RecipeOperationResult> addRecipe(Recipe legacyRecipe) async {
-    return await _recipeService.addRecipe(legacyRecipe);
+    return await _recipeService.personal.addLegacyRecipe(legacyRecipe);
   }
 
   /// För befintlig kod som använder Recipe model
   Future<RecipeOperationResult> updateLegacyRecipe(Recipe legacyRecipe) async {
-    return await _recipeService.updateLegacyRecipe(legacyRecipe);
+    return await _recipeService.personal.updateLegacyRecipe(legacyRecipe);
   }
 
   /// För befintlig kod
   Future<RecipeOperationResult> deleteRecipeById(String id) async {
-    return await _recipeService.deleteRecipeById(id);
+    return await _recipeService.personal.deleteLegacyRecipe(id);
   }
 
   /// Legacy getter för befintlig kod
   Recipe? getRecipeById(String id) {
-    return _recipeService.getRecipeById(id);
+    return _recipeService.personal.getLegacyRecipeById(id);
   }
 
   /// Legacy method för befintlig kod
@@ -189,7 +248,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     await _recipeService.refresh();
   }
 
-  // ===== COLLABORATIVE EDITING METHODS =====
+  // ===== CONTENT EDITING METHODS (Personal & Collaborative) =====
 
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -205,69 +264,164 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
     List<String>? tags,
     String? sourceUrl,
   }) async {
-    return await _recipeService.updateRecipeContent(
-      recipeId: recipeId,
-      name: name,
-      description: description,
-      ingredients: ingredients,
-      instructions: instructions,
-      imageUrls: imageUrls,
-      mealType: mealType,
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      tags: tags,
-      sourceUrl: sourceUrl,
-    );
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    // Route to appropriate interface based on recipe type
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.updateRecipeContent(
+        recipeId: recipeId,
+        name: name,
+        description: description,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+      );
+    } else {
+      return await _recipeService.updateRecipeContent(
+        recipeId: recipeId,
+        name: name,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        imageUrls: imageUrls,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+      );
+    }
   }
 
   Future<bool> addIngredient(String recipeId, String ingredient) async {
-    return await _recipeService.addIngredient(recipeId, ingredient);
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.addIngredient(recipeId, ingredient);
+    } else {
+      return await _recipeService.addIngredient(recipeId, ingredient);
+    }
   }
 
-  Future<bool> updateIngredient(
-      String recipeId, int index, String newIngredient) async {
-    return await _recipeService.updateIngredient(
-        recipeId, index, newIngredient);
+  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.updateIngredient(recipeId, index, newIngredient);
+    } else {
+      return await _recipeService.updateIngredient(recipeId, index, newIngredient);
+    }
   }
 
   Future<bool> removeIngredient(String recipeId, int index) async {
-    return await _recipeService.removeIngredient(recipeId, index);
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.removeIngredient(recipeId, index);
+    } else {
+      return await _recipeService.removeIngredient(recipeId, index);
+    }
   }
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
-    return await _recipeService.addInstruction(recipeId, instruction);
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.addInstruction(recipeId, instruction);
+    } else {
+      return await _recipeService.addInstruction(recipeId, instruction);
+    }
   }
 
-  Future<bool> updateInstruction(
-      String recipeId, int index, String newInstruction) async {
-    return await _recipeService.updateInstruction(
-        recipeId, index, newInstruction);
+  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.updateInstruction(recipeId, index, newInstruction);
+    } else {
+      return await _recipeService.updateInstruction(recipeId, index, newInstruction);
+    }
   }
 
   Future<bool> removeInstruction(String recipeId, int index) async {
-    return await _recipeService.removeInstruction(recipeId, index);
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.removeInstruction(recipeId, index);
+    } else {
+      return await _recipeService.removeInstruction(recipeId, index);
+    }
   }
 
   Future<bool> markRecipeAsCooked(String recipeId) async {
-    return await _recipeService.markRecipeAsCooked(recipeId);
+    final recipe = getUnifiedRecipeById(recipeId);
+    if (recipe == null) return false;
+    
+    if (recipe.isPersonal) {
+      return await _recipeService.personal.markAsCooked(recipeId);
+    } else {
+      return await _recipeService.markRecipeAsCooked(recipeId);
+    }
   }
 
-  // ===== COLLABORATIVE MEMBER MANAGEMENT =====
+  // ===== SOCIAL MEMBER MANAGEMENT (Phase 5: Feature Interface) =====
 
   Future<bool> addMemberToRecipe(
-      String recipeId, String userId, RecipePermission permission) async {
-    return await _recipeService.addMemberToRecipe(recipeId, userId, permission);
+      String recipeId, String userId, String userDisplayName, 
+      {RecipePermission permission = RecipePermission.edit}) async {
+    return await _recipeService.social.addMember(
+      recipeId: recipeId,
+      userId: userId,
+      userDisplayName: userDisplayName,
+      permission: permission,
+    );
   }
 
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
-    return await _recipeService.removeMemberFromRecipe(recipeId, userId);
+    return await _recipeService.social.removeMember(
+      recipeId: recipeId,
+      userId: userId,
+    );
   }
 
   Future<bool> updateMemberPermission(
       String recipeId, String userId, RecipePermission permission) async {
-    return await _recipeService.updateMemberPermission(
-        recipeId, userId, permission);
+    return await _recipeService.social.updateMemberPermission(
+      recipeId: recipeId,
+      userId: userId,
+      permission: permission,
+    );
+  }
+
+  /// Get all members of a collaborative recipe
+  Map<String, RecipePermission> getRecipeMembers(String recipeId) {
+    return _recipeService.social.getRecipeMembers(recipeId);
+  }
+
+  /// Check if user can invite members to recipe
+  bool canInviteMembers(String recipeId) {
+    return _recipeService.social.canInviteMembers(recipeId);
+  }
+
+  /// Get recipes shared with current user
+  List<UnifiedRecipe> getSharedWithMe() {
+    return _recipeService.social.getSharedWithMe();
+  }
+
+  /// Get recipes owned by current user that are shared
+  List<UnifiedRecipe> getSharedByMe() {
+    return _recipeService.social.getSharedByMe();
   }
 
   // ===== RECIPE QUERIES & FILTERING =====
@@ -365,39 +519,64 @@ class UnifiedRecipeViewModel extends ChangeNotifier {
 
   /// Kontrollera om användaren kan redigera specifikt recept
   bool canEditRecipe(String recipeId) {
-    if (currentUserId == null) return false;
-
-    final recipe = getUnifiedRecipeById(recipeId);
-    if (recipe == null) return false;
-
-    return recipe.canBeEditedBy(currentUserId!);
+    return _recipeService.social.canEdit(recipeId);
   }
 
   /// Kontrollera om användaren kan hantera medlemmar i specifikt recept
   bool canManageRecipeMembers(String recipeId) {
-    if (currentUserId == null) return false;
-
-    final recipe = getUnifiedRecipeById(recipeId);
-    if (recipe == null) return false;
-
-    return recipe.canManageMembersBy(currentUserId!);
+    return _recipeService.social.canManageMembers(recipeId);
   }
 
-  /// Få medlemmar i specifikt recept
-  List<String> getRecipeMembers(String recipeId) {
-    final recipe = getUnifiedRecipeById(recipeId);
-    if (recipe == null || recipe.isPersonal) return [];
+  /// Kontrollera om användaren kan visa specifikt recept
+  bool canViewRecipe(String recipeId) {
+    return _recipeService.social.canView(recipeId);
+  }
 
-    return recipe.allMemberIds;
+  /// Kontrollera om användaren kan ta bort specifikt recept
+  bool canDeleteRecipe(String recipeId) {
+    return _recipeService.social.canDelete(recipeId);
   }
 
   /// Få aktiva editorer för specifikt recept
   List<String> getActiveEditors(String recipeId) {
-    final recipe = getUnifiedRecipeById(recipeId);
-    if (recipe == null || recipe.isPersonal) return [];
-
-    return recipe.currentActiveEditors;
+    return _recipeService.realtime.getActiveEditors(recipeId);
   }
+
+  // ===== REALTIME OPERATIONS (Phase 5: Feature Interface) =====
+
+  /// Watch a recipe for real-time updates
+  Stream<UnifiedRecipe> watchRecipe(String recipeId) {
+    return _recipeService.realtime.watchRecipe(recipeId);
+  }
+
+  /// Start real-time editing session for recipe
+  Future<bool> startRealtimeEditing(String recipeId) async {
+    return await _recipeService.realtime.startRealtimeEditing(recipeId);
+  }
+
+  /// Stop real-time editing session for recipe
+  Future<bool> stopRealtimeEditing(String recipeId) async {
+    return await _recipeService.realtime.stopRealtimeEditing(recipeId);
+  }
+
+  /// Make real-time edit to recipe
+  Future<bool> makeRealtimeEdit({
+    required String recipeId,
+    required Map<String, dynamic> changes,
+    String? editDescription,
+  }) async {
+    return await _recipeService.realtime.makeRealtimeEdit(
+      recipeId: recipeId,
+      changes: changes,
+      editDescription: editDescription,
+    );
+  }
+
+  /// Get real-time connection status
+  bool get isRealtimeConnected => _recipeService.realtime.isConnected;
+
+  /// Get real-time connection status stream
+  Stream<bool> get realtimeConnectionStream => _recipeService.realtime.connectionStream;
 
   // ===== ERROR HANDLING =====
 

@@ -3,12 +3,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../services/recipe_service.dart';
+import '../../services/unified/unified_recipe_service.dart';
 import '../../core/injection.dart';
 import '../../models/recipe.dart';
 import '../../models/friend_category.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/friend_categories_service.dart';
+import '../../services/unified/unified_friends_service.dart';
 import '../../theme/app_theme.dart';
 import '../../core/utils/logger.dart';
 import 'state_widget.dart';
@@ -656,11 +656,11 @@ enum ActionButtonStyle { primary, secondary, outlined }
 // === PRIVATE IMPLEMENTATION CLASSES ===
 // ============================================================================
 
-/// Consumer widget för att lyssna på RecipeService
+/// Consumer widget för att lyssna på UnifiedRecipeService
 class _RecipeServiceConsumer extends StatelessWidget {
   final Widget Function(
     BuildContext context,
-    RecipeService value,
+    dynamic value,
     Widget? child,
   ) builder;
 
@@ -668,7 +668,7 @@ class _RecipeServiceConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final recipeService = sl<RecipeService>();
+    final recipeService = sl<UnifiedRecipeService>();
     return ListenableBuilder(
       listenable: recipeService,
       builder: (context, _) {
@@ -711,10 +711,10 @@ class _FriendCategoryManagerWidgetState
     _selectedFriends = Set.from(widget.selectedFriendIds);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final categoriesService = context.read<FriendCategoriesService>();
+      final categoriesService = context.read<UnifiedFriendsService>();
       final friendsViewModel = context.read<FriendsViewModel>();
 
-      if (categoriesService.categories.isEmpty) {
+      if (categoriesService.categoriesList.isEmpty) {
         categoriesService.refresh();
       }
       if (friendsViewModel.friends.isEmpty) {
@@ -725,7 +725,7 @@ class _FriendCategoryManagerWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<FriendCategoriesService, FriendsViewModel>(
+    return Consumer2<UnifiedFriendsService, FriendsViewModel>(
       builder: (context, categoriesService, friendsVM, child) {
         if (categoriesService.isLoading || friendsVM.isLoading) {
           return Center(
@@ -757,7 +757,7 @@ class _FriendCategoryManagerWidgetState
           );
         }
 
-        final categories = categoriesService.categoriesWithFriends;
+        final categories = categoriesService.categoriesList;
         final friends = friendsVM.friends;
 
         if (categories.isEmpty && friends.isEmpty) {
@@ -817,7 +817,7 @@ class _FriendCategoryManagerWidgetState
   }
 
   Widget _buildCategorySection(
-      List<FriendCategory> categories, FriendCategoriesService service) {
+      List<FriendCategory> categories, UnifiedFriendsService service) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1065,7 +1065,7 @@ class _FriendCategoryManagerWidgetState
   }
 
   void _toggleCategory(
-      FriendCategory category, FriendCategoriesService service) {
+      FriendCategory category, UnifiedFriendsService service) {
     setState(() {
       if (_selectedCategories.contains(category.id)) {
         _selectedCategories.remove(category.id);

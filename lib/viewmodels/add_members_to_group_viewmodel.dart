@@ -3,17 +3,13 @@
 import 'package:flutter/foundation.dart';
 import '../models/friend_category.dart';
 import '../models/user_profile.dart';
-import '../services/friends_service.dart';
-import '../services/friend_categories_service.dart';
-import '../services/group_invitation_service.dart'; // ✅ NYTT: Importera GroupInvitationService
+import '../models/group_invitation.dart';
+import '../services/unified/unified_friends_service.dart';
 import '../core/utils/logger.dart';
 
 
 class AddMembersToGroupViewModel extends ChangeNotifier {
-  final FriendsService _friendsService;
-  final FriendCategoriesService _categoriesService;
-  final GroupInvitationService
-      _groupInvitationService; // ✅ NYTT: GroupInvitationService
+  final UnifiedFriendsService _friendsService;
 
   // Group info
   final String groupId;
@@ -38,23 +34,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
 
   AddMembersToGroupViewModel({
     required this.groupId,
-    required FriendsService friendsService,
-    required FriendCategoriesService categoriesService,
-    required GroupInvitationService groupInvitationService, // ✅ NYTT: Parameter
-  })  : _friendsService = friendsService,
-        _categoriesService = categoriesService,
-        _groupInvitationService = groupInvitationService {
-    // ✅ NYTT: Spara referens
+    required UnifiedFriendsService friendsService,
+  })  : _friendsService = friendsService {
 
     // ✅ DEBUG: Konstruktor debug - FÖRSTA RADEN
     debugPrint(
         '🔍 DEBUG: AddMembersToGroupViewModel konstruktor - groupId: $groupId');
     debugPrint(
-        '🔍 DEBUG: Services injected - FriendsService: ${friendsService.runtimeType}');
-    debugPrint(
-        '🔍 DEBUG: Services injected - FriendCategoriesService: ${categoriesService.runtimeType}');
-    debugPrint(
-        '🔍 DEBUG: Services injected - GroupInvitationService: ${groupInvitationService.runtimeType}');
+        '🔍 DEBUG: Services injected - UnifiedFriendsService: ${friendsService.runtimeType}');
 
     AppLogger.info(
         '🔄 Initialiserar AddMembersToGroupViewModel för grupp: $groupId');
@@ -111,7 +98,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
 
       // Hämta gruppinformation
       debugPrint('🔍 DEBUG: Hämtar gruppinformation för $groupId');
-      _group = _categoriesService.getCategoryById(groupId);
+      _group = _friendsService.categories.getCategoryById(groupId);
       if (_group == null) {
         debugPrint('🔍 DEBUG: Gruppen hittades inte: $groupId');
         _setError('Gruppen hittades inte');
@@ -145,7 +132,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
     }
 
     // Hämta alla vänner
-    final allFriends = _friendsService.friends;
+    final allFriends = _friendsService.management.getAllFriends();
     debugPrint('🔍 DEBUG: Totala vänner från service: ${allFriends.length}');
 
     // Filtrera bort befintliga gruppmedlemmar
@@ -162,11 +149,10 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
     // ✅ NYTT: Filtrera även bort de som redan har väntande inbjudningar
     _availableFriends = _availableFriends.where((friend) {
       // Kontrollera om det redan finns en väntande inbjudan
-      final existingInvitation = _groupInvitationService.sentInvitations
+      final existingInvitation = _friendsService.invitations.getSentInvitations()
           .where((inv) =>
-              inv.groupId == groupId &&
               inv.toUserId == friend.uid &&
-              inv.isPending)
+              inv.status == GroupInvitationStatus.pending)
           .isNotEmpty;
 
       if (existingInvitation) {
@@ -273,7 +259,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
     // ✅ DEBUG: Method entry - FÖRSTA RADEN
     debugPrint('🔍 DEBUG: ===== sendInvitations() KALLAD =====');
     debugPrint(
-        '🔍 DEBUG: sendInvitations kallad - använder GroupInvitationService: ${_groupInvitationService.runtimeType}');
+        '🔍 DEBUG: sendInvitations kallad - använder UnifiedFriendsService: ${_friendsService.runtimeType}');
     debugPrint('🔍 DEBUG: Personal message: $personalMessage');
     debugPrint('🔍 DEBUG: Selected friends: ${_selectedFriendIds.toList()}');
     debugPrint('🔍 DEBUG: Group: ${_group?.name} (ID: $groupId)');
@@ -304,14 +290,29 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
       debugPrint('🔍 DEBUG:   - users: $selectedUserIds');
       debugPrint('🔍 DEBUG:   - personalMessage: $personalMessage');
       debugPrint(
-          '🔍 DEBUG:   - service: ${_groupInvitationService.runtimeType}');
+          '🔍 DEBUG:   - service: ${_friendsService.runtimeType}');
 
-      // ✅ NYTT: Använd bulk-funktionen från GroupInvitationService
-      final results = await _groupInvitationService.sendBulkGroupInvitations(
-        groupId: groupId,
-        toUserIds: selectedUserIds,
-        personalMessage: personalMessage,
-      );
+      // ✅ NYTT: Använd bulk-funktionen från UnifiedFriendsService
+      final results = <String, bool>{};
+      for (final userId in selectedUserIds) {
+        // Get friend info
+        final friend = _friendsService.management.getFriendById(userId);
+        if (friend != null) {
+          // Use actual email if available, otherwise skip invitation
+          if (friend.email.isNotEmpty && friend.email.contains('@')) {
+            final success = await _friendsService.invitations.sendEmailInvitation(
+              email: friend.email,
+              customMessage: personalMessage,
+            );
+            results[userId] = success;
+          } else {
+            AppLogger.warning('⚠️ Cannot send invitation to ${friend.displayName}: No valid email available');
+            results[userId] = false;
+          }
+        } else {
+          results[userId] = false;
+        }
+      }
 
       // ✅ DEBUG: Kontrollera resultat från API-anrop
       debugPrint('🔍 DEBUG: sendBulkGroupInvitations results: $results');
@@ -343,11 +344,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
         AppLogger.warning('⚠️ $failureCount gruppinbjudningar misslyckades');
         debugPrint('🔍 DEBUG: $failureCount invitations failed');
 
-        // Visa specifikt fel från GroupInvitationService om det finns
-        if (_groupInvitationService.hasError) {
+        // Visa specifikt fel från UnifiedFriendsService om det finns
+        if (_friendsService.hasError) {
           debugPrint(
-              '🔍 DEBUG: GroupInvitationService error: ${_groupInvitationService.error}');
-          _setInvitationError(_groupInvitationService.error!);
+              '🔍 DEBUG: UnifiedFriendsService error: ${_friendsService.error}');
+          _setInvitationError(_friendsService.error!);
+        } else if (successCount == 0 && failureCount > 0) {
+          // All invitations failed, likely due to email service not being implemented
+          _setInvitationError('Email invitation system is not yet implemented. Please try again later.');
         }
       }
 
@@ -388,9 +392,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
 
   /// ✅ NYTT: Kontrollera om en användare redan har väntande gruppinbjudan
   bool hasExistingInvitation(String userId) {
-    final hasInvitation = _groupInvitationService.sentInvitations
-        .where((inv) =>
-            inv.groupId == groupId && inv.toUserId == userId && inv.isPending)
+    final hasInvitation = _friendsService.invitations.getSentInvitations()
+        .where((inv) => inv.toUserId == userId && inv.status == GroupInvitationStatus.pending)
         .isNotEmpty;
     debugPrint('🔍 DEBUG: hasExistingInvitation($userId): $hasInvitation');
     return hasInvitation;
@@ -398,7 +401,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
 
   /// ✅ NYTT: Hämta information om skickade inbjudningar för denna grupp
   List<dynamic> getSentInvitationsForGroup() {
-    final invitations = _groupInvitationService.sentInvitations
+    final invitations = _friendsService.invitations.getSentInvitations()
         .where((inv) => inv.groupId == groupId)
         .toList();
     debugPrint(
@@ -411,9 +414,9 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
     debugPrint('🔍 DEBUG: refresh() kallad');
     AppLogger.info('🔄 Refreshar AddMembersToGroupViewModel data');
 
-    // ✅ NYTT: Refresha även GroupInvitationService
-    await _groupInvitationService.refresh();
-    debugPrint('🔍 DEBUG: GroupInvitationService refreshed');
+    // ✅ NYTT: Refresha även UnifiedFriendsService
+    await _friendsService.refresh();
+    debugPrint('🔍 DEBUG: UnifiedFriendsService refreshed');
 
     await _initializeData();
     debugPrint('🔍 DEBUG: refresh() komplett');

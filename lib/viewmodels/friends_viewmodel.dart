@@ -1,19 +1,32 @@
 // lib/viewmodels/friends_viewmodel.dart
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/user_profile.dart';
 import '../models/friend_request.dart';
 import '../models/friend_category.dart';
-import '../services/friends_service.dart';
+import '../services/unified/unified_friends_service.dart';
 import '../services/user_service.dart';
-import '../services/friend_categories_service.dart';
 import '../core/utils/logger.dart'; // ✅ NYTT: För AppLogger
+
+/// Represents the friendship status between two users
+enum FriendshipStatus {
+  /// Not friends and no pending requests
+  none,
+  /// Are friends
+  friends,
+  /// Current user has sent a request to the other user
+  requestSent,
+  /// Current user has received a request from the other user
+  requestReceived,
+  /// User is blocked
+  blocked,
+}
 
 
 class FriendsViewModel extends ChangeNotifier {
-  final FriendsService _friendsService;
+  final UnifiedFriendsService _friendsService;
   final UserService _userService;
-  final FriendCategoriesService _categoriesService; // ✅ NYTT
 
   // ✅ NYTT: Dispose-säkerhet
   bool _isDisposed = false;
@@ -36,36 +49,33 @@ class FriendsViewModel extends ChangeNotifier {
   String? _groupCreationError;
 
   FriendsViewModel({
-    required FriendsService friendsService,
+    required UnifiedFriendsService friendsService,
     required UserService userService,
-    required FriendCategoriesService categoriesService, // ✅ NYTT
   })  : _friendsService = friendsService,
-        _userService = userService,
-        _categoriesService = categoriesService {
+        _userService = userService {
     // ✅ NYTT
     // ✅ VIKTIGT: Registrera listeners vid skapandet
     AppLogger.info('🔄 Registrerar ViewModel listeners...');
     _friendsService.addListener(_onFriendsServiceChanged);
     _userService.addListener(_onUserServiceChanged);
-    _categoriesService.addListener(_onCategoriesServiceChanged); // ✅ NYTT
     AppLogger.success('✅ Alla ViewModel listeners registrerade');
   }
 
   // ===== GETTERS =====
 
-  // Friends data från service
+  // Friends data from unified service
   List<UserProfile> get friends => _friendsService.friends;
   List<FriendRequest> get incomingRequests => _friendsService.incomingRequests;
-  List<FriendRequest> get sentRequests => _friendsService.sentRequests;
-  int get friendsCount => _friendsService.friendsCount;
-  int get pendingRequestsCount => _friendsService.pendingRequestsCount;
+  List<FriendRequest> get sentRequests => _friendsService.outgoingRequests;
+  int get friendsCount => _friendsService.friends.length;
+  int get pendingRequestsCount => _friendsService.incomingRequests.length;
 
-  // ✅ NYTT: Group data från categories service
-  List<FriendCategory> get groups => _categoriesService.sortedCategories;
-  List<FriendCategory> get groupsWithFriends =>
-      _categoriesService.categoriesWithFriends;
-  bool get isLoadingGroups => _categoriesService.isLoading;
-  String? get groupsError => _categoriesService.error;
+  // Group data from unified friends service
+  List<FriendCategory> get groups => _friendsService.categoriesList;
+  List<FriendCategory> get groupsWithFriends => _friendsService.categoriesList
+      .where((category) => category.friendCount > 0).toList();
+  bool get isLoadingGroups => _friendsService.isLoading;
+  String? get groupsError => _friendsService.error;
   int get groupsCount => groups.length;
 
   // Search state
@@ -131,10 +141,7 @@ class FriendsViewModel extends ChangeNotifier {
 
   /// Send friend request to user
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
-    final success = await _friendsService.sendFriendRequest(
-      userId,
-      message: message,
-    );
+    final success = await _friendsService.management.sendFriendRequest(userId, message: message);
 
     if (success) {
       // Remove from search results to show updated state
@@ -147,22 +154,22 @@ class FriendsViewModel extends ChangeNotifier {
 
   /// Accept incoming friend request
   Future<bool> acceptFriendRequest(String requestId) async {
-    return await _friendsService.acceptFriendRequest(requestId);
+    return await _friendsService.management.acceptFriendRequest(requestId);
   }
 
   /// Reject incoming friend request
   Future<bool> rejectFriendRequest(String requestId) async {
-    return await _friendsService.rejectFriendRequest(requestId);
+    return await _friendsService.management.rejectFriendRequest(requestId);
   }
 
   /// Cancel sent friend request
   Future<bool> cancelSentRequest(String requestId) async {
-    return await _friendsService.cancelSentRequest(requestId);
+    return await _friendsService.management.cancelFriendRequest(requestId);
   }
 
   /// Remove friend (unfriend)
   Future<bool> removeFriend(String friendUserId) async {
-    final success = await _friendsService.removeFriend(friendUserId);
+    final success = await _friendsService.management.removeFriend(friendUserId);
 
     if (success) {
       // Clear selection if removed friend was selected
@@ -189,18 +196,17 @@ class FriendsViewModel extends ChangeNotifier {
 
       AppLogger.info('🔄 Skapar grupp: $name');
 
-      final success = await _categoriesService.createCategory(
+      final categoryId = await _friendsService.categories.createCategory(
         name: name,
-        description: description,
-        emoji: emoji,
-        friendUserIds: selectedFriendIds,
+        description: description ?? '',
+        initialMemberIds: selectedFriendIds,
       );
 
+      final success = categoryId != null;
       if (success) {
         AppLogger.success('✅ Grupp "$name" skapad!');
       } else {
-        _groupCreationError =
-            _categoriesService.error ?? 'Kunde inte skapa grupp';
+        _groupCreationError = _friendsService.error ?? 'Kunde inte skapa grupp';
       }
 
       return success;
@@ -216,49 +222,54 @@ class FriendsViewModel extends ChangeNotifier {
 
   /// Hämta vänner för en specifik grupp
   List<UserProfile> getFriendsInGroup(String groupId) {
-    return _categoriesService.getFriendsForCategory(groupId);
+    return _friendsService.categories.getFriendsInCategory(groupId);
   }
 
   /// Kontrollera om gruppmamn är tillgängligt
   bool isGroupNameAvailable(String name) {
-    return _categoriesService.isCategoryNameAvailable(name);
+    return _friendsService.categories.getCategoryByName(name) == null;
   }
 
   /// Hämta grupper för en specifik vän
   List<FriendCategory> getGroupsForFriend(String friendUserId) {
-    return _categoriesService.getCategoriesForFriend(friendUserId);
+    return _friendsService.categories.getCategoriesForFriend(friendUserId);
   }
 
   /// Sök grupper
   List<FriendCategory> searchGroups(String query) {
-    return _categoriesService.searchCategories(query);
+    if (query.trim().isEmpty) return [];
+    final lowerQuery = query.toLowerCase();
+    return _friendsService.categoriesList
+        .where((category) => category.name.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 
   // ===== UTILITY METHODS =====
 
   /// Get relationship status with user
   FriendshipStatus getFriendshipStatus(String userId) {
-    // Check if already friends
-    if (friends.any((friend) => friend.uid == userId)) {
+    // Check if user is already a friend
+    if (_friendsService.friends.any((friend) => friend.uid == userId)) {
       return FriendshipStatus.friends;
     }
-
-    // Check for pending incoming request
-    if (incomingRequests.any((req) => req.fromUserId == userId)) {
-      return FriendshipStatus.requestReceived;
-    }
-
-    // Check for pending sent request
-    if (sentRequests.any((req) => req.toUserId == userId)) {
+    
+    // Check if there's an outgoing request
+    if (_friendsService.outgoingRequests.any((request) => request.toUserId == userId)) {
       return FriendshipStatus.requestSent;
     }
-
+    
+    // Check if there's an incoming request
+    if (_friendsService.incomingRequests.any((request) => request.fromUserId == userId)) {
+      return FriendshipStatus.requestReceived;
+    }
+    
     return FriendshipStatus.none;
   }
 
   /// Get mutual friends with user
   Future<List<UserProfile>> getMutualFriends(String userId) async {
-    return await _friendsService.getMutualFriends(userId);
+    // TODO: Implement mutual friends in UnifiedFriendsService
+    return [];
   }
 
   /// Check if user can be added as friend
@@ -299,6 +310,12 @@ class FriendsViewModel extends ChangeNotifier {
   List<UserProfile> getSelectedFriends() {
     return friends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
   }
+  
+  /// Get profile picture URL for a user
+  String? getAvatarUrlForUser(String userId) {
+    final profile = getUserProfile(userId);
+    return profile?.avatarUrl;
+  }
 
   // ===== USER PROFILE MANAGEMENT =====
 
@@ -309,7 +326,7 @@ class FriendsViewModel extends ChangeNotifier {
 
     try {
       _isLoadingUserProfiles = true;
-      notifyListeners();
+      // Don't call notifyListeners() immediately during potential build phase
 
       // Samla alla unika userId från requests
       final userIds = <String>{};
@@ -365,7 +382,12 @@ class FriendsViewModel extends ChangeNotifier {
     } finally {
       if (!_isDisposed) {
         _isLoadingUserProfiles = false;
-        notifyListeners();
+        // Use scheduleMicrotask to avoid calling notifyListeners during build
+        scheduleMicrotask(() {
+          if (!_isDisposed) {
+            notifyListeners();
+          }
+        });
       }
     }
   }
@@ -388,7 +410,7 @@ class FriendsViewModel extends ChangeNotifier {
   }
 
   /// Hämta avatar URL för en användare
-  String? getAvatarUrlForUser(String userId) {
+  String? getProfilePictureUrlForUser(String userId) {
     final profile = getUserProfile(userId);
     return profile?.avatarUrl;
   }
@@ -409,21 +431,12 @@ class FriendsViewModel extends ChangeNotifier {
       _searchError = null;
       notifyListeners();
 
-      final results = await _userService.searchUsers(_searchQuery);
+      final results = await _friendsService.management.searchUsers(_searchQuery);
 
       // ✅ SÄKER: Kontrollera dispose efter asynkron operation
       if (_isDisposed) return;
 
-      // Filter out current user and existing friends
-      final currentUserId = _userService.currentUserId;
-      final friendIds = friends.map((f) => f.uid).toSet();
-
-      _searchResults = results
-          .where(
-            (user) =>
-                user.uid != currentUserId && !friendIds.contains(user.uid),
-          )
-          .toList();
+      _searchResults = results;
 
       AppLogger.info(
         '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
@@ -467,31 +480,13 @@ class FriendsViewModel extends ChangeNotifier {
     }
   }
 
-  // ✅ VIKTIGT: Lyssna på ändringar i grupper och uppdatera UI
-  void _onCategoriesServiceChanged() {
-    // ✅ SÄKER: Kontrollera om ViewModel är disposed innan notifiering
-    if (!_isDisposed) {
-      AppLogger.info(
-          '🔔 _onCategoriesServiceChanged anropad - kategorier har ändrats!');
-      AppLogger.info(
-          '📊 Antal grupper nu: ${_categoriesService.categories.length}');
-
-      // Trigga UI rebuild
-      notifyListeners();
-      AppLogger.info('✅ notifyListeners anropad för FriendsViewModel');
-    } else {
-      AppLogger.warning(
-          '⚠️ Ignorerar categories service change - ViewModel är disposed');
-    }
-  }
 
   /// Clear errors
   void clearError() {
     if (!_isDisposed) {
       _friendsService.clearError();
-      _categoriesService.clearError(); // ✅ NYTT
       _searchError = null;
-      _groupCreationError = null; // ✅ NYTT
+      _groupCreationError = null;
       notifyListeners();
     }
   }
@@ -504,18 +499,9 @@ class FriendsViewModel extends ChangeNotifier {
     // Rensa cache innan refresh
     clearUserProfilesCache();
 
-    // Refresha friends service data
-    await _friendsService.refresh();
-
-    // ✅ SÄKER: Kontrollera dispose efter asynkron operation
-    if (_isDisposed) return;
-
-    // ✅ NYTT: Refresha groups data
-    await _categoriesService.refresh();
-
-    // ✅ SÄKER: Kontrollera dispose efter asynkron operation
-    if (_isDisposed) return;
-
+    // Note: UnifiedFriendsService handles its own refresh through Firebase listeners
+    // No need to manually refresh as it's reactive
+    
     // Ladda användaruppgifter för nya förfrågningar
     await loadUserProfilesForRequests();
   }
@@ -535,10 +521,3 @@ class FriendsViewModel extends ChangeNotifier {
   }
 }
 
-/// Enum för friendship status
-enum FriendshipStatus {
-  none, // Ingen relation
-  requestSent, // Förfrågan skickad
-  requestReceived, // Förfrågan mottagen
-  friends, // Vänner
-}
