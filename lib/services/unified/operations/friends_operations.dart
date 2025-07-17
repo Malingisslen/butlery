@@ -395,7 +395,7 @@ class FriendsOperations {
   // ===== PRIVATE HELPER METHODS =====
 
   bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+    return RegExp(r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', unicode: true).hasMatch(email);
   }
 }
 

@@ -52,7 +52,13 @@ class MenuViewModel extends ChangeNotifier {
   int get totalRecipeCount =>
       _menu.values.fold(0, (sum, recipes) => sum + recipes.length);
 
-  List<Recipe> get availableRecipes => _recipeService.legacyRecipes;
+  List<Recipe> get availableRecipes {
+    // Ensure service is initialized and get unified recipes
+    if (!_recipeService.isInitialized) {
+      return [];
+    }
+    return _recipeService.legacyRecipes;
+  }
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 
   // ✅ UPPDATERAD: Kombinerade menyer
@@ -70,6 +76,12 @@ class MenuViewModel extends ChangeNotifier {
     _lastPrompt = trimmedPrompt;
 
     try {
+      // Ensure recipe service is initialized before proceeding
+      if (!_recipeService.isInitialized) {
+        AppLogger.info('🔄 Initialiserar recept-service för meny-generering...');
+        await _recipeService.initialize();
+      }
+      
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (availableRecipes.isEmpty) {

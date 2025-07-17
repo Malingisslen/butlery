@@ -7,6 +7,7 @@ import '../../models/unified/unified_shopping_list.dart';
 import '../../models/user_profile.dart';
 import '../../theme/app_theme.dart';
 import '../../viewmodels/universal_share_dialog_viewmodel.dart';
+import '../user/user_display_widgets.dart';
 import 'package:provider/provider.dart';
 
 
@@ -475,21 +476,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog>
                 padding: AppTheme.listItemPadding, // ✅ AppTheme padding
                 child: Row(
                   children: [
-                    // Avatar placeholder
-                    CircleAvatar(
-                      radius: AppTheme.iconSizeAction, // ✅ AppTheme size
-                      backgroundColor:
-                          AppTheme.primaryColor.withValues(alpha: 0.1),
-                      child: Text(
-                        friend.displayName.isNotEmpty
-                            ? friend.displayName[0].toUpperCase()
-                            : '?',
-                        style: AppTheme.bodyStyle.copyWith(
-                          // ✅ AppTheme style
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    // Avatar using proper UserDisplayWidgets
+                    UserDisplayWidgets.avatar(
+                      imageUrl: friend.avatarUrl,
+                      displayName: friend.displayName,
+                      size: ImageSize.medium,
                     ),
                     AppTheme.mediumHorizontalGap, // ✅ AppTheme gap
 

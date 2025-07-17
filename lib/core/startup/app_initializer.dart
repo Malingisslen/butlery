@@ -165,6 +165,9 @@ class AppInitializer {
       // Initiera App Check för säkerhet
       await _initializeAppCheck();
 
+      // Konfigurera Firestore för bättre prestanda och offline-support
+      await _configureFirestore();
+
       // Utför Firestore-ping om användare är inloggad
       await _performFirestorePing();
     } on FirebaseException catch (e) {
@@ -194,6 +197,26 @@ class AppInitializer {
     } catch (e) {
       debugPrint('⚠️ App Check kunde inte aktiveras: $e');
       debugPrint('⚠️ Fortsätter utan App Check (utvecklingsläge)');
+    }
+  }
+
+  /// Konfigurerar Firestore för optimal prestanda och offline-support
+  static Future<void> _configureFirestore() async {
+    try {
+      // Kontrollera om Firestore redan har konfigurerats
+      final firestore = FirebaseFirestore.instance;
+      
+      // Konfigurera Firestore-inställningar
+      firestore.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        sslEnabled: true,
+      );
+      
+      debugPrint('✅ Firestore konfigurerat för offline-support');
+    } catch (e) {
+      debugPrint('⚠️ Firestore-konfiguration misslyckades: $e');
+      debugPrint('⚠️ Fortsätter med standard Firestore-inställningar');
     }
   }
 

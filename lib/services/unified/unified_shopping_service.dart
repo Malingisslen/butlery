@@ -4,10 +4,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import '../../repositories/interfaces/auth_repository.dart';
 import '../../repositories/firestore_repository.dart';
-import 'package:hive/hive.dart';
-import 'dart:convert';
+import '../../core/cache/json_cache_helper.dart';
 import '../../models/unified/unified_shopping_item.dart';
 import '../../models/unified/unified_shopping_list.dart';
 import '../../core/utils/logger.dart';
@@ -23,7 +23,9 @@ class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<Unifi
   late final PersonalShoppingOperations _personalOps;
   late final CollaborativeShoppingOperations _collaborativeOps;
   late final ShoppingShareOperations _shareOps;
-  static const String _hiveBoxBaseName = 'unified_shopping_lists_cache';
+  
+  /// JSON cache helper for shopping list data
+  late final JsonCacheHelper _cacheHelper;
   static const String _activeListKey = 'active_list_id';
 
 final FirestoreRepository _firestoreRepository;
@@ -122,11 +124,6 @@ UnifiedShoppingService({
     }
   }
 
-  /// Get user-specific Hive box name for secure caching
-  String get _userSpecificBoxName {
-    final userId = currentUserId;
-    return userId != null ? '${_hiveBoxBaseName}_$userId' : _hiveBoxBaseName;
-  }
 
   // ===== INITIALIZATION - FÖRENKLAD UTAN MIGRATION =====
 
@@ -149,15 +146,17 @@ UnifiedShoppingService({
         }
       }
 
-      // Öppna Hive box för caching
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
+      // Initialize cache helper
+      _cacheHelper = JsonCacheFactory.shoppingCache();
+      _cacheHelper.setCurrentUser(currentUserId);
 
       // Ladda cached data först (offline-first)
-      await _loadCachedLists(box);
+      await _loadCachedLists();
 
       // Lyssna på auth changes using mixin
       _authRepository.authStateChanges().listen((user) {
         onAuthStateChanged(user?.uid);
+        _cacheHelper.setCurrentUser(user?.uid);
         if (user == null) {
           _clearAll();
         }
@@ -348,8 +347,7 @@ UnifiedShoppingService({
       _activeListId = listId;
 
       // Spara aktiv lista ID
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
-      await box.put(_activeListKey, listId);
+      await _cacheHelper.saveActiveId(_activeListKey, listId);
 
       notifyListeners();
       return true;
@@ -695,35 +693,33 @@ UnifiedShoppingService({
 
   // ===== CACHE METHODS - ✅ FIXAD FÖR ATT FUNGERA OFFLINE =====
 
-  Future<void> _loadCachedLists(Box<String> box) async {
+  Future<void> _loadCachedLists() async {
     try {
-      final cachedListIds =
-          box.keys.where((key) => key != _activeListKey).toList();
+      final cachedListIds = await _cacheHelper.getAllKeys();
+      final dataKeys = cachedListIds.where((key) => key != _activeListKey).toList();
 
-      for (final listId in cachedListIds) {
-        final cachedData = box.get(listId);
-        if (cachedData != null) {
+      for (final listId in dataKeys) {
+        final listData = await _cacheHelper.loadJson(listId);
+        if (listData != null) {
           try {
-            // ✅ FIX: Parse JSON properly from cache
-            final listData = jsonDecode(cachedData);
             final list = UnifiedShoppingList.fromJson(listData);
             _lists.add(list);
             AppLogger.debug('Laddad cached lista: ${list.name}');
           } catch (e) {
             AppLogger.error('Fel vid parsing av cached lista $listId: $e');
             // Ta bort trasig cache
-            await box.delete(listId);
+            await _cacheHelper.delete(listId);
           }
         }
       }
 
       // Load active list ID
-      _activeListId = box.get(_activeListKey);
+      _activeListId = await _cacheHelper.loadActiveId(_activeListKey);
 
       // Om ingen aktiv lista men vi har listor, sätt första som aktiv
       if (_activeListId == null && _lists.isNotEmpty) {
         _activeListId = _lists.first.id;
-        await box.put(_activeListKey, _activeListId!);
+        await _cacheHelper.saveActiveId(_activeListKey, _activeListId!);
       }
 
       AppLogger.debug('✅ ${_lists.length} cached lists laddade');
@@ -734,10 +730,8 @@ UnifiedShoppingService({
 
   Future<void> _saveToCache(UnifiedShoppingList list) async {
     try {
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
       final listData = list.toJson();
-      final listJson = jsonEncode(listData);
-      await box.put(list.id, listJson);
+      await _cacheHelper.saveJson(list.id, listData);
       AppLogger.debug('Lista cachad: ${list.name}');
     } catch (e) {
       AppLogger.error('Fel vid sparande till cache: $e');
@@ -746,8 +740,7 @@ UnifiedShoppingService({
 
   Future<void> _removeFromCache(String listId) async {
     try {
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
-      await box.delete(listId);
+      await _cacheHelper.delete(listId);
       AppLogger.debug('Lista borttagen från cache: $listId');
     } catch (e) {
       AppLogger.error('Fel vid borttagning från cache: $e');

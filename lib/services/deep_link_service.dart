@@ -185,6 +185,62 @@ class DeepLinkService {
       AppLogger.error('Failed to initialize dynamic links: $e');
     }
   }
+
+  /// Handle incoming deep link and navigate appropriately
+  static Future<void> handleDeepLink(String url, Function(String) navigateToRoute) async {
+    try {
+      final deepLinkData = parseDeepLink(url);
+      if (deepLinkData == null) {
+        AppLogger.warning('Invalid deep link received: $url');
+        return;
+      }
+
+      // Check if link is expired (older than 7 days)
+      if (isLinkExpired(deepLinkData)) {
+        AppLogger.warning('Deep link expired: $url');
+        return;
+      }
+
+      // Navigate based on deep link type
+      switch (deepLinkData.type) {
+        case DeepLinkType.friendInvitation:
+          if (deepLinkData.id != null) {
+            navigateToRoute('/friends?invitation=${deepLinkData.id}');
+          }
+          break;
+        case DeepLinkType.recipeShare:
+          if (deepLinkData.id != null) {
+            navigateToRoute('/recipe/${deepLinkData.id}?shared=true');
+          }
+          break;
+        case DeepLinkType.menuShare:
+          if (deepLinkData.id != null) {
+            navigateToRoute('/menu/${deepLinkData.id}?shared=true');
+          }
+          break;
+        case DeepLinkType.shoppingListShare:
+          if (deepLinkData.id != null) {
+            navigateToRoute('/shopping/${deepLinkData.id}?shared=true');
+          }
+          break;
+      }
+
+      AppLogger.info('Deep link handled successfully: ${deepLinkData.type}');
+    } catch (e) {
+      AppLogger.error('Failed to handle deep link: $e');
+    }
+  }
+
+  /// Check if a deep link is expired
+  static bool isLinkExpired(DeepLinkData deepLinkData) {
+    if (deepLinkData.timestamp == null) return false;
+    
+    final linkTime = DateTime.fromMillisecondsSinceEpoch(deepLinkData.timestamp!);
+    final now = DateTime.now();
+    final difference = now.difference(linkTime);
+    
+    return difference.inDays > 7; // Links expire after 7 days
+  }
 }
 
 /// Deep link data structure

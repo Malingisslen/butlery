@@ -120,8 +120,8 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     }
 
-    // Enkel email-validering med regex
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    // Email-validering med stöd för Unicode-tecken i local part
+    final emailRegex = RegExp(r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', unicode: true);
     if (!emailRegex.hasMatch(email)) {
       _setError('Ogiltig email-adress');
       return false;

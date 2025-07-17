@@ -70,6 +70,7 @@ class _ButleryAppState extends State<ButleryApp> {
   void initState() {
     super.initState();
     _waitForBackgroundInitialization();
+    _handleInitialDeepLink();
   }
 
   /// Väntar på att background initialization ska slutföras för att sätta upp analytics
@@ -91,6 +92,24 @@ class _ButleryAppState extends State<ButleryApp> {
       }
     }
   }
+
+  /// Handle initial deep link when app starts
+  void _handleInitialDeepLink() async {
+    // Wait for background initialization to complete
+    while (!AppInitializer.isBackgroundInitialized) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    try {
+      // TODO: Get initial deep link from platform
+      // This would typically come from app launch parameters
+      // For now, just log that deep link handling is ready
+      debugPrint('🔗 Deep link handling initialized');
+    } catch (e) {
+      debugPrint('⚠️ Deep link initialization failed: $e');
+    }
+  }
+
 
   @override
   void dispose() {

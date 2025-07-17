@@ -38,14 +38,13 @@ class FranSocialaMedierView extends StatelessWidget {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             viewModel.parseText().then((success) {
               if (success && context.mounted) {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => SkrivSjalvReceptView(
-                      initialRecipe: viewModel.parsedRecipe,
-                      isTemplate: true,
-                    ),
-                  ),
+                  '/skrivSjalv',
+                  arguments: {
+                    'initialRecipe': viewModel.parsedRecipe,
+                    'isTemplate': true,
+                  },
                 );
               }
             });

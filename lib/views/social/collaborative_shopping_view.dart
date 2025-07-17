@@ -5,6 +5,7 @@ import '../../viewmodels/collaborative_shopping_viewmodel.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../widgets/common/state_widget.dart';
+import '../../widgets/common/loading_state_builder.dart';
 
 
 class CollaborativeShoppingView extends StatefulWidget {
@@ -89,27 +90,18 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
   Widget _buildBody(
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
-    if (viewModel.isLoading && !viewModel.hasData) {
-      return StateWidget.loading(
-        message: 'Laddar gemensam lista...',
-      );
-    }
-
-    if (viewModel.hasError) {
-      return StateWidget.error(
-        message: viewModel.error!,
-        onAction: () {
-          viewModel.clearError();
-          viewModel.refresh();
-        },
-      );
-    }
-
-    if (!viewModel.hasData) {
-      return _buildNotFoundState(context);
-    }
-
-    return _buildListContent(context, viewModel);
+    return LoadingStateBuilder<dynamic>(
+      isLoading: viewModel.isLoading,
+      error: viewModel.error,
+      data: viewModel.currentList,
+      loadingMessage: 'Laddar gemensam lista...',
+      emptyBuilder: (context) => _buildNotFoundState(context),
+      builder: (context, shoppingList) => _buildListContent(context, viewModel),
+      onErrorRetry: () {
+        viewModel.clearError();
+        viewModel.refresh();
+      },
+    );
   }
 
   // ===== STATES =====
@@ -203,6 +195,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
 
@@ -476,6 +470,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
                 : null,
             fontWeight: item.bought ? FontWeight.normal : FontWeight.w500,
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         subtitle: _buildItemSubtitle(context, viewModel, item),
         trailing: _buildItemTrailing(context, viewModel, item),
