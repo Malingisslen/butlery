@@ -17,6 +17,7 @@ import '../widgets/common/layout_components.dart';
 // Theme
 import '../theme/app_theme.dart';
 import '../widgets/common/state_widget.dart';
+import '../core/dialogs/dialog_factory.dart';
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/common/input_components.dart';
 
@@ -194,6 +195,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                     child: Text(
                       '${list.name} (${list.items.length} varor)',
                       style: const TextStyle(fontWeight: FontWeight.w500),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   );
                 }).toList(),
@@ -293,14 +296,18 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
             children: [
               _getCategoryIcon(category, isCompleted),
               const SizedBox(width: 8),
-              Text(
-                category,
-                style: TextStyle(
-                  fontSize: AppTheme.bodyStyle.fontSize,
-                  fontWeight: FontWeight.w600,
-                  color: isCompleted
-                      ? AppTheme.neutralMedium
-                      : AppTheme.primaryColor,
+              Expanded(
+                child: Text(
+                  category,
+                  style: TextStyle(
+                    fontSize: AppTheme.bodyStyle.fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: isCompleted
+                        ? AppTheme.neutralMedium
+                        : AppTheme.primaryColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
@@ -481,6 +488,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                     fontWeight: FontWeight.w500,
                     fontSize: AppTheme.bodyStyle.fontSize,
                   ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           trailing: item.bought
               ? null
@@ -500,36 +509,54 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
 
   // ==================== DIALOG METODER ====================
 
-  void _showShoppingShareDialog() {
+  Future<void> _showShoppingShareDialog() async {
     if (_viewModel.activeList == null) return;
 
     List<UserProfile> availableFriends = [];
 
     try {
       final friendsService = sl<UnifiedFriendsService>();
-      availableFriends = friendsService.management.getAllFriends().map((friend) => UserProfile(
-        uid: friend.uid,
-        displayName: friend.displayName,
-        email: friend.email,
-        avatarUrl: friend.avatarUrl,
-        bio: friend.bio,
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      )).toList();
+      
+      // Ensure friends service is initialized
+      if (!friendsService.isInitialized) {
+        AppLogger.info('🔄 Initialiserar friends service för delning...');
+        await friendsService.initialize();
+      }
+      
+      final rawFriends = friendsService.management.getAllFriends();
+      
+      // Filter out friends with missing display names and add fallbacks
+      availableFriends = rawFriends
+          .where((friend) => friend.displayName.isNotEmpty)
+          .map((friend) => UserProfile(
+            uid: friend.uid,
+            displayName: friend.displayName.isNotEmpty 
+                ? friend.displayName 
+                : 'Vän ${friend.uid.substring(0, 6)}...',
+            email: friend.email,
+            avatarUrl: friend.avatarUrl,
+            bio: friend.bio?.isNotEmpty == true ? friend.bio : null,
+            joinedAt: friend.joinedAt,
+            lastActiveAt: friend.lastActiveAt,
+          )).toList();
+          
+      AppLogger.info('📋 Laddade ${availableFriends.length} vänner för delning (${rawFriends.length} totalt)');
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte hämta vänner för shopping sharing: $e');
       availableFriends = [];
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => UniversalShareDialog.shoppingList(
-        shoppingList: _viewModel.activeList!,
-        viewModel: sl<UniversalShareDialogViewModel>(),
-        initialMessage: "Kolla min inköpslista!",
-        availableFriends: availableFriends,
-      ),
-    );
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => UniversalShareDialog.shoppingList(
+          shoppingList: _viewModel.activeList!,
+          viewModel: sl<UniversalShareDialogViewModel>(),
+          initialMessage: "Kolla min inköpslista!",
+          availableFriends: availableFriends,
+        ),
+      );
+    }
   }
 
   // ✅ MIGRERAD: _showAddItemDialog använder InputComponents
@@ -597,40 +624,21 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     }
   }
 
-  void _clearBoughtItemsWithConfirmation(UnifiedShoppingViewModel viewModel) {
+  void _clearBoughtItemsWithConfirmation(UnifiedShoppingViewModel viewModel) async {
     if (viewModel.boughtItems == 0) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Töm inhandlade varor',
-          style: AppTheme.cardTitleStyle,
-        ),
-        content: Text(
-          'Vill du ta bort alla ${viewModel.boughtItems} inhandlade varor från listan?',
-          style: AppTheme.bodyStyle,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: AppTheme.secondaryButtonStyle,
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              viewModel.clearBoughtItems();
-              _showSuccessSnackBar('Inhandlade varor rensade!');
-            },
-            style: AppTheme.primaryButtonStyle.copyWith(
-              backgroundColor: WidgetStateProperty.all(AppTheme.errorColor),
-            ),
-            child: const Text('Töm'),
-          ),
-        ],
-      ),
+    final confirmed = await DialogFactory.showConfirmation(
+      context,
+      title: 'Töm inhandlade varor',
+      message: 'Vill du ta bort alla ${viewModel.boughtItems} inhandlade varor från listan?',
+      confirmText: 'Töm',
+      isDangerous: true,
     );
+
+    if (confirmed == true) {
+      viewModel.clearBoughtItems();
+      _showSuccessSnackBar('Inhandlade varor rensade!');
+    }
   }
 
   void _shareListExternally() {
@@ -704,52 +712,19 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  void _showCreateListDialog() {
-    final nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Skapa ny lista',
-          style: AppTheme.cardTitleStyle,
-        ),
-        content: TextField(
-          controller: nameController,
-          autofocus: true,
-          style: AppTheme.bodyStyle,
-          decoration: InputDecoration(
-            labelText: 'Listnamn',
-            labelStyle: AppTheme.formLabelStyle,
-            hintText: 'T.ex. Veckohandling',
-            hintStyle: AppTheme.inputHintStyle,
-            border: OutlineInputBorder(
-              borderRadius: AppTheme.mediumRadius,
-            ),
-            contentPadding: AppTheme.inputPadding,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: AppTheme.secondaryButtonStyle,
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isNotEmpty) {
-                _viewModel.createPersonalList(name);
-                Navigator.pop(context);
-                _showSuccessSnackBar('Lista "$name" skapad!');
-              }
-            },
-            style: AppTheme.primaryButtonStyle,
-            child: const Text('Skapa'),
-          ),
-        ],
-      ),
+  void _showCreateListDialog() async {
+    final name = await DialogFactory.showTextInput(
+      context,
+      title: 'Skapa ny lista',
+      hintText: 'T.ex. Veckohandling',
+      confirmText: 'Skapa',
+      required: true,
     );
+
+    if (name != null && name.isNotEmpty) {
+      _viewModel.createPersonalList(name);
+      _showSuccessSnackBar('Lista "$name" skapad!');
+    }
   }
 
   // ===== SNACKBAR HELPERS =====

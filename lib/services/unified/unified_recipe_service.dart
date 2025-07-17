@@ -22,8 +22,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'dart:convert';
+import '../../core/cache/json_cache_helper.dart';
 import '../../models/unified/unified_recipe.dart';
 import '../../models/recipe.dart'; // För backwards compatibility
 import '../../core/utils/logger.dart';
@@ -38,10 +37,11 @@ import '../permission_service.dart';
 import '../../core/injection.dart';
 
 class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<UnifiedRecipe> {
-  static const String _hiveBoxBaseName = 'unified_recipes_cache';
-
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
+  
+  /// JSON cache helper for recipe data
+  late final JsonCacheHelper _cacheHelper;
 
   // ===== FEATURE INTERFACES - Phase 5 Enhancement =====
   
@@ -97,11 +97,6 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
   String? get currentUserDisplayName =>
       _authRepository.currentUser?.displayName ?? 'Du';
 
-  /// Get user-specific Hive box name for secure caching
-  String get _userSpecificBoxName {
-    final userId = currentUserId;
-    return userId != null ? '${_hiveBoxBaseName}_$userId' : _hiveBoxBaseName;
-  }
 
   // ===== BACKWARDS COMPATIBILITY - för befintlig kod =====
 
@@ -138,26 +133,17 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
         }
       }
 
-      // Ensure Hive is initialized before opening boxes
-      try {
-        if (!Hive.isBoxOpen(_userSpecificBoxName)) {
-          // Initialize Hive if not already done
-          await Hive.initFlutter();
-        }
-      } catch (e) {
-        // Hive might already be initialized, continue
-        AppLogger.debug('Hive already initialized or initialization skipped: $e');
-      }
-
-      // Öppna Hive box för caching
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
+      // Initialize cache helper
+      _cacheHelper = JsonCacheFactory.recipeCache();
+      _cacheHelper.setCurrentUser(currentUserId);
 
       // Ladda cached data först (offline-first)
-      await _loadCachedRecipes(box);
+      await _loadCachedRecipes();
 
       // Lyssna på auth changes using mixin
       _authRepository.authStateChanges().listen((user) {
         onAuthStateChanged(user?.uid);
+        _cacheHelper.setCurrentUser(user?.uid);
         if (user == null) {
           _clearAll();
         }
@@ -650,8 +636,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       _recipes.clear();
 
       // Reload from cache first
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
-      await _loadCachedRecipes(box);
+      await _loadCachedRecipes();
 
       // Restart Firebase sync to get latest data
       stopFirebaseSync();
@@ -818,21 +803,20 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   // ===== CACHE METHODS =====
 
-  Future<void> _loadCachedRecipes(Box<String> box) async {
+  Future<void> _loadCachedRecipes() async {
     try {
-      final cachedRecipeIds = box.keys.toList();
+      final cachedRecipeIds = await _cacheHelper.getAllKeys();
 
       for (final recipeId in cachedRecipeIds) {
-        final cachedData = box.get(recipeId);
-        if (cachedData != null) {
+        final recipeData = await _cacheHelper.loadJson(recipeId);
+        if (recipeData != null) {
           try {
-            final recipeData = jsonDecode(cachedData);
             final recipe = UnifiedRecipe.fromJson(recipeData);
             _recipes.add(recipe);
             AppLogger.debug('Laddat cached recept: ${recipe.name}');
           } catch (e) {
             AppLogger.error('Fel vid parsing av cached recept $recipeId: $e');
-            await box.delete(recipeId);
+            await _cacheHelper.delete(recipeId);
           }
         }
       }
@@ -845,10 +829,8 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   Future<void> _saveToCache(UnifiedRecipe recipe) async {
     try {
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
       final recipeData = recipe.toJson();
-      final recipeJson = jsonEncode(recipeData);
-      await box.put(recipe.id, recipeJson);
+      await _cacheHelper.saveJson(recipe.id, recipeData);
       AppLogger.debug('Recept cachat: ${recipe.name}');
     } catch (e) {
       AppLogger.error('Fel vid sparande till cache: $e');
@@ -857,8 +839,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   Future<void> _removeFromCache(String recipeId) async {
     try {
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
-      await box.delete(recipeId);
+      await _cacheHelper.delete(recipeId);
       AppLogger.debug('Recept borttaget från cache: $recipeId');
     } catch (e) {
       AppLogger.error('Fel vid borttagning från cache: $e');

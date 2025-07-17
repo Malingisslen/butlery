@@ -7,10 +7,10 @@ import 'dart:async';
 
 import '../models/recipe.dart';
 import '../core/utils/logger.dart';
+import '../core/utils/retry_helper.dart';
 import '../repositories/firestore_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
-import '../theme/app_theme.dart';
 
 /// Service för offline-funktionalitet med Hive - USER-SPECIFIC VERSION
 class OfflineService extends ChangeNotifier {
@@ -378,10 +378,13 @@ class OfflineService extends ChangeNotifier {
           if (recipe != null && recipe.needsSync) {
             AppLogger.info('📤 Synkar recept: ${recipe.title}');
 
-            await _firestoreRepository.setDocument(
-              userRecipesRef.doc(recipe.id),
-              recipe.toFirestore(),
-            );
+            // Use retry logic for Firebase operations
+            await RetryHelper.retryFirebaseOperation(() async {
+              await _firestoreRepository.setDocument(
+                userRecipesRef.doc(recipe!.id),
+                recipe.toFirestore(),
+              );
+            });
 
             // ✅ SÄKER: Synkningen lyckades
             recipe.isModifiedOffline = false;
@@ -433,16 +436,20 @@ class OfflineService extends ChangeNotifier {
         }
       }
 
-      // ✅ SMART RETRY: Om alla misslyckades, vänta innan nästa försök
+      // ✅ SMART RETRY: Om alla misslyckades, använd exponential backoff
       if (successCount == 0 && failureCount > 0) {
         AppLogger.info(
-            '⏰ Alla sync-försök misslyckades, väntar 30s innan retry...');
-        // Schedule retry efter 30 sekunder
-        Timer(AppTheme.wait30s, () {
+            '⏰ Alla sync-försök misslyckades, använder exponential backoff...');
+        
+        // Use exponential backoff for retry attempts
+        RetryHelper.retryWithBackoff(() async {
           if (_isOnline && _syncQueueBox.isNotEmpty) {
             AppLogger.info('🔄 Retry-försök startar...');
-            _syncPendingChanges();
+            await _syncPendingChanges();
           }
+        }, maxRetries: 3, shouldRetry: (error) {
+          // Only retry if we still have items in the queue
+          return _syncQueueBox.isNotEmpty;
         });
       }
     } catch (e) {

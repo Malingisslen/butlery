@@ -53,5 +53,25 @@
 	<string>Butlery behöver tillgång till bildgalleriet för att välja bilder till recept</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Butlery behöver tillgång till bildgalleriet för att spara bilder av recept</string>
+	
+	<!-- Deep Link Configuration -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.butlery.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>butlery</string>
+				<string>https</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Universal Links Configuration -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:butlery.app</string>
+	</array>
 </dict>
 </plist>

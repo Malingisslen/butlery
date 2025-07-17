@@ -73,10 +73,45 @@ class AppRouter {
           return _buildRoute(const PhotoImportView(), settings, Routes.getAnimationType(routeName));
         
         case Routes.skrivSjalv:
+          // Handle arguments for template or initial recipe
+          final arguments = settings.arguments;
+          if (arguments is Map<String, dynamic>) {
+            final initialRecipe = arguments['initialRecipe'];
+            final isTemplate = arguments['isTemplate'] as bool? ?? false;
+            return _buildRoute(
+              SkrivSjalvReceptView(
+                initialRecipe: initialRecipe,
+                isTemplate: isTemplate,
+              ), 
+              settings, 
+              Routes.getAnimationType(routeName)
+            );
+          }
           return _buildRoute(const SkrivSjalvReceptView(), settings, Routes.getAnimationType(routeName));
         
         case Routes.franSocialaMedier:
-          return _buildRoute(const FranSocialaMedierView(), settings, Routes.getAnimationType(routeName));
+          // Handle different argument types
+          final arguments = settings.arguments;
+          String? initialText;
+          String? sourceUrl;
+          
+          if (arguments is String) {
+            // Simple text argument from photo import
+            initialText = arguments;
+          } else if (arguments is Map<String, dynamic>) {
+            // Complex arguments from URL import
+            initialText = arguments['text'] as String?;
+            sourceUrl = arguments['sourceUrl'] as String?;
+          }
+          
+          return _buildRoute(
+            FranSocialaMedierView(
+              initialText: initialText,
+              sourceUrl: sourceUrl,
+            ), 
+            settings, 
+            Routes.getAnimationType(routeName)
+          );
         
         case Routes.importFranArkiv:
           return _buildRoute(const ImporteraFranArkivView(), settings, Routes.getAnimationType(routeName));

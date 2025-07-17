@@ -18,6 +18,8 @@
 import '../../../models/friend_category.dart';
 import '../../../models/user_profile.dart';
 import '../../../core/utils/logger.dart';
+import '../unified_friends_service.dart';
+import 'package:collection/collection.dart';
 
 /// Friends categories operations feature interface
 /// 
@@ -28,7 +30,7 @@ import '../../../core/utils/logger.dart';
 /// - Category-based permissions and features
 /// - Smart categorization suggestions
 class FriendsCategoriesOperations {
-  final dynamic _parent; // UnifiedFriendsService
+  final UnifiedFriendsService _parent;
 
   FriendsCategoriesOperations(this._parent);
 
@@ -50,7 +52,7 @@ class FriendsCategoriesOperations {
       }
 
       // Check for duplicate name
-      if (_parent._getAllCategories().any((c) => c.name.toLowerCase() == name.toLowerCase())) {
+      if (_parent.getAllCategoriesInternal().any((c) => c.name.toLowerCase() == name.toLowerCase())) {
         AppLogger.error('Category with this name already exists');
         return null;
       }
@@ -67,11 +69,11 @@ class FriendsCategoriesOperations {
       );
 
       // Add to local state
-      _parent._addCategory(category);
-      _parent._notifyListeners();
+      _parent.addCategoryInternal(category);
+      _parent.notifyListenersInternal();
 
       // Sync to Firebase
-      await _parent._syncCategoryToFirebase(category);
+      await _parent.syncCategoryToFirebaseInternal(category);
 
       AppLogger.success('Created category: $name');
       return category.id;
@@ -90,7 +92,7 @@ class FriendsCategoriesOperations {
     String? icon,
   }) async {
     try {
-      final category = _parent._getCategoryById(categoryId);
+      final category = _parent.getCategoryByIdInternal(categoryId);
 
       if (category == null) {
         AppLogger.error('Category not found');
@@ -99,7 +101,7 @@ class FriendsCategoriesOperations {
 
       // Check for duplicate name if name is being changed
       if (name != null && name != category.name) {
-        if (_parent._getAllCategories().any((c) => c.id != categoryId && c.name.toLowerCase() == name.toLowerCase())) {
+        if (_parent.getAllCategoriesInternal().any((c) => c.id != categoryId && c.name.toLowerCase() == name.toLowerCase())) {
           AppLogger.error('Category with this name already exists');
           return false;
         }
@@ -113,11 +115,11 @@ class FriendsCategoriesOperations {
       );
 
       // Update in local state
-      _parent._updateCategory(categoryId, updatedCategory);
-      _parent._notifyListeners();
+      _parent.updateCategoryInternal(categoryId, updatedCategory);
+      _parent.notifyListenersInternal();
 
       // Sync to Firebase
-      await _parent._syncCategoryToFirebase(updatedCategory);
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
 
       AppLogger.success('Updated category: ${updatedCategory.name}');
       return true;
@@ -130,7 +132,7 @@ class FriendsCategoriesOperations {
   /// Delete a category
   Future<bool> deleteCategory(String categoryId) async {
     try {
-      final category = _parent._getCategoryById(categoryId);
+      final category = _parent.getCategoryByIdInternal(categoryId);
 
       if (category == null) {
         AppLogger.error('Category not found');
@@ -147,11 +149,11 @@ class FriendsCategoriesOperations {
       // with a separate relationship table in the future
 
       // Remove from local state
-      _parent._removeCategory(categoryId);
-      _parent._notifyListeners();
+      _parent.removeCategoryInternal(categoryId);
+      _parent.notifyListenersInternal();
 
       // Remove from Firebase
-      await _parent._deleteCategoryFromFirebase(categoryId);
+      await _parent.deleteCategoryFromFirebaseInternal(categoryId);
 
       AppLogger.success('Deleted category: ${category.name}');
       return true;
@@ -163,22 +165,22 @@ class FriendsCategoriesOperations {
 
   /// Get all categories
   List<FriendCategory> getAllCategories() {
-    return List.unmodifiable(_parent._getAllCategories());
+    return List.unmodifiable(_parent.getAllCategoriesInternal());
   }
 
   /// Get category by ID
   FriendCategory? getCategoryById(String categoryId) {
-    return _parent._getCategoryById(categoryId);
+    return _parent.getCategoryByIdInternal(categoryId);
   }
 
   /// Get default categories
   List<FriendCategory> getDefaultCategories() {
-    return _parent._getAllCategories().where((c) => c.isDefault).toList();
+    return _parent.getAllCategoriesInternal().where((c) => c.isDefault).toList();
   }
 
   /// Get custom categories
   List<FriendCategory> getCustomCategories() {
-    return _parent._getAllCategories().where((c) => !c.isDefault).toList();
+    return _parent.getAllCategoriesInternal().where((c) => !c.isDefault).toList();
   }
 
   // ===== FRIEND CATEGORY ASSIGNMENT =====
@@ -189,8 +191,8 @@ class FriendsCategoriesOperations {
     required String categoryId,
   }) async {
     try {
-      final friend = _parent._friends
-          .where((f) => f.id == friendId)
+      final friend = _parent.friendsInternal
+          .where((f) => f.uid == friendId)
           .firstOrNull;
 
       if (friend == null) {
@@ -198,7 +200,7 @@ class FriendsCategoriesOperations {
         return false;
       }
 
-      final category = _parent._getCategoryById(categoryId);
+      final category = _parent.getCategoryByIdInternal(categoryId);
 
       if (category == null) {
         AppLogger.error('Category not found');
@@ -206,16 +208,16 @@ class FriendsCategoriesOperations {
       }
 
       // Add friend to category relationship
-      _parent._addFriendToCategory(friendId, categoryId);
+      _parent.addFriendToCategoryInternal(friendId, categoryId);
       
       // Update category with friend count
       final updatedCategory = category.addFriend(friendId);
-      _parent._updateCategory(categoryId, updatedCategory);
+      _parent.updateCategoryInternal(categoryId, updatedCategory);
 
-      _parent._notifyListeners();
+      _parent.notifyListenersInternal();
 
       // Sync to Firebase (category and relationship)
-      await _parent._syncCategoryToFirebase(updatedCategory);
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
       // Friend-category relationship is automatically synced by _addFriendToCategory method
 
       AppLogger.success('Assigned ${friend.displayName} to ${category.name}');
@@ -232,8 +234,8 @@ class FriendsCategoriesOperations {
     required String categoryId,
   }) async {
     try {
-      final friend = _parent._friends
-          .where((f) => f.id == friendId)
+      final friend = _parent.friendsInternal
+          .where((f) => f.uid == friendId)
           .firstOrNull;
 
       if (friend == null) {
@@ -241,7 +243,7 @@ class FriendsCategoriesOperations {
         return false;
       }
 
-      final category = _parent._getCategoryById(categoryId);
+      final category = _parent.getCategoryByIdInternal(categoryId);
 
       if (category == null) {
         AppLogger.error('Category not found');
@@ -249,16 +251,16 @@ class FriendsCategoriesOperations {
       }
 
       // Remove friend from category relationship
-      _parent._removeFriendFromCategory(friendId, categoryId);
+      _parent.removeFriendFromCategoryInternal(friendId, categoryId);
       
       // Update category with friend count
       final updatedCategory = category.removeFriend(friendId);
-      _parent._updateCategory(categoryId, updatedCategory);
+      _parent.updateCategoryInternal(categoryId, updatedCategory);
 
-      _parent._notifyListeners();
+      _parent.notifyListenersInternal();
 
       // Sync to Firebase (category and relationship)
-      await _parent._syncCategoryToFirebase(updatedCategory);
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
       // Friend-category relationship is automatically synced by _addFriendToCategory method
 
       AppLogger.success('Removed ${friend.displayName} from ${category.name}');
@@ -271,27 +273,27 @@ class FriendsCategoriesOperations {
 
   /// Get friends in category
   List<UserProfile> getFriendsInCategory(String categoryId) {
-    final friendIds = _parent._getFriendsInCategory(categoryId);
-    return _parent._friends.where((friend) => friendIds.contains(friend.uid)).toList();
+    final friendIds = _parent.getFriendsInCategoryInternal(categoryId);
+    return _parent.friendsInternal.where((friend) => friendIds.contains(friend.uid)).toList();
   }
 
   /// Get friends not in any category
   List<UserProfile> getUncategorizedFriends() {
-    return _parent._friends.where((friend) {
-      final categoriesForFriend = _parent._getCategoriesForFriend(friend.uid);
+    return _parent.friendsInternal.where((friend) {
+      final categoriesForFriend = _parent.getCategoriesForFriendInternal(friend.uid);
       return categoriesForFriend.isEmpty;
     }).toList();
   }
 
   /// Get categories for friend
   List<FriendCategory> getCategoriesForFriend(String friendId) {
-    final categoryIds = _parent._getCategoriesForFriend(friendId);
-    return _parent._getAllCategories().where((category) => categoryIds.contains(category.id)).toList();
+    final categoryIds = _parent.getCategoriesForFriendInternal(friendId);
+    return _parent.getAllCategoriesInternal().where((category) => categoryIds.contains(category.id)).toList();
   }
   
   /// Get category by name
   FriendCategory? getCategoryByName(String name) {
-    return _parent._getAllCategories().where((c) => c.name.toLowerCase() == name.toLowerCase()).firstOrNull;
+    return _parent.getAllCategoriesInternal().where((c) => c.name.toLowerCase() == name.toLowerCase()).firstOrNull;
   }
   
   /// Compatibility getter for legacy code
@@ -299,7 +301,7 @@ class FriendsCategoriesOperations {
   
   /// Check if category name is available
   bool isCategoryNameAvailable(String name) {
-    return !_parent._getAllCategories().any((c) => c.name.toLowerCase() == name.toLowerCase());
+    return !_parent.getAllCategoriesInternal().any((c) => c.name.toLowerCase() == name.toLowerCase());
   }
   
   /// Refresh categories data
@@ -356,14 +358,14 @@ class FriendsCategoriesOperations {
 
   /// Get category statistics
   Map<String, dynamic> getCategoryStats() {
-    final totalCategories = _parent._getAllCategories().length;
-    final defaultCategories = _parent._getAllCategories().where((c) => c.isDefault).length;
+    final totalCategories = _parent.getAllCategoriesInternal().length;
+    final defaultCategories = _parent.getAllCategoriesInternal().where((c) => c.isDefault).length;
     final customCategories = totalCategories - defaultCategories;
-    final totalFriends = _parent._friends.length;
+    final totalFriends = _parent.friendsInternal.length;
     
     // Count categorized friends using the relationship mapping
     final categorizedFriendIds = <String>{};
-    for (final entry in _parent._friendCategoryRelationships.entries) {
+    for (final entry in _parent.friendCategoryRelationshipsInternal.entries) {
       if (entry.value.isNotEmpty) {
         categorizedFriendIds.add(entry.key);
       }
@@ -372,8 +374,8 @@ class FriendsCategoriesOperations {
     final uncategorizedFriends = totalFriends - categorizedFriends;
 
     final categoryUsage = <String, int>{};
-    for (final category in _parent._getAllCategories()) {
-      final friendsInCategory = _parent._getFriendsInCategory(category.id);
+    for (final category in _parent.getAllCategoriesInternal()) {
+      final friendsInCategory = _parent.getFriendsInCategoryInternal(category.id);
       categoryUsage[category.name] = friendsInCategory.length;
     }
 
@@ -390,10 +392,10 @@ class FriendsCategoriesOperations {
 
   /// Get most used categories
   List<FriendCategory> getMostUsedCategories({int limit = 5}) {
-    final categories = List<FriendCategory>.from(_parent._getAllCategories());
+    final categories = List<FriendCategory>.from(_parent.getAllCategoriesInternal());
     categories.sort((a, b) {
-      final aCount = _parent._getFriendsInCategory(a.id).length;
-      final bCount = _parent._getFriendsInCategory(b.id).length;
+      final aCount = _parent.getFriendsInCategoryInternal(a.id).length;
+      final bCount = _parent.getFriendsInCategoryInternal(b.id).length;
       return bCount.compareTo(aCount);
     });
     return categories.take(limit).toList();
@@ -401,8 +403,8 @@ class FriendsCategoriesOperations {
 
   /// Get empty categories
   List<FriendCategory> getEmptyCategories() {
-    return _parent._getAllCategories().where((c) {
-      final friendsInCategory = _parent._getFriendsInCategory(c.id);
+    return _parent.getAllCategoriesInternal().where((c) {
+      final friendsInCategory = _parent.getFriendsInCategoryInternal(c.id);
       return friendsInCategory.isEmpty;
     }).toList();
   }
@@ -412,8 +414,8 @@ class FriendsCategoriesOperations {
   /// Suggest categories for friend based on mutual friends
   Future<List<FriendCategory>> suggestCategoriesForFriend(String friendId) async {
     try {
-      final friend = _parent._friends
-          .where((f) => f.id == friendId)
+      final friend = _parent.friendsInternal
+          .where((f) => f.uid == friendId)
           .firstOrNull;
 
       if (friend == null) return [];

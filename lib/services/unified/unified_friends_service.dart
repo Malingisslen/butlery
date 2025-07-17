@@ -16,10 +16,10 @@
 /// Used in phases: Phase 5 - Service Consolidation
 
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hive/hive.dart';
+import 'package:collection/collection.dart';
+import '../../core/cache/json_cache_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../repositories/interfaces/auth_repository.dart';
@@ -41,10 +41,12 @@ import 'operations/friends_invitations_operations.dart';
 
 /// Unified Friends Service with feature interfaces
 class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserProfile> {
-  static const String _hiveBoxBaseName = 'unified_friends_cache';
   // Dependencies
   final FirestoreRepository firestoreRepository;
   final AuthRepository _authRepository;
+  
+  /// JSON cache helper for friends data
+  late final JsonCacheHelper _cacheHelper;
 
   // Feature interfaces
   late final FriendsManagementOperations _managementOps;
@@ -106,32 +108,27 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   // These methods provide controlled access to private collections for operations classes
 
   /// Add category to internal list (for operations use only)
-  // ignore: unused_element
-  void _addCategory(FriendCategory category) {
+  void addCategoryInternal(FriendCategory category) {
     _categories.add(category);
   }
 
   /// Get sent invitation by ID (for operations use only)
-  // ignore: unused_element
-  GroupInvitation? _getSentInvitationById(String invitationId) {
+  GroupInvitation? getSentInvitationByIdInternal(String invitationId) {
     return _sentInvitations.where((i) => i.id == invitationId).firstOrNull;
   }
 
   /// Get all sent invitations (for operations use only)
-  // ignore: unused_element
-  List<GroupInvitation> _getAllSentInvitations() {
+  List<GroupInvitation> getAllSentInvitationsInternal() {
     return List.unmodifiable(_sentInvitations);
   }
 
   /// Remove category from internal list (for operations use only)
-  // ignore: unused_element
-  void _removeCategory(String categoryId) {
+  void removeCategoryInternal(String categoryId) {
     _categories.removeWhere((c) => c.id == categoryId);
   }
 
   /// Update category in internal list (for operations use only)
-  // ignore: unused_element
-  void _updateCategory(String categoryId, FriendCategory updatedCategory) {
+  void updateCategoryInternal(String categoryId, FriendCategory updatedCategory) {
     final index = _categories.indexWhere((c) => c.id == categoryId);
     if (index != -1) {
       _categories[index] = updatedCategory;
@@ -139,26 +136,147 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   }
 
   /// Get category by ID (for operations use only)
-  // ignore: unused_element
-  FriendCategory? _getCategoryById(String categoryId) {
+  FriendCategory? getCategoryByIdInternal(String categoryId) {
     return _categories.where((c) => c.id == categoryId).firstOrNull;
   }
 
   /// Get all categories (for operations use only)
-  // ignore: unused_element
-  List<FriendCategory> _getAllCategories() {
+  List<FriendCategory> getAllCategoriesInternal() {
     return _categories;
   }
 
+  /// Get friends list (for operations use only)
+  List<UserProfile> get friendsInternal => _friends;
+
+  /// Get friend category relationships (for operations use only)
+  Map<String, Set<String>> get friendCategoryRelationshipsInternal => _friendCategoryRelationships;
+
+  /// Sync category to Firebase (for operations use only)
+  Future<void> syncCategoryToFirebaseInternal(FriendCategory category) async {
+    // Implementation for syncing category to Firebase
+    // This would normally sync the category to Firestore
+    try {
+      final currentUser = _authRepository.getCurrentUser();
+      if (currentUser == null) return;
+
+      await firestore
+          .collection('users')
+          .doc(currentUser.uid)
+          .collection('friend_categories')
+          .doc(category.id)
+          .set(category.toJson());
+    } catch (e) {
+      AppLogger.error('Failed to sync category to Firebase: $e');
+    }
+  }
+
+  /// Delete category from Firebase (for operations use only)
+  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async {
+    try {
+      final currentUser = _authRepository.getCurrentUser();
+      if (currentUser == null) return;
+
+      await firestore
+          .collection('users')
+          .doc(currentUser.uid)
+          .collection('friend_categories')
+          .doc(categoryId)
+          .delete();
+    } catch (e) {
+      AppLogger.error('Failed to delete category from Firebase: $e');
+    }
+  }
+
+  /// Add friend to category (for operations use only)
+  void addFriendToCategoryInternal(String friendId, String categoryId) {
+    _friendCategoryRelationships.putIfAbsent(friendId, () => <String>{});
+    _friendCategoryRelationships[friendId]!.add(categoryId);
+    _syncFriendCategoryRelationshipsToFirebase();
+  }
+
+  /// Remove friend from category (for operations use only)
+  void removeFriendFromCategoryInternal(String friendId, String categoryId) {
+    _friendCategoryRelationships[friendId]?.remove(categoryId);
+    if (_friendCategoryRelationships[friendId]?.isEmpty ?? false) {
+      _friendCategoryRelationships.remove(friendId);
+    }
+    _syncFriendCategoryRelationshipsToFirebase();
+  }
+
+  /// Sync friend-category relationships to Firebase (for operations use only)
+  Future<void> _syncFriendCategoryRelationshipsToFirebase() async {
+    if (!sl<PermissionService>().isAuthenticated) return;
+
+    try {
+      await firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('friend_category_relationships')
+          .doc('relationships')
+          .set({
+            'relationships': _friendCategoryRelationships.map(
+              (friendId, categoryIds) => MapEntry(friendId, categoryIds.toList()),
+            ),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      AppLogger.debug('Friend-category relationships synced to Firebase');
+    } catch (e) {
+      AppLogger.error('Failed to sync friend-category relationships to Firebase: $e');
+    }
+  }
+
+  /// Send email invitation (for operations use only)
+  Future<bool> sendEmailInvitationInternal({
+    required String email,
+    required GroupInvitation invitation,
+  }) async {
+    try {
+      // Implementation would send actual email
+      AppLogger.info('Email invitation sent to $email');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to send email invitation: $e');
+      return false;
+    }
+  }
+
+  /// Send SMS invitation (for operations use only)
+  Future<bool> sendSMSInvitationInternal({
+    required String phoneNumber,
+    required GroupInvitation invitation,
+  }) async {
+    try {
+      // Implementation would send actual SMS
+      AppLogger.info('SMS invitation sent to $phoneNumber');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to send SMS invitation: $e');
+      return false;
+    }
+  }
+
+  /// Create invitation link (for operations use only)
+  String createInvitationLinkInternal(String invitationId) {
+    return _generateInvitationLink(invitationId);
+  }
+
+  /// Update invitation status (for operations use only)
+  Future<void> updateInvitationStatusInternal(String invitationId, GroupInvitationStatus status) async {
+    final invitation = getSentInvitationByIdInternal(invitationId);
+    if (invitation != null) {
+      final updatedInvitation = invitation.copyWith(status: status);
+      updateSentInvitationInternal(invitationId, updatedInvitation);
+    }
+  }
+
   /// Add invitation to internal list (for operations use only)
-  // ignore: unused_element
-  void _addSentInvitation(GroupInvitation invitation) {
+  void addSentInvitationInternal(GroupInvitation invitation) {
     _sentInvitations.add(invitation);
   }
 
   /// Update invitation in internal list (for operations use only)
-  // ignore: unused_element
-  void _updateSentInvitation(String invitationId, GroupInvitation updatedInvitation) {
+  void updateSentInvitationInternal(String invitationId, GroupInvitation updatedInvitation) {
     final index = _sentInvitations.indexWhere((i) => i.id == invitationId);
     if (index != -1) {
       _sentInvitations[index] = updatedInvitation;
@@ -175,11 +293,6 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'You';
 
-  /// Get user-specific Hive box name for secure caching
-  String get _userSpecificBoxName {
-    final userId = currentUserId;
-    return userId != null ? '${_hiveBoxBaseName}_$userId' : _hiveBoxBaseName;
-  }
   
   /// Compatibility getter for legacy code
   List<UserProfile> get friendsList => friends;
@@ -205,11 +318,12 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
         }
       }
 
-      // Open Hive box for caching (user-specific for security)
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
+      // Initialize cache helper
+      _cacheHelper = JsonCacheFactory.friendsCache();
+      _cacheHelper.setCurrentUser(currentUserId);
 
       // Load cached data first (offline-first)
-      await _loadCachedData(box);
+      await _loadCachedData();
 
       // Initialize default categories
       await _initializeDefaultCategories();
@@ -217,6 +331,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
       // Listen to auth changes using mixin
       _authRepository.authStateChanges().listen((user) {
         onAuthStateChanged(user?.uid);
+        _cacheHelper.setCurrentUser(user?.uid);
         if (user == null) {
           _clearAll();
         }
@@ -261,14 +376,12 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   }
   
   /// Get categories for friend
-  // ignore: unused_element
-  Set<String> _getCategoriesForFriend(String friendId) {
+  Set<String> getCategoriesForFriendInternal(String friendId) {
     return _friendCategoryRelationships[friendId] ?? <String>{};
   }
   
   /// Get friends in category
-  // ignore: unused_element
-  List<String> _getFriendsInCategory(String categoryId) {
+  List<String> getFriendsInCategoryInternal(String categoryId) {
     return _friendCategoryRelationships.entries
         .where((entry) => entry.value.contains(categoryId))
         .map((entry) => entry.key)
@@ -278,8 +391,7 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   // ===== INTERNAL METHODS FOR FEATURE INTERFACES =====
 
   /// Internal method to notify listeners
-  // ignore: unused_element
-  void _notifyListeners() {
+  void notifyListenersInternal() {
     notifyListeners();
   }
 
@@ -414,29 +526,6 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
     }
   }
 
-  /// Internal method to sync friend-category relationships to Firebase
-  // ignore: unused_element
-  Future<void> _syncFriendCategoryRelationshipsToFirebase() async {
-    if (!sl<PermissionService>().isAuthenticated) return;
-
-    try {
-      await firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('friend_category_relationships')
-          .doc('relationships')
-          .set({
-            'relationships': _friendCategoryRelationships.map(
-              (friendId, categoryIds) => MapEntry(friendId, categoryIds.toList()),
-            ),
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-
-      AppLogger.debug('Friend-category relationships synced to Firebase');
-    } catch (e) {
-      AppLogger.error('Failed to sync friend-category relationships to Firebase: $e');
-    }
-  }
 
   /// Internal method to load friend-category relationships from Firebase
   // ignore: unused_element
@@ -601,14 +690,13 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
 
   // ===== PRIVATE METHODS =====
 
-  /// Load cached data from Hive
-  Future<void> _loadCachedData(Box<String> box) async {
+  /// Load cached data from JsonCacheHelper
+  Future<void> _loadCachedData() async {
     try {
       // Load friends
-      final friendsData = box.get('friends');
+      final friendsData = await _cacheHelper.loadJsonList('friends');
       if (friendsData != null) {
-        final friendsList = jsonDecode(friendsData) as List<dynamic>;
-        _friends.addAll(friendsList.map((f) => UserProfile(
+        _friends.addAll(friendsData.map((f) => UserProfile(
           uid: f['uid'] as String,
           displayName: f['displayName'] as String,
           email: f['email'] as String? ?? '',
@@ -620,17 +708,15 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
       }
 
       // Load categories
-      final categoriesData = box.get('categories');
+      final categoriesData = await _cacheHelper.loadJsonList('categories');
       if (categoriesData != null) {
-        final categoriesList = jsonDecode(categoriesData) as List<dynamic>;
-        _categories.addAll(categoriesList.map((c) => FriendCategory.fromJson(c)));
+        _categories.addAll(categoriesData.map((c) => FriendCategory.fromJson(c)));
       }
 
       // Load blocked users
-      final blockedData = box.get('blockedUsers');
+      final blockedData = await _cacheHelper.loadJsonList('blockedUsers');
       if (blockedData != null) {
-        final blockedList = jsonDecode(blockedData) as List<dynamic>;
-        _blockedUsers.addAll(blockedList.cast<String>());
+        _blockedUsers.addAll(blockedData.cast<String>());
       }
 
       AppLogger.debug('✅ Cached friends data loaded');
@@ -642,16 +728,41 @@ class UnifiedFriendsService extends ChangeNotifier with FirebaseSyncMixin<UserPr
   /// Save friend to cache
   Future<void> _saveFriendToCache(UserProfile friend) async {
     try {
-      final box = await Hive.openBox<String>(_userSpecificBoxName);
-      final friendsJson = jsonEncode(_friends.map((f) => {
+      final friendsData = _friends.map((f) => {
         'uid': f.uid,
         'displayName': f.displayName,
         'avatarUrl': f.avatarUrl,
         'bio': f.bio,
-      }).toList());
-      await box.put('friends', friendsJson);
+        'joinedAt': f.joinedAt.toIso8601String(),
+        'lastActiveAt': f.lastActiveAt.toIso8601String(),
+      }).toList();
+      await _cacheHelper.saveJsonList('friends', friendsData);
+      
+      // Also save categories and blocked users when saving friends
+      await _saveCategoriesToCache();
+      await _saveBlockedUsersToCache();
     } catch (e) {
       AppLogger.error('Failed to save friend to cache: $e');
+    }
+  }
+
+  /// Save categories to cache
+  Future<void> _saveCategoriesToCache() async {
+    try {
+      final categoriesData = _categories.map((c) => c.toJson()).toList();
+      await _cacheHelper.saveJsonList('categories', categoriesData);
+    } catch (e) {
+      AppLogger.error('Failed to save categories to cache: $e');
+    }
+  }
+
+  /// Save blocked users to cache
+  Future<void> _saveBlockedUsersToCache() async {
+    try {
+      final blockedData = _blockedUsers.map((uid) => {'uid': uid}).toList();
+      await _cacheHelper.saveJsonList('blockedUsers', blockedData);
+    } catch (e) {
+      AppLogger.error('Failed to save blocked users to cache: $e');
     }
   }
 

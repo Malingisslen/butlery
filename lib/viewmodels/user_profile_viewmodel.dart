@@ -269,7 +269,7 @@ class UserProfileViewModel extends ChangeNotifier {
       _displayNameError = 'Namnet måste vara minst 2 tecken';
     } else if (_displayName.length > 50) {
       _displayNameError = 'Namnet får vara max 50 tecken';
-    } else if (!RegExp(r'^[a-zA-ZåäöÅÄÖ0-9\s\-_.]+$').hasMatch(_displayName)) {
+    } else if (!RegExp(r'^[\p{L}\p{N}\s\-_.]+$', unicode: true).hasMatch(_displayName)) {
       _displayNameError = 'Namnet innehåller ogiltiga tecken';
     } else {
       _displayNameError = null;

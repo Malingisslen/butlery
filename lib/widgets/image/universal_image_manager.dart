@@ -438,6 +438,11 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
     if (widget.height != null) return widget.height!;
     if (widget.config.customHeight != null) return widget.config.customHeight!;
 
+    // For recipe cards, use proper aspect ratio instead of forcing square
+    if (widget.config.type == ImageType.recipeCard) {
+      return _imageWidth / AppTheme.imageAspectRatio;
+    }
+
     switch (widget.config.size) {
       case ImageSize.small:
         return 32.0;
@@ -448,7 +453,8 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       case ImageSize.extraLarge:
         return 120.0;
       case ImageSize.card:
-        return 70.0;
+        // For card images, use proper aspect ratio
+        return _imageWidth / AppTheme.imageAspectRatio;
       case ImageSize.hero:
         return 200.0;
       case ImageSize.thumbnail:

@@ -13,6 +13,7 @@ import '../../viewmodels/unified_shopping_viewmodel.dart';
 import '../../utils/text_utils.dart';
 import '../../core/utils/logger.dart';
 import '../../core/validators/form_validators.dart';
+import '../../core/constants/routes.dart';
 import 'state_widget.dart';
 
 /// 🎯 UNIFIED INPUT COMPONENTS
@@ -1628,7 +1629,7 @@ class _ShoppingListSelectorState extends State<_ShoppingListSelector> {
       // Navigera till shopping view
       if (mounted) {
         widget.onListSelected?.call();
-        Navigator.pushReplacementNamed(context, '/unified-shopping');
+        Navigator.pushReplacementNamed(context, Routes.inkopslista);
       }
     } catch (e) {
       AppLogger.error('❌ Fel vid tillägg av ingredienser: $e');

@@ -17,6 +17,7 @@
 
 import '../../../models/group_invitation.dart';
 import '../../../core/utils/logger.dart';
+import '../unified_friends_service.dart';
 
 /// Friends invitations operations feature interface
 /// 
@@ -27,7 +28,7 @@ import '../../../core/utils/logger.dart';
 /// - Contact integration and discovery
 /// - Invitation analytics and insights
 class FriendsInvitationsOperations {
-  final dynamic _parent; // UnifiedFriendsService
+  final UnifiedFriendsService _parent;
 
   FriendsInvitationsOperations(this._parent);
 
@@ -72,11 +73,14 @@ class FriendsInvitationsOperations {
       );
 
       // Add to local state
-      _parent._addSentInvitation(invitation);
-      _parent._notifyListeners();
+      _parent.addSentInvitationInternal(invitation);
+      _parent.notifyListenersInternal();
 
       // Send invitation via email service
-      final emailSent = await _parent._sendEmailInvitation(invitation);
+      final emailSent = await _parent.sendEmailInvitationInternal(
+        email: email,
+        invitation: invitation,
+      );
 
       if (emailSent) {
         AppLogger.success('Email invitation sent to $email');
@@ -130,11 +134,14 @@ class FriendsInvitationsOperations {
       );
 
       // Add to local state
-      _parent._addSentInvitation(invitation);
-      _parent._notifyListeners();
+      _parent.addSentInvitationInternal(invitation);
+      _parent.notifyListenersInternal();
 
       // Send invitation via SMS service
-      final smsSent = await _parent._sendSMSInvitation(invitation);
+      final smsSent = await _parent.sendSMSInvitationInternal(
+        phoneNumber: phoneNumber,
+        invitation: invitation,
+      );
 
       if (smsSent) {
         AppLogger.success('SMS invitation sent to $phoneNumber');
@@ -177,11 +184,11 @@ class FriendsInvitationsOperations {
       );
 
       // Add to local state
-      _parent._addSentInvitation(invitation);
-      _parent._notifyListeners();
+      _parent.addSentInvitationInternal(invitation);
+      _parent.notifyListenersInternal();
 
       // Create invitation link
-      final link = await _parent._createInvitationLink(invitation);
+      final link = _parent.createInvitationLinkInternal(invitation.id);
 
       AppLogger.success('Invitation link created');
       return link;
@@ -237,7 +244,7 @@ class FriendsInvitationsOperations {
   /// Cancel an invitation
   Future<bool> cancelInvitation(String invitationId) async {
     try {
-      final invitation = _parent._getSentInvitationById(invitationId);
+      final invitation = _parent.getSentInvitationByIdInternal(invitationId);
 
       if (invitation == null) {
         AppLogger.error('Invitation not found');
@@ -256,11 +263,11 @@ class FriendsInvitationsOperations {
       );
 
       // Update local state
-      _parent._updateSentInvitation(invitationId, cancelledInvitation);
-      _parent._notifyListeners();
+      _parent.updateSentInvitationInternal(invitationId, cancelledInvitation);
+      _parent.notifyListenersInternal();
 
       // Update in Firebase
-      await _parent._updateInvitationStatus(cancelledInvitation);
+      await _parent.updateInvitationStatusInternal(cancelledInvitation.id, cancelledInvitation.status);
 
       AppLogger.success('Invitation cancelled');
       return true;
@@ -273,7 +280,7 @@ class FriendsInvitationsOperations {
   /// Resend an invitation
   Future<bool> resendInvitation(String invitationId) async {
     try {
-      final invitation = _parent._getSentInvitationById(invitationId);
+      final invitation = _parent.getSentInvitationByIdInternal(invitationId);
 
       if (invitation == null) {
         AppLogger.error('Invitation not found');
@@ -292,23 +299,27 @@ class FriendsInvitationsOperations {
       );
 
       // Update local state
-      _parent._updateSentInvitation(invitationId, resentInvitation);
-      _parent._notifyListeners();
+      _parent.updateSentInvitationInternal(invitationId, resentInvitation);
+      _parent.notifyListenersInternal();
 
       // Resend invitation (implementation depends on invitation type)
-      final emailSent = await _parent._sendEmailInvitation(resentInvitation);
+      // For now, we'll use a placeholder email or extract from invitation
+      final emailSent = await _parent.sendEmailInvitationInternal(
+        email: invitation.toUserId, // Assuming toUserId contains email for now
+        invitation: resentInvitation,
+      );
       
       if (emailSent) {
         // Update in Firebase only if email was actually sent
-        await _parent._updateInvitationStatus(resentInvitation);
+        await _parent.updateInvitationStatusInternal(resentInvitation.id, resentInvitation.status);
         AppLogger.success('Invitation resent');
         return true;
       } else {
         AppLogger.error('Resend failed: Email service not implemented');
         // Revert the local state since the resend failed
         final originalInvitation = invitation;
-        _parent._updateSentInvitation(invitationId, originalInvitation);
-        _parent._notifyListeners();
+        _parent.updateSentInvitationInternal(invitationId, originalInvitation);
+        _parent.notifyListenersInternal();
         return false;
       }
     } catch (e) {
@@ -320,7 +331,7 @@ class FriendsInvitationsOperations {
   /// Mark invitation as viewed
   Future<bool> markInvitationAsViewed(String invitationId) async {
     try {
-      final invitation = _parent._getSentInvitationById(invitationId);
+      final invitation = _parent.getSentInvitationByIdInternal(invitationId);
 
       if (invitation == null) {
         AppLogger.error('Invitation not found');
@@ -333,11 +344,11 @@ class FriendsInvitationsOperations {
       );
 
       // Update local state
-      _parent._updateSentInvitation(invitationId, viewedInvitation);
-      _parent._notifyListeners();
+      _parent.updateSentInvitationInternal(invitationId, viewedInvitation);
+      _parent.notifyListenersInternal();
 
       // Update in Firebase
-      await _parent._updateInvitationStatus(viewedInvitation);
+      await _parent.updateInvitationStatusInternal(viewedInvitation.id, viewedInvitation.status);
 
       AppLogger.success('Invitation marked as viewed');
       return true;
@@ -351,19 +362,19 @@ class FriendsInvitationsOperations {
 
   /// Get all sent invitations
   List<GroupInvitation> getSentInvitations() {
-    return List.unmodifiable(_parent._getAllSentInvitations());
+    return List.unmodifiable(_parent.getAllSentInvitationsInternal());
   }
 
   /// Get invitations by status
   List<GroupInvitation> getInvitationsByStatus(GroupInvitationStatus status) {
-    return _parent._getAllSentInvitations()
+    return _parent.getAllSentInvitationsInternal()
         .where((i) => i.status == status)
         .toList();
   }
 
   /// Get pending invitations
   List<GroupInvitation> getPendingInvitations() {
-    return _parent._getAllSentInvitations()
+    return _parent.getAllSentInvitationsInternal()
         .where((i) => i.status == GroupInvitationStatus.pending)
         .toList();
   }
@@ -371,14 +382,14 @@ class FriendsInvitationsOperations {
   /// Get expired invitations
   List<GroupInvitation> getExpiredInvitations() {
     final now = DateTime.now();
-    return _parent._getAllSentInvitations()
+    return _parent.getAllSentInvitationsInternal()
         .where((i) => i.expiresAt.isBefore(now))
         .toList();
   }
 
   /// Check if invitation exists
   bool hasInvitation({String? email, String? phoneNumber}) {
-    return _parent._getAllSentInvitations().any((i) => 
+    return _parent.getAllSentInvitationsInternal().any((i) => 
         (email != null && i.toUserId == email) ||
         (phoneNumber != null && i.toUserId == phoneNumber)
     );
@@ -386,7 +397,7 @@ class FriendsInvitationsOperations {
 
   /// Get invitation by ID
   GroupInvitation? getInvitationById(String invitationId) {
-    return _parent._getAllSentInvitations()
+    return _parent.getAllSentInvitationsInternal()
         .where((i) => i.id == invitationId)
         .firstOrNull;
   }
@@ -394,7 +405,7 @@ class FriendsInvitationsOperations {
   /// Search invitations
   List<GroupInvitation> searchInvitations(String query) {
     final searchTerm = query.toLowerCase();
-    return _parent._getAllSentInvitations()
+    return _parent.getAllSentInvitationsInternal()
         .where((i) => 
             (i.toUserId.toLowerCase().contains(searchTerm)) ||
             (i.fromUserName.toLowerCase().contains(searchTerm)) ||
@@ -407,11 +418,11 @@ class FriendsInvitationsOperations {
 
   /// Get invitation statistics
   Map<String, dynamic> getInvitationStats() {
-    final total = _parent._getAllSentInvitations().length;
-    final pending = _parent._getAllSentInvitations().where((i) => i.status == GroupInvitationStatus.pending).length;
-    final accepted = _parent._getAllSentInvitations().where((i) => i.status == GroupInvitationStatus.accepted).length;
-    final rejected = _parent._getAllSentInvitations().where((i) => i.status == GroupInvitationStatus.rejected).length;
-    final cancelled = _parent._getAllSentInvitations().where((i) => i.status == GroupInvitationStatus.cancelled).length;
+    final total = _parent.getAllSentInvitationsInternal().length;
+    final pending = _parent.getAllSentInvitationsInternal().where((i) => i.status == GroupInvitationStatus.pending).length;
+    final accepted = _parent.getAllSentInvitationsInternal().where((i) => i.status == GroupInvitationStatus.accepted).length;
+    final rejected = _parent.getAllSentInvitationsInternal().where((i) => i.status == GroupInvitationStatus.rejected).length;
+    final cancelled = _parent.getAllSentInvitationsInternal().where((i) => i.status == GroupInvitationStatus.cancelled).length;
     final expired = getExpiredInvitations().length;
 
     return {
@@ -428,7 +439,7 @@ class FriendsInvitationsOperations {
   /// Get invitation performance metrics
   Map<String, dynamic> getInvitationMetrics() {
     final stats = getInvitationStats();
-    final recentInvitations = _parent._getAllSentInvitations()
+    final recentInvitations = _parent.getAllSentInvitationsInternal()
         .where((i) => i.sentAt.isAfter(DateTime.now().subtract(const Duration(days: 30))))
         .length;
 
@@ -468,7 +479,7 @@ class FriendsInvitationsOperations {
   // ===== PRIVATE HELPER METHODS =====
 
   bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+    return RegExp(r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', unicode: true).hasMatch(email);
   }
 
   bool _isValidPhoneNumber(String phoneNumber) {
@@ -476,7 +487,7 @@ class FriendsInvitationsOperations {
   }
 
   double _calculateAverageResponseTime() {
-    final respondedInvitations = _parent._getAllSentInvitations()
+    final respondedInvitations = _parent.getAllSentInvitationsInternal()
         .where((i) => i.status == GroupInvitationStatus.accepted || i.status == GroupInvitationStatus.rejected)
         .where((i) => i.respondedAt != null)
         .toList();
@@ -509,11 +520,11 @@ class FriendsInvitationsOperations {
       final acceptedInvitation = invitation.accept();
       
       // Update local state
-      _parent._updateSentInvitation(invitationId, acceptedInvitation);
-      _parent._notifyListeners();
+      _parent.updateSentInvitationInternal(invitationId, acceptedInvitation);
+      _parent.notifyListenersInternal();
       
       // Update in Firebase
-      await _parent._updateInvitationStatus(acceptedInvitation);
+      await _parent.updateInvitationStatusInternal(acceptedInvitation.id, acceptedInvitation.status);
       
       return true;
     } catch (e) {
@@ -530,11 +541,11 @@ class FriendsInvitationsOperations {
       final rejectedInvitation = invitation.reject();
       
       // Update local state
-      _parent._updateSentInvitation(invitationId, rejectedInvitation);
-      _parent._notifyListeners();
+      _parent.updateSentInvitationInternal(invitationId, rejectedInvitation);
+      _parent.notifyListenersInternal();
       
       // Update in Firebase
-      await _parent._updateInvitationStatus(rejectedInvitation);
+      await _parent.updateInvitationStatusInternal(rejectedInvitation.id, rejectedInvitation.status);
       
       return true;
     } catch (e) {

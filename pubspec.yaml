@@ -48,6 +48,7 @@ dependencies:
   # ==================== UTILITIES ====================
   uuid: ^4.5.1
   intl: ^0.19.0
+  collection: ^1.18.0
   url_launcher: ^6.3.1
   share_plus: ^10.1.0        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.4

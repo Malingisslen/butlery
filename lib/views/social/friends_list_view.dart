@@ -9,8 +9,10 @@ import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/search_filter_widget.dart';
 import '../../widgets/common/state_widget.dart';
+import '../../widgets/common/loading_state_builder.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
+import '../../core/dialogs/dialog_factory.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
 import '../../models/friend_category.dart';
@@ -205,57 +207,53 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
-    if (viewModel.isLoading && viewModel.friends.isEmpty) {
-      return StateWidget.loading(message: 'Laddar vänner...');
-    }
-
-    if (viewModel.friends.isEmpty) {
-      return StateWidget.noFriends();
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await viewModel.refresh();
-      },
-      child: ListView.separated(
-        padding: EdgeInsets.all(AppTheme.spacingMd),
-        itemCount: viewModel.friends.length,
-        separatorBuilder: (context, index) =>
-            SizedBox(height: AppTheme.spacingSm),
-        itemBuilder: (context, index) {
-          final friend = viewModel.friends[index];
-          return _buildFriendCard(friend, viewModel);
+    return LoadingStateBuilder<List<UserProfile>>(
+      isLoading: viewModel.isLoading,
+      error: viewModel.error,
+      data: viewModel.friends,
+      loadingMessage: 'Laddar vänner...',
+      emptyState: EmptyStateVariant.noFriends,
+      builder: (context, friends) => RefreshIndicator(
+        onRefresh: () async {
+          await viewModel.refresh();
         },
+        child: ListView.separated(
+          padding: EdgeInsets.all(AppTheme.spacingMd),
+          itemCount: friends.length,
+          separatorBuilder: (context, index) =>
+              SizedBox(height: AppTheme.spacingSm),
+          itemBuilder: (context, index) {
+            final friend = friends[index];
+            return _buildFriendCard(friend, viewModel);
+          },
+        ),
       ),
     );
   }
 
   Widget _buildRequestsTab(FriendsViewModel viewModel) {
-    if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
-      return StateWidget.loading(message: 'Laddar förfrågningar...');
-    }
-
-    if (viewModel.incomingRequests.isEmpty) {
-      return StateWidget.empty(
-        title: 'Inga vänskapsförfrågningar',
-        subtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
-        icon: Icons.notifications_none,
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await viewModel.refresh();
-      },
-      child: ListView.separated(
-        padding: EdgeInsets.all(AppTheme.spacingMd),
-        itemCount: viewModel.incomingRequests.length,
-        separatorBuilder: (context, index) =>
-            SizedBox(height: AppTheme.spacingSm),
-        itemBuilder: (context, index) {
-          final request = viewModel.incomingRequests[index];
-          return _buildRequestCard(request, viewModel);
+    return LoadingStateBuilder<List<FriendRequest>>(
+      isLoading: viewModel.isLoading,
+      error: viewModel.error,
+      data: viewModel.incomingRequests,
+      loadingMessage: 'Laddar förfrågningar...',
+      emptyTitle: 'Inga vänskapsförfrågningar',
+      emptySubtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
+      emptyIcon: Icons.notifications_none,
+      builder: (context, requests) => RefreshIndicator(
+        onRefresh: () async {
+          await viewModel.refresh();
         },
+        child: ListView.separated(
+          padding: EdgeInsets.all(AppTheme.spacingMd),
+          itemCount: requests.length,
+          separatorBuilder: (context, index) =>
+              SizedBox(height: AppTheme.spacingSm),
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            return _buildRequestCard(request, viewModel);
+          },
+        ),
       ),
     );
   }
@@ -967,24 +965,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   Future<void> _showRemoveFriendDialog(
       UserProfile friend, FriendsViewModel viewModel) async {
-    final shouldRemove = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ta bort vän?'),
-        content: Text(
-            'Är du säker på att du vill ta bort ${friend.displayName} från din vänlista?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
+    final shouldRemove = await DialogFactory.showDeleteConfirmation(
+      context,
+      itemName: friend.displayName,
+      itemType: 'vän från din vänlista',
     );
 
     if (shouldRemove == true && mounted) {

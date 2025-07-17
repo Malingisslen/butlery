@@ -9,9 +9,10 @@ class FormValidators {
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
   );
 
-  // NY: Display name regex - tillåter bokstäver, siffror, mellanslag och vissa tecken
+  // NY: Display name regex - tillåter Unicode bokstäver, siffror, mellanslag och vissa tecken
   static final RegExp _displayNameRegex = RegExp(
-    r'^[a-zA-ZåäöÅÄÖ0-9\s\-_\.]+$',
+    r'^[\p{L}\p{N}\s\-_\.]+$',
+    unicode: true,
   );
 
   /// Obligatoriskt fält
