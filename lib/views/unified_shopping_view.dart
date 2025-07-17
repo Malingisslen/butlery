@@ -18,6 +18,7 @@ import '../widgets/common/layout_components.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/state_widget.dart';
 import '../core/dialogs/dialog_factory.dart';
+import '../core/utils/snackbar_utils.dart';
 import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/common/input_components.dart';
 
@@ -447,18 +448,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       ),
       onDismissed: (direction) {
         viewModel.removeItem(item.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${item.name} borttagen'),
-            action: SnackBarAction(
-              label: 'Ångra',
-              onPressed: () {
-                // Restore the deleted item
-                viewModel.restoreItem(item);
-              },
-            ),
-          ),
-        );
+        SnackBarUtils.showSuccess(context, '${item.name} borttagen');
       },
       child: Card(
         margin: const EdgeInsets.only(bottom: 8),
@@ -730,36 +720,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   // ===== SNACKBAR HELPERS =====
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: AppTheme.errorTextStyle,
-        ),
-        backgroundColor: AppTheme.errorColor,
-        duration: AppTheme.animationDurationDelay,
-        action: SnackBarAction(
-          label: 'OK',
-          textColor: AppTheme.neutralLight,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-        ),
-      ),
-    );
+    SnackBarUtils.showError(context, message);
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: AppTheme.successTextStyle,
-        ),
-        backgroundColor: AppTheme.successColor,
-        duration: AppTheme.animationDurationDelay,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, message);
   }
 
   @override

@@ -9,17 +9,17 @@ import '../services/unified/unified_friends_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart'; // Fixad import
+import '../core/mixins/state_notifier_mixin.dart';
+import '../core/mixins/async_operation_mixin.dart';
 
 
-class SocialRecipeViewModel extends ChangeNotifier {
+class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final Recipe _recipe;
   final UnifiedRecipeService _recipeService;
   final UnifiedFriendsService _friendsService;
 
   // Comments state
   List<RecipeComment> _comments = [];
-  bool _isLoadingComments = false;
-  String? _commentsError;
 
   // Sharing state
   bool _isSharing = false;
@@ -47,8 +47,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   Recipe get recipe => _recipe;
   List<RecipeComment> get comments => List.unmodifiable(_comments);
-  bool get isLoadingComments => _isLoadingComments;
-  String? get commentsError => _commentsError;
+  bool get isLoadingComments => isLoading;
+  String? get commentsError => error;
   bool get hasComments => _comments.isNotEmpty;
 
   bool get isSharing => _isSharing;
@@ -268,8 +268,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   Future<void> _loadComments() async {
     try {
-      _isLoadingComments = true;
-      _commentsError = null;
+      setLoading(true);
+      clearError();
       notifyListeners();
 
       // TODO: Implement comment loading through UnifiedRecipeService social operations
@@ -292,10 +292,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
       AppLogger.info('💬 ${_comments.length} kommentarer laddade för recept');
     } catch (e) {
-      _commentsError = 'Kunde inte ladda kommentarer: $e';
+      setError('Kunde inte ladda kommentarer: $e');
       AppLogger.error('Load comments failed', e);
     } finally {
-      _isLoadingComments = false;
+      setLoading(false);
       notifyListeners();
     }
   }
@@ -310,7 +310,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   /// Clear all errors
   void clearErrors() {
-    _commentsError = null;
+    clearError();
     _sharingError = null;
     notifyListeners();
   }

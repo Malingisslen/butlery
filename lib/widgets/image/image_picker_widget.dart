@@ -1,0 +1,500 @@
+// lib/widgets/image/image_picker_widget.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+import '../../theme/app_theme.dart';
+import '../../services/image_picker_service.dart';
+import '../../core/injection.dart';
+import '../../core/utils/logger.dart';
+import 'image_config.dart';
+
+/// Image picker widget for selecting images
+class ImagePickerWidget extends StatefulWidget {
+  final List<String> selectedImages;
+  final ImageConfig config;
+  final Function(List<String>)? onImagesSelected;
+  final Function(String)? onImageRemoved;
+  final bool allowMultiple;
+  final bool showImagePreview;
+
+  const ImagePickerWidget({
+    super.key,
+    this.selectedImages = const [],
+    required this.config,
+    this.onImagesSelected,
+    this.onImageRemoved,
+    this.allowMultiple = true,
+    this.showImagePreview = true,
+  });
+
+  /// Factory constructor for picker
+  factory ImagePickerWidget.picker({
+    Key? key,
+    List<String> selectedImages = const [],
+    ImageSize size = ImageSize.medium,
+    int maxImages = 5,
+    Function(List<String>)? onImagesSelected,
+    Function(String)? onImageRemoved,
+    bool allowMultiple = true,
+    bool showImagePreview = true,
+  }) {
+    return ImagePickerWidget(
+      key: key,
+      selectedImages: selectedImages,
+      config: ImageConfig.picker(
+        size: size,
+        maxImages: maxImages,
+      ),
+      onImagesSelected: onImagesSelected,
+      onImageRemoved: onImageRemoved,
+      allowMultiple: allowMultiple,
+      showImagePreview: showImagePreview,
+    );
+  }
+
+  @override
+  State<ImagePickerWidget> createState() => _ImagePickerWidgetState();
+}
+
+class _ImagePickerWidgetState extends State<ImagePickerWidget> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Remove unused theme variable
+    final hasImages = widget.selectedImages.isNotEmpty;
+    final canAddMore = widget.selectedImages.length < widget.config.maxImages;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Add images section
+        if (canAddMore || !hasImages) _buildAddImagesSection(),
+
+        // Selected images preview
+        if (hasImages && widget.showImagePreview) ...[
+          if (canAddMore) const SizedBox(height: 16),
+          _buildSelectedImagesPreview(),
+        ],
+
+        // Image count info
+        if (hasImages)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              '${widget.selectedImages.length}/${widget.config.maxImages} images selected',
+              style: AppTheme.textTheme.bodySmall?.copyWith(
+                color: AppTheme.textPrimary.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Build add images section
+  Widget _buildAddImagesSection() {
+    // Remove unused theme variable
+    final dimensions = widget.config.getDimensions();
+
+    return Container(
+      width: double.infinity,
+      height: dimensions.height,
+      decoration: BoxDecoration(
+        borderRadius: widget.config.effectiveBorderRadius,
+        border: Border.all(
+          color: AppTheme.dividerColor.withValues(alpha: 0.3),
+          style: BorderStyle.solid,
+        ),
+        color: AppTheme.cardColor,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isLoading ? null : _pickImages,
+          borderRadius: widget.config.effectiveBorderRadius,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isLoading) ...[
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.primaryColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Selecting images...',
+                    style: AppTheme.textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ] else ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    ),
+                    child: Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 32,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.allowMultiple ? 'Select images' : 'Select image',
+                    style: AppTheme.textTheme.bodyLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.allowMultiple
+                        ? 'Tap to select up to ${widget.config.maxImages} images'
+                        : 'Tap to select an image',
+                    style: AppTheme.textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build selected images preview
+  Widget _buildSelectedImagesPreview() {
+    // Remove unused theme variable
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Selected Images',
+          style: AppTheme.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1,
+          ),
+          itemCount: widget.selectedImages.length,
+          itemBuilder: (context, index) {
+            return _buildImagePreview(widget.selectedImages[index], index);
+          },
+        ),
+      ],
+    );
+  }
+
+  /// Build individual image preview
+  Widget _buildImagePreview(String imagePath, int index) {
+    // Remove unused theme variable
+
+    return Stack(
+      children: [
+        // Image container
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: AppTheme.dividerColor.withValues(alpha: 0.2),
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: imagePath.startsWith('http')
+                ? CachedNetworkImage(
+                    imageUrl: imagePath,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    placeholder: (context, url) => Container(
+                      color: AppTheme.cardColor,
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: AppTheme.cardColor,
+                      child: Icon(
+                        Icons.error_outline,
+                        color: AppTheme.errorColor,
+                      ),
+                    ),
+                  )
+                : Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: AppTheme.cardColor,
+                      child: Icon(
+                        Icons.error_outline,
+                        color: AppTheme.errorColor,
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+
+        // Remove button
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => _removeImage(imagePath, index),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.errorColor,
+                border: Border.all(
+                  color: AppTheme.cardColor,
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.close,
+                size: 16,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+
+        // Index indicator
+        Positioned(
+          bottom: 4,
+          left: 4,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppTheme.cardColor.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '${index + 1}',
+              style: AppTheme.textTheme.bodySmall?.copyWith(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Pick images
+  Future<void> _pickImages() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (widget.config.enableHapticFeedback) {
+        HapticFeedback.lightImpact();
+      }
+
+      final imagePickerService = sl<ImagePickerService>();
+      List<File> results = [];
+
+      if (widget.allowMultiple) {
+        final multipleResults = await imagePickerService.pickMultipleImages();
+        results = multipleResults;
+      } else {
+        final result = await imagePickerService.pickImage(ImageSource.gallery);
+        if (result != null) {
+          results = [result];
+        }
+      }
+
+      if (results.isNotEmpty) {
+        final newImages = List<String>.from(widget.selectedImages);
+        final availableSlots = widget.config.maxImages - newImages.length;
+        final imagesToAdd =
+            results.take(availableSlots).map((e) => e.path).toList();
+
+        newImages.addAll(imagesToAdd);
+        widget.onImagesSelected?.call(newImages);
+
+        AppLogger.debug('Selected ${imagesToAdd.length} images');
+      }
+    } catch (e) {
+      AppLogger.error('Failed to pick images: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select images: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Remove image
+  void _removeImage(String imagePath, int index) {
+    if (widget.config.enableHapticFeedback) {
+      HapticFeedback.lightImpact();
+    }
+
+    final newImages = List<String>.from(widget.selectedImages);
+    newImages.removeAt(index);
+
+    widget.onImagesSelected?.call(newImages);
+    widget.onImageRemoved?.call(imagePath);
+
+    AppLogger.debug('Removed image at index $index');
+  }
+}
+
+/// Simple image source picker widget
+class ImageSourcePickerWidget extends StatelessWidget {
+  final Function(ImageSource)? onSourceSelected;
+  final bool showCamera;
+  final bool showGallery;
+
+  const ImageSourcePickerWidget({
+    super.key,
+    this.onSourceSelected,
+    this.showCamera = true,
+    this.showGallery = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Remove unused theme variable
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showCamera)
+          ListTile(
+            leading: Icon(
+              Icons.camera_alt_outlined,
+              color: AppTheme.primaryColor,
+            ),
+            title: Text(
+              'Camera',
+              style: AppTheme.textTheme.bodyLarge,
+            ),
+            onTap: () => onSourceSelected?.call(ImageSource.camera),
+          ),
+        if (showGallery)
+          ListTile(
+            leading: Icon(
+              Icons.photo_library_outlined,
+              color: AppTheme.primaryColor,
+            ),
+            title: Text(
+              'Gallery',
+              style: AppTheme.textTheme.bodyLarge,
+            ),
+            onTap: () => onSourceSelected?.call(ImageSource.gallery),
+          ),
+      ],
+    );
+  }
+}
+
+/// Image picker bottom sheet
+class ImagePickerBottomSheet extends StatelessWidget {
+  final Function(ImageSource)? onSourceSelected;
+  final bool showCamera;
+  final bool showGallery;
+  final String? title;
+
+  const ImagePickerBottomSheet({
+    super.key,
+    this.onSourceSelected,
+    this.showCamera = true,
+    this.showGallery = true,
+    this.title,
+  });
+
+  /// Show image picker bottom sheet
+  static Future<ImageSource?> show(
+    BuildContext context, {
+    bool showCamera = true,
+    bool showGallery = true,
+    String? title,
+  }) async {
+    return await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => ImagePickerBottomSheet(
+        onSourceSelected: (source) => Navigator.of(context).pop(source),
+        showCamera: showCamera,
+        showGallery: showGallery,
+        title: title,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Remove unused theme variable
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Text(
+              title!,
+              style: AppTheme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          ImageSourcePickerWidget(
+            onSourceSelected: onSourceSelected,
+            showCamera: showCamera,
+            showGallery: showGallery,
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}

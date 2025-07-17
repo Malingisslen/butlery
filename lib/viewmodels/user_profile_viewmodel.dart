@@ -9,9 +9,11 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../core/utils/logger.dart';
 import '../core/injection.dart';
+import '../core/mixins/state_notifier_mixin.dart';
+import '../core/mixins/async_operation_mixin.dart';
 
 
-class UserProfileViewModel extends ChangeNotifier {
+class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final UserService _userService;
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
@@ -24,9 +26,7 @@ class UserProfileViewModel extends ChangeNotifier {
   bool _allowEmailSearch = false;
 
   // UI state
-  bool _isLoading = false;
   bool _isUploadingAvatar = false;
-  String? _error;
   bool _hasUnsavedChanges = false;
 
   // Validation state
@@ -50,10 +50,9 @@ class UserProfileViewModel extends ChangeNotifier {
   bool get isSearchable => _isSearchable;
   bool get allowEmailSearch => _allowEmailSearch;
 
-  bool get isLoading => _isLoading;
+  @override
+  bool get isLoading => super.isLoading || _isUploadingAvatar;
   bool get isUploadingAvatar => _isUploadingAvatar;
-  String? get error => _error;
-  bool get hasError => _error != null;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
 
   String? get displayNameError => _displayNameError;
@@ -101,7 +100,7 @@ class UserProfileViewModel extends ChangeNotifier {
   Future<bool> uploadAvatar() async {
     try {
       _isUploadingAvatar = true;
-      _clearError();
+      clearError();
       notifyListeners();
 
       // Pick image från gallery
@@ -117,7 +116,7 @@ class UserProfileViewModel extends ChangeNotifier {
       // Get current user ID
       final userId = sl<PermissionService>().currentUserId;
       if (userId == null) {
-        _setError('Ingen användare inloggad');
+        setError('Ingen användare inloggad');
         return false;
       }
 
@@ -134,12 +133,12 @@ class UserProfileViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _setError('Kunde inte ladda upp avatar');
+        setError('Kunde inte ladda upp avatar');
         return false;
       }
     } catch (e) {
       AppLogger.error('❌ Kunde inte ladda upp avatar: $e');
-      _setError('Kunde inte ladda upp avatar: $e');
+      setError('Kunde inte ladda upp avatar: $e');
       return false;
     } finally {
       _isUploadingAvatar = false;
@@ -157,7 +156,7 @@ class UserProfileViewModel extends ChangeNotifier {
   /// Save profile changes
   Future<bool> saveProfile() async {
     if (!isFormValid) {
-      _setError('Fyll i alla obligatoriska fält korrekt');
+      setError('Fyll i alla obligatoriska fält korrekt');
       return false;
     }
 
@@ -172,10 +171,7 @@ class UserProfileViewModel extends ChangeNotifier {
       }
     }
 
-    try {
-      _setLoading(true);
-      _clearError();
-
+    return await saveData(() async {
       final updatedProfile = await _userService.createOrUpdateProfile(
         displayName: _displayName,
         bio: _bio.isEmpty ? null : _bio,
@@ -190,23 +186,16 @@ class UserProfileViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _setError(_userService.error ?? 'Kunde inte spara profil');
-        return false;
+        throw Exception(_userService.error ?? 'Kunde inte spara profil');
       }
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte spara profil: $e');
-      _setError('Kunde inte spara profil: $e');
-      return false;
-    } finally {
-      _setLoading(false);
-    }
+    });
   }
 
   /// Reset form to current profile values
   void resetForm() {
     _loadCurrentProfile();
     _hasUnsavedChanges = false;
-    _clearError();
+    clearError();
     _clearValidationErrors();
     notifyListeners();
   }
@@ -234,8 +223,9 @@ class UserProfileViewModel extends ChangeNotifier {
   }
 
   /// Clear all errors
+  @override
   void clearError() {
-    _clearError();
+    setError('');
     _clearValidationErrors();
     notifyListeners();
   }
@@ -307,19 +297,6 @@ class UserProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _error = null;
-  }
 
   void _clearValidationErrors() {
     _displayNameError = null;

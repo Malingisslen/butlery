@@ -5,17 +5,17 @@ import '../models/unified/unified_shopping_list.dart';
 import '../models/user_profile.dart';
 import '../services/unified/unified_shopping_service.dart';
 import '../services/unified/unified_friends_service.dart';
+import '../core/mixins/state_notifier_mixin.dart';
+import '../core/mixins/async_operation_mixin.dart';
 
 
-class ShoppingShareViewModel extends ChangeNotifier {
+class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedShoppingService _shoppingService;
   final UnifiedFriendsService _friendsService;
 
   // ==================== STATE PROPERTIES ====================
 
-  bool _isLoading = false;
   bool _isSharing = false;
-  String? _error;
   List<UserProfile> _friends = [];
   final List<String> _selectedFriendIds = [];
   String _shareMessage = '';
@@ -31,9 +31,7 @@ class ShoppingShareViewModel extends ChangeNotifier {
 
   // ==================== GETTERS ====================
 
-  bool get isLoading => _isLoading;
   bool get isSharing => _isSharing;
-  String? get error => _error;
   List<UserProfile> get friends => List.unmodifiable(_friends);
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
   String get shareMessage => _shareMessage;
@@ -41,7 +39,6 @@ class ShoppingShareViewModel extends ChangeNotifier {
 
   // ==================== COMPUTED PROPERTIES ====================
 
-  bool get hasError => _error != null;
   bool get canShare => _selectedFriendIds.isNotEmpty && !_isSharing;
   bool get hasFriends => _friends.isNotEmpty;
   int get selectedCount => _selectedFriendIds.length;
@@ -238,8 +235,8 @@ class ShoppingShareViewModel extends ChangeNotifier {
   }
 
   void _setLoading(bool loading) {
-    if (_isLoading != loading) {
-      _isLoading = loading;
+    if (isLoading != loading) {
+      setLoading(loading);
       notifyListeners();
     }
   }
@@ -252,15 +249,11 @@ class ShoppingShareViewModel extends ChangeNotifier {
   }
 
   void _setError(String error) {
-    _error = error;
-    notifyListeners();
+    setError(error);
   }
 
   void _clearError() {
-    if (_error != null) {
-      _error = null;
-      notifyListeners();
-    }
+    clearError();
   }
 
   // ==================== VALIDATION METHODS ====================

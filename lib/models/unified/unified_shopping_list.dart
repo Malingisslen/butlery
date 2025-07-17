@@ -16,7 +16,11 @@ enum SyncStatus {
 enum ListType {
   personal, // Personlig lista
   collaborative, // Delad med andra, real-time sync
+  template, // Mall-lista för återanvändning
 }
+
+// Alias for compatibility
+typedef ShoppingListType = ListType;
 
 enum SharedListPermission {
   view, // Kan bara se listan
@@ -140,6 +144,7 @@ class UnifiedShoppingList {
   bool get isNotEmpty => items.isNotEmpty;
 
   int get totalItems => items.length;
+  int get itemCount => items.length;  // Alias for compatibility
   int get boughtItems => items.where((item) => item.bought).length;
   int get unboughtItems => totalItems - boughtItems;
   int get memberCount => memberPermissions.length;

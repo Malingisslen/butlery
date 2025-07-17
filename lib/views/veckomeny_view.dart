@@ -23,6 +23,9 @@ import '../widgets/common/input_components.dart';
 // Theme
 import '../theme/app_theme.dart';
 
+// Utils
+import '../core/utils/snackbar_utils.dart';
+
 // Core
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
@@ -91,12 +94,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final viewModel = context.read<MenuViewModel>();
 
     if (!viewModel.hasMenu) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Skapa en meny först innan du kan spara den'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan spara den');
       return;
     }
 
@@ -126,13 +124,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veckomeny delad!'),
-          backgroundColor: AppTheme.successColor,
-          duration: AppTheme.wait2s,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Veckomeny delad!');
     }
   }
 
@@ -141,12 +133,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     // Kontrollera att meny finns
     if (!menuViewModel.hasMenu) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Skapa en meny först innan du kan dela den'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan dela den');
       return;
     }
 
@@ -175,12 +162,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     // Kontrollera att meny finns
     if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Skapa en meny först innan du kan skapa inköpslista'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan skapa inköpslista');
       return;
     }
 
@@ -284,15 +266,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             IconButton(
               icon: AppTheme.errorIcon(context),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.error!),
-                    action: SnackBarAction(
-                      label: 'Stäng',
-                      onPressed: viewModel.clearError,
-                    ),
-                  ),
-                );
+                SnackBarUtils.showError(context, viewModel.error!);
               },
               tooltip: 'Visa fel',
             ),

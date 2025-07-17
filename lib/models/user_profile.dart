@@ -1,9 +1,10 @@
 // lib/models/user_profile.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/mixins/json_serializable_mixin.dart';
 
 
-class UserProfile {
+class UserProfile with JsonSerializableMixin {
   final String uid;
   final String displayName;
   final String email;
@@ -135,6 +136,24 @@ class UserProfile {
     };
   }
 
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'displayName': displayName,
+      'email': email,
+      'bio': bio,
+      'avatarUrl': avatarUrl,
+      'isSearchable': isSearchable,
+      'allowEmailSearch': allowEmailSearch,
+      'publicRecipeCount': publicRecipeCount,
+      'friendsCount': friendsCount,
+      'joinedAt': serializeDateTime(joinedAt),
+      'lastActiveAt': serializeDateTime(lastActiveAt),
+      'isOnline': isOnline,
+    };
+  }
+
   /// Create from Firestore document
   factory UserProfile.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -156,23 +175,6 @@ class UserProfile {
     );
   }
 
-  /// JSON serialization för caching
-  Map<String, dynamic> toJson() {
-    return {
-      'uid': uid,
-      'displayName': displayName,
-      'email': email,
-      'bio': bio,
-      'avatarUrl': avatarUrl,
-      'isSearchable': isSearchable,
-      'allowEmailSearch': allowEmailSearch,
-      'publicRecipeCount': publicRecipeCount,
-      'friendsCount': friendsCount,
-      'joinedAt': joinedAt.toIso8601String(),
-      'lastActiveAt': lastActiveAt.toIso8601String(),
-      'isOnline': isOnline,
-    };
-  }
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -185,10 +187,16 @@ class UserProfile {
       allowEmailSearch: json['allowEmailSearch'] as bool? ?? false,
       publicRecipeCount: json['publicRecipeCount'] as int? ?? 0,
       friendsCount: json['friendsCount'] as int? ?? 0,
-      joinedAt: DateTime.parse(json['joinedAt'] as String),
-      lastActiveAt: DateTime.parse(json['lastActiveAt'] as String),
+      joinedAt: UserProfile._deserializeDateTime(json['joinedAt']) ?? DateTime.now(),
+      lastActiveAt: UserProfile._deserializeDateTime(json['lastActiveAt']) ?? DateTime.now(),
       isOnline: json['isOnline'] as bool? ?? false,
     );
+  }
+
+  static DateTime? _deserializeDateTime(dynamic value) {
+    if (value is String) return DateTime.parse(value);
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   @override

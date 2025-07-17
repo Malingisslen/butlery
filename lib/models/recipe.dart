@@ -3,6 +3,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import '../core/mixins/json_serializable_mixin.dart';
 
 // VIKTIGT: Kör denna kommando efter att ha sparat filen:
 // flutter packages pub run build_runner build --delete-conflicting-outputs
@@ -19,7 +20,7 @@ part 'recipe.g.dart'; // Genererad fil av Hive
 /// - lastCookedAt för "senast tillagad" tracking
 /// - imageUrls för flera bilder per recept (NY!)
 @HiveType(typeId: 0) // Unikt ID för denna model i Hive
-class Recipe extends HiveObject {
+class Recipe extends HiveObject with JsonSerializableMixin {
   @HiveField(0)
   final String id;
 
@@ -187,6 +188,7 @@ class Recipe extends HiveObject {
   // ==================== JSON SERIALIZATION (SharedPreferences) ====================
 
   /// Konverterar Recipe-objekt till Map för JSON-lagring
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -201,11 +203,11 @@ class Recipe extends HiveObject {
       'imageUrls': imageUrls, // NY
       'mealType': mealType,
       'sourceUrl': sourceUrl,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      'lastSyncedAt': lastSyncedAt?.toIso8601String(),
+      'createdAt': serializeDateTime(createdAt),
+      'updatedAt': serializeDateTime(updatedAt),
+      'lastSyncedAt': serializeDateTime(lastSyncedAt),
       'isModifiedOffline': isModifiedOffline,
-      'lastCookedAt': lastCookedAt?.toIso8601String(),
+      'lastCookedAt': serializeDateTime(lastCookedAt),
     };
   }
 
@@ -230,20 +232,19 @@ class Recipe extends HiveObject {
                   : [],
       mealType: json['mealType'] as String,
       sourceUrl: json['sourceUrl'] as String?,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : DateTime.now(),
-      lastSyncedAt: json['lastSyncedAt'] != null
-          ? DateTime.parse(json['lastSyncedAt'] as String)
-          : null,
+      createdAt: Recipe._deserializeDateTime(json['createdAt']) ?? DateTime.now(),
+      updatedAt: Recipe._deserializeDateTime(json['updatedAt']) ?? DateTime.now(),
+      lastSyncedAt: Recipe._deserializeDateTime(json['lastSyncedAt']),
       isModifiedOffline: json['isModifiedOffline'] as bool? ?? false,
-      lastCookedAt: json['lastCookedAt'] != null
-          ? DateTime.parse(json['lastCookedAt'] as String)
-          : null,
+      lastCookedAt: Recipe._deserializeDateTime(json['lastCookedAt']),
     );
+  }
+
+  /// Helper method for deserializing DateTime from JSON
+  static DateTime? _deserializeDateTime(dynamic value) {
+    if (value is String) return DateTime.parse(value);
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   // ==================== FIRESTORE SERIALIZATION ====================

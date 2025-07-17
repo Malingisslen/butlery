@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../models/recipe.dart';
 import '../../theme/app_theme.dart';
 import '../image/universal_image_manager.dart';
+import '../image/image_config.dart';
 
 /// 🔥 GENERISK KORTKOMPONENT SOM ERSÄTTER:
 /// - recipe_card.dart
@@ -452,9 +453,10 @@ class ContentCard extends StatelessWidget {
   }) {
     // För Recipe-typ, använd CachedRecipeImage
     if (adapter.type == ContentCardType.recipe && adapter.item is Recipe) {
+      final imageUrl = adapter.displayImageUrls.isNotEmpty ? adapter.displayImageUrls.first : '';
       return UniversalImageManager.cached(
-        imageUrls: adapter.displayImageUrls,
-        size: size ?? AppTheme.recipeImageSize, // ✅ AppTheme constant
+        imageUrl: imageUrl,
+        size: ImageSize.card, // Use ImageSize enum instead of double
         borderRadius: AppTheme.roundRadius, // ✅ AppTheme radius
       );
     }

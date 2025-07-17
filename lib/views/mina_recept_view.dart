@@ -18,6 +18,7 @@ import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
 import '../../core/constants/routes.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
@@ -153,25 +154,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       try {
         // Visa loading indicator
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  SizedBox(
-                    width: AppTheme.iconSize20,
-                    height: AppTheme.iconSize20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.neutralLight),
-                    ),
-                  ),
-                  SizedBox(width: AppTheme.spacingMd),
-                  Text('Synkroniserar...'),
-                ],
-              ),
-              duration: AppTheme.wait30s,
-            ),
-          );
+          SnackBarUtils.showInfo(context, 'Synkroniserar...');
         }
 
         // Synka offline-ändringar
@@ -182,24 +165,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         // Visa success
         if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Synkronisering klar!'),
-              backgroundColor: AppTheme.successColor,
-              duration: AppTheme.wait2s,
-            ),
-          );
+          SnackBarUtils.showSuccess(context, 'Synkronisering klar!');
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Synkronisering misslyckades: $e'),
-              backgroundColor: AppTheme.errorColor,
-            ),
-          );
+          SnackBarUtils.showError(context, 'Synkronisering misslyckades: $e');
         }
       }
     }
@@ -233,8 +203,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             SocialComponents.avatar(
               user: userService.currentUserProfile,
               size: ImageSize.medium,
-              showStatus: true,
-              clickable: true,
+              showOnlineStatus: true,
+              isClickable: true,
               onTap: () => LayoutComponents.showProfileMenu(
                 context,
                 userImageUrl: userService.currentUserProfile?.avatarUrl,
@@ -351,18 +321,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             IconButton(
               icon: AppTheme.errorIcon(context),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.error!),
-                    action: SnackBarAction(
-                      label: 'Försök igen',
-                      onPressed: () {
-                        viewModel.clearError();
-                        viewModel.refresh();
-                      },
-                    ),
-                  ),
-                );
+                SnackBarUtils.showError(context, viewModel.error!);
               },
               tooltip: 'Visa fel',
             ),
@@ -515,13 +474,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Om offline, bara refresh från lokal cache
           await viewModel.refresh();
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('📵 Offline-läge - visar lokala recept'),
-                backgroundColor: AppTheme.warningColor,
-                duration: AppTheme.wait2s,
-              ),
-            );
+            SnackBarUtils.showWarning(context, 'Offline-läge - visar lokala recept');
           }
         }
       },

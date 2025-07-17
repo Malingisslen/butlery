@@ -2,11 +2,12 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import '../core/mixins/json_serializable_mixin.dart';
 
 
 enum FriendRequestStatus { pending, accepted, rejected, cancelled, expired }
 
-class FriendRequest {
+class FriendRequest with JsonSerializableMixin {
   final String id;
   final String fromUserId; // Who sent the request
   final String toUserId; // Who received the request
@@ -139,14 +140,15 @@ class FriendRequest {
   }
 
   /// JSON serialization för caching
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'fromUserId': fromUserId,
       'toUserId': toUserId,
       'status': status.name,
-      'sentAt': sentAt.toIso8601String(),
-      'respondedAt': respondedAt?.toIso8601String(),
+      'sentAt': serializeDateTime(sentAt),
+      'respondedAt': serializeDateTime(respondedAt),
       'message': message,
     };
   }
@@ -160,12 +162,17 @@ class FriendRequest {
         (s) => s.name == json['status'],
         orElse: () => FriendRequestStatus.pending,
       ),
-      sentAt: DateTime.parse(json['sentAt'] as String),
-      respondedAt: json['respondedAt'] != null
-          ? DateTime.parse(json['respondedAt'] as String)
-          : null,
+      sentAt: FriendRequest._deserializeDateTime(json['sentAt']) ?? DateTime.now(),
+      respondedAt: FriendRequest._deserializeDateTime(json['respondedAt']),
       message: json['message'] as String?,
     );
+  }
+
+  /// Helper method for deserializing DateTime from JSON
+  static DateTime? _deserializeDateTime(dynamic value) {
+    if (value is String) return DateTime.parse(value);
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   @override
