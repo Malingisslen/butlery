@@ -13,6 +13,7 @@ import '../../widgets/common/loading_state_builder.dart';
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/dialogs/dialog_factory.dart';
+import '../../core/utils/snackbar_utils.dart';
 import '../../models/user_profile.dart';
 import '../../models/friend_request.dart';
 import '../../models/friend_category.dart';
@@ -867,12 +868,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     final result = await SocialComponents.showCreateGroupDialog(context);
 
     if (result != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gruppen "${result.name}" skapades! 🎉'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Gruppen "${result.name}" skapades! 🎉');
       setState(() {}); // Uppdatera vyn
     }
   }
@@ -883,21 +879,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     final success = await service.invitations.acceptGroupInvitation(invitationId);
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inbjudan accepterad! Välkommen till gruppen! 🎉'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Inbjudan accepterad! Välkommen till gruppen! 🎉');
       final viewModel = context.read<FriendsViewModel>();
       viewModel.refresh();
     } else if (mounted && service.invitations.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fel: ${service.invitations.error}'),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Fel: ${service.invitations.error}');
     }
   }
 
@@ -906,19 +892,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     final success = await service.invitations.rejectGroupInvitation(invitationId);
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inbjudan avvisad'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Inbjudan avvisad');
     } else if (mounted && service.invitations.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fel: ${service.invitations.error}'),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Fel: ${service.invitations.error}');
     }
   }
 
@@ -927,13 +903,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       UserProfile user, FriendsViewModel viewModel) async {
     final success = await viewModel.sendFriendRequest(user.uid);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Vänskapsförfrågan skickad till ${user.displayName}! ✉️'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Vänskapsförfrågan skickad till ${user.displayName}! ✉️');
     }
   }
 
@@ -941,12 +911,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       FriendRequest request, FriendsViewModel viewModel) async {
     final success = await viewModel.acceptFriendRequest(request.id);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vänskapsförfrågan accepterad! 🎉'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Vänskapsförfrågan accepterad! 🎉');
     }
   }
 
@@ -954,12 +919,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       FriendRequest request, FriendsViewModel viewModel) async {
     final success = await viewModel.rejectFriendRequest(request.id);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vänskapsförfrågan avböjd'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Vänskapsförfrågan avböjd');
     }
   }
 
@@ -974,12 +934,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     if (shouldRemove == true && mounted) {
       final success = await viewModel.removeFriend(friend.uid);
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${friend.displayName} borttagen från vänlista'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, '${friend.displayName} borttagen från vänlista');
       }
     }
   }

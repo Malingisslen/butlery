@@ -8,6 +8,7 @@ import '../../widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
 import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
 import '../../core/validators/form_validators.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 
 class UserProfileEditView extends StatelessWidget {
@@ -101,19 +102,9 @@ class _UserProfileEditViewContentState
       Navigator.pop(context); // Close loading dialog
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Avatar uppladdad!'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, 'Avatar uppladdad!');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.error ?? 'Kunde inte ladda upp avatar'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        SnackBarUtils.showError(context, viewModel.error ?? 'Kunde inte ladda upp avatar');
       }
     }
   }
@@ -131,22 +122,12 @@ class _UserProfileEditViewContentState
 
     if (mounted) {
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Profil sparad!'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, 'Profil sparad!');
 
         // Navigate back after successful save
         Navigator.pop(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.error ?? 'Kunde inte spara profil'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        SnackBarUtils.showError(context, viewModel.error ?? 'Kunde inte spara profil');
       }
     }
   }
@@ -349,12 +330,7 @@ class _UserProfileEditViewContentState
                       ? null
                       : () {
                           viewModel.removeAvatar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Avatar borttagen'),
-                              backgroundColor: AppTheme.successColor,
-                            ),
-                          );
+                          SnackBarUtils.showSuccess(context, 'Avatar borttagen');
                         },
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Ta bort'),
@@ -531,12 +507,7 @@ class _UserProfileEditViewContentState
                 ? () {
                     viewModel.resetForm();
                     _initializeForm(viewModel);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Formulär återställt'),
-                        backgroundColor: AppTheme.successColor,
-                      ),
-                    );
+                    SnackBarUtils.showSuccess(context, 'Formulär återställt');
                   }
                 : null,
             icon: const Icon(Icons.refresh),

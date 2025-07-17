@@ -1,0 +1,371 @@
+// lib/widgets/common/input/shopping_list_selector.dart
+
+import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
+import '../../../models/recipe.dart';
+import '../../../models/unified/unified_shopping_item.dart';
+import '../../../models/unified/unified_shopping_list.dart';
+import '../../../viewmodels/unified_shopping_viewmodel.dart';
+import '../state_widget.dart';
+import 'shopping_list_card.dart';
+import 'shopping_list_actions.dart';
+
+/// Shopping List Selector Widget
+/// 
+/// A comprehensive widget that allows users to:
+/// - Select from existing shopping lists
+/// - Create new shopping lists
+/// - Add menu ingredients to selected lists
+/// - Handle collaborative and personal lists
+class ShoppingListSelector extends StatefulWidget {
+  final VoidCallback? onListSelected;
+  final Map<String, List<Recipe>>? menu;
+
+  const ShoppingListSelector({
+    super.key,
+    this.onListSelected,
+    this.menu,
+  });
+
+  @override
+  State<ShoppingListSelector> createState() => _ShoppingListSelectorState();
+}
+
+class _ShoppingListSelectorState extends State<ShoppingListSelector> {
+  late UnifiedShoppingViewModel _viewModel;
+  String? _selectedListId;
+  bool _isAddingToList = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = UnifiedShoppingViewModel();
+    _selectedListId = _viewModel.activeList?.id;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _viewModel,
+      builder: (context, child) {
+        if (_viewModel.isLoading) {
+          return const StateWidget(
+            type: StateType.loading,
+            title: 'Laddar listor...',
+          );
+        }
+        
+        if (_viewModel.hasError) {
+          return StateWidget(
+            type: StateType.error,
+            title: 'Fel vid laddning',
+            subtitle: _viewModel.error,
+            actionLabel: 'Försök igen',
+            onAction: () => _viewModel.loadLists(),
+          );
+        }
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            AppTheme.mediumGap,
+            _buildListsSection(context, _viewModel),
+            if (widget.menu != null && _selectedListId != null) ...[
+              AppTheme.mediumGap,
+              _buildAddToListSection(context, _viewModel),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  /// Build header with title and create button
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          Icons.shopping_cart,
+          size: AppTheme.iconSizeAction,
+          color: AppTheme.primaryColor,
+        ),
+        AppTheme.smallHorizontalGap,
+        Expanded(
+          child: Text(
+            'Handlistor',
+            style: AppTheme.sectionTitleStyle,
+          ),
+        ),
+        FilledButton.icon(
+          onPressed: () => _createNewList(context),
+          icon: Icon(Icons.add, size: AppTheme.iconSizeAction),
+          label: Text('Ny lista'),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppTheme.primaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build lists section
+  Widget _buildListsSection(BuildContext context, UnifiedShoppingViewModel viewModel) {
+    if (viewModel.lists.isEmpty) {
+      return ShoppingListEmptyState(
+        onCreateList: () => _createNewList(context),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: viewModel.lists.length,
+      itemBuilder: (context, index) {
+        final list = viewModel.lists[index];
+        final isSelected = _selectedListId == list.id;
+        
+        return ShoppingListCard(
+          list: list,
+          viewModel: viewModel,
+          isSelected: isSelected,
+          onTap: () => _selectList(list.id),
+        );
+      },
+    );
+  }
+
+  /// Build add to list section
+  Widget _buildAddToListSection(BuildContext context, UnifiedShoppingViewModel viewModel) {
+    final selectedList = viewModel.lists.firstWhere(
+      (list) => list.id == _selectedListId,
+      orElse: () => viewModel.lists.first,
+    );
+
+    final menuItems = _convertMenuToShoppingItems();
+    
+    return Container(
+      padding: AppTheme.cardPadding,
+      decoration: BoxDecoration(
+        color: AppTheme.successColor.withValues(alpha: 0.1),
+        borderRadius: AppTheme.largeRadius,
+        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.restaurant_menu,
+                size: AppTheme.iconSizeAction,
+                color: AppTheme.successColor,
+              ),
+              AppTheme.smallHorizontalGap,
+              Expanded(
+                child: Text(
+                  'Lägg till från meny',
+                  style: AppTheme.cardTitleStyle.copyWith(
+                    color: AppTheme.successColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          AppTheme.smallGap,
+          Text(
+            'Lägg till ${menuItems.length} artiklar från menyn i "${selectedList.name}"',
+            style: AppTheme.bodyStyle,
+          ),
+          AppTheme.mediumGap,
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _previewMenuItems(context, menuItems),
+                  icon: Icon(Icons.preview),
+                  label: Text('Förhandsgranska'),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppTheme.successColor),
+                    foregroundColor: AppTheme.successColor,
+                  ),
+                ),
+              ),
+              AppTheme.smallHorizontalGap,
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _isAddingToList ? null : () => _addMenuToList(context, viewModel, selectedList, menuItems),
+                  icon: _isAddingToList 
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.neutralLight),
+                          ),
+                        )
+                      : Icon(Icons.add_shopping_cart),
+                  label: Text(_isAddingToList ? 'Lägger till...' : 'Lägg till'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.successColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Select a list
+  void _selectList(String listId) {
+    setState(() {
+      _selectedListId = listId;
+    });
+    widget.onListSelected?.call();
+  }
+
+  /// Create new list
+  Future<void> _createNewList(BuildContext context) async {
+    final name = await ShoppingListActions.showCreateListDialog(context);
+    
+    if (name != null && name.isNotEmpty) {
+      final success = await _viewModel.createList(name);
+      
+      if (mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Lista "$name" skapad'
+                  : 'Kunde inte skapa lista: ${_viewModel.error ?? "Okänt fel"}',
+            ),
+            backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+          ),
+        );
+
+        if (success) {
+          setState(() {
+            _selectedListId = _viewModel.activeList?.id;
+          });
+        }
+      }
+    }
+  }
+
+  /// Add menu items to selected list
+  Future<void> _addMenuToList(
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+    UnifiedShoppingList selectedList,
+    List<UnifiedShoppingItem> menuItems,
+  ) async {
+    final confirmed = await ShoppingListActions.showAddToListConfirmation(
+      context,
+      selectedList,
+      menuItems.length,
+    );
+
+    if (confirmed) {
+      setState(() {
+        _isAddingToList = true;
+      });
+
+      try {
+        final success = await viewModel.addItemsToList(selectedList.id, menuItems);
+        
+        if (mounted && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                success
+                    ? '${menuItems.length} artiklar tillagda i "${selectedList.name}"'
+                    : 'Kunde inte lägga till artiklar: ${viewModel.error ?? "Okänt fel"}',
+              ),
+              backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isAddingToList = false;
+          });
+        }
+      }
+    }
+  }
+
+  /// Preview menu items
+  void _previewMenuItems(BuildContext context, List<UnifiedShoppingItem> items) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Förhandsgranska artiklar'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return ListTile(
+                dense: true,
+                leading: Icon(Icons.shopping_cart, size: AppTheme.iconSizeInfo),
+                title: Text(item.name),
+                subtitle: item.quantity > 0 
+                    ? Text('${item.quantity} ${item.unit}')
+                    : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Stäng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Convert menu recipes to shopping items
+  List<UnifiedShoppingItem> _convertMenuToShoppingItems() {
+    if (widget.menu == null) return [];
+
+    final Map<String, UnifiedShoppingItem> itemMap = {};
+    
+    for (final dayRecipes in widget.menu!.values) {
+      for (final recipe in dayRecipes) {
+        for (final ingredient in recipe.ingredients) {
+          final key = ingredient.toLowerCase().trim();
+          
+          if (itemMap.containsKey(key)) {
+            // Combine quantities if possible
+            final existingItem = itemMap[key]!;
+            itemMap[key] = existingItem.copyWith(
+              amount: existingItem.amount + 1,
+            );
+          } else {
+            itemMap[key] = UnifiedShoppingItem(
+              name: ingredient,
+              amount: 1,
+              unit: 'st',
+              bought: false,
+            );
+          }
+        }
+      }
+    }
+
+    return itemMap.values.toList()..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+}

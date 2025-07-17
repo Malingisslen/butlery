@@ -176,6 +176,11 @@ UnifiedShoppingService({
     }
   }
 
+  /// Load lists - alias for initialize for compatibility
+  Future<void> loadLists() async {
+    await initialize();
+  }
+
   // ===== LIST MANAGEMENT =====
 
   Future<String?> createPersonalList(String name,

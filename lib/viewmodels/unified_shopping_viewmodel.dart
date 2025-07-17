@@ -126,6 +126,52 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
     return await _shoppingService.setActiveList(listId);
   }
 
+  /// Load lists - for shopping list selector API compatibility
+  Future<void> loadLists() async {
+    await _shoppingService.loadLists();
+  }
+
+  /// Create list - for shopping list selector API compatibility
+  Future<bool> createList(String name) async {
+    return await createPersonalList(name);
+  }
+
+  /// Rename list - for shopping list actions API compatibility
+  Future<bool> renameList(String listId, String newName) async {
+    return await _shoppingService.renameList(listId, newName);
+  }
+
+  /// Delete list - for shopping list actions API compatibility
+  Future<bool> deleteList(String listId) async {
+    return await _shoppingService.deleteList(listId);
+  }
+
+  /// Export list - for shopping list actions API compatibility
+  String exportList() {
+    return exportListAsText();
+  }
+
+  /// Add items to list - for shopping list selector API compatibility
+  Future<bool> addItemsToList(String listId, List<UnifiedShoppingItem> items) async {
+    // Set active list first
+    await setActiveList(listId);
+    
+    // Add items to active list
+    for (final item in items) {
+      await addItem(
+        name: item.name,
+        amount: item.amount,
+        unit: item.unit,
+        category: item.category,
+        note: item.note,
+        estimatedPrice: item.estimatedPrice,
+        priority: item.priority,
+      );
+    }
+    
+    return true;
+  }
+
   // ===== ITEM MANAGEMENT - BÅDA API:ER för kompatibilitet =====
 
   /// Lägg till artikel (original API)
