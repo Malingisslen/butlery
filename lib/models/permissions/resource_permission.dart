@@ -11,6 +11,15 @@ enum ResourcePermission {
 
   /// Kan bara se innehåll
   viewer,
+  
+  /// Administrator - kan redigera och bjuda in andra
+  admin,
+  
+  /// Kan skriva/redigera innehåll
+  write,
+  
+  /// Kan bara läsa innehåll
+  read,
 }
 
 /// Helper för ResourcePermission operations
@@ -18,12 +27,15 @@ class ResourcePermissionHelper {
   /// Kan användaren redigera innehåll?
   static bool canEditContent(ResourcePermission permission) {
     return permission == ResourcePermission.owner ||
-        permission == ResourcePermission.editor;
+        permission == ResourcePermission.editor ||
+        permission == ResourcePermission.admin ||
+        permission == ResourcePermission.write;
   }
 
   /// Kan användaren bjuda in andra?
   static bool canInviteParticipants(ResourcePermission permission) {
-    return permission == ResourcePermission.owner;
+    return permission == ResourcePermission.owner ||
+        permission == ResourcePermission.admin;
   }
 
   /// Kan användaren lämna resursen?
@@ -38,7 +50,8 @@ class ResourcePermissionHelper {
 
   /// Kan användaren hantera andra användares behörigheter?
   static bool canManagePermissions(ResourcePermission permission) {
-    return permission == ResourcePermission.owner;
+    return permission == ResourcePermission.owner ||
+        permission == ResourcePermission.admin;
   }
 
   /// Kan användaren arkivera/återaktivera resursen?
@@ -55,6 +68,12 @@ class ResourcePermissionHelper {
         return 'editor';
       case ResourcePermission.viewer:
         return 'viewer';
+      case ResourcePermission.admin:
+        return 'admin';
+      case ResourcePermission.write:
+        return 'write';
+      case ResourcePermission.read:
+        return 'read';
     }
   }
 
@@ -67,6 +86,12 @@ class ResourcePermissionHelper {
         return ResourcePermission.editor;
       case 'viewer':
         return ResourcePermission.viewer;
+      case 'admin':
+        return ResourcePermission.admin;
+      case 'write':
+        return ResourcePermission.write;
+      case 'read':
+        return ResourcePermission.read;
       default:
         throw ArgumentError('Okänd ResourcePermission: $value');
     }
@@ -81,6 +106,12 @@ class ResourcePermissionHelper {
         return 'Redigerare - kan ändra innehåll';
       case ResourcePermission.viewer:
         return 'Betraktare - kan bara se';
+      case ResourcePermission.admin:
+        return 'Administrator - kan redigera och bjuda in andra';
+      case ResourcePermission.write:
+        return 'Skrivare - kan ändra innehåll';
+      case ResourcePermission.read:
+        return 'Läsare - kan bara se';
     }
   }
 
@@ -93,6 +124,12 @@ class ResourcePermissionHelper {
         return 'Redigerare';
       case ResourcePermission.viewer:
         return 'Betraktare';
+      case ResourcePermission.admin:
+        return 'Administrator';
+      case ResourcePermission.write:
+        return 'Skrivare';
+      case ResourcePermission.read:
+        return 'Läsare';
     }
   }
 
@@ -105,14 +142,23 @@ class ResourcePermissionHelper {
         return '✏️'; // Penna för redigerare
       case ResourcePermission.viewer:
         return '👀'; // Ögon för betraktare
+      case ResourcePermission.admin:
+        return '🔧'; // Skiftnyckel för admin
+      case ResourcePermission.write:
+        return '📝'; // Anteckningsblock för skrivare
+      case ResourcePermission.read:
+        return '📖'; // Bok för läsare
     }
   }
 
   /// Få alla tillgängliga behörigheter som kan tilldelas
   static List<ResourcePermission> getAssignablePermissions() {
     return [
+      ResourcePermission.admin,
       ResourcePermission.editor,
+      ResourcePermission.write,
       ResourcePermission.viewer,
+      ResourcePermission.read,
     ]; // Owner kan inte tilldelas, bara ägas
   }
 
@@ -122,9 +168,12 @@ class ResourcePermissionHelper {
     ResourcePermission permission2,
   ) {
     const hierarchy = {
-      ResourcePermission.viewer: 0,
-      ResourcePermission.editor: 1,
-      ResourcePermission.owner: 2,
+      ResourcePermission.read: 0,
+      ResourcePermission.viewer: 1,
+      ResourcePermission.write: 2,
+      ResourcePermission.editor: 3,
+      ResourcePermission.admin: 4,
+      ResourcePermission.owner: 5,
     };
 
     return (hierarchy[permission1] ?? 0) > (hierarchy[permission2] ?? 0);

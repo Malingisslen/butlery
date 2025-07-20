@@ -4,18 +4,17 @@ import 'package:flutter/material.dart';
 import '../../models/friend_category.dart';
 import '../../models/user_profile.dart';
 import '../../models/invitations/invitation_target.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../viewmodels/recipe_form_viewmodel.dart';
 
-// Import all split modules
-import '../social/avatar/avatar_widgets.dart';
-import '../social/collaborative/collaborative_indicators.dart';
-import '../social/groups/group_dialogs.dart';
-import '../social/invitations/invitation_target_displays.dart';
-import '../social/invitations/invitation_target_inputs.dart';
+// Import facade
+import 'social/social_facade.dart';
 
 // ✅ Re-export ImageSize for easier imports
 export '../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
+
+// Import ImageSize for local usage
+import '../user/user_display_widgets.dart' show ImageSize;
 
 /// 🚀 SocialComponents - The ultimate social widget API
 ///
@@ -60,16 +59,23 @@ class SocialComponents {
     Widget? overlay,
     AlignmentGeometry overlayAlignment = Alignment.bottomRight,
   }) {
-    return AvatarWidgets.avatar(
+    return SocialFacade.avatar(
       user: user,
       imageUrl: imageUrl,
       displayName: displayName,
       size: size,
       onTap: onTap,
-      showStatus: showOnlineStatus,
+      showOnlineStatus: showOnlineStatus,
       isOnline: isOnline,
+      padding: padding,
+      showBorder: showBorder,
       borderColor: borderColor,
-      clickable: isClickable,
+      showPlaceholder: showPlaceholder,
+      placeholderText: placeholderText,
+      customSize: customSize,
+      isClickable: isClickable,
+      overlay: overlay,
+      overlayAlignment: overlayAlignment,
     );
   }
 
@@ -87,17 +93,18 @@ class SocialComponents {
     Color? backgroundColor,
     bool showBorder = true,
   }) {
-    return AvatarWidgets.userCard(
+    return SocialFacade.userCard(
       user: user,
       onTap: onTap,
-      actions: trailing,
+      trailing: trailing,
       avatarSize: avatarSize,
-      showStatus: showOnlineStatus,
+      showOnlineStatus: showOnlineStatus,
       isOnline: isOnline,
       padding: padding,
       showSubtitle: showSubtitle,
       subtitle: subtitle,
       backgroundColor: backgroundColor,
+      showBorder: showBorder,
     );
   }
 
@@ -113,12 +120,12 @@ class SocialComponents {
     bool enabled = true,
     Color? backgroundColor,
   }) {
-    return AvatarWidgets.userListTile(
+    return SocialFacade.userListTile(
       user: user,
       onTap: onTap,
       trailing: trailing,
       avatarSize: avatarSize,
-      showStatus: showOnlineStatus,
+      showOnlineStatus: showOnlineStatus,
       isOnline: isOnline,
       subtitle: subtitle,
       enabled: enabled,
@@ -135,7 +142,7 @@ class SocialComponents {
     Color? color,
     EdgeInsets? padding,
   }) {
-    return CollaborativeIndicators.collaborativeStatusBadge(
+    return SocialFacade.collaborativeStatusBadge(
       text: text,
       icon: icon,
       color: color,
@@ -154,7 +161,7 @@ class SocialComponents {
     Widget? trailing,
     BuildContext? context,
   }) {
-    return CollaborativeIndicators.collaborativeBanner(
+    return SocialFacade.collaborativeBanner(
       title: title,
       subtitle: subtitle,
       contentId: contentId,
@@ -171,7 +178,7 @@ class SocialComponents {
     required BuildContext context,
     required RecipeFormViewModel viewModel,
   }) {
-    return CollaborativeIndicators.smartPermissionsBanner(
+    return SocialFacade.smartPermissionsBanner(
       context: context,
       viewModel: viewModel,
     );
@@ -187,11 +194,14 @@ class SocialComponents {
     int maxParticipants = 3,
     VoidCallback? onTap,
   }) {
-    return CollaborativeIndicators.collaborativeAppBar(
+    return SocialFacade.collaborativeAppBar(
       context: context,
       contentId: contentId,
       recipe: recipe,
-      title: 'Redigera recept',
+      showParticipants: showParticipants,
+      showStatus: showStatus,
+      maxParticipants: maxParticipants,
+      onTap: onTap,
     );
   }
 
@@ -204,12 +214,13 @@ class SocialComponents {
     EdgeInsets? padding,
     bool showAnimation = true,
   }) {
-    return CollaborativeIndicators.smartCollaborativeBanner(
+    return SocialFacade.smartCollaborativeBanner(
       context: context,
       contentId: contentId,
       recipe: recipe,
-      title: 'Du redigerar tillsammans med andra',
-      subtitle: 'Ändringar synkas automatiskt med andra deltagare',
+      showIfNotCollaborative: showIfNotCollaborative,
+      padding: padding,
+      showAnimation: showAnimation,
     );
   }
 
@@ -221,11 +232,12 @@ class SocialComponents {
     bool showAnimation = true,
     VoidCallback? onTap,
   }) {
-    return CollaborativeIndicators.smartCollaborativeBanner(
+    return SocialFacade.collaborativeStatusIndicator(
       context: context,
       contentId: contentId,
-      title: 'Du redigerar tillsammans med andra',
-      subtitle: 'Ändringar synkas automatiskt med andra deltagare',
+      showLabel: showLabel,
+      showAnimation: showAnimation,
+      onTap: onTap,
     );
   }
 
@@ -239,11 +251,14 @@ class SocialComponents {
     bool showAnimation = true,
     VoidCallback? onTap,
   }) {
-    return CollaborativeIndicators.collaborativeParticipants(
+    return SocialFacade.participantsList(
       context: context,
       contentId: contentId,
       maxVisible: maxVisible,
-      avatarSize: avatarSize == ImageSize.small ? 24 : 32,
+      avatarSize: avatarSize,
+      showCount: showCount,
+      showAnimation: showAnimation,
+      onTap: onTap,
     );
   }
 
@@ -261,20 +276,16 @@ class SocialComponents {
     bool showCreateNew = true,
     VoidCallback? onCreateNew,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title != null) Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: categories.map((category) => FilterChip(
-            label: Text(category.name),
-            selected: selectedCategoryIds.contains(category.id),
-            onSelected: (_) => onCategoryToggled(category.id),
-          )).toList(),
-        ),
-      ],
+    return SocialFacade.friendCategorySelector(
+      categories: categories,
+      selectedCategoryIds: selectedCategoryIds,
+      onCategoryToggled: onCategoryToggled,
+      allowMultipleSelection: allowMultipleSelection,
+      title: title,
+      padding: padding,
+      showSelectAll: showSelectAll,
+      showCreateNew: showCreateNew,
+      onCreateNew: onCreateNew,
     );
   }
 
@@ -286,10 +297,12 @@ class SocialComponents {
     bool showCount = true,
     bool enabled = true,
   }) {
-    return FilterChip(
-      label: Text(category.name),
-      selected: isSelected,
-      onSelected: enabled ? (_) => onTap() : null,
+    return SocialFacade.friendCategoryChip(
+      category: category,
+      isSelected: isSelected,
+      onTap: onTap,
+      showCount: showCount,
+      enabled: enabled,
     );
   }
 
@@ -303,9 +316,12 @@ class SocialComponents {
     String? initialDescription,
     VoidCallback? onSuccess,
   }) {
-    return GroupDialogs.showCreateGroupDialog(
+    return SocialFacade.showCreateGroupDialog(
       context,
       preSelectedMembers: preSelectedMembers,
+      initialName: initialName,
+      initialDescription: initialDescription,
+      onSuccess: onSuccess,
     );
   }
 
@@ -317,9 +333,12 @@ class SocialComponents {
     String? currentDescription,
     VoidCallback? onSuccess,
   }) {
-    return GroupDialogs.showEditGroupDialog(
+    return SocialFacade.showEditGroupDialog(
       context,
       group: group,
+      currentName: currentName,
+      currentDescription: currentDescription,
+      onSuccess: onSuccess,
     );
   }
 
@@ -330,9 +349,11 @@ class SocialComponents {
     String? groupName,
     VoidCallback? onSuccess,
   }) {
-    return GroupDialogs.showDeleteGroupDialog(
+    return SocialFacade.showDeleteGroupDialog(
       context,
       group: group,
+      groupName: groupName,
+      onSuccess: onSuccess,
     );
   }
 
@@ -344,10 +365,12 @@ class SocialComponents {
     String? groupName,
     VoidCallback? onSuccess,
   }) {
-    return GroupDialogs.showRemoveMemberDialog(
+    return SocialFacade.showRemoveMemberDialog(
       context,
       group: group,
       member: member,
+      groupName: groupName,
+      onSuccess: onSuccess,
     );
   }
 
@@ -362,14 +385,13 @@ class SocialComponents {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
-    return Card(
-      child: ListTile(
-        leading: showTypeIcon ? Icon(getInvitationTargetTypeIcon(target)) : null,
-        title: Text(target.displayName),
-        subtitle: showStatus ? Text(target.type.name) : null,
-        trailing: trailing,
-        onTap: onTap,
-      ),
+    return SocialFacade.invitationTargetDisplay(
+      target: target,
+      avatarSize: avatarSize,
+      showStatus: showStatus,
+      showTypeIcon: showTypeIcon,
+      onTap: onTap,
+      trailing: trailing,
     );
   }
 
@@ -381,14 +403,12 @@ class SocialComponents {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
-    return Card(
-      child: ListTile(
-        leading: showTypeIcon ? Icon(getInvitationTargetTypeIcon(target)) : null,
-        title: Text(target.displayName),
-        subtitle: showStatus ? Text(target.type.name) : null,
-        trailing: trailing,
-        onTap: onTap,
-      ),
+    return SocialFacade.targetCard(
+      target: target,
+      showStatus: showStatus,
+      showTypeIcon: showTypeIcon,
+      onTap: onTap,
+      trailing: trailing,
     );
   }
 
@@ -398,10 +418,10 @@ class SocialComponents {
     bool showTypeIcon = true,
     VoidCallback? onTap,
   }) {
-    return ActionChip(
-      avatar: showTypeIcon ? Icon(getInvitationTargetTypeIcon(target)) : null,
-      label: Text(target.displayName),
-      onPressed: onTap,
+    return SocialFacade.targetChip(
+      target: target,
+      showTypeIcon: showTypeIcon,
+      onTap: onTap,
     );
   }
 
@@ -413,12 +433,12 @@ class SocialComponents {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
-    return ListTile(
-      leading: showTypeIcon ? Icon(getInvitationTargetTypeIcon(target)) : null,
-      title: Text(target.displayName),
-      subtitle: showStatus ? Text(target.type.name) : null,
-      trailing: trailing,
+    return SocialFacade.targetListTile(
+      target: target,
+      showStatus: showStatus,
+      showTypeIcon: showTypeIcon,
       onTap: onTap,
+      trailing: trailing,
     );
   }
 
@@ -427,9 +447,9 @@ class SocialComponents {
     required InvitationTarget target,
     bool showTypeIcon = true,
   }) {
-    return Chip(
-      avatar: showTypeIcon ? Icon(getInvitationTargetTypeIcon(target)) : null,
-      label: Text(target.displayName),
+    return SocialFacade.targetBadge(
+      target: target,
+      showTypeIcon: showTypeIcon,
     );
   }
 
@@ -440,18 +460,11 @@ class SocialComponents {
     bool showTypeIcon = true,
     Function(InvitationTarget)? onTap,
   }) {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: targets.length,
-      itemBuilder: (context, index) {
-        final target = targets[index];
-        return targetListTile(
-          target: target,
-          showStatus: showStatus,
-          showTypeIcon: showTypeIcon,
-          onTap: onTap != null ? () => onTap(target) : null,
-        );
-      },
+    return SocialFacade.targetList(
+      targets: targets,
+      showStatus: showStatus,
+      showTypeIcon: showTypeIcon,
+      onTap: onTap,
     );
   }
 
@@ -462,22 +475,11 @@ class SocialComponents {
     bool showTypeIcon = true,
     Function(InvitationTarget)? onTap,
   }) {
-    return GridView.builder(
-      shrinkWrap: true,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 3,
-      ),
-      itemCount: targets.length,
-      itemBuilder: (context, index) {
-        final target = targets[index];
-        return targetCard(
-          target: target,
-          showStatus: showStatus,
-          showTypeIcon: showTypeIcon,
-          onTap: onTap != null ? () => onTap(target) : null,
-        );
-      },
+    return SocialFacade.targetGrid(
+      targets: targets,
+      showStatus: showStatus,
+      showTypeIcon: showTypeIcon,
+      onTap: onTap,
     );
   }
 
@@ -494,7 +496,7 @@ class SocialComponents {
     bool showSearchBar = true,
     String? searchHint,
   }) {
-    return InvitationTargetInputs.invitationTargetSelector(
+    return SocialFacade.targetSelector(
       availableTargets: availableTargets,
       selectedTargetIds: selectedTargetIds,
       onTargetToggled: onTargetToggled,
@@ -515,12 +517,11 @@ class SocialComponents {
     required Function(InvitationTarget) onTargetToggled,
     bool showTypeIcon = true,
   }) {
-    return Column(
-      children: targets.map((target) => targetChip(
-        target: target,
-        showTypeIcon: showTypeIcon,
-        onTap: () => onTargetToggled(target),
-      )).toList(),
+    return SocialFacade.targetList(
+      targets: targets,
+      showStatus: true,
+      showTypeIcon: showTypeIcon,
+      onTap: onTargetToggled,
     );
   }
 
@@ -531,12 +532,11 @@ class SocialComponents {
     required Function(InvitationTarget) onTargetSelected,
     bool showTypeIcon = true,
   }) {
-    return Column(
-      children: targets.map((target) => targetChip(
-        target: target,
-        showTypeIcon: showTypeIcon,
-        onTap: () => onTargetSelected(target),
-      )).toList(),
+    return SocialFacade.targetList(
+      targets: targets,
+      showStatus: true,
+      showTypeIcon: showTypeIcon,
+      onTap: onTargetSelected,
     );
   }
 
@@ -546,12 +546,12 @@ class SocialComponents {
     String? hint,
     String? initialValue,
   }) {
-    return TextField(
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: hint ?? 'Sök...',
-        prefixIcon: Icon(Icons.search),
-      ),
+    return SocialFacade.targetSelector(
+      availableTargets: [],
+      selectedTargetIds: {},
+      onTargetToggled: (_) {},
+      searchHint: hint,
+      showSearchBar: true,
     );
   }
 
@@ -561,13 +561,11 @@ class SocialComponents {
     required Set<String> selectedTypes,
     required Function(String) onTypeToggled,
   }) {
-    return Wrap(
-      spacing: 8,
-      children: availableTypes.map((type) => FilterChip(
-        label: Text(type),
-        selected: selectedTypes.contains(type),
-        onSelected: (_) => onTypeToggled(type),
-      )).toList(),
+    return SocialFacade.targetSelector(
+      availableTargets: [],
+      selectedTargetIds: {},
+      onTargetToggled: (_) {},
+      showSearchBar: false,
     );
   }
 
@@ -577,22 +575,10 @@ class SocialComponents {
     required VoidCallback onDeselectAll,
     required VoidCallback onInvertSelection,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        TextButton(
-          onPressed: onSelectAll,
-          child: Text('Välj alla'),
-        ),
-        TextButton(
-          onPressed: onDeselectAll,
-          child: Text('Avmarkera alla'),
-        ),
-        TextButton(
-          onPressed: onInvertSelection,
-          child: Text('Invertera'),
-        ),
-      ],
+    return SocialFacade.quickSelectionButtons(
+      onSelectAll: onSelectAll,
+      onDeselectAll: onDeselectAll,
+      onInvertSelection: onInvertSelection,
     );
   }
 
@@ -607,15 +593,11 @@ class SocialComponents {
     EdgeInsets? padding,
     bool shrinkWrap = false,
   }) {
-    return InvitationTargetDisplays.invitationTargetList(
+    return SocialFacade.targetList(
       targets: targets,
-      avatarSize: avatarSize,
       showStatus: showStatus,
       showTypeIcon: showTypeIcon,
       onTap: onTap,
-      trailingBuilder: trailingBuilder,
-      padding: padding,
-      shrinkWrap: shrinkWrap,
     );
   }
 
@@ -632,7 +614,7 @@ class SocialComponents {
     bool showSearchBar = true,
     String? searchHint,
   }) {
-    return InvitationTargetInputs.invitationTargetSelector(
+    return SocialFacade.targetSelector(
       availableTargets: availableTargets,
       selectedTargetIds: selectedTargetIds,
       onTargetToggled: onTargetToggled,
@@ -654,12 +636,10 @@ class SocialComponents {
     bool showTypeIcon = true,
     bool enabled = true,
   }) {
-    return InvitationTargetInputs.invitationTargetChip(
+    return SocialFacade.targetChip(
       target: target,
-      isSelected: isSelected,
-      onTap: onTap,
       showTypeIcon: showTypeIcon,
-      enabled: enabled,
+      onTap: onTap,
     );
   }
 
@@ -677,15 +657,16 @@ class SocialComponents {
     EdgeInsets? padding,
     double? iconSize,
   }) {
-    return ElevatedButton.icon(
-      onPressed: enabled && !isLoading ? onPressed : null,
-      icon: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(icon, size: iconSize),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        padding: padding,
-      ),
+    return SocialFacade.socialActionButton(
+      icon: icon,
+      label: label,
+      onPressed: onPressed,
+      enabled: enabled,
+      isLoading: isLoading,
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      padding: padding,
+      iconSize: iconSize,
     );
   }
 
@@ -699,19 +680,14 @@ class SocialComponents {
     TextStyle? valueStyle,
     TextStyle? labelStyle,
   }) {
-    final children = stats.entries.map((entry) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(entry.value.toString(), style: valueStyle),
-          if (showLabels) Text(entry.key, style: labelStyle),
-        ],
-      );
-    }).toList();
-    
-    return Padding(
-      padding: padding ?? EdgeInsets.zero,
-      child: horizontal ? Row(children: children) : Column(children: children),
+    return SocialFacade.socialStats(
+      stats: stats,
+      showLabels: showLabels,
+      horizontal: horizontal,
+      padding: padding,
+      textColor: textColor,
+      valueStyle: valueStyle,
+      labelStyle: labelStyle,
     );
   }
 
@@ -719,51 +695,39 @@ class SocialComponents {
 
   /// Format user display name
   static String formatUserDisplayName(UserProfile? user, {String fallback = 'Okänd användare'}) {
-    return user?.displayName ?? fallback;
+    return SocialFacade.formatUserDisplayName(user, fallback: fallback);
   }
 
   /// Check if user is online
   static bool isUserOnline(UserProfile? user) {
-    return user?.isOnline ?? false;
+    return SocialFacade.isUserOnline(user);
   }
 
   /// Get user avatar URL
   static String? getUserAvatarUrl(UserProfile? user) {
-    return user?.avatarUrl;
+    return SocialFacade.getUserAvatarUrl(user);
   }
 
   /// Format invitation target display name
   static String formatInvitationTargetDisplayName(InvitationTarget target) {
-    return target.displayName;
+    return SocialFacade.formatInvitationTargetDisplayName(target);
   }
 
   /// Get invitation target type icon
   static IconData getInvitationTargetTypeIcon(InvitationTarget target) {
-    switch (target.type) {
-      case InvitationTargetType.individual:
-        return Icons.person;
-      case InvitationTargetType.group:
-        return Icons.group;
-    }
+    return SocialFacade.getInvitationTargetTypeIcon(target);
   }
 
   // ===== INVITATION TARGET STATES =====
 
   /// Build target list loading state
   static Widget targetListLoading() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   /// Build target card loading state
   static Widget targetCardLoading() {
-    return const Card(
-      child: ListTile(
-        leading: CircularProgressIndicator(),
-        title: Text('Laddar...'),
-      ),
-    );
+    return const Card(child: Center(child: CircularProgressIndicator()));
   }
 
   /// Build target loading error state
@@ -777,12 +741,12 @@ class SocialComponents {
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red),
           const SizedBox(height: 16),
-          Text(message ?? 'Kunde inte ladda mål'),
+          Text(message ?? 'Ett fel inträffade'),
           if (onRetry != null) ...[
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
-              child: Text('Försök igen'),
+              child: const Text('Försök igen'),
             ),
           ],
         ],
@@ -826,14 +790,12 @@ class SocialComponents {
         children: [
           Icon(Icons.search_off, size: 48, color: Colors.grey),
           const SizedBox(height: 16),
-          Text(searchQuery != null
-              ? 'Inga resultat för "$searchQuery"'
-              : 'Inga sökresultat'),
+          Text('Inga resultat för "${searchQuery ?? ''}"'),
           if (onClearSearch != null) ...[
             const SizedBox(height: 16),
-            TextButton(
+            ElevatedButton(
               onPressed: onClearSearch,
-              child: Text('Rensa sökning'),
+              child: const Text('Rensa sökning'),
             ),
           ],
         ],
@@ -857,7 +819,7 @@ class SocialComponents {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onContinue,
-              child: Text('Fortsätt'),
+              child: const Text('Fortsätt'),
             ),
           ],
         ],

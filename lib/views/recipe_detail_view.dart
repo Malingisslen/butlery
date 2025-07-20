@@ -2,12 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
 import '../widgets/common/layout_components.dart';
 import '../widgets/common/social_components.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
 import '../core/injection.dart';
 
 // Import all recipe detail modules
@@ -72,13 +74,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         
         return LayoutComponents.mainMenu(
           body: SingleChildScrollView(
-            padding: AppTheme.screenPadding,
+            padding: AppDimensions.screenPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Recipe title
                 _buildHeader(context, viewModel),
-                AppTheme.mediumGap,
+                SizedBox(height: AppDimensions.spacingXl),
                 
                 // Recipe metadata (portions, time, rating, source)
                 RecipeDetailMetadata(
@@ -86,7 +88,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   currentPortions: _actions.currentPortions,
                   isScaled: _actions.currentPortions != recipe.portions,
                 ),
-                AppTheme.mediumGap,
+                SizedBox(height: AppDimensions.spacingXl),
                 
                 // Recipe content (description, tags, images, instructions)
                 RecipeDetailContent(
@@ -113,7 +115,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
                 
                 // Bottom spacing
-                AppTheme.largeGap,
+                SizedBox(height: AppDimensions.spacingXxxl),
               ],
             ),
           ),
@@ -134,8 +136,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   value: 'share',
                   child: Row(
                     children: [
-                      Icon(Icons.share, size: AppTheme.iconSizeAction),
-                      AppTheme.smallHorizontalGap,
+                      Icon(Icons.share, size: AppDimensions.iconSizeAction),
+                      SizedBox(width: AppDimensions.spacingM),
                       Text('Dela'),
                     ],
                   ),
@@ -144,8 +146,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   value: 'share_social',
                   child: Row(
                     children: [
-                      Icon(Icons.people, size: AppTheme.iconSizeAction),
-                      AppTheme.smallHorizontalGap,
+                      Icon(Icons.people, size: AppDimensions.iconSizeAction),
+                      SizedBox(width: AppDimensions.spacingM),
                       Text('Dela med vänner'),
                     ],
                   ),
@@ -156,13 +158,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     children: [
                       Icon(
                         Icons.delete,
-                        size: AppTheme.iconSizeAction,
-                        color: AppTheme.errorColor,
+                        size: AppDimensions.iconSizeAction,
+                        color: AppColors.error,
                       ),
-                      AppTheme.smallHorizontalGap,
+                      SizedBox(width: AppDimensions.spacingM),
                       Text(
                         'Ta bort',
-                        style: TextStyle(color: AppTheme.errorColor),
+                        style: TextStyle(color: AppColors.error),
                       ),
                     ],
                   ),
@@ -178,11 +180,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   Widget _buildHeader(BuildContext context, RecipeDetailViewModel viewModel) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,8 +192,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           // Recipe title
           Text(
             viewModel.recipe.title,
-            style: AppTheme.sectionTitleStyle.copyWith(
-              fontSize: AppTheme.displaySmall.fontSize,
+            style: AppTextStyles.sectionTitleStyle.copyWith(
+              fontSize: AppTextStyles.displaySmall.fontSize,
             ),
           ),
           

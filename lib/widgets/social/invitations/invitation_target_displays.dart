@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../user/user_display_widgets.dart';
 
 /// Invitation target display widgets
@@ -56,37 +58,43 @@ class InvitationTargetDisplays {
     BoxDecoration decoration;
 
     if (isDisabled) {
-      decoration = AppTheme.cardDecoration.copyWith(
-        color: AppTheme.cardColor.withValues(alpha: 0.5),
-        border: Border.all(color: AppTheme.dividerColor),
+      decoration = BoxDecoration(
+        color: AppColors.cardWhite.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
       );
     } else if (isSelected) {
-      decoration = AppTheme.cardDecoration.copyWith(
-        color: AppTheme.primaryColor.withValues(alpha: 0.1),
-        border: Border.all(color: AppTheme.primaryColor, width: 2),
+      decoration = BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.primaryBlue, width: 2),
       );
     } else {
-      decoration = AppTheme.cardDecoration;
+      decoration = BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      );
     }
 
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingSm,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingS,
+        vertical: AppDimensions.spacingXs,
       ),
       decoration: decoration,
       child: Material(
-        color: AppTheme.transparent,
+        color: Colors.transparent,
         child: InkWell(
           onTap: isDisabled ? null : onTap,
-          borderRadius: AppTheme.largeRadius,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           child: Padding(
-            padding: AppTheme.cardPadding,
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
                 // Emoji container
                 _buildEmojiContainer(target),
-                AppTheme.smallHorizontalGap,
+                const SizedBox(width: AppDimensions.spacingM),
 
                 // Name and description
                 Expanded(
@@ -112,15 +120,15 @@ class InvitationTargetDisplays {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: AppTheme.chipRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Material(
-        color: AppTheme.transparent,
+        color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppTheme.chipRadius,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
@@ -129,7 +137,7 @@ class InvitationTargetDisplays {
                 // Emoji
                 Text(
                   target.displayEmoji,
-                  style: TextStyle(fontSize: AppTheme.bodyStyle.fontSize),
+                  style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize),
                 ),
                 const SizedBox(width: 4),
 
@@ -137,7 +145,7 @@ class InvitationTargetDisplays {
                 Flexible(
                   child: Text(
                     target.displayName,
-                    style: AppTheme.chipLabelStyle,
+                    style: AppTextStyles.labelSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -149,7 +157,7 @@ class InvitationTargetDisplays {
                   const SizedBox(width: 4),
                   Text(
                     '(${target.memberCount})',
-                    style: AppTheme.captionStyle,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
 
@@ -161,7 +169,7 @@ class InvitationTargetDisplays {
                     child: Icon(
                       Icons.close,
                       size: 16,
-                      color: AppTheme.textSecondary,
+                      color: AppColors.textMedium,
                     ),
                   ),
                 ],
@@ -182,7 +190,7 @@ class InvitationTargetDisplays {
   }) {
     return ListTile(
       onTap: onTap,
-      contentPadding: AppTheme.listItemPadding,
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
 
       // Leading: Emoji container
       leading: _buildSmallEmojiContainer(target),
@@ -190,7 +198,7 @@ class InvitationTargetDisplays {
       // Title: Name
       title: Text(
         target.displayName,
-        style: AppTheme.cardTitleStyle,
+        style: AppTextStyles.titleMedium,
         overflow: TextOverflow.ellipsis,
       ),
 
@@ -198,7 +206,7 @@ class InvitationTargetDisplays {
       subtitle: showSubtitle && target.subtitle.isNotEmpty
           ? Text(
               target.subtitle,
-              style: AppTheme.subtitleStyle,
+              style: AppTextStyles.titleMedium,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             )
@@ -226,7 +234,11 @@ class InvitationTargetDisplays {
     }
 
     return Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -235,7 +247,7 @@ class InvitationTargetDisplays {
             ? Divider(
                 height: 1,
                 thickness: 1,
-                color: AppTheme.dividerColor,
+                color: AppColors.divider,
               )
             : const SizedBox.shrink(),
         itemBuilder: (context, index) {
@@ -257,13 +269,13 @@ class InvitationTargetDisplays {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: AppTheme.smallRadius,
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Center(
         child: Text(
           target.displayEmoji,
-          style: TextStyle(fontSize: AppTheme.iconSizeInfo.toDouble()),
+          style: TextStyle(fontSize: AppDimensions.iconSizeM.toDouble()),
         ),
       ),
     );
@@ -275,13 +287,13 @@ class InvitationTargetDisplays {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: AppTheme.smallRadius,
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Center(
         child: Text(
           target.displayEmoji,
-          style: TextStyle(fontSize: AppTheme.bodyStyle.fontSize),
+          style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize),
         ),
       ),
     );
@@ -290,16 +302,16 @@ class InvitationTargetDisplays {
   /// Build target info (name and description)
   static Widget _buildTargetInfo(InvitationTarget target, bool isDisabled) {
     final nameStyle = isDisabled
-        ? AppTheme.cardTitleStyle.copyWith(
-            color: AppTheme.textTertiary,
+        ? AppTextStyles.titleMedium.copyWith(
+            color: AppColors.textLight,
           )
-        : AppTheme.cardTitleStyle;
+        : AppTextStyles.titleMedium;
 
     final descriptionStyle = isDisabled
-        ? AppTheme.subtitleStyle.copyWith(
-            color: AppTheme.textTertiary,
+        ? AppTextStyles.titleMedium.copyWith(
+            color: AppColors.textLight,
           )
-        : AppTheme.subtitleStyle;
+        : AppTextStyles.titleMedium;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,14 +341,14 @@ class InvitationTargetDisplays {
       case InvitationTargetType.individual:
         return Icon(
           Icons.person,
-          size: AppTheme.iconSizeInfo,
-          color: AppTheme.textSecondary,
+          size: AppDimensions.iconSizeM,
+          color: AppColors.textMedium,
         );
       case InvitationTargetType.group:
         return Icon(
           Icons.group,
-          size: AppTheme.iconSizeInfo,
-          color: AppTheme.textSecondary,
+          size: AppDimensions.iconSizeM,
+          color: AppColors.textMedium,
         );
     }
   }
@@ -344,26 +356,30 @@ class InvitationTargetDisplays {
   /// Build empty state for target lists
   static Widget _buildEmptyTargetList() {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           Icon(
             Icons.people_outline,
-            size: AppTheme.iconSizeEmptyState,
-            color: AppTheme.textTertiary,
+            size: 64,
+            color: AppColors.textLight,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Inga mål valda',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              color: AppTheme.textTertiary,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.textLight,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             'Välj vänner eller grupper att dela med',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
         ],

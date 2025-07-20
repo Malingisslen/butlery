@@ -19,7 +19,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../utils/logger.dart';
-import '../../theme/app_theme.dart';
 
 /// Mixin that provides common Firebase sync functionality to services
 /// 
@@ -55,7 +54,7 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
   Timer? _syncDebounceTimer;
   
   /// Debounce duration for sync operations
-  static const Duration _syncDebounce = AppTheme.wait2s;
+  static const Duration _syncDebounce = Duration(seconds: 2);
   
   /// Queue of pending sync operations
   final Set<String> _pendingSyncIds = {};

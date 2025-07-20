@@ -6,7 +6,9 @@ import '../../viewmodels/create_shared_list_viewmodel.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../services/unified/unified_friends_service.dart';
 import '../../widgets/common/utility_components.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/injection.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
@@ -83,7 +85,7 @@ class _CreateSharedShoppingListViewState
     return AppBar(
       title: const Text('Dela inköpslista'),
       leading: IconButton(
-        icon: AppTheme.actionIcon(context, Icons.close),
+        icon: const Icon(Icons.close),
         onPressed: () => Navigator.pop(context),
       ),
     );
@@ -91,29 +93,40 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildBody(BuildContext context, CreateSharedListViewModel viewModel) {
     return SingleChildScrollView(
-      padding: AppTheme.screenPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header info
           _buildHeaderInfo(context),
-          AppTheme.largeGap,
+          const SizedBox(height: AppDimensions.spacingXl),
 
           // Lista detaljer
           _buildListDetails(context, viewModel),
-          AppTheme.largeGap,
+          const SizedBox(height: AppDimensions.spacingXl),
 
           // Vän selection
           _buildFriendSelection(context, viewModel),
-          AppTheme.largeGap,
+          const SizedBox(height: AppDimensions.spacingXl),
 
           // Info om vad som händer
           _buildInfoSection(context),
 
           // Error display
           if (viewModel.hasError) ...[
-            AppTheme.mediumGap,
-            AppTheme.errorContainer(context, viewModel.error!),
+            const SizedBox(height: AppDimensions.spacingXl),
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingM),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                viewModel.error!,
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+              ),
+            ),
           ],
         ],
       ),
@@ -122,8 +135,12 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildHeaderInfo(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
-      decoration: AppTheme.infoBoxDecoration(context),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundTint,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,22 +148,22 @@ class _CreateSharedShoppingListViewState
             children: [
               Icon(
                 Icons.group,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Skapa delad inköpslista',
-                style: AppTheme.cardTitleStyle.copyWith(
-                  color: AppTheme.primaryColor,
+                style: AppTextStyles.titleMedium.copyWith(
+                  color: AppColors.primaryBlue,
                 ),
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             'Skapa en lista som du och dina vänner kan samarbeta kring i realtid.',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
           ),
         ],
       ),
@@ -160,9 +177,9 @@ class _CreateSharedShoppingListViewState
       children: [
         Text(
           'Lista detaljer',
-          style: AppTheme.sectionTitleStyle,
+          style: AppTextStyles.headlineSmall,
         ),
-        AppTheme.mediumGap,
+        const SizedBox(height: AppDimensions.spacingXl),
 
         // Titel med real-time validation
         TextFormField(
@@ -175,7 +192,7 @@ class _CreateSharedShoppingListViewState
           ),
           onChanged: viewModel.updateTitle,
         ),
-        AppTheme.mediumGap,
+        const SizedBox(height: AppDimensions.spacingXl),
 
         // Beskrivning med validation
         TextFormField(
@@ -201,14 +218,14 @@ class _CreateSharedShoppingListViewState
       children: [
         Text(
           'Välj vänner att dela med',
-          style: AppTheme.sectionTitleStyle,
+          style: AppTextStyles.headlineSmall,
         ),
-        AppTheme.mediumGap,
+        const SizedBox(height: AppDimensions.spacingXl),
         Container(
-          height: AppTheme.containerHeightLarge,
+          height: 200,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: AppTheme.mediumRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           // ✅ MIGRERAD: FriendCategoryManager → UtilityComponents.friendCategoryManager
           child: UtilityComponents.friendCategoryManager(
@@ -224,12 +241,12 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildInfoSection(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withValues(alpha: 0.1),
-        borderRadius: AppTheme.mediumRadius,
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppTheme.successColor.withValues(alpha: 0.3),
+          color: AppColors.success.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -239,27 +256,27 @@ class _CreateSharedShoppingListViewState
             children: [
               Icon(
                 Icons.info_outline,
-                color: AppTheme.successColor,
-                size: AppTheme.iconSizeInfo,
+                color: AppColors.success,
+                size: AppDimensions.iconSizeM,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Vad händer när du delar?',
-                style: AppTheme.formLabelStyle.copyWith(
-                  color: AppTheme.successColor,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.success,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             '• Dina valda vänner får en notifikation\n'
             '• De kan se listan, checka av artiklar och lägga till nya\n'
             '• Alla ändringar synkroniseras i realtid\n'
             '• Du kan hantera behörigheter senare',
-            style: AppTheme.bodyStyle.copyWith(
-              color: AppTheme.successColor,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.success,
             ),
           ),
         ],
@@ -270,13 +287,13 @@ class _CreateSharedShoppingListViewState
   Widget _buildBottomBar(
       BuildContext context, CreateSharedListViewModel viewModel) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           top: BorderSide(
             color: Theme.of(context).dividerColor,
-            width: AppTheme.dividerHeight,
+            width: AppDimensions.borderWidthThin,
           ),
         ),
       ),
@@ -291,13 +308,13 @@ class _CreateSharedShoppingListViewState
                 children: [
                   Text(
                     viewModel.selectedFriendsText,
-                    style: AppTheme.formLabelStyle,
+                    style: AppTextStyles.labelLarge,
                   ),
                   if (viewModel.isTitleValid) ...[
-                    AppTheme.tinyGap,
+                    const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       'Lista: "${viewModel.trimmedTitle}"',
-                      style: AppTheme.captionStyle,
+                      style: AppTextStyles.bodySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -305,16 +322,23 @@ class _CreateSharedShoppingListViewState
                 ],
               ),
             ),
-            AppTheme.mediumHorizontalGap,
+            const SizedBox(width: AppDimensions.spacingM),
 
             SizedBox(
-              width: AppTheme.buttonWidthMedium,
+              width: 120,
               child: FilledButton.icon(
                 onPressed: viewModel.canCreate
                     ? () => _createSharedList(context, viewModel)
                     : null,
                 icon: viewModel.isCreating
-                    ? AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight)
+                    ? SizedBox(
+                        width: AppDimensions.iconSizeS,
+                        height: AppDimensions.iconSizeS,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
+                        ),
+                      )
                     : const Icon(Icons.group_add),
                 label: Text(viewModel.createButtonText),
               ),

@@ -14,7 +14,9 @@ import '../../services/search_service.dart';
 import '../../services/offline_service.dart' as offline_service;
 import '../../widgets/common/social_components.dart';
 import '../../services/user_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
 import '../../core/constants/routes.dart';
@@ -132,7 +134,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Avsluta'),
           ),
@@ -226,13 +228,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 top: 0,
                 right: 0,
                 child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingXs),
+                  padding: EdgeInsets.all(AppDimensions.spacingXs),
                   decoration: BoxDecoration(
-                    color: AppTheme.errorColor,
+                    color: AppColors.error,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).colorScheme.surface,
-                      width: AppTheme.strokeWidth2,
+                      width: AppDimensions.borderWidthThick,
                     ),
                   ),
                   constraints: const BoxConstraints(
@@ -241,8 +243,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ),
                   child: Text(
                     totalNotifications > 99 ? '99+' : '$totalNotifications',
-                    style: AppTheme.microText.copyWith(
-                      color: AppTheme.neutralLight,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.neutralLight,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -278,7 +280,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
           // ✅ UPPDATERAD: USER AVATAR med notification badge
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingXs),
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
             child: _buildUserAvatarWithBadge(),
           ),
 
@@ -298,8 +300,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     right: 0,
                     top: 0,
                     child: Container(
-                      width: AppTheme.spacingSm,
-                      height: AppTheme.spacingSm,
+                      width: AppDimensions.spacingS,
+                      height: AppDimensions.spacingS,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.error,
                         shape: BoxShape.circle,
@@ -319,7 +321,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Error indicator
           if (viewModel.hasError)
             IconButton(
-              icon: AppTheme.errorIcon(context),
+              icon: Icon(Icons.error, color: AppColors.error),
               onPressed: () {
                 SnackBarUtils.showError(context, viewModel.error!);
               },
@@ -424,12 +426,25 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (viewModel.hasError) {
       return Center(
         child: Padding(
-          padding: AppTheme.screenPadding,
+          padding: AppDimensions.screenPadding,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppTheme.errorContainer(context, viewModel.error!),
-              AppTheme.mediumGap,
+              Container(
+                padding: EdgeInsets.all(AppDimensions.paddingM),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.error),
+                ),
+                child: Text(
+                  viewModel.error!,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: () {
                   viewModel.clearError();
@@ -479,7 +494,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         }
       },
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+        padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
         itemCount: recipes.length,
         itemBuilder: (context, index) {
           final recipe = recipes[index];
@@ -487,8 +502,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           return Padding(
             key: ValueKey(recipe.id),
             padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingSm,
-              vertical: AppTheme.spacingXs,
+              horizontal: AppDimensions.spacingS,
+              vertical: AppDimensions.spacingXs,
             ),
             child: ContentCard.recipe(
               recipe: recipe,
@@ -526,13 +541,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
-          SizedBox(width: AppTheme.spacingSm),
+          SizedBox(width: AppDimensions.spacingS),
           Text(label),
           const Spacer(),
           if (isSelected)
             Icon(
               sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-              size: AppTheme.iconSizeInfo,
+              size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.primary,
             ),
         ],

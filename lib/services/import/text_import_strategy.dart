@@ -16,7 +16,7 @@
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
 import 'package:uuid/uuid.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import 'import_strategy.dart';
 
 /// Strategy for importing recipes from text content
@@ -253,20 +253,24 @@ Gör så här:
     final rating = extractRating(text);
 
     return Recipe(
-      id: _uuid.v4(),
-      title: recipeName,
-      description: description,
-      ingredients: ingredients.isNotEmpty ? ingredients : ['Ingen ingrediensinformation'],
-      instructions: instructions.isNotEmpty ? instructions : ['Ingen instruktionsinformation'],
-      mealType: _guessMealType('$recipeName $description'),
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      imageUrls: [],
-      tags: _extractTags(text),
-      sourceUrl: 'Importerat från text',
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      core: RecipeCore(
+        id: _uuid.v4(),
+        title: recipeName,
+        description: description,
+        ingredients: ingredients.isNotEmpty ? ingredients : ['Ingen ingrediensinformation'],
+        instructions: instructions.isNotEmpty ? instructions : ['Ingen instruktionsinformation'],
+        imageUrls: [],
+        mealType: _guessMealType('$recipeName $description'),
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: _extractTags(text),
+        sourceUrl: 'Importerat från text',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        createdBy: '',
+      ),
+      type: RecipeType.personal,
     );
   }
 

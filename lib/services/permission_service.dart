@@ -17,7 +17,7 @@
 
 import '../models/permissions/resource_permission.dart';
 import '../models/permissions/edit_mode.dart';
-import '../models/unified/unified_recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/unified/unified_shopping_list.dart';
 import '../models/user_profile.dart';
 import '../services/auth_service.dart';
@@ -135,7 +135,7 @@ class PermissionService {
       if (recipe == null) return false;
       
       // Only owner can delete
-      return isOwner(recipe.ownerId);
+      return isOwner(recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '');
     });
   }
 
@@ -168,7 +168,7 @@ class PermissionService {
     final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
     if (recipe == null) return EditMode.noAccess;
     
-    if (isOwner(recipe.ownerId)) return EditMode.owner;
+    if (isOwner(recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '')) return EditMode.owner;
     if (recipe.isCollaborative && canEditRecipe(recipeId)) return EditMode.collaborative;
     if (canViewRecipe(recipeId)) return EditMode.readOnlyWithFork;
     
@@ -195,7 +195,7 @@ class PermissionService {
       final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) return false;
       
-      return isOwner(recipe.ownerId);
+      return isOwner(recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '');
     });
   }
 
@@ -478,23 +478,63 @@ class PermissionService {
   }
 
   /// Check if user has specific permission for a recipe
-  bool _hasRecipePermission(UnifiedRecipe recipe, String userId, String permission) {
-    if (userId == recipe.ownerId) return true; // Owner has all permissions
-    if (recipe.isPersonal) return userId == recipe.ownerId;
+  bool _hasRecipePermission(Recipe recipe, String userId, String permission) {
+    // Check if user is the creator/owner
+    if (userId == recipe.core.createdBy) return true;
+    if (recipe.socialData?.ownerId != null && userId == recipe.socialData!.ownerId) return true;
     
-    final userPermission = recipe.memberPermissions?[userId];
+    if (recipe.isPersonal) return userId == recipe.core.createdBy;
+    
+    final userPermission = recipe.socialData?.memberPermissions?[userId];
     if (userPermission == null) return false;
     
     switch (permission) {
       case 'view':
         return true; // All members can view
       case 'edit':
-        return userPermission.name == 'edit' || userPermission.name == 'admin';
+        return userPermission == ResourcePermission.editor || userPermission == ResourcePermission.owner;
       case 'admin':
-        return userPermission.name == 'admin';
+        return userPermission == ResourcePermission.owner;
       default:
         return false;
     }
+  }
+
+  // ===== ASYNC METHODS FOR COLLABORATIVE FEATURES =====
+
+  /// Get user profile by ID
+  Future<UserProfile?> getUserProfile(String userId) async {
+    try {
+      return await _userService.getUserProfile(userId);
+    } catch (e) {
+      AppLogger.error('Error getting user profile: $e');
+      return null;
+    }
+  }
+
+  /// Get shared recipe information
+  Future<dynamic> getSharedRecipe(String recipeId) async {
+    // This would typically fetch from a shared recipe service
+    // For now, return null as implementation depends on your shared recipe model
+    return null;
+  }
+
+  /// Update recipe permission for a user
+  Future<void> updateRecipePermission(String recipeId, String userId, ResourcePermission permission) async {
+    // Implementation depends on your permission storage system
+    AppLogger.info('Updating recipe permission for $userId to $permission');
+  }
+
+  /// Remove recipe permission for a user
+  Future<void> removeRecipePermission(String recipeId, String userId) async {
+    // Implementation depends on your permission storage system
+    AppLogger.info('Removing recipe permission for $userId');
+  }
+
+  /// Share recipe with specific users
+  Future<void> shareRecipe(String recipeId, List<String> userIds, ResourcePermission permission) async {
+    // Implementation depends on your sharing system
+    AppLogger.info('Sharing recipe $recipeId with $userIds');
   }
 }
 

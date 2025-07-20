@@ -3,11 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../viewmodels/social_recipe_viewmodel.dart';
 import '../../widgets/common/social_components.dart';
 import '../../widgets/common/state_widget.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/injection.dart';
 import '../../services/user_service.dart';
 
@@ -61,33 +63,33 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               },
               child: Container(
                 width: double.infinity,
-                padding: AppTheme.cardPadding,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
-                  borderRadius: AppTheme.cardBorderRadius,
-                  border: Border.all(color: AppTheme.dividerColor),
+                  color: AppColors.cardWhite,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                  border: Border.all(color: AppColors.divider),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.comment_outlined,
-                      color: AppTheme.primaryColor,
-                      size: AppTheme.iconSizeAction,
+                      color: AppColors.primaryBlue,
+                      size: AppDimensions.iconSizeAction,
                     ),
-                    AppTheme.smallHorizontalGap,
+                    const SizedBox(width: AppDimensions.spacingM),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Kommentarer',
-                            style: AppTheme.cardTitleStyle,
+                            style: AppTextStyles.titleMedium,
                           ),
                           if (socialViewModel.comments.isNotEmpty) ...[
-                            AppTheme.tinyGap,
+                            const SizedBox(height: AppDimensions.spacingXs),
                             Text(
                               '${socialViewModel.comments.length} kommentarer',
-                              style: AppTheme.subtitleStyle,
+                              style: AppTextStyles.titleMedium,
                             ),
                           ],
                         ],
@@ -97,8 +99,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       _isCommentsExpanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
-                      color: AppTheme.textSecondary,
-                      size: AppTheme.iconSizeAction,
+                      color: AppColors.textMedium,
+                      size: AppDimensions.iconSizeAction,
                     ),
                   ],
                 ),
@@ -107,7 +109,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
             // Expanded comments section
             if (_isCommentsExpanded) ...[
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
               _buildCommentsSection(socialViewModel),
             ],
           ],
@@ -119,9 +121,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   Widget _buildCommentsSection(SocialRecipeViewModel socialViewModel) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         children: [
@@ -137,7 +139,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             )
           else if (socialViewModel.comments.isEmpty)
             Padding(
-              padding: AppTheme.cardPadding,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: StateWidget.empty(
                 title: 'Inga kommentarer än',
                 subtitle: 'Var först med att kommentera detta recept!',
@@ -150,8 +152,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: socialViewModel.comments.length,
               separatorBuilder: (context, index) => Divider(
-                height: AppTheme.dividerHeight,
-                color: AppTheme.dividerColor,
+                height: AppDimensions.borderWidthThin,
+                color: AppColors.divider,
               ),
               itemBuilder: (context, index) {
                 final comment = socialViewModel.comments[index];
@@ -165,30 +167,30 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
           // Debug info (if enabled)
           if (true) ...[
-            Divider(color: AppTheme.dividerColor),
+            Divider(color: AppColors.divider),
             Container(
-              padding: AppTheme.cardPadding,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Debug Info',
-                    style: AppTheme.captionStyle.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  AppTheme.tinyGap,
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     'Recipe ID: ${widget.recipe.id}',
-                    style: AppTheme.captionStyle,
+                    style: AppTextStyles.bodySmall,
                   ),
                   Text(
                     'Comments: ${socialViewModel.comments.length}',
-                    style: AppTheme.captionStyle,
+                    style: AppTextStyles.bodySmall,
                   ),
                   Text(
                     'Loading: ${socialViewModel.isLoadingComments}',
-                    style: AppTheme.captionStyle,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
@@ -204,15 +206,15 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     
     if (currentUser == null) {
       return Container(
-        padding: AppTheme.cardPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           children: [
             Text(
               'Du måste vara inloggad för att kommentera',
-              style: AppTheme.bodyStyle,
+              style: AppTextStyles.bodyLarge,
               textAlign: TextAlign.center,
             ),
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             FilledButton(
               onPressed: () {
                 // Navigate to login
@@ -226,30 +228,30 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     }
 
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         children: [
           // Reply indicator
           if (_replyingToCommentId != null) ...[
             Container(
               width: double.infinity,
-              padding: AppTheme.cardPadding,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.mediumRadius,
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.reply,
-                    color: AppTheme.primaryColor,
-                    size: AppTheme.iconSizeInfo,
+                    color: AppColors.primaryBlue,
+                    size: AppDimensions.iconSizeM,
                   ),
-                  AppTheme.smallHorizontalGap,
+                  const SizedBox(width: AppDimensions.spacingM),
                   Text(
                     'Svarar $_replyingToUserName',
-                    style: AppTheme.captionStyle.copyWith(
-                      color: AppTheme.primaryColor,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primaryBlue,
                     ),
                   ),
                   const Spacer(),
@@ -262,14 +264,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     },
                     icon: Icon(
                       Icons.close,
-                      color: AppTheme.primaryColor,
-                      size: AppTheme.iconSizeInfo,
+                      color: AppColors.primaryBlue,
+                      size: AppDimensions.iconSizeM,
                     ),
                   ),
                 ],
               ),
             ),
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
           ],
 
           // Comment input
@@ -279,7 +281,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 user: null,
                 size: ImageSize.small,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: TextField(
                   controller: _commentController,
@@ -287,35 +289,35 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     hintText: _replyingToCommentId != null
                         ? 'Skriv ditt svar...'
                         : 'Skriv en kommentar...',
-                    hintStyle: AppTheme.inputHintStyle,
+                    hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
                     border: OutlineInputBorder(
-                      borderRadius: AppTheme.mediumRadius,
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
-                    contentPadding: AppTheme.inputPadding,
+                    contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
                   ),
-                  style: AppTheme.bodyStyle,
+                  style: AppTextStyles.bodyLarge,
                   maxLines: 3,
                   minLines: 1,
                 ),
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               IconButton(
                 onPressed: socialViewModel.isPostingComment
                     ? null
                     : () => _postComment(socialViewModel),
                 icon: socialViewModel.isPostingComment
                     ? SizedBox(
-                        width: AppTheme.iconSizeAction,
-                        height: AppTheme.iconSizeAction,
+                        width: AppDimensions.iconSizeAction,
+                        height: AppDimensions.iconSizeAction,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppTheme.primaryColor,
+                          color: AppColors.primaryBlue,
                         ),
                       )
                     : Icon(
                         Icons.send,
-                        color: AppTheme.primaryColor,
-                        size: AppTheme.iconSizeAction,
+                        color: AppColors.primaryBlue,
+                        size: AppDimensions.iconSizeAction,
                       ),
               ),
             ],
@@ -331,7 +333,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     bool isReply = false,
   }) {
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -342,20 +344,20 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 user: comment.author,
                 size: ImageSize.small,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       comment.author?.displayName ?? 'Anonym',
-                      style: AppTheme.captionStyle.copyWith(
+                      style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       _formatCommentTime(comment.timestamp),
-                      style: AppTheme.captionStyle,
+                      style: AppTextStyles.bodySmall,
                     ),
                   ],
                 ),
@@ -371,8 +373,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   },
                   icon: Icon(
                     Icons.reply,
-                    color: AppTheme.textSecondary,
-                    size: AppTheme.iconSizeInfo,
+                    color: AppColors.textMedium,
+                    size: AppDimensions.iconSizeM,
                   ),
                 ),
               ],
@@ -381,37 +383,37 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 onPressed: () => _toggleLike(comment, socialViewModel),
                 icon: Icon(
                   comment.isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: comment.isLiked ? AppTheme.errorColor : AppTheme.textSecondary,
-                  size: AppTheme.iconSizeInfo,
+                  color: comment.isLiked ? AppColors.error : AppColors.textMedium,
+                  size: AppDimensions.iconSizeM,
                 ),
               ),
             ],
           ),
           
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           
           // Comment content
           Text(
             comment.content,
-            style: AppTheme.bodyStyle,
+            style: AppTextStyles.bodyLarge,
           ),
           
           // Like count
           if (comment.likeCount > 0) ...[
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               '${comment.likeCount} ${comment.likeCount == 1 ? 'gilla-markering' : 'gilla-markeringar'}',
-              style: AppTheme.captionStyle.copyWith(
-                color: AppTheme.textSecondary,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textMedium,
               ),
             ),
           ],
           
           // Replies
           if (comment.replies != null && comment.replies.isNotEmpty) ...[
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Container(
-              margin: EdgeInsets.only(left: AppTheme.spacingMd),
+              margin: EdgeInsets.only(left: AppDimensions.spacingL),
               child: Column(
                 children: comment.replies.map<Widget>((reply) {
                   return Column(
@@ -419,8 +421,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       _buildCommentItem(reply, socialViewModel, isReply: true),
                       if (reply != comment.replies.last)
                         Divider(
-                          height: AppTheme.dividerHeight,
-                          color: AppTheme.dividerColor,
+                          height: AppDimensions.borderWidthThin,
+                          color: AppColors.divider,
                         ),
                     ],
                   );
@@ -444,7 +446,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     if (currentUser == null) {
       _showSnackBarSafely(
         'Du måste vara inloggad för att kommentera',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
       return;
     }
@@ -455,7 +457,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       if (userProfile == null) {
         _showSnackBarSafely(
           'Kunde inte hämta användardata',
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppColors.error,
         );
         return;
       }
@@ -476,7 +478,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
       _showSnackBarSafely(
         'Kommentar postad',
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppColors.success,
       );
 
       // Callback
@@ -484,7 +486,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     } catch (e) {
       _showSnackBarSafely(
         'Kunde inte posta kommentar',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -498,7 +500,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     if (currentUser == null) {
       _showSnackBarSafely(
         'Du måste vara inloggad för att gilla kommentarer',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
       return;
     }
@@ -508,7 +510,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     } catch (e) {
       _showSnackBarSafely(
         'Kunde inte uppdatera gilla-markering',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -541,7 +543,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: backgroundColor ?? AppTheme.successColor,
+          backgroundColor: backgroundColor ?? AppColors.success,
           duration: duration,
         ),
       );

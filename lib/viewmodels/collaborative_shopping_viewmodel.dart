@@ -8,7 +8,7 @@ import '../models/unified/unified_shopping_item.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import '../core/permissions/permission_mixins.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../core/mixins/state_notifier_mixin.dart';
 import '../core/mixins/async_operation_mixin.dart';
 
@@ -195,24 +195,24 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with StateNotifierMi
   // ===== UI HELPERS =====
 
   Color getStatusColor() {
-    if (!hasData) return AppTheme.textSecondary;
+    if (!hasData) return AppColors.textMedium;
 
     switch (statusText) {
       case 'Klar':
-        return AppTheme.successColor;
+        return AppColors.success;
       case 'Pågående':
-        return AppTheme.warningColor;
+        return AppColors.warning;
       case 'Tom lista':
-        return AppTheme.textSecondary;
+        return AppColors.textMedium;
       default:
-        return AppTheme.textSecondary;
+        return AppColors.textMedium;
     }
   }
 
   Color getProgressColor() {
-    if (completionPercentage == 100) return AppTheme.successColor;
-    if (completionPercentage > 50) return AppTheme.warningColor;
-    return AppTheme.primaryColor;
+    if (completionPercentage == 100) return AppColors.success;
+    if (completionPercentage > 50) return AppColors.warning;
+    return AppColors.primaryBlue;
   }
 
   String? getItemSubtitle(UnifiedShoppingItem item) {

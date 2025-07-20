@@ -31,8 +31,8 @@ import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/permissions/permission_mixins.dart';
 import '../services/unified/types/recipe_types.dart' show RecipeOperationResult;
-import '../models/unified/unified_recipe.dart';
-import '../models/recipe.dart'; // För backwards compatibility
+import '../models/permissions/resource_permission.dart';
+import '../models/recipe_unified.dart';
 
 class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, RecipePermissionMixin {
   final UnifiedRecipeService _recipeService =
@@ -41,16 +41,14 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   // ===== GETTERS - samma API som din befintliga recipe_list_viewmodel =====
 
   // ✅ FIX: Lägg till allRecipes getter som injection.dart förväntar sig
-  List<UnifiedRecipe> get allRecipes => _recipeService.recipes;
+  List<Recipe> get allRecipes => _recipeService.recipes;
 
   // Recipes och state
-  List<UnifiedRecipe> get recipes => _recipeService.recipes;
-  List<UnifiedRecipe> get personalRecipes => _recipeService.personalRecipes;
-  List<UnifiedRecipe> get collaborativeRecipes =>
+  List<Recipe> get recipes => _recipeService.recipes;
+  List<Recipe> get personalRecipes => _recipeService.personalRecipes;
+  List<Recipe> get collaborativeRecipes =>
       _recipeService.collaborativeRecipes;
 
-  // Legacy compatibility
-  List<Recipe> get legacyRecipes => _recipeService.legacyRecipes;
 
   // Loading states
   bool get isLoading => _recipeService.isLoading;
@@ -117,7 +115,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     if (name.trim().isEmpty) return false;
 
     final recipeId = await _recipeService.personal.createRecipe(
-      name: name.trim(),
+      title: name.trim(),
       description: description,
       ingredients: ingredients,
       instructions: instructions,
@@ -157,9 +155,8 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     if (name.trim().isEmpty) return false;
 
     final recipeId = await _recipeService.createCollaborativeRecipe(
-      name: name.trim(),
+      title: name.trim(),
       memberIds: memberIds,
-      memberDisplayNames: memberDisplayNames,
       description: description,
       ingredients: ingredients,
       instructions: instructions,
@@ -205,12 +202,12 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     return await _recipeService.social.makeRecipePersonal(collaborativeRecipeId);
   }
 
-  Future<bool> updateRecipe(UnifiedRecipe recipe) async {
+  Future<bool> updateRecipe(Recipe recipe) async {
     // Route to appropriate interface based on recipe type
     if (recipe.isPersonal) {
       return await _recipeService.personal.updateRecipe(recipe);
     } else {
-      return await _recipeService.updateRecipe(recipe); // Fallback to main service
+      return await _recipeService.updateRecipe(recipe); // Collaborative recipes handled by main service
     }
   }
 
@@ -228,24 +225,24 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
 
   // ===== LEGACY COMPATIBILITY METHODS =====
 
-  /// För befintlig kod som använder Recipe model
-  Future<RecipeOperationResult> addRecipe(Recipe legacyRecipe) async {
-    return await _recipeService.personal.addLegacyRecipe(legacyRecipe);
+  /// Add unified recipe
+  Future<RecipeOperationResult> addRecipe(Recipe recipe) async {
+    return await _recipeService.personal.addLegacyRecipe(recipe);
   }
 
-  /// För befintlig kod som använder Recipe model
-  Future<RecipeOperationResult> updateLegacyRecipe(Recipe legacyRecipe) async {
-    return await _recipeService.personal.updateLegacyRecipe(legacyRecipe);
+  /// Update unified recipe
+  Future<RecipeOperationResult> updateLegacyRecipe(Recipe recipe) async {
+    return await _recipeService.personal.updateLegacyRecipe(recipe);
   }
 
   /// För befintlig kod
   Future<RecipeOperationResult> deleteRecipeById(String id) async {
-    return await _recipeService.personal.deleteLegacyRecipe(id);
+    return await _recipeService.deleteRecipeById(id);
   }
 
-  /// Legacy getter för befintlig kod
+  /// Get recipe by ID (unified)
   Recipe? getRecipeById(String id) {
-    return _recipeService.personal.getLegacyRecipeById(id);
+    return _recipeService.getRecipeById(id);
   }
 
   /// Legacy method för befintlig kod
@@ -276,7 +273,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     if (recipe.isPersonal) {
       return await _recipeService.personal.updateRecipeContent(
         recipeId: recipeId,
-        name: name,
+        title: name,
         description: description,
         mealType: mealType,
         portions: portions,
@@ -288,7 +285,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     } else {
       return await _recipeService.updateRecipeContent(
         recipeId: recipeId,
-        name: name,
+        title: name,
         description: description,
         ingredients: ingredients,
         instructions: instructions,
@@ -384,34 +381,23 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
 
   Future<bool> addMemberToRecipe(
       String recipeId, String userId, String userDisplayName, 
-      {RecipePermission permission = RecipePermission.edit}) async {
-    return await _recipeService.social.addMember(
-      recipeId: recipeId,
-      userId: userId,
-      userDisplayName: userDisplayName,
-      permission: permission,
-    );
+      {ResourcePermission permission = ResourcePermission.editor}) async {
+    return await _recipeService.addMemberToRecipe(recipeId, userId, permission);
   }
 
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
-    return await _recipeService.social.removeMember(
-      recipeId: recipeId,
-      userId: userId,
-    );
+    return await _recipeService.removeMemberFromRecipe(recipeId, userId);
   }
 
   Future<bool> updateMemberPermission(
-      String recipeId, String userId, RecipePermission permission) async {
-    return await _recipeService.social.updateMemberPermission(
-      recipeId: recipeId,
-      userId: userId,
-      permission: permission,
-    );
+      String recipeId, String userId, ResourcePermission permission) async {
+    return await _recipeService.updateMemberPermission(recipeId, userId, permission);
   }
 
   /// Get all members of a collaborative recipe
-  Map<String, RecipePermission> getRecipeMembers(String recipeId) {
-    return _recipeService.social.getRecipeMembers(recipeId);
+  Map<String, ResourcePermission> getRecipeMembers(String recipeId) {
+    final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
+    return recipe?.socialData?.memberPermissions ?? {};
   }
 
   /// Check if user can invite members to recipe
@@ -420,39 +406,45 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   }
 
   /// Get recipes shared with current user
-  List<UnifiedRecipe> getSharedWithMe() {
-    return _recipeService.social.getSharedWithMe();
+  List<Recipe> getSharedWithMe() {
+    return recipes.where((recipe) => 
+      recipe.isShared && 
+      recipe.socialData?.ownerId != _recipeService.currentUserId
+    ).toList();
   }
 
   /// Get recipes owned by current user that are shared
-  List<UnifiedRecipe> getSharedByMe() {
-    return _recipeService.social.getSharedByMe();
+  List<Recipe> getSharedByMe() {
+    return recipes.where((recipe) => 
+      recipe.isShared && 
+      recipe.socialData?.ownerId == _recipeService.currentUserId
+    ).toList();
   }
 
   // ===== RECIPE QUERIES & FILTERING =====
 
   /// Hitta recept by ID (unified version)
-  UnifiedRecipe? getUnifiedRecipeById(String id) {
+  Recipe? getUnifiedRecipeById(String id) {
     return recipes.where((r) => r.id == id).firstOrNull;
   }
 
   /// Filtrera recept baserat på mealType
-  List<UnifiedRecipe> getRecipesByMealType(String mealType) {
+  List<Recipe> getRecipesByMealType(String mealType) {
     return recipes.where((r) => r.mealType == mealType).toList();
   }
 
   /// Filtrera recept baserat på tags
-  List<UnifiedRecipe> getRecipesByTag(String tag) {
+  List<Recipe> getRecipesByTag(String tag) {
     return recipes.where((r) => r.tags?.contains(tag) ?? false).toList();
   }
 
   /// Sök i recept baserat på namn, ingredienser eller instruktioner
-  List<UnifiedRecipe> searchRecipes(String query) {
+  List<Recipe> searchRecipes(String query) {
     if (query.trim().isEmpty) return recipes;
 
     final lowercaseQuery = query.toLowerCase();
     return recipes.where((recipe) {
-      return recipe.name.toLowerCase().contains(lowercaseQuery) ||
+      return recipe.title.toLowerCase().contains(lowercaseQuery) ||
           recipe.description.toLowerCase().contains(lowercaseQuery) ||
           recipe.ingredients.any((ingredient) =>
               ingredient.toLowerCase().contains(lowercaseQuery)) ||
@@ -465,7 +457,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   }
 
   /// Få recept som användaren kan redigera
-  List<UnifiedRecipe> getEditableRecipes() {
+  List<Recipe> getEditableRecipes() {
     if (currentUserId == null) return [];
 
     return recipes.where((recipe) {
@@ -475,25 +467,28 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   }
 
   /// Få recept som nyligen tillagats
-  List<UnifiedRecipe> getRecentlyCookedRecipes() {
-    return recipes.where((recipe) => recipe.wasCookedRecently).toList();
+  List<Recipe> getRecentlyCookedRecipes() {
+    return recipes.where((recipe) => 
+      recipe.lastCookedAt != null &&
+      DateTime.now().difference(recipe.lastCookedAt!).inDays < 7
+    ).toList();
   }
 
   /// Gruppera recept efter måltidstyp
-  Map<String, List<UnifiedRecipe>> get recipesByMealType {
-    final Map<String, List<UnifiedRecipe>> grouped = {};
+  Map<String, List<Recipe>> get recipesByMealType {
+    final Map<String, List<Recipe>> grouped = {};
 
     for (final recipe in recipes) {
       grouped.putIfAbsent(recipe.mealType, () => []).add(recipe);
     }
 
     // Sortera måltidstyper och recept
-    final sortedGrouped = <String, List<UnifiedRecipe>>{};
+    final sortedGrouped = <String, List<Recipe>>{};
     final sortedKeys = grouped.keys.toList()..sort();
 
     for (final key in sortedKeys) {
       final sortedRecipes = grouped[key]!;
-      sortedRecipes.sort((a, b) => a.name.compareTo(b.name));
+      sortedRecipes.sort((a, b) => a.title.compareTo(b.title));
       sortedGrouped[key] = sortedRecipes;
     }
 
@@ -502,7 +497,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
 
   /// Få alla använda måltidstyper
   List<String> get usedMealTypes {
-    final mealTypes = recipes.map((recipe) => recipe.mealType).toSet().toList();
+    final mealTypes = recipes.map<String>((recipe) => recipe.mealType).toSet().toList();
     mealTypes.sort();
     return mealTypes;
   }
@@ -535,8 +530,12 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   // ===== REALTIME OPERATIONS (Phase 5: Feature Interface) =====
 
   /// Watch a recipe for real-time updates
-  Stream<UnifiedRecipe> watchRecipe(String recipeId) {
-    return _recipeService.realtime.watchRecipe(recipeId);
+  Stream<Recipe> watchRecipe(String recipeId) {
+    // For now, return a stream that emits the current recipe state
+    // TODO: Implement proper real-time watching when operations are updated
+    return Stream.periodic(Duration(milliseconds: 500), (_) {
+      return recipes.where((r) => r.id == recipeId).firstOrNull;
+    }).where((recipe) => recipe != null).cast<Recipe>();
   }
 
   /// Start real-time editing session for recipe

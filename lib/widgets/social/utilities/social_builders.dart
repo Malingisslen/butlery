@@ -1,7 +1,9 @@
 // lib/widgets/social/utilities/social_builders.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import 'social_helpers.dart';
 
 /// Social UI builder utilities
@@ -19,7 +21,7 @@ class SocialBuilders {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ?? AppTheme.sectionPadding,
+      padding: padding ?? AppDimensions.sectionPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -31,13 +33,13 @@ class SocialBuilders {
                   children: [
                     Text(
                       title,
-                      style: AppTheme.sectionTitleStyle,
+                      style: AppTextStyles.sectionTitleStyle,
                     ),
                     if (subtitle != null) ...[
-                      AppTheme.tinyGap,
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         subtitle,
-                        style: AppTheme.subtitleStyle,
+                        style: AppTextStyles.titleMedium,
                       ),
                     ],
                   ],
@@ -46,7 +48,7 @@ class SocialBuilders {
               if (trailing != null) trailing,
             ],
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           content,
         ],
       ),
@@ -62,41 +64,41 @@ class SocialBuilders {
     VoidCallback? onTap,
     Color? color,
   }) {
-    final cardColor = color ?? AppTheme.primaryColor;
+    final cardColor = color ?? AppColors.primaryBlue;
 
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppTheme.largeRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.largeRadius),
         child: Padding(
-          padding: AppTheme.cardPadding,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingSm),
+                padding: EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
                   color: cardColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.smallRadius,
+                  borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
                 ),
                 child: Icon(
                   icon,
                   color: cardColor,
-                  size: AppTheme.iconSizeAction,
+                  size: AppDimensions.iconSizeAction,
                 ),
               ),
-              AppTheme.mediumHorizontalGap,
+              SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: AppTheme.cardTitleStyle,
+                      style: AppTextStyles.cardTitleStyle,
                     ),
-                    AppTheme.tinyGap,
+                    const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       subtitle,
-                      style: AppTheme.subtitleStyle,
+                      style: AppTextStyles.titleMedium,
                     ),
                   ],
                 ),
@@ -104,8 +106,8 @@ class SocialBuilders {
               if (onTap != null)
                 Icon(
                   Icons.arrow_forward_ios,
-                  size: AppTheme.iconSizeInfo,
-                  color: AppTheme.textSecondary,
+                  size: AppDimensions.iconSizeM,
+                  color: AppColors.textSecondary,
                 ),
             ],
           ),
@@ -121,7 +123,7 @@ class SocialBuilders {
   }) {
     return Card(
       child: Padding(
-        padding: AppTheme.cardPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: stats.map((stat) {
             final isLast = stat == stats.last;
@@ -134,19 +136,19 @@ class SocialBuilders {
                         Icon(
                           stat.icon,
                           color: stat.color,
-                          size: AppTheme.iconSizeAction,
+                          size: AppDimensions.iconSizeAction,
                         ),
-                        AppTheme.tinyGap,
+                        const SizedBox(height: AppDimensions.spacingXs),
                         Text(
                           stat.value,
-                          style: AppTheme.cardTitleStyle.copyWith(
+                          style: AppTextStyles.cardTitleStyle.copyWith(
                             color: stat.color,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           stat.label,
-                          style: AppTheme.captionStyle,
+                          style: AppTextStyles.bodySmall,
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -156,7 +158,7 @@ class SocialBuilders {
                     Container(
                       width: 1,
                       height: 40,
-                      color: AppTheme.dividerColor,
+                      color: AppColors.dividerColor,
                     ),
                 ],
               ),

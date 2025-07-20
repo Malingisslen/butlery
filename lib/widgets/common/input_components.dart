@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../models/unified/unified_shopping_item.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 
 // Import all input modules
 import 'input/instruction_editor.dart';

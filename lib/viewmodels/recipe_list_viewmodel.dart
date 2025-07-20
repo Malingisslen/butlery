@@ -1,7 +1,7 @@
 // lib/viewmodels/recipe_list_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/search_service.dart';
 import '../core/injection.dart';
@@ -157,7 +157,7 @@ class RecipeListViewModel extends ChangeNotifier {
       return _cachedFilteredRecipes!;
     }
 
-    var filtered = List<Recipe>.from(_recipeService.legacyRecipes);
+    var filtered = List<Recipe>.from(_recipeService.recipes);
 
     // Applicera tidsfilter
     if (_activeTimeFilters.isNotEmpty) {

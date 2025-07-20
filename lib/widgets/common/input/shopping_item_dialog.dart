@@ -1,7 +1,9 @@
 // lib/widgets/common/input/shopping_item_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../models/unified/unified_shopping_item.dart';
 import '../../../core/validators/form_validators.dart';
 
@@ -91,15 +93,15 @@ class _AddUnifiedShoppingItemDialogState
     return AlertDialog(
       title: Row(
         children: [
-          AppTheme.actionIcon(
-            context,
+          Icon(
             isEditing ? Icons.edit : Icons.add_shopping_cart,
-            color: AppTheme.primaryColor,
+            color: AppColors.primaryBlue,
+            size: AppDimensions.iconSizeAction,
           ),
-          AppTheme.smallHorizontalGap,
+          const SizedBox(width: AppDimensions.spacingM),
           Text(
             isEditing ? 'Redigera artikel' : 'Lägg till artikel',
-            style: AppTheme.sectionTitleStyle,
+            style: AppTextStyles.headlineSmall,
           ),
         ],
       ),
@@ -114,24 +116,24 @@ class _AddUnifiedShoppingItemDialogState
               TextFormField(
                 controller: _nameController,
                 autofocus: true,
-                style: AppTheme.bodyStyle,
+                style: AppTextStyles.bodyLarge,
                 decoration: InputDecoration(
                   labelText: 'Artikel',
-                  labelStyle: AppTheme.formLabelStyle,
+                  labelStyle: AppTextStyles.labelLarge,
                   hintText: 'T.ex. Mjölk',
-                  hintStyle: AppTheme.inputHintStyle,
-                  prefixIcon: AppTheme.actionIcon(
-                    context,
+                  hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+                  prefixIcon: Icon(
                     Icons.shopping_basket,
-                    color: AppTheme.primaryColor,
+                    color: AppColors.primaryBlue,
+                    size: AppDimensions.iconSizeAction,
                   ),
                   border: const OutlineInputBorder(),
-                  contentPadding: AppTheme.inputPadding,
+                  contentPadding: EdgeInsets.all(AppDimensions.paddingM),
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 validator: FormValidators.shoppingItemName(),
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // Amount and unit on same row - adjusted flex values
               Row(
@@ -141,19 +143,19 @@ class _AddUnifiedShoppingItemDialogState
                     flex: 1,
                     child: TextFormField(
                       controller: _amountController,
-                      style: AppTheme.bodyStyle,
+                      style: AppTextStyles.bodyLarge,
                       decoration: InputDecoration(
                         labelText: 'Antal',
-                        labelStyle: AppTheme.formLabelStyle,
+                        labelStyle: AppTextStyles.labelLarge,
                         hintText: '1',
-                        hintStyle: AppTheme.inputHintStyle,
-                        prefixIcon: AppTheme.actionIcon(
-                          context,
+                        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+                        prefixIcon: Icon(
                           Icons.numbers,
-                          color: AppTheme.primaryColor,
+                          color: AppColors.primaryBlue,
+                          size: AppDimensions.iconSizeAction,
                         ),
                         border: const OutlineInputBorder(),
-                        contentPadding: AppTheme.inputPadding,
+                        contentPadding: EdgeInsets.all(AppDimensions.paddingM),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -161,24 +163,24 @@ class _AddUnifiedShoppingItemDialogState
                       validator: FormValidators.shoppingItemAmount(),
                     ),
                   ),
-                  AppTheme.smallHorizontalGap,
+                  const SizedBox(width: AppDimensions.spacingM),
 
                   // Unit - more space for dropdown (flex: 2)
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
                       value: _selectedUnit,
-                      style: AppTheme.bodyStyle,
+                      style: AppTextStyles.bodyLarge,
                       decoration: InputDecoration(
                         labelText: 'Enhet',
-                        labelStyle: AppTheme.formLabelStyle,
-                        prefixIcon: AppTheme.actionIcon(
-                          context,
+                        labelStyle: AppTextStyles.labelLarge,
+                        prefixIcon: Icon(
                           Icons.straighten,
-                          color: AppTheme.primaryColor,
+                          color: AppColors.primaryBlue,
+                          size: AppDimensions.iconSizeAction,
                         ),
                         border: const OutlineInputBorder(),
-                        contentPadding: AppTheme.inputPadding,
+                        contentPadding: EdgeInsets.all(AppDimensions.paddingM),
                       ),
                       isDense: true,
                       isExpanded: true,
@@ -187,7 +189,7 @@ class _AddUnifiedShoppingItemDialogState
                           value: unit['value'],
                           child: Text(
                             unit['dropdown']!,
-                            style: AppTheme.bodyStyle,
+                            style: AppTextStyles.bodyLarge,
                             overflow: TextOverflow.ellipsis,
                           ),
                         );
@@ -203,22 +205,22 @@ class _AddUnifiedShoppingItemDialogState
                   ),
                 ],
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // Category dropdown
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
-                style: AppTheme.bodyStyle,
+                style: AppTextStyles.bodyLarge,
                 decoration: InputDecoration(
                   labelText: 'Kategori',
-                  labelStyle: AppTheme.formLabelStyle,
-                  prefixIcon: AppTheme.actionIcon(
-                    context,
+                  labelStyle: AppTextStyles.labelLarge,
+                  prefixIcon: Icon(
                     Icons.category,
-                    color: AppTheme.primaryColor,
+                    color: AppColors.primaryBlue,
+                    size: AppDimensions.iconSizeAction,
                   ),
                   border: const OutlineInputBorder(),
-                  contentPadding: AppTheme.inputPadding,
+                  contentPadding: EdgeInsets.all(AppDimensions.paddingM),
                 ),
                 isExpanded: true,
                 items: _categories.map((category) {
@@ -226,7 +228,7 @@ class _AddUnifiedShoppingItemDialogState
                     value: category,
                     child: Text(
                       category,
-                      style: AppTheme.bodyStyle,
+                      style: AppTextStyles.bodyLarge,
                       overflow: TextOverflow.ellipsis,
                     ),
                   );
@@ -246,18 +248,25 @@ class _AddUnifiedShoppingItemDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Avbryt', style: AppTheme.buttonTextStyle),
+          child: Text('Avbryt', style: AppTextStyles.labelLarge),
         ),
         FilledButton.icon(
           onPressed: _submitForm,
-          style: AppTheme.primaryButtonStyle,
-          icon: AppTheme.actionIcon(
-            context,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.neutralLight,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+              vertical: AppDimensions.paddingM,
+            ),
+          ),
+          icon: Icon(
             isEditing ? Icons.save : Icons.add,
+            size: AppDimensions.iconSizeAction,
           ),
           label: Text(
             isEditing ? 'Spara' : 'Lägg till',
-            style: AppTheme.buttonTextStyle,
+            style: AppTextStyles.labelLarge,
           ),
         ),
       ],

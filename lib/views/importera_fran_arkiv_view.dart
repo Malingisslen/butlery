@@ -7,7 +7,9 @@ import '../widgets/common/content_card.dart';
 import '../widgets/common/search_filter_widget.dart';
 import '../widgets/common/utility_components.dart';
 import '../widgets/common/state_widget.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
 import '../core/injection.dart';
 
 /// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
@@ -60,7 +62,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         actions: [
           if (viewModel.hasError)
             IconButton(
-              icon: AppTheme.errorIcon(context),
+              icon: Icon(Icons.error, color: AppColors.error),
               onPressed: () {
                 // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
                 UtilityComponents.showErrorSnackbar(context, viewModel.error!);
@@ -80,7 +82,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   maxHeight: MediaQuery.of(context).size.height * 0.35,
                 ),
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(AppTheme.spacingMd),
+                  padding: EdgeInsets.all(AppDimensions.paddingL),
                   child: Column(
                     children: [
                       SearchFilterWidget.searchOnly(
@@ -93,21 +95,24 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                             : null,
                       ),
 
-                      SizedBox(height: AppTheme.spacingMd),
+                      SizedBox(height: AppDimensions.paddingL),
 
                       // Tagg-filter
                       if (allTags.isNotEmpty) ...[
                         Wrap(
-                          spacing: AppTheme.spacingSm,
+                          spacing: AppDimensions.spacingS,
                           children: allTags.map((tag) {
-                            return AppTheme.filterChip(
-                              label: tag,
+                            return FilterChip(
+                              label: Text(tag),
                               selected: viewModel.selectedTags.contains(tag),
-                              onSelected: () => viewModel.toggleTag(tag),
+                              onSelected: (_) => viewModel.toggleTag(tag),
+                              backgroundColor: AppColors.cardWhite,
+                              selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+                              checkmarkColor: AppColors.primaryBlue,
                             );
                           }).toList(),
                         ),
-                        SizedBox(height: AppTheme.spacingMd),
+                        SizedBox(height: AppDimensions.paddingL),
                       ],
 
                       // Tids-filter
@@ -125,8 +130,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   viewModel.timeFilter != TimeFilter.all)
                 Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingMd,
-                    vertical: AppTheme.spacingSm,
+                    horizontal: AppDimensions.spacingL,
+                    vertical: AppDimensions.spacingS,
                   ),
                   child: _buildAdvancedStats(context, viewModel),
                 ),
@@ -134,14 +139,14 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               // Recept-lista
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
                   child: _buildRecipeList(context, viewModel),
                 ),
               ),
 
               // Import-knappar
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingMd),
+                padding: EdgeInsets.all(AppDimensions.spacingL),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   border: Border(
@@ -172,27 +177,47 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     ArchiveImportViewModel viewModel,
   ) {
     return Wrap(
-      spacing: AppTheme.spacingSm,
+      spacing: AppDimensions.spacingS,
       children: [
-        AppTheme.choiceChip(
-          label: 'Alla',
+        ChoiceChip(
+          label: const Text('Alla'),
           selected: viewModel.timeFilter == TimeFilter.all,
-          onSelected: () => viewModel.setTimeFilter(TimeFilter.all),
+          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
+          backgroundColor: viewModel.timeFilter == TimeFilter.all ? AppColors.primaryBlue : AppColors.cardWhite,
+          selectedColor: AppColors.primaryBlue,
+          labelStyle: AppTextStyles.labelSmall.copyWith(
+            color: viewModel.timeFilter == TimeFilter.all ? AppColors.neutralLight : AppColors.textDark,
+          ),
         ),
-        AppTheme.choiceChip(
-          label: '≤ 15 min',
+        ChoiceChip(
+          label: const Text('≤ 15 min'),
           selected: viewModel.timeFilter == TimeFilter.under15,
-          onSelected: () => viewModel.setTimeFilter(TimeFilter.under15),
+          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
+          backgroundColor: viewModel.timeFilter == TimeFilter.under15 ? AppColors.primaryBlue : AppColors.cardWhite,
+          selectedColor: AppColors.primaryBlue,
+          labelStyle: AppTextStyles.labelSmall.copyWith(
+            color: viewModel.timeFilter == TimeFilter.under15 ? AppColors.neutralLight : AppColors.textDark,
+          ),
         ),
-        AppTheme.choiceChip(
-          label: '≤ 30 min',
+        ChoiceChip(
+          label: const Text('≤ 30 min'),
           selected: viewModel.timeFilter == TimeFilter.under30,
-          onSelected: () => viewModel.setTimeFilter(TimeFilter.under30),
+          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
+          backgroundColor: viewModel.timeFilter == TimeFilter.under30 ? AppColors.primaryBlue : AppColors.cardWhite,
+          selectedColor: AppColors.primaryBlue,
+          labelStyle: AppTextStyles.labelSmall.copyWith(
+            color: viewModel.timeFilter == TimeFilter.under30 ? AppColors.neutralLight : AppColors.textDark,
+          ),
         ),
-        AppTheme.choiceChip(
-          label: '≤ 60 min',
+        ChoiceChip(
+          label: const Text('≤ 60 min'),
           selected: viewModel.timeFilter == TimeFilter.under60,
-          onSelected: () => viewModel.setTimeFilter(TimeFilter.under60),
+          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
+          backgroundColor: viewModel.timeFilter == TimeFilter.under60 ? AppColors.primaryBlue : AppColors.cardWhite,
+          selectedColor: AppColors.primaryBlue,
+          labelStyle: AppTextStyles.labelSmall.copyWith(
+            color: viewModel.timeFilter == TimeFilter.under60 ? AppColors.neutralLight : AppColors.textDark,
+          ),
         ),
       ],
     );
@@ -218,27 +243,31 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
             .secondaryContainer
             .withValues(alpha: 0.3),
-        borderRadius: AppTheme.smallRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
           color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
         children: [
-          AppTheme.filterIcon(context),
-          SizedBox(width: AppTheme.spacingXs),
+          Icon(
+            Icons.filter_list,
+            color: AppColors.textMedium,
+            size: AppDimensions.iconSizeM,
+          ),
+          SizedBox(width: AppDimensions.spacingXs),
           Expanded(
             child: Text(
               'Filter: ${filterParts.join(' • ')}',
-              style: AppTheme.captionStyle.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
                 fontWeight: FontWeight.w500,
               ),
@@ -246,7 +275,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           ),
           Text(
             '${viewModel.selectedCount} valda',
-            style: AppTheme.captionStyle.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w600,
             ),
@@ -290,7 +319,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         final selected = viewModel.selectedRecipeIds.contains(recipe.id);
 
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: AppTheme.spacingXxs),
+          padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
           child: ContentCard.compactRecipe(
             recipe: recipe,
             onTap: () => Navigator.pushNamed(
@@ -329,7 +358,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   viewModel.isImporting ? null : viewModel.toggleSelectAll,
             ),
           ),
-          SizedBox(width: AppTheme.spacingSm),
+          SizedBox(width: AppDimensions.spacingS),
           Expanded(
             flex: 2,
             // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton

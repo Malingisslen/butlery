@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../services/offline_service.dart';
 
 /// Status indicators for app state display
@@ -52,23 +54,23 @@ class OfflineIndicator extends StatelessWidget {
         return Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMd,
-            vertical: AppTheme.spacingSm,
+            horizontal: AppDimensions.spacingL,
+            vertical: AppDimensions.spacingS,
           ),
-          color: backgroundColor ?? AppTheme.warningColor,
+          color: backgroundColor ?? AppColors.warning,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.wifi_off,
-                color: AppTheme.neutralLight,
-                size: AppTheme.iconSizeSmall,
+                color: AppColors.neutralLight,
+                size: AppDimensions.iconSizeM,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 message ?? 'Offline-läge - Ändringar sparas lokalt',
-                style: AppTheme.bodyStyle.copyWith(
-                  color: AppTheme.neutralLight,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.neutralLight,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -93,11 +95,11 @@ class OfflineStatusIcon extends StatelessWidget {
         }
 
         return Padding(
-          padding: EdgeInsets.only(right: AppTheme.spacingSm),
+          padding: EdgeInsets.only(right: AppDimensions.spacingS),
           child: Icon(
             Icons.cloud_off,
-            color: AppTheme.warningColor,
-            size: AppTheme.iconSizeAction,
+            color: AppColors.warning,
+            size: AppDimensions.iconSizeAction,
           ),
         );
       },

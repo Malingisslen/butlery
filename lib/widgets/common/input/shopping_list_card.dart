@@ -1,7 +1,9 @@
 // lib/widgets/common/input/shopping_list_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../models/unified/unified_shopping_list.dart';
 import '../../../viewmodels/unified_shopping_viewmodel.dart';
 import 'shopping_list_actions.dart';
@@ -30,30 +32,30 @@ class ShoppingListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXs,
       ),
-      color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.1) : null,
+      color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
       shape: RoundedRectangleBorder(
-        borderRadius: AppTheme.largeRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         side: BorderSide(
-          color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+          color: isSelected ? AppColors.primaryBlue : AppColors.divider,
           width: isSelected ? 2 : 1,
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppTheme.largeRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         child: Padding(
-          padding: AppTheme.cardPadding,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildListHeader(context),
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
               _buildListMetadata(context),
               if (list.itemCount > 0) ...[
-                AppTheme.smallGap,
+                const SizedBox(height: AppDimensions.spacingM),
                 _buildListPreview(context),
               ],
             ],
@@ -69,18 +71,18 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         // List icon
         Container(
-          padding: EdgeInsets.all(AppTheme.spacingXs),
+          padding: EdgeInsets.all(AppDimensions.spacingXs),
           decoration: BoxDecoration(
             color: _getListTypeColor().withValues(alpha: 0.1),
-            borderRadius: AppTheme.smallRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: Icon(
             _getListTypeIcon(),
-            size: AppTheme.iconSizeAction,
+            size: AppDimensions.iconSizeAction,
             color: _getListTypeColor(),
           ),
         ),
-        AppTheme.smallHorizontalGap,
+        const SizedBox(width: AppDimensions.spacingM),
 
         // List name
         Expanded(
@@ -89,7 +91,7 @@ class ShoppingListCard extends StatelessWidget {
             children: [
               Text(
                 list.name,
-                style: AppTheme.cardTitleStyle.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
                 maxLines: 1,
@@ -99,7 +101,7 @@ class ShoppingListCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   list.description!,
-                  style: AppTheme.captionStyle,
+                  style: AppTextStyles.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -122,15 +124,15 @@ class ShoppingListCard extends StatelessWidget {
   /// Build list metadata (items count, type, etc.)
   Widget _buildListMetadata(BuildContext context) {
     return Wrap(
-      spacing: AppTheme.spacingSm,
-      runSpacing: AppTheme.spacingXs,
+      spacing: AppDimensions.spacingS,
+      runSpacing: AppDimensions.spacingXs,
       children: [
         // Items count
         _buildMetadataBadge(
           context,
           Icons.shopping_cart,
           '${list.itemCount} artiklar',
-          AppTheme.textSecondary,
+          AppColors.textMedium,
         ),
 
         // List type
@@ -147,7 +149,7 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.people,
             '${list.memberCount} medlemmar',
-            AppTheme.accentColor,
+            AppColors.secondaryPurple,
           ),
         ],
 
@@ -157,7 +159,7 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.access_time,
             'Aktiv',
-            AppTheme.warningColor,
+            AppColors.warning,
           ),
         ],
       ],
@@ -169,33 +171,33 @@ class ShoppingListCard extends StatelessWidget {
     final previewItems = list.items.take(3).toList();
     
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingSm),
+      padding: EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: AppTheme.smallRadius,
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Senaste artiklar:',
-            style: AppTheme.captionStyle,
+            style: AppTextStyles.bodySmall,
           ),
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           ...previewItems.map((item) => Padding(
-            padding: EdgeInsets.only(bottom: AppTheme.spacingXxs),
+            padding: EdgeInsets.only(bottom: AppDimensions.spacingXxs),
             child: Row(
               children: [
                 Icon(
                   item.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                  size: AppTheme.iconSizeInfo,
-                  color: item.isCompleted ? AppTheme.successColor : AppTheme.textSecondary,
+                  size: AppDimensions.iconSizeM,
+                  color: item.isCompleted ? AppColors.success : AppColors.textMedium,
                 ),
-                AppTheme.tinyGap,
+                const SizedBox(height: AppDimensions.spacingXs),
                 Expanded(
                   child: Text(
                     item.name,
-                    style: AppTheme.captionStyle.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                       decoration: item.isCompleted ? TextDecoration.lineThrough : null,
                     ),
                     maxLines: 1,
@@ -206,10 +208,10 @@ class ShoppingListCard extends StatelessWidget {
             ),
           )),
           if (list.itemCount > 3) ...[
-            AppTheme.tinyGap,
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               '... och ${list.itemCount - 3} till',
-              style: AppTheme.captionStyle.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -228,25 +230,25 @@ class ShoppingListCard extends StatelessWidget {
   ) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingXs,
-        vertical: AppTheme.spacingXxs,
+        horizontal: AppDimensions.spacingXs,
+        vertical: AppDimensions.spacingXxs,
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: AppTheme.chipRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
-            size: AppTheme.iconSizeInfo,
+            size: AppDimensions.iconSizeM,
             color: color,
           ),
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
-            style: AppTheme.captionStyle.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
               color: color,
             ),
           ),
@@ -283,11 +285,11 @@ class ShoppingListCard extends StatelessWidget {
   Color _getListTypeColor() {
     switch (list.type) {
       case ShoppingListType.personal:
-        return AppTheme.primaryColor;
+        return AppColors.primaryBlue;
       case ShoppingListType.collaborative:
-        return AppTheme.accentColor;
+        return AppColors.secondaryPurple;
       case ShoppingListType.template:
-        return AppTheme.warningColor;
+        return AppColors.warning;
     }
   }
 }
@@ -304,30 +306,30 @@ class ShoppingListEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.shopping_cart_outlined,
-            size: AppTheme.iconSizeEmptyState,
-            color: AppTheme.textTertiary,
+            size: 64,
+            color: AppColors.textLight,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Inga handlistor än',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              color: AppTheme.textTertiary,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.textLight,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             'Skapa din första handlista för att komma igång',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
           if (onCreateList != null) ...[
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             FilledButton.icon(
               onPressed: onCreateList,
               icon: Icon(Icons.add),

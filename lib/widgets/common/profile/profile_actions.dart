@@ -1,7 +1,9 @@
 // lib/widgets/common/profile/profile_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../core/injection.dart';
 import '../../../core/utils/logger.dart';
 import '../../../services/backup_service.dart';
@@ -25,38 +27,38 @@ class ProfileActions {
         Navigator.pop(context);
         onTap();
       } : null,
-      borderRadius: AppTheme.mediumRadius,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(AppTheme.spacingSm),
-        margin: EdgeInsets.only(bottom: AppTheme.spacingXs),
+        padding: EdgeInsets.all(AppDimensions.spacingS),
+        margin: EdgeInsets.only(bottom: AppDimensions.spacingXs),
         child: Row(
           children: [
             Icon(
               icon,
-              size: AppTheme.iconSizeAction,
+              size: AppDimensions.iconSizeAction,
               color: Theme.of(context).colorScheme.primary,
             ),
-            SizedBox(width: AppTheme.spacingMd),
+            SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: AppTheme.cardTitleStyle,
+                    style: AppTextStyles.titleMedium,
                   ),
-                  AppTheme.tinyGap,
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     subtitle,
-                    style: AppTheme.captionStyle,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
             ),
             Icon(
               Icons.arrow_forward_ios,
-              size: AppTheme.iconSizeInfo,
+              size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ],
@@ -79,18 +81,18 @@ class ProfileActions {
         Navigator.pop(context);
         onTap();
       } : null,
-      borderRadius: AppTheme.mediumRadius,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(AppTheme.spacingSm),
-        margin: EdgeInsets.only(bottom: AppTheme.spacingXs),
+        padding: EdgeInsets.all(AppDimensions.spacingS),
+        margin: EdgeInsets.only(bottom: AppDimensions.spacingXs),
         child: Row(
           children: [
             Stack(
               children: [
                 Icon(
                   icon,
-                  size: AppTheme.iconSizeAction,
+                  size: AppDimensions.iconSizeAction,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 if (count > 0)
@@ -98,9 +100,9 @@ class ProfileActions {
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: EdgeInsets.all(AppTheme.spacingXs),
+                      padding: EdgeInsets.all(AppDimensions.spacingXs),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
+                        color: AppColors.error,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -109,8 +111,8 @@ class ProfileActions {
                       ),
                       child: Text(
                         count > 99 ? '99+' : '$count',
-                        style: AppTheme.microText.copyWith(
-                          color: AppTheme.neutralLight,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.neutralLight,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -119,26 +121,26 @@ class ProfileActions {
                   ),
               ],
             ),
-            SizedBox(width: AppTheme.spacingMd),
+            SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: AppTheme.cardTitleStyle,
+                    style: AppTextStyles.titleMedium,
                   ),
-                  AppTheme.tinyGap,
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     subtitle,
-                    style: AppTheme.captionStyle,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
             ),
             Icon(
               Icons.arrow_forward_ios,
-              size: AppTheme.iconSizeInfo,
+              size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ],
@@ -150,39 +152,39 @@ class ProfileActions {
   /// Build data backup section
   static Widget buildDataBackupSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Divider(
-            color: AppTheme.dividerColor,
-            height: AppTheme.dividerHeight,
+            color: AppColors.divider,
+            height: AppDimensions.dividerHeight,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Data & Backup',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              fontSize: AppTheme.displaySmall.fontSize,
+            style: AppTextStyles.headlineSmall.copyWith(
+              fontSize: AppTextStyles.displaySmall.fontSize,
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           _buildDataButton(
             context: context,
             icon: Icons.download,
             title: 'Ladda ner backup',
             subtitle: 'Spara alla recept som JSON',
             onTap: () => _handleBackup(context),
-            color: AppTheme.primaryColor,
+            color: AppColors.primaryBlue,
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           _buildDataButton(
             context: context,
             icon: Icons.upload,
             title: 'Återställ från backup',
             subtitle: 'Importera recept från JSON',
             onTap: () => _handleRestore(context),
-            color: AppTheme.accentColor,
+            color: AppColors.primaryBlue,
           ),
         ],
       ),
@@ -192,29 +194,32 @@ class ProfileActions {
   /// Build logout section
   static Widget buildLogoutSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         children: [
           Divider(
-            color: AppTheme.dividerColor,
-            height: AppTheme.dividerHeight,
+            color: AppColors.divider,
+            height: AppDimensions.dividerHeight,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           SizedBox(
             width: double.infinity,
             child: FilledButton.tonalIcon(
               onPressed: () => _handleLogout(context),
               style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.errorColor.withValues(alpha: 0.1),
-                foregroundColor: AppTheme.errorColor,
-                minimumSize: Size(double.infinity, AppTheme.buttonHeight),
-                padding: AppTheme.buttonPadding,
+                backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                foregroundColor: AppColors.error,
+                minimumSize: Size(double.infinity, AppDimensions.buttonHeight),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingXl,
+                  vertical: AppDimensions.paddingM,
+                ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: AppTheme.largeRadius,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
               ),
               icon: const Icon(Icons.logout),
-              label: Text('Logga ut', style: AppTheme.buttonTextStyle),
+              label: Text('Logga ut', style: AppTextStyles.labelLarge),
             ),
           ),
         ],
@@ -235,13 +240,13 @@ class ProfileActions {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: AppTheme.mediumRadius,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(AppTheme.spacingSm),
+        padding: EdgeInsets.all(AppDimensions.spacingS),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: AppTheme.mediumRadius,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
             color: color.withValues(alpha: 0.3),
           ),
@@ -250,24 +255,24 @@ class ProfileActions {
           children: [
             Icon(
               icon,
-              size: AppTheme.iconSizeAction,
+              size: AppDimensions.iconSizeAction,
               color: color,
             ),
-            SizedBox(width: AppTheme.spacingMd),
+            SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: AppTheme.cardTitleStyle.copyWith(
+                    style: AppTextStyles.titleMedium.copyWith(
                       color: color,
                     ),
                   ),
-                  AppTheme.tinyGap,
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     subtitle,
-                    style: AppTheme.captionStyle.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: color,
                     ),
                   ),
@@ -327,7 +332,7 @@ class ProfileActions {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+        backgroundColor: success ? AppColors.success : AppColors.error,
       ),
     );
   }
@@ -337,7 +342,7 @@ class ProfileActions {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+        backgroundColor: success ? AppColors.success : AppColors.error,
       ),
     );
   }
@@ -357,7 +362,7 @@ class ProfileActions {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Logga ut'),
           ),
@@ -383,7 +388,7 @@ class ProfileActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Utloggning misslyckades: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppColors.error,
           ),
         );
       }

@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../../services/image_picker_service.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
@@ -86,8 +87,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               '${widget.selectedImages.length}/${widget.config.maxImages} images selected',
-              style: AppTheme.textTheme.bodySmall?.copyWith(
-                color: AppTheme.textPrimary.withValues(alpha: 0.7),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textPrimary.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -106,10 +107,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppTheme.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.dividerColor.withValues(alpha: 0.3),
           style: BorderStyle.solid,
         ),
-        color: AppTheme.cardColor,
+        color: AppColors.cardColor,
       ),
       child: Material(
         color: Colors.transparent,
@@ -127,15 +128,15 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppTheme.primaryColor,
+                        AppColors.primaryBlue,
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Selecting images...',
-                    style: AppTheme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textPrimary.withValues(alpha: 0.7),
                     ),
                   ),
                 ] else ...[
@@ -143,19 +144,19 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
                     ),
                     child: Icon(
                       Icons.add_photo_alternate_outlined,
                       size: 32,
-                      color: AppTheme.primaryColor,
+                      color: AppColors.primaryBlue,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     widget.allowMultiple ? 'Select images' : 'Select image',
-                    style: AppTheme.textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.textPrimary,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -164,8 +165,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     widget.allowMultiple
                         ? 'Tap to select up to ${widget.config.maxImages} images'
                         : 'Tap to select an image',
-                    style: AppTheme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textPrimary.withValues(alpha: 0.7),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -187,7 +188,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       children: [
         Text(
           'Selected Images',
-          style: AppTheme.textTheme.bodyLarge?.copyWith(
+          style: AppTextStyles.bodyLarge.copyWith(
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -221,7 +222,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: AppTheme.dividerColor.withValues(alpha: 0.2),
+              color: AppColors.dividerColor.withValues(alpha: 0.2),
             ),
           ),
           child: ClipRRect(
@@ -233,16 +234,16 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: double.infinity,
                     height: double.infinity,
                     placeholder: (context, url) => Container(
-                      color: AppTheme.cardColor,
+                      color: AppColors.cardColor,
                       child: const Center(
                         child: CircularProgressIndicator(),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: AppTheme.cardColor,
+                      color: AppColors.cardColor,
                       child: Icon(
                         Icons.error_outline,
-                        color: AppTheme.errorColor,
+                        color: AppColors.error,
                       ),
                     ),
                   )
@@ -252,10 +253,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: double.infinity,
                     height: double.infinity,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      color: AppTheme.cardColor,
+                      color: AppColors.cardColor,
                       child: Icon(
                         Icons.error_outline,
-                        color: AppTheme.errorColor,
+                        color: AppColors.error,
                       ),
                     ),
                   ),
@@ -272,9 +273,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.errorColor,
+                color: AppColors.error,
                 border: Border.all(
-                  color: AppTheme.cardColor,
+                  color: AppColors.cardColor,
                   width: 1,
                 ),
               ),
@@ -294,12 +295,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor.withValues(alpha: 0.9),
+              color: AppColors.cardColor.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               '${index + 1}',
-              style: AppTheme.textTheme.bodySmall?.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
@@ -354,7 +355,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to select images: ${e.toString()}'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -407,11 +408,11 @@ class ImageSourcePickerWidget extends StatelessWidget {
           ListTile(
             leading: Icon(
               Icons.camera_alt_outlined,
-              color: AppTheme.primaryColor,
+              color: AppColors.primaryBlue,
             ),
             title: Text(
               'Camera',
-              style: AppTheme.textTheme.bodyLarge,
+              style: AppTextStyles.bodyLarge,
             ),
             onTap: () => onSourceSelected?.call(ImageSource.camera),
           ),
@@ -419,11 +420,11 @@ class ImageSourcePickerWidget extends StatelessWidget {
           ListTile(
             leading: Icon(
               Icons.photo_library_outlined,
-              color: AppTheme.primaryColor,
+              color: AppColors.primaryBlue,
             ),
             title: Text(
               'Gallery',
-              style: AppTheme.textTheme.bodyLarge,
+              style: AppTextStyles.bodyLarge,
             ),
             onTap: () => onSourceSelected?.call(ImageSource.gallery),
           ),
@@ -481,7 +482,7 @@ class ImagePickerBottomSheet extends StatelessWidget {
           if (title != null) ...[
             Text(
               title!,
-              style: AppTheme.textTheme.headlineSmall?.copyWith(
+              style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),

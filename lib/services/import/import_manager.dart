@@ -15,7 +15,7 @@
 /// Connected to: Import ViewModels, PersonalRecipeOperations, Import strategies
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../unified/operations/personal_recipe_operations.dart';
 import 'import_strategy.dart';
 import 'text_import_strategy.dart';
@@ -180,6 +180,43 @@ class ImportManager {
     return suggestions;
   }
 
+  /// Get text import strategy for direct usage
+  TextImportStrategy getTextImportStrategy() {
+    final textStrategy = _strategies
+        .whereType<TextImportStrategy>()
+        .firstOrNull;
+    
+    if (textStrategy == null) {
+      throw StateError('TextImportStrategy not found in available strategies');
+    }
+    
+    return textStrategy;
+  }
+
+  /// Save imported recipe using PersonalRecipeOperations
+  Future<ImportManagerResult> saveImportedRecipe(Recipe recipe) async {
+    try {
+      final saveResult = await _personalOperations.addUnifiedRecipe(recipe);
+
+      if (saveResult.isSuccess) {
+        return ImportManagerResult.success(
+          recipe,
+          strategy: 'direct_save',
+        );
+      } else {
+        return ImportManagerResult.failure(
+          'Failed to save recipe: ${saveResult.message}',
+          strategy: 'direct_save',
+        );
+      }
+    } catch (e) {
+      return ImportManagerResult.failure(
+        'Error saving recipe: $e',
+        strategy: 'direct_save',
+      );
+    }
+  }
+
   // ===== PRIVATE METHODS =====
 
   Future<ImportManagerResult> _importWithStrategy(
@@ -207,7 +244,7 @@ class ImportManager {
       }
 
       // Save recipe using PersonalRecipeOperations
-      final saveResult = await _personalOperations.addLegacyRecipe(importResult.recipe!);
+      final saveResult = await _personalOperations.addUnifiedRecipe(importResult.recipe!);
 
       if (!saveResult.isSuccess) {
         return ImportManagerResult.failure(

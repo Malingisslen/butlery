@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// Service for handling common dialogs
 /// Separates dialog business logic from UI layer
@@ -22,7 +22,7 @@ class DialogService {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Avsluta'),
           ),
@@ -69,7 +69,7 @@ class DialogService {
             onPressed: () => Navigator.pop(context, true),
             style: isDestructive
                 ? FilledButton.styleFrom(
-                    backgroundColor: AppTheme.errorColor,
+                    backgroundColor: AppColors.error,
                   )
                 : null,
             child: Text(confirmText),

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../interfaces/auth_repository.dart';
 import '../interfaces/recipe_repository.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../models/recipe_change.dart';
 
 class FirebaseRecipeRepository implements RecipeRepository {
@@ -68,7 +68,7 @@ class FirebaseRecipeRepository implements RecipeRepository {
         .collection('recipes')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map(Recipe.fromFirestore).toList());
+        .map((snap) => snap.docs.map((d) => Recipe.fromFirestore(d)).toList());
   }
 
   @override
@@ -121,7 +121,7 @@ class FirebaseRecipeRepository implements RecipeRepository {
   @override
   Future<List<Recipe>> fetchArchiveRecipes() async {
     final snap = await _firestore.collection('butlery_archive').get();
-    return snap.docs.map(Recipe.fromFirestore).toList();
+    return snap.docs.map((d) => Recipe.fromFirestore(d)).toList();
   }
 
   @override
@@ -141,6 +141,6 @@ class FirebaseRecipeRepository implements RecipeRepository {
         .collection('recipes')
         .orderBy('updatedAt', descending: true)
         .get();
-    return snap.docs.map(Recipe.fromFirestore).toList();
+    return snap.docs.map((d) => Recipe.fromFirestore(d)).toList();
   }
 }

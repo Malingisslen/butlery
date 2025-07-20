@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../constants/icon_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/permission_service.dart';
@@ -57,7 +57,7 @@ class MenuViewModel extends ChangeNotifier {
     if (!_recipeService.isInitialized) {
       return [];
     }
-    return _recipeService.legacyRecipes;
+    return _recipeService.recipes;
   }
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 

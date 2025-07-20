@@ -1,7 +1,9 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 ///
@@ -66,7 +68,7 @@ class _MainMenuLayout extends StatelessWidget {
           ? AppBar(
               title: Text(
                 title!,
-                style: AppTheme.sectionTitleStyle,
+                style: AppTextStyles.headlineSmall,
               ),
               actions: actions,
               backgroundColor: Theme.of(context).colorScheme.surface,
@@ -81,9 +83,16 @@ class _MainMenuLayout extends StatelessWidget {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    return AppTheme.styledBottomNavBar(
+    return BottomNavigationBar(
       currentIndex: currentIndex ?? 0,
       onTap: (index) => _handleNavigation(context, index),
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: AppColors.backgroundBeige,
+      selectedItemColor: AppColors.primaryBlue,
+      unselectedItemColor: AppColors.textMedium,
+      selectedLabelStyle: AppTextStyles.labelSmall,
+      unselectedLabelStyle: AppTextStyles.labelSmall,
+      elevation: AppDimensions.elevationMedium,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.book_outlined),
@@ -160,7 +169,7 @@ class _SimpleLayout extends StatelessWidget {
               ? AppBar(
                   title: Text(
                     title!,
-                    style: AppTheme.sectionTitleStyle,
+                    style: AppTextStyles.headlineSmall,
                   ),
                   actions: actions,
                 )

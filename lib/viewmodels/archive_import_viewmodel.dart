@@ -19,7 +19,7 @@
 // ✅ PHASE 5 VERSION: Updated to use personal recipe operations interface
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/search_service.dart';
 import '../data/archived_recipes.dart' as archive;
@@ -145,10 +145,10 @@ class ArchiveImportViewModel extends ChangeNotifier {
               .where((r) => _selectedRecipeIds.contains(r.id))
               .map(
                 (r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'),
-              ) // NY! Sätt sourceUrl
+              )
               .toList();
 
-      final result = await _recipeService.personal.addMultipleRecipes(toImport);
+      final result = await _recipeService.personal.addMultipleUnifiedRecipes(toImport);
 
       if (result.isSuccess) {
         _error = null;
@@ -173,9 +173,9 @@ class ArchiveImportViewModel extends ChangeNotifier {
           (filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes)
               .map(
                 (r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'),
-              ) // HÄR är ändringen!
+              )
               .toList();
-      final result = await _recipeService.personal.addMultipleRecipes(toImport);
+      final result = await _recipeService.personal.addMultipleUnifiedRecipes(toImport);
 
       if (result.isSuccess) {
         _error = null;

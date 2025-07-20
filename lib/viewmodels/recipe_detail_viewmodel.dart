@@ -1,7 +1,7 @@
 // lib/viewmodels/recipe_detail_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/analytics_service.dart';
 import '../core/injection.dart';
@@ -37,7 +37,7 @@ class RecipeDetailViewModel extends ChangeNotifier {
   void _onRecipeServiceUpdate() {
     // Uppdatera vårt recept om det har ändrats i service
     final updatedRecipe = _recipeService.getRecipeById(_recipe.id);
-    if (updatedRecipe != null && updatedRecipe != _recipe) {
+    if (updatedRecipe != null && updatedRecipe.updatedAt != _recipe.updatedAt) {
       _recipe = updatedRecipe;
       notifyListeners();
     }
@@ -89,9 +89,9 @@ class RecipeDetailViewModel extends ChangeNotifier {
       // Uppdatera receptet med ny lastCookedAt
       final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
 
-      final result = await _recipeService.updateLegacyRecipe(updatedRecipe);
+      final success = await _recipeService.updateRecipe(updatedRecipe);
 
-      if (result.isSuccess) {
+      if (success) {
         _recipe = updatedRecipe;
         notifyListeners();
 
@@ -105,7 +105,7 @@ class RecipeDetailViewModel extends ChangeNotifier {
 
         return true;
       } else {
-        _error = result.message;
+        _error = 'Kunde inte uppdatera recept';
         return false;
       }
     } catch (e) {

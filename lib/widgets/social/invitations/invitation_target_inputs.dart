@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import 'invitation_target_displays.dart';
 
 /// Invitation target input widgets
@@ -70,7 +72,7 @@ class InvitationTargetInputs {
         .toList();
 
     return Padding(
-      padding: padding ?? EdgeInsets.all(AppTheme.spacingMd),
+      padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -78,9 +80,9 @@ class InvitationTargetInputs {
           if (title != null) ...[
             Text(
               title,
-              style: AppTheme.sectionTitleStyle,
+              style: AppTextStyles.titleLarge,
             ),
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
           ],
 
           // Selected targets chips
@@ -89,7 +91,7 @@ class InvitationTargetInputs {
               selectedTargets,
               onTargetToggled,
             ),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
           ],
 
           // Search bar
@@ -101,7 +103,7 @@ class InvitationTargetInputs {
                 // This widget just provides the UI
               },
             ),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
           ],
 
           // Select all button
@@ -112,7 +114,7 @@ class InvitationTargetInputs {
               onTargetToggled,
               allowMultipleSelection,
             ),
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
           ],
 
           // Available targets list
@@ -149,7 +151,7 @@ class InvitationTargetInputs {
       // Add section header if grouping by type
       if (groupByType && target.type.name != currentType) {
         if (widgets.isNotEmpty) {
-          widgets.add(AppTheme.mediumGap);
+          widgets.add(const SizedBox(height: AppDimensions.spacingXl));
         }
 
         widgets.add(_buildTargetSectionHeader(
@@ -165,16 +167,16 @@ class InvitationTargetInputs {
         CheckboxListTile(
           value: isSelected,
           onChanged: (checked) => onTargetToggled(target, checked ?? false),
-          contentPadding: AppTheme.listItemPadding,
+          contentPadding: AppDimensions.listItemPadding,
           secondary: InvitationTargetDisplays.buildTargetChip(target),
           title: Text(
             target.displayName,
-            style: AppTheme.cardTitleStyle,
+            style: AppTextStyles.titleMedium,
           ),
           subtitle: target.subtitle.isNotEmpty
               ? Text(
                   target.subtitle,
-                  style: AppTheme.subtitleStyle,
+                  style: AppTextStyles.titleMedium,
                 )
               : null,
         ),
@@ -231,12 +233,12 @@ class InvitationTargetInputs {
       children: [
         Text(
           'Valda (${selectedTargets.length})',
-          style: AppTheme.sectionTitleStyle,
+          style: AppTextStyles.titleLarge,
         ),
-        AppTheme.smallGap,
+        const SizedBox(height: AppDimensions.spacingM),
         Wrap(
-          spacing: AppTheme.spacingSm,
-          runSpacing: AppTheme.spacingXs,
+          spacing: AppDimensions.spacingS,
+          runSpacing: AppDimensions.spacingXs,
           children: selectedTargets.map((target) {
             return InvitationTargetDisplays.buildTargetChip(
               target,
@@ -256,38 +258,40 @@ class InvitationTargetInputs {
   }) {
     return TextField(
       onChanged: onChanged,
-      style: AppTheme.bodyStyle,
+      style: AppTextStyles.bodyLarge,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: AppTheme.inputHintStyle,
+        hintStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.textLight,
+        ),
         prefixIcon: Icon(
           Icons.search,
-          color: AppTheme.textSecondary,
-          size: AppTheme.iconSizeAction,
+          color: AppColors.textSecondary,
+          size: AppDimensions.iconSizeAction,
         ),
         suffixIcon: onClear != null
             ? IconButton(
                 icon: Icon(
                   Icons.clear,
-                  color: AppTheme.textSecondary,
-                  size: AppTheme.iconSizeAction,
+                  color: AppColors.textSecondary,
+                  size: AppDimensions.iconSizeAction,
                 ),
                 onPressed: onClear,
               )
             : null,
         filled: true,
-        fillColor: AppTheme.cardColor,
+        fillColor: AppColors.cardColor,
         border: OutlineInputBorder(
-          borderRadius: AppTheme.mediumRadius,
-          borderSide: BorderSide(color: AppTheme.dividerColor),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderSide: BorderSide(color: AppColors.dividerColor),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppTheme.mediumRadius,
-          borderSide: BorderSide(color: AppTheme.dividerColor),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderSide: BorderSide(color: AppColors.dividerColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: AppTheme.mediumRadius,
-          borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
         ),
       ),
     );
@@ -326,11 +330,11 @@ class InvitationTargetInputs {
           : null,
       icon: Icon(
         allSelected ? Icons.deselect : Icons.select_all,
-        size: AppTheme.iconSizeAction,
+        size: AppDimensions.iconSizeAction,
       ),
       label: Text(
         allSelected ? 'Avmarkera alla' : 'Markera alla',
-        style: AppTheme.buttonTextStyle,
+        style: AppTextStyles.labelLarge,
       ),
     );
   }
@@ -363,10 +367,10 @@ class InvitationTargetInputs {
   /// Build section header
   static Widget _buildTargetSectionHeader(String title) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       child: Text(
         title,
-        style: AppTheme.sectionTitleStyle,
+        style: AppTextStyles.titleLarge,
       ),
     );
   }
@@ -374,26 +378,30 @@ class InvitationTargetInputs {
   /// Build empty targets message
   static Widget _buildEmptyTargetsMessage([String? customMessage]) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           Icon(
             Icons.people_outline,
-            size: AppTheme.iconSizeEmptyState,
-            color: AppTheme.textTertiary,
+            size: AppDimensions.iconSizeEmptyState,
+            color: AppColors.textMedium,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Inga mål tillgängliga',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              color: AppTheme.textTertiary,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.textMedium,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             customMessage ?? 'Lägg till vänner eller skapa grupper först',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
         ],
@@ -464,13 +472,13 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppTheme.cardColor,
+      backgroundColor: AppColors.cardColor,
       shape: RoundedRectangleBorder(
-        borderRadius: AppTheme.largeRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       title: Text(
         widget.title,
-        style: AppTheme.sectionTitleStyle,
+        style: AppTextStyles.titleLarge,
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -483,35 +491,35 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
               onChanged: _filterTargets,
               onClear: searchQuery.isNotEmpty ? () => _filterTargets('') : null,
             ),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // Selected count
             if (selectedTargets.isNotEmpty) ...[
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingSm),
+                padding: EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.smallRadius,
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.check_circle,
-                      size: AppTheme.iconSizeInfo,
-                      color: AppTheme.primaryColor,
+                      size: AppDimensions.iconSizeM,
+                      color: AppColors.primaryBlue,
                     ),
-                    AppTheme.smallHorizontalGap,
+                    const SizedBox(width: AppDimensions.spacingM),
                     Text(
                       '${selectedTargets.length} valda',
-                      style: AppTheme.captionStyle.copyWith(
-                        color: AppTheme.primaryColor,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primaryBlue,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
             ],
 
             // Target list
@@ -529,28 +537,28 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           style: TextButton.styleFrom(
-            foregroundColor: AppTheme.textSecondary,
+            foregroundColor: AppColors.textSecondary,
           ),
           child: Text(
             'Avbryt',
-            style: AppTheme.buttonTextStyle.copyWith(
-              color: AppTheme.textSecondary,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
         ),
         ElevatedButton(
           onPressed: () => Navigator.of(context).pop(selectedTargets),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
-            foregroundColor: AppTheme.neutralLight,
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.neutralLight,
             shape: RoundedRectangleBorder(
-              borderRadius: AppTheme.mediumRadius,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
           ),
           child: Text(
             'Välj (${selectedTargets.length})',
-            style: AppTheme.buttonTextStyle.copyWith(
-              color: AppTheme.neutralLight,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.neutralLight,
             ),
           ),
         ),

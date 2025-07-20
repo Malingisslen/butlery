@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../../core/utils/logger.dart';
 
 /// Progress data for upload operations
@@ -31,24 +33,24 @@ class ImagePickerDialogs {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        padding: AppTheme.padding20,
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: AppTheme.avatarSizeMedium,
+              width: AppDimensions.avatarSizeMedium,
               height: 5,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: AppTheme.neutralMedium,
+                color: AppColors.neutralMedium,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
             Text(
               'Välj bildkälla',
-              style: AppTheme.displaySmall.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.displaySmall.copyWith(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: AppTheme.spacingLg),
+            SizedBox(height: AppDimensions.spacingLg),
             ListTile(
               leading: const Icon(Icons.camera_alt, size: 28),
               title: const Text('Ta foto'),
@@ -70,7 +72,7 @@ class ImagePickerDialogs {
                 Navigator.pop(context, ImageSource.gallery);
               },
             ),
-            SizedBox(height: AppTheme.spacingLg),
+            SizedBox(height: AppDimensions.spacingLg),
           ],
         ),
       ),
@@ -118,7 +120,7 @@ class ImagePickerDialogs {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -168,12 +170,12 @@ class ImagePickerDialogs {
                       Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingMd),
+                  SizedBox(height: AppDimensions.spacingL),
                   Text(
                     progress.message,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  SizedBox(height: AppTheme.spacingSm),
+                  SizedBox(height: AppDimensions.spacingS),
                   Text(
                     '$percentage% (${progress.completed}/${progress.total})',
                     style: Theme.of(context).textTheme.bodySmall,

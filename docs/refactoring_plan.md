@@ -522,14 +522,136 @@ Run the script to update all imports automatically.
 
 ---
 
-## PHASE 8: UNIFY DATA MODELS (Week 10)
+## PHASE 8: ADVANCED SRP REFACTORING (Week 10-11)
 
 ### Objective
-Consolidate 4+ recipe model variants into one.
+✅ **COMPLETED**: Split 8 files (4,347 lines) into 38 focused components using facade patterns.
+
+### Completed Implementation
+
+#### ✅ Step 8.1: High Priority Files Split
+- **archived_recipes.dart** (771→9 lines, 99% reduction)
+- **social_components.dart** (761→40 lines, 95% reduction)  
+- **social_media_extractor.dart** (611→30 lines, 95% reduction)
+
+#### ✅ Step 8.2: Medium Priority Files Split
+- **universal_image_manager.dart** (already refactored)
+- **permission_validators.dart** (599→24 lines, 96% reduction)
+- **edit_recipe_view.dart** (591→124 lines, 79% reduction)
+- **offline_service.dart** (587→200 lines, 66% reduction)
+
+#### ✅ Step 8.3: Architecture Patterns Applied
+- **Facade Pattern**: 100% backward compatibility maintained
+- **Single Responsibility**: Each component has one clear purpose
+- **Focused Modules**: 38 new components with clear boundaries
+- **Clean Dependencies**: Proper separation between concerns
+
+### Results Achieved
+- **85% average code reduction** in main facade files
+- **38 focused components** created with excellent SRP adherence
+- **100% backward compatibility** maintained across all splits
+- **All compilation errors resolved** and import warnings fixed
+
+---
+
+## PHASE 9: LARGE FILE SRP REFACTORING (Week 12-13)
+
+### Objective
+Split the remaining 16 largest files (300+ lines) that violate Single Responsibility Principle.
+
+### Priority Files Identified
+
+#### 🔴 High Priority (800+ lines)
+1. **`lib/models/realtime/realtime_menu.dart`** - **960 lines**
+   - Split into: Data model + Business logic + Sync manager + Utilities
+   - **Issues**: Menu data + participants + Firebase sync + business operations
+
+2. **`lib/services/unified/unified_recipe_service.dart`** - **900 lines**
+   - Split into: Personal operations + Social operations + Realtime operations + Cache manager
+   - **Issues**: Multiple domain responsibilities in single service
+
+3. **`lib/models/realtime/realtime_recipe.dart`** - **750 lines**
+   - Split into: Data model + Collaboration manager + Conflict resolver
+   - **Issues**: Recipe data + realtime logic + permission management
+
+#### 🟡 Medium-High Priority (650-750 lines)
+4. **`lib/models/unified/unified_recipe.dart`** - **691 lines**
+5. **`lib/viewmodels/realtime_menu_viewmodel.dart`** - **690 lines**
+6. **`lib/viewmodels/unified_recipe_viewmodel.dart`** - **661 lines**
+7. **`lib/widgets/user/user_display_widgets.dart`** - **653 lines**
+8. **`lib/viewmodels/shared_content_viewmodel.dart`** - **653 lines**
+
+#### 🟢 Medium Priority (550-650 lines)
+9. **`lib/viewmodels/menu_viewmodel.dart`** - **644 lines**
+10. **`lib/services/realtime/realtime_menu_service.dart`** - **632 lines**
+11. **`lib/core/dialogs/dialog_factory.dart`** - **630 lines**
+12. **`lib/services/unified/unified_friends_service.dart`** - **585 lines**
+13. **`lib/views/social/collaborative_shopping_view.dart`** - **572 lines**
+14. **`lib/widgets/common/content_card.dart`** - **556 lines**
+15. **`lib/views/social/user_profile_edit_view.dart`** - **552 lines**
+16. **`lib/viewmodels/recipe_form_viewmodel.dart`** - **550 lines**
 
 ### Implementation Steps
 
-#### Step 8.1: Create Unified Recipe Model
+#### Step 9.1: Split RealtimeMenu Model (960 lines)
+```dart
+// lib/models/realtime/realtime_menu_data.dart
+class RealtimeMenuData {
+  // Pure data representation
+}
+
+// lib/models/realtime/realtime_menu_operations.dart  
+class RealtimeMenuOperations {
+  // Business logic operations
+}
+
+// lib/models/realtime/realtime_menu_sync.dart
+class RealtimeMenuSync {
+  // Firebase synchronization
+}
+
+// lib/models/realtime/realtime_menu.dart (facade)
+class RealtimeMenu {
+  // Backward compatible facade
+}
+```
+
+#### Step 9.2: Split UnifiedRecipeService (900 lines)
+```dart
+// lib/services/unified/modules/personal_recipe_operations.dart
+// lib/services/unified/modules/social_recipe_operations.dart
+// lib/services/unified/modules/realtime_recipe_operations.dart
+// lib/services/unified/modules/recipe_cache_manager.dart
+// lib/services/unified/unified_recipe_service.dart (facade)
+```
+
+#### Step 9.3: Split RealtimeRecipe Model (750 lines)
+```dart
+// lib/models/realtime/realtime_recipe_data.dart
+// lib/models/realtime/realtime_recipe_collaboration.dart
+// lib/models/realtime/realtime_recipe_conflicts.dart
+// lib/models/realtime/realtime_recipe.dart (facade)
+```
+
+#### Step 9.4: Continue with Remaining Files
+Apply same facade pattern to all 16 identified files, creating focused components while maintaining backward compatibility.
+
+### Expected Results
+- **16 large files** split into **80+ focused components**
+- **~3,000 lines** of complex code reorganized
+- **70% average reduction** in main file sizes
+- **Improved maintainability** through clear separation of concerns
+
+---
+
+## PHASE 10: UNIFY DATA MODELS (Week 14)
+
+### Objective
+Consolidate 4+ recipe model variants into one unified model.
+
+### Implementation Steps
+
+#### Step 10.1: Create Unified Recipe Model
 
 Create `lib/models/recipe.dart`:
 ```dart
@@ -557,7 +679,7 @@ class RecipeMetadata {
 enum RecipeType { personal, shared, collaborative, realtime }
 ```
 
-#### Step 8.2: Create Model Adapters
+#### Step 10.2: Create Model Adapters
 
 Create adapters for migration:
 ```dart
@@ -568,20 +690,20 @@ class RecipeAdapter {
 }
 ```
 
-#### Step 8.3: Update All Services and ViewModels
+#### Step 10.3: Update All Services and ViewModels
 
 Systematically update all references to use new unified model.
 
 ---
 
-## PHASE 9: FINAL CLEANUP AND VALIDATION (Week 11-12)
+## PHASE 11: FINAL CLEANUP AND VALIDATION (Week 15-16)
 
 ### Objective
 Ensure all changes work correctly and no regressions.
 
 ### Implementation Steps
 
-#### Step 9.1: Create Architecture Validation Script
+#### Step 11.1: Create Architecture Validation Script
 
 Create `tools/validate_architecture.dart`:
 ```dart
@@ -600,21 +722,21 @@ void main() async {
 }
 ```
 
-#### Step 9.2: Comprehensive Testing
+#### Step 11.2: Comprehensive Testing
 
 1. Unit tests for all repositories
 2. Integration tests for services
 3. Widget tests for UI components
 4. E2E tests for critical user flows
 
-#### Step 9.3: Performance Validation
+#### Step 11.3: Performance Validation
 
 1. Profile app startup time
 2. Measure screen transition performance
 3. Check memory usage patterns
 4. Validate offline sync performance
 
-#### Step 9.4: Documentation Update
+#### Step 11.4: Documentation Update
 
 Update all documentation:
 - README.md with new architecture
@@ -633,9 +755,10 @@ Update all documentation:
 - [ ] Phase 5: Services consolidated from 10+ to 4
 - [ ] Phase 6: Duplication patterns eliminated
 - [ ] Phase 7: Widget files under 500 lines each
-- [ ] Phase 8: Single unified data model
-- [ ] Phase 9: All tests passing
-- [ ] Phase 10: Performance validated
+- [x] Phase 8: Advanced SRP refactoring completed (8 files → 38 components)
+- [ ] Phase 9: Large file SRP refactoring (16 files → 80+ components)
+- [ ] Phase 10: Single unified data model
+- [ ] Phase 11: All tests passing and performance validated
 
 ## SUCCESS METRICS
 

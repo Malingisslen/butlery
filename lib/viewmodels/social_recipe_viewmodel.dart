@@ -1,7 +1,7 @@
 // lib/viewmodels/social_recipe_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 import '../models/recipe_comment.dart';
 import '../services/unified/unified_recipe_service.dart';

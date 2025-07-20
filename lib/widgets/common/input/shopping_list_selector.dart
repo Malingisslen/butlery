@@ -1,8 +1,10 @@
 // lib/widgets/common/input/shopping_list_selector.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
-import '../../../models/recipe.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
+import '../../../models/recipe_unified.dart';
 import '../../../models/unified/unified_shopping_item.dart';
 import '../../../models/unified/unified_shopping_list.dart';
 import '../../../viewmodels/unified_shopping_viewmodel.dart';
@@ -69,10 +71,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             _buildListsSection(context, _viewModel),
             if (widget.menu != null && _selectedListId != null) ...[
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
               _buildAddToListSection(context, _viewModel),
             ],
           ],
@@ -87,22 +89,22 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       children: [
         Icon(
           Icons.shopping_cart,
-          size: AppTheme.iconSizeAction,
-          color: AppTheme.primaryColor,
+          size: AppDimensions.iconSizeAction,
+          color: AppColors.primaryBlue,
         ),
-        AppTheme.smallHorizontalGap,
+        const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: Text(
             'Handlistor',
-            style: AppTheme.sectionTitleStyle,
+            style: AppTextStyles.headlineSmall,
           ),
         ),
         FilledButton.icon(
           onPressed: () => _createNewList(context),
-          icon: Icon(Icons.add, size: AppTheme.iconSizeAction),
+          icon: Icon(Icons.add, size: AppDimensions.iconSizeAction),
           label: Text('Ny lista'),
           style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: AppColors.primaryBlue,
           ),
         ),
       ],
@@ -145,11 +147,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     final menuItems = _convertMenuToShoppingItems();
     
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withValues(alpha: 0.1),
-        borderRadius: AppTheme.largeRadius,
-        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,26 +160,26 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
             children: [
               Icon(
                 Icons.restaurant_menu,
-                size: AppTheme.iconSizeAction,
-                color: AppTheme.successColor,
+                size: AppDimensions.iconSizeAction,
+                color: AppColors.success,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Text(
                   'Lägg till från meny',
-                  style: AppTheme.cardTitleStyle.copyWith(
-                    color: AppTheme.successColor,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: AppColors.success,
                   ),
                 ),
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             'Lägg till ${menuItems.length} artiklar från menyn i "${selectedList.name}"',
-            style: AppTheme.bodyStyle,
+            style: AppTextStyles.bodyLarge,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Row(
             children: [
               Expanded(
@@ -186,12 +188,12 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                   icon: Icon(Icons.preview),
                   label: Text('Förhandsgranska'),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppTheme.successColor),
-                    foregroundColor: AppTheme.successColor,
+                    side: BorderSide(color: AppColors.success),
+                    foregroundColor: AppColors.success,
                   ),
                 ),
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: FilledButton.icon(
                   onPressed: _isAddingToList ? null : () => _addMenuToList(context, viewModel, selectedList, menuItems),
@@ -201,13 +203,13 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.neutralLight),
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
                           ),
                         )
                       : Icon(Icons.add_shopping_cart),
                   label: Text(_isAddingToList ? 'Lägger till...' : 'Lägg till'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.successColor,
+                    backgroundColor: AppColors.success,
                   ),
                 ),
               ),
@@ -241,7 +243,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                   ? 'Lista "$name" skapad'
                   : 'Kunde inte skapa lista: ${_viewModel.error ?? "Okänt fel"}',
             ),
-            backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+            backgroundColor: success ? AppColors.success : AppColors.error,
           ),
         );
 
@@ -283,7 +285,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                     ? '${menuItems.length} artiklar tillagda i "${selectedList.name}"'
                     : 'Kunde inte lägga till artiklar: ${viewModel.error ?? "Okänt fel"}',
               ),
-              backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+              backgroundColor: success ? AppColors.success : AppColors.error,
             ),
           );
         }
@@ -312,7 +314,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               final item = items[index];
               return ListTile(
                 dense: true,
-                leading: Icon(Icons.shopping_cart, size: AppTheme.iconSizeInfo),
+                leading: Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
                 title: Text(item.name),
                 subtitle: item.quantity > 0 
                     ? Text('${item.quantity} ${item.unit}')

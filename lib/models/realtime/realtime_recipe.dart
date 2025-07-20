@@ -1,7 +1,7 @@
 // lib/models/realtime/realtime_recipe.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../recipe.dart';
+import '../recipe_unified.dart';
 import '../permissions/resource_permission.dart';
 import 'realtime_resource.dart';
 
@@ -103,7 +103,8 @@ class RealtimeRecipe extends RealtimeResource {
       timeMinutes: timeMinutes,
       rating: rating,
       tags: tags,
-      updatedAt: DateTime.now(),
+      lastEditedByUserId: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -121,7 +122,8 @@ class RealtimeRecipe extends RealtimeResource {
   }) {
     final updatedRecipe = recipe.copyWith(
       ingredients: ingredients,
-      updatedAt: DateTime.now(),
+      lastEditedByUserId: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -175,7 +177,8 @@ class RealtimeRecipe extends RealtimeResource {
   }) {
     final updatedRecipe = recipe.copyWith(
       instructions: instructions,
-      updatedAt: DateTime.now(),
+      lastEditedByUserId: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -229,7 +232,8 @@ class RealtimeRecipe extends RealtimeResource {
   }) {
     final updatedRecipe = recipe.copyWith(
       imageUrls: imageUrls,
-      updatedAt: DateTime.now(),
+      lastEditedByUserId: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -385,7 +389,8 @@ class RealtimeRecipe extends RealtimeResource {
     // För nu, bara uppdatera portionsantalet
     final updatedRecipe = recipe.copyWith(
       portions: newPortions,
-      updatedAt: DateTime.now(),
+      lastEditedByUserId: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -526,7 +531,7 @@ class RealtimeRecipe extends RealtimeResource {
   @override
   Map<String, dynamic> serializeContent() {
     return {
-      'recipe': recipe.toFirestore(isNested: true),
+      'recipe': recipe.toFirestore(),
     };
   }
 
@@ -540,19 +545,34 @@ class RealtimeRecipe extends RealtimeResource {
 
     // Create Recipe from nested data
     final recipe = Recipe(
-      title: recipeData['title'] as String? ?? '',
-      description: recipeData['description'] as String? ?? '',
-      portions: recipeData['portions'] as int?,
-      timeMinutes: recipeData['timeMinutes'] as int?,
-      ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-      instructions: List<String>.from(recipeData['instructions'] ?? []),
-      tags: recipeData['tags'] != null
-          ? List<String>.from(recipeData['tags'])
-          : null,
-      rating: (recipeData['rating'] as num?)?.toDouble(),
-      imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-      mealType: recipeData['mealType'] as String? ?? 'Middag',
-      sourceUrl: recipeData['sourceUrl'] as String?,
+      core: RecipeCore(
+        id: recipeData['id'] as String? ?? doc.id,
+        title: recipeData['title'] as String? ?? '',
+        description: recipeData['description'] as String? ?? '',
+        portions: recipeData['portions'] as int?,
+        timeMinutes: recipeData['timeMinutes'] as int?,
+        ingredients: List<String>.from(recipeData['ingredients'] ?? []),
+        instructions: List<String>.from(recipeData['instructions'] ?? []),
+        tags: recipeData['tags'] != null
+            ? List<String>.from(recipeData['tags'])
+            : null,
+        rating: (recipeData['rating'] as num?)?.toDouble(),
+        imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
+        mealType: recipeData['mealType'] as String? ?? 'Middag',
+        sourceUrl: recipeData['sourceUrl'] as String?,
+        createdAt: recipeData['createdAt'] != null 
+            ? (recipeData['createdAt'] as Timestamp).toDate()
+            : DateTime.now(),
+        updatedAt: recipeData['updatedAt'] != null 
+            ? (recipeData['updatedAt'] as Timestamp).toDate()
+            : DateTime.now(),
+        createdBy: recipeData['createdBy'] as String?,
+        isPublic: recipeData['isPublic'] as bool? ?? false,
+        lastCookedAt: recipeData['lastCookedAt'] != null 
+            ? (recipeData['lastCookedAt'] as Timestamp).toDate()
+            : null,
+      ),
+      type: RecipeType.realtime,
     );
 
     return RealtimeRecipe(
@@ -679,12 +699,27 @@ class RealtimeRecipe extends RealtimeResource {
 
   /// Skapa en personlig kopia av receptet (för "Spara kopia" funktionen)
   Recipe createPersonalCopy({required String newOwnerId}) {
-    return recipe.copyWith(
-      id: '', // Nytt ID genereras automatiskt
-      sourceUrl: 'Delat från $ownerDisplayName',
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      lastCookedAt: null,
+    return Recipe(
+      core: RecipeCore(
+        id: '', // Nytt ID genereras automatiskt  
+        title: recipe.title,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        mealType: recipe.mealType,
+        portions: recipe.portions,
+        timeMinutes: recipe.timeMinutes,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        sourceUrl: 'Delat från $ownerDisplayName',
+        imageUrls: recipe.imageUrls,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        createdBy: newOwnerId,
+        isPublic: false,
+        lastCookedAt: null,
+      ),
+      type: RecipeType.personal,
     );
   }
 

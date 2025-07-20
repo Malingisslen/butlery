@@ -4,8 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
-import 'recipe.dart'; // Import existing Recipe model
+import 'recipe_unified.dart'; // Import unified Recipe model
 import 'permissions/edit_mode.dart';
+import 'permissions/resource_permission.dart';
 
 
 enum ShareScope {
@@ -197,6 +198,15 @@ class SharedRecipe {
     );
   }
 
+  /// Get permission level for shared recipe
+  ResourcePermission get permission {
+    if (allowCollaboration) {
+      return ResourcePermission.editor;
+    } else {
+      return ResourcePermission.viewer;
+    }
+  }
+
   /// 🆕 Bestäm redigeringsläge för användaren
   EditMode getEditModeFor(String userId) {
     if (sharedByUserId == userId) {
@@ -249,8 +259,7 @@ class SharedRecipe {
       'viewedByUserIds': viewedByUserIds,
       'importedByUserIds': importedByUserIds,
       'dismissedByUserIds': dismissedByUserIds, // 🆕 Spara dismiss data
-      'recipeSnapshot': recipeSnapshot.toFirestore(
-          isNested: true), // 🔧 FIXED: isNested = true
+      'recipeSnapshot': recipeSnapshot.toFirestore(), // Fixed: removed isNested parameter
     };
   }
 
@@ -266,21 +275,24 @@ class SharedRecipe {
 
       // Skapa Recipe direkt från data istället för att använda mock DocumentSnapshot
       final recipe = Recipe(
-        id: recipeData['id'] as String? ?? '',
-        title: recipeData['title'] as String? ?? 'Untitled Recipe',
-        description: recipeData['description'] as String? ?? '',
-        ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-        instructions: List<String>.from(recipeData['instructions'] ?? []),
-        imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-        mealType: recipeData['mealType'] as String? ?? 'Middag',
-        portions: recipeData['portions'] as int?,
-        timeMinutes: recipeData['timeMinutes'] as int?,
-        rating: (recipeData['rating'] as num?)?.toDouble(),
-        tags: List<String>.from(recipeData['tags'] ?? []),
-        sourceUrl: recipeData['sourceUrl'] as String?,
-        createdAt: _parseTimestamp(recipeData['createdAt']) ?? DateTime.now(),
-        updatedAt: _parseTimestamp(recipeData['updatedAt']) ?? DateTime.now(),
-        lastCookedAt: _parseTimestamp(recipeData['lastCookedAt']),
+        core: RecipeCore(
+          id: recipeData['id'] as String? ?? '',
+          title: recipeData['title'] as String? ?? 'Untitled Recipe',
+          description: recipeData['description'] as String? ?? '',
+          ingredients: List<String>.from(recipeData['ingredients'] ?? []),
+          instructions: List<String>.from(recipeData['instructions'] ?? []),
+          imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
+          mealType: recipeData['mealType'] as String? ?? 'Middag',
+          portions: recipeData['portions'] as int?,
+          timeMinutes: recipeData['timeMinutes'] as int?,
+          rating: (recipeData['rating'] as num?)?.toDouble(),
+          tags: List<String>.from(recipeData['tags'] ?? []),
+          sourceUrl: recipeData['sourceUrl'] as String?,
+          createdAt: _parseTimestamp(recipeData['createdAt']) ?? DateTime.now(),
+          updatedAt: _parseTimestamp(recipeData['updatedAt']) ?? DateTime.now(),
+          lastCookedAt: _parseTimestamp(recipeData['lastCookedAt']),
+        ),
+        type: RecipeType.shared, // Mark as shared recipe
       );
 
       return SharedRecipe(

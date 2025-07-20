@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 
 /// Invitation target state widgets
 ///
@@ -14,15 +16,19 @@ class InvitationTargetStates {
   /// Build loading state for target lists
   static Widget buildTargetListLoading() {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
-          AppTheme.mediumLoadingIndicator(),
-          AppTheme.mediumGap,
+          const CircularProgressIndicator(),
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Laddar mål...',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
           ),
         ],
       ),
@@ -33,11 +39,15 @@ class InvitationTargetStates {
   static Widget buildTargetCardLoading() {
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingSm,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingS,
+        vertical: AppDimensions.spacingXs,
       ),
-      padding: AppTheme.cardPadding,
-      decoration: AppTheme.cardDecoration,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Row(
         children: [
           // Loading emoji container
@@ -45,14 +55,21 @@ class InvitationTargetStates {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: AppTheme.smallRadius,
+              color: AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Center(
-              child: AppTheme.smallLoadingIndicator(),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
             ),
           ),
-          AppTheme.smallHorizontalGap,
+          const SizedBox(width: AppDimensions.spacingM),
 
           // Loading text placeholders
           Expanded(
@@ -63,8 +80,8 @@ class InvitationTargetStates {
                   height: 16,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundColor,
-                    borderRadius: AppTheme.smallRadius,
+                    color: AppColors.backgroundLight,
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -72,8 +89,8 @@ class InvitationTargetStates {
                   height: 12,
                   width: 120,
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundColor,
-                    borderRadius: AppTheme.smallRadius,
+                    color: AppColors.backgroundLight,
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
                 ),
               ],
@@ -85,8 +102,8 @@ class InvitationTargetStates {
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: AppTheme.smallRadius,
+              color: AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
           ),
         ],
@@ -102,47 +119,51 @@ class InvitationTargetStates {
     VoidCallback? onRetry,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           Icon(
             Icons.error_outline,
-            size: AppTheme.iconSizeEmptyState,
-            color: AppTheme.errorColor,
+            size: AppDimensions.iconSizeEmptyState,
+            color: AppColors.error,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Kunde inte ladda mål',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              color: AppTheme.errorColor,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.error,
             ),
           ),
           if (errorMessage != null) ...[
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               errorMessage,
-              style: AppTheme.subtitleStyle,
+              style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
           ],
           if (onRetry != null) ...[
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: Icon(
                 Icons.refresh,
-                size: AppTheme.iconSizeAction,
+                size: AppDimensions.iconSizeAction,
               ),
               label: Text(
                 'Försök igen',
-                style: AppTheme.buttonTextStyle,
+                style: AppTextStyles.labelLarge,
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor,
-                foregroundColor: AppTheme.neutralLight,
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.neutralLight,
                 shape: RoundedRectangleBorder(
-                  borderRadius: AppTheme.mediumRadius,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
               ),
             ),
@@ -157,26 +178,30 @@ class InvitationTargetStates {
   /// Build empty state for targets (no available targets)
   static Widget buildNoTargetsAvailable() {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           Icon(
             Icons.people_outline,
-            size: AppTheme.iconSizeEmptyState,
-            color: AppTheme.textTertiary,
+            size: AppDimensions.iconSizeEmptyState,
+            color: AppColors.textMedium,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Inga mål tillgängliga',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              color: AppTheme.textTertiary,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.textMedium,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             'Lägg till vänner eller skapa grupper för att börja dela',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
         ],
@@ -190,32 +215,36 @@ class InvitationTargetStates {
     VoidCallback? onClearSearch,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           Icon(
             Icons.search_off,
-            size: AppTheme.iconSizeEmptyState,
-            color: AppTheme.textTertiary,
+            size: AppDimensions.iconSizeEmptyState,
+            color: AppColors.textMedium,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Inga träffar',
-            style: AppTheme.sectionTitleStyle.copyWith(
-              color: AppTheme.textTertiary,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.textMedium,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: AppTheme.subtitleStyle,
+              style: AppTextStyles.titleMedium,
               children: [
                 const TextSpan(text: 'Ingen träff för '),
                 TextSpan(
                   text: '"$searchQuery"',
-                  style: AppTheme.subtitleStyle.copyWith(
+                  style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -224,16 +253,16 @@ class InvitationTargetStates {
             ),
           ),
           if (onClearSearch != null) ...[
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             TextButton.icon(
               onPressed: onClearSearch,
               icon: Icon(
                 Icons.clear,
-                size: AppTheme.iconSizeAction,
+                size: AppDimensions.iconSizeAction,
               ),
               label: Text(
                 'Rensa sökning',
-                style: AppTheme.buttonTextStyle,
+                style: AppTextStyles.labelLarge,
               ),
             ),
           ],
@@ -245,12 +274,12 @@ class InvitationTargetStates {
   /// Build empty state for selected targets
   static Widget buildNoTargetsSelected() {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingLg),
+      padding: EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: AppTheme.mediumRadius,
+        color: AppColors.backgroundColor,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppTheme.dividerColor,
+          color: AppColors.divider,
           style: BorderStyle.solid,
         ),
       ),
@@ -258,20 +287,20 @@ class InvitationTargetStates {
         children: [
           Icon(
             Icons.touch_app,
-            size: AppTheme.iconSizeDisplay,
-            color: AppTheme.textTertiary,
+            size: AppDimensions.iconSizeDisplay,
+            color: AppColors.textMedium,
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             'Inga mål valda',
-            style: AppTheme.cardTitleStyle.copyWith(
-              color: AppTheme.textTertiary,
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.textMedium,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Tryck på mål nedan för att välja',
-            style: AppTheme.captionStyle,
+            style: AppTextStyles.bodySmall,
             textAlign: TextAlign.center,
           ),
         ],
@@ -288,35 +317,37 @@ class InvitationTargetStates {
     VoidCallback? onDismiss,
   }) {
     return Container(
-      margin: EdgeInsets.all(AppTheme.spacingMd),
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      margin: EdgeInsets.all(AppDimensions.spacingL),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withValues(alpha: 0.1),
-        borderRadius: AppTheme.mediumRadius,
-        border: Border.all(color: AppTheme.successColor),
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.success),
       ),
       child: Row(
         children: [
           Icon(
             Icons.check_circle,
-            color: AppTheme.successColor,
-            size: AppTheme.iconSizeAction,
+            color: AppColors.success,
+            size: AppDimensions.iconSizeAction,
           ),
-          AppTheme.smallHorizontalGap,
+          const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   operation,
-                  style: AppTheme.successTextStyle,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.success,
+                  ),
                 ),
                 if (successMessage != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     successMessage,
-                    style: AppTheme.captionStyle.copyWith(
-                      color: AppTheme.successColor.withValues(alpha: 0.8),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.success.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -328,8 +359,8 @@ class InvitationTargetStates {
               onPressed: onDismiss,
               icon: Icon(
                 Icons.close,
-                color: AppTheme.successColor,
-                size: AppTheme.iconSizeInfo,
+                color: AppColors.success,
+                size: AppDimensions.iconSizeM,
               ),
             ),
         ],
@@ -343,49 +374,49 @@ class InvitationTargetStates {
     VoidCallback? onContinue,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingLg),
+      padding: EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withValues(alpha: 0.1),
-        borderRadius: AppTheme.mediumRadius,
-        border: Border.all(color: AppTheme.successColor),
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.success),
       ),
       child: Column(
         children: [
           Icon(
             Icons.check_circle,
-            size: AppTheme.iconSizeDisplay,
-            color: AppTheme.successColor,
+            size: AppDimensions.iconSizeDisplay,
+            color: AppColors.success,
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             '${targets.length} mål valda',
-            style: AppTheme.cardTitleStyle.copyWith(
-              color: AppTheme.successColor,
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.success,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Du kan nu fortsätta med delningen',
-            style: AppTheme.captionStyle.copyWith(
-              color: AppTheme.successColor.withValues(alpha: 0.8),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.success.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
           if (onContinue != null) ...[
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             ElevatedButton(
               onPressed: onContinue,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.successColor,
-                foregroundColor: AppTheme.neutralLight,
+                backgroundColor: AppColors.success,
+                foregroundColor: AppColors.neutralLight,
                 shape: RoundedRectangleBorder(
-                  borderRadius: AppTheme.mediumRadius,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
               ),
               child: Text(
                 'Fortsätt',
-                style: AppTheme.buttonTextStyle.copyWith(
-                  color: AppTheme.neutralLight,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.neutralLight,
                 ),
               ),
             ),
@@ -406,46 +437,50 @@ class InvitationTargetStates {
     String? actionLabel,
     Color? color,
   }) {
-    final stateColor = color ?? AppTheme.textSecondary;
+    final stateColor = color ?? AppColors.textSecondary;
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
-      decoration: AppTheme.cardDecoration,
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           Icon(
             icon,
-            size: AppTheme.iconSizeEmptyState,
+            size: AppDimensions.iconSizeEmptyState,
             color: stateColor,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             title,
-            style: AppTheme.sectionTitleStyle.copyWith(
+            style: AppTextStyles.titleLarge.copyWith(
               color: stateColor,
             ),
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             message,
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
           if (onAction != null && actionLabel != null) ...[
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             ElevatedButton(
               onPressed: onAction,
               style: ElevatedButton.styleFrom(
                 backgroundColor: stateColor,
-                foregroundColor: AppTheme.neutralLight,
+                foregroundColor: AppColors.neutralLight,
                 shape: RoundedRectangleBorder(
-                  borderRadius: AppTheme.mediumRadius,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
               ),
               child: Text(
                 actionLabel,
-                style: AppTheme.buttonTextStyle.copyWith(
-                  color: AppTheme.neutralLight,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.neutralLight,
                 ),
               ),
             ),

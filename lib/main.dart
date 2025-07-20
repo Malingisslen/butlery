@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'core/constants/routes.dart';
 import 'core/router/app_router.dart';
+import 'theme/app_dimensions.dart';
 
 // Firebase Analytics (för observer)
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -30,6 +31,7 @@ import 'services/analytics_service.dart';
 
 // Theme
 import 'theme/app_theme.dart';
+import 'theme/app_colors.dart';
 
 // Auth view
 import 'views/auth_view.dart';
@@ -128,7 +130,7 @@ class _ButleryAppState extends State<ButleryApp> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const CircularProgressIndicator(),
-                const SizedBox(height: 16),
+                SizedBox(height: AppDimensions.spacingXl),
                 Text('Initialiserar tjänster...', style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
@@ -189,36 +191,36 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
     // Show loading screen while initializing
     if (!_isInitialized) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppColors.backgroundBeige,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // App icon/logo
               Container(
-                width: AppTheme.iconSizeHero,
-                height: AppTheme.iconSizeHero,
+                width: AppDimensions.iconSizeHero,
+                height: AppDimensions.iconSizeHero,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  color: AppColors.primaryBlue,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
                 child: Icon(
                   Icons.restaurant_menu,
-                  size: AppTheme.iconSizeHero,
-                  color: AppTheme.neutralLight,
+                  size: AppDimensions.iconSizeHero,
+                  color: AppColors.neutralLight,
                 ),
               ),
-              AppTheme.largeGap,
+              SizedBox(height: AppDimensions.spacingXxxl),
               
               // Loading indicator
               const CircularProgressIndicator(),
-              AppTheme.mediumGap,
+              SizedBox(height: AppDimensions.spacingXl),
               
               // Loading text
               Text(
                 'Startar Butlery...',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.textTertiary,
+                  color: AppColors.textTertiary,
                 ),
               ),
             ],
@@ -246,17 +248,17 @@ class AuthWrapper extends StatelessWidget {
         // Medan vi väntar på auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: AppTheme.backgroundColor,
+            backgroundColor: AppColors.backgroundBeige,
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(),
-                  AppTheme.mediumGap,
+                  SizedBox(height: AppDimensions.spacingXl),
                   Text(
                     'Kontrollerar inloggning...',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.textTertiary,
+                      color: AppColors.textTertiary,
                     ),
                   ),
                 ],
@@ -268,21 +270,21 @@ class AuthWrapper extends StatelessWidget {
         // Om vi har ett fel
         if (snapshot.hasError) {
           return Scaffold(
-            backgroundColor: AppTheme.backgroundColor,
+            backgroundColor: AppColors.backgroundBeige,
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppTheme.errorIcon(context),
-                  AppTheme.mediumGap,
-                  Text('Ett fel uppstod', style: AppTheme.sectionTitleStyle),
-                  AppTheme.smallGap,
+                  Icon(Icons.error, color: AppColors.error, size: AppDimensions.iconSizeXl),
+                  SizedBox(height: AppDimensions.spacingXl),
+                  Text('Ett fel uppstod', style: Theme.of(context).textTheme.headlineSmall),
+                  SizedBox(height: AppDimensions.spacingM),
                   Text(
                     snapshot.error.toString(),
                     textAlign: TextAlign.center,
-                    style: AppTheme.bodyStyle,
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  AppTheme.mediumGap,
+                  SizedBox(height: AppDimensions.spacingXl),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pushReplacementNamed(Routes.home),
                     child: const Text('Försök igen'),

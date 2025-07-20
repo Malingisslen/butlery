@@ -1,7 +1,7 @@
 // lib/views/recipe_detail/fullscreen_image_viewer.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
 import '../../widgets/image/universal_image_manager.dart' as img;
 
 /// Fullscreen image viewer for recipe images
@@ -45,9 +45,9 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.dark,
+      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: AppTheme.transparent,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('${_currentIndex + 1} / ${widget.imageUrls.length}'),
       ),

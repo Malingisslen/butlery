@@ -1,7 +1,9 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../viewmodels/menu_viewmodel.dart';
 import '../state_widget.dart';
 
@@ -63,39 +65,39 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: AppTheme.bottomSheetBorderRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.bottomSheetBorderRadius),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
           Container(
-            width: AppTheme.iconSizeDisplay,
-            height: AppTheme.spacingXs,
-            margin: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
+            width: AppDimensions.iconSizeDisplay,
+            height: AppDimensions.spacingXs,
+            margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
             decoration: BoxDecoration(
               color: Theme.of(context)
                   .colorScheme
                   .onSurfaceVariant
                   .withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(AppTheme.spacingXxs),
+              borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
             ),
           ),
 
           // Title
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
             child: Row(
               children: [
                 Icon(
                   Icons.folder_open,
-                  size: AppTheme.iconSizeAction,
+                  size: AppDimensions.iconSizeAction,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                SizedBox(width: AppTheme.spacingSm),
+                SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Sparade menyer',
-                  style: AppTheme.sectionTitleStyle,
+                  style: AppTextStyles.headlineSmall,
                 ),
                 const Spacer(),
                 TextButton(
@@ -106,7 +108,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ),
           ),
 
-          Divider(height: AppTheme.spacingMd),
+          Divider(height: AppDimensions.spacingL),
 
           // Content
           Flexible(
@@ -125,7 +127,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: EdgeInsets.all(AppTheme.spacingXl),
+      padding: EdgeInsets.all(AppDimensions.spacingXl),
       child: StateWidget.empty(
         title: 'Inga sparade menyer',
         subtitle: 'Du har inga sparade menyer än. Generera och spara en meny först!',
@@ -150,16 +152,16 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   Widget _buildMenuListItem(dynamic menu) {
     return Card(
       margin: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXs,
       ),
       child: ListTile(
         leading: Container(
-          width: AppTheme.iconSizeDisplay,
-          height: AppTheme.iconSizeDisplay,
+          width: AppDimensions.iconSizeDisplay,
+          height: AppDimensions.iconSizeDisplay,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: AppTheme.smallRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
           ),
           child: Icon(
             Icons.restaurant_menu,
@@ -168,11 +170,11 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         ),
         title: Text(
           'Meny ${menu.toString()}',
-          style: AppTheme.cardTitleStyle,
+          style: AppTextStyles.titleMedium,
         ),
         subtitle: Text(
           'Sparad tidigare',
-          style: AppTheme.captionStyle,
+          style: AppTextStyles.bodySmall,
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _handleMenuAction(menu, value),
@@ -191,9 +193,9 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete, color: Colors.red),
+                  Icon(Icons.delete, color: AppColors.error),
                   SizedBox(width: 8),
-                  Text('Ta bort', style: TextStyle(color: Colors.red)),
+                  Text('Ta bort', style: TextStyle(color: AppColors.error)),
                 ],
               ),
             ),
@@ -225,7 +227,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Meny laddad!'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -234,7 +236,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fel vid laddning: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -255,7 +257,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Ta bort'),
           ),
@@ -275,7 +277,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Meny borttagen'),
-              backgroundColor: AppTheme.successColor,
+              backgroundColor: AppColors.success,
             ),
           );
         }
@@ -284,7 +286,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Fel vid borttagning: $e'),
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
           );
         }

@@ -5,10 +5,12 @@ enum EditMode {
   collaborative, // Kollaborativ redigering - ändringar synkas
   readOnlyWithFork, // Bara läsning + "Spara min kopia"
   noAccess, // Ingen åtkomst
+  edit, // Standard edit mode
+  view, // Standard view mode
 }
 
 extension EditModeExtension on EditMode {
-  bool get canEdit => this == EditMode.owner || this == EditMode.collaborative;
+  bool get canEdit => this == EditMode.owner || this == EditMode.collaborative || this == EditMode.edit;
   bool get canFork => this != EditMode.noAccess;
   bool get showForkButton =>
       this == EditMode.readOnlyWithFork || this == EditMode.collaborative;
@@ -23,6 +25,10 @@ extension EditModeExtension on EditMode {
         return 'Skrivskyddat - du kan spara din egen kopia';
       case EditMode.noAccess:
         return 'Ingen åtkomst';
+      case EditMode.edit:
+        return 'Redigeringsläge';
+      case EditMode.view:
+        return 'Visningsläge';
     }
   }
 }

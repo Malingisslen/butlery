@@ -15,7 +15,11 @@
       "Bash(mkdir:*)",
       "Bash(sed:*)",
       "Bash(ls:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
 import 'image_config.dart';
 
 /// Shared image components and utilities
@@ -55,7 +55,7 @@ class ImageComponents {
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppTheme.cardColor,
+        color: backgroundColor ?? AppColors.cardWhite,
         borderRadius: config.effectiveBorderRadius,
         border: config.borderColor != null
             ? Border.all(
@@ -68,7 +68,7 @@ class ImageComponents {
           Icon(
             Icons.image_outlined,
             size: dimensions.width == double.infinity ? 48 : dimensions.width * 0.4,
-            color: AppTheme.textSecondary,
+            color: AppColors.textSecondary,
           ),
     );
   }
@@ -88,7 +88,7 @@ class ImageComponents {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              AppTheme.primaryColor,
+              AppColors.primaryBlue,
             ),
           ),
         ),
@@ -111,14 +111,14 @@ class ImageComponents {
         Icon(
           Icons.error_outline,
           size: dimensions.width == double.infinity ? 32 : dimensions.width * 0.3,
-          color: AppTheme.errorColor,
+          color: AppColors.error,
         ),
         if (errorMessage != null) ...[
           const SizedBox(height: 4),
           Text(
             errorMessage,
             style: const TextStyle(
-              color: AppTheme.errorColor,
+              color: AppColors.error,
               fontSize: 12,
             ),
             textAlign: TextAlign.center,
@@ -133,7 +133,7 @@ class ImageComponents {
             child: const Text(
               'Retry',
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: AppColors.primaryBlue,
                 fontSize: 12,
               ),
             ),
@@ -162,10 +162,10 @@ class ImageComponents {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor.withValues(alpha: 0.9),
+          color: AppColors.cardWhite.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: AppTheme.dividerColor,
+            color: AppColors.divider,
           ),
         ),
         child: Row(
@@ -174,7 +174,7 @@ class ImageComponents {
             const Icon(
               Icons.collections_outlined,
               size: 12,
-              color: AppTheme.textPrimary,
+              color: AppColors.textPrimary,
             ),
             const SizedBox(width: 2),
             Text(
@@ -182,7 +182,7 @@ class ImageComponents {
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: AppTheme.textPrimary,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -205,10 +205,10 @@ class ImageComponents {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor.withValues(alpha: 0.9),
+          color: AppColors.cardWhite.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppTheme.dividerColor,
+            color: AppColors.divider,
           ),
         ),
         child: Text(
@@ -216,7 +216,7 @@ class ImageComponents {
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppTheme.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
       ),
@@ -249,10 +249,10 @@ class ImageComponents {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: index == currentIndex
-                    ? AppTheme.primaryColor
-                    : AppTheme.cardColor.withValues(alpha: 0.6),
+                    ? AppColors.primaryBlue
+                    : AppColors.cardWhite.withValues(alpha: 0.6),
                 border: Border.all(
-                  color: AppTheme.dividerColor,
+                  color: AppColors.divider,
                   width: 0.5,
                 ),
               ),
@@ -281,9 +281,9 @@ class ImageComponents {
         height: indicatorSize,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isOnline ? AppTheme.successColor : AppTheme.textSecondary,
+          color: isOnline ? AppColors.success : AppColors.textSecondary,
           border: Border.all(
-            color: AppTheme.cardColor,
+            color: AppColors.cardWhite,
             width: 2,
           ),
         ),
