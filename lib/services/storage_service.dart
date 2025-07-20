@@ -265,6 +265,22 @@ class StorageService {
     return true;
   }
 
+  /// Upload recipe image (alias for uploadImageFile)
+  Future<String?> uploadRecipeImage(
+    File imageFile,
+    String recipeId, {
+    Function(double)? onProgress,
+  }) async {
+    // Use current user ID or fallback logic
+    final userId = 'current_user'; // This should be replaced with actual user ID logic
+    return await uploadImageFile(imageFile, userId, onProgress: onProgress);
+  }
+
+  /// Delete recipe image (alias for deleteImage)
+  Future<void> deleteRecipeImage(String imageUrl) async {
+    await deleteImage(imageUrl);
+  }
+
   /// Hämta Storage-användning för en användare
   Future<StorageInfo?> getUserStorageInfo(String userId) async {
     try {

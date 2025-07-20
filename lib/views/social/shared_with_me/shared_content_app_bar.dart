@@ -1,0 +1,68 @@
+// lib/views/social/shared_with_me/shared_content_app_bar.dart
+
+import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_text_styles.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../viewmodels/shared_content_viewmodel.dart';
+
+/// SharedContentAppBar - App bar for shared content view
+///
+/// Handles the app bar with notification badges and refresh functionality.
+class SharedContentAppBar {
+  static Widget build(BuildContext context, SharedContentViewModel viewModel) {
+    return SliverAppBar(
+      title: const Text('Delat innehåll'),
+      floating: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.arrow_back),
+      ),
+      actions: [
+        // Notification badge med unread count
+        if (viewModel.totalUnreadCount > 0)
+          Container(
+            margin: EdgeInsets.only(right: AppDimensions.spacingS),
+            child: Stack(
+              children: [
+                IconButton(
+                  onPressed: () => viewModel.refresh(),
+                  icon: const Icon(Icons.refresh),
+                ),
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: EdgeInsets.all(AppDimensions.spacingXs),
+                    decoration: BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
+                    ),
+                    child: Text(
+                      '${viewModel.totalUnreadCount}',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.neutralLight,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          IconButton(
+            onPressed: () => viewModel.refresh(),
+            icon: const Icon(Icons.refresh),
+          ),
+      ],
+    );
+  }
+}

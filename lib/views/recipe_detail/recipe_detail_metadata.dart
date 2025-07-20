@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../viewmodels/recipe_detail_viewmodel.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/utils/snackbar_utils.dart';
 
 /// Recipe detail metadata widget
@@ -36,7 +38,7 @@ class RecipeDetailMetadata extends StatelessWidget {
         // Source URL (if available)
         if (viewModel.recipe.sourceUrl != null &&
             viewModel.recipe.sourceUrl!.isNotEmpty) ...[
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           _buildSourceUrl(context),
         ],
       ],
@@ -48,11 +50,11 @@ class RecipeDetailMetadata extends StatelessWidget {
     
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,18 +64,18 @@ class RecipeDetailMetadata extends StatelessWidget {
             children: [
               Icon(
                 Icons.info_outline,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Recept information',
-                style: AppTheme.cardTitleStyle,
+                style: AppTextStyles.titleMedium,
               ),
             ],
           ),
           
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           
           // Metadata items
           Row(
@@ -91,7 +93,7 @@ class RecipeDetailMetadata extends StatelessWidget {
               
               // Cooking time
               if ((recipe.timeMinutes ?? 0) > 0) ...[
-                AppTheme.smallHorizontalGap,
+                const SizedBox(width: AppDimensions.spacingM),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -104,7 +106,7 @@ class RecipeDetailMetadata extends StatelessWidget {
               
               // Rating
               if ((recipe.rating ?? 0) > 0) ...[
-                AppTheme.smallHorizontalGap,
+                const SizedBox(width: AppDimensions.spacingM),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -119,16 +121,16 @@ class RecipeDetailMetadata extends StatelessWidget {
           
           // Rating stars (if rating exists)
           if ((recipe.rating ?? 0) > 0) ...[
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Row(
               children: [
-                SizedBox(width: AppTheme.iconSizeAction + AppTheme.spacingSm),
+                SizedBox(width: AppDimensions.iconSizeAction + AppDimensions.spacingS),
                 _buildStarRating(recipe.rating ?? 0),
               ],
             ),
           ],
           
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           
           // "Cooked today" button
           SizedBox(
@@ -137,19 +139,19 @@ class RecipeDetailMetadata extends StatelessWidget {
               onPressed: () => _markAsCooked(context),
               icon: Icon(
                 Icons.check_circle_outline,
-                size: AppTheme.iconSizeAction,
+                size: AppDimensions.iconSizeAction,
               ),
               label: Text(
                 'Lagat idag',
-                style: AppTheme.buttonTextStyle,
+                style: AppTextStyles.labelLarge,
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.successColor.withValues(alpha: 0.1),
-                foregroundColor: AppTheme.successColor,
-                minimumSize: Size(double.infinity, AppTheme.buttonHeight),
-                padding: AppTheme.buttonPadding,
+                backgroundColor: AppColors.success.withValues(alpha: 0.1),
+                foregroundColor: AppColors.success,
+                minimumSize: Size(double.infinity, AppDimensions.buttonHeight),
+                padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
                 shape: RoundedRectangleBorder(
-                  borderRadius: AppTheme.largeRadius,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
               ),
             ),
@@ -167,38 +169,38 @@ class RecipeDetailMetadata extends StatelessWidget {
     bool isHighlighted = false,
   }) {
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppTheme.primaryColor.withValues(alpha: 0.1)
-            : AppTheme.cardColor,
-        borderRadius: AppTheme.mediumRadius,
+            ? AppColors.primaryBlue.withValues(alpha: 0.1)
+            : AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: isHighlighted
-              ? AppTheme.primaryColor.withValues(alpha: 0.3)
-              : AppTheme.dividerColor,
+              ? AppColors.primaryBlue.withValues(alpha: 0.3)
+              : AppColors.divider,
         ),
       ),
       child: Column(
         children: [
           Icon(
             icon,
-            color: isHighlighted ? AppTheme.primaryColor : AppTheme.textSecondary,
-            size: AppTheme.iconSizeAction,
+            color: isHighlighted ? AppColors.primaryBlue : AppColors.textMedium,
+            size: AppDimensions.iconSizeAction,
           ),
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
-            style: AppTheme.captionStyle.copyWith(
-              color: isHighlighted ? AppTheme.primaryColor : AppTheme.textSecondary,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: isHighlighted ? AppColors.primaryBlue : AppColors.textMedium,
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             value,
-            style: AppTheme.bodyStyle.copyWith(
-              color: isHighlighted ? AppTheme.primaryColor : AppTheme.textPrimary,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: isHighlighted ? AppColors.primaryBlue : AppColors.textDark,
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w500,
             ),
             textAlign: TextAlign.center,
@@ -216,11 +218,11 @@ class RecipeDetailMetadata extends StatelessWidget {
     
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,31 +232,31 @@ class RecipeDetailMetadata extends StatelessWidget {
             children: [
               Icon(
                 isArchiveUrl ? Icons.archive : Icons.link,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 isArchiveUrl ? 'Arkiverad källa' : 'Källa',
-                style: AppTheme.cardTitleStyle,
+                style: AppTextStyles.titleMedium,
               ),
             ],
           ),
           
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           
           // URL
           InkWell(
             onTap: () => _launchUrl(context, sourceUrl),
-            borderRadius: AppTheme.mediumRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             child: Container(
               width: double.infinity,
-              padding: AppTheme.cardPadding,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.mediumRadius,
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -262,18 +264,18 @@ class RecipeDetailMetadata extends StatelessWidget {
                   Expanded(
                     child: Text(
                       sourceUrl,
-                      style: AppTheme.bodyStyle.copyWith(
-                        color: AppTheme.primaryColor,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.primaryBlue,
                         decoration: TextDecoration.underline,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  AppTheme.smallHorizontalGap,
+                  const SizedBox(width: AppDimensions.spacingM),
                   Icon(
                     Icons.open_in_new,
-                    color: AppTheme.primaryColor,
-                    size: AppTheme.iconSizeInfo,
+                    color: AppColors.primaryBlue,
+                    size: AppDimensions.iconSizeM,
                   ),
                 ],
               ),
@@ -282,20 +284,20 @@ class RecipeDetailMetadata extends StatelessWidget {
           
           // Archive notice
           if (isArchiveUrl) ...[
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: AppTheme.warningColor,
-                  size: AppTheme.iconSizeInfo,
+                  color: AppColors.warning,
+                  size: AppDimensions.iconSizeM,
                 ),
-                AppTheme.smallHorizontalGap,
+                const SizedBox(width: AppDimensions.spacingM),
                 Expanded(
                   child: Text(
                     'Denna länk leder till en arkiverad version av receptet',
-                    style: AppTheme.captionStyle.copyWith(
-                      color: AppTheme.warningColor,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.warning,
                     ),
                   ),
                 ),
@@ -318,23 +320,23 @@ class RecipeDetailMetadata extends StatelessWidget {
         // Full stars
         ...List.generate(fullStars, (index) => Icon(
           Icons.star,
-          color: AppTheme.warningColor,
-          size: AppTheme.iconSizeInfo,
+          color: AppColors.warning,
+          size: AppDimensions.iconSizeM,
         )),
         
         // Half star
         if (hasHalfStar)
           Icon(
             Icons.star_half,
-            color: AppTheme.warningColor,
-            size: AppTheme.iconSizeInfo,
+            color: AppColors.warning,
+            size: AppDimensions.iconSizeM,
           ),
         
         // Empty stars
         ...List.generate(emptyStars, (index) => Icon(
           Icons.star_border,
-          color: AppTheme.textSecondary,
-          size: AppTheme.iconSizeInfo,
+          color: AppColors.textMedium,
+          size: AppDimensions.iconSizeM,
         )),
       ],
     );
@@ -361,14 +363,14 @@ class RecipeDetailMetadata extends StatelessWidget {
       _showSnackBarSafely(
         context,
         'Recept markerat som lagat idag!',
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
       _showSnackBarSafely(
         context,
         'Kunde inte markera som lagat',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -383,7 +385,7 @@ class RecipeDetailMetadata extends StatelessWidget {
         _showSnackBarSafely(
           context,
           'Kunde inte öppna länk',
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppColors.error,
         );
       }
     } catch (e) {
@@ -391,7 +393,7 @@ class RecipeDetailMetadata extends StatelessWidget {
       _showSnackBarSafely(
         context,
         'Ogiltig länk',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -402,7 +404,7 @@ class RecipeDetailMetadata extends StatelessWidget {
     Color? backgroundColor,
   }) {
     if (context.mounted) {
-      if (backgroundColor == AppTheme.errorColor) {
+      if (backgroundColor == AppColors.error) {
         SnackBarUtils.showError(context, message);
       } else {
         SnackBarUtils.showSuccess(context, message);

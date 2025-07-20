@@ -1,7 +1,8 @@
 // lib/widgets/common/input/portion_scaler_ui.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 
 /// UI components for the portion scaler widget
 class PortionScalerUI {
@@ -21,13 +22,13 @@ class PortionScalerUI {
     required VoidCallback onToggleUnitConversion,
   }) {
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
             .primaryContainer
             .withValues(alpha: 0.3),
-        borderRadius: AppTheme.cardBorderRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
         ),
@@ -45,7 +46,7 @@ class PortionScalerUI {
             onUpdatePortions,
           ),
 
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
 
           // Status info
           if (currentPortions != originalPortions || convertToSwedish)
@@ -92,16 +93,15 @@ class PortionScalerUI {
         Icon(
           Icons.restaurant_menu,
           color: Theme.of(context).colorScheme.primary,
-          size: AppTheme.iconSizeSmall,
+          size: AppDimensions.iconSizeS,
         ),
-        const SizedBox(width: AppTheme.spacingXs),
+        const SizedBox(width: AppDimensions.spacingXs),
         Text(
           'Portioner',
-          style: AppTheme.getTextStyle(
-            context,
-            AppTheme.subtitleStyle,
+          style: AppTextStyles.titleMedium.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
-          ).copyWith(fontWeight: FontWeight.w600),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const Spacer(),
         _buildPortionControls(
@@ -133,7 +133,7 @@ class PortionScalerUI {
           child: Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(color: Theme.of(context).colorScheme.outline),
             ),
             child: Row(
@@ -151,16 +151,15 @@ class PortionScalerUI {
                 // Current portions
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSm,
-                    vertical: AppTheme.spacingXs,
+                    horizontal: AppDimensions.spacingS,
+                    vertical: AppDimensions.spacingXs,
                   ),
                   child: Text(
                     '$currentPortions',
-                    style: AppTheme.getTextStyle(
-                      context,
-                      AppTheme.cardTitleStyle,
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.primary,
-                    ).copyWith(fontWeight: FontWeight.bold),
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -188,15 +187,15 @@ class PortionScalerUI {
     required VoidCallback? onPressed,
   }) {
     return Material(
-      color: AppTheme.transparent,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Container(
-          padding: const EdgeInsets.all(AppTheme.spacingSm),
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
           child: Icon(
             icon,
-            size: AppTheme.iconSizeSmall,
+            size: AppDimensions.iconSizeS,
             color: onPressed != null
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.outline,
@@ -217,26 +216,26 @@ class PortionScalerUI {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingSm,
-            vertical: AppTheme.spacingXs,
+            horizontal: AppDimensions.spacingS,
+            vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 convertToSwedish ? Icons.language : Icons.calculate,
-                size: AppTheme.iconSizeSmall,
+                size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
-              const SizedBox(width: AppTheme.spacingXs),
+              const SizedBox(width: AppDimensions.spacingXs),
               Flexible(
                 child: Text(
                   _buildStatusText(currentPortions, originalPortions, convertToSwedish),
-                  style: AppTheme.captionStyle.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
                     fontWeight: FontWeight.w500,
                   ),
@@ -245,7 +244,7 @@ class PortionScalerUI {
             ],
           ),
         ),
-        AppTheme.smallGap,
+        const SizedBox(height: AppDimensions.spacingM),
       ],
     );
   }
@@ -257,7 +256,7 @@ class PortionScalerUI {
     VoidCallback onToggleUnitConversion,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppTheme.spacingSm),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Row(
         children: [
           Expanded(
@@ -265,13 +264,13 @@ class PortionScalerUI {
               onPressed: onToggleUnitConversion,
               icon: Icon(
                 convertToSwedish ? Icons.check_circle : Icons.language,
-                size: AppTheme.iconSizeSmall,
+                size: AppDimensions.iconSizeS,
               ),
               label: Text(
                 convertToSwedish
                     ? 'Använder svenska enheter'
                     : 'Konvertera amerikanska enheter',
-                style: AppTheme.captionStyle.copyWith(
+                style: AppTextStyles.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -291,8 +290,8 @@ class PortionScalerUI {
                         .withValues(alpha: 0.3)
                     : null,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSm,
-                  vertical: AppTheme.spacingXs,
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXs,
                 ),
               ),
             ),
@@ -316,19 +315,18 @@ class PortionScalerUI {
       children: [
         Text(
           'Ingredienser för $currentPortions ${currentPortions == 1 ? 'portion' : 'portioner'}:',
-          style: AppTheme.getTextStyle(
-            context,
-            AppTheme.bodyStyle,
+          style: AppTextStyles.bodyLarge.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ).copyWith(fontWeight: FontWeight.w500),
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        AppTheme.smallGap,
+        const SizedBox(height: AppDimensions.spacingM),
         Container(
           width: double.infinity,
-          padding: AppTheme.cardPadding,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: AppTheme.cardBorderRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant,
             ),
@@ -365,7 +363,7 @@ class PortionScalerUI {
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: AppTheme.spacingXxs,
+        vertical: AppDimensions.spacingXs,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,7 +374,7 @@ class PortionScalerUI {
             height: 6,
             margin: const EdgeInsets.only(
               top: 8,
-              right: AppTheme.spacingSm,
+              right: AppDimensions.spacingS,
             ),
             decoration: BoxDecoration(
               color: isChanged
@@ -390,13 +388,10 @@ class PortionScalerUI {
           Expanded(
             child: AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 300),
-              style: AppTheme.getTextStyle(
-                context,
-                AppTheme.bodyStyle,
+              style: AppTextStyles.bodyLarge.copyWith(
                 color: isChanged
                     ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).colorScheme.onSurface,
-              ).copyWith(
                 fontWeight: isChanged ? FontWeight.w600 : FontWeight.normal,
               ),
               child: Text(ingredient),
@@ -407,7 +402,7 @@ class PortionScalerUI {
           if (isChanged)
             Icon(
               Icons.refresh,
-              size: AppTheme.iconSizeSmall,
+              size: AppDimensions.iconSizeS,
               color: Theme.of(context).colorScheme.primary,
             ),
         ],

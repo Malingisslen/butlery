@@ -1,7 +1,9 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../core/validators/form_validators.dart';
 import '../../../viewmodels/menu_viewmodel.dart';
 
@@ -60,16 +62,16 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildMenuInfo(),
-                AppTheme.mediumGap,
+                const SizedBox(height: AppDimensions.spacingXl),
                 _buildNameField(),
-                AppTheme.mediumGap,
+                const SizedBox(height: AppDimensions.spacingXl),
                 _buildCommentField(),
-                AppTheme.mediumGap,
+                const SizedBox(height: AppDimensions.spacingXl),
                 _buildSocialSharingToggle(),
                 if (_enableSocialSharing) ...[
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
                   _buildFriendSelection(),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
                   _buildShareMessage(),
                 ],
               ],
@@ -103,24 +105,24 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildMenuInfo() {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: AppTheme.mediumRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Meny att spara',
-            style: AppTheme.bodyStyle.copyWith(
+            style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '${widget.viewModel.totalRecipeCount} recept i ${widget.viewModel.menu.length} kategorier',
-            style: AppTheme.captionStyle,
+            style: AppTextStyles.bodySmall,
           ),
         ],
       ),
@@ -179,21 +181,21 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       children: [
         Text(
           'Välj vänner att dela med',
-          style: AppTheme.bodyStyle.copyWith(
+          style: AppTextStyles.bodyLarge.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
-        AppTheme.tinyGap,
+        const SizedBox(height: AppDimensions.spacingXs),
         Container(
           height: 100,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: AppTheme.mediumRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: const Center(
             child: Text(
               'Vänlistor inte tillgängliga',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: AppColors.textMedium),
             ),
           ),
         ),
@@ -232,7 +234,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Meny "${_nameController.text}" sparad!'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -244,7 +246,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fel vid sparande: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppColors.error,
           ),
         );
       }

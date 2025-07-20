@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/url_import_viewmodel.dart';
 import '../widgets/common/state_widget.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
 import '../core/injection.dart';
 
 /// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
@@ -76,7 +78,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
     return Scaffold(
       appBar: AppBar(title: const Text('Import via URL')),
       body: Padding(
-        padding: AppTheme.screenPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           children: [
             // URL input
@@ -92,7 +94,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _fetchPage(),
             ),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // Hämta-knapp
             ElevatedButton(
@@ -100,16 +102,33 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   viewModel.canFetch && !viewModel.isLoading
                       ? _fetchPage
                       : null,
-              style: AppTheme.primaryButtonStyle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.cardWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+              ),
               child:
                   viewModel.isLoading
-                      ? AppTheme.smallLoadingIndicator()
+                      ? SizedBox(
+                          width: AppDimensions.iconSizeS,
+                          height: AppDimensions.iconSizeS,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                          ),
+                        )
                       : const Text('Hämta text'),
             ),
 
             // Error visning
             if (viewModel.hasError) ...[
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
               StateWidget.error(
                 message: viewModel.error!,
               ),
@@ -117,15 +136,19 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
 
             // Extraherad text
             if (viewModel.hasExtractedText) ...[
-              AppTheme.mediumGap,
-              Text('Extraherad text:', style: AppTheme.sectionTitleStyle),
+              const SizedBox(height: AppDimensions.spacingXl),
+              Text('Extraherad text:', style: AppTextStyles.headlineSmall),
               Expanded(
                 child: SingleChildScrollView(
                   child: Container(
                     width: double.infinity,
-                    padding: AppTheme.cardPadding,
-                    margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-                    decoration: AppTheme.infoBoxDecoration(context),
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundTint,
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                      border: Border.all(color: AppColors.divider),
+                    ),
                     child: Text(
                       viewModel.extractedText,
                       style: Theme.of(context).textTheme.bodyMedium,
@@ -133,10 +156,20 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   ),
                 ),
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: _navigateToTextImport,
-                style: AppTheme.primaryButtonStyle,
+                style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.cardWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+              ),
                 child: const Text('Gå vidare till klistra-in'),
               ),
             ],

@@ -1,7 +1,8 @@
 // lib/widgets/common/input/shopping_list_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import '../../../models/unified/unified_shopping_list.dart';
 import '../../../viewmodels/unified_shopping_viewmodel.dart';
 import '../../../core/utils/logger.dart';
@@ -18,15 +19,15 @@ class ShoppingListActions {
     UnifiedShoppingViewModel viewModel,
   ) {
     return PopupMenuButton<String>(
-      icon: AppTheme.actionIcon(context, Icons.more_vert),
+      icon: Icon(Icons.more_vert, size: AppDimensions.iconSizeAction),
       onSelected: (action) => _handleListAction(context, action, list, viewModel),
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
-              Icon(Icons.edit, size: AppTheme.iconSizeAction),
-              AppTheme.smallHorizontalGap,
+              Icon(Icons.edit, size: AppDimensions.iconSizeAction),
+              const SizedBox(width: AppDimensions.spacingM),
               Text('Byt namn'),
             ],
           ),
@@ -35,8 +36,8 @@ class ShoppingListActions {
           value: 'export',
           child: Row(
             children: [
-              Icon(Icons.share, size: AppTheme.iconSizeAction),
-              AppTheme.smallHorizontalGap,
+              Icon(Icons.share, size: AppDimensions.iconSizeAction),
+              const SizedBox(width: AppDimensions.spacingM),
               Text('Exportera'),
             ],
           ),
@@ -47,13 +48,13 @@ class ShoppingListActions {
             children: [
               Icon(
                 Icons.delete,
-                size: AppTheme.iconSizeAction,
-                color: AppTheme.errorColor,
+                size: AppDimensions.iconSizeAction,
+                color: AppColors.error,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Ta bort',
-                style: TextStyle(color: AppTheme.errorColor),
+                style: TextStyle(color: AppColors.error),
               ),
             ],
           ),
@@ -132,7 +133,7 @@ class ShoppingListActions {
                   ? 'Lista döpt om till "$newName"'
                   : 'Kunde inte byta namn: ${viewModel.error ?? "Okänt fel"}',
             ),
-            backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+            backgroundColor: success ? AppColors.success : AppColors.error,
           ),
         );
       }
@@ -156,7 +157,7 @@ class ShoppingListActions {
                   ? 'Lista "${list.name}" exporterad'
                   : 'Kunde inte exportera lista: ${viewModel.error ?? "Okänt fel"}',
             ),
-            backgroundColor: exportText.isNotEmpty ? AppTheme.successColor : AppTheme.errorColor,
+            backgroundColor: exportText.isNotEmpty ? AppColors.success : AppColors.error,
           ),
         );
       }
@@ -166,7 +167,7 @@ class ShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Kunde inte exportera lista'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -184,8 +185,8 @@ class ShoppingListActions {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.warning, color: AppTheme.errorColor),
-            AppTheme.smallHorizontalGap,
+            Icon(Icons.warning, color: AppColors.error),
+            const SizedBox(width: AppDimensions.spacingM),
             Text('Ta bort lista'),
           ],
         ),
@@ -201,7 +202,7 @@ class ShoppingListActions {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: Text('Ta bort'),
           ),
@@ -220,7 +221,7 @@ class ShoppingListActions {
                   ? 'Lista "${list.name}" borttagen'
                   : 'Kunde inte ta bort lista: ${viewModel.error ?? "Okänt fel"}',
             ),
-            backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+            backgroundColor: success ? AppColors.success : AppColors.error,
           ),
         );
       }

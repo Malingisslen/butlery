@@ -134,9 +134,13 @@ abstract class RealtimeResource {
     // Kontrollera specifik behörighet
     switch (requiredPermission) {
       case ResourcePermission.viewer:
+      case ResourcePermission.read:
         return true; // Alla deltagare kan se
       case ResourcePermission.editor:
+      case ResourcePermission.write:
         return ResourcePermissionHelper.canEditContent(userPermission);
+      case ResourcePermission.admin:
+        return userPermission == ResourcePermission.owner || userPermission == ResourcePermission.admin;
       case ResourcePermission.owner:
         return userPermission == ResourcePermission.owner;
     }
@@ -273,10 +277,16 @@ abstract class RealtimeResource {
     switch (permission) {
       case ResourcePermission.owner:
         return 'Ägare';
+      case ResourcePermission.admin:
+        return 'Administratör';
       case ResourcePermission.editor:
         return 'Redigerare';
+      case ResourcePermission.write:
+        return 'Skrivare';
       case ResourcePermission.viewer:
         return 'Betraktare';
+      case ResourcePermission.read:
+        return 'Läsare';
     }
   }
 

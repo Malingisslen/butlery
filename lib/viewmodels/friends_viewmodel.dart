@@ -330,6 +330,12 @@ class FriendsViewModel extends ChangeNotifier
     // ✅ SÄKER: Kontrollera dispose innan asynkrona operationer
     if (_isDisposed) return;
 
+    // ✅ PREVENT RACE CONDITION: Check if operation is already in progress
+    if (isOperationActive('load_user_profiles')) {
+      AppLogger.debug('⏳ User profiles loading already in progress, skipping...');
+      return;
+    }
+
     await executeNamedOperation(
       'load_user_profiles',
       () async {
@@ -449,8 +455,13 @@ class FriendsViewModel extends ChangeNotifier
   void _onFriendsServiceChanged() {
     // ✅ SÄKER: Kontrollera om ViewModel är disposed innan notifiering
     if (!_isDisposed) {
-      loadUserProfilesForRequests();
-      notifyListeners();
+      // Use delayed execution to prevent multiple rapid calls
+      Future.delayed(Duration.zero, () {
+        if (!_isDisposed) {
+          loadUserProfilesForRequests();
+          notifyListeners();
+        }
+      });
     } else {
       AppLogger.warning(
           '⚠️ Ignorerar friends service change - ViewModel är disposed');

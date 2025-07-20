@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../../services/image_picker_service.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
@@ -108,7 +109,7 @@ class AvatarImageWidget extends StatelessWidget {
           height: dimensions.height,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: config.backgroundColor ?? AppTheme.cardColor,
+            color: config.backgroundColor ?? AppColors.cardWhite,
             border: config.borderColor != null
                 ? Border.all(
                     color: config.borderColor!,
@@ -138,9 +139,9 @@ class AvatarImageWidget extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryColor,
+                color: AppColors.primaryBlue,
                 border: Border.all(
-                  color: AppTheme.cardColor,
+                  color: AppColors.cardWhite,
                   width: 2,
                 ),
               ),
@@ -193,8 +194,8 @@ class AvatarImageWidget extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withValues(alpha: 0.8),
-            AppTheme.primaryColor,
+            AppColors.primaryBlue.withValues(alpha: 0.8),
+            AppColors.primaryBlue,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -203,7 +204,7 @@ class AvatarImageWidget extends StatelessWidget {
       child: Center(
         child: Text(
           initials,
-          style: AppTheme.textTheme.headlineMedium?.copyWith(
+          style: AppTextStyles.headlineMedium.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w600,
             fontSize: _getFontSize(dimensions.width),
@@ -309,7 +310,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.cardColor.withValues(alpha: 0.8),
+                color: AppColors.cardWhite.withValues(alpha: 0.8),
               ),
               child: Center(
                 child: SizedBox(
@@ -318,7 +319,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.primaryColor,
+                      AppColors.primaryBlue,
                     ),
                   ),
                 ),
@@ -339,9 +340,9 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.errorColor,
+                  color: AppColors.error,
                   border: Border.all(
-                    color: AppTheme.cardColor,
+                    color: AppColors.cardWhite,
                     width: 2,
                   ),
                 ),

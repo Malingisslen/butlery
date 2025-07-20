@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../constants/icon_constants.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
 import '../../viewmodels/menu_viewmodel.dart';
 
 /// UI Helper for SavedMenuInfo
@@ -12,13 +12,13 @@ class SavedMenuUIHelper {
   static Color getAttributionColor(SavedMenuInfo menuInfo) {
     switch (menuInfo.attributionColorType) {
       case 'owned':
-        return AppTheme.primaryColor;
+        return AppColors.primaryBlue;
       case 'modified':
-        return AppTheme.accentColor;
+        return AppColors.accent;
       case 'shared':
-        return AppTheme.successColor;
+        return AppColors.success;
       default:
-        return AppTheme.textSecondary;
+        return AppColors.textSecondary;
     }
   }
 

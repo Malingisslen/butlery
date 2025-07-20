@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../../services/image_picker_service.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
@@ -105,10 +106,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppTheme.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.dividerColor.withValues(alpha: 0.3),
           style: BorderStyle.solid,
         ),
-        color: AppTheme.cardColor,
+        color: AppColors.cardColor,
       ),
       child: Material(
         color: Colors.transparent,
@@ -126,15 +127,15 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppTheme.primaryColor,
+                        AppColors.primaryBlue,
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Adding image...',
-                    style: AppTheme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textPrimary.withValues(alpha: 0.7),
                     ),
                   ),
                 ] else ...[
@@ -142,27 +143,27 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
                     ),
                     child: Icon(
                       Icons.add_photo_alternate_outlined,
                       size: 32,
-                      color: AppTheme.primaryColor,
+                      color: AppColors.primaryBlue,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Add images',
-                    style: AppTheme.textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.textPrimary,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Tap to add up to ${widget.config.maxImages} images',
-                    style: AppTheme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textPrimary.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -268,7 +269,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
+                color: AppColors.primaryBlue,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -282,7 +283,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                   const SizedBox(width: 4),
                   Text(
                     'Primary',
-                    style: AppTheme.textTheme.bodySmall?.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
@@ -347,7 +348,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: isDestructive ? AppTheme.errorColor : AppTheme.cardColor,
+        color: isDestructive ? AppColors.error : AppColors.cardColor,
         borderRadius: BorderRadius.circular(20),
         elevation: 4,
         child: InkWell(
@@ -358,7 +359,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             child: Icon(
               icon,
               size: 20,
-              color: isDestructive ? Colors.white : AppTheme.textPrimary,
+              color: isDestructive ? Colors.white : AppColors.textPrimary,
             ),
           ),
         ),

@@ -4,7 +4,7 @@
 import 'package:flutter/foundation.dart';
 import '../services/permission_service.dart';
 import '../services/social_recipe_service.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';

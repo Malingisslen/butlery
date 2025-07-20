@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
-import 'recipe.dart'; // Import existing Recipe model
+import 'recipe_unified.dart'; // Import unified Recipe model
 
 
 class SharedMenu {
@@ -241,7 +241,7 @@ class SharedMenu {
     for (final entry in menuSnapshot.entries) {
       menuData[entry.key] = entry.value.map((recipe) {
         // Få recipe data och säkerställ att inga FieldValue.serverTimestamp() finns i nested objects
-        final recipeData = recipe.toFirestore(isNested: true);
+        final recipeData = recipe.toFirestore();
 
         // Ersätt eventuella serverTimestamp med DateTime.now() för nested objects
         if (recipeData['createdAt'] is FieldValue) {
@@ -299,23 +299,26 @@ class SharedMenu {
             // 🔧 FIXED: Skapa Recipe direkt från data istället för via mock DocumentSnapshot
             final recipeMap = recipeData as Map<String, dynamic>;
             final recipe = Recipe(
-              id: recipeMap['id'] as String? ?? '',
-              title: recipeMap['title'] as String? ?? 'Untitled Recipe',
-              description: recipeMap['description'] as String? ?? '',
-              ingredients: List<String>.from(recipeMap['ingredients'] ?? []),
-              instructions: List<String>.from(recipeMap['instructions'] ?? []),
-              imageUrls: List<String>.from(recipeMap['imageUrls'] ?? []),
-              mealType: recipeMap['mealType'] as String? ?? 'Middag',
-              portions: recipeMap['portions'] as int?,
-              timeMinutes: recipeMap['timeMinutes'] as int?,
-              rating: (recipeMap['rating'] as num?)?.toDouble(),
-              tags: List<String>.from(recipeMap['tags'] ?? []),
-              sourceUrl: recipeMap['sourceUrl'] as String?,
-              createdAt:
-                  _parseTimestamp(recipeMap['createdAt']) ?? DateTime.now(),
-              updatedAt:
-                  _parseTimestamp(recipeMap['updatedAt']) ?? DateTime.now(),
-              lastCookedAt: _parseTimestamp(recipeMap['lastCookedAt']),
+              core: RecipeCore(
+                id: recipeMap['id'] as String? ?? '',
+                title: recipeMap['title'] as String? ?? 'Untitled Recipe',
+                description: recipeMap['description'] as String? ?? '',
+                ingredients: List<String>.from(recipeMap['ingredients'] ?? []),
+                instructions: List<String>.from(recipeMap['instructions'] ?? []),
+                imageUrls: List<String>.from(recipeMap['imageUrls'] ?? []),
+                mealType: recipeMap['mealType'] as String? ?? 'Middag',
+                portions: recipeMap['portions'] as int?,
+                timeMinutes: recipeMap['timeMinutes'] as int?,
+                rating: (recipeMap['rating'] as num?)?.toDouble(),
+                tags: List<String>.from(recipeMap['tags'] ?? []),
+                sourceUrl: recipeMap['sourceUrl'] as String?,
+                createdAt:
+                    _parseTimestamp(recipeMap['createdAt']) ?? DateTime.now(),
+                updatedAt:
+                    _parseTimestamp(recipeMap['updatedAt']) ?? DateTime.now(),
+                lastCookedAt: _parseTimestamp(recipeMap['lastCookedAt']),
+              ),
+              type: RecipeType.shared, // Mark as shared menu recipe
             );
             recipeList.add(recipe);
           } catch (e) {

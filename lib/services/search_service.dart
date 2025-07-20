@@ -1,6 +1,6 @@
 // lib/services/search_service.dart
 
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 
 /// Centraliserad service för all sökfunktionalitet i appen
 class SearchService {

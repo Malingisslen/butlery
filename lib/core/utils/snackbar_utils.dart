@@ -16,7 +16,8 @@
 /// Used in phases: Phase 7 - Additional Code Duplication Elimination
 
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'logger.dart';
 
 /// Utility class that eliminates duplicated SnackBar creation patterns
@@ -34,11 +35,11 @@ import 'logger.dart';
 /// ScaffoldMessenger.of(context).showSnackBar(
 ///   SnackBar(
 ///     content: Text(message, style: AppTheme.errorTextStyle),
-///     backgroundColor: AppTheme.errorColor,
+///     backgroundColor: AppColors.error,
 ///     duration: AppTheme.animationDurationDelay,
 ///     action: SnackBarAction(
 ///       label: 'OK',
-///       textColor: AppTheme.neutralLight,
+///       textColor: AppColors.neutralLight,
 ///       onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
 ///     ),
 ///   ),
@@ -66,8 +67,8 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppTheme.successColor,
-        textColor: AppTheme.neutralLight,
+        backgroundColor: AppColors.success,
+        textColor: AppColors.neutralLight,
         icon: Icons.check_circle_outline,
         duration: duration ?? const Duration(seconds: 3),
         actionLabel: actionLabel,
@@ -113,8 +114,8 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppTheme.errorColor,
-        textColor: AppTheme.neutralLight,
+        backgroundColor: AppColors.error,
+        textColor: AppColors.neutralLight,
         icon: Icons.error_outline,
         duration: duration ?? const Duration(seconds: 5),
         actionLabel: actionLabel ?? (showCloseButton ? 'OK' : null),
@@ -174,8 +175,8 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppTheme.warningColor,
-        textColor: AppTheme.neutralDark,
+        backgroundColor: AppColors.warning,
+        textColor: AppColors.textDark,
         icon: Icons.warning_outlined,
         duration: duration ?? const Duration(seconds: 4),
         actionLabel: actionLabel,
@@ -204,8 +205,8 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppTheme.primaryColor,
-        textColor: AppTheme.neutralLight,
+        backgroundColor: AppColors.primaryBlue,
+        textColor: AppColors.neutralLight,
         icon: Icons.info_outline,
         duration: duration ?? const Duration(seconds: 4),
         actionLabel: actionLabel,
@@ -237,19 +238,19 @@ class SnackBarUtils {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.neutralLight),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   message,
-                  style: TextStyle(color: AppTheme.neutralLight),
+                  style: TextStyle(color: AppColors.neutralLight),
                 ),
               ),
             ],
           ),
-          backgroundColor: AppTheme.neutralDark,
+          backgroundColor: AppColors.neutralDark,
           duration: duration ?? const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -278,7 +279,7 @@ class SnackBarUtils {
         context,
         message: message,
         backgroundColor: backgroundColor,
-        textColor: textColor ?? AppTheme.neutralLight,
+        textColor: textColor ?? AppColors.neutralLight,
         icon: icon,
         duration: duration ?? const Duration(seconds: 3),
         actionLabel: actionLabel,
@@ -422,9 +423,9 @@ class SnackBarUtils {
         backgroundColor: backgroundColor,
         duration: duration ?? const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.all(AppDimensions.spacingXl),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         action: (actionLabel != null && onAction != null)
           ? SnackBarAction(

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../viewmodels/realtime_menu_viewmodel.dart';
 import '../../../widgets/common/navigation_components.dart';
 import '../handlers/menu_action_handler.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_text_styles.dart';
+import '../../../theme/app_dimensions.dart';
 
 /// App bar komponent för realtidsmenyer
 class MenuAppBar extends StatelessWidget {
@@ -34,18 +36,18 @@ class MenuAppBar extends StatelessWidget {
           children: [
             Text(
               menu?.menuTitle ?? 'Laddar meny...',
-              style: AppTheme.cardTitleStyle,
+              style: AppTextStyles.titleMedium,
             ),
             if (menu != null) ...[
-              AppTheme.tinyGap,
+              const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 '${menu.categoriesWithRecipes} kategorier • ${menu.totalRecipeCount} recept',
-                style: AppTheme.metadataStyle,
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
               ),
             ],
           ],
         ),
-        titlePadding: AppTheme.cardPadding,
+        titlePadding: const EdgeInsets.all(AppDimensions.paddingL),
       ),
       actions: [
         // ✅ UPPDATERAD: Använder NavigationComponents.realtimeStatus()
@@ -68,16 +70,16 @@ class MenuAppBar extends StatelessWidget {
     return IconButton(
       icon: Stack(
         children: [
-          AppTheme.actionIcon(context, Icons.people),
+          const Icon(Icons.people),
           if (viewModel.activeParticipantCount > 1)
             Positioned(
               right: 0,
               top: 0,
               child: Container(
-                padding: EdgeInsets.all(AppTheme.spacingXs),
+                padding: EdgeInsets.all(AppDimensions.spacingXs),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor,
-                  borderRadius: AppTheme.chipRadius,
+                  color: AppColors.success,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
                 ),
                 constraints: const BoxConstraints(
                   minWidth: 16,
@@ -85,7 +87,7 @@ class MenuAppBar extends StatelessWidget {
                 ),
                 child: Text(
                   '${viewModel.activeParticipantCount}',
-                  style: AppTheme.chipOnPrimaryTextStyle,
+                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.cardWhite),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -105,9 +107,9 @@ class MenuAppBar extends StatelessWidget {
           value: 'refresh',
           child: Row(
             children: [
-              AppTheme.actionIcon(context, Icons.refresh),
-              AppTheme.smallHorizontalGap,
-              Text('Uppdatera', style: AppTheme.bodyStyle),
+              const Icon(Icons.refresh),
+              const SizedBox(width: AppDimensions.spacingM),
+              Text('Uppdatera', style: AppTextStyles.bodyLarge),
             ],
           ),
         ),
@@ -116,9 +118,9 @@ class MenuAppBar extends StatelessWidget {
             value: 'invite',
             child: Row(
               children: [
-                AppTheme.actionIcon(context, Icons.person_add),
-                AppTheme.smallHorizontalGap,
-                Text('Bjud in', style: AppTheme.bodyStyle),
+                const Icon(Icons.person_add),
+                const SizedBox(width: AppDimensions.spacingM),
+                Text('Bjud in', style: AppTextStyles.bodyLarge),
               ],
             ),
           ),
@@ -126,9 +128,9 @@ class MenuAppBar extends StatelessWidget {
             value: 'permissions',
             child: Row(
               children: [
-                AppTheme.actionIcon(context, Icons.security),
-                AppTheme.smallHorizontalGap,
-                Text('Hantera behörigheter', style: AppTheme.bodyStyle),
+                const Icon(Icons.security),
+                const SizedBox(width: AppDimensions.spacingM),
+                Text('Hantera behörigheter', style: AppTextStyles.bodyLarge),
               ],
             ),
           ),
@@ -137,9 +139,9 @@ class MenuAppBar extends StatelessWidget {
           value: 'copy',
           child: Row(
             children: [
-              AppTheme.actionIcon(context, Icons.copy),
-              AppTheme.smallHorizontalGap,
-              Text('Skapa personlig kopia', style: AppTheme.bodyStyle),
+              const Icon(Icons.copy),
+              const SizedBox(width: AppDimensions.spacingM),
+              Text('Skapa personlig kopia', style: AppTextStyles.bodyLarge),
             ],
           ),
         ),
@@ -148,10 +150,9 @@ class MenuAppBar extends StatelessWidget {
             value: 'delete',
             child: Row(
               children: [
-                AppTheme.actionIcon(context, Icons.delete,
-                    color: AppTheme.errorColor),
-                AppTheme.smallHorizontalGap,
-                Text('Ta bort meny', style: AppTheme.errorTextStyle),
+                Icon(Icons.delete, color: AppColors.error),
+                const SizedBox(width: AppDimensions.spacingM),
+                Text('Ta bort meny', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
               ],
             ),
           ),

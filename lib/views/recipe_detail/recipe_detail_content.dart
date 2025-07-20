@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../viewmodels/recipe_detail_viewmodel.dart';
 import '../../widgets/image/universal_image_manager.dart' as img;
 import '../../widgets/common/input_components.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 
 /// Recipe detail content widget
 ///
@@ -38,29 +40,29 @@ class RecipeDetailContent extends StatelessWidget {
         // Description
         if (recipe.description.isNotEmpty) ...[
           _buildDescription(context),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
         ],
         
         // Tags
         if (recipe.tags?.isNotEmpty ?? false) ...[
           _buildTags(context),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
         ],
         
         // Images
         if (recipe.imageUrls.isNotEmpty) ...[
           _buildImageCarousel(context),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
         ],
         
         // Portion scaler
         _buildPortionScaler(context),
-        AppTheme.mediumGap,
+        const SizedBox(height: AppDimensions.spacingXl),
         
         // Instructions
         if (recipe.instructions.isNotEmpty) ...[
           _buildInstructions(context),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
         ],
       ],
     );
@@ -69,11 +71,11 @@ class RecipeDetailContent extends StatelessWidget {
   Widget _buildDescription(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,20 +84,20 @@ class RecipeDetailContent extends StatelessWidget {
             children: [
               Icon(
                 Icons.description_outlined,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Beskrivning',
-                style: AppTheme.cardTitleStyle,
+                style: AppTextStyles.titleMedium,
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             viewModel.recipe.description,
-            style: AppTheme.bodyStyle,
+            style: AppTextStyles.bodyLarge,
           ),
         ],
       ),
@@ -105,11 +107,11 @@ class RecipeDetailContent extends StatelessWidget {
   Widget _buildTags(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,36 +120,36 @@ class RecipeDetailContent extends StatelessWidget {
             children: [
               Icon(
                 Icons.local_offer_outlined,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Taggar',
-                style: AppTheme.cardTitleStyle,
+                style: AppTextStyles.titleMedium,
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Wrap(
-            spacing: AppTheme.spacingSm,
-            runSpacing: AppTheme.spacingSm,
+            spacing: AppDimensions.spacingS,
+            runSpacing: AppDimensions.spacingS,
             children: (viewModel.recipe.tags ?? []).map((tag) => Container(
               padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSm,
-                vertical: AppTheme.spacingXs,
+                horizontal: AppDimensions.spacingS,
+                vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.chipRadius,
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
                 border: Border.all(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(
                 tag,
-                style: AppTheme.captionStyle.copyWith(
-                  color: AppTheme.primaryColor,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.primaryBlue,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -162,32 +164,32 @@ class RecipeDetailContent extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: AppTheme.cardPadding,
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
                 Icon(
                   Icons.photo_library_outlined,
-                  color: AppTheme.primaryColor,
-                  size: AppTheme.iconSizeAction,
+                  color: AppColors.primaryBlue,
+                  size: AppDimensions.iconSizeAction,
                 ),
-                AppTheme.smallHorizontalGap,
+                const SizedBox(width: AppDimensions.spacingM),
                 Text(
                   'Bilder',
-                  style: AppTheme.cardTitleStyle,
+                  style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 Text(
                   '${viewModel.recipe.imageUrls.length} ${viewModel.recipe.imageUrls.length == 1 ? 'bild' : 'bilder'}',
-                  style: AppTheme.captionStyle,
+                  style: AppTextStyles.bodySmall,
                 ),
               ],
             ),
@@ -198,8 +200,8 @@ class RecipeDetailContent extends StatelessWidget {
             onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
             child: ClipRRect(
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(AppTheme.radiusMedium),
-                bottomRight: Radius.circular(AppTheme.radiusMedium),
+                bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
+                bottomRight: Radius.circular(AppDimensions.borderRadiusM),
               ),
               child: img.UniversalImageManager.carousel(
                 imageUrls: viewModel.recipe.imageUrls,
@@ -225,11 +227,11 @@ class RecipeDetailContent extends StatelessWidget {
   Widget _buildInstructions(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: AppTheme.cardBorderRadius,
-        border: Border.all(color: AppTheme.dividerColor),
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,17 +240,17 @@ class RecipeDetailContent extends StatelessWidget {
             children: [
               Icon(
                 Icons.format_list_numbered,
-                color: AppTheme.primaryColor,
-                size: AppTheme.iconSizeAction,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
               ),
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Instruktioner',
-                style: AppTheme.cardTitleStyle,
+                style: AppTextStyles.titleMedium,
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: viewModel.recipe.instructions.asMap().entries.map((entry) {
@@ -258,7 +260,7 @@ class RecipeDetailContent extends StatelessWidget {
               return Padding(
                 padding: EdgeInsets.only(
                   bottom: index < viewModel.recipe.instructions.length - 1
-                      ? AppTheme.spacingSm
+                      ? AppDimensions.spacingS
                       : 0,
                 ),
                 child: Row(
@@ -268,16 +270,16 @@ class RecipeDetailContent extends StatelessWidget {
                     Container(
                       width: 28,
                       height: 28,
-                      margin: EdgeInsets.only(right: AppTheme.spacingSm),
+                      margin: EdgeInsets.only(right: AppDimensions.spacingS),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
+                        color: AppColors.primaryBlue,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: AppTheme.captionStyle.copyWith(
-                            color: AppTheme.neutralLight,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.neutralLight,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -290,7 +292,7 @@ class RecipeDetailContent extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           instruction,
-                          style: AppTheme.bodyStyle,
+                          style: AppTextStyles.bodyLarge,
                         ),
                       ),
                     ),

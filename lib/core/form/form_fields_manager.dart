@@ -13,8 +13,21 @@ class FormFieldsManager {
   final Map<String, TextEditingController> _controllers = {};
   final List<String> _values = [];
   final Function(int, String)? onValueChanged;
+  final List<String>? initialItems;
+  final String? Function(String?)? validator;
 
-  FormFieldsManager({this.onValueChanged});
+  FormFieldsManager({
+    this.onValueChanged,
+    this.initialItems,
+    this.validator,
+  }) {
+    if (initialItems != null) {
+      _values.addAll(initialItems!);
+    }
+    if (_values.isEmpty) {
+      _values.add('');
+    }
+  }
 
   /// Hämta alla controllers synkroniserade med aktuella värden
   List<TextEditingController> getControllers(List<String> currentValues) {
@@ -92,6 +105,35 @@ class FormFieldsManager {
         controller.text = value;
       }
     }
+  }
+
+  /// Update items (for backward compatibility)
+  void updateItems(List<String> items) {
+    _values.clear();
+    _values.addAll(items);
+    if (_values.isEmpty) {
+      _values.add('');
+    }
+  }
+
+  /// Update at specific index
+  void updateAt(int index, String value) {
+    updateValue(index, value);
+  }
+
+  /// Add new item
+  void add(String value) {
+    _values.add(value);
+  }
+
+  /// Remove item at index
+  void removeAt(int index) {
+    removeController(index);
+  }
+
+  /// Get controllers property
+  List<TextEditingController> get controllers {
+    return getControllers(_values);
   }
 
   /// Hämta antal fält

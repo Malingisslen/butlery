@@ -1,7 +1,7 @@
 // lib/viewmodels/create_shared_list_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_shopping_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';

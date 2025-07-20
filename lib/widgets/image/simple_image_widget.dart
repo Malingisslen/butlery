@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
 import 'image_config.dart';
 import 'image_components.dart';
 
@@ -232,7 +232,7 @@ class NetworkImageWidget extends StatelessWidget {
           : (_, __) => Container(
                 width: width,
                 height: height,
-                color: AppTheme.cardColor,
+                color: AppColors.cardWhite,
                 child: const Center(
                   child: CircularProgressIndicator(),
                 ),
@@ -242,10 +242,10 @@ class NetworkImageWidget extends StatelessWidget {
           : (_, __, ___) => Container(
                 width: width,
                 height: height,
-                color: AppTheme.cardColor,
+                color: AppColors.cardWhite,
                 child: Icon(
                   Icons.error_outline,
-                  color: AppTheme.errorColor,
+                  color: AppColors.error,
                 ),
               ),
     );

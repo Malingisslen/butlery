@@ -1,7 +1,8 @@
 // lib/widgets/common/input/instruction_editor.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 
 /// Dynamic instruction editor with Enter-key support for new steps
 ///
@@ -79,19 +80,19 @@ class _InstructionEditorState extends State<InstructionEditor> {
       children: List.generate(controllers.length, (i) {
         return Padding(
           padding: EdgeInsets.symmetric(
-            vertical: AppTheme.spacingXs,
+            vertical: AppDimensions.spacingXs,
           ),
           child: TextFormField(
             controller: controllers[i],
             decoration: InputDecoration(
               border: OutlineInputBorder(
-                borderRadius: AppTheme.mediumRadius,
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               labelText: 'Instruktion ${i + 1}',
-              labelStyle: AppTheme.formLabelStyle,
-              contentPadding: AppTheme.inputPadding,
+              labelStyle: AppTextStyles.labelLarge,
+              contentPadding: EdgeInsets.all(AppDimensions.paddingM),
             ),
-            style: AppTheme.bodyStyle,
+            style: AppTextStyles.bodyLarge,
             onFieldSubmitted: (_) => _handleEnterPressed(i, controllers[i]),
             onChanged: (_) => _notifyChanges(),
             textInputAction: TextInputAction.newline,

@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import 'image_config.dart';
 import 'image_components.dart';
 
@@ -123,9 +124,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppTheme.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.dividerColor.withValues(alpha: 0.3),
         ),
-        color: AppTheme.cardColor,
+        color: AppColors.cardColor,
       ),
       child: Center(
         child: Column(
@@ -134,20 +135,20 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Icon(
               Icons.photo_library_outlined,
               size: 48,
-              color: AppTheme.textPrimary.withValues(alpha: 0.4),
+              color: AppColors.textPrimary.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 12),
             Text(
               'No images yet',
-              style: AppTheme.textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textPrimary.withValues(alpha: 0.6),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textPrimary.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Images will appear here',
-              style: AppTheme.textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textPrimary.withValues(alpha: 0.4),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textPrimary.withValues(alpha: 0.4),
               ),
             ),
           ],
@@ -163,19 +164,19 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor,
+        color: AppColors.primaryBlue,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         children: [
           Icon(
             Icons.check_circle,
-            color: AppTheme.primaryColor,
+            color: AppColors.primaryBlue,
           ),
           const SizedBox(width: 8),
           Text(
             '${_selectedImages.length} selected',
-            style: AppTheme.textTheme.bodyLarge?.copyWith(
+            style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
@@ -185,8 +186,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             onPressed: _exitSelectionMode,
             child: Text(
               'Cancel',
-              style: AppTheme.textTheme.bodyMedium?.copyWith(
-                color: AppTheme.primaryColor,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.primaryBlue,
               ),
             ),
           ),
@@ -203,10 +204,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppTheme.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.dividerColor.withValues(alpha: 0.3),
           style: BorderStyle.solid,
         ),
-        color: AppTheme.cardColor,
+        color: AppColors.cardColor,
       ),
       child: Material(
         color: Colors.transparent,
@@ -220,13 +221,13 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 Icon(
                   Icons.add_photo_alternate_outlined,
                   size: 32,
-                  color: AppTheme.primaryColor,
+                  color: AppColors.primaryBlue,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Add',
-                  style: AppTheme.textTheme.bodySmall?.copyWith(
-                    color: AppTheme.primaryColor,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primaryBlue,
                   ),
                 ),
               ],
@@ -250,8 +251,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(
               color: isSelected
-                  ? AppTheme.primaryColor
-                  : AppTheme.dividerColor.withValues(alpha: 0.2),
+                  ? AppColors.primaryBlue
+                  : AppColors.dividerColor.withValues(alpha: 0.2),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -279,7 +280,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                   // Selection overlay
                   if (isSelected)
                     Container(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.2),
                     ),
                 ],
               ),
@@ -297,10 +298,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? AppTheme.primaryColor
-                    : AppTheme.cardColor.withValues(alpha: 0.8),
+                    ? AppColors.primaryBlue
+                    : AppColors.cardColor.withValues(alpha: 0.8),
                 border: Border.all(
-                  color: AppTheme.dividerColor.withValues(alpha: 0.3),
+                  color: AppColors.dividerColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Icon(
@@ -308,7 +309,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 size: 16,
                 color: isSelected
                     ? Colors.white
-                    : AppTheme.textPrimary.withValues(alpha: 0.6),
+                    : AppColors.textPrimary.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -409,9 +410,9 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
           border: Border.all(
-            color: AppTheme.dividerColor.withValues(alpha: 0.3),
+            color: AppColors.dividerColor.withValues(alpha: 0.3),
           ),
-          color: AppTheme.cardColor,
+          color: AppColors.cardColor,
         ),
         child: Center(
           child: Column(
@@ -420,13 +421,13 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               Icon(
                 Icons.photo_library_outlined,
                 size: 48,
-                color: AppTheme.textPrimary.withValues(alpha: 0.4),
+                color: AppColors.textPrimary.withValues(alpha: 0.4),
               ),
               const SizedBox(height: 12),
               Text(
                 'No images to display',
-                style: AppTheme.textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textPrimary.withValues(alpha: 0.6),
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textPrimary.withValues(alpha: 0.6),
                 ),
               ),
             ],

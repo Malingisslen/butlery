@@ -1,6 +1,6 @@
 import 'dart:async';
 import '../interfaces/recipe_repository.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../models/recipe_change.dart';
 import 'in_memory_repository.dart';
 

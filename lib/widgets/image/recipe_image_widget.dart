@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
 import 'image_config.dart';
 import 'image_components.dart';
 
@@ -107,7 +107,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       height: dimensions.height,
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
-        color: AppTheme.cardColor,
+        color: AppColors.cardWhite,
       ),
       child: hasImages ? _buildImageContent() : _buildEmptyState(),
     );
@@ -166,7 +166,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  AppTheme.cardColor.withValues(alpha: 0.1),
+                  AppColors.cardWhite.withValues(alpha: 0.1),
                 ],
               ),
             ),

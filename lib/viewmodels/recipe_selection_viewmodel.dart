@@ -1,7 +1,7 @@
 // lib/viewmodels/recipe_selection_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 import '../services/unified/unified_recipe_service.dart';
 
@@ -58,8 +58,8 @@ class RecipeSelectionViewModel extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Ladda alla recept (using legacy compatibility)
-      _allRecipes = _recipeService.legacyRecipes;
+      // Ladda alla recept (unified format)
+      _allRecipes = _recipeService.recipes;
 
       // ✅ NY: Kolla vilka som redan delats med denna vän
       // TODO: Implement getRecipesSharedWithFriend in social feature interface

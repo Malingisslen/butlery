@@ -2,7 +2,6 @@
 
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../theme/app_theme.dart';
 import 'logger.dart';
 
 class ConnectivityCheck {
@@ -10,7 +9,7 @@ class ConnectivityCheck {
     try {
       final result = await InternetAddress.lookup(
         'google.com',
-      ).timeout(AppTheme.wait3s);
+      ).timeout(const Duration(seconds: 3));
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } on SocketException catch (_) {
       return false;
@@ -31,7 +30,7 @@ class ConnectivityCheck {
     for (final server in dnsServers) {
       try {
         final result = await InternetAddress.lookup(server)
-            .timeout(AppTheme.timeoutShort);
+            .timeout(const Duration(seconds: 5));
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           return true;
         }
@@ -52,7 +51,7 @@ class ConnectivityCheck {
           .collection('connectivity_test')
           .limit(1)
           .get()
-          .timeout(AppTheme.timeoutMedium);
+          .timeout(const Duration(seconds: 10));
       return true;
     } catch (e) {
       AppLogger.debug('Firebase connectivity test failed: $e');

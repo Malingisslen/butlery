@@ -15,9 +15,7 @@
 /// Connected to: base_hive_repository.dart
 /// Used in phases: offline storage prototype
 
-import 'package:hive_flutter/hive_flutter.dart';
-
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import 'base_hive_repository.dart';
 
 /// Repository för att lagra Recipe-objekt i Hive.
@@ -26,10 +24,8 @@ class RecipeHiveRepository extends BaseHiveRepository<Recipe> {
 
   @override
   Future<void> init({String? userId}) async {
-    // Registrera adapter om nödvändigt
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(RecipeAdapter());
-    }
+    // TODO: Register unified Recipe adapter when available
+    // For now, using JSON serialization instead
     await super.init(userId: userId);
   }
 

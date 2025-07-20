@@ -8,7 +8,7 @@ import '../../viewmodels/recipe_detail_viewmodel.dart';
 import '../../viewmodels/social_recipe_viewmodel.dart';
 import '../../widgets/common/universal_share_dialog.dart';
 import '../../viewmodels/universal_share_dialog_viewmodel.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
 import '../../core/injection.dart';
 import '../../services/share_service.dart';
 import '../../services/user_service.dart';
@@ -42,7 +42,7 @@ class RecipeDetailActions {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: backgroundColor ?? AppTheme.successColor,
+          backgroundColor: backgroundColor ?? AppColors.success,
           duration: duration,
         ),
       );
@@ -84,7 +84,7 @@ class RecipeDetailActions {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Ta bort'),
           ),
@@ -101,13 +101,13 @@ class RecipeDetailActions {
         showSnackBarSafely(
           context,
           'Recept borttaget',
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: AppColors.success,
         );
       } else {
         showSnackBarSafely(
           context,
           'Kunde inte ta bort recept',
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppColors.error,
         );
       }
     }
@@ -126,14 +126,14 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Recept delat',
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
       showSnackBarSafely(
         context,
         'Kunde inte dela recept',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -200,7 +200,7 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Du måste vara inloggad för att kommentera',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
       return;
     }
@@ -213,7 +213,7 @@ class RecipeDetailActions {
           showSnackBarSafely(
             context,
             'Kunde inte hämta användardata',
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppColors.error,
           );
         }
         return;
@@ -227,14 +227,14 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Kommentar postad',
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
       showSnackBarSafely(
         context,
         'Kunde inte posta kommentar',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -258,14 +258,14 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Användarprofil skapad',
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
       showSnackBarSafely(
         context,
         'Kunde inte skapa användarprofil',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -282,14 +282,14 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Recept markerat som lagat idag!',
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
       showSnackBarSafely(
         context,
         'Kunde inte markera som lagat',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }
@@ -307,7 +307,7 @@ class RecipeDetailActions {
         showSnackBarSafely(
           context,
           'Kunde inte öppna länk',
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppColors.error,
         );
       }
     } catch (e) {
@@ -315,7 +315,7 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Ogiltig länk',
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppColors.error,
       );
     }
   }

@@ -8,16 +8,16 @@ import '../../models/group_invitation.dart';
 import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/search_filter_widget.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../widgets/common/loading_state_builder.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/injection.dart';
-import '../../core/dialogs/dialog_factory.dart';
 import '../../core/utils/snackbar_utils.dart';
-import '../../models/user_profile.dart';
-import '../../models/friend_request.dart';
-import '../../models/friend_category.dart';
-import 'group_detail_view.dart';
+
+// Import focused components
+import 'friends_list/friends_tab.dart';
+import 'friends_list/requests_tab.dart';
+import 'friends_list/search_tab.dart';
+import 'friends_list/groups_tab.dart';
 
 class FriendsListView extends StatelessWidget {
   const FriendsListView({super.key});
@@ -106,7 +106,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelPadding:
-                    EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+                    EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
                 tabs: [
                   Tab(
                     icon: const Icon(Icons.people),
@@ -128,7 +128,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     icon: Badge(
                       isLabelVisible: pendingInvitationsCount > 0,
                       label: Text('$pendingInvitationsCount'),
-                      backgroundColor: AppTheme.warningColor,
+                      backgroundColor: AppColors.warning,
                       child: const Icon(Icons.group),
                     ),
                     text: 'Grupper (${friendsService.categories.categoriesList.length})',
@@ -142,22 +142,22 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 if (viewModel.hasError)
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(AppTheme.spacingMd),
-                    margin: EdgeInsets.all(AppTheme.spacingMd),
+                    padding: EdgeInsets.all(AppDimensions.spacingL),
+                    margin: EdgeInsets.all(AppDimensions.spacingL),
                     decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.1),
-                      borderRadius: AppTheme.smallRadius,
+                      color: AppColors.error.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                       border: Border.all(
-                          color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                          color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: AppTheme.errorColor),
-                        SizedBox(width: AppTheme.spacingSm),
+                        Icon(Icons.error_outline, color: AppColors.error),
+                        SizedBox(width: AppDimensions.spacingS),
                         Expanded(
                           child: Text(
                             viewModel.error!,
-                            style: TextStyle(color: AppTheme.errorColor),
+                            style: TextStyle(color: AppColors.error),
                           ),
                         ),
                         TextButton(
@@ -175,7 +175,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     onSearchChanged: _onSearchChanged,
                     searchHint: 'Sök efter vänner...',
                     autofocus: false,
-                    padding: EdgeInsets.all(AppTheme.spacingMd),
+                    padding: EdgeInsets.all(AppDimensions.spacingL),
                     showStats: true,
                     resultCount: viewModel.searchResults.length,
                   ),
@@ -208,659 +208,19 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
-    return LoadingStateBuilder<List<UserProfile>>(
-      isLoading: viewModel.isLoading,
-      error: viewModel.error,
-      data: viewModel.friends,
-      loadingMessage: 'Laddar vänner...',
-      emptyState: EmptyStateVariant.noFriends,
-      builder: (context, friends) => RefreshIndicator(
-        onRefresh: () async {
-          await viewModel.refresh();
-        },
-        child: ListView.separated(
-          padding: EdgeInsets.all(AppTheme.spacingMd),
-          itemCount: friends.length,
-          separatorBuilder: (context, index) =>
-              SizedBox(height: AppTheme.spacingSm),
-          itemBuilder: (context, index) {
-            final friend = friends[index];
-            return _buildFriendCard(friend, viewModel);
-          },
-        ),
-      ),
-    );
+    return FriendsTab.build(context, viewModel);
   }
 
   Widget _buildRequestsTab(FriendsViewModel viewModel) {
-    return LoadingStateBuilder<List<FriendRequest>>(
-      isLoading: viewModel.isLoading,
-      error: viewModel.error,
-      data: viewModel.incomingRequests,
-      loadingMessage: 'Laddar förfrågningar...',
-      emptyTitle: 'Inga vänskapsförfrågningar',
-      emptySubtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
-      emptyIcon: Icons.notifications_none,
-      builder: (context, requests) => RefreshIndicator(
-        onRefresh: () async {
-          await viewModel.refresh();
-        },
-        child: ListView.separated(
-          padding: EdgeInsets.all(AppTheme.spacingMd),
-          itemCount: requests.length,
-          separatorBuilder: (context, index) =>
-              SizedBox(height: AppTheme.spacingSm),
-          itemBuilder: (context, index) {
-            final request = requests[index];
-            return _buildRequestCard(request, viewModel);
-          },
-        ),
-      ),
-    );
+    return RequestsTab.build(context, viewModel);
   }
 
   Widget _buildSearchTab(FriendsViewModel viewModel) {
-    if (_searchQuery.isEmpty) {
-      return StateWidget.empty(
-        title: 'Sök efter nya vänner',
-        subtitle: 'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
-        icon: Icons.search,
-      );
-    }
-
-    if (viewModel.isSearching) {
-      return StateWidget.loading(message: 'Söker användare...');
-    }
-
-    if (viewModel.searchResults.isEmpty) {
-      return StateWidget.noSearchResults();
-    }
-
-    return ListView.separated(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
-      itemCount: viewModel.searchResults.length,
-      separatorBuilder: (context, index) =>
-          SizedBox(height: AppTheme.spacingSm),
-      itemBuilder: (context, index) {
-        final user = viewModel.searchResults[index];
-        return _buildSearchResultCard(user, viewModel);
-      },
-    );
+    return SearchTab.build(context, viewModel, _searchQuery);
   }
 
   Widget _buildGroupsTab(UnifiedFriendsService friendsService) {
-    return AnimatedBuilder(
-      animation: friendsService,
-      builder: (context, child) {
-        final groups = friendsService.categories.categoriesList;
-        final pendingInvitations =
-            friendsService.invitations.pendingReceivedInvitations;
-
-        if (friendsService.isLoading &&
-            groups.isEmpty &&
-            pendingInvitations.isEmpty) {
-          return StateWidget.loading(message: 'Laddar grupper...');
-        }
-
-        return RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([
-              friendsService.categories.refresh(),
-              friendsService.invitations.refresh(),
-            ]);
-          },
-          child: CustomScrollView(
-            slivers: [
-              // Pending inbjudningar sektion
-              if (pendingInvitations.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: AppTheme.screenPadding,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.mail_outline,
-                                color: AppTheme.warningColor, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Gruppinbjudningar (${pendingInvitations.length})',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.warningColor,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Du har fått inbjudningar att gå med i grupper',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppTheme.textSecondary,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final invitation = pendingInvitations[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacingMd,
-                          vertical: AppTheme.spacingXs,
-                        ),
-                        child: _buildInvitationCard(
-                            invitation, friendsService),
-                      );
-                    },
-                    childCount: pendingInvitations.length,
-                  ),
-                ),
-                // Separator
-                if (groups.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: AppTheme.screenPadding,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 16),
-                          Divider(color: AppTheme.dividerColor),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-
-              // Befintliga grupper sektion
-              if (groups.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: AppTheme.screenPadding,
-                    child: Row(
-                      children: [
-                        Icon(Icons.groups,
-                            color: AppTheme.primaryColor, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Mina grupper (${groups.length})',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final group = groups[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacingMd,
-                          vertical: AppTheme.spacingXs,
-                        ),
-                        child: _buildGroupCard(group, friendsService),
-                      );
-                    },
-                    childCount: groups.length,
-                  ),
-                ),
-              ],
-
-              // Empty state
-              if (groups.isEmpty && pendingInvitations.isEmpty) ...[
-                SliverFillRemaining(
-                  child: StateWidget.empty(
-                    title: 'Inga grupper än',
-                    subtitle:
-                        'Skapa din första grupp eller vänta på inbjudningar från vänner.',
-                    icon: Icons.groups_outlined,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildInvitationCard(
-      GroupInvitation invitation, UnifiedFriendsService service) {
-    return Card(
-      color: AppTheme.warningColor.withValues(alpha: 0.05),
-      shape: RoundedRectangleBorder(
-        borderRadius: AppTheme.mediumRadius,
-        side: BorderSide(
-          color: AppTheme.warningColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Padding(
-        padding: AppTheme.cardPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.warningColor.withValues(alpha: 0.1),
-                    borderRadius: AppTheme.smallRadius,
-                  ),
-                  child: Center(
-                    child: Text(
-                      invitation.groupEmoji,
-                      style: AppTheme.displaySmall,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        invitation.groupName,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      Text(
-                        'Inbjudan från ${invitation.fromUserName}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textSecondary,
-                            ),
-                      ),
-                      Text(
-                        'Skickat: ${invitation.timeAgoText}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.warningColor,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (invitation.personalMessage?.isNotEmpty == true) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacingSm),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                  borderRadius: AppTheme.smallRadius,
-                ),
-                child: Text(
-                  invitation.personalMessage!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontStyle: FontStyle.italic,
-                      ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: service.invitations.isLoading
-                        ? null
-                        : () => _rejectInvitation(invitation.id, service),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.errorColor,
-                      side: BorderSide(color: AppTheme.errorColor),
-                    ),
-                    child: const Text('Avvisa'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: service.invitations.isLoading
-                        ? null
-                        : () => _acceptInvitation(invitation.id, service),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.successColor,
-                    ),
-                    child: const Text('Acceptera'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGroupCard(
-      FriendCategory group, UnifiedFriendsService friendsService) {
-    return Card(
-      child: ListTile(
-        onTap: () => _navigateToGroupDetail(group),
-        leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-          child: Text(
-            group.emoji ?? '👥',
-            style: AppTheme.displaySmall,
-          ),
-        ),
-        title: Text(
-          group.name,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (group.description?.isNotEmpty == true)
-              Text(
-                group.description!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            SizedBox(height: AppTheme.spacingXs),
-            Text(
-              group.summary,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFriendCard(UserProfile friend, FriendsViewModel viewModel) {
-    return Card(
-      child: ListTile(
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            '/friend-profile',
-            arguments: friend,
-          );
-        },
-        // ✅ MIGRATION 1/3: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
-        leading: SocialComponents.avatar(
-          user: friend,
-          size: ImageSize.small,
-        ),
-        title: Text(
-          friend.displayName,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: friend.bio?.isNotEmpty == true
-            ? Text(
-                friend.bio!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) {
-            switch (value) {
-              case 'remove':
-                _showRemoveFriendDialog(friend, viewModel);
-                break;
-              case 'profile':
-                Navigator.pushNamed(
-                  context,
-                  '/friend-profile',
-                  arguments: friend,
-                );
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'profile',
-              child: Row(
-                children: [
-                  Icon(Icons.person),
-                  SizedBox(width: 8),
-                  Text('Visa profil'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'remove',
-              child: Row(
-                children: [
-                  Icon(Icons.person_remove, color: AppTheme.errorColor),
-                  SizedBox(width: 8),
-                  Text('Ta bort vän',
-                      style: TextStyle(color: AppTheme.errorColor)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRequestCard(FriendRequest request, FriendsViewModel viewModel) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(AppTheme.spacingMd),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                // ✅ MIGRATION 2/3: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
-                SocialComponents.avatar(
-                  size: ImageSize.small,
-                  imageUrl: viewModel.getAvatarUrlForUser(request.fromUserId),
-                  displayName:
-                      viewModel.getDisplayNameForUser(request.fromUserId),
-                ),
-                SizedBox(width: AppTheme.spacingMd),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Vänskapsförfrågan',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      if (request.message?.isNotEmpty == true)
-                        Text(
-                          request.message!,
-                          style: Theme.of(context).textTheme.bodySmall,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      SizedBox(height: AppTheme.spacingXs),
-                      Text(
-                        'Skickat ${request.timeAgoText}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: AppTheme.spacingMd),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _rejectRequest(request, viewModel),
-                    icon: const Icon(Icons.close),
-                    label: const Text('Avböj'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.errorColor,
-                      side: BorderSide(color: AppTheme.errorColor),
-                    ),
-                  ),
-                ),
-                SizedBox(width: AppTheme.spacingMd),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _acceptRequest(request, viewModel),
-                    icon: const Icon(Icons.check),
-                    label: const Text('Acceptera'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.successColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchResultCard(UserProfile user, FriendsViewModel viewModel) {
-    final isFriend = viewModel.friends.any((friend) => friend.uid == user.uid);
-    final hasPendingRequest =
-        viewModel.sentRequests.any((req) => req.toUserId == user.uid);
-
-    return Card(
-      child: ListTile(
-        // ✅ MIGRATION 3/3: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
-        leading: SocialComponents.avatar(
-          size: ImageSize.small,
-          imageUrl: viewModel.getAvatarUrlForUser(user.uid),
-          displayName: viewModel.getDisplayNameForUser(user.uid),
-        ),
-        title: Text(
-          user.displayName,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: user.bio?.isNotEmpty == true
-            ? Text(
-                user.bio!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
-        trailing:
-            _buildActionButton(user, viewModel, isFriend, hasPendingRequest),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(UserProfile user, FriendsViewModel viewModel,
-      bool isFriend, bool hasPendingRequest) {
-    if (isFriend) {
-      return Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingSm,
-          vertical: AppTheme.spacingXs,
-        ),
-        decoration: BoxDecoration(
-          color: AppTheme.successColor.withValues(alpha: 0.1),
-          borderRadius: AppTheme.smallRadius,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: AppTheme.successColor,
-              size: AppTheme.iconSizeInfo,
-            ),
-            SizedBox(width: AppTheme.spacingXs),
-            Text(
-              'Vänner',
-              style: TextStyle(
-                color: AppTheme.successColor,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (hasPendingRequest) {
-      return Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingSm,
-          vertical: AppTheme.spacingXs,
-        ),
-        decoration: BoxDecoration(
-          color: AppTheme.warningColor.withValues(alpha: 0.1),
-          borderRadius: AppTheme.smallRadius,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.schedule,
-              color: AppTheme.warningColor,
-              size: AppTheme.iconSizeInfo,
-            ),
-            SizedBox(width: AppTheme.spacingXs),
-            Text(
-              'Väntande',
-              style: TextStyle(
-                color: AppTheme.warningColor,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return FilledButton.icon(
-      onPressed: viewModel.isLoading
-          ? null
-          : () => _sendFriendRequest(user, viewModel),
-      icon: viewModel.isLoading
-          ? SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(
-                  Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-            )
-          : const Icon(Icons.person_add),
-      label: const Text('Lägg till'),
-    );
-  }
-
-  // Navigation methods
-  void _navigateToGroupDetail(FriendCategory group) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GroupDetailView(groupId: group.id),
-      ),
-    );
+    return GroupsTab.build(context, friendsService);
   }
 
   // ✅ UPPDATERAD: Använd SocialComponents.showCreateGroupDialog
@@ -873,69 +233,4 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     }
   }
 
-  // Invitation actions
-  Future<void> _acceptInvitation(
-      String invitationId, UnifiedFriendsService service) async {
-    final success = await service.invitations.acceptGroupInvitation(invitationId);
-
-    if (success && mounted) {
-      SnackBarUtils.showSuccess(context, 'Inbjudan accepterad! Välkommen till gruppen! 🎉');
-      final viewModel = context.read<FriendsViewModel>();
-      viewModel.refresh();
-    } else if (mounted && service.invitations.hasError) {
-      SnackBarUtils.showError(context, 'Fel: ${service.invitations.error}');
-    }
-  }
-
-  Future<void> _rejectInvitation(
-      String invitationId, UnifiedFriendsService service) async {
-    final success = await service.invitations.rejectGroupInvitation(invitationId);
-
-    if (success && mounted) {
-      SnackBarUtils.showWarning(context, 'Inbjudan avvisad');
-    } else if (mounted && service.invitations.hasError) {
-      SnackBarUtils.showError(context, 'Fel: ${service.invitations.error}');
-    }
-  }
-
-  // Friend actions
-  Future<void> _sendFriendRequest(
-      UserProfile user, FriendsViewModel viewModel) async {
-    final success = await viewModel.sendFriendRequest(user.uid);
-    if (success && mounted) {
-      SnackBarUtils.showSuccess(context, 'Vänskapsförfrågan skickad till ${user.displayName}! ✉️');
-    }
-  }
-
-  Future<void> _acceptRequest(
-      FriendRequest request, FriendsViewModel viewModel) async {
-    final success = await viewModel.acceptFriendRequest(request.id);
-    if (success && mounted) {
-      SnackBarUtils.showSuccess(context, 'Vänskapsförfrågan accepterad! 🎉');
-    }
-  }
-
-  Future<void> _rejectRequest(
-      FriendRequest request, FriendsViewModel viewModel) async {
-    final success = await viewModel.rejectFriendRequest(request.id);
-    if (success && mounted) {
-      SnackBarUtils.showWarning(context, 'Vänskapsförfrågan avböjd');
-    }
-  }
-
-  Future<void> _showRemoveFriendDialog(
-      UserProfile friend, FriendsViewModel viewModel) async {
-    final shouldRemove = await DialogFactory.showDeleteConfirmation(
-      context,
-      itemName: friend.displayName,
-      itemType: 'vän från din vänlista',
-    );
-
-    if (shouldRemove == true && mounted) {
-      final success = await viewModel.removeFriend(friend.uid);
-      if (success && mounted) {
-        SnackBarUtils.showSuccess(context, '${friend.displayName} borttagen från vänlista');
-      }
-    }
-  }
 }

@@ -131,10 +131,12 @@ class SocialRecipeService extends ChangeNotifier {
 
       // Create a personal recipe from the shared one
       final success = await _recipeService.personal.createRecipe(
-        name: sharedRecipe.recipeSnapshot.title,
+        title: sharedRecipe.recipeSnapshot.title,
         description: sharedRecipe.recipeSnapshot.description,
         ingredients: sharedRecipe.recipeSnapshot.ingredients,
         instructions: sharedRecipe.recipeSnapshot.instructions,
+        imageUrls: sharedRecipe.recipeSnapshot.imageUrls,
+        mealType: sharedRecipe.recipeSnapshot.mealType,
         portions: sharedRecipe.recipeSnapshot.portions,
         timeMinutes: sharedRecipe.recipeSnapshot.timeMinutes,
         tags: sharedRecipe.recipeSnapshot.tags,
@@ -167,10 +169,12 @@ class SocialRecipeService extends ChangeNotifier {
       for (final entry in sharedMenu.menuSnapshot.entries) {
         for (final recipe in entry.value) {
           final success = await _recipeService.personal.createRecipe(
-            name: recipe.title,
+            title: recipe.title,
             description: recipe.description,
             ingredients: recipe.ingredients,
             instructions: recipe.instructions,
+            imageUrls: recipe.imageUrls,
+            mealType: recipe.mealType,
             portions: recipe.portions,
             timeMinutes: recipe.timeMinutes,
             tags: recipe.tags,

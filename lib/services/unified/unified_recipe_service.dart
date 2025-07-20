@@ -23,8 +23,8 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
 import '../../core/cache/json_cache_helper.dart';
-import '../../models/unified/unified_recipe.dart';
-import '../../models/recipe.dart'; // För backwards compatibility
+import '../../models/recipe_unified.dart';
+import '../../models/permissions/resource_permission.dart';
 import '../../core/utils/logger.dart';
 import '../../core/mixins/firebase_sync_mixin.dart';
 
@@ -36,7 +36,7 @@ import 'types/recipe_types.dart';
 import '../permission_service.dart';
 import '../../core/injection.dart';
 
-class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<UnifiedRecipe> {
+class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe> {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
   
@@ -70,17 +70,17 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
 
   // State
-  final List<UnifiedRecipe> _recipes = [];
+  final List<Recipe> _recipes = [];
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
 
   // ===== GETTERS - Same API as your existing RecipeService =====
 
-  List<UnifiedRecipe> get recipes => List.unmodifiable(_recipes);
-  List<UnifiedRecipe> get personalRecipes =>
+  List<Recipe> get recipes => List.unmodifiable(_recipes);
+  List<Recipe> get personalRecipes =>
       recipes.where((r) => r.isPersonal).toList();
-  List<UnifiedRecipe> get collaborativeRecipes =>
+  List<Recipe> get collaborativeRecipes =>
       recipes.where((r) => r.isCollaborative).toList();
 
   bool get hasRecipes => _recipes.isNotEmpty;
@@ -98,19 +98,15 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       _authRepository.currentUser?.displayName ?? 'Du';
 
 
-  // ===== BACKWARDS COMPATIBILITY - för befintlig kod =====
+  // ===== UNIFIED RECIPE ACCESS =====
 
-  /// Legacy getter för befintlig kod
-  List<Recipe> get legacyRecipes =>
-      _recipes.map((r) => r.toLegacyRecipe()).toList();
-
-  /// Legacy method för befintlig kod
+  /// Get recipe by ID - returns unified Recipe
   Recipe? getRecipeById(String id) {
-    final unifiedRecipe = _recipes.where((r) => r.id == id).firstOrNull;
-    return unifiedRecipe?.toLegacyRecipe();
+    return _recipes.where((r) => r.id == id).firstOrNull;
   }
 
-  /// Legacy property för befintlig kod
+
+  /// Legacy property for error access
   String? get lastError => _error;
 
   // ===== INITIALIZATION =====
@@ -166,7 +162,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
   // ===== RECIPE MANAGEMENT =====
 
   Future<String?> createPersonalRecipe({
-    required String name,
+    required String title,
     String description = '',
     List<String> ingredients = const [],
     List<String> instructions = const [],
@@ -183,26 +179,25 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       return null;
     }
 
-    if (name.trim().isEmpty) {
+    if (title.trim().isEmpty) {
       _setError('Receptnamn kan inte vara tomt');
       return null;
     }
 
     try {
-      final newRecipe = UnifiedRecipe.personal(
-        name: name.trim(),
-        ownerId: currentUserId!,
-        ownerDisplayName: currentUserDisplayName!,
+      final newRecipe = Recipe.personal(
+        title: title.trim(),
         description: description,
         ingredients: ingredients,
         instructions: instructions,
-        imageUrls: imageUrls,
         mealType: mealType,
+        createdBy: currentUserId!,
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
         tags: tags,
         sourceUrl: sourceUrl,
+        imageUrls: imageUrls,
       );
 
       // Lägg till lokalt (optimistic update)
@@ -215,7 +210,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       // Synka till Firebase
       _scheduleSyncForRecipe(newRecipe.id);
 
-      AppLogger.success('✅ Personligt recept "$name" skapat');
+      AppLogger.success('✅ Personligt recept "$title" skapat');
       return newRecipe.id;
     } catch (e) {
       AppLogger.error('❌ Kunde inte skapa personligt recept: $e');
@@ -225,9 +220,8 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
   }
 
   Future<String?> createCollaborativeRecipe({
-    required String name,
+    required String title,
     required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     String description = '',
     List<String> ingredients = const [],
     List<String> instructions = const [],
@@ -248,37 +242,36 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       return null;
     }
 
-    if (name.trim().isEmpty) {
+    if (title.trim().isEmpty) {
       _setError('Receptnamn kan inte vara tomt');
       return null;
     }
 
     try {
       // Skapa member permissions
-      final memberPermissions = <String, RecipePermission>{};
+      final memberPermissions = <String, ResourcePermission>{};
       for (final memberId in memberIds) {
-        memberPermissions[memberId] = RecipePermission.edit;
+        memberPermissions[memberId] = ResourcePermission.editor;
       }
 
-      final newRecipe = UnifiedRecipe.collaborative(
-        name: name.trim(),
-        ownerId: currentUserId!,
-        ownerDisplayName: currentUserDisplayName!,
-        memberPermissions: memberPermissions,
+      final newRecipe = Recipe.collaborative(
+        title: title.trim(),
         description: description,
         ingredients: ingredients,
         instructions: instructions,
-        imageUrls: imageUrls,
         mealType: mealType,
+        ownerId: currentUserId!,
+        ownerDisplayName: currentUserDisplayName!,
+        memberPermissions: memberPermissions,
+        allowGuestViewing: allowGuestViewing,
+        allowMemberInvites: allowMemberInvites,
+        descriptionCollaborative: descriptionCollaborative,
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
         tags: tags,
         sourceUrl: sourceUrl,
-        descriptionCollaborative: descriptionCollaborative, // ✅ ÄNDRAT
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        categoryIds: categoryIds,
+        imageUrls: imageUrls,
       );
 
       // Lägg till lokalt (optimistic update)
@@ -292,7 +285,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       _scheduleSyncForRecipe(newRecipe.id);
 
       AppLogger.success(
-          '✅ Kollaborativt recept "$name" skapat med ${memberIds.length} medlemmar');
+          '✅ Kollaborativt recept "$title" skapat med ${memberIds.length} medlemmar');
       return newRecipe.id;
     } catch (e) {
       AppLogger.error('❌ Kunde inte skapa kollaborativt recept: $e');
@@ -301,7 +294,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     }
   }
 
-  Future<bool> updateRecipe(UnifiedRecipe updatedRecipe) async {
+  Future<bool> updateRecipe(Recipe updatedRecipe) async {
     try {
       final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
       if (index == -1) {
@@ -311,7 +304,6 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
       // Uppdatera lokalt (optimistic update)
       _recipes[index] = updatedRecipe.copyWith(
-        updatedAt: DateTime.now(),
         lastEditedByUserId: currentUserId,
         lastEditedByDisplayName: currentUserDisplayName,
       );
@@ -361,7 +353,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   Future<bool> updateRecipeContent({
     required String recipeId,
-    String? name,
+    String? title,
     String? description,
     List<String>? ingredients,
     List<String>? instructions,
@@ -388,7 +380,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     }
 
     final updatedRecipe = recipe.copyWith(
-      name: name,
+      title: title,
       description: description,
       ingredients: ingredients,
       instructions: instructions,
@@ -399,7 +391,6 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       rating: rating,
       tags: tags,
       sourceUrl: sourceUrl,
-      updatedAt: DateTime.now(),
       lastEditedByUserId: currentUserId,
       lastEditedByDisplayName: currentUserDisplayName,
     );
@@ -504,7 +495,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
   // ===== COLLABORATIVE MEMBER MANAGEMENT =====
 
   Future<bool> addMemberToRecipe(
-      String recipeId, String userId, RecipePermission permission) async {
+      String recipeId, String userId, ResourcePermission permission) async {
     final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
     if (recipe == null || recipe.isPersonal) return false;
 
@@ -514,7 +505,22 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       return false;
     }
 
-    final updatedRecipe = recipe.addMember(userId, permission);
+    // This method needs to be implemented in the new Recipe model
+    // For now, we'll create a new recipe with updated social data
+    if (recipe.socialData == null) return false;
+    final newSocialData = RecipeSocialData(
+      ownerId: recipe.socialData!.ownerId,
+      ownerDisplayName: recipe.socialData!.ownerDisplayName,
+      memberPermissions: {
+        ...?recipe.socialData?.memberPermissions,
+        userId: permission,
+      },
+      allowGuestViewing: recipe.socialData!.allowGuestViewing,
+      allowMemberInvites: recipe.socialData!.allowMemberInvites,
+      categoryIds: recipe.socialData!.categoryIds,
+      descriptionCollaborative: recipe.socialData!.descriptionCollaborative,
+    );
+    final updatedRecipe = recipe.copyWith(socialData: newSocialData);
     return await updateRecipe(updatedRecipe);
   }
 
@@ -528,12 +534,28 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       return false;
     }
 
-    final updatedRecipe = recipe.removeMember(userId);
+    // This method needs to be implemented in the new Recipe model
+    // For now, we'll create a new recipe with updated social data
+    if (recipe.socialData == null) return false;
+    final updatedPermissions = Map<String, ResourcePermission>.from(
+      recipe.socialData?.memberPermissions ?? {},
+    );
+    updatedPermissions.remove(userId);
+    final newSocialData = RecipeSocialData(
+      ownerId: recipe.socialData!.ownerId,
+      ownerDisplayName: recipe.socialData!.ownerDisplayName,
+      memberPermissions: updatedPermissions,
+      allowGuestViewing: recipe.socialData!.allowGuestViewing,
+      allowMemberInvites: recipe.socialData!.allowMemberInvites,
+      categoryIds: recipe.socialData!.categoryIds,
+      descriptionCollaborative: recipe.socialData!.descriptionCollaborative,
+    );
+    final updatedRecipe = recipe.copyWith(socialData: newSocialData);
     return await updateRecipe(updatedRecipe);
   }
 
   Future<bool> updateMemberPermission(
-      String recipeId, String userId, RecipePermission permission) async {
+      String recipeId, String userId, ResourcePermission permission) async {
     final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
     if (recipe == null || recipe.isPersonal) return false;
 
@@ -543,76 +565,60 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       return false;
     }
 
-    final updatedRecipe = recipe.updateMemberPermission(userId, permission);
+    // This method needs to be implemented in the new Recipe model
+    // For now, we'll create a new recipe with updated social data
+    if (recipe.socialData == null) return false;
+    final updatedPermissions = Map<String, ResourcePermission>.from(
+      recipe.socialData?.memberPermissions ?? {},
+    );
+    updatedPermissions[userId] = permission;
+    final newSocialData = RecipeSocialData(
+      ownerId: recipe.socialData!.ownerId,
+      ownerDisplayName: recipe.socialData!.ownerDisplayName,
+      memberPermissions: updatedPermissions,
+      allowGuestViewing: recipe.socialData!.allowGuestViewing,
+      allowMemberInvites: recipe.socialData!.allowMemberInvites,
+      categoryIds: recipe.socialData!.categoryIds,
+      descriptionCollaborative: recipe.socialData!.descriptionCollaborative,
+    );
+    final updatedRecipe = recipe.copyWith(socialData: newSocialData);
     return await updateRecipe(updatedRecipe);
   }
 
   // ===== LEGACY COMPATIBILITY METHODS =====
 
-  /// För befintlig kod som använder Recipe model
-  Future<RecipeOperationResult> addRecipe(Recipe legacyRecipe) async {
-    try {
-      final recipeId = await createPersonalRecipe(
-        name: legacyRecipe.title,
-        description: legacyRecipe.description,
-        ingredients: legacyRecipe.ingredients,
-        instructions: legacyRecipe.instructions,
-        imageUrls: legacyRecipe.imageUrls,
-        mealType: legacyRecipe.mealType,
-        portions: legacyRecipe.portions,
-        timeMinutes: legacyRecipe.timeMinutes,
-        rating: legacyRecipe.rating,
-        tags: legacyRecipe.tags,
-        sourceUrl: legacyRecipe.sourceUrl,
-      );
-
-      if (recipeId != null) {
-        return RecipeOperationResult.success();
-      } else {
-        return RecipeOperationResult.failure(
-            _error ?? 'Kunde inte skapa recept');
-      }
-    } catch (e) {
-      return RecipeOperationResult.failure(e.toString());
-    }
+  /// Create recipe using legacy interface
+  Future<String?> createRecipe({
+    required String title,
+    required String description,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required List<String> imageUrls,
+    required String mealType,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? tags,
+    String? sourceUrl,
+  }) async {
+    return await createPersonalRecipe(
+      title: title,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      imageUrls: imageUrls,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+    );
   }
 
-  /// För befintlig kod som använder Recipe model
-  Future<RecipeOperationResult> updateLegacyRecipe(Recipe legacyRecipe) async {
-    try {
-      // Find unified recipe by ID
-      final unifiedRecipe =
-          _recipes.where((r) => r.id == legacyRecipe.id).firstOrNull;
-      if (unifiedRecipe == null) {
-        return RecipeOperationResult.failure('Recept hittades inte');
-      }
-
-      // Convert legacy recipe to unified recipe
-      final updatedRecipe = unifiedRecipe.copyWith(
-        name: legacyRecipe.title,
-        description: legacyRecipe.description,
-        ingredients: legacyRecipe.ingredients,
-        instructions: legacyRecipe.instructions,
-        imageUrls: legacyRecipe.imageUrls,
-        mealType: legacyRecipe.mealType,
-        portions: legacyRecipe.portions,
-        timeMinutes: legacyRecipe.timeMinutes,
-        rating: legacyRecipe.rating,
-        tags: legacyRecipe.tags,
-        sourceUrl: legacyRecipe.sourceUrl,
-        lastCookedAt: legacyRecipe.lastCookedAt,
-      );
-
-      final success = await updateRecipe(updatedRecipe);
-      if (success) {
-        return RecipeOperationResult.success();
-      } else {
-        return RecipeOperationResult.failure(
-            _error ?? 'Kunde inte uppdatera recept');
-      }
-    } catch (e) {
-      return RecipeOperationResult.failure(e.toString());
-    }
+  /// Mark recipe as cooked using legacy interface
+  Future<bool> markAsCooked(String recipeId) async {
+    return await markRecipeAsCooked(recipeId);
   }
 
   /// För befintlig kod
@@ -624,6 +630,12 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
       return RecipeOperationResult.failure(
           _error ?? 'Kunde inte ta bort recept');
     }
+  }
+
+  /// Clear current error
+  void clearError() {
+    _error = null;
+    notifyListeners();
   }
 
   /// Legacy refresh method
@@ -669,7 +681,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   // ===== FIREBASE SYNC METHODS =====
 
-  Future<void> _syncRecipeToFirebase(UnifiedRecipe recipe) async {
+  Future<void> _syncRecipeToFirebase(Recipe recipe) async {
     if (currentUserId == null) return;
 
     try {
@@ -680,13 +692,13 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
           .doc(recipe.id)
           .set(recipe.toFirestore(), SetOptions(merge: true));
 
-      AppLogger.debug('Recept synkat: ${recipe.name}');
+      AppLogger.debug('Recept synkat: ${recipe.title}');
     } catch (e) {
       AppLogger.error('Firebase synk-fel för recept ${recipe.id}: $e');
     }
   }
 
-  Future<void> _syncCollaborativeRecipeToFirebase(UnifiedRecipe recipe) async {
+  Future<void> _syncCollaborativeRecipeToFirebase(Recipe recipe) async {
     if (currentUserId == null) return;
 
     try {
@@ -695,7 +707,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
           .doc(recipe.id)
           .set(recipe.toFirestore(), SetOptions(merge: true));
 
-      AppLogger.debug('Kollaborativt recept synkat: ${recipe.name}');
+      AppLogger.debug('Kollaborativt recept synkat: ${recipe.title}');
     } catch (e) {
       AppLogger.error(
           'Firebase synk-fel för kollaborativt recept ${recipe.id}: $e');
@@ -745,7 +757,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   void _handlePersonalRecipesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      final recipe = UnifiedRecipe.fromFirestore(doc);
+      final recipe = Recipe.fromFirestore(doc);
 
       switch (changeType) {
         case DocumentChangeType.added:
@@ -763,7 +775,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   void _handleCollaborativeRecipesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
     try {
-      final recipe = UnifiedRecipe.fromFirestore(doc);
+      final recipe = Recipe.fromFirestore(doc);
 
       switch (changeType) {
         case DocumentChangeType.added:
@@ -780,7 +792,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     }
   }
 
-  void _updateLocalRecipe(UnifiedRecipe updatedRecipe) {
+  void _updateLocalRecipe(Recipe updatedRecipe) {
     final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
     if (index != -1) {
       _recipes[index] = updatedRecipe;
@@ -791,7 +803,7 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
   }
 
   /// Public method for feature interfaces to update local recipe
-  void updateLocalRecipe(UnifiedRecipe updatedRecipe) {
+  void updateLocalRecipe(Recipe updatedRecipe) {
     _updateLocalRecipe(updatedRecipe);
     notifyListeners();
   }
@@ -811,9 +823,9 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
         final recipeData = await _cacheHelper.loadJson(recipeId);
         if (recipeData != null) {
           try {
-            final recipe = UnifiedRecipe.fromJson(recipeData);
+            final recipe = Recipe.fromJson(recipeData);
             _recipes.add(recipe);
-            AppLogger.debug('Laddat cached recept: ${recipe.name}');
+            AppLogger.debug('Laddat cached recept: ${recipe.title}');
           } catch (e) {
             AppLogger.error('Fel vid parsing av cached recept $recipeId: $e');
             await _cacheHelper.delete(recipeId);
@@ -827,11 +839,11 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
     }
   }
 
-  Future<void> _saveToCache(UnifiedRecipe recipe) async {
+  Future<void> _saveToCache(Recipe recipe) async {
     try {
       final recipeData = recipe.toJson();
       await _cacheHelper.saveJson(recipe.id, recipeData);
-      AppLogger.debug('Recept cachat: ${recipe.name}');
+      AppLogger.debug('Recept cachat: ${recipe.title}');
     } catch (e) {
       AppLogger.error('Fel vid sparande till cache: $e');
     }
@@ -872,11 +884,6 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Unified
 
   void _setError(String message) {
     _error = message;
-    notifyListeners();
-  }
-
-  void clearError() {
-    _error = null;
     notifyListeners();
   }
 

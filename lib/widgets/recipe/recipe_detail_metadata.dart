@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../viewmodels/recipe_detail_viewmodel.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/utils/snackbar_utils.dart';
 
 class RecipeDetailMetadata extends StatefulWidget {
@@ -40,13 +42,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       children: [
         // Metadata container
         _buildMetadata(context),
-        AppTheme.largeGap,
+        SizedBox(height: AppDimensions.spacingXl),
         
         // Source URL (if available)
         if (widget.viewModel.recipe.sourceUrl != null &&
             widget.viewModel.recipe.sourceUrl!.isNotEmpty) ...[
           _buildSourceUrl(context),
-          AppTheme.largeGap,
+          SizedBox(height: AppDimensions.spacingXl),
         ],
       ],
     );
@@ -56,8 +58,12 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   Widget _buildMetadata(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
-      decoration: AppTheme.infoBoxDecoration(context),
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundTint,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         children: [
           // Metadata items row
@@ -86,7 +92,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           
           // Rating stars display
           if (widget.viewModel.hasRating) ...[
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (i) {
@@ -94,27 +100,27 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
                 if (i + 1 <= rating) {
                   return Icon(
                     Icons.star,
-                    color: AppTheme.starColor,
-                    size: AppTheme.iconSize20,
+                    color: AppColors.starGold,
+                    size: AppDimensions.iconSizeS,
                   );
                 } else if (i + 0.5 <= rating) {
                   return Icon(
                     Icons.star_half,
-                    color: AppTheme.starColor,
-                    size: AppTheme.iconSize20,
+                    color: AppColors.starGold,
+                    size: AppDimensions.iconSizeS,
                   );
                 }
                 return Icon(
                   Icons.star_border,
-                  color: AppTheme.starColor,
-                  size: AppTheme.iconSize20,
+                  color: AppColors.starGold,
+                  size: AppDimensions.iconSizeS,
                 );
               }),
             ),
           ],
 
           // "Cooked today" button
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -137,11 +143,11 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: widget.viewModel.recipe.wasCookedRecently
-                    ? AppTheme.successColor
+                    ? AppColors.success
                     : Theme.of(context).colorScheme.primary,
                 side: BorderSide(
                   color: widget.viewModel.recipe.wasCookedRecently
-                      ? AppTheme.successColor
+                      ? AppColors.success
                       : Theme.of(context).colorScheme.outline,
                 ),
               ),
@@ -163,15 +169,15 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       children: [
         Icon(
           icon,
-          size: AppTheme.iconSizeAction,
+          size: AppDimensions.iconSizeAction,
           color: isHighlighted
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        AppTheme.tinyGap,
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           text,
-          style: AppTheme.captionStyle.copyWith(
+          style: AppTextStyles.bodySmall.copyWith(
             color: isHighlighted
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -203,35 +209,39 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
                 );
               }
             },
-      borderRadius: AppTheme.mediumRadius,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: AppTheme.cardPadding,
-        decoration: AppTheme.infoBoxDecoration(context),
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        decoration: BoxDecoration(
+        color: AppColors.backgroundTint,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
         child: Row(
           children: [
             Icon(
               isFromArchive ? Icons.archive : Icons.link,
-              size: AppTheme.iconSizeAction,
+              size: AppDimensions.iconSizeAction,
               color: Theme.of(context).colorScheme.primary,
             ),
-            SizedBox(width: AppTheme.spacingSm),
+            SizedBox(width: AppDimensions.spacingS),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Källa',
-                    style: AppTheme.captionStyle.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   Text(
                     sourceUrl,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: AppTextStyles.bodyMedium.copyWith(
                           color: isFromArchive
-                              ? Theme.of(context).colorScheme.onSurface
-                              : Theme.of(context).colorScheme.primary,
+                              ? AppColors.textDark
+                              : AppColors.primaryBlue,
                           decoration:
                               isFromArchive ? null : TextDecoration.underline,
                         ),
@@ -244,7 +254,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             if (!isFromArchive)
               Icon(
                 Icons.open_in_new,
-                size: AppTheme.iconSizeInfo,
+                size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.primary,
               ),
           ],

@@ -1,7 +1,8 @@
 // lib/widgets/common/profile/profile_menu.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 import '../../../core/injection.dart';
 import '../../../core/utils/logger.dart';
 import '../../../services/auth_service.dart';
@@ -94,22 +95,25 @@ class _ProfileMenuState extends State<ProfileMenu> {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: AppTheme.bottomSheetBorderRadius,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(AppDimensions.borderRadiusL),
+          topRight: Radius.circular(AppDimensions.borderRadiusL),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
           Container(
-            width: AppTheme.iconSizeDisplay,
-            height: AppTheme.spacingXs,
-            margin: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+            width: 48,
+            height: AppDimensions.spacingXs,
+            margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
             decoration: BoxDecoration(
               color: Theme.of(context)
                   .colorScheme
                   .onSurfaceVariant
                   .withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(AppTheme.spacingXxs),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
             ),
           ),
 
@@ -120,23 +124,23 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 children: [
                   // Header with user info
                   _buildProfileHeader(context),
-                  AppTheme.largeGap,
+                  SizedBox(height: AppDimensions.spacingXl),
 
                   // Social functions
                   if (widget.showSocialOptions) ...[
                     _buildSocialSection(context),
-                    AppTheme.largeGap,
+                    SizedBox(height: AppDimensions.spacingXl),
                   ],
 
                   // Data & Backup section
                   if (widget.showBackupOptions) ...[
                     ProfileActions.buildDataBackupSection(context),
-                    AppTheme.largeGap,
+                    SizedBox(height: AppDimensions.spacingXl),
                   ],
 
                   // Logout section
                   ProfileActions.buildLogoutSection(context),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
                 ],
               ),
             ),
@@ -152,33 +156,33 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
             .primaryContainer
             .withValues(alpha: 0.3),
-        borderRadius: AppTheme.mediumRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
-      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         children: [
           Row(
             children: [
               _buildSimpleAvatar(context),
-              AppTheme.mediumHorizontalGap,
+              SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Min profil',
-                      style: AppTheme.cardTitleStyle.copyWith(
+                      style: AppTextStyles.titleMedium.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    AppTheme.tinyGap,
+                    const SizedBox(height: AppDimensions.spacingXs),
                     _buildUserBasicInfo(context),
                   ],
                 ),
@@ -187,12 +191,12 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 onPressed: () => Navigator.pop(context),
                 icon: Icon(
                   Icons.close,
-                  size: AppTheme.iconSizeNavigation,
+                  size: AppDimensions.iconSizeAction,
                 ),
               ),
             ],
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           if (user != null) _buildUserMetadata(context, user),
         ],
       ),
@@ -203,7 +207,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   Widget _buildSimpleAvatar(BuildContext context) {
     final hasImage =
         widget.userImageUrl != null && widget.userImageUrl!.isNotEmpty;
-    final avatarSize = AppTheme.thumbnailLargeSize;
+    final avatarSize = AppDimensions.thumbnailLargeSize;
 
     return Container(
       width: avatarSize,
@@ -244,7 +248,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
       child: Center(
         child: Text(
           initials,
-          style: AppTheme.cardTitleStyle.copyWith(
+          style: AppTextStyles.titleMedium.copyWith(
             color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
             fontSize: size * 0.35,
@@ -273,15 +277,15 @@ class _ProfileMenuState extends State<ProfileMenu> {
       children: [
         Text(
           widget.displayName,
-          style: AppTheme.bodyStyle.copyWith(
+          style: AppTextStyles.bodyLarge.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
         if (widget.email != null) ...[
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             widget.email!,
-            style: AppTheme.captionStyle,
+            style: AppTextStyles.bodySmall,
           ),
         ],
       ],
@@ -298,14 +302,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
           _formatDate(user.metadata.creationTime),
           Icons.calendar_today,
         ),
-        AppTheme.tinyGap,
+        const SizedBox(height: AppDimensions.spacingXs),
         _buildInfoItem(
           context,
           'Senast aktiv',
           _formatDate(user.metadata.lastSignInTime),
           Icons.access_time,
         ),
-        AppTheme.tinyGap,
+        const SizedBox(height: AppDimensions.spacingXs),
         _buildInfoItem(
           context,
           'Autentisering',
@@ -327,14 +331,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
       children: [
         Icon(
           icon,
-          size: AppTheme.iconSizeInfo,
+          size: AppDimensions.iconSizeM,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        SizedBox(width: AppTheme.spacingXs),
+        SizedBox(width: AppDimensions.spacingXs),
         Expanded(
           child: Text(
             '$label: $value',
-            style: AppTheme.captionStyle,
+            style: AppTextStyles.bodySmall,
           ),
         ),
       ],
@@ -344,15 +348,15 @@ class _ProfileMenuState extends State<ProfileMenu> {
   /// Social section
   Widget _buildSocialSection(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+      margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Sociala funktioner',
-            style: AppTheme.sectionHeaderStyle,
+            style: AppTextStyles.headlineSmall,
           ),
-          AppTheme.mediumGap,
+          const SizedBox(height: AppDimensions.spacingXl),
           
           ProfileActions.buildMenuItem(
             context,

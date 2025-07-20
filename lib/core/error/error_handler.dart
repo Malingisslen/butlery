@@ -5,7 +5,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'failures.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class ErrorHandler {
   /// Konverterar olika typer av exceptions till Failure objekt
@@ -97,24 +98,24 @@ class ErrorHandler {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: AppTheme.neutralLight),
+            Icon(Icons.error_outline, color: AppColors.neutralLight),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 failure.message,
-                style: const TextStyle(color: AppTheme.neutralLight),
+                style: TextStyle(color: AppColors.neutralLight),
               ),
             ),
           ],
         ),
         backgroundColor: Theme.of(context).colorScheme.error,
         behavior: SnackBarBehavior.floating,
-        duration: AppTheme.snackbarDuration,
+        duration: AppDimensions.snackbarDuration,
         action:
             onRetry != null
                 ? SnackBarAction(
                   label: 'Försök igen',
-                  textColor: AppTheme.neutralLight,
+                  textColor: AppColors.neutralLight,
                   onPressed: onRetry,
                 )
                 : null,

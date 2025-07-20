@@ -16,6 +16,8 @@
 /// Used in phases: Phase 6 - Eliminate Code Duplication Patterns
 
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../utils/logger.dart';
 
 /// Factory class that eliminates duplicated dialog creation patterns
@@ -77,7 +79,7 @@ class DialogFactory {
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(
                 foregroundColor: isDangerous 
-                  ? Colors.red 
+                  ? AppColors.error 
                   : confirmColor ?? Theme.of(context).primaryColor,
               ),
               child: Text(confirmText),
@@ -140,8 +142,8 @@ class DialogFactory {
         builder: (context) => AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.red),
-              SizedBox(width: 8),
+              Icon(Icons.error_outline, color: AppColors.error),
+              SizedBox(width: AppDimensions.spacingM),
               Text(title),
             ],
           ),
@@ -200,8 +202,8 @@ class DialogFactory {
         builder: (context) => AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.check_circle_outline, color: Colors.green),
-              SizedBox(width: 8),
+              Icon(Icons.check_circle_outline, color: AppColors.success),
+              SizedBox(width: AppDimensions.spacingM),
               Text(title),
             ],
           ),
@@ -273,7 +275,7 @@ class DialogFactory {
       children: [
         Text(description),
         if (bulletPoints != null && bulletPoints.isNotEmpty) ...[
-          SizedBox(height: 16),
+          SizedBox(height: AppDimensions.spacingXl),
           ...bulletPoints.map((point) => Padding(
             padding: EdgeInsets.only(bottom: 4),
             child: Row(
@@ -324,7 +326,7 @@ class DialogFactory {
             children: [
               if (message != null) ...[
                 Text(message),
-                SizedBox(height: 16),
+                SizedBox(height: AppDimensions.spacingXl),
               ],
               TextField(
                 controller: controller,
@@ -388,7 +390,7 @@ class DialogFactory {
             children: [
               if (message != null) ...[
                 Text(message),
-                SizedBox(height: 16),
+                SizedBox(height: AppDimensions.spacingXl),
               ],
               TextField(
                 controller: controller,
@@ -447,7 +449,7 @@ class DialogFactory {
               children: [
                 if (message != null) ...[
                   Text(message),
-                  SizedBox(height: 16),
+                  SizedBox(height: AppDimensions.spacingXl),
                 ],
                 ...choices.map((choice) => RadioListTile<T>(
                   title: Text(choice.label),
@@ -500,7 +502,7 @@ class DialogFactory {
               children: [
                 if (message != null) ...[
                   Text(message),
-                  SizedBox(height: 16),
+                  SizedBox(height: AppDimensions.spacingXl),
                 ],
                 ...choices.map((choice) => CheckboxListTile(
                   title: Text(choice.label),

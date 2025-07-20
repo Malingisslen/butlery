@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/injection.dart';
 import '../../core/validators/form_validators.dart';
 import '../../core/utils/snackbar_utils.dart';
@@ -88,8 +90,8 @@ class _UserProfileEditViewContentState
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppTheme.mediumLoadingIndicator(),
-            SizedBox(height: AppTheme.spacingMd),
+            const CircularProgressIndicator(),
+            SizedBox(height: AppDimensions.spacingL),
             const Text('Laddar upp avatar...'),
           ],
         ),
@@ -210,7 +212,7 @@ class _UserProfileEditViewContentState
                     ? SizedBox(
                         width: 20,
                         height: 20,
-                        child: AppTheme.smallLoadingIndicator(),
+                        child: const CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Text('Spara'),
               ),
@@ -228,8 +230,8 @@ class _UserProfileEditViewContentState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppTheme.mediumLoadingIndicator(),
-            SizedBox(height: AppTheme.spacingMd),
+            const CircularProgressIndicator(),
+            SizedBox(height: AppDimensions.spacingL),
             const Text('Laddar profil...'),
           ],
         ),
@@ -237,7 +239,7 @@ class _UserProfileEditViewContentState
     }
 
     return SingleChildScrollView(
-      padding: AppTheme.screenPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Form(
         key: _formKey,
         child: Column(
@@ -245,19 +247,19 @@ class _UserProfileEditViewContentState
           children: [
             // Avatar section
             _buildAvatarSection(viewModel),
-            SizedBox(height: AppTheme.spacingLg),
+            SizedBox(height: AppDimensions.spacingXl),
 
             // Display name field
             _buildDisplayNameField(viewModel),
-            SizedBox(height: AppTheme.spacingMd),
+            SizedBox(height: AppDimensions.spacingL),
 
             // Bio field
             _buildBioField(viewModel),
-            SizedBox(height: AppTheme.spacingLg),
+            SizedBox(height: AppDimensions.spacingXl),
 
             // Privacy settings
             _buildPrivacySettings(viewModel),
-            SizedBox(height: AppTheme.spacingXl),
+            SizedBox(height: AppDimensions.spacingXxl),
 
             // Action buttons
             _buildActionButtons(viewModel),
@@ -287,19 +289,19 @@ class _UserProfileEditViewContentState
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppTheme.overlay,
+                      color: AppColors.neutralDark.withValues(alpha: 0.7),
                     ),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppTheme.smallLoadingIndicator(color: AppTheme.neutralLight),
-                          SizedBox(height: AppTheme.spacingXs),
+                          const CircularProgressIndicator(strokeWidth: 2, color: AppColors.neutralLight),
+                          SizedBox(height: AppDimensions.spacingXs),
                           Text(
                             'Laddar upp...',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppTheme.neutralLight,
+                                      color: AppColors.neutralLight,
                                     ),
                           ),
                         ],
@@ -310,7 +312,7 @@ class _UserProfileEditViewContentState
             ],
           ),
 
-          SizedBox(height: AppTheme.spacingMd),
+          SizedBox(height: AppDimensions.spacingL),
 
           // Avatar action buttons
           Row(
@@ -324,7 +326,7 @@ class _UserProfileEditViewContentState
                     : 'Lägg till avatar'),
               ),
               if (viewModel.avatarUrl != null) ...[
-                SizedBox(width: AppTheme.spacingMd),
+                SizedBox(width: AppDimensions.spacingL),
                 OutlinedButton.icon(
                   onPressed: viewModel.isUploadingAvatar
                       ? null
@@ -335,8 +337,8 @@ class _UserProfileEditViewContentState
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Ta bort'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.errorColor,
-                    side: BorderSide(color: AppTheme.errorColor),
+                    foregroundColor: AppColors.error,
+                    side: BorderSide(color: AppColors.error),
                   ),
                 ),
               ],
@@ -353,9 +355,9 @@ class _UserProfileEditViewContentState
       children: [
         Text(
           'Visningsnamn',
-          style: AppTheme.formLabelStyle,
+          style: AppTextStyles.labelMedium,
         ),
-        SizedBox(height: AppTheme.spacingXs),
+        SizedBox(height: AppDimensions.spacingXs),
         TextFormField(
           controller: _displayNameController,
           focusNode: _displayNameFocusNode,
@@ -364,10 +366,10 @@ class _UserProfileEditViewContentState
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.person),
             suffixIcon: viewModel.displayNameError != null
-                ? Icon(Icons.error, color: AppTheme.errorColor)
+                ? Icon(Icons.error, color: AppColors.error)
                 : _displayNameController.text.isNotEmpty &&
                         viewModel.displayNameError == null
-                    ? Icon(Icons.check_circle, color: AppTheme.successColor)
+                    ? Icon(Icons.check_circle, color: AppColors.success)
                     : null,
           ),
           validator: FormValidators.requiredDisplayName(),
@@ -385,11 +387,11 @@ class _UserProfileEditViewContentState
         ),
         if (viewModel.displayNameError != null)
           Padding(
-            padding: EdgeInsets.only(top: AppTheme.spacingXs),
+            padding: EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               viewModel.displayNameError!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.errorColor,
+                    color: AppColors.error,
                   ),
             ),
           ),
@@ -403,9 +405,9 @@ class _UserProfileEditViewContentState
       children: [
         Text(
           'Beskrivning',
-          style: AppTheme.formLabelStyle,
+          style: AppTextStyles.labelMedium,
         ),
-        SizedBox(height: AppTheme.spacingXs),
+        SizedBox(height: AppDimensions.spacingXs),
         TextFormField(
           controller: _bioController,
           focusNode: _bioFocusNode,
@@ -421,11 +423,11 @@ class _UserProfileEditViewContentState
         ),
         if (viewModel.bioError != null)
           Padding(
-            padding: EdgeInsets.only(top: AppTheme.spacingXs),
+            padding: EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               viewModel.bioError!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.errorColor,
+                    color: AppColors.error,
                   ),
             ),
           ),
@@ -439,13 +441,13 @@ class _UserProfileEditViewContentState
       children: [
         Text(
           'Integritetsinställningar',
-          style: AppTheme.sectionHeaderStyle,
+          style: AppTextStyles.titleMedium,
         ),
-        SizedBox(height: AppTheme.spacingMd),
+        SizedBox(height: AppDimensions.spacingL),
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: AppTheme.mediumRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Column(
             children: [
@@ -487,17 +489,25 @@ class _UserProfileEditViewContentState
                 ? SizedBox(
                     width: 20,
                     height: 20,
-                    child: AppTheme.smallLoadingIndicator(),
+                    child: const CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.save),
             label: Text(
               viewModel.isLoading ? 'Sparar...' : 'Spara profil',
             ),
-            style: AppTheme.primaryButtonStyle,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: AppColors.cardWhite,
+              minimumSize: Size(double.infinity, AppDimensions.buttonHeight),
+              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              ),
+            ),
           ),
         ),
 
-        SizedBox(height: AppTheme.spacingMd),
+        SizedBox(height: AppDimensions.spacingL),
 
         // Reset button
         SizedBox(
@@ -518,28 +528,28 @@ class _UserProfileEditViewContentState
         // Unsaved changes indicator
         if (viewModel.hasUnsavedChanges)
           Padding(
-            padding: EdgeInsets.only(top: AppTheme.spacingMd),
+            padding: EdgeInsets.only(top: AppDimensions.spacingL),
             child: Container(
-              padding: EdgeInsets.all(AppTheme.spacingSm),
+              padding: EdgeInsets.all(AppDimensions.spacingS),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.smallRadius,
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 border: Border.all(
-                  color: AppTheme.warningColor.withValues(alpha: 0.3),
+                  color: AppColors.warning.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning_amber,
-                    color: AppTheme.warningColor,
-                    size: AppTheme.iconSizeInfo,
+                    color: AppColors.warning,
+                    size: AppDimensions.iconSizeM,
                   ),
-                  SizedBox(width: AppTheme.spacingXs),
+                  SizedBox(width: AppDimensions.spacingXs),
                   Expanded(
                     child: Text(
                       'Du har osparade ändringar',
-                      style: AppTheme.smallText,
+                      style: AppTextStyles.bodySmall,
                     ),
                   ),
                 ],

@@ -15,7 +15,8 @@
 /// Connected to: UnifiedRecipeService, Social ViewModels, Friend services
 /// Used in phases: Phase 5 - Service Consolidation
 
-import '../../../models/unified/unified_recipe.dart';
+import '../../../models/recipe_unified.dart';
+import '../../../models/permissions/resource_permission.dart';
 import '../../../core/utils/logger.dart';
 import '../../permission_service.dart';
 import '../../../core/injection.dart';
@@ -57,7 +58,7 @@ class SocialRecipeOperations {
 
       // Create collaborative version
       return await _parent.createCollaborativeRecipe(
-        name: personalRecipe.name,
+        title: personalRecipe.title,
         memberIds: memberIds,
         memberDisplayNames: memberDisplayNames,
         description: personalRecipe.description,
@@ -94,14 +95,14 @@ class SocialRecipeOperations {
       }
 
       // Check if user is owner
-      if (collaborativeRecipe.ownerId != _parent.currentUserId) {
+      if (collaborativeRecipe.socialData?.ownerId != _parent.currentUserId) {
         AppLogger.error('Cannot convert recipe: User is not owner');
         return null;
       }
 
       // Create personal version
       final personalRecipeId = await _parent.createPersonalRecipe(
-        name: collaborativeRecipe.name,
+        title: collaborativeRecipe.title,
         description: collaborativeRecipe.description,
         ingredients: collaborativeRecipe.ingredients,
         instructions: collaborativeRecipe.instructions,
@@ -133,7 +134,7 @@ class SocialRecipeOperations {
     required String recipeId,
     required String userId,
     required String userDisplayName,
-    RecipePermission permission = RecipePermission.edit,
+    ResourcePermission permission = ResourcePermission.editor,
   }) async {
     try {
       return await _parent.addMemberToRecipe(recipeId, userId, permission);
@@ -160,7 +161,7 @@ class SocialRecipeOperations {
   Future<bool> updateMemberPermission({
     required String recipeId,
     required String userId,
-    required RecipePermission permission,
+    required ResourcePermission permission,
   }) async {
     try {
       return await _parent.updateMemberPermission(recipeId, userId, permission);
@@ -171,12 +172,12 @@ class SocialRecipeOperations {
   }
 
   /// Get all members of a collaborative recipe
-  Map<String, RecipePermission> getRecipeMembers(String recipeId) {
+  Map<String, ResourcePermission> getRecipeMembers(String recipeId) {
     final recipe = _parent.recipes
         .where((r) => r.id == recipeId && r.isCollaborative)
         .firstOrNull;
     
-    return recipe?.memberPermissions ?? {};
+    return recipe?.socialData?.memberPermissions ?? {};
   }
 
   /// Check if user can invite members to recipe
@@ -187,29 +188,29 @@ class SocialRecipeOperations {
     
     if (recipe == null) return false;
     
-    return recipe.allowMemberInvites && 
+    return recipe.socialData?.allowMemberInvites == true && 
            _parent.currentUserId != null &&
-           recipe.canManageMembersBy(_parent.currentUserId!);
+           sl<PermissionService>().canManageRecipeMembers(recipeId);
   }
 
   // ===== SOCIAL DISCOVERY =====
 
   /// Get all collaborative recipes current user is member of
-  List<UnifiedRecipe> getCollaborativeRecipes() {
+  List<Recipe> getCollaborativeRecipes() {
     return _parent.collaborativeRecipes;
   }
 
   /// Get recipes shared with current user
-  List<UnifiedRecipe> getSharedWithMe() {
+  List<Recipe> getSharedWithMe() {
     if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.collaborativeRecipes
-        .where((r) => r.ownerId != _parent.currentUserId)
+        .where((r) => r.socialData?.ownerId != _parent.currentUserId)
         .toList();
   }
 
   /// Get recipes owned by current user that are shared
-  List<UnifiedRecipe> getSharedByMe() {
+  List<Recipe> getSharedByMe() {
     if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.collaborativeRecipes
@@ -218,11 +219,11 @@ class SocialRecipeOperations {
   }
 
   /// Get recipes by specific user (if accessible)
-  List<UnifiedRecipe> getRecipesByUser(String userId) {
+  List<Recipe> getRecipesByUser(String userId) {
     if (!sl<PermissionService>().isAuthenticated) return [];
     
     return _parent.recipes
-        .where((r) => sl<PermissionService>().isOwner(r.ownerId) && 
+        .where((r) => sl<PermissionService>().isOwner(r.socialData?.ownerId ?? r.core.createdBy) && 
           sl<PermissionService>().canViewRecipe(r.id))
         .toList();
   }
@@ -286,13 +287,13 @@ class SocialRecipeOperations {
     if (recipe == null) return {};
 
     return {
-      'memberCount': recipe.isCollaborative ? recipe.memberPermissions.length : 1,
+      'memberCount': recipe.isCollaborative ? (recipe.socialData?.memberPermissions?.length ?? 1) : 1,
       'lastActivity': recipe.updatedAt,
-      'lastEditedBy': recipe.lastEditedByDisplayName,
+      'lastEditedBy': recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
       'viewsCount': 0, // To be implemented
       'rating': recipe.rating,
       'isCollaborative': recipe.isCollaborative,
-      'allowGuestViewing': recipe.isCollaborative ? recipe.allowGuestViewing : false,
+      'allowGuestViewing': recipe.isCollaborative ? (recipe.socialData?.allowGuestViewing ?? false) : false,
     };
   }
 
@@ -304,13 +305,13 @@ class SocialRecipeOperations {
       return getSharedWithMe().map((recipe) {
         return {
           'id': recipe.id,
-          'title': recipe.name,
+          'title': recipe.title,
           'description': recipe.description,
-          'ownerId': recipe.ownerId,
-          'ownerDisplayName': recipe.ownerDisplayName,
+          'ownerId': recipe.socialData?.ownerId ?? recipe.core.createdBy,
+          'ownerDisplayName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
           'sharedAt': recipe.createdAt.toIso8601String(),
           'permissions': {_parent.currentUserId!: 'view'}, // Simplified
-          'recipe': recipe.toLegacyRecipe(),
+          'recipe': recipe.toJson(),
         };
       }).toList();
     } catch (e) {

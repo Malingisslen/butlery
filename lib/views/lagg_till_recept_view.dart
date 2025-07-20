@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import '../widgets/common/layout_components.dart';
 import '../widgets/common/utility_components.dart';
 import '../services/dialog_service.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
 
 /// ✨ 100% THEME-CENTRALISERAD LÄGG TILL RECEPT VY - MIGRERAD TILL UtilityComponents
 class LaggTillReceptView extends StatelessWidget {
@@ -26,14 +27,14 @@ class LaggTillReceptView extends StatelessWidget {
       child: LayoutComponents.mainMenu(
         currentIndex: 1,
         body: Padding(
-          padding: AppTheme.sectionPadding,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: ListView(
             children: [
               Text(
                 'Hur vill du lägga till ditt recept?',
-                style: AppTheme.sectionTitleStyle,
+                style: AppTextStyles.headlineSmall,
               ),
-              AppTheme.extraLargeGap,
+              const SizedBox(height: AppDimensions.spacingXxl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -43,7 +44,7 @@ class LaggTillReceptView extends StatelessWidget {
                 onPressed: () => _navigate(context, '/franSocialaMedier'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -53,7 +54,7 @@ class LaggTillReceptView extends StatelessWidget {
                 onPressed: () => _navigate(context, '/franSocialaMedier'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -63,7 +64,7 @@ class LaggTillReceptView extends StatelessWidget {
                 onPressed: () => _navigate(context, '/franSocialaMedier'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -73,7 +74,7 @@ class LaggTillReceptView extends StatelessWidget {
                 onPressed: () => _navigate(context, '/photoImport'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -83,7 +84,7 @@ class LaggTillReceptView extends StatelessWidget {
                 onPressed: () => _navigate(context, '/importViaUrl'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -93,7 +94,7 @@ class LaggTillReceptView extends StatelessWidget {
                 onPressed: () => _navigate(context, '/skrivSjalv'),
                 isExpanded: true,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
 
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
