@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../viewmodels/menu_viewmodel.dart';
+import '../../theme/app_dimensions.dart';
 
 // Import all split modules
 import 'layout/layout_scaffolds.dart';
@@ -9,6 +10,7 @@ import 'layout/status_indicators.dart';
 import 'profile/profile_menu.dart';
 import 'menu_persistence/menu_save_dialog.dart';
 import 'menu_persistence/menu_load_dialog.dart';
+import 'utility_components.dart';
 
 /// Unified Layout Components
 ///
@@ -166,6 +168,115 @@ class LayoutComponents {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => LoadMenuBottomSheet(viewModel: viewModel),
+    );
+  }
+
+  // ===== GRID LAYOUTS =====
+
+  /// 2x3 Grid layout for square buttons (recipe upload view)
+  static Widget squareButtonGrid(
+    BuildContext context, {
+    required List<Map<String, dynamic>> buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
+  }) {
+    if (buttons.length != 6) {
+      throw ArgumentError('squareButtonGrid requires exactly 6 buttons');
+    }
+
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+        child: Column(
+          children: [
+            // Row 1
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingS),
+                      child: UtilityComponents.squareButton(
+                        context,
+                        label: buttons[0]['label'],
+                        icon: buttons[0]['icon'],
+                        onPressed: buttons[0]['onPressed'],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingS),
+                      child: UtilityComponents.squareButton(
+                        context,
+                        label: buttons[1]['label'],
+                        icon: buttons[1]['icon'],
+                        onPressed: buttons[1]['onPressed'],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Row 2
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingS),
+                      child: UtilityComponents.squareButton(
+                        context,
+                        label: buttons[2]['label'],
+                        icon: buttons[2]['icon'],
+                        onPressed: buttons[2]['onPressed'],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingS),
+                      child: UtilityComponents.squareButton(
+                        context,
+                        label: buttons[3]['label'],
+                        icon: buttons[3]['icon'],
+                        onPressed: buttons[3]['onPressed'],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Row 3
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingS),
+                      child: UtilityComponents.squareButton(
+                        context,
+                        label: buttons[4]['label'],
+                        icon: buttons[4]['icon'],
+                        onPressed: buttons[4]['onPressed'],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingS),
+                      child: UtilityComponents.squareButton(
+                        context,
+                        label: buttons[5]['label'],
+                        icon: buttons[5]['icon'],
+                        onPressed: buttons[5]['onPressed'],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

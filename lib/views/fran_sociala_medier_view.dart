@@ -118,7 +118,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                       child: Text(
                         'Importerat från: ${viewModel.sourceUrl}',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: AppColors.textMedium,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -147,7 +147,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                       '1. Stek löken\n'
                       '2. Tillsätt färs och stek\n'
                       '3. Häll i tomaterna och låt sjuda',
-                  hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+                  hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
                   border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
                   suffixIcon: viewModel.inputText.isNotEmpty

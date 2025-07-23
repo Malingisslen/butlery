@@ -27,28 +27,6 @@ class ShareMessageInput {
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.all(AppDimensions.paddingL),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surface,
           ),
           maxLines: 3,
           textInputAction: TextInputAction.newline,

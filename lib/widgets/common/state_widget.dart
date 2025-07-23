@@ -113,6 +113,32 @@ class StateWidget extends StatelessWidget {
     );
   }
 
+  /// Empty state för "inga vänner hittades"
+  factory StateWidget.noFriendsSearchResults({
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return StateWidget(
+      type: StateType.empty,
+      emptyVariant: EmptyStateVariant.noFriendsSearchResults,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
+  }
+
+  /// Empty state för "inga grupper hittades"
+  factory StateWidget.noGroupsSearchResults({
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return StateWidget(
+      type: StateType.empty,
+      emptyVariant: EmptyStateVariant.noGroupsSearchResults,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
+  }
+
   /// Empty state för "ingen meny"
   factory StateWidget.noMenu({
     String? actionLabel = 'Generera meny',

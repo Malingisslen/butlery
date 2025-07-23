@@ -531,11 +531,13 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
 
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
-    // For now, return a stream that emits the current recipe state
-    // TODO: Implement proper real-time watching when operations are updated
-    return Stream.periodic(Duration(milliseconds: 500), (_) {
-      return recipes.where((r) => r.id == recipeId).firstOrNull;
-    }).where((recipe) => recipe != null).cast<Recipe>();
+    // Use the proper real-time watching from RealtimeRecipeOperations
+    return _recipeService.realtime.watchRecipe(recipeId);
+  }
+
+  /// Watch multiple recipes for real-time updates
+  Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) {
+    return _recipeService.realtime.watchMultipleRecipes(recipeIds);
   }
 
   /// Start real-time editing session for recipe

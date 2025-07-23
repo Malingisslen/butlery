@@ -1,8 +1,6 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
 import '../../../theme/app_text_styles.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
@@ -86,13 +84,7 @@ class _MainMenuLayout extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex ?? 0,
       onTap: (index) => _handleNavigation(context, index),
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: AppColors.backgroundBeige,
-      selectedItemColor: AppColors.primaryBlue,
-      unselectedItemColor: AppColors.textMedium,
-      selectedLabelStyle: AppTextStyles.labelSmall,
-      unselectedLabelStyle: AppTextStyles.labelSmall,
-      elevation: AppDimensions.elevationMedium,
+      // Remove ALL custom styling - let theme handle everything
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.book_outlined),

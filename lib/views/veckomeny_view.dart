@@ -398,46 +398,48 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Widget _buildGenerateButton(MenuViewModel viewModel) {
-    return SizedBox(
-      width: double.infinity,
-      height: AppDimensions.buttonHeight,
+    return Center(
       child: ElevatedButton.icon(
-        onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
-            ? _generateMenu
-            : null,
-        icon: viewModel.isGenerating
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.neutralLight,
-                ),
-              )
-            : const Icon(Icons.restaurant_menu),
-        label: Text(
-          viewModel.isGenerating
-              ? 'Genererar...'
-              : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
-          foregroundColor: AppColors.neutralLight,
-          padding: EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM,
+          onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
+              ? _generateMenu
+              : null,
+          icon: viewModel.isGenerating
+              ? SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.neutralLight,
+                  ),
+                )
+              : const Icon(Icons.restaurant_menu),
+          label: Text(
+            viewModel.isGenerating
+                ? 'Genererar...'
+                : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.neutralLight,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+              vertical: AppDimensions.paddingM,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            ),
           ),
-        ),
       ),
     );
   }
 
   Widget _buildMenuContent(MenuViewModel viewModel) {
     if (!viewModel.hasMenu) {
-      return StateWidget.noMenu();
+      return StateWidget.empty(
+        title: 'Ingen meny genererad ännu',
+        subtitle: 'Skriv vad du vill ha eller tryck på knappen nedan',
+        icon: Icons.clear, // Use clear as "no icon" marker
+      );
     }
 
     return ListView(
@@ -523,18 +525,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ),
         ),
         for (final recipe in recipes)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
-            child: ContentCard.compactRecipe(
-              recipe: recipe,
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/receptDetalj',
-                  arguments: recipe,
-                );
-              },
-            ),
+          ContentCard.compactRecipe(
+            recipe: recipe,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/receptDetalj',
+                arguments: recipe,
+              );
+            },
           ),
       ],
     );

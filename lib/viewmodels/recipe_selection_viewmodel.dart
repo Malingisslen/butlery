@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 import '../services/unified/unified_recipe_service.dart';
+import '../core/utils/logger.dart';
 
 /// ViewModel för receptval och delning med vänner
 class RecipeSelectionViewModel extends ChangeNotifier {
@@ -23,7 +24,19 @@ class RecipeSelectionViewModel extends ChangeNotifier {
   String? _error;
   final Set<String> _selectedRecipeIds = {};
   bool _isSharing = false;
-  Set<String> _alreadySharedRecipeIds = {}; // ✅ NY: För redan delade recept
+  final Set<String> _alreadySharedRecipeIds = {}; // ✅ NY: För redan delade recept
+  
+  // Additional getters for dialog compatibility
+  bool get hasSelectedRecipes => _selectedRecipeIds.isNotEmpty;
+  int get selectedCount => _selectedRecipeIds.length;
+  
+  // Search and filtering compatibility methods
+  void updateSearch(String query) => updateSearchQuery(query);
+  bool get hasSearchResults => _filteredRecipes.isNotEmpty;
+  void clearSearch() => updateSearchQuery('');
+  int get filteredCount => _filteredRecipes.length;
+  int get totalCount => _allRecipes.length;
+  void clearSelections() => clearSelection();
 
   // Getters
   List<Recipe> get allRecipes => _allRecipes;
@@ -31,73 +44,63 @@ class RecipeSelectionViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get isSharing => _isSharing;
   bool get hasError => _error != null;
   bool get hasRecipes => _allRecipes.isNotEmpty;
-  bool get hasSearchResults => _filteredRecipes.isNotEmpty;
-  int get totalCount => _allRecipes.length;
-  int get filteredCount => _filteredRecipes.length;
+  bool get hasFilteredRecipes => _filteredRecipes.isNotEmpty;
+  bool get canShare => _selectedRecipeIds.isNotEmpty && !_isSharing;
   Set<String> get selectedRecipeIds => _selectedRecipeIds;
-  bool get hasSelectedRecipes => _selectedRecipeIds.isNotEmpty;
-  int get selectedCount => _selectedRecipeIds.length;
-  bool get isSharing => _isSharing;
-  List<Recipe> get selectedRecipes => _allRecipes
-      .where((recipe) => _selectedRecipeIds.contains(recipe.id))
-      .toList();
+  Set<String> get alreadySharedRecipeIds => _alreadySharedRecipeIds; // ✅ NY: För UI
 
-  // ✅ NYA GETTERS för redan delade recept
-  Set<String> get alreadySharedRecipeIds => _alreadySharedRecipeIds;
-
-  /// Kontrollera om recept redan delats med vännen
-  bool isRecipeAlreadyShared(String recipeId) {
-    return _alreadySharedRecipeIds.contains(recipeId);
+  /// Lista över valda recept (inklusive kompletta Recipe-objekt)
+  List<Recipe> get selectedRecipes {
+    return _allRecipes.where((recipe) => _selectedRecipeIds.contains(recipe.id)).toList();
   }
 
-  /// ✅ UPPDATERAD: Ladda användarens recept OCH kolla vilka som redan delats
+  /// Indikator om receptet redan är delat med vald vän
+  bool isRecipeAlreadyShared(String recipeId) => _alreadySharedRecipeIds.contains(recipeId);
+
+  /// Ladda alla recept
   Future<void> loadRecipes() async {
+    _setLoading(true);
+    _clearError();
+
     try {
-      _setLoading(true);
-      _clearError();
+      AppLogger.info('📋 Laddar recept för delning...');
 
-      // Ladda alla recept (unified format)
-      _allRecipes = _recipeService.recipes;
+      final recipes = _recipeService.recipes;
+      _allRecipes = recipes.toList();
 
-      // ✅ NY: Kolla vilka som redan delats med denna vän
-      // TODO: Implement getRecipesSharedWithFriend in social feature interface
-      _alreadySharedRecipeIds = <String>{}; // For now, empty set
+      // Ladda redan delade recept
+      await _loadSharedRecipes();
 
-      _filteredRecipes = List.from(_allRecipes);
+      _applyFilters();
+      _setLoading(false);
 
-      // Applicera eventuell befintlig sökning
-      if (_searchQuery.isNotEmpty) {
-        _filterRecipes(_searchQuery);
-      }
+      AppLogger.success('✅ ${_allRecipes.length} recept laddade');
     } catch (e) {
-      _setError('Kunde inte ladda recept: $e');
-    } finally {
+      AppLogger.error('❌ Fel vid laddning av recept', e);
+      _setError('Kunde inte ladda recept');
       _setLoading(false);
     }
   }
 
-  /// Uppdatera sökquery och filtrera recept
-  void updateSearch(String query) {
+  /// Sök i recept
+  void updateSearchQuery(String query) {
+    if (_searchQuery == query) return;
+
     _searchQuery = query;
-    _filterRecipes(query);
-    notifyListeners();
+    _applyFilters();
   }
 
-  /// Rensa sökning
-  void clearSearch() {
-    _searchQuery = '';
-    _filteredRecipes = List.from(_allRecipes);
-    notifyListeners();
-  }
-
-  /// Toggla recept-selektion
+  /// Välj eller avmarkera recept
   void toggleRecipeSelection(String recipeId) {
     if (_selectedRecipeIds.contains(recipeId)) {
       _selectedRecipeIds.remove(recipeId);
+      AppLogger.debug('➖ Avmarkerat recept: $recipeId');
     } else {
       _selectedRecipeIds.add(recipeId);
+      AppLogger.debug('➕ Markerat recept: $recipeId');
     }
     notifyListeners();
   }
@@ -107,86 +110,99 @@ class RecipeSelectionViewModel extends ChangeNotifier {
     return _selectedRecipeIds.contains(recipeId);
   }
 
-  /// Rensa alla selektioner
-  void clearSelections() {
-    _selectedRecipeIds.clear();
-    notifyListeners();
-  }
-
-  /// Välj alla filtrerade recept
-  void selectAllFiltered() {
-    for (final recipe in _filteredRecipes) {
-      _selectedRecipeIds.add(recipe.id);
+  /// Rensa alla val
+  void clearSelection() {
+    if (_selectedRecipeIds.isNotEmpty) {
+      _selectedRecipeIds.clear();
+      notifyListeners();
+      AppLogger.debug('🧹 Rensat receptval');
     }
-    notifyListeners();
   }
 
-  /// Dela valda recept med SocialRecipeService
+  /// Dela valda recept med vännen
   Future<bool> shareSelectedRecipes() async {
-    if (_selectedRecipeIds.isEmpty) return false;
+    if (_selectedRecipeIds.isEmpty || _isSharing) return false;
+
+    _setSharing(true);
+    _clearError();
 
     try {
-      _setSharing(true);
+      AppLogger.info('📤 Delar ${_selectedRecipeIds.length} recept med ${targetFriend.displayName}');
 
-      // Hämta de valda recepten
-      final recipesToShare = selectedRecipes;
-
-      // Dela varje recept individuellt med den specifika vännen
-      // Vi använder shareRecipeToFriends men med bara en vän i listan
-      bool allSuccessful = true;
-
-      for (final recipe in recipesToShare) {
-        final memberDisplayNames = {targetFriend.uid: targetFriend.displayName};
-        
-        final sharedRecipeId = await _recipeService.social.shareRecipe(
+      final recipes = selectedRecipes;
+      for (final recipe in recipes) {
+        final success = await _recipeService.social.shareRecipe(
           recipeId: recipe.id,
           memberIds: [targetFriend.uid],
-          memberDisplayNames: memberDisplayNames,
+          memberDisplayNames: {targetFriend.uid: targetFriend.displayName},
         );
+        
+        final shareResult = success != null;
 
-        final success = sharedRecipeId != null;
-        if (!success) {
-          allSuccessful = false;
-          // Vi fortsätter med nästa recept även om ett misslyckas
-        } else {
-          // ✅ NY: Lägg till i redan delade recept lokalt för direkta UI-uppdateringar
-          _alreadySharedRecipeIds.add(recipe.id);
+        if (!shareResult) {
+          throw Exception('Kunde inte dela recept: ${recipe.title}');
         }
       }
 
-      // Rensa selektion efter lyckad delning
-      if (allSuccessful) {
-        clearSelections();
-      }
+      // Lägg till delade recept i redan-delat lista
+      _alreadySharedRecipeIds.addAll(_selectedRecipeIds);
+      clearSelection(); // Rensa valet efter lyckad delning
 
-      // ✅ Notifiera listeners för UI-uppdatering
-      notifyListeners();
-
-      return allSuccessful;
-    } catch (e) {
-      _setError('Kunde inte dela recept: $e');
-      return false;
-    } finally {
       _setSharing(false);
+      AppLogger.success('✅ Recept delade med ${targetFriend.displayName}');
+      return true;
+    } catch (e) {
+      AppLogger.error('❌ Fel vid delning av recept', e);
+      _setError('Kunde inte dela recept. Försök igen.');
+      _setSharing(false);
+      return false;
     }
   }
 
-  /// Privat metod för filtrering
-  void _filterRecipes(String query) {
-    if (query.isEmpty) {
-      _filteredRecipes = List.from(_allRecipes);
-    } else {
-      final searchLower = query.toLowerCase();
-      _filteredRecipes = _allRecipes.where((recipe) {
-        return recipe.title.toLowerCase().contains(searchLower) ||
-            recipe.mealType.toLowerCase().contains(searchLower) ||
+  /// Applicera filter och sortering
+  void _applyFilters() {
+    var filtered = _allRecipes;
+
+    // Textfilter
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      filtered = filtered.where((recipe) {
+        return recipe.title.toLowerCase().contains(query) ||
+            recipe.description.toLowerCase().contains(query) ||
             recipe.ingredients.any((ingredient) =>
-                ingredient.toLowerCase().contains(searchLower)) ||
-            (recipe.tags
-                    ?.any((tag) => tag.toLowerCase().contains(searchLower)) ??
-                false);
+                ingredient.toLowerCase().contains(query));
       }).toList();
     }
+
+    // Sortera: opådelat först, sedan alfabetiskt
+    filtered.sort((a, b) {
+      final aShared = _alreadySharedRecipeIds.contains(a.id);
+      final bShared = _alreadySharedRecipeIds.contains(b.id);
+
+      if (aShared && !bShared) return 1; // a efter b
+      if (!aShared && bShared) return -1; // a före b
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    });
+
+    _filteredRecipes = filtered;
+    notifyListeners();
+
+    AppLogger.debug(
+        '🔍 Filtrerade recept: ${_filteredRecipes.length}/${_allRecipes.length}');
+  }
+
+
+  /// Uppdatera recept från service
+  Future<void> refresh() async {
+    AppLogger.debug('🔄 Uppdaterar receptlista...');
+    await loadRecipes();
+  }
+
+  /// Statusinformation för delning
+  String getSelectionSummary() {
+    if (_selectedRecipeIds.isEmpty) return 'Inga recept valda';
+    if (_selectedRecipeIds.length == 1) return '1 recept valt';
+    return '${_selectedRecipeIds.length} recept valda';
   }
 
   /// Få delningsmeddelande för valda recept
@@ -219,5 +235,45 @@ class RecipeSelectionViewModel extends ChangeNotifier {
 
   void _clearError() {
     _error = null;
+  }
+
+  /// Load recipes that are already shared with target friend
+  Future<void> _loadSharedRecipes() async {
+    try {
+      // Get all collaborative recipes that the current user owns or participates in
+      final collaborativeRecipes = _recipeService.social.getSharedByMe();
+      final sharedWithMeRecipes = _recipeService.social.getSharedWithMe();
+      
+      final sharedRecipeIds = <String>{};
+      
+      // Check recipes shared by me
+      for (final recipe in collaborativeRecipes) {
+        if (recipe.socialData?.memberPermissions != null) {
+          final memberIds = recipe.socialData!.memberPermissions!.keys.toSet();
+          // If target friend is a member of this recipe, mark as shared
+          if (memberIds.contains(targetFriend.uid)) {
+            sharedRecipeIds.add(recipe.id);
+          }
+        }
+      }
+      
+      // Check recipes shared with me (in case friend shared with us)
+      for (final recipe in sharedWithMeRecipes) {
+        if (recipe.socialData?.memberPermissions != null) {
+          final memberIds = recipe.socialData!.memberPermissions!.keys.toSet();
+          if (memberIds.contains(targetFriend.uid)) {
+            sharedRecipeIds.add(recipe.id);
+          }
+        }
+      }
+      
+      _alreadySharedRecipeIds.clear();
+      _alreadySharedRecipeIds.addAll(sharedRecipeIds);
+      
+      AppLogger.debug('Found ${sharedRecipeIds.length} recipes already shared with ${targetFriend.displayName}');
+    } catch (e) {
+      AppLogger.error('Error loading shared recipes', e);
+      _alreadySharedRecipeIds.clear();
+    }
   }
 }

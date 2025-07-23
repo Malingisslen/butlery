@@ -9,9 +9,9 @@ class AppColors {
 
   // ===== PRIMARY COLOR PALETTE =====
 
-  static const Color primaryBlue = Color(0xFF4A7C93); // Header blue from "Din meny"
+  static const Color primaryBlue = Color(0xFF4E6F8B); // Updated primary blue per user request
   static const Color darkNavy = Color(0xFF2C3E50); // Bottom navigation
-  static const Color backgroundBeige = Color(0xFFF5F5F0); // Main background
+  static const Color backgroundBeige = Color(0xFFEFE9E3); // Main background
   static const Color cardWhite = Color(0xFFFFFFFF); // White cards
   
   // ===== TEXT COLORS =====
@@ -24,7 +24,7 @@ class AppColors {
   
   // ===== SEMANTIC COLORS =====
   
-  static const Color accent = Color(0xFF60A5FA); // Accent blue for buttons
+  static const Color accent = Color(0xFFA7C4D9); // Accent blue for buttons
   static const Color success = Color(0xFF10B981); // Green for success
   static const Color warning = Color(0xFFF59E0B); // Yellow for warnings
   static const Color error = Color(0xFFEF4444); // Red for errors
@@ -32,7 +32,7 @@ class AppColors {
   
   // ===== SPECIALIZED COLORS =====
   
-  static const Color recipeMeta = Color(0xFF8B9AAF); // For "6 portioner | 30 minuter"
+  static const Color recipeMeta = Color(0xFF757575); // Colors.grey[600] - better contrast for metadata
   static const Color sectionHeader = Color(0xFF374151); // For "Middagar", "Lunch" etc
   static const Color starGold = Color(0xFFFBBF24); // Gold yellow for stars
   
@@ -87,9 +87,9 @@ class AppColors {
     onError: cardWhite,
     errorContainer: Color(0xFFFFEBEE),
     onErrorContainer: Color(0xFFB71C1C),
-    surface: cardWhite,
+    surface: backgroundBeige,
     onSurface: textDark,
-    surfaceContainerHighest: Color(0xFFF5F5F5),
+    surfaceContainerHighest: cardWhite,
     onSurfaceVariant: textMedium,
     outline: divider,
     outlineVariant: Color(0xFFE0E0E0),
@@ -133,80 +133,7 @@ class AppColors {
     surfaceTint: Color(0xFF90CAF9),
   );
 
-  // ===== GRADIENT DEFINITIONS =====
 
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primaryBlue, accent],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient successGradient = LinearGradient(
-    colors: [success, Color(0xFF059669)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient warningGradient = LinearGradient(
-    colors: [warning, Color(0xFFD97706)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient errorGradient = LinearGradient(
-    colors: [error, Color(0xFFDC2626)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ===== COLOR UTILITIES =====
-
-  /// Get color based on recipe type
-  static Color getRecipeTypeColor(String recipeType) {
-    switch (recipeType.toLowerCase()) {
-      case 'breakfast':
-      case 'frukost':
-        return const Color(0xFFFF9800);
-      case 'lunch':
-        return const Color(0xFF4CAF50);
-      case 'dinner':
-      case 'middag':
-        return primaryBlue;
-      case 'snack':
-      case 'mellanmål':
-        return const Color(0xFF9C27B0);
-      case 'dessert':
-        return const Color(0xFFE91E63);
-      default:
-        return textMedium;
-    }
-  }
-
-  /// Get difficulty color
-  static Color getDifficultyColor(String difficulty) {
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-      case 'lätt':
-        return success;
-      case 'medium':
-      case 'medel':
-        return warning;
-      case 'hard':
-      case 'svår':
-        return error;
-      default:
-        return textMedium;
-    }
-  }
-
-  /// Get surface color with elevation tint
-  static Color getSurfaceColorWithElevation(double elevation) {
-    final tintOpacity = (elevation * 0.05).clamp(0.0, 0.12);
-    return Color.alphaBlend(
-      lightColorScheme.surfaceTint.withValues(alpha: tintOpacity),
-      lightColorScheme.surface,
-    );
-  }
 
   // ===== LEGACY COMPATIBILITY COLORS =====
   // Additional colors for backwards compatibility
@@ -223,48 +150,5 @@ class AppColors {
   /// Background dark color
   static const Color backgroundDark = neutralDark;
 
-  // ===== MEAL TYPE COLORS (FROM ORIGINAL APPTHEME) =====
 
-  /// Colors for different meal types - centralized instead of hardcoded
-  static const Color frukostColor = Color(0xFFFF8C00); // Orange
-  static const Color lunchColor = Color(0xFF16A085); // Teal
-  static const Color middagColor = primaryBlue; // Uses theme blue
-  static const Color dessertColor = Color(0xFFE91E63); // Pink
-  static const Color mellanmalColor = Color(0xFF9C27B0); // Purple
-  static const Color fikaColor = Color(0xFF8D6E63); // Brown
-  static const Color defaultMealColor = textSecondary; // Fallback color
-
-  // ===== OVERLAY OPACITY CONSTANTS =====
-
-  /// Overlay opacity for loading screens and dialogs
-  static const double overlayOpacity = 0.7;
-  static const double cardOverlayOpacity = 0.8;
-
-  // ===== SHADOW COLOR =====
-
-  /// Shadow color for card shadows (with opacity)
-  static const Color cardShadowColor = Color(0x1A2C3E50); // textDark with opacity as Color
-  
-  /// Primary blue shadow for buttons
-  static const Color primaryBlueShadow = Color(0x1A4A7C93); // primaryBlue with opacity as Color
-
-  /// Utility method to get meal type color
-  static Color getMealTypeColor(String mealType) {
-    switch (mealType.toLowerCase()) {
-      case 'frukost':
-        return frukostColor;
-      case 'lunch':
-        return lunchColor;
-      case 'middag':
-        return middagColor;
-      case 'dessert':
-        return dessertColor;
-      case 'mellanmål':
-        return mellanmalColor;
-      case 'fika':
-        return fikaColor;
-      default:
-        return defaultMealColor;
-    }
-  }
 }

@@ -279,20 +279,6 @@ class InvitationTargetInputs {
                 onPressed: onClear,
               )
             : null,
-        filled: true,
-        fillColor: AppColors.cardColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: BorderSide(color: AppColors.dividerColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: BorderSide(color: AppColors.dividerColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
-        ),
       ),
     );
   }
@@ -472,10 +458,6 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-      ),
       title: Text(
         widget.title,
         style: AppTextStyles.titleLarge,
@@ -499,7 +481,7 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
                 padding: EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
                 child: Row(
                   children: [
@@ -536,9 +518,6 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.textSecondary,
-          ),
           child: Text(
             'Avbryt',
             style: AppTextStyles.labelLarge.copyWith(
@@ -548,13 +527,6 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
         ),
         ElevatedButton(
           onPressed: () => Navigator.of(context).pop(selectedTargets),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-            foregroundColor: AppColors.neutralLight,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
-          ),
           child: Text(
             'Välj (${selectedTargets.length})',
             style: AppTextStyles.labelLarge.copyWith(

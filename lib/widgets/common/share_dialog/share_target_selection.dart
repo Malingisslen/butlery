@@ -38,31 +38,6 @@ class ShareTargetSelection {
               Icons.search,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingL,
-              vertical: AppDimensions.spacingS,
-            ),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surface,
           ),
           style: AppTextStyles.bodyLarge,
         ),

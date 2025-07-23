@@ -2,8 +2,6 @@
 
 import 'package:flutter/material.dart';
 import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
 
 /// ActionButtons - Utility action buttons with loading support
 ///
@@ -37,24 +35,18 @@ class ActionButtons {
                 height: AppDimensions.iconSizeS,
                 child: const CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                 ),
               ),
             )
           else if (icon != null)
             Padding(
               padding: EdgeInsets.only(right: AppDimensions.spacingS),
-              child: Icon(
-                icon,
-                size: AppDimensions.iconSizeS,
-                color: AppColors.cardWhite,
-              ),
+              child: Icon(icon),
             ),
           Flexible(
             fit: isExpanded ? FlexFit.tight : FlexFit.loose,
             child: Text(
               effectiveLabel,
-              style: AppTextStyles.buttonPrimary,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               textAlign: isExpanded ? TextAlign.center : TextAlign.start,
@@ -69,59 +61,18 @@ class ActionButtons {
       case ActionButtonStyle.primary:
         button = ElevatedButton(
           onPressed: effectiveOnPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-            foregroundColor: AppColors.cardWhite,
-            elevation: AppDimensions.elevationLow,
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
-          ),
           child: buttonChild,
         );
         break;
       case ActionButtonStyle.secondary:
-        button = ElevatedButton(
+        button = FilledButton(
           onPressed: effectiveOnPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-            foregroundColor: AppColors.cardWhite,
-            elevation: AppDimensions.elevationLow,
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
-          ).copyWith(
-            backgroundColor: WidgetStateProperty.all(
-              Theme.of(context).colorScheme.secondary,
-            ),
-          ),
           child: buttonChild,
         );
         break;
       case ActionButtonStyle.outlined:
         button = OutlinedButton(
           onPressed: effectiveOnPressed,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primaryBlue,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
-            side: BorderSide(color: AppColors.primaryBlue),
-          ),
           child: buttonChild,
         );
         break;
@@ -152,6 +103,88 @@ class ActionButtons {
       style: ActionButtonStyle.primary,
       isExpanded: isExpanded,
     );
+  }
+
+  /// Square button for recipe upload view - perfect square aspect ratio
+  static Widget squareButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isLoading = false,
+    String? loadingText,
+  }) {
+    return AspectRatio(
+      aspectRatio: 1.0, // Perfect square
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isLoading)
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            else
+              Icon(icon, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              isLoading ? (loadingText ?? 'Laddar...') : label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Large prominent button for important actions (like archive)
+  static Widget largeButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isLoading = false,
+    String? loadingText,
+    double height = 100, // Slightly increased height
+    EdgeInsets? margin,
+  }) {
+    Widget button = SizedBox(
+      height: height,
+      child: ElevatedButton.icon(
+        onPressed: isLoading ? null : onPressed,
+        icon: isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(icon, size: 32, color: Colors.white),
+        label: Text(
+          isLoading ? (loadingText ?? 'Laddar...') : label,
+          style: const TextStyle(
+            fontSize: 18,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+
+    if (margin != null) {
+      return Padding(padding: margin, child: button);
+    }
+    return button;
   }
 
   /// Secondary action button convenience method

@@ -36,7 +36,7 @@ class SearchStatsWidget extends StatelessWidget {
         color: Theme.of(context)
             .colorScheme
             .primaryContainer
-            .withValues(alpha: 0.3),
+            .withValues(alpha: 0.3), // ✅ Back to proper AppTheme color
         borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),

@@ -274,8 +274,26 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Get mutual friends with user
   Future<List<UserProfile>> getMutualFriends(String userId) async {
-    // TODO: Implement mutual friends in UnifiedFriendsService
-    return [];
+    if (_isDisposed) return [];
+
+    // PREVENT RACE CONDITION: Check if operation is already in progress
+    if (isOperationActive('get_mutual_friends_$userId')) {
+      AppLogger.debug('⏳ Mutual friends loading already in progress for $userId, skipping...');
+      return [];
+    }
+
+    try {
+      return await executeNamedOperation(
+        'get_mutual_friends_$userId',
+        () async {
+          return await _friendsService.management.getMutualFriends(userId);
+        },
+        errorPrefix: 'Failed to get mutual friends',
+      );
+    } catch (e) {
+      // Return empty list on error since executeNamedOperation rethrows
+      return [];
+    }
   }
 
   /// Check if user can be added as friend
@@ -510,12 +528,17 @@ class FriendsViewModel extends ChangeNotifier
     // ✅ MARKERA som disposed för säkerhet
     _isDisposed = true;
 
-    // ✅ KRITISK FIX: FriendsViewModel är en SINGLETON som ska leva
-    AppLogger.warning(
-        '⚠️ FriendsViewModel.dispose() anropad - IGNORERAS för singleton safety');
+    AppLogger.info('🧹 FriendsViewModel.dispose() - Cleaning up memory leaks');
+    
+    // CRITICAL: Clean up to prevent memory leaks
+    _searchResults.clear();
+    _selectedFriendIds.clear();
+    _requestUserProfiles.clear();
+    
+    // Cancel any listeners that might be causing memory pressure
+    _friendsService.removeListener(_onFriendsServiceChanged);
+    _userService.removeListener(_onUserServiceChanged);
 
-    // ✅ ANROPA super.dispose() för att uppfylla @mustCallSuper
-    // Men ta INTE bort listeners eller rensa state
     super.dispose();
   }
 }

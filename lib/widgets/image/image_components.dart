@@ -55,7 +55,7 @@ class ImageComponents {
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.cardWhite,
+        color: backgroundColor ?? AppColors.backgroundTint, // Lighter background
         borderRadius: config.effectiveBorderRadius,
         border: config.borderColor != null
             ? Border.all(
@@ -66,9 +66,9 @@ class ImageComponents {
       ),
       child: child ??
           Icon(
-            Icons.image_outlined,
-            size: dimensions.width == double.infinity ? 48 : dimensions.width * 0.4,
-            color: AppColors.textSecondary,
+            Icons.restaurant_menu, // More contextual for recipe images
+            size: 24, // Much smaller, more elegant
+            color: AppColors.textTertiary, // Lighter icon color
           ),
     );
   }

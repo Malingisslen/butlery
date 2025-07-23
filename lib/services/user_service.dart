@@ -372,6 +372,90 @@ class UserService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Update user's FCM token for push notifications
+  Future<void> updateFCMToken(String token) async {
+    final userId = currentUserId;
+    if (userId == null || _currentUserProfile == null) {
+      AppLogger.warning('⚠️ Cannot update FCM token - no current user');
+      return;
+    }
+
+    try {
+      AppLogger.info('🔔 Updating FCM token for user: $userId');
+      
+      // Update in repository
+      await _repository.updateFCMToken(userId, token);
+
+      // Update local cache
+      _currentUserProfile = _currentUserProfile!.copyWith(
+        fcmToken: token,
+        fcmTokenUpdatedAt: DateTime.now(),
+      );
+
+      _profileCache[userId] = _currentUserProfile!;
+      notifyListeners();
+
+      AppLogger.success('✅ FCM token updated successfully');
+    } catch (e) {
+      AppLogger.error('❌ Failed to update FCM token', e);
+      _setError('Kunde inte uppdatera notifikationstoken: $e');
+    }
+  }
+
+  /// Update user's notification preferences
+  Future<void> updateNotificationSettings(bool enabled) async {
+    final userId = currentUserId;
+    if (userId == null || _currentUserProfile == null) {
+      AppLogger.warning('⚠️ Cannot update notification settings - no current user');
+      return;
+    }
+
+    try {
+      AppLogger.info('🔔 Updating notification settings for user: $userId');
+      
+      // Update in repository
+      await _repository.updateNotificationSettings(userId, enabled);
+
+      // Update local cache
+      _currentUserProfile = _currentUserProfile!.copyWith(
+        notificationsEnabled: enabled,
+      );
+
+      _profileCache[userId] = _currentUserProfile!;
+      notifyListeners();
+
+      AppLogger.success('✅ Notification settings updated successfully');
+    } catch (e) {
+      AppLogger.error('❌ Failed to update notification settings', e);
+      _setError('Kunde inte uppdatera notifikationsinställningar: $e');
+    }
+  }
+
+  /// Clear FCM token (e.g., on logout)
+  Future<void> clearFCMToken() async {
+    final userId = currentUserId;
+    if (userId == null) return;
+
+    try {
+      AppLogger.info('🔔 Clearing FCM token for user: $userId');
+      
+      await _repository.clearFCMToken(userId);
+
+      if (_currentUserProfile != null) {
+        _currentUserProfile = _currentUserProfile!.copyWith(
+          fcmToken: null,
+          fcmTokenUpdatedAt: null,
+        );
+        _profileCache[userId] = _currentUserProfile!;
+        notifyListeners();
+      }
+
+      AppLogger.success('✅ FCM token cleared successfully');
+    } catch (e) {
+      AppLogger.error('❌ Failed to clear FCM token', e);
+    }
+  }
+
   /// Clear cache (useful for testing or manual refresh)
   void clearCache() {
     _profileCache.clear();

@@ -49,22 +49,6 @@ class SearchInputWidget extends StatelessWidget {
                 onPressed: onClear,
               )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        contentPadding: EdgeInsets.all(AppDimensions.paddingM),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
       ),
     );
 

@@ -226,17 +226,32 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     });
 
     try {
-      // TODO: Implement actual save logic
-      await Future.delayed(const Duration(seconds: 1));
+      // FIXED: Use actual ViewModel save logic
+      final success = await widget.viewModel.saveMenuWithNameAndComment(
+        _nameController.text,
+        _commentController.text,
+        shareWithFriends: _enableSocialSharing,
+        selectedFriendIds: _selectedFriendIds,
+        shareMessage: _shareMessageController.text,
+      );
       
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Meny "${_nameController.text}" sparad!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Meny "${_nameController.text}" sparad!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.viewModel.error ?? 'Kunde inte spara meny'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

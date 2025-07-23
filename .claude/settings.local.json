@@ -10,6 +10,8 @@
       "Bash(flutter build:*)",
       "Bash(/mnt/c/tools/flutter/bin/flutter analyze)",
       "Bash(/mnt/c/tools/flutter/bin/flutter analyze --no-pub)",
+      "Bash(cmd.exe /c \"flutter *\")",
+      "Bash(~/flutter-smart.sh *)",
       "Bash(awk:*)",
       "Bash(git checkout:*)",
       "Bash(mkdir:*)",
@@ -19,8 +21,19 @@
       "Bash(for:*)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(done)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(cmd.exe /c \"flutter doctor --version\")",
+      "Bash(cmd.exe /c \"flutter analyze\")",
+      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/core/utils/error_handler.dart lib/core/utils/service_optimizer.dart lib/core/mixins/performance_monitoring_mixin.dart\")",
+      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos\")",
+      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/widgets/common/content_card.dart\")",
+      "Bash(cmd.exe /c \"flutter pub get\")",
+      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/services/notifications/\")",
+      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/models/user_profile.dart lib/services/user_service.dart lib/repositories/\")"
     ],
     "deny": []
-  }
+  },
+  "flutter_command_pattern": "cmd.exe /c \"flutter COMMAND\"",
+  "flutter_environment": "WSL with Windows Flutter integration",
+  "project_notes": "Use cmd.exe /c for all Flutter commands due to WSL line ending issues"
 }

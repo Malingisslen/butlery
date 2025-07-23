@@ -15,6 +15,8 @@ enum StateType {
 enum EmptyStateVariant {
   noRecipes,
   noSearchResults,
+  noFriendsSearchResults,
+  noGroupsSearchResults,
   noMenu,
   noShoppingList,
   noFriends,

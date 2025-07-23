@@ -30,7 +30,7 @@ class ImagePickerDialogs {
     return showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadiusM)),
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),

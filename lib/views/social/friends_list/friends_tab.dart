@@ -34,7 +34,7 @@ class FriendsTab {
               SizedBox(height: AppDimensions.spacingS),
           itemBuilder: (context, index) {
             final friend = friends[index];
-            return FriendCard.build(context, friend, viewModel);
+            return FriendCard.build(context, friend);
           },
         ),
       ),

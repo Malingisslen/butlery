@@ -178,6 +178,7 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
       final success = await _recipeService.social.addComment(
         recipeId: _recipe.id,
         comment: _newCommentText.trim(),
+        parentCommentId: _replyToCommentId,
       );
 
       // Handle success case
@@ -202,54 +203,84 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
 
   /// Edit existing comment
   Future<bool> editComment(String commentId, String newText) async {
-    // TODO: Implement edit comment through UnifiedRecipeService social operations
-    final success = false; // await _socialRecipeService.editComment(commentId, newText);
-
-    // TODO: Handle success case when implemented
-    // if (success) {
-    //   await _loadComments(); // Refresh to show edit
-    // }
-
-    return success;
+    try {
+      setLoading(true);
+      final success = await _recipeService.social.editComment(commentId, newText);
+      
+      if (success) {
+        await _loadComments(); // Refresh to show edit
+      }
+      
+      return success;
+    } catch (e) {
+      AppLogger.error('Error editing comment', e);
+      setError('Kunde inte redigera kommentar');
+      return false;
+    } finally {
+      setLoading(false);
+      notifyListeners();
+    }
   }
 
   /// Delete comment
   Future<bool> deleteComment(String commentId) async {
-    // TODO: Implement delete comment through UnifiedRecipeService social operations
-    final success = false; // await _socialRecipeService.deleteComment(commentId);
-
-    // TODO: Handle success case when implemented
-    // if (success) {
-    //   await _loadComments(); // Refresh to show deletion
-    // }
-
-    return success;
+    try {
+      setLoading(true);
+      final success = await _recipeService.social.deleteComment(commentId);
+      
+      if (success) {
+        await _loadComments(); // Refresh to show deletion
+      }
+      
+      return success;
+    } catch (e) {
+      AppLogger.error('Error deleting comment', e);
+      setError('Kunde inte ta bort kommentar');
+      return false;
+    } finally {
+      setLoading(false);
+      notifyListeners();
+    }
   }
 
   /// Toggle like on comment
   Future<bool> toggleCommentLike(String commentId) async {
-    // TODO: Implement toggle like through UnifiedRecipeService social operations
-    final success = false; // await _socialRecipeService.toggleCommentLike(commentId);
+    try {
+      final currentUserId = sl<PermissionService>().currentUserId;
+      if (currentUserId == null) return false;
 
-    // TODO: Handle success case when implemented
-    // if (success) {
-    //   // Update local comment state optimistically
-    //   final commentIndex = _comments.indexWhere((c) => c.id == commentId);
-    //   if (commentIndex >= 0) {
-    //     final comment = _comments[commentIndex];
-    //     final currentUserId = _userService.currentUserId;
+      // Optimistic update
+      final commentIndex = _comments.indexWhere((c) => c.id == commentId);
+      if (commentIndex >= 0) {
+        final comment = _comments[commentIndex];
+        final isLiked = comment.isLikedBy(currentUserId);
+        _comments[commentIndex] = isLiked
+            ? comment.removeLike(currentUserId)
+            : comment.addLike(currentUserId);
+        notifyListeners();
+      }
 
-    //     if (currentUserId != null) {
-    //       final isLiked = comment.isLikedBy(currentUserId);
-    //       _comments[commentIndex] = isLiked
-    //           ? comment.removeLike(currentUserId)
-    //           : comment.addLike(currentUserId);
-    //       notifyListeners();
-    //     }
-    //   }
-    // }
-
-    return success;
+      final success = await _recipeService.social.toggleCommentLike(commentId);
+      
+      if (!success) {
+        // Revert optimistic update on failure
+        if (commentIndex >= 0) {
+          final comment = _comments[commentIndex];
+          final isLiked = comment.isLikedBy(currentUserId);
+          _comments[commentIndex] = isLiked
+              ? comment.removeLike(currentUserId)
+              : comment.addLike(currentUserId);
+          notifyListeners();
+        }
+        setError('Kunde inte uppdatera gilla-status');
+      }
+      
+      return success;
+    } catch (e) {
+      AppLogger.error('Error toggling comment like', e);
+      setError('Kunde inte uppdatera gilla-status');
+      return false;
+    }
   }
 
   /// Check if current user can edit comment
@@ -272,8 +303,7 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
       clearError();
       notifyListeners();
 
-      // TODO: Implement comment loading through UnifiedRecipeService social operations
-      final comments = <RecipeComment>[]; // await _socialRecipeService.getRecipeComments(_recipe.id);
+      final comments = await _recipeService.social.getComments(_recipe.id);
 
       // Sort comments: top-level first (newest first), then replies by date
       _comments = List.from(comments);
@@ -360,8 +390,7 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
 
   @override
   void dispose() {
-    // TODO: Remove social service listener when implemented
-    // _socialRecipeService.removeListener(_onSocialServiceChanged);
+    _recipeService.removeListener(_onSocialServiceChanged);
     _friendsService.removeListener(_onFriendsServiceChanged);
     super.dispose();
   }

@@ -7,6 +7,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/common/navigation_components.dart';
+import '../../core/dialogs/dialog_factory.dart';
+import '../../core/utils/snackbar_utils.dart';
+import '../../viewmodels/friends_viewmodel.dart';
+import '../../core/injection.dart';
 
 /// Enkel vänprofilvy för att visa väninformation
 class FriendProfileView extends StatelessWidget {
@@ -33,18 +37,10 @@ class FriendProfileView extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  UserDisplayWidgets.editableAvatar(
+                  UserDisplayWidgets.avatar(
                     imageUrl: friend.avatarUrl,
                     displayName: friend.displayName,
-                    onEditTap: () {
-                      // För vänprofiler - visa bara ett meddelande
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Kan inte redigera vänners profiler'),
-                          backgroundColor: AppColors.warning,
-                        ),
-                      );
-                    },
+                    size: ImageSize.extraLarge,
                   ),
                   SizedBox(height: AppDimensions.spacingL),
                   Text(
@@ -145,28 +141,45 @@ class FriendProfileView extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingL),
 
             // Action buttons
-            Row(
+            Column(
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Meddelandefunktion kommer snart! 💌'),
-                          backgroundColor: AppColors.warning,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.message),
-                    label: const Text('Skicka meddelande'),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Meddelandefunktion kommer snart! 💌'),
+                              backgroundColor: AppColors.warning,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.message),
+                        label: const Text('Skicka meddelande'),
+                      ),
+                    ),
+                    SizedBox(width: AppDimensions.spacingL),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () => _showRecipeSelection(context),
+                        icon: const Icon(Icons.share),
+                        label: const Text('Dela recept'),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: AppDimensions.spacingL),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => _showRecipeSelection(context),
-                    icon: const Icon(Icons.share),
-                    label: const Text('Dela recept'),
+                SizedBox(height: AppDimensions.spacingM),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showRemoveFriendDialog(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: BorderSide(color: AppColors.error),
+                    ),
+                    icon: const Icon(Icons.person_remove),
+                    label: const Text('Ta bort vän'),
                   ),
                 ),
               ],
@@ -183,6 +196,26 @@ class FriendProfileView extends StatelessWidget {
       context,
       friend: friend,
     );
+  }
+
+  Future<void> _showRemoveFriendDialog(BuildContext context) async {
+    final shouldRemove = await DialogFactory.showDeleteConfirmation(
+      context,
+      itemName: friend.displayName,
+      itemType: 'vän från din vänlista',
+    );
+
+    if (shouldRemove == true && context.mounted) {
+      final viewModel = sl<FriendsViewModel>();
+      final success = await viewModel.removeFriend(friend.uid);
+      if (success && context.mounted) {
+        SnackBarUtils.showSuccess(
+          context,
+          '${friend.displayName} borttagen från vänlista',
+        );
+        Navigator.of(context).pop(); // Go back to friends list
+      }
+    }
   }
 
   Widget _buildStatItem(

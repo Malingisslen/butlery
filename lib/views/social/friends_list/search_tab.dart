@@ -13,8 +13,9 @@ class SearchTab {
   static Widget build(
     BuildContext context,
     FriendsViewModel viewModel,
-    String searchQuery,
-  ) {
+    String searchQuery, {
+    bool isGroupsSearch = false,
+  }) {
     if (searchQuery.isEmpty) {
       return StateWidget.empty(
         title: 'Sök efter nya vänner',
@@ -28,7 +29,9 @@ class SearchTab {
     }
 
     if (viewModel.searchResults.isEmpty) {
-      return StateWidget.noSearchResults();
+      return isGroupsSearch 
+          ? StateWidget.noGroupsSearchResults()
+          : StateWidget.noFriendsSearchResults();
     }
 
     return ListView.separated(

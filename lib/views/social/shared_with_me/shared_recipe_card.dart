@@ -170,14 +170,14 @@ class SharedRecipeCard {
 
   static Widget _buildRecipeContent(BuildContext context, dynamic recipe) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center, // Center image with content
       children: [
         if (recipe.hasImages)
           ClipRRect(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             child: Container(
-              width: 80,
-              height: 80,
+              width: 100, // Increased from 80 to 100 for better visibility
+              height: 100, // Increased from 80 to 100 for better visibility
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 image: recipe.primaryImageUrl != null

@@ -18,6 +18,10 @@
 import '../../../models/unified/unified_shopping_item.dart';
 import '../../../models/unified/unified_shopping_list.dart';
 import '../../../core/utils/logger.dart';
+import '../../../services/permission_service.dart';
+import '../../../core/injection.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Shopping share operations feature interface
 /// 
@@ -228,9 +232,13 @@ class ShoppingShareOperations {
         shareContent = '$customMessage\n\n$shareContent';
       }
       
-      // This would integrate with share_plus plugin
-      // For now, just log the action
-      AppLogger.info('Sharing list ${list.name} with format $format');
+      // Use share_plus plugin to share externally
+      await Share.share(
+        shareContent,
+        subject: 'Inköpslista: ${list.name}',
+      );
+      
+      AppLogger.success('✅ List shared externally: ${list.name}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to share list', e);
@@ -251,9 +259,35 @@ class ShoppingShareOperations {
         return false;
       }
       
-      // This would integrate with social features
-      // For now, just log the action
-      AppLogger.info('Sharing list ${list.name} with ${friendIds.length} friends');
+      if (!sl<PermissionService>().isAuthenticated) {
+        AppLogger.warning('User must be logged in to share with friends');
+        return false;
+      }
+      
+      final currentUser = sl<PermissionService>().currentUser;
+      if (currentUser == null) return false;
+      
+      // Create shared list entries in Firestore
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+      
+      for (final friendId in friendIds) {
+        final shareDoc = firestore.collection('sharedShoppingLists').doc();
+        batch.set(shareDoc, {
+          'listId': listId,
+          'listName': list.name,
+          'ownerId': currentUser.uid,
+          'ownerDisplayName': currentUser.displayName,
+          'sharedWithUserId': friendId,
+          'message': message,
+          'sharedAt': FieldValue.serverTimestamp(),
+          'isActive': true,
+        });
+      }
+      
+      await batch.commit();
+      
+      AppLogger.success('✅ List shared with ${friendIds.length} friends: ${list.name}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to share list with friends', e);
@@ -270,11 +304,44 @@ class ShoppingShareOperations {
         return null;
       }
       
-      // This would create a public link for the list
-      // For now, return a placeholder
-      final link = 'https://butlery.app/shared/${list.id}';
-      AppLogger.info('Created public link for list ${list.name}');
-      return link;
+      if (!sl<PermissionService>().isAuthenticated) {
+        AppLogger.warning('User must be logged in to create public link');
+        return null;
+      }
+      
+      final currentUser = sl<PermissionService>().currentUser;
+      if (currentUser == null) return null;
+      
+      // Create public sharing entry in Firestore
+      final firestore = FirebaseFirestore.instance;
+      final publicShareDoc = firestore.collection('publicShoppingLists').doc();
+      
+      await publicShareDoc.set({
+        'listId': listId,
+        'listName': list.name,
+        'ownerId': currentUser.uid,
+        'ownerDisplayName': currentUser.displayName,
+        'listData': {
+          'name': list.name,
+          'description': list.description,
+          'items': list.items.map((item) => {
+            'name': item.name,
+            'amount': item.amount,
+            'unit': item.unit,
+            'category': item.category,
+            'bought': item.bought,
+          }).toList(),
+        },
+        'createdAt': FieldValue.serverTimestamp(),
+        'expiresAt': Timestamp.fromDate(
+          DateTime.now().add(const Duration(days: 7)),
+        ),
+        'isActive': true,
+      });
+      
+      final publicLink = 'https://butlery.app/shared/${publicShareDoc.id}';
+      AppLogger.success('✅ Public link created for list: ${list.name}');
+      return publicLink;
     } catch (e) {
       AppLogger.error('Failed to create public link', e);
       return null;
@@ -296,10 +363,21 @@ class ShoppingShareOperations {
         return false;
       }
       
-      // Create template data
-      final templateData = {
-        'name': templateName,
-        'description': description,
+      if (!sl<PermissionService>().isAuthenticated) {
+        AppLogger.warning('User must be logged in to save template');
+        return false;
+      }
+      
+      final currentUser = sl<PermissionService>().currentUser;
+      if (currentUser == null) return false;
+      
+      // Save template to Firestore
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('shoppingListTemplates').add({
+        'name': templateName.trim(),
+        'description': description?.trim(),
+        'ownerId': currentUser.uid,
+        'ownerDisplayName': currentUser.displayName,
         'originalListId': listId,
         'items': list.items.map((item) => {
           'name': item.name,
@@ -307,17 +385,13 @@ class ShoppingShareOperations {
           'unit': item.unit,
           'category': item.category,
           'note': item.note,
-          'estimatedPrice': item.estimatedPrice,
-          'priority': item.priority,
         }).toList(),
-        'createdAt': DateTime.now().toIso8601String(),
-        'createdBy': _parent.currentUserId,
-        'createdByDisplayName': _parent.currentUserDisplayName,
-      };
+        'createdAt': FieldValue.serverTimestamp(),
+        'isPublic': false,
+        'tags': <String>[],
+      });
       
-      // This would save the template to Firebase
-      // For now, just log the action with template data
-      AppLogger.success('Saved template "$templateName" from list ${list.name} with ${templateData['items'].length} items');
+      AppLogger.success('✅ Template saved: $templateName');
       return true;
     } catch (e) {
       AppLogger.error('Failed to save template', e);
@@ -535,15 +609,339 @@ class ShoppingShareOperations {
     return value;
   }
 
-  /// Share list with friend
+  /// Share shopping list with specific friend
   Future<bool> shareListWithFriend(String listId, String friendId) async {
     try {
-      // This would implement proper list sharing
-      AppLogger.info('shareListWithFriend called - not implemented');
+      final list = _getListById(listId);
+      if (list == null) {
+        AppLogger.error('Cannot share list: List not found');
+        return false;
+      }
+
+      if (!sl<PermissionService>().isAuthenticated) {
+        AppLogger.warning('User must be logged in to share list with friend');
+        return false;
+      }
+
+      final currentUser = sl<PermissionService>().currentUser;
+      if (currentUser == null) return false;
+
+      // Create shared list entry in Firestore
+      final firestore = FirebaseFirestore.instance;
+      final shareDoc = firestore.collection('sharedShoppingLists').doc();
+      
+      await shareDoc.set({
+        'listId': listId,
+        'listName': list.name,
+        'ownerId': currentUser.uid,
+        'ownerDisplayName': currentUser.displayName,
+        'ownerAvatarUrl': currentUser.avatarUrl,
+        'sharedWithUserId': friendId,
+        'sharedAt': FieldValue.serverTimestamp(),
+        'isActive': true,
+        'shareType': 'direct_friend',
+        'listData': {
+          'name': list.name,
+          'description': list.description,
+          'type': list.isCollaborative ? 'collaborative' : 'personal',
+          'items': list.items.map((item) => {
+            'id': item.id,
+            'name': item.name,
+            'amount': item.amount,
+            'unit': item.unit,
+            'category': item.category,
+            'note': item.note,
+            'estimatedPrice': item.estimatedPrice,
+            'priority': item.priority,
+            'bought': item.bought,
+            'purchasedAt': item.purchasedAt?.toIso8601String(),
+            'addedBy': item.addedByUserId != null ? {
+              'id': item.addedByUserId,
+              'displayName': item.addedByDisplayName,
+            } : null,
+          }).toList(),
+          'statistics': {
+            'totalItems': list.items.length,
+            'boughtItems': list.items.where((item) => item.bought).length,
+            'remainingItems': list.items.where((item) => !item.bought).length,
+          },
+        },
+      });
+
+      // Create user-specific share record for the friend
+      await firestore
+          .collection('userSharedShoppingLists')
+          .doc(friendId)
+          .collection('receivedLists')
+          .doc(shareDoc.id)
+          .set({
+        'sharedListId': shareDoc.id,
+        'sharedByUserId': currentUser.uid,
+        'sharedByDisplayName': currentUser.displayName,
+        'listName': list.name,
+        'sharedAt': FieldValue.serverTimestamp(),
+        'isViewed': false,
+        'isImported': false,
+        'shareType': 'direct_friend',
+      });
+
+      AppLogger.success('✅ Shopping list shared with friend: ${list.name}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to share list with friend', e);
       return false;
+    }
+  }
+
+  /// Share shopping list with multiple friends
+  Future<bool> shareListWithMultipleFriends({
+    required String listId,
+    required List<String> friendIds,
+    String? message,
+  }) async {
+    try {
+      if (friendIds.isEmpty) {
+        AppLogger.error('No friends specified for sharing');
+        return false;
+      }
+
+      // Use the shareWithFriends method which handles multiple friends
+      return await shareWithFriends(
+        listId: listId,
+        friendIds: friendIds,
+        message: message,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to share list with multiple friends', e);
+      return false;
+    }
+  }
+
+  /// Get shopping lists shared with current user
+  Future<List<Map<String, dynamic>>> getShoppingListsSharedWithMe() async {
+    try {
+      if (!sl<PermissionService>().isAuthenticated) return [];
+      
+      final currentUserId = sl<PermissionService>().currentUserId;
+      if (currentUserId == null) return [];
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('userSharedShoppingLists')
+          .doc(currentUserId)
+          .collection('receivedLists')
+          .orderBy('sharedAt', descending: true)
+          .get();
+
+      final sharedLists = <Map<String, dynamic>>[];
+      
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data();
+        final sharedListId = data['sharedListId'];
+        
+        // Get full list data
+        final listDoc = await FirebaseFirestore.instance
+            .collection('sharedShoppingLists')
+            .doc(sharedListId)
+            .get();
+            
+        if (listDoc.exists && listDoc.data()!['isActive'] == true) {
+          final listData = listDoc.data()!;
+          final listDataSnapshot = listData['listData'] as Map<String, dynamic>? ?? {};
+          final statistics = listDataSnapshot['statistics'] as Map<String, dynamic>? ?? {};
+          
+          sharedLists.add({
+            'id': sharedListId,
+            'listName': listData['listName'] ?? 'Namnlös lista',
+            'ownerDisplayName': listData['ownerDisplayName'] ?? 'Okänd användare',
+            'ownerAvatarUrl': listData['ownerAvatarUrl'],
+            'sharedAt': data['sharedAt'],
+            'totalItems': statistics['totalItems'] ?? 0,
+            'boughtItems': statistics['boughtItems'] ?? 0,
+            'remainingItems': statistics['remainingItems'] ?? 0,
+            'isViewed': data['isViewed'] ?? false,
+            'isImported': data['isImported'] ?? false,
+            'shareType': data['shareType'] ?? 'direct_friend',
+          });
+        }
+      }
+
+      return sharedLists;
+    } catch (e) {
+      AppLogger.error('Failed to get shared shopping lists', e);
+      return [];
+    }
+  }
+
+  /// Get shopping lists shared by current user
+  Future<List<Map<String, dynamic>>> getShoppingListsSharedByMe() async {
+    try {
+      if (!sl<PermissionService>().isAuthenticated) return [];
+      
+      final currentUserId = sl<PermissionService>().currentUserId;
+      if (currentUserId == null) return [];
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('sharedShoppingLists')
+          .where('ownerId', isEqualTo: currentUserId)
+          .where('isActive', isEqualTo: true)
+          .orderBy('sharedAt', descending: true)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        final listDataSnapshot = data['listData'] as Map<String, dynamic>? ?? {};
+        final statistics = listDataSnapshot['statistics'] as Map<String, dynamic>? ?? {};
+        
+        return {
+          'id': doc.id,
+          'listName': data['listName'] ?? 'Namnlös lista',
+          'sharedWithUserId': data['sharedWithUserId'],
+          'sharedAt': data['sharedAt'],
+          'totalItems': statistics['totalItems'] ?? 0,
+          'boughtItems': statistics['boughtItems'] ?? 0,
+          'remainingItems': statistics['remainingItems'] ?? 0,
+          'shareType': data['shareType'] ?? 'direct_friend',
+        };
+      }).toList();
+    } catch (e) {
+      AppLogger.error('Failed to get lists shared by me', e);
+      return [];
+    }
+  }
+
+  /// Import shared shopping list
+  Future<String?> importSharedShoppingList(String sharedListId) async {
+    try {
+      if (!sl<PermissionService>().isAuthenticated) return null;
+      
+      final currentUserId = sl<PermissionService>().currentUserId;
+      if (currentUserId == null) return null;
+
+      // Get shared list data
+      final listDoc = await FirebaseFirestore.instance
+          .collection('sharedShoppingLists')
+          .doc(sharedListId)
+          .get();
+
+      if (!listDoc.exists || listDoc.data()!['isActive'] != true) {
+        AppLogger.error('Shared shopping list not found or inactive');
+        return null;
+      }
+
+      final listData = listDoc.data()!;
+      final listDataSnapshot = listData['listData'] as Map<String, dynamic>? ?? {};
+      
+      // Verify user has access to this list
+      if (listData['sharedWithUserId'] != currentUserId) {
+        AppLogger.error('User does not have access to this shopping list');
+        return null;
+      }
+
+      // Create the shopping list items
+      final itemsData = listDataSnapshot['items'] as List<dynamic>? ?? [];
+      final items = itemsData.map((itemData) {
+        return UnifiedShoppingItem(
+          name: itemData['name'] ?? 'Okänd artikel',
+          amount: (itemData['amount'] as num?)?.toDouble() ?? 1.0,
+          unit: itemData['unit'] ?? '',
+          category: itemData['category'] ?? 'Övrigt',
+          note: itemData['note'],
+          estimatedPrice: (itemData['estimatedPrice'] as num?)?.toDouble(),
+          priority: itemData['priority'] ?? 3,
+          bought: itemData['bought'] ?? false,
+        );
+      }).toList();
+
+      // Create new shopping list with imported data
+      final importedListName = '${listDataSnapshot['name'] ?? 'Importerad lista'} (från ${listData['ownerDisplayName'] ?? 'okänd'})';
+      final listId = await _parent.createPersonalList(importedListName, items: items);
+
+      if (listId != null) {
+        // Mark as imported in user's received lists
+        await FirebaseFirestore.instance
+            .collection('userSharedShoppingLists')
+            .doc(currentUserId)
+            .collection('receivedLists')
+            .doc(sharedListId)
+            .update({
+          'isImported': true,
+          'importedAt': FieldValue.serverTimestamp(),
+          'importedListId': listId,
+        });
+
+        AppLogger.success('✅ Shopping list imported successfully');
+      }
+
+      return listId;
+    } catch (e) {
+      AppLogger.error('Failed to import shared shopping list', e);
+      return null;
+    }
+  }
+
+  /// Mark shared shopping list as viewed
+  Future<void> markSharedShoppingListAsViewed(String sharedListId) async {
+    try {
+      if (!sl<PermissionService>().isAuthenticated) return;
+      
+      final currentUserId = sl<PermissionService>().currentUserId;
+      if (currentUserId == null) return;
+
+      await FirebaseFirestore.instance
+          .collection('userSharedShoppingLists')
+          .doc(currentUserId)
+          .collection('receivedLists')
+          .doc(sharedListId)
+          .update({
+        'isViewed': true,
+        'viewedAt': FieldValue.serverTimestamp(),
+      });
+
+      AppLogger.debug('Shopping list marked as viewed: $sharedListId');
+    } catch (e) {
+      AppLogger.error('Failed to mark shopping list as viewed', e);
+    }
+  }
+
+  /// Get shopping list sharing statistics
+  Future<Map<String, dynamic>> getShoppingListSharingStats() async {
+    try {
+      if (!sl<PermissionService>().isAuthenticated) return {};
+      
+      final currentUserId = sl<PermissionService>().currentUserId;
+      if (currentUserId == null) return {};
+
+      // Get lists shared by user
+      final sharedByMeQuery = await FirebaseFirestore.instance
+          .collection('sharedShoppingLists')
+          .where('ownerId', isEqualTo: currentUserId)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      // Get lists shared with user
+      final sharedWithMeQuery = await FirebaseFirestore.instance
+          .collection('userSharedShoppingLists')
+          .doc(currentUserId)
+          .collection('receivedLists')
+          .get();
+
+      final totalSharedByMe = sharedByMeQuery.docs.length;
+      final totalSharedWithMe = sharedWithMeQuery.docs.length;
+      
+      // Calculate imported lists
+      final importedLists = sharedWithMeQuery.docs
+          .where((doc) => doc.data()['isImported'] == true)
+          .length;
+
+      return {
+        'listsSharedByMe': totalSharedByMe,
+        'listsSharedWithMe': totalSharedWithMe,
+        'importedLists': importedLists,
+        'totalSharingActivity': totalSharedByMe + totalSharedWithMe,
+      };
+    } catch (e) {
+      AppLogger.error('Failed to get shopping list sharing stats', e);
+      return {};
     }
   }
 }
