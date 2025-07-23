@@ -327,7 +327,8 @@ class AppInitializer {
   /// 6️⃣ Initierar Offline Service (Hive)
   static Future<void> _initializeOfflineService() async {
     try {
-      final offlineService = OfflineService();
+      // Use dependency injection to get the singleton instance
+      final offlineService = sl<OfflineService>();
       await offlineService.initialize();
       debugPrint('✅ Offline Service initierad');
     } catch (e) {

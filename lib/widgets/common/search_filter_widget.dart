@@ -1,11 +1,32 @@
-// lib/widgets/common/search_filter_widget.dart
-
+// lib/widgets/common/search_filter_widget.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_dimensions.dart';
 
-/// Unified search and filter widget that replaces ALL search/filter components
-/// REGEL: Kan användas för både full filter-funktionalitet OCH ren search
+// Focused Components
+import 'search_filter/search_input_widget.dart';
+import 'search_filter/filter_toggle_button.dart';
+import 'search_filter/filters_panel_widget.dart';
+import 'search_filter/search_stats_widget.dart';
+
+// Export models for backward compatibility
+export 'search_filter/filter_models.dart';
+
+/// Search and Filter Widget API
+///
+/// This class provides a unified API for search and filter functionality:
+/// - Search input field with clear functionality
+/// - Filter panels with animated show/hide
+/// - Filter chips for time, meal type, and rating
+/// - Statistics showing search and filter results
+/// - Both search-only and full filter modes
+///
+/// MIGRATION GUIDE:
+/// ```dart
+/// // Before: No change needed
+/// SearchFilterWidget.searchOnly(searchQuery: query, onSearchChanged: onChanged);
+/// SearchFilterWidget.withFilters(searchQuery: query, onSearchChanged: onChanged, ...);
+/// ```
 class SearchFilterWidget extends StatefulWidget {
   // Search properties
   final String searchQuery;
@@ -174,7 +195,14 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   Widget build(BuildContext context) {
     // Search-only mode: just return search bar
     if (widget.searchOnly) {
-      return _buildSearchOnlyMode(context);
+      return SearchInputWidget(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        hintText: widget.searchHint,
+        autofocus: widget.autofocus,
+        onClear: _onSearchCleared,
+        padding: widget.padding,
+      );
     }
 
     // Full mode: search + filters + stats
@@ -200,156 +228,29 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
         widget.activeRatingFilters != null;
   }
 
-  /// Search-only mode widget
-  Widget _buildSearchOnlyMode(BuildContext context) {
-    final searchField = TextField(
-      controller: _searchController,
-      focusNode: _searchFocusNode,
-      autofocus: widget.autofocus,
-      style: AppTheme.bodyStyle,
-      decoration: InputDecoration(
-        hintText: widget.searchHint,
-        hintStyle: AppTheme.inputHintStyle,
-        prefixIcon: Icon(
-          Icons.search,
-          size: AppTheme.iconSizeAction,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: Icon(
-                  Icons.clear,
-                  size: AppTheme.iconSizeAction,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                onPressed: _onSearchCleared,
-              )
-            : null,
-        border: OutlineInputBorder(
-          borderRadius: AppTheme.mediumRadius,
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: AppTheme.mediumRadius,
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        contentPadding: AppTheme.inputPadding,
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
-      ),
-    );
-
-    // Wrap with padding if provided
-    if (widget.padding != null) {
-      return Padding(
-        padding: widget.padding!,
-        child: searchField,
-      );
-    }
-
-    return searchField;
-  }
-
   /// Search bar with integrated filter toggle
   Widget _buildSearchSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       child: Row(
         children: [
           // Search field
           Expanded(
-            child: TextField(
+            child: SearchInputWidget(
               controller: _searchController,
               focusNode: _searchFocusNode,
-              style: AppTheme.bodyStyle,
-              decoration: InputDecoration(
-                hintText: widget.searchHint,
-                hintStyle: AppTheme.inputHintStyle,
-                prefixIcon: Icon(
-                  Icons.search,
-                  size: AppTheme.iconSizeAction,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.clear,
-                          size: AppTheme.iconSizeAction,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        onPressed: _onSearchCleared,
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: AppTheme.mediumRadius,
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: AppTheme.mediumRadius,
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                contentPadding: AppTheme.inputPadding,
-              ),
+              hintText: widget.searchHint,
+              onClear: _onSearchCleared,
             ),
           ),
 
           // Filter toggle button (only if filters available)
           if (_hasFilters() && widget.onToggleFilters != null) ...[
-            AppTheme.smallHorizontalGap,
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: AppTheme.mediumRadius,
-                border: Border.all(
-                  color: (widget.showFilters ?? false)
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline,
-                  width: (widget.showFilters ?? false) ? 2 : 1,
-                ),
-                color: (widget.showFilters ?? false)
-                    ? Theme.of(context).colorScheme.primaryContainer
-                    : Theme.of(context).colorScheme.surface,
-              ),
-              child: Stack(
-                children: [
-                  IconButton(
-                    onPressed: widget.onToggleFilters,
-                    icon: Icon(
-                      Icons.filter_list,
-                      color: (widget.showFilters ?? false)
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    tooltip: (widget.showFilters ?? false)
-                        ? 'Dölj filter'
-                        : 'Visa filter',
-                  ),
-                  // Active filters indicator
-                  if ((widget.hasActiveFilters ?? false) &&
-                      !(widget.showFilters ?? false))
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.error,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+            const SizedBox(width: AppDimensions.spacingM),
+            FilterToggleButton(
+              showFilters: widget.showFilters ?? false,
+              hasActiveFilters: widget.hasActiveFilters ?? false,
+              onToggle: widget.onToggleFilters!,
             ),
           ],
         ],
@@ -359,316 +260,33 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
 
   /// Animated filter section
   Widget _buildFilterSection(BuildContext context) {
-    return AnimatedSize(
-      duration: AppTheme.animationDurationMedium,
-      curve: Curves.easeInOut,
-      child: (widget.showFilters ?? false)
-          ? Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.overlay.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Time filters
-                  _buildFilterGroup(
-                    context,
-                    title: 'Tillagningstid',
-                    options: RecipeFilters.timeFilters,
-                    activeFilters: widget.activeTimeFilters!,
-                    onToggle: widget.onTimeFilterToggle!,
-                  ),
-
-                  // Meal type filters
-                  _buildFilterGroup(
-                    context,
-                    title: 'Måltidstyp',
-                    options: RecipeFilters.mealTypeFilters,
-                    activeFilters: widget.activeMealTypeFilters!,
-                    onToggle: widget.onMealTypeFilterToggle!,
-                  ),
-
-                  // Rating filters
-                  _buildFilterGroup(
-                    context,
-                    title: 'Betyg',
-                    options: RecipeFilters.ratingFilters,
-                    activeFilters: widget.activeRatingFilters!,
-                    onToggle: widget.onRatingFilterToggle!,
-                  ),
-
-                  // Clear all filters button
-                  if (widget.hasActiveFilters ?? false) ...[
-                    AppTheme.smallGap,
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: widget.onClearAllFilters,
-                        icon: Icon(
-                          Icons.clear_all,
-                          size: AppTheme.iconSizeAction,
-                        ),
-                        label: Text(
-                          'Rensa alla filter',
-                          style: AppTheme.buttonTextStyle,
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  AppTheme.smallGap,
-                ],
-              ),
-            )
-          : const SizedBox.shrink(),
-    );
-  }
-
-  /// Build filter group with chips
-  Widget _buildFilterGroup(
-    BuildContext context, {
-    required String title,
-    required List<FilterOption> options,
-    required Set<String> activeFilters,
-    required Function(String) onToggle,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppTheme.smallGap,
-          Text(
-            title,
-            style: AppTheme.sectionTitleStyle.copyWith(
-              fontSize: AppTheme.bodyStyle.fontSize,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          AppTheme.tinyGap,
-          Wrap(
-            spacing: AppTheme.spacingXs,
-            runSpacing: AppTheme.spacingXs,
-            children: options.map((option) {
-              final isSelected = activeFilters.contains(option.id);
-
-              return FilterChip(
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (option.icon != null) ...[
-                      Icon(
-                        option.icon,
-                        size: AppTheme.iconSizeSmall,
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      AppTheme.tinyGap,
-                    ],
-                    Text(
-                      option.label,
-                      style: AppTheme.chipLabelStyle.copyWith(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                selected: isSelected,
-                onSelected: (_) => onToggle(option.id),
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                selectedColor: Theme.of(context).colorScheme.primary,
-                checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-                side: BorderSide(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withValues(alpha: 0.3),
-                  width: isSelected ? 2 : 1,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppTheme.chipRadius,
-                ),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+    return FiltersPanelWidget(
+      showFilters: widget.showFilters ?? false,
+      activeTimeFilters: widget.activeTimeFilters!,
+      activeMealTypeFilters: widget.activeMealTypeFilters!,
+      activeRatingFilters: widget.activeRatingFilters!,
+      onTimeFilterToggle: widget.onTimeFilterToggle!,
+      onMealTypeFilterToggle: widget.onMealTypeFilterToggle!,
+      onRatingFilterToggle: widget.onRatingFilterToggle!,
+      hasActiveFilters: widget.hasActiveFilters ?? false,
+      onClearAllFilters: widget.onClearAllFilters,
     );
   }
 
   /// Statistics section showing results and active filters
   Widget _buildStatsSection(BuildContext context) {
-    if (!_shouldShowStats()) return const SizedBox.shrink();
-
-    final statsText = _buildStatsText();
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingXs,
-      ),
-      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
-      decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primaryContainer
-            .withValues(alpha: 0.3),
-        borderRadius: AppTheme.smallRadius,
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: AppTheme.iconSizeInfo,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          AppTheme.tinyGap,
-          Expanded(
-            child: Text(
-              statsText,
-              style: AppTheme.captionStyle.copyWith(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return SearchStatsWidget(
+      searchQuery: widget.searchQuery,
+      hasActiveFilters: widget.hasActiveFilters ?? false,
+      resultCount: widget.resultCount,
+      activeFilterCount: _getActiveFilterCount(),
     );
   }
 
-  /// Check if stats should be shown
-  bool _shouldShowStats() {
-    return widget.searchQuery.isNotEmpty ||
-        (widget.hasActiveFilters ?? false) ||
-        widget.resultCount != null;
+  /// Get total count of active filters
+  int _getActiveFilterCount() {
+    return (widget.activeTimeFilters?.length ?? 0) +
+        (widget.activeMealTypeFilters?.length ?? 0) +
+        (widget.activeRatingFilters?.length ?? 0);
   }
-
-  /// Build stats text
-  String _buildStatsText() {
-    final parts = <String>[];
-
-    if (widget.searchQuery.isNotEmpty) {
-      parts.add('Sökning: "${widget.searchQuery}"');
-    }
-
-    if (widget.hasActiveFilters ?? false) {
-      final filterCount = (widget.activeTimeFilters?.length ?? 0) +
-          (widget.activeMealTypeFilters?.length ?? 0) +
-          (widget.activeRatingFilters?.length ?? 0);
-      if (filterCount > 0) {
-        parts.add('$filterCount filter aktiva');
-      }
-    }
-
-    if (widget.resultCount != null) {
-      parts.add('${widget.resultCount} resultat');
-    }
-
-    return parts.join(' • ');
-  }
-}
-
-/// Filter option data model
-class FilterOption {
-  final String id;
-  final String label;
-  final IconData? icon;
-  final dynamic value;
-
-  const FilterOption({
-    required this.id,
-    required this.label,
-    this.icon,
-    this.value,
-  });
-}
-
-/// Predefined recipe filters
-class RecipeFilters {
-  static const List<FilterOption> timeFilters = [
-    FilterOption(
-      id: 'quick',
-      label: '< 30 min',
-      icon: Icons.timer,
-      value: 30,
-    ),
-    FilterOption(
-      id: 'medium',
-      label: '30-60 min',
-      icon: Icons.timer,
-      value: 60,
-    ),
-    FilterOption(
-      id: 'long',
-      label: '> 60 min',
-      icon: Icons.timer,
-      value: 999,
-    ),
-  ];
-
-  static const List<FilterOption> mealTypeFilters = [
-    FilterOption(
-      id: 'breakfast',
-      label: 'Frukost',
-      icon: Icons.breakfast_dining,
-      value: 'Frukost',
-    ),
-    FilterOption(
-      id: 'lunch',
-      label: 'Lunch',
-      icon: Icons.lunch_dining,
-      value: 'Lunch',
-    ),
-    FilterOption(
-      id: 'dinner',
-      label: 'Middag',
-      icon: Icons.dinner_dining,
-      value: 'Middag',
-    ),
-    FilterOption(
-      id: 'snack',
-      label: 'Mellanmål',
-      icon: Icons.cookie,
-      value: 'Mellanmål',
-    ),
-    FilterOption(
-      id: 'dessert',
-      label: 'Efterrätt',
-      icon: Icons.cake,
-      value: 'Efterrätt',
-    ),
-  ];
-
-  static const List<FilterOption> ratingFilters = [
-    FilterOption(
-      id: 'high_rated',
-      label: '4+ ⭐',
-      value: 4.0,
-    ),
-    FilterOption(
-      id: 'top_rated',
-      label: '5 ⭐',
-      value: 5.0,
-    ),
-  ];
 }

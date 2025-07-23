@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import '../../models/realtime/realtime_menu.dart';
 import '../../models/realtime/realtime_resource.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../models/permissions/resource_permission.dart';
 import '../realtime_sync_service.dart';
 import '../auth_service.dart';

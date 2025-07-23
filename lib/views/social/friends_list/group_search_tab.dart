@@ -1,0 +1,47 @@
+// lib/views/social/friends_list/group_search_tab.dart
+
+import 'package:flutter/material.dart';
+import '../../../services/unified/unified_friends_service.dart';
+import '../../../widgets/common/state_widget.dart';
+import '../../../theme/app_dimensions.dart';
+import 'group_card.dart';
+
+/// GroupSearchTab - Group search tab component
+///
+/// Displays search results for filtering current groups.
+class GroupSearchTab {
+  static Widget build(
+    BuildContext context,
+    UnifiedFriendsService friendsService,
+    String searchQuery,
+  ) {
+    if (searchQuery.isEmpty) {
+      return StateWidget.empty(
+        title: 'Sök bland dina grupper',
+        subtitle: 'Skriv ett gruppnamn i sökfältet ovan för att filtrera dina grupper.',
+        icon: Icons.search,
+      );
+    }
+
+    // Filter current groups by search query
+    final allGroups = friendsService.categories.categoriesList;
+    final filteredGroups = allGroups
+        .where((group) => group.name.toLowerCase().contains(searchQuery.toLowerCase()))
+        .toList();
+
+    if (filteredGroups.isEmpty) {
+      return StateWidget.noGroupsSearchResults();
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.all(AppDimensions.spacingL),
+      itemCount: filteredGroups.length,
+      separatorBuilder: (context, index) =>
+          SizedBox(height: AppDimensions.spacingS),
+      itemBuilder: (context, index) {
+        final group = filteredGroups[index];
+        return GroupCard.build(context, group);
+      },
+    );
+  }
+}

@@ -91,6 +91,7 @@ class FriendCategoriesOperations {
     required String categoryId,
     String? name,
     String? description,
+    String? icon,
     bool? isPrivate,
   }) async {
     final category = getCategoryById(categoryId);
@@ -110,8 +111,21 @@ class FriendCategoriesOperations {
     }
 
     try {
-      // TODO: Implement category update in repository
-      AppLogger.info('Category update to be implemented: $categoryId');
+      // Create updated category with new values
+      final updatedCategory = category.copyWith(
+        name: name?.trim(),
+        description: description?.trim(),
+        emoji: icon,
+        updatedAt: DateTime.now(),
+      );
+
+      // Use the internal update method that handles caching and notifications
+      _parent._updateCategory(updatedCategory);
+      
+      // Sync to Firebase
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      
+      AppLogger.success('✅ Category updated: ${updatedCategory.name}');
       return true;
     } catch (e) {
       AppLogger.error('Error updating category: $categoryId', e);
@@ -133,8 +147,22 @@ class FriendCategoriesOperations {
     }
 
     try {
-      // TODO: Implement category deletion in repository
-      AppLogger.info('Category deletion to be implemented: $categoryId');
+      // Remove all friend-category relationships for this category
+      final friendCategoryRelationships = _parent.friendCategoryRelationshipsInternal;
+      for (final friendId in friendCategoryRelationships.keys.toList()) {
+        friendCategoryRelationships[friendId]?.remove(categoryId);
+        if (friendCategoryRelationships[friendId]?.isEmpty == true) {
+          friendCategoryRelationships.remove(friendId);
+        }
+      }
+      
+      // Delete from Firebase
+      await _parent.deleteCategoryFromFirebaseInternal(categoryId);
+      
+      // Use the internal remove method that handles caching and notifications
+      _parent._removeCategory(categoryId);
+      
+      AppLogger.success('✅ Category deleted: ${category.name}');
       return true;
     } catch (e) {
       AppLogger.error('Error deleting category: $categoryId', e);
@@ -189,8 +217,26 @@ class FriendCategoriesOperations {
     }
 
     try {
-      // TODO: Implement remove friend from category in repository
-      AppLogger.info('Remove friend from category to be implemented');
+      // Remove from friend-category relationships
+      final friendCategoryRelationships = _parent.friendCategoryRelationshipsInternal;
+      friendCategoryRelationships[friendId]?.remove(categoryId);
+      if (friendCategoryRelationships[friendId]?.isEmpty == true) {
+        friendCategoryRelationships.remove(friendId);
+      }
+      
+      // Update the category's member list
+      final updatedCategory = category.copyWith(
+        friendUserIds: category.friendUserIds.where((id) => id != friendId).toList(),
+        updatedAt: DateTime.now(),
+      );
+      
+      // Use the internal update method that handles caching and notifications
+      _parent._updateCategory(updatedCategory);
+      
+      // Sync to Firebase
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      
+      AppLogger.success('✅ Friend removed from category: $friendId -> $categoryId');
       return true;
     } catch (e) {
       AppLogger.error('Error removing friend from category', e);

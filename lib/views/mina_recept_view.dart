@@ -14,10 +14,13 @@ import '../../services/search_service.dart';
 import '../../services/offline_service.dart' as offline_service;
 import '../../widgets/common/social_components.dart';
 import '../../services/user_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
 import '../../core/constants/routes.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
@@ -131,7 +134,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Avsluta'),
           ),
@@ -153,25 +156,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       try {
         // Visa loading indicator
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  SizedBox(
-                    width: AppTheme.iconSize20,
-                    height: AppTheme.iconSize20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.neutralLight),
-                    ),
-                  ),
-                  SizedBox(width: AppTheme.spacingMd),
-                  Text('Synkroniserar...'),
-                ],
-              ),
-              duration: AppTheme.wait30s,
-            ),
-          );
+          SnackBarUtils.showInfo(context, 'Synkroniserar...');
         }
 
         // Synka offline-ändringar
@@ -182,24 +167,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         // Visa success
         if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Synkronisering klar!'),
-              backgroundColor: AppTheme.successColor,
-              duration: AppTheme.wait2s,
-            ),
-          );
+          SnackBarUtils.showSuccess(context, 'Synkronisering klar!');
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Synkronisering misslyckades: $e'),
-              backgroundColor: AppTheme.errorColor,
-            ),
-          );
+          SnackBarUtils.showError(context, 'Synkronisering misslyckades: $e');
         }
       }
     }
@@ -232,9 +204,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           children: [
             SocialComponents.avatar(
               user: userService.currentUserProfile,
-              size: ImageSize.medium,
-              showStatus: true,
-              clickable: true,
+              size: ImageSize.extraLarge,
+              showOnlineStatus: true,
+              isClickable: true,
               onTap: () => LayoutComponents.showProfileMenu(
                 context,
                 userImageUrl: userService.currentUserProfile?.avatarUrl,
@@ -256,13 +228,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 top: 0,
                 right: 0,
                 child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingXs),
+                  padding: EdgeInsets.all(AppDimensions.spacingXs),
                   decoration: BoxDecoration(
-                    color: AppTheme.errorColor,
+                    color: AppColors.error,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).colorScheme.surface,
-                      width: AppTheme.strokeWidth2,
+                      width: AppDimensions.borderWidthThick,
                     ),
                   ),
                   constraints: const BoxConstraints(
@@ -271,8 +243,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ),
                   child: Text(
                     totalNotifications > 99 ? '99+' : '$totalNotifications',
-                    style: AppTheme.microText.copyWith(
-                      color: AppTheme.neutralLight,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.neutralLight,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -308,7 +280,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
           // ✅ UPPDATERAD: USER AVATAR med notification badge
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingXs),
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
             child: _buildUserAvatarWithBadge(),
           ),
 
@@ -328,8 +300,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     right: 0,
                     top: 0,
                     child: Container(
-                      width: AppTheme.spacingSm,
-                      height: AppTheme.spacingSm,
+                      width: AppDimensions.spacingS,
+                      height: AppDimensions.spacingS,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.error,
                         shape: BoxShape.circle,
@@ -349,20 +321,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Error indicator
           if (viewModel.hasError)
             IconButton(
-              icon: AppTheme.errorIcon(context),
+              icon: Icon(Icons.error, color: AppColors.error),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.error!),
-                    action: SnackBarAction(
-                      label: 'Försök igen',
-                      onPressed: () {
-                        viewModel.clearError();
-                        viewModel.refresh();
-                      },
-                    ),
-                  ),
-                );
+                SnackBarUtils.showError(context, viewModel.error!);
               },
               tooltip: 'Visa fel',
             ),
@@ -465,12 +426,25 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (viewModel.hasError) {
       return Center(
         child: Padding(
-          padding: AppTheme.screenPadding,
+          padding: AppDimensions.screenPadding,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppTheme.errorContainer(context, viewModel.error!),
-              AppTheme.mediumGap,
+              Container(
+                padding: EdgeInsets.all(AppDimensions.paddingM),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.error),
+                ),
+                child: Text(
+                  viewModel.error!,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: () {
                   viewModel.clearError();
@@ -515,41 +489,29 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Om offline, bara refresh från lokal cache
           await viewModel.refresh();
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('📵 Offline-läge - visar lokala recept'),
-                backgroundColor: AppTheme.warningColor,
-                duration: AppTheme.wait2s,
-              ),
-            );
+            SnackBarUtils.showWarning(context, 'Offline-läge - visar lokala recept');
           }
         }
       },
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+        padding: EdgeInsets.zero, // Remove all ListView padding
         itemCount: recipes.length,
         itemBuilder: (context, index) {
           final recipe = recipes[index];
 
-          return Padding(
+          return ContentCard.recipe(
             key: ValueKey(recipe.id),
-            padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingSm,
-              vertical: AppTheme.spacingXs,
-            ),
-            child: ContentCard.recipe(
-              recipe: recipe,
-              onTap: () async {
-                // Navigera till detaljer
-                await Navigator.pushNamed(
-                  context,
-                  '/receptDetalj',
-                  arguments: recipe,
-                );
+            recipe: recipe,
+            onTap: () async {
+              // Navigera till detaljer
+              await Navigator.pushNamed(
+                context,
+                '/receptDetalj',
+                arguments: recipe,
+              );
 
-                // Ingen refresh behövs - ViewModel lyssnar på RecipeService
-              },
-            ),
+              // Ingen refresh behövs - ViewModel lyssnar på RecipeService
+            },
           );
         },
       ),
@@ -573,13 +535,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
-          SizedBox(width: AppTheme.spacingSm),
+          SizedBox(width: AppDimensions.spacingS),
           Text(label),
           const Spacer(),
           if (isSelected)
             Icon(
               sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-              size: AppTheme.iconSizeInfo,
+              size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.primary,
             ),
         ],

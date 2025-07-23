@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import '../constants/routes.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 // Auth view
 import '../../views/auth_view.dart';
@@ -34,7 +36,7 @@ import '../../views/social/create_shared_shopping_list_view.dart';
 import '../../views/social/friend_profile_view.dart';
 
 // Models
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../models/shared_menu.dart';
 import '../../models/user_profile.dart';
 
@@ -275,8 +277,8 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
+              Icon(Icons.error_outline, size: AppDimensions.iconSizeXl, color: AppColors.error),
+              SizedBox(height: AppDimensions.spacingXl),
               Text(
                 message ?? 'Sidan kunde inte hittas',
                 style: Theme.of(context).textTheme.headlineSmall,

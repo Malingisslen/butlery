@@ -16,7 +16,7 @@
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
 import 'package:uuid/uuid.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../data/archived_recipes.dart' as archive;
 import 'import_strategy.dart';
 
@@ -80,11 +80,30 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       // Create new recipe with archive attribution
-      final importedRecipe = sourceRecipe.copyWith(
-        id: _uuid.v4(), // Generate new ID for imported recipe
-        sourceUrl: 'Från Butlerys arkiv',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+      final importedRecipe = Recipe(
+        core: RecipeCore(
+          id: _uuid.v4(), // Generate new ID for imported recipe
+          title: sourceRecipe.title,
+          description: sourceRecipe.description,
+          ingredients: sourceRecipe.ingredients,
+          instructions: sourceRecipe.instructions,
+          mealType: sourceRecipe.mealType,
+          portions: sourceRecipe.portions,
+          timeMinutes: sourceRecipe.timeMinutes,
+          rating: sourceRecipe.rating,
+          tags: sourceRecipe.tags,
+          sourceUrl: 'Från Butlerys arkiv',
+          imageUrls: sourceRecipe.imageUrls,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          createdBy: sourceRecipe.createdBy,
+          isPublic: sourceRecipe.isPublic,
+          lastCookedAt: sourceRecipe.lastCookedAt,
+        ),
+        type: sourceRecipe.type,
+        socialData: sourceRecipe.socialData,
+        realtimeData: sourceRecipe.realtimeData,
+        offlineData: sourceRecipe.offlineData,
       );
 
       final warnings = <String>[];

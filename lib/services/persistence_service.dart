@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../core/utils/logger.dart';
 
 /// 💾 PERSISTENCE SERVICE - HANTERAR LOKAL DATALAGRING

@@ -8,10 +8,12 @@ import '../models/unified/unified_shopping_item.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import '../core/permissions/permission_mixins.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../core/mixins/state_notifier_mixin.dart';
+import '../core/mixins/async_operation_mixin.dart';
 
 
-class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionMixin, ShoppingListPermissionMixin {
+class CollaborativeShoppingViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin, BasePermissionMixin, ShoppingListPermissionMixin {
   final UnifiedShoppingService _shoppingService;
   final String listId;
 
@@ -19,9 +21,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
   UnifiedShoppingList? _currentList;
 
   // UI state
-  bool _isLoading = false;
   bool _isAddingItem = false;
-  String? _error;
 
   // Real-time activity (simulated for now)
   String _lastActivity = '';
@@ -38,10 +38,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
   // ===== GETTERS =====
 
   UnifiedShoppingList? get currentList => _currentList;
-  bool get isLoading => _isLoading;
   bool get isAddingItem => _isAddingItem;
-  String? get error => _error;
-  bool get hasError => _error != null;
   bool get hasData => _currentList != null;
 
   // List properties
@@ -91,9 +88,9 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
   // ===== INITIALIZATION =====
 
   Future<void> _initialize() async {
-    _setLoading(true);
-    await _loadList();
-    _setLoading(false);
+    await executeAsync(() async {
+      await _loadList();
+    });
   }
 
   Future<void> _loadList() async {
@@ -110,21 +107,21 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
         _updateActivity('Lista laddad', DateTime.now());
         AppLogger.success('✅ Kollaborativ lista laddad: ${targetList.name}');
       } else {
-        _setError('Lista hittades inte');
         AppLogger.error('❌ Kollaborativ lista inte hittad: $listId');
+        throw Exception('Lista hittades inte');
       }
     } catch (e) {
-      _setError('Kunde inte ladda lista: $e');
       AppLogger.error('❌ Fel vid laddning av kollaborativ lista', e);
+      throw Exception('Kunde inte ladda lista: $e');
     }
   }
 
   // ===== PUBLIC ACTIONS =====
 
   Future<void> refresh() async {
-    _clearError();
-    await _loadList();
-    notifyListeners();
+    await executeAsync(() async {
+      await _loadList();
+    });
   }
 
   Future<bool> addItem(String itemName) async {
@@ -149,12 +146,12 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
         AppLogger.success('✅ Artikel tillagd: $itemName');
         return true;
       } else {
-        _setError('Kunde inte lägga till artikel');
+        setError('Kunde inte lägga till artikel');
         AppLogger.error('❌ Kunde inte lägga till artikel: $itemName');
         return false;
       }
     } catch (e) {
-      _setError('Fel vid tillägg av artikel: $e');
+      setError('Fel vid tillägg av artikel: $e');
       AppLogger.error('❌ Exception vid tillägg av artikel', e);
       return false;
     } finally {
@@ -184,12 +181,12 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
         AppLogger.success('✅ Artikel status växlad: $itemId');
         return true;
       } else {
-        _setError('Kunde inte uppdatera artikel');
+        setError('Kunde inte uppdatera artikel');
         AppLogger.error('❌ Kunde inte växla artikel status: $itemId');
         return false;
       }
     } catch (e) {
-      _setError('Fel vid uppdatering: $e');
+      setError('Fel vid uppdatering: $e');
       AppLogger.error('❌ Exception vid växling av artikel status', e);
       return false;
     }
@@ -198,24 +195,24 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
   // ===== UI HELPERS =====
 
   Color getStatusColor() {
-    if (!hasData) return AppTheme.textSecondary;
+    if (!hasData) return AppColors.textMedium;
 
     switch (statusText) {
       case 'Klar':
-        return AppTheme.successColor;
+        return AppColors.success;
       case 'Pågående':
-        return AppTheme.warningColor;
+        return AppColors.warning;
       case 'Tom lista':
-        return AppTheme.textSecondary;
+        return AppColors.textMedium;
       default:
-        return AppTheme.textSecondary;
+        return AppColors.textMedium;
     }
   }
 
   Color getProgressColor() {
-    if (completionPercentage == 100) return AppTheme.successColor;
-    if (completionPercentage > 50) return AppTheme.warningColor;
-    return AppTheme.primaryColor;
+    if (completionPercentage == 100) return AppColors.success;
+    if (completionPercentage > 50) return AppColors.warning;
+    return AppColors.primaryBlue;
   }
 
   String? getItemSubtitle(UnifiedShoppingItem item) {
@@ -250,30 +247,14 @@ class CollaborativeShoppingViewModel extends ChangeNotifier with BasePermissionM
 
   // ===== PRIVATE HELPERS =====
 
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
   void _setAddingItem(bool adding) {
     _isAddingItem = adding;
     notifyListeners();
   }
 
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    if (_error != null) {
-      _error = null;
-      notifyListeners();
-    }
-  }
-
+  @override
   void clearError() {
-    _clearError();
+    setError('');
   }
 
   void _updateActivity(String activity, DateTime time) {

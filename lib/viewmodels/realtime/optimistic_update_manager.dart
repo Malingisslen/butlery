@@ -2,9 +2,8 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../core/utils/logger.dart';
-import '../../theme/app_theme.dart';
 
 /// Manager för optimistiska uppdateringar med automatic rollback
 class OptimisticUpdateManager {
@@ -35,7 +34,7 @@ class OptimisticUpdateManager {
 
     // Auto-rollback efter 10 sekunder
     _rollbackTimer?.cancel();
-    _rollbackTimer = Timer(AppTheme.wait10s, clear);
+    _rollbackTimer = Timer(const Duration(seconds: 10), clear);
 
     onUpdated?.call();
     AppLogger.debug('🔄 Optimistisk ändring applicerad för $categoryName');

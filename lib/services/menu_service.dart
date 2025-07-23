@@ -1,7 +1,7 @@
 // lib/services/menu_service.dart
 
 import 'dart:math';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 
 /// Service för att generera veckomenyer - flyttar logik från VeckomenyView
 class MenuService {

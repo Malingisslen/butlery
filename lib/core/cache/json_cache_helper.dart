@@ -80,6 +80,17 @@ class JsonCacheHelper {
     }
     
     try {
+      // Ensure Hive is initialized before opening boxes
+      if (!Hive.isBoxOpen(_userSpecificBoxName)) {
+        // Initialize Hive if not already done
+        try {
+          await Hive.initFlutter('butlery_cache');
+        } catch (e) {
+          // Hive might already be initialized, continue
+          AppLogger.debug('Hive already initialized: $e');
+        }
+      }
+      
       _box = await Hive.openBox<String>(_userSpecificBoxName);
       AppLogger.debug('Opened JSON cache box: $_userSpecificBoxName');
       return _box!;

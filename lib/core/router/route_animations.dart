@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import '../constants/routes.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 
 /// Centralized route animation system for the Butlery application.
 ///
@@ -34,8 +36,8 @@ class RouteAnimations {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(opacity: animation, child: child);
       },
-      transitionDuration: AppTheme.animationDurationFast,
-      reverseTransitionDuration: AppTheme.animationDurationFast,
+      transitionDuration: AppDimensions.animationDurationFast,
+      reverseTransitionDuration: AppDimensions.animationDurationFast,
     );
   }
 
@@ -57,8 +59,8 @@ class RouteAnimations {
           child: child,
         );
       },
-      transitionDuration: AppTheme.animationDurationMedium,
-      reverseTransitionDuration: AppTheme.animationDurationMedium,
+      transitionDuration: AppDimensions.animationDurationMedium,
+      reverseTransitionDuration: AppDimensions.animationDurationMedium,
     );
   }
 
@@ -80,8 +82,8 @@ class RouteAnimations {
           child: child,
         );
       },
-      transitionDuration: AppTheme.animationDurationMedium,
-      reverseTransitionDuration: AppTheme.animationDurationMedium,
+      transitionDuration: AppDimensions.animationDurationMedium,
+      reverseTransitionDuration: AppDimensions.animationDurationMedium,
     );
   }
 
@@ -108,8 +110,8 @@ class RouteAnimations {
           ),
         );
       },
-      transitionDuration: AppTheme.animationDurationFast,
-      reverseTransitionDuration: AppTheme.animationDurationFast,
+      transitionDuration: AppDimensions.animationDurationFast,
+      reverseTransitionDuration: AppDimensions.animationDurationFast,
     );
   }
 
@@ -138,8 +140,8 @@ class RouteAnimations {
           ),
         );
       },
-      transitionDuration: AppTheme.animationDurationFast,
-      reverseTransitionDuration: AppTheme.animationDurationFast,
+      transitionDuration: AppDimensions.animationDurationFast,
+      reverseTransitionDuration: AppDimensions.animationDurationFast,
     );
   }
 
@@ -198,12 +200,12 @@ class RouteAnimations {
   static Duration getDurationForType(RouteAnimationType type) {
     switch (type) {
       case RouteAnimationType.fade:
-        return AppTheme.animationDurationFast;
+        return AppDimensions.animationDurationFast;
       case RouteAnimationType.slideFromBottom:
       case RouteAnimationType.slideFromRight:
-        return AppTheme.animationDurationMedium;
+        return AppDimensions.animationDurationMedium;
       case RouteAnimationType.scale:
-        return AppTheme.animationDurationFast;
+        return AppDimensions.animationDurationFast;
     }
   }
 }
@@ -219,37 +221,37 @@ class _ErrorScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fel'),
-        backgroundColor: AppTheme.errorColor,
-        foregroundColor: AppTheme.cardColor,
-        elevation: AppTheme.elevationMedium,
+        backgroundColor: AppColors.error,
+        foregroundColor: AppColors.cardWhite,
+        elevation: AppDimensions.elevationMedium,
       ),
       body: Center(
         child: Padding(
-          padding: AppTheme.screenPadding,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.error_outline,
-                size: AppTheme.iconSizeHero,
-                color: AppTheme.errorColor,
+                size: AppDimensions.iconSizeXl,
+                color: AppColors.error,
               ),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 'Något gick fel',
-                style: AppTheme.sectionTitleStyle.copyWith(
-                  color: AppTheme.errorColor,
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: AppColors.error,
                 ),
               ),
               if (message != null) ...[
-                AppTheme.smallGap,
+                const SizedBox(height: AppDimensions.spacingM),
                 Text(
                   message!,
                   textAlign: TextAlign.center,
-                  style: AppTheme.subtitleStyle,
+                  style: AppTextStyles.titleMedium,
                 ),
               ],
-              AppTheme.largeGap,
+              const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushNamedAndRemoveUntil(
@@ -259,11 +261,11 @@ class _ErrorScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: AppTheme.cardColor,
-                  padding: AppTheme.buttonPadding,
+                  backgroundColor: AppColors.primaryBlue,
+                  foregroundColor: AppColors.cardWhite,
+                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
                   shape: RoundedRectangleBorder(
-                    borderRadius: AppTheme.largeRadius,
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                   ),
                 ),
                 child: const Text('Startsida'),

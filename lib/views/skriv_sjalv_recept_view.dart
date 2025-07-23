@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:butlery/theme/app_theme.dart';
-import '../models/recipe.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
+import '../models/recipe_unified.dart';
 import '../viewmodels/recipe_form_viewmodel.dart';
 import '../widgets/common/utility_components.dart';
 import '../widgets/common/state_widget.dart';
@@ -29,8 +30,6 @@ class SkrivSjalvReceptView extends StatelessWidget {
       create: (_) => RecipeFormViewModel(
         recipeService: sl(),
         analyticsService: sl(),
-        storageService: sl(),
-        imagePickerService: sl(),
         initialRecipe: initialRecipe,
         isTemplate: isTemplate,
       ),
@@ -55,10 +54,10 @@ class _SkrivSjalvReceptViewContentState
     if (!_formKey.currentState!.validate()) return;
 
     final viewModel = context.read<RecipeFormViewModel>();
-    final success = await viewModel.saveRecipe();
+    final savedRecipe = await viewModel.saveRecipe();
 
     if (mounted) {
-      if (success) {
+      if (savedRecipe != null) {
         // ✅ MIGRERAD: Använd UtilityComponents.showSuccessSnackbar
         UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
         Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
@@ -79,7 +78,7 @@ class _SkrivSjalvReceptViewContentState
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
+              padding: EdgeInsets.all(AppDimensions.spacingL),
               child: Text(
                 'Lägg till bild',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -132,16 +131,13 @@ class _SkrivSjalvReceptViewContentState
 
     switch (choice) {
       case 'camera':
-        await viewModel.pickAndUploadImage(context, source: ImageSource.camera);
+        await viewModel.pickAndUploadImage(context);
         break;
       case 'gallery':
         if (viewModel.canAddMoreImages && viewModel.imageUrls.length < 4) {
           await viewModel.pickMultipleImages(context);
         } else {
-          await viewModel.pickAndUploadImage(
-            context,
-            source: ImageSource.gallery,
-          );
+          await viewModel.pickAndUploadImage(context);
         }
         break;
       case 'url':
@@ -200,12 +196,12 @@ class _SkrivSjalvReceptViewContentState
       body: Stack(
         children: [
           Padding(
-            padding: AppTheme.screenPadding,
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Form(
               key: _formKey,
               child: ListView(
                 padding: EdgeInsets.only(
-                  bottom: AppTheme.spacingXxl + AppTheme.spacingMd,
+                  bottom: AppDimensions.spacingXxl + AppDimensions.spacingL,
                 ),
                 children: [
                   // Måltidstyp
@@ -222,19 +218,23 @@ class _SkrivSjalvReceptViewContentState
                       if (value != null) viewModel.setMealType(value);
                     },
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Bildhantering med UniversalImageManager
                   UniversalImageManager.recipeEdit(
                     imageUrls: viewModel.imageUrls,
                     onAddImage: viewModel.addImageUrl,
                     onRemoveImage: viewModel.removeImageAt,
-                    onSetPrimary: viewModel.setPrimaryImage,
+                    onSetPrimary: (index) {
+                      if (index < viewModel.imageUrls.length) {
+                        viewModel.setPrimaryImage(viewModel.imageUrls[index]);
+                      }
+                    },
                     userId: sl<PermissionService>().currentUserId ?? "",
                     onPickImage: () => _pickImage(viewModel),
                     maxImages: 5,
                   ),
-                  AppTheme.largeGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Titel
                   TextFormField(
@@ -248,7 +248,7 @@ class _SkrivSjalvReceptViewContentState
                       FormValidators.maxLength(100, 'Titel'),
                     ]),
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Beskrivning
                   TextFormField(
@@ -260,7 +260,7 @@ class _SkrivSjalvReceptViewContentState
                     onChanged: viewModel.setDescription,
                     validator: FormValidators.maxLength(500, 'Beskrivning'),
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Portioner
                   TextFormField(
@@ -269,10 +269,10 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
-                    onChanged: viewModel.setPortions,
+                    onChanged: (value) => viewModel.setPortions(int.tryParse(value)),
                     validator: FormValidators.portions(),
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Tid
                   TextFormField(
@@ -281,10 +281,10 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
-                    onChanged: viewModel.setTimeMinutes,
+                    onChanged: (value) => viewModel.setTimeMinutes(int.tryParse(value)),
                     validator: FormValidators.cookingTime(),
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Ingredienser
                   _buildDynamicList(
@@ -295,7 +295,7 @@ class _SkrivSjalvReceptViewContentState
                     onRemove: viewModel.removeIngredient,
                     viewModel: viewModel,
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Instruktioner
                   _buildDynamicList(
@@ -306,7 +306,7 @@ class _SkrivSjalvReceptViewContentState
                     onRemove: viewModel.removeInstruction,
                     viewModel: viewModel,
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Taggar
                   _buildDynamicList(
@@ -317,7 +317,7 @@ class _SkrivSjalvReceptViewContentState
                     onRemove: viewModel.removeTag,
                     viewModel: viewModel,
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Betyg
                   TextFormField(
@@ -328,10 +328,10 @@ class _SkrivSjalvReceptViewContentState
                       decimal: true,
                     ),
                     textInputAction: TextInputAction.next,
-                    onChanged: viewModel.setRating,
+                    onChanged: (value) => viewModel.setRating(double.tryParse(value)),
                     validator: FormValidators.rating(),
                   ),
-                  AppTheme.mediumGap,
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Source URL-fält
                   TextFormField(
@@ -344,7 +344,7 @@ class _SkrivSjalvReceptViewContentState
                           : 'Länk till originalreceptet',
                       prefixIcon: Icon(
                         Icons.link,
-                        size: AppTheme.iconSizeAction,
+                        size: AppDimensions.iconSizeAction,
                       ),
                     ),
                     style: Theme.of(context).textTheme.bodyMedium,
@@ -360,7 +360,7 @@ class _SkrivSjalvReceptViewContentState
           // Loading overlay med StateWidget
           if (viewModel.isSaving)
             Container(
-              color: AppTheme.overlayLight,
+              color: AppColors.backgroundBeige.withValues(alpha: 0.8),
               child: Center(
                 child: StateWidget.loading(
                   message: 'Sparar recept...',
@@ -372,7 +372,7 @@ class _SkrivSjalvReceptViewContentState
 
       // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
       bottomNavigationBar: Padding(
-        padding: AppTheme.screenPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: UtilityComponents.primaryButton(
           context,
           label: 'Spara recept',
@@ -398,14 +398,14 @@ class _SkrivSjalvReceptViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTheme.formLabelStyle),
-        AppTheme.smallGap,
+        Text(label, style: AppTextStyles.labelLarge),
+        const SizedBox(height: AppDimensions.spacingM),
         ...controllers.asMap().entries.map((entry) {
           final index = entry.key;
           final controller = entry.value;
 
           return Padding(
-            padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
+            padding: EdgeInsets.only(bottom: AppDimensions.spacingS),
             child: Row(
               children: [
                 Expanded(
@@ -430,7 +430,7 @@ class _SkrivSjalvReceptViewContentState
                 ),
                 if (controllers.length > 1)
                   IconButton(
-                    icon: AppTheme.actionIcon(context, Icons.delete),
+                    icon: const Icon(Icons.delete),
                     onPressed: () => onRemove(index),
                   ),
               ],

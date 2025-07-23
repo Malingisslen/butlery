@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/realtime/realtime_recipe.dart';
+import '../models/realtime/live_editor.dart';
 
 class CollaborativeRecipeRepository {
   final FirebaseFirestore _firestore;
@@ -66,5 +67,56 @@ class CollaborativeRecipeRepository {
 
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchRealtimeRecipe(String id) {
     return _firestore.collection('realtime_recipes').doc(id).get();
+  }
+
+  // Missing methods for collaborative manager
+  Stream<RealtimeRecipe?> getRealtimeRecipeStream(String id) {
+    return _firestore
+        .collection('realtime_recipes')
+        .doc(id)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.exists) {
+        return RealtimeRecipe.fromFirestore(snapshot);
+      }
+      return null;
+    });
+  }
+
+  Stream<List<LiveEditor>> getParticipantsStream(String id) {
+    return _firestore
+        .collection('realtime_recipes')
+        .doc(id)
+        .collection('presence')
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => LiveEditor.fromFirestore(doc.data()))
+          .toList();
+    });
+  }
+
+  Future<void> updateUserPresence(String recipeId, String userId, String displayName) {
+    return _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .doc(userId)
+        .set({
+      'userId': userId,
+      'displayName': displayName,
+      'lastSeen': DateTime.now().millisecondsSinceEpoch,
+      'isActive': true,
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> clearUserPresence(String recipeId, String userId) {
+    return _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .doc(userId)
+        .update({'isActive': false});
   }
 }

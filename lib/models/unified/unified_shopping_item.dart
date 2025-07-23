@@ -115,6 +115,8 @@ class UnifiedShoppingItem {
 
   bool get isCollaborative => addedByUserId != null;
   bool get isPurchased => bought;
+  bool get isCompleted => bought;  // Alias for compatibility
+  double get quantity => amount;  // Alias for compatibility
 
   /// ✅ SMART: Formatera mängd utan onödiga decimaler
   String get formattedAmount {

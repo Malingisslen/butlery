@@ -2,9 +2,8 @@
 
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/unified/unified_shopping_item.dart';
-import '../theme/app_theme.dart';
 
 /// Format-alternativ för receptdelning
 enum RecipeShareFormat {
@@ -40,7 +39,7 @@ class ShareService {
 
     // Rubrik
     buffer.writeln(recipe.title);
-    buffer.writeln(AppTheme.dividerChar * recipe.title.length);
+    buffer.writeln('=' * recipe.title.length);
 
     // Metadata
     final metadata = <String>[];
@@ -69,7 +68,7 @@ class ShareService {
     if (recipe.ingredients.isNotEmpty) {
       buffer.writeln(_ingredientsTitle);
       for (final ingredient in recipe.ingredients) {
-        buffer.writeln('${AppTheme.bulletPoint} $ingredient');
+        buffer.writeln('• $ingredient');
       }
       buffer.writeln();
     }
@@ -79,7 +78,7 @@ class ShareService {
       buffer.writeln(_instructionsTitle);
       for (int i = 0; i < recipe.instructions.length; i++) {
         buffer.writeln(
-          '${i + 1}${AppTheme.numberDivider}${recipe.instructions[i]}',
+          '${i + 1}. ${recipe.instructions[i]}',
         );
       }
       buffer.writeln();
@@ -133,7 +132,7 @@ class ShareService {
     if (recipe.ingredients.isNotEmpty) {
       buffer.writeln('Ingredienser:');
       for (final ingredient in recipe.ingredients) {
-        buffer.writeln('${AppTheme.bulletPoint} $ingredient');
+        buffer.writeln('• $ingredient');
       }
       buffer.writeln();
     }

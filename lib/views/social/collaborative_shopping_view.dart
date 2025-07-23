@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../core/injection.dart';
 import '../../widgets/common/state_widget.dart';
 import '../../widgets/common/loading_state_builder.dart';
@@ -53,19 +55,19 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       title: Text(viewModel.listTitle),
       actions: [
         IconButton(
-          icon: AppTheme.actionIcon(context, Icons.share),
+          icon: const Icon(Icons.share),
           onPressed: () => _shareList(context, viewModel),
         ),
         PopupMenuButton<String>(
-          icon: AppTheme.actionIcon(context, Icons.more_vert),
+          icon: const Icon(Icons.more_vert),
           onSelected: (value) => _handleMenuAction(context, viewModel, value),
           itemBuilder: (context) => [
             PopupMenuItem(
               value: 'settings',
               child: Row(
                 children: [
-                  AppTheme.actionIcon(context, Icons.settings),
-                  AppTheme.smallHorizontalGap,
+                  const Icon(Icons.settings),
+                  const SizedBox(width: AppDimensions.spacingM),
                   Text('Inställningar'),
                 ],
               ),
@@ -74,8 +76,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
               value: 'members',
               child: Row(
                 children: [
-                  AppTheme.actionIcon(context, Icons.group),
-                  AppTheme.smallHorizontalGap,
+                  const Icon(Icons.group),
+                  const SizedBox(width: AppDimensions.spacingM),
                   Text('Hantera medlemmar'),
                 ],
               ),
@@ -109,27 +111,27 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   Widget _buildNotFoundState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: AppTheme.screenPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.shopping_cart_outlined,
-              size: AppTheme.iconSizeEmptyState,
+              size: AppDimensions.iconSizeXl,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             Text(
               'Lista hittades inte',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            AppTheme.smallGap,
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               'Listan kanske har tagits bort eller så har du inte tillgång längre',
-              style: AppTheme.subtitleStyle,
+              style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
-            AppTheme.largeGap,
+            const SizedBox(height: AppDimensions.spacingXl),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: Icon(Icons.arrow_back),
@@ -159,13 +161,13 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
-            width: AppTheme.dividerHeight,
+            width: AppDimensions.borderWidthThin,
           ),
         ),
       ),
@@ -189,7 +191,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
           // Description
           if (viewModel.hasDescription) ...[
-            AppTheme.tinyGap,
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               viewModel.listDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -200,9 +202,9 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             ),
           ],
 
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           _buildProgressSection(context, viewModel),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           _buildMetadata(context, viewModel),
         ],
       ),
@@ -215,17 +217,17 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingSm,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingS,
+        vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: AppTheme.chipRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         viewModel.statusText,
-        style: AppTheme.chipLabelStyle.copyWith(
+        style: AppTextStyles.labelSmall.copyWith(
           color: color,
           fontWeight: FontWeight.w600,
         ),
@@ -259,9 +261,9 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             ),
           ],
         ),
-        AppTheme.tinyGap,
+        const SizedBox(height: AppDimensions.spacingXs),
         ClipRRect(
-          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           child: LinearProgressIndicator(
             value: progress,
             backgroundColor:
@@ -278,19 +280,19 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
     return Row(
       children: [
-        AppTheme.infoIcon(context, icon: Icons.group),
-        SizedBox(width: AppTheme.spacingXs),
+        Icon(Icons.group, color: AppColors.textMedium, size: AppDimensions.iconSizeM),
+        SizedBox(width: AppDimensions.spacingXs),
         Text(
           viewModel.memberCountText,
-          style: AppTheme.metadataStyle,
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
         ),
-        AppTheme.smallHorizontalGap,
-        AppTheme.infoIcon(context, icon: Icons.access_time),
-        SizedBox(width: AppTheme.spacingXs),
+        const SizedBox(width: AppDimensions.spacingM),
+        Icon(Icons.access_time, color: AppColors.textMedium, size: AppDimensions.iconSizeM),
+        SizedBox(width: AppDimensions.spacingXs),
         Expanded(
           child: Text(
             viewModel.activitySummary,
-            style: AppTheme.metadataStyle,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -302,7 +304,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
     if (!viewModel.canEdit) {
       return Container(
-        padding: AppTheme.cardPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
           color: Theme.of(context)
               .colorScheme
@@ -311,17 +313,17 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
           border: Border(
             bottom: BorderSide(
               color: Theme.of(context).dividerColor,
-              width: AppTheme.dividerHeight,
+              width: AppDimensions.borderWidthThin,
             ),
           ),
         ),
         child: Row(
           children: [
-            AppTheme.infoIcon(context, icon: Icons.visibility),
-            AppTheme.smallHorizontalGap,
+            Icon(Icons.visibility, color: AppColors.textMedium, size: AppDimensions.iconSizeM),
+            const SizedBox(width: AppDimensions.spacingM),
             Text(
               'Du kan bara visa denna lista',
-              style: AppTheme.subtitleStyle.copyWith(
+              style: AppTextStyles.titleMedium.copyWith(
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -331,13 +333,13 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     }
 
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
-            width: AppTheme.dividerHeight,
+            width: AppDimensions.borderWidthThin,
           ),
         ),
       ),
@@ -350,8 +352,12 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
                 hintText: 'Lägg till artikel...',
                 suffixIcon: viewModel.isAddingItem
                     ? Padding(
-                        padding: EdgeInsets.all(AppTheme.spacingSm),
-                        child: AppTheme.smallLoadingIndicator(),
+                        padding: EdgeInsets.all(AppDimensions.spacingS),
+                        child: SizedBox(
+                          width: AppDimensions.iconSizeS,
+                          height: AppDimensions.iconSizeS,
+                          child: const CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
                     : null,
               ),
@@ -359,7 +365,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
               enabled: !viewModel.isAddingItem,
             ),
           ),
-          AppTheme.smallHorizontalGap,
+          const SizedBox(width: AppDimensions.spacingM),
           FilledButton.icon(
             onPressed:
                 viewModel.isAddingItem ? null : () => _addItem(viewModel),
@@ -381,7 +387,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     final completedItems = viewModel.completedItemsList;
 
     return ListView.builder(
-      padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+      padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
       itemCount: activeItems.length +
           (completedItems.isNotEmpty ? completedItems.length + 1 : 0),
       itemBuilder: (context, index) {
@@ -413,8 +419,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       BuildContext context, CollaborativeShoppingViewModel viewModel) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingSm,
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingS,
       ),
       child: Row(
         children: [
@@ -422,10 +428,10 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             child: Divider(color: Theme.of(context).colorScheme.outline),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingSm),
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
             child: Text(
               'KLARA (${viewModel.completedItemsCount})',
-              style: AppTheme.captionStyle.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -442,10 +448,10 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       CollaborativeShoppingViewModel viewModel, dynamic item) {
     return Card(
       margin: EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingXs,
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXs,
       ),
-      elevation: item.bought ? 0 : AppTheme.elevationLow,
+      elevation: item.bought ? 0 : AppDimensions.elevationLow,
       color: item.bought
           ? Theme.of(context)
               .colorScheme
@@ -458,7 +464,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
           onChanged:
               viewModel.canView ? (_) => _toggleItem(viewModel, item.id) : null,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
         ),
         title: Text(
@@ -477,7 +483,10 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
         trailing: _buildItemTrailing(context, viewModel, item),
         onTap: viewModel.canView ? () => _toggleItem(viewModel, item.id) : null,
         dense: true,
-        contentPadding: AppTheme.listItemPadding,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
       ),
     );
   }
@@ -487,7 +496,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     final subtitle = viewModel.getItemSubtitle(item);
     return subtitle != null
         ? Text(subtitle,
-            style: AppTheme.metadataStyle,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             maxLines: 2,
             overflow: TextOverflow.ellipsis)
         : null;
@@ -516,7 +525,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(viewModel.error!),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -531,7 +540,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(viewModel.error!),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppColors.error,
         ),
       );
     }

@@ -57,4 +57,31 @@ class MockUserRepository extends InMemoryRepository<UserProfile>
   Future<bool> isDisplayNameAvailable(String displayName) async {
     return !items.values.any((p) => p.displayName == displayName);
   }
+
+  @override
+  Future<void> updateFCMToken(String userId, String token) async {
+    final profile = items[userId];
+    if (profile == null) return;
+    items[userId] = profile.copyWith(
+      fcmToken: token,
+      fcmTokenUpdatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> updateNotificationSettings(String userId, bool enabled) async {
+    final profile = items[userId];
+    if (profile == null) return;
+    items[userId] = profile.copyWith(notificationsEnabled: enabled);
+  }
+
+  @override
+  Future<void> clearFCMToken(String userId) async {
+    final profile = items[userId];
+    if (profile == null) return;
+    items[userId] = profile.copyWith(
+      fcmToken: null,
+      fcmTokenUpdatedAt: null,
+    );
+  }
 }

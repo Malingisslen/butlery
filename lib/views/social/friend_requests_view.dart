@@ -3,13 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
-import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../theme/app_theme.dart';
 import '../../core/injection.dart';
-import '../../models/friend_request.dart';
 
+// Import focused components
+import 'friend_requests/friend_requests_header.dart';
+import 'friend_requests/incoming_requests_tab.dart';
+import 'friend_requests/sent_requests_tab.dart';
+import 'friend_requests/friend_request_actions.dart';
 
 class FriendRequestsView extends StatelessWidget {
   const FriendRequestsView({super.key});
@@ -42,7 +43,6 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Ladda data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<FriendsViewModel>();
       viewModel.refresh();
@@ -62,831 +62,122 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     });
   }
 
+  void _onIncomingSelectionChanged(String requestId, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedIncoming.add(requestId);
+      } else {
+        _selectedIncoming.remove(requestId);
+      }
+    });
+  }
+
+  void _onSentSelectionChanged(String requestId, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedSent.add(requestId);
+      } else {
+        _selectedSent.remove(requestId);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<FriendsViewModel>();
-    final totalRequests =
-        viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
     return LayoutComponents.mainMenu(
       currentIndex: null,
       body: Scaffold(
-        appBar: AppBar(
-          title: Text('Notiser ($totalRequests)'),
-          bottom: TabBar(
-            controller: _tabController,
-            onTap: (_) => _clearSelection(), // Rensa selection vid tab-byte
-            tabs: [
-              Tab(
-                icon: Badge(
-                  isLabelVisible: viewModel.incomingRequests.isNotEmpty,
-                  label: Text('${viewModel.incomingRequests.length}'),
-                  child: const Icon(Icons.inbox),
-                ),
-                text: 'Inkommande',
-              ),
-              Tab(
-                icon: Badge(
-                  isLabelVisible: viewModel.sentRequests.isNotEmpty,
-                  label: Text('${viewModel.sentRequests.length}'),
-                  child: const Icon(Icons.outbox),
-                ),
-                text: 'Skickade',
-              ),
-            ],
-          ),
-          actions: [
-            // Batch actions för current tab
-            if (_tabController.index == 0 && _selectedIncoming.isNotEmpty)
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.checklist,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                onSelected: (value) => _handleBatchAction(value, viewModel),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'accept_all',
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle, color: AppTheme.successColor),
-                        const SizedBox(width: 8),
-                        Text('Acceptera valda (${_selectedIncoming.length})'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'reject_all',
-                    child: Row(
-                      children: [
-                        Icon(Icons.cancel, color: AppTheme.errorColor),
-                        const SizedBox(width: 8),
-                        Text('Avböj valda (${_selectedIncoming.length})'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            if (_tabController.index == 1 && _selectedSent.isNotEmpty)
-              IconButton(
-                icon: Icon(
-                  Icons.cancel,
-                  color: AppTheme.errorColor,
-                ),
-                onPressed: () => _cancelSelectedSentRequests(viewModel),
-                tooltip: 'Avbryt valda (${_selectedSent.length})',
-              ),
-          ],
+        appBar: FriendRequestsHeader.buildAppBar(
+          context,
+          viewModel,
+          _tabController,
+          _clearSelection,
+          _selectedIncoming,
+          _selectedSent,
+          () => _handleBatchAccept(viewModel),
+          () => _handleBatchReject(viewModel),
+          () => _handleCancelSelected(viewModel),
         ),
         body: Column(
           children: [
-            // Error display
-            if (viewModel.hasError)
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(AppTheme.spacingMd),
-                margin: EdgeInsets.all(AppTheme.spacingMd),
-                decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.smallRadius,
-                  border: Border.all(
-                      color: AppTheme.errorColor.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: AppTheme.errorColor),
-                    SizedBox(width: AppTheme.spacingSm),
-                    Expanded(
-                      child: Text(
-                        viewModel.error!,
-                        style: TextStyle(color: AppTheme.errorColor),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: viewModel.clearError,
-                      child: const Text('Stäng'),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Tab content
+            FriendRequestsHeader.buildErrorDisplay(context, viewModel),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildIncomingTab(viewModel),
-                  _buildSentTab(viewModel),
+                  IncomingRequestsTab.build(
+                    context,
+                    viewModel,
+                    _selectedIncoming,
+                    _onIncomingSelectionChanged,
+                    _clearSelection,
+                  ),
+                  SentRequestsTab.build(
+                    context,
+                    viewModel,
+                    _selectedSent,
+                    _onSentSelectionChanged,
+                    _clearSelection,
+                  ),
                 ],
               ),
             ),
           ],
         ),
-        // Floating action för bulk actions
-        floatingActionButton: _buildFloatingActionButton(viewModel),
-      ),
-    );
-  }
-
-  /// Tab 1: Inkommande förfrågningar
-  Widget _buildIncomingTab(FriendsViewModel viewModel) {
-    if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
-      return StateWidget.loading(message: 'Laddar förfrågningar...');
-    }
-
-    if (viewModel.incomingRequests.isEmpty) {
-      return StateWidget.empty(
-        title: 'Inga vänskapsförfrågningar',
-        subtitle: 'När någon skickar dig en vänskapsförfrågning visas den här.',
-        icon: Icons.inbox_outlined,
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await viewModel.refresh();
-        _clearSelection();
-      },
-      child: Column(
-        children: [
-          // Selection header
-          if (_selectedIncoming.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(AppTheme.spacingMd),
-              color: Theme.of(context)
-                  .colorScheme
-                  .primaryContainer
-                  .withValues(alpha: 0.3),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.checklist,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                  SizedBox(width: AppTheme.spacingSm),
-                  Text(
-                    '${_selectedIncoming.length} förfrågningar valda',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: _clearSelection,
-                    child: const Text('Rensa'),
-                  ),
-                ],
-              ),
-            ),
-
-          // Requests list
-          Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
-              itemCount: viewModel.incomingRequests.length,
-              separatorBuilder: (context, index) =>
-                  SizedBox(height: AppTheme.spacingSm),
-              itemBuilder: (context, index) {
-                final request = viewModel.incomingRequests[index];
-                final isSelected = _selectedIncoming.contains(request.id);
-
-                return _buildIncomingRequestCard(
-                  request,
-                  viewModel,
-                  isSelected,
-                  (selected) {
-                    setState(() {
-                      if (selected) {
-                        _selectedIncoming.add(request.id);
-                      } else {
-                        _selectedIncoming.remove(request.id);
-                      }
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Tab 2: Skickade förfrågningar
-  Widget _buildSentTab(FriendsViewModel viewModel) {
-    if (viewModel.isLoading && viewModel.sentRequests.isEmpty) {
-      return StateWidget.loading(message: 'Laddar skickade förfrågningar...');
-    }
-
-    if (viewModel.sentRequests.isEmpty) {
-      return StateWidget.empty(
-        title: 'Inga skickade förfrågningar',
-        subtitle: 'Förfrågningar du skickar till andra visas här.',
-        icon: Icons.outbox_outlined,
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await viewModel.refresh();
-        _clearSelection();
-      },
-      child: Column(
-        children: [
-          // Selection header
-          if (_selectedSent.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(AppTheme.spacingMd),
-              color: Theme.of(context)
-                  .colorScheme
-                  .primaryContainer
-                  .withValues(alpha: 0.3),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.checklist,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                  SizedBox(width: AppTheme.spacingSm),
-                  Text(
-                    '${_selectedSent.length} förfrågningar valda',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: _clearSelection,
-                    child: const Text('Rensa'),
-                  ),
-                ],
-              ),
-            ),
-
-          // Requests list
-          Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
-              itemCount: viewModel.sentRequests.length,
-              separatorBuilder: (context, index) =>
-                  SizedBox(height: AppTheme.spacingSm),
-              itemBuilder: (context, index) {
-                final request = viewModel.sentRequests[index];
-                final isSelected = _selectedSent.contains(request.id);
-
-                return _buildSentRequestCard(
-                  request,
-                  viewModel,
-                  isSelected,
-                  (selected) {
-                    setState(() {
-                      if (selected) {
-                        _selectedSent.add(request.id);
-                      } else {
-                        _selectedSent.remove(request.id);
-                      }
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Inkommande förfrågningskort - ✅ MIGRERAD till SocialComponents
-  Widget _buildIncomingRequestCard(
-    FriendRequest request,
-    FriendsViewModel viewModel,
-    bool isSelected,
-    Function(bool) onSelectionChanged,
-  ) {
-    // ✅ NYTT: Hämta riktig användardata
-    final userProfile = viewModel.getUserProfile(request.fromUserId);
-    final displayName = userProfile?.displayName ??
-        viewModel.getDisplayNameForUser(request.fromUserId);
-    final avatarUrl = userProfile?.avatarUrl;
-    final isOnline = userProfile?.isOnline ?? false;
-
-    return Card(
-      color: isSelected
-          ? Theme.of(context)
-              .colorScheme
-              .primaryContainer
-              .withValues(alpha: 0.3)
-          : null,
-      child: InkWell(
-        onTap: () => onSelectionChanged(!isSelected),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all(AppTheme.spacingMd),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  // Selection checkbox
-                  Checkbox(
-                    value: isSelected,
-                    onChanged: (value) => onSelectionChanged(value ?? false),
-                  ),
-                  SizedBox(width: AppTheme.spacingSm),
-
-                  // ✅ MIGRATION 1/2: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
-                  Stack(
-                    children: [
-                      SocialComponents.avatar(
-                        size: ImageSize.small,
-                        imageUrl: avatarUrl,
-                        displayName: displayName,
-                      ),
-                      // Online indicator
-                      if (isOnline)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: AppTheme.successColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.surface,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(width: AppTheme.spacingMd),
-
-                  // Request info - ✅ UPPDATERAD med riktig användardata
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayName,
-                          style: Theme.of(context).textTheme.titleMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          'vill bli vän',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                        ),
-                        if (request.message?.isNotEmpty == true) ...[
-                          SizedBox(height: AppTheme.spacingXs),
-                          Container(
-                            padding: EdgeInsets.all(AppTheme.spacingSm),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '"${request.message!}"',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                        SizedBox(height: AppTheme.spacingXs),
-                        Text(
-                          request.timeAgoText,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              // Actions (inte visas vid bulk selection)
-              if (!isSelected) ...[
-                SizedBox(height: AppTheme.spacingMd),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: viewModel.isLoading
-                            ? null
-                            : () => _rejectRequest(request, viewModel),
-                        icon: const Icon(Icons.close),
-                        label: const Text('Avböj'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.errorColor,
-                          side: BorderSide(color: AppTheme.errorColor),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: AppTheme.spacingMd),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: viewModel.isLoading
-                            ? null
-                            : () => _acceptRequest(request, viewModel),
-                        icon: const Icon(Icons.check),
-                        label: const Text('Acceptera'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.successColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
+        floatingActionButton: FriendRequestActions.buildFloatingActionButton(
+          context,
+          _tabController,
+          _selectedIncoming,
+          () => _handleBatchAccept(viewModel),
         ),
       ),
     );
   }
 
-  /// Skickade förfrågningskort - ✅ MIGRERAD till SocialComponents
-  Widget _buildSentRequestCard(
-    FriendRequest request,
-    FriendsViewModel viewModel,
-    bool isSelected,
-    Function(bool) onSelectionChanged,
-  ) {
-    // ✅ NYTT: Hämta riktig användardata
-    final userProfile = viewModel.getUserProfile(request.toUserId);
-    final displayName = userProfile?.displayName ??
-        viewModel.getDisplayNameForUser(request.toUserId);
-    final avatarUrl = userProfile?.avatarUrl;
-    final isOnline = userProfile?.isOnline ?? false;
-
-    Color statusColor;
-    IconData statusIcon;
-    String statusText;
-
-    switch (request.status) {
-      case FriendRequestStatus.pending:
-        statusColor = AppTheme.warningColor;
-        statusIcon = Icons.schedule;
-        statusText = 'Väntande svar';
-        break;
-      case FriendRequestStatus.accepted:
-        statusColor = AppTheme.successColor;
-        statusIcon = Icons.check_circle;
-        statusText = 'Accepterad';
-        break;
-      case FriendRequestStatus.rejected:
-        statusColor = AppTheme.errorColor;
-        statusIcon = Icons.cancel;
-        statusText = 'Avböjd';
-        break;
-      case FriendRequestStatus.expired:
-        statusColor = AppTheme.neutralMedium;
-        statusIcon = Icons.timer_off;
-        statusText = 'Utgången';
-        break;
-      default:
-        statusColor = AppTheme.neutralMedium;
-        statusIcon = Icons.help;
-        statusText = 'Okänd status';
-    }
-
-    return Card(
-      color: isSelected
-          ? Theme.of(context)
-              .colorScheme
-              .primaryContainer
-              .withValues(alpha: 0.3)
-          : null,
-      child: InkWell(
-        onTap: () => onSelectionChanged(!isSelected),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all(AppTheme.spacingMd),
-          child: Row(
-            children: [
-              // Selection checkbox (endast för pending requests)
-              if (request.isPending)
-                Checkbox(
-                  value: isSelected,
-                  onChanged: (value) => onSelectionChanged(value ?? false),
-                )
-              else
-                SizedBox(width: 48), // Placeholder för alignment
-
-              SizedBox(width: AppTheme.spacingSm),
-
-              // ✅ MIGRATION 2/2: Ersätt UserDisplayWidgets.avatar med SocialComponents.avatar
-              Stack(
-                children: [
-                  SocialComponents.avatar(
-                    size: ImageSize.small,
-                    imageUrl: avatarUrl,
-                    displayName: displayName,
-                  ),
-                  // Online indicator
-                  if (isOnline)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: AppTheme.successColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.surface,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              SizedBox(width: AppTheme.spacingMd),
-
-              // Request info - ✅ UPPDATERAD med riktig användardata
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (request.message?.isNotEmpty == true)
-                      Text(
-                        request.message!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontStyle: FontStyle.italic,
-                            ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    SizedBox(height: AppTheme.spacingXs),
-                    Row(
-                      children: [
-                        Icon(statusIcon, size: 16, color: statusColor),
-                        SizedBox(width: AppTheme.spacingXs),
-                        Text(
-                          statusText,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: statusColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          request.timeAgoText,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Cancel button för pending requests (inte vid selection)
-              if (request.isPending && !isSelected)
-                IconButton(
-                  onPressed: () => _cancelSentRequest(request, viewModel),
-                  icon: Icon(Icons.cancel, color: AppTheme.errorColor),
-                  tooltip: 'Avbryt förfrågan',
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Floating action button för bulk actions
-  Widget? _buildFloatingActionButton(FriendsViewModel viewModel) {
-    if (_tabController.index == 0 && _selectedIncoming.isNotEmpty) {
-      return FloatingActionButton.extended(
-        onPressed: () => _handleBatchAction('accept_all', viewModel),
-        icon: const Icon(Icons.check_circle),
-        label: Text('Acceptera ${_selectedIncoming.length}'),
-        backgroundColor: AppTheme.successColor,
-      );
-    }
-    return null;
-  }
-
-  /// Hantera batch actions för inkommande förfrågningar
-  Future<void> _handleBatchAction(
-      String action, FriendsViewModel viewModel) async {
+  Future<void> _handleBatchAccept(FriendsViewModel viewModel) async {
     if (_selectedIncoming.isEmpty) return;
 
-    final count = _selectedIncoming.length;
-
-    if (action == 'accept_all') {
-      final shouldAccept = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Acceptera alla valda?'),
-          content: Text('Vill du acceptera $count vänskapsförfrågningar?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Avbryt'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.successColor),
-              child: const Text('Acceptera alla'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldAccept == true) {
-        await _batchAcceptRequests(viewModel);
-      }
-    } else if (action == 'reject_all') {
-      final shouldReject = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Avböj alla valda?'),
-          content: Text('Vill du avböja $count vänskapsförfrågningar?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Avbryt'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style:
-                  FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
-              child: const Text('Avböj alla'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldReject == true) {
-        await _batchRejectRequests(viewModel);
-      }
-    }
-  }
-
-  /// Batch accept requests
-  Future<void> _batchAcceptRequests(FriendsViewModel viewModel) async {
-    int successCount = 0;
-
-    for (final requestId in _selectedIncoming) {
-      final success = await viewModel.acceptFriendRequest(requestId);
-      if (success) successCount++;
-    }
-
-    _clearSelection();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$successCount vänskapsförfrågningar accepterade! 🎉'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
-    }
-  }
-
-  /// Batch reject requests
-  Future<void> _batchRejectRequests(FriendsViewModel viewModel) async {
-    int successCount = 0;
-
-    for (final requestId in _selectedIncoming) {
-      final success = await viewModel.rejectFriendRequest(requestId);
-      if (success) successCount++;
-    }
-
-    _clearSelection();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$successCount vänskapsförfrågningar avböjda'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
-    }
-  }
-
-  /// Cancel selected sent requests
-  Future<void> _cancelSelectedSentRequests(FriendsViewModel viewModel) async {
-    final shouldCancel = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Avbryt valda förfrågningar?'),
-        content: Text(
-            'Vill du avbryta ${_selectedSent.length} skickade förfrågningar?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Nej'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Avbryt alla'),
-          ),
-        ],
+    await FriendRequestActions.showBatchAcceptDialog(
+      context,
+      _selectedIncoming.length,
+      () => FriendRequestActions.performBatchAccept(
+        context,
+        viewModel,
+        _selectedIncoming,
+        _clearSelection,
       ),
     );
-
-    if (shouldCancel == true) {
-      int successCount = 0;
-
-      for (final requestId in _selectedSent) {
-        final success = await viewModel.cancelSentRequest(requestId);
-        if (success) successCount++;
-      }
-
-      _clearSelection();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$successCount förfrågningar avbrutna'),
-            backgroundColor: AppTheme.warningColor,
-          ),
-        );
-      }
-    }
   }
 
-  /// Single request actions
-  Future<void> _acceptRequest(
-      FriendRequest request, FriendsViewModel viewModel) async {
-    final success = await viewModel.acceptFriendRequest(request.id);
+  Future<void> _handleBatchReject(FriendsViewModel viewModel) async {
+    if (_selectedIncoming.isEmpty) return;
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vänskapsförfrågan accepterad! 🎉'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
-    }
+    await FriendRequestActions.showBatchRejectDialog(
+      context,
+      _selectedIncoming.length,
+      () => FriendRequestActions.performBatchReject(
+        context,
+        viewModel,
+        _selectedIncoming,
+        _clearSelection,
+      ),
+    );
   }
 
-  Future<void> _rejectRequest(
-      FriendRequest request, FriendsViewModel viewModel) async {
-    final success = await viewModel.rejectFriendRequest(request.id);
+  Future<void> _handleCancelSelected(FriendsViewModel viewModel) async {
+    if (_selectedSent.isEmpty) return;
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vänskapsförfrågan avböjd'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
-    }
-  }
-
-  Future<void> _cancelSentRequest(
-      FriendRequest request, FriendsViewModel viewModel) async {
-    final success = await viewModel.cancelSentRequest(request.id);
-
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Förfrågan avbruten'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
-    }
+    await FriendRequestActions.showCancelSentDialog(
+      context,
+      _selectedSent.length,
+      () => FriendRequestActions.performBatchCancel(
+        context,
+        viewModel,
+        _selectedSent,
+        _clearSelection,
+      ),
+    );
   }
 }

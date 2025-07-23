@@ -1,7 +1,7 @@
 // lib/viewmodels/universal_share_dialog_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/unified/unified_shopping_list.dart';
 import '../services/social_recipe_service.dart';
 import '../services/unified/unified_shopping_service.dart';

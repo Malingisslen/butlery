@@ -16,7 +16,7 @@
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
 import 'package:uuid/uuid.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import 'import_strategy.dart';
 
 /// Strategy for importing recipes from text content
@@ -152,10 +152,22 @@ Gör så här:
   String _preprocessText(String input) {
     String processed = input;
 
+    // Clean up social media formatting
+    processed = _cleanSocialMediaFormatting(processed);
+
     // Add line breaks after common ingredient headers
     processed = processed.replaceAllMapped(
       RegExp(
-        r'(behöver är|ingredienser|du behöver|ingredients)',
+        r'(behöver är|ingredienser|du behöver|ingredients|what you need|shopping list)',
+        caseSensitive: false,
+      ),
+      (match) => '${match.group(0)}\n',
+    );
+
+    // Add line breaks after instruction headers  
+    processed = processed.replaceAllMapped(
+      RegExp(
+        r'(gör så här|instruktion|tillredning|steg|instructions|method|directions|preparation)',
         caseSensitive: false,
       ),
       (match) => '${match.group(0)}\n',
@@ -164,16 +176,45 @@ Gör så här:
     // Add line breaks before common instruction words
     processed = processed.replaceAllMapped(
       RegExp(
-        r'(Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör)',
+        r'(Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör|Start by|Preheat|Cook|Fry|Mix|Pour|Add|Cut|Serve|Heat|Stir)',
         caseSensitive: false,
       ),
       (match) => '\n${match.group(0)}',
+    );
+
+    // Fix measurement formatting (e.g., "2dl" -> "2 dl")
+    processed = processed.replaceAllMapped(
+      RegExp(r'(\d+(?:[,\.]\d+)?)(dl|cl|ml|kg|g|msk|tsk|st|krm)'),
+      (match) => '${match.group(1)} ${match.group(2)}',
     );
 
     // Normalize line breaks
     processed = processed.replaceAll(RegExp(r'\n+'), '\n');
 
     return processed.trim();
+  }
+
+  /// Clean up common social media formatting issues
+  String _cleanSocialMediaFormatting(String text) {
+    String processed = text;
+
+    // Remove emoji separators but keep recipe emojis
+    processed = processed.replaceAll(RegExp(r'[🔥💥✨🌟⭐]+'), '');
+    
+    // Clean up excessive punctuation
+    processed = processed.replaceAll(RegExp(r'[!]{2,}'), '!');
+    processed = processed.replaceAll(RegExp(r'[.]{3,}'), '...');
+    
+    // Remove hashtags but keep the content
+    processed = processed.replaceAll(RegExp(r'#\w+'), '');
+    
+    // Clean up multiple spaces
+    processed = processed.replaceAll(RegExp(r' {2,}'), ' ');
+    
+    // Remove Instagram/Facebook line separators
+    processed = processed.replaceAll(RegExp(r'^[-_=]{3,}$', multiLine: true), '');
+    
+    return processed;
   }
 
   Recipe? _parseTextToRecipe(String text) {
@@ -253,20 +294,24 @@ Gör så här:
     final rating = extractRating(text);
 
     return Recipe(
-      id: _uuid.v4(),
-      title: recipeName,
-      description: description,
-      ingredients: ingredients.isNotEmpty ? ingredients : ['Ingen ingrediensinformation'],
-      instructions: instructions.isNotEmpty ? instructions : ['Ingen instruktionsinformation'],
-      mealType: _guessMealType('$recipeName $description'),
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      imageUrls: [],
-      tags: _extractTags(text),
-      sourceUrl: 'Importerat från text',
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      core: RecipeCore(
+        id: _uuid.v4(),
+        title: recipeName,
+        description: description,
+        ingredients: ingredients.isNotEmpty ? ingredients : ['Ingen ingrediensinformation'],
+        instructions: instructions.isNotEmpty ? instructions : ['Ingen instruktionsinformation'],
+        imageUrls: [],
+        mealType: _guessMealType('$recipeName $description'),
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: _extractTags(text),
+        sourceUrl: 'Importerat från text',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        createdBy: '',
+      ),
+      type: RecipeType.personal,
     );
   }
 
@@ -291,11 +336,28 @@ Gör så här:
   }
 
   bool _looksLikeIngredient(String line) {
-    // Has measurements
-    if (RegExp(r'\d+\s*(dl|cl|ml|kg|g|msk|tsk|st|krm)').hasMatch(line)) return true;
+    // Has common Swedish measurements
+    if (RegExp(r'\d+(?:[,\.]\d+)?\s*(dl|cl|ml|kg|g|hg|msk|tsk|st|krm|bit|skiva|klyfta|burk|pkt|påse)').hasMatch(line)) return true;
     
-    // Short line that could be an ingredient
-    if (line.length < 50 && line.split(' ').length <= 5) return true;
+    // Has common English measurements
+    if (RegExp(r'\d+(?:[,\.]\d+)?\s*(cup|cups|oz|tbsp|tsp|lb|lbs|pound|pounds|ounce|ounces)').hasMatch(line)) return true;
+    
+    // Has fractions (½, ¼, ¾)
+    if (RegExp(r'[½¼¾]').hasMatch(line)) return true;
+    
+    // Common ingredient words
+    final ingredientWords = [
+      'mjöl', 'socker', 'smör', 'ägg', 'mjölk', 'grädde', 'olja', 'salt', 'peppar',
+      'lök', 'vitlök', 'tomat', 'potatis', 'kött', 'kyckling', 'fisk', 'ris', 'pasta',
+      'flour', 'sugar', 'butter', 'eggs', 'milk', 'cream', 'oil', 'salt', 'pepper'
+    ];
+    if (ingredientWords.any((word) => line.toLowerCase().contains(word))) return true;
+    
+    // Short line that could be an ingredient (but not too short)
+    if (line.length > 3 && line.length < 80 && line.split(' ').length <= 8) return true;
+    
+    // Starts with bullet point or dash
+    if (RegExp(r'^[•\-\*]\s+').hasMatch(line)) return true;
     
     return false;
   }
@@ -304,26 +366,79 @@ Gör så här:
     // Numbered instruction
     if (RegExp(r'^\d+\.').hasMatch(line)) return true;
     
-    // Starts with action word
-    final actionWords = ['koka', 'stek', 'blanda', 'rör', 'häll', 'lägg', 'skär'];
-    if (actionWords.any((word) => line.toLowerCase().startsWith(word))) return true;
+    // Starts with bullet point or dash (but longer than typical ingredient)
+    if (RegExp(r'^[•\-\*]\s+').hasMatch(line) && line.length > 15) return true;
     
-    // Longer descriptive line
-    if (line.length > 20) return true;
+    // Starts with Swedish action words
+    final swedishActionWords = [
+      'koka', 'stek', 'blanda', 'rör', 'häll', 'lägg', 'skär', 'servera',
+      'värm', 'vispa', 'knåda', 'grädda', 'sjud', 'fräs', 'koka upp',
+      'sätt ugnen', 'förvärm', 'tillsätt', 'smaksätt', 'strö över'
+    ];
+    if (swedishActionWords.any((word) => line.toLowerCase().startsWith(word))) return true;
+    
+    // Starts with English action words
+    final englishActionWords = [
+      'cook', 'fry', 'mix', 'stir', 'pour', 'add', 'cut', 'serve',
+      'heat', 'whisk', 'knead', 'bake', 'boil', 'sauté', 'preheat',
+      'season', 'sprinkle', 'chop', 'slice', 'dice', 'mince'
+    ];
+    if (englishActionWords.any((word) => line.toLowerCase().startsWith(word))) return true;
+    
+    // Contains time indicators
+    if (RegExp(r'\d+\s*(min|minut|tim|hour|sec)', caseSensitive: false).hasMatch(line)) return true;
+    
+    // Contains temperature indicators
+    if (RegExp(r'\d+\s*(°|grad|degree)', caseSensitive: false).hasMatch(line)) return true;
+    
+    // Longer descriptive line (likely an instruction)
+    if (line.length > 30 && line.split(' ').length > 4) return true;
     
     return false;
   }
 
   String? _parseIngredientLine(String line) {
-    // Remove bullet points and numbers
-    String cleaned = line.replaceAll(RegExp(r'^[•\-\d+\.]\s*'), '').trim();
-    return cleaned.isNotEmpty ? cleaned : null;
+    // Remove bullet points, numbers, and asterisks
+    String cleaned = line.replaceAll(RegExp(r'^[•\-\*\d+\.]\s*'), '').trim();
+    
+    if (cleaned.isEmpty) return null;
+    
+    // Further clean up common prefixes
+    cleaned = cleaned.replaceAll(RegExp(r'^-\s*'), ''); // Additional dash cleanup
+    cleaned = cleaned.replaceAll(RegExp(r'^\*\s*'), ''); // Asterisk cleanup
+    
+    // Normalize fractions to make them more readable
+    cleaned = cleaned.replaceAll('1/2', '½');
+    cleaned = cleaned.replaceAll('1/4', '¼');
+    cleaned = cleaned.replaceAll('3/4', '¾');
+    
+    // Fix common spacing issues with measurements
+    cleaned = cleaned.replaceAllMapped(
+      RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ]+)'),
+      (match) => '${match.group(1)} ${match.group(2)}',
+    );
+    
+    return cleaned;
   }
 
   String? _parseInstructionLine(String line) {
-    // Remove numbering
+    // Remove numbering and bullets
     String cleaned = line.replaceAll(RegExp(r'^\d+\.\s*'), '').trim();
-    return cleaned.isNotEmpty ? cleaned : null;
+    cleaned = cleaned.replaceAll(RegExp(r'^[•\-\*]\s*'), '').trim();
+    
+    if (cleaned.isEmpty) return null;
+    
+    // Capitalize first letter if it's not already
+    if (cleaned.isNotEmpty && cleaned[0] == cleaned[0].toLowerCase()) {
+      cleaned = '${cleaned[0].toUpperCase()}${cleaned.substring(1)}';
+    }
+    
+    // Ensure instruction ends with proper punctuation
+    if (!cleaned.endsWith('.') && !cleaned.endsWith('!') && !cleaned.endsWith('?')) {
+      cleaned += '.';
+    }
+    
+    return cleaned;
   }
 
   int? _extractPortions(String text) {

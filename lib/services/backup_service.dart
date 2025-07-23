@@ -5,7 +5,7 @@ import 'dart:io';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import 'unified/unified_recipe_service.dart';
@@ -17,7 +17,7 @@ class BackupService {
     try {
       // Hämta alla recept
       final recipeService = sl<UnifiedRecipeService>();
-      final recipes = recipeService.legacyRecipes;
+      final recipes = recipeService.recipes;
 
       if (recipes.isEmpty) {
         return BackupResult.error('Inga recept att exportera');
@@ -199,7 +199,7 @@ class BackupService {
           // Kolla om receptet redan finns (baserat på titel)
           final existingRecipes = recipeService.recipes;
           final alreadyExists = existingRecipes.any(
-            (r) => r.name.toLowerCase() == recipe.title.toLowerCase(),
+            (r) => r.title.toLowerCase() == recipe.title.toLowerCase(),
           );
 
           if (alreadyExists) {
@@ -210,20 +210,39 @@ class BackupService {
 
           // Skapa nytt recept med ny ID
           final newRecipe = Recipe(
-            title: recipe.title,
-            description: recipe.description,
-            portions: recipe.portions,
-            timeMinutes: recipe.timeMinutes,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            tags: recipe.tags,
-            rating: recipe.rating,
-            imageUrls: recipe.imageUrls,
-            mealType: recipe.mealType,
-            sourceUrl: 'Importerat från backup ${_formatDate(DateTime.now())}',
+            core: RecipeCore(
+              id: '',
+              title: recipe.title,
+              description: recipe.description,
+              ingredients: recipe.ingredients,
+              instructions: recipe.instructions,
+              imageUrls: recipe.imageUrls,
+              mealType: recipe.mealType,
+              portions: recipe.portions,
+              timeMinutes: recipe.timeMinutes,
+              rating: recipe.rating,
+              tags: recipe.tags,
+              sourceUrl: 'Importerat från backup ${_formatDate(DateTime.now())}',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              createdBy: '',
+            ),
+            type: RecipeType.personal,
           );
 
-          await recipeService.personal.addLegacyRecipe(newRecipe);
+          await recipeService.personal.createRecipe(
+            title: newRecipe.title,
+            description: newRecipe.description,
+            ingredients: newRecipe.ingredients,
+            instructions: newRecipe.instructions,
+            imageUrls: newRecipe.imageUrls,
+            mealType: newRecipe.mealType,
+            portions: newRecipe.portions,
+            timeMinutes: newRecipe.timeMinutes,
+            rating: newRecipe.rating,
+            tags: newRecipe.tags,
+            sourceUrl: newRecipe.sourceUrl,
+          );
           successCount++;
         } catch (e) {
           skipCount++;

@@ -194,5 +194,31 @@ class FirebaseUserRepository implements UserRepository {
     final currentId = _authRepository.currentUserId;
     return query.docs.first.id == currentId;
   }
+
+  /// Update FCM token for push notifications
+  @override
+  Future<void> updateFCMToken(String userId, String token) async {
+    await _profilesRef.doc(userId).update({
+      'fcmToken': token,
+      'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Update notification settings
+  @override
+  Future<void> updateNotificationSettings(String userId, bool enabled) async {
+    await _profilesRef.doc(userId).update({
+      'notificationsEnabled': enabled,
+    });
+  }
+
+  /// Clear FCM token (e.g., on logout)
+  @override
+  Future<void> clearFCMToken(String userId) async {
+    await _profilesRef.doc(userId).update({
+      'fcmToken': null,
+      'fcmTokenUpdatedAt': null,
+    });
+  }
 }
 

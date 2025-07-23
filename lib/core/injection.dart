@@ -81,7 +81,7 @@ import '../viewmodels/collaborative_status_viewmodel.dart';
 import '../viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Models
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 
 /// Service Locator instance
@@ -249,9 +249,6 @@ Future<void> initializeDependencies() async {
       () => RecipeFormViewModel(
         recipeService: sl<UnifiedRecipeService>(),
         analyticsService: sl<AnalyticsService>(),
-        storageService: sl<StorageService>(),
-        imagePickerService: sl<ImagePickerService>(),
-        collaborativeRepository: sl<CollaborativeRecipeRepository>(),
       ),
     );
 
@@ -392,11 +389,12 @@ Future<void> initializeDependencies() async {
 
     debugPrint('🔄 Initialiserar core services...');
 
-    await sl<UnifiedRecipeService>().initialize();
-    debugPrint('✅ UnifiedRecipeService initierad');
-
+    // Initialize OfflineService first (Hive dependency)
     await sl<OfflineService>().initialize();
     debugPrint('✅ OfflineService initierad');
+
+    await sl<UnifiedRecipeService>().initialize();
+    debugPrint('✅ UnifiedRecipeService initierad');
 
     // ==================== REALTIME SYNC INITIALIZATION (FAS 2) ====================
     debugPrint('🔄 Initialiserar RealtimeSyncService...');

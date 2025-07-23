@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/realtime/realtime_menu.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/permissions/resource_permission.dart';
 import '../services/realtime/realtime_menu_service.dart';
 import '../services/realtime_sync_service.dart';
@@ -11,7 +11,6 @@ import '../services/auth_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
-import '../theme/app_theme.dart';
 import 'realtime/optimistic_update_manager.dart';
 import 'realtime/participant_tracker.dart';
 import 'realtime/connection_monitor.dart';
@@ -122,9 +121,14 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   List<Recipe> get selectedCategoryRecipes {
     if (_selectedCategory == null) return [];
 
-    final fallback =
-        _currentMenu?.getRecipesForCategory(_selectedCategory!) ?? [];
-    return _optimisticManager.getRecipesForDay(_selectedCategory!, fallback);
+    final baseRecipes = _currentMenu?.getRecipesForCategory(_selectedCategory!) ?? [];
+    
+    // Apply optimistic changes if any exist for this category
+    if (_optimisticManager.hasChanges && _optimisticManager.allChanges.containsKey(_selectedCategory!)) {
+      return _optimisticManager.allChanges[_selectedCategory!]!;
+    }
+    
+    return baseRecipes;
   }
 
   /// Meny med optimistiska ändringar tillämpade
@@ -388,7 +392,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
       AppLogger.info('🤖 Regenererar kategori: $categoryName');
 
       // Placeholder - här skulle du anropa AI-service för att generera nya recept
-      await Future.delayed(AppTheme.wait2s);
+      await Future.delayed(const Duration(seconds: 2));
 
       // När AI-integration är klar:
       // final newRecipes = await _aiService.generateRecipesForCategory(categoryName);
@@ -677,6 +681,10 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   void dispose() {
     AppLogger.info('🗑️ RealtimeMenuViewModel disposing...');
 
+    // CRITICAL: Ensure subscription cleanup
+    _menuSubscription?.cancel();
+    _menuSubscription = null;
+    
     stopWatching();
     _menuService.removeListener(_onServiceStateChanged);
 

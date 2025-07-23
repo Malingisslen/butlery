@@ -7,7 +7,9 @@ import '../../widgets/common/social_components.dart';
 import '../../models/user_profile.dart';
 import '../../viewmodels/add_members_to_group_viewmodel.dart';
 import '../../widgets/common/state_widget.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 
 class AddMembersToGroupView extends StatefulWidget {
   final String groupId;
@@ -90,18 +92,18 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         children: [
           Text(
             'Lägg till medlemmar',
-            style: AppTheme.sectionTitleStyle,
+            style: AppTextStyles.headlineSmall,
           ),
           if (viewModel.group != null)
             Text(
               viewModel.group!.name,
-              style: AppTheme.subtitleStyle,
+              style: AppTextStyles.titleMedium,
             ),
         ],
       ),
-      backgroundColor: AppTheme.backgroundColor,
-      foregroundColor: AppTheme.textPrimary,
-      elevation: AppTheme.elevationLow,
+      backgroundColor: AppColors.backgroundBeige,
+      foregroundColor: AppColors.textDark,
+      elevation: AppDimensions.elevationLow,
       actions: [
         if (viewModel.hasSelectedFriends)
           TextButton(
@@ -111,8 +113,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             },
             child: Text(
               'Välj alla',
-              style: AppTheme.buttonTextStyle.copyWith(
-                color: AppTheme.primaryColor,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: AppColors.primaryBlue,
               ),
             ),
           ),
@@ -124,8 +126,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             },
             child: Text(
               'Rensa',
-              style: AppTheme.buttonTextStyle.copyWith(
-                color: AppTheme.textSecondary,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: AppColors.textMedium,
               ),
             ),
           ),
@@ -178,7 +180,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildSearchBar(AddMembersToGroupViewModel viewModel) {
     return Container(
-      padding: AppTheme.screenPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: TextField(
         onChanged: (value) {
           debugPrint('🔍 DEBUG: Search query ändrad: "$value"');
@@ -197,7 +199,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: AppTheme.mediumRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
         ),
       ),
@@ -206,21 +208,21 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildSelectionControls(AddMembersToGroupViewModel viewModel) {
     return Container(
-      padding: AppTheme.screenPadding.copyWith(top: 0),
+      padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
       child: Row(
         children: [
           Icon(
             Icons.info_outline,
             size: 16,
-            color: AppTheme.textSecondary,
+            color: AppColors.textMedium,
           ),
-          AppTheme.smallHorizontalGap,
+          const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
               viewModel.hasSelectedFriends
                   ? '${viewModel.selectedCount} av ${viewModel.filteredFriends.length} vald(a)'
                   : 'Välj vänner att bjuda in till gruppen',
-              style: AppTheme.subtitleStyle,
+              style: AppTextStyles.titleMedium,
             ),
           ),
         ],
@@ -230,9 +232,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildFriendsList(AddMembersToGroupViewModel viewModel) {
     return ListView.separated(
-      padding: AppTheme.screenPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: viewModel.filteredFriends.length,
-      separatorBuilder: (context, index) => AppTheme.smallGap,
+      separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingM),
       itemBuilder: (context, index) {
         final friend = viewModel.filteredFriends[index];
         return _buildFriendTile(friend, viewModel);
@@ -247,8 +249,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     final invitationStatus = viewModel.getInvitationStatusForUser(friend.uid);
 
     return Card(
-      elevation: AppTheme.elevationLow,
-      shape: RoundedRectangleBorder(borderRadius: AppTheme.mediumRadius),
+      elevation: AppDimensions.elevationLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
       child: ListTile(
         leading: SocialComponents.avatar(
           user: friend,
@@ -256,12 +258,12 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         ),
         title: Text(
           friend.displayName,
-          style: AppTheme.cardTitleStyle,
+          style: AppTextStyles.titleMedium,
         ),
         subtitle: friend.bio?.isNotEmpty == true
             ? Text(
                 friend.bio!,
-                style: AppTheme.subtitleStyle,
+                style: AppTextStyles.titleMedium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               )
@@ -292,17 +294,17 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
       switch (invitationStatus) {
         case 'sent':
-          statusColor = AppTheme.successColor;
+          statusColor = AppColors.success;
           statusIcon = Icons.check_circle;
           statusText = 'Skickad';
           break;
         case 'failed':
-          statusColor = AppTheme.errorColor;
+          statusColor = AppColors.error;
           statusIcon = Icons.error;
           statusText = 'Misslyckades';
           break;
         default:
-          statusColor = AppTheme.warningColor;
+          statusColor = AppColors.warning;
           statusIcon = Icons.schedule;
           statusText = 'Väntar';
       }
@@ -313,7 +315,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           Icon(statusIcon, color: statusColor, size: 20),
           Text(
             statusText,
-            style: AppTheme.captionStyle.copyWith(color: statusColor),
+            style: AppTextStyles.bodySmall.copyWith(color: statusColor),
           ),
         ],
       );
@@ -327,7 +329,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             '🔍 DEBUG: Checkbox changed för ${friend.displayName} - new value: $value');
         viewModel.toggleFriendSelection(friend.uid);
       },
-      activeColor: AppTheme.primaryColor,
+      activeColor: AppColors.primaryBlue,
     );
   }
 
@@ -337,12 +339,12 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     }
 
     return Container(
-      padding: AppTheme.screenPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
+        color: AppColors.backgroundBeige,
         border: Border(
           top: BorderSide(
-            color: AppTheme.dividerColor,
+            color: AppColors.divider,
             width: 1,
           ),
         ),
@@ -353,31 +355,31 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           children: [
             if (viewModel.invitationError != null) ...[
               Container(
-                padding: AppTheme.cardPadding,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.smallRadius,
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.error_outline,
-                      color: AppTheme.errorColor,
+                      color: AppColors.error,
                       size: 20,
                     ),
-                    AppTheme.smallHorizontalGap,
+                    const SizedBox(width: AppDimensions.spacingM),
                     Expanded(
                       child: Text(
                         viewModel.invitationError!,
-                        style: AppTheme.bodyStyle.copyWith(
-                          color: AppTheme.errorColor,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.error,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
             ],
             FilledButton(
               onPressed: viewModel.isSendingInvitations
@@ -403,16 +405,26 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                             content: Text(
                               '${viewModel.selectedCount} inbjudningar skickade! 📨',
                             ),
-                            backgroundColor: AppTheme.successColor,
+                            backgroundColor: AppColors.success,
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                              borderRadius: AppTheme.mediumRadius,
+                              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                             ),
                           ),
                         );
                       }
                     },
-              style: AppTheme.primaryButtonStyle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.cardWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+              ),
               child: viewModel.isSendingInvitations
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
@@ -423,23 +435,23 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              AppTheme.neutralLight,
+                              AppColors.neutralLight,
                             ),
                           ),
                         ),
-                        AppTheme.smallHorizontalGap,
+                        const SizedBox(width: AppDimensions.spacingM),
                         Text(
                           'Skickar...',
-                          style: AppTheme.buttonTextStyle.copyWith(
-                            color: AppTheme.neutralLight,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: AppColors.neutralLight,
                           ),
                         ),
                       ],
                     )
                   : Text(
                       'Skicka ${viewModel.selectedCount} inbjudningar',
-                      style: AppTheme.buttonTextStyle.copyWith(
-                        color: AppTheme.neutralLight,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.neutralLight,
                       ),
                     ),
             ),

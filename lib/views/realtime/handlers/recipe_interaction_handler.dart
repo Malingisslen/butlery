@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import '../../../viewmodels/realtime_menu_viewmodel.dart';
-import '../../../models/recipe.dart';
+import '../../../models/recipe_unified.dart';
 import '../../../widgets/common/navigation_components.dart';
-import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
 import '../../../core/utils/logger.dart';
 
 /// Handler för recipe interactions med kategori-struktur
@@ -37,7 +37,7 @@ class RecipeInteractionHandler {
             content: Text(
               '${result.length} recept tillagda i $categoryName',
             ),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -52,7 +52,7 @@ class RecipeInteractionHandler {
       message: 'Vill du ta bort "$recipeTitle" från denna kategori?',
       confirmText: 'Ta bort',
       cancelText: 'Avbryt',
-      confirmColor: AppTheme.errorColor,
+      confirmColor: AppColors.error,
     );
   }
 
@@ -64,7 +64,7 @@ class RecipeInteractionHandler {
       message: 'Vill du ta bort alla recept från $categoryName?',
       confirmText: 'Rensa',
       cancelText: 'Avbryt',
-      confirmColor: AppTheme.errorColor,
+      confirmColor: AppColors.error,
     );
 
     if (confirmed) {
@@ -75,7 +75,7 @@ class RecipeInteractionHandler {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$categoryName rensad'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -101,7 +101,7 @@ class RecipeInteractionHandler {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$categoryName regenererad'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -179,7 +179,7 @@ class RecipeInteractionHandler {
             content: Text(
               '"${recipe.title}" flyttad till $selectedCategory',
             ),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppColors.success,
           ),
         );
       }
