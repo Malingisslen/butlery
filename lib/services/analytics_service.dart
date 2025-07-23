@@ -224,6 +224,39 @@ class AnalyticsService {
     }
   }
 
+  /// Logga när ett recept tas bort
+  Future<void> logRecipeDeleted({
+    required String recipeId,
+    required String recipeTitle,
+    required String mealType,
+    required bool isPersonal,
+    required DateTime createdAt,
+    int? daysSinceCreated,
+  }) async {
+    try {
+      final now = DateTime.now();
+      final actualDaysSinceCreated = daysSinceCreated ?? 
+        now.difference(createdAt).inDays;
+
+      await _analytics.logEvent(
+        name: 'recipe_deleted',
+        parameters: {
+          'recipe_id': recipeId,
+          'recipe_title': recipeTitle,
+          'meal_type': mealType,
+          'recipe_type': isPersonal ? 'personal' : 'collaborative',
+          'days_since_created': actualDaysSinceCreated,
+          'created_at': createdAt.toIso8601String(),
+          'timestamp': now.toIso8601String(),
+        },
+      );
+
+      debugPrint('📊 Recipe deletion loggad: $recipeTitle ($mealType)');
+    } catch (e) {
+      debugPrint('Analytics fel: $e');
+    }
+  }
+
   // ==================== APP-HÄNDELSER ====================
 
   /// Logga när användare loggar in

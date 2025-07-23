@@ -5,7 +5,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 
 /// Image Size enum
 enum ImageSize {
@@ -106,8 +108,8 @@ class UserDisplayWidgets {
   }) {
     final avatarSize = _getAvatarSize(size);
     final effectiveBackgroundColor =
-        backgroundColor ?? AppTheme.primaryColor.withValues(alpha: 0.1);
-    final effectiveTextColor = textColor ?? AppTheme.primaryColor;
+        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: 0.1);
+    final effectiveTextColor = textColor ?? AppColors.primaryBlue;
 
     Widget avatar = Container(
       width: avatarSize,
@@ -126,6 +128,7 @@ class UserDisplayWidgets {
                 width: avatarSize,
                 height: avatarSize,
                 fit: BoxFit.cover,
+                alignment: Alignment.center,
                 placeholder: (context, url) => _buildInitialsAvatar(displayName,
                     avatarSize, effectiveBackgroundColor, effectiveTextColor),
                 errorWidget: (context, url, error) => _buildInitialsAvatar(
@@ -133,10 +136,8 @@ class UserDisplayWidgets {
                     avatarSize,
                     effectiveBackgroundColor,
                     effectiveTextColor),
-                memCacheWidth: (avatarSize * 2).toInt(),
-                memCacheHeight: (avatarSize * 2).toInt(),
-                fadeInDuration: AppTheme.animationDurationMedium,
-                fadeOutDuration: AppTheme.animationDurationMedium,
+                fadeInDuration: const Duration(milliseconds: 300),
+                fadeOutDuration: const Duration(milliseconds: 300),
               ),
             )
           : _buildInitialsAvatar(displayName, avatarSize,
@@ -156,10 +157,10 @@ class UserDisplayWidgets {
               height: avatarSize * 0.25,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isOnline ? AppTheme.successColor : AppTheme.textTertiary,
+                color: isOnline ? AppColors.success : AppColors.textTertiary,
                 border: Border.all(
-                  color: AppTheme.cardColor,
-                  width: AppTheme.spacingXxs,
+                  color: AppColors.cardWhite,
+                  width: AppDimensions.borderWidthThin,
                 ),
               ),
             ),
@@ -170,7 +171,7 @@ class UserDisplayWidgets {
 
     return onTap != null
         ? Material(
-            color: AppTheme.transparent,
+            color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(avatarSize / 2),
@@ -195,33 +196,33 @@ class UserDisplayWidgets {
           imageUrl: imageUrl,
           displayName: displayName,
           size: size,
-          borderColor: borderColor ?? AppTheme.primaryColor,
-          borderWidth: borderWidth ?? AppTheme.spacingXs,
+          borderColor: borderColor ?? AppColors.primaryBlue,
+          borderWidth: borderWidth ?? AppDimensions.spacingXs,
         ),
         Positioned(
           right: 0,
           bottom: 0,
           child: Material(
-            color: AppTheme.primaryColor,
+            color: AppColors.primaryBlue,
             shape: const CircleBorder(),
             child: InkWell(
               onTap: onEditTap,
-              borderRadius: AppTheme.roundRadius,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
               child: Container(
-                width: AppTheme.iconSizeDisplay,
-                height: AppTheme.iconSizeDisplay,
+                width: AppDimensions.iconSizeS,
+                height: AppDimensions.iconSizeS,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.primaryColor,
+                  color: AppColors.primaryBlue,
                   border: Border.all(
-                    color: AppTheme.cardColor,
-                    width: AppTheme.spacingXxs,
+                    color: AppColors.cardWhite,
+                    width: AppDimensions.borderWidthThin,
                   ),
                 ),
                 child: Icon(
                   Icons.edit,
-                  size: AppTheme.iconSizeInfo,
-                  color: AppTheme.cardColor,
+                  size: AppDimensions.iconSizeM,
+                  color: AppColors.cardWhite,
                 ),
               ),
             ),
@@ -242,7 +243,7 @@ class UserDisplayWidgets {
   }) =>
       Text(
         displayName,
-        style: style ?? AppTheme.cardTitleStyle,
+        style: style ?? AppTextStyles.titleMedium,
         maxLines: maxLines,
         overflow: overflow ?? TextOverflow.ellipsis,
       );
@@ -256,7 +257,7 @@ class UserDisplayWidgets {
   }) =>
       Text(
         email,
-        style: style ?? AppTheme.subtitleStyle,
+        style: style ?? AppTextStyles.titleMedium,
         maxLines: maxLines,
         overflow: overflow ?? TextOverflow.ellipsis,
       );
@@ -274,7 +275,7 @@ class UserDisplayWidgets {
       children: [
         userName(displayName: displayName, style: nameStyle),
         if (email != null) ...[
-          AppTheme.tinyGap,
+          const SizedBox(height: AppDimensions.spacingXs),
           userEmail(email: email, style: emailStyle),
         ],
       ],
@@ -298,9 +299,9 @@ class UserDisplayWidgets {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: AppTheme.mediumRadius,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Padding(
-        padding: padding ?? AppTheme.listItemPadding,
+        padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
             avatar(
@@ -310,25 +311,25 @@ class UserDisplayWidgets {
               showStatus: showStatus,
               isOnline: isOnline,
             ),
-            AppTheme.mediumHorizontalGap,
+            SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   userName(displayName: displayName),
                   if (email != null) ...[
-                    AppTheme.tinyGap,
+                    const SizedBox(height: AppDimensions.spacingXs),
                     userEmail(email: email),
                   ],
                   if (subtitle != null) ...[
-                    AppTheme.tinyGap,
-                    Text(subtitle, style: AppTheme.captionStyle),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(subtitle, style: AppTextStyles.bodySmall),
                   ],
                 ],
               ),
             ),
             if (trailing != null) ...[
-              AppTheme.smallHorizontalGap,
+              const SizedBox(width: AppDimensions.spacingM),
               trailing,
             ],
           ],
@@ -353,14 +354,14 @@ class UserDisplayWidgets {
     EdgeInsets? margin,
   }) {
     return Card(
-      margin: margin ?? AppTheme.cardPadding,
-      elevation: AppTheme.elevationLow,
-      shape: RoundedRectangleBorder(borderRadius: AppTheme.largeRadius),
+      margin: margin ?? const EdgeInsets.all(AppDimensions.paddingL),
+      elevation: AppDimensions.elevationLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppTheme.largeRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         child: Padding(
-          padding: padding ?? AppTheme.cardPadding,
+          padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -373,21 +374,21 @@ class UserDisplayWidgets {
                     showStatus: showStatus,
                     isOnline: isOnline,
                   ),
-                  AppTheme.mediumHorizontalGap,
+                  SizedBox(width: AppDimensions.spacingM),
                   Expanded(
                       child: userInfo(displayName: displayName, email: email)),
                 ],
               ),
               if (subtitle != null) ...[
-                AppTheme.smallGap,
-                Text(subtitle, style: AppTheme.subtitleStyle),
+                const SizedBox(height: AppDimensions.spacingM),
+                Text(subtitle, style: AppTextStyles.titleMedium),
               ],
               if (description != null) ...[
-                AppTheme.smallGap,
-                Text(description, style: AppTheme.bodyStyle),
+                const SizedBox(height: AppDimensions.spacingM),
+                Text(description, style: AppTextStyles.bodyLarge),
               ],
               if (actions != null) ...[
-                AppTheme.mediumGap,
+                const SizedBox(height: AppDimensions.spacingXl),
                 actions,
               ],
             ],
@@ -413,9 +414,9 @@ class UserDisplayWidgets {
     return ListView.separated(
       shrinkWrap: shrinkWrap,
       physics: physics ?? const NeverScrollableScrollPhysics(),
-      padding: padding ?? AppTheme.screenPadding,
+      padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
       itemCount: users.length,
-      separatorBuilder: (context, index) => AppTheme.smallGap,
+      separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingM),
       itemBuilder: (context, index) {
         final user = users[index];
         return userRow(
@@ -447,11 +448,11 @@ class UserDisplayWidgets {
     return GridView.builder(
       shrinkWrap: shrinkWrap,
       physics: physics ?? const NeverScrollableScrollPhysics(),
-      padding: padding ?? AppTheme.screenPadding,
+      padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: AppTheme.spacingSm,
-        mainAxisSpacing: AppTheme.spacingSm,
+        crossAxisSpacing: AppDimensions.spacingS,
+        mainAxisSpacing: AppDimensions.spacingS,
         childAspectRatio: aspectRatio,
       ),
       itemCount: users.length,
@@ -464,7 +465,7 @@ class UserDisplayWidgets {
           subtitle: user.subtitle,
           avatarSize: avatarSize,
           onTap: onUserTap != null ? () => onUserTap(user) : null,
-          padding: AppTheme.cardPadding,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
         );
       },
     );
@@ -482,24 +483,27 @@ class UserDisplayWidgets {
   }) {
     return Center(
       child: Padding(
-        padding: AppTheme.screenPadding,
+        padding: EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon,
-                size: AppTheme.iconSizeEmptyState,
-                color: AppTheme.textTertiary),
-            AppTheme.mediumGap,
+                size: AppDimensions.iconSizeXl,
+                color: AppColors.textTertiary),
+            const SizedBox(height: AppDimensions.spacingXl),
             Text(title,
-                style: AppTheme.cardTitleStyle, textAlign: TextAlign.center),
-            AppTheme.smallGap,
+                style: AppTextStyles.titleMedium, textAlign: TextAlign.center),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(subtitle,
-                style: AppTheme.subtitleStyle, textAlign: TextAlign.center),
+                style: AppTextStyles.titleMedium, textAlign: TextAlign.center),
             if (onAction != null && actionLabel != null) ...[
-              AppTheme.largeGap,
+              SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: onAction,
-                style: AppTheme.primaryButtonStyle,
+                style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.cardWhite,
+          ),
                 child: Text(actionLabel),
               ),
             ],
@@ -514,15 +518,15 @@ class UserDisplayWidgets {
     required bool isOnline,
     double? size,
   }) {
-    final indicatorSize = size ?? AppTheme.iconSizeInfo;
+    final indicatorSize = size ?? AppDimensions.iconSizeM;
     return Container(
       width: indicatorSize,
       height: indicatorSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isOnline ? AppTheme.successColor : AppTheme.textTertiary,
+        color: isOnline ? AppColors.success : AppColors.textTertiary,
         border:
-            Border.all(color: AppTheme.cardColor, width: AppTheme.spacingXxs),
+            Border.all(color: AppColors.cardWhite, width: AppDimensions.borderWidthThin),
       ),
     );
   }
@@ -537,17 +541,17 @@ class UserDisplayWidgets {
     return Container(
       padding: padding ??
           EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingXs,
-            vertical: AppTheme.spacingXs / 2,
+            horizontal: AppDimensions.spacingXs,
+            vertical: AppDimensions.spacingXs / 2,
           ),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppTheme.primaryColor,
-        borderRadius: AppTheme.chipRadius,
+        color: backgroundColor ?? AppColors.primaryBlue,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
         label,
-        style: AppTheme.chipLabelStyle.copyWith(
-          color: textColor ?? AppTheme.cardColor,
+        style: AppTextStyles.labelSmall.copyWith(
+          color: textColor ?? AppColors.cardWhite,
         ),
       ),
     );
@@ -575,7 +579,7 @@ class UserDisplayWidgets {
       child: Center(
         child: Text(
           initials,
-          style: AppTheme.bodyStyle.copyWith(
+          style: AppTextStyles.bodyLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w600,
             color: textColor,
@@ -589,14 +593,14 @@ class UserDisplayWidgets {
   /// Optimerad avatar size calculation
   static double _getAvatarSize(ImageSize size) {
     return switch (size) {
-      ImageSize.small => AppTheme.iconSizeDisplay, // 32px
-      ImageSize.medium => AppTheme.iconSizeHero, // 48px
-      ImageSize.large => AppTheme.thumbnailLargeSize, // 80px
-      ImageSize.extraLarge => AppTheme.iconSizeEmptyState * 1.875, // 120px
-      ImageSize.card => AppTheme.recipeImageSize, // 70px
-      ImageSize.hero => AppTheme.imageHeightMedium, // 200px
-      ImageSize.thumbnail => AppTheme.thumbnailSize, // 60px
-      ImageSize.custom => AppTheme.iconSizeHero, // fallback
+      ImageSize.small => AppDimensions.iconSizeS, // 32px
+      ImageSize.medium => AppDimensions.iconSizeM, // 48px
+      ImageSize.large => AppDimensions.imageSizeLarge, // 80px
+      ImageSize.extraLarge => AppDimensions.iconSizeXl * 1.875, // 120px
+      ImageSize.card => AppDimensions.imageSizeCard, // 70px
+      ImageSize.hero => AppDimensions.imageSizeHero, // 200px
+      ImageSize.thumbnail => AppDimensions.imageSizeThumbnail, // 60px
+      ImageSize.custom => AppDimensions.iconSizeM, // fallback
     };
   }
 
@@ -621,10 +625,10 @@ class UserDisplayWidgets {
 class UserStatusHelper {
   static Color getStatusColor(UserStatus status) {
     return switch (status) {
-      UserStatus.online => AppTheme.successColor,
-      UserStatus.offline => AppTheme.textTertiary,
-      UserStatus.away => AppTheme.warningColor,
-      UserStatus.busy => AppTheme.errorColor,
+      UserStatus.online => AppColors.success,
+      UserStatus.offline => AppColors.textTertiary,
+      UserStatus.away => AppColors.warning,
+      UserStatus.busy => AppColors.error,
     };
   }
 
@@ -638,7 +642,7 @@ class UserStatusHelper {
   }
 
   static Icon getStatusIcon(UserStatus status, {double? size}) {
-    final iconSize = size ?? AppTheme.iconSizeInfo;
+    final iconSize = size ?? AppDimensions.iconSizeM;
     final color = getStatusColor(status);
 
     return switch (status) {

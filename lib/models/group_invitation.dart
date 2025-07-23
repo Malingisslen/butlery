@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import '../core/mixins/json_serializable_mixin.dart';
 
 
 enum GroupInvitationStatus {
@@ -12,7 +13,7 @@ enum GroupInvitationStatus {
   cancelled // Avbruten av avsändare
 }
 
-class GroupInvitation {
+class GroupInvitation with JsonSerializableMixin {
   final String id;
   final String groupId; // Vilken grupp
   final String groupName; // Gruppnamn (cached för UI)
@@ -242,6 +243,7 @@ class GroupInvitation {
   }
 
   /// JSON-serialisering för caching
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -252,10 +254,10 @@ class GroupInvitation {
       'fromUserName': fromUserName,
       'toUserId': toUserId,
       'status': status.name,
-      'sentAt': sentAt.toIso8601String(),
-      'respondedAt': respondedAt?.toIso8601String(),
+      'sentAt': serializeDateTime(sentAt),
+      'respondedAt': serializeDateTime(respondedAt),
       'personalMessage': personalMessage,
-      'expiresAt': expiresAt.toIso8601String(),
+      'expiresAt': serializeDateTime(expiresAt),
     };
   }
 
@@ -272,13 +274,18 @@ class GroupInvitation {
         (s) => s.name == json['status'],
         orElse: () => GroupInvitationStatus.pending,
       ),
-      sentAt: DateTime.parse(json['sentAt'] as String),
-      respondedAt: json['respondedAt'] != null
-          ? DateTime.parse(json['respondedAt'] as String)
-          : null,
+      sentAt: GroupInvitation._deserializeDateTime(json['sentAt']) ?? DateTime.now(),
+      respondedAt: GroupInvitation._deserializeDateTime(json['respondedAt']),
       personalMessage: json['personalMessage'] as String?,
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
+      expiresAt: GroupInvitation._deserializeDateTime(json['expiresAt']) ?? DateTime.now(),
     );
+  }
+
+  /// Helper method for deserializing DateTime from JSON
+  static DateTime? _deserializeDateTime(dynamic value) {
+    if (value is String) return DateTime.parse(value);
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   @override

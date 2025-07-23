@@ -2,17 +2,28 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'dart:async';
-
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../core/utils/logger.dart';
-import '../core/utils/retry_helper.dart';
 import '../repositories/firestore_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
+import 'offline/offline_initialization.dart';
+import 'offline/offline_user_storage.dart';
+import 'offline/offline_legacy_storage.dart';
+import 'offline/offline_sync_manager.dart';
+import 'offline/sync_result.dart';
 
-/// Service för offline-funktionalitet med Hive - USER-SPECIFIC VERSION
+// Export focused components for external usage
+export 'offline/sync_result.dart';
+
+/// Offline Service - Facade using focused offline modules
+/// 
+/// This service has been refactored to use focused components:
+/// - offline_initialization.dart - Hive setup and connectivity monitoring
+/// - offline_user_storage.dart - User-specific storage operations
+/// - offline_legacy_storage.dart - Backward compatibility methods
+/// - offline_sync_manager.dart - Sync operations and retry handling
+/// - sync_result.dart - Result type definitions
 class OfflineService extends ChangeNotifier {
   // Singleton pattern
   static final OfflineService _instance = OfflineService._internal();
@@ -30,558 +41,183 @@ class OfflineService extends ChangeNotifier {
     _authRepository = FirebaseAuthRepository();
   }
 
-  // Hive boxes
-  static const String _recipeBoxName = 'recipes_offline';
-  static const String _syncQueueBoxName = 'sync_queue';
-  late Box<Recipe> _recipeBox;
-  late Box<String> _syncQueueBox;
-
   late FirestoreRepository _firestoreRepository;
   late AuthRepository _authRepository;
 
-  // Connectivity
-  final Connectivity _connectivity = Connectivity();
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  bool _isOnline = true;
-  bool _isInitialized = false;
+  // Focused components
+  late OfflineInitialization _initialization;
+  late OfflineUserStorage _userStorage;
+  late OfflineLegacyStorage _legacyStorage;
+  late OfflineSyncManager _syncManager;
 
-  // NEW: User-specific storage state
+  // User-specific storage state
   String? _currentUserId;
 
-  // 🔄 SYNC STATE
-  bool _isSyncing = false;
-
-  // Getters
-  bool get isOnline => _isOnline;
-  bool get isInitialized => _isInitialized;
-  bool get isSyncing => _isSyncing;
-  Box<Recipe> get recipeBox => _recipeBox;
+  // Getters (safe to call before initialization)
+  bool get isOnline => _isInitializationReady ? _initialization.isOnline : true; // Default to online
+  bool get isInitialized => _isInitializationReady ? _initialization.isInitialized : false;
+  bool get isSyncing => _isSyncManagerReady ? _syncManager.isSyncing : false;
+  Box<Recipe> get recipeBox {
+    if (!_isInitializationReady) {
+      throw StateError('OfflineService not initialized - call initialize() first');
+    }
+    return _initialization.recipeBox;
+  }
   String? get currentUserId => _currentUserId;
 
-  /// VIKTIGA getters för offline_status_icon.dart
-  bool get hasQueuedChanges => _isInitialized && _syncQueueBox.isNotEmpty;
-  int get queuedChangesCount => _isInitialized ? _syncQueueBox.length : 0;
+  // Helper getters to check if components are ready
+  bool get _isInitializationReady {
+    try {
+      return _initialization.isInitialized;
+    } catch (e) {
+      return false; // _initialization not set yet
+    }
+  }
+
+  bool get _isSyncManagerReady {
+    try {
+      // Test if _syncManager field is initialized by accessing isSyncing
+      _syncManager.isSyncing;
+      return true;
+    } catch (e) {
+      return false; // _syncManager not set yet
+    }
+  }
+
+  /// Important getters for offline_status_icon.dart
+  bool get hasQueuedChanges => isInitialized && _isSyncManagerReady && _syncManager.hasQueuedChanges;
+  int get queuedChangesCount => (isInitialized && _isSyncManagerReady) ? _syncManager.queuedChangesCount : 0;
 
   /// Set current user for offline storage
   void setCurrentUser(String? userId) {
     if (_currentUserId != userId) {
       _currentUserId = userId;
+      _legacyStorage.setCurrentUser(userId);
       AppLogger.info(
           '👤 Offline service använder nu user: ${userId ?? "INGEN"}');
       notifyListeners();
     }
   }
 
-  /// Initialisera Hive och offline-service
+  /// Initialize Hive and offline service
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (isInitialized) return;
 
-    AppLogger.info('🗄️ Initialiserar Hive för offline-stöd...');
+    // Initialize components
+    _initialization = OfflineInitialization(
+      onConnectivityChanged: () => notifyListeners(),
+      onReconnected: () => _syncManager.syncPendingChanges(isOnline: isOnline),
+    );
 
-    try {
-      // Initialisera Hive
-      await Hive.initFlutter();
+    await _initialization.initialize();
 
-      // Registrera adapters
-      if (!Hive.isAdapterRegistered(0)) {
-        Hive.registerAdapter(RecipeAdapter());
-      }
+    _userStorage = OfflineUserStorage(
+      recipeBox: _initialization.recipeBox,
+      syncQueueBox: _initialization.syncQueueBox,
+    );
 
-      // Öppna boxes
-      _recipeBox = await Hive.openBox<Recipe>(_recipeBoxName);
-      _syncQueueBox = await Hive.openBox<String>(_syncQueueBoxName);
+    _legacyStorage = OfflineLegacyStorage(
+      recipeBox: _initialization.recipeBox,
+      syncQueueBox: _initialization.syncQueueBox,
+      userStorage: _userStorage,
+    );
 
-      // Starta connectivity monitoring
-      await _initConnectivityMonitoring();
-
-      _isInitialized = true;
-      AppLogger.success(
-        '✅ Hive initialiserad med ${_recipeBox.length} offline recept',
-      );
-    } catch (e) {
-      AppLogger.error('❌ Fel vid Hive-initialisering: $e');
-      rethrow;
-    }
-  }
-
-  /// Initiera connectivity monitoring
-  Future<void> _initConnectivityMonitoring() async {
-    // Kolla initial status
-    final connectivityResult = await _connectivity.checkConnectivity();
-    _updateConnectionStatus(connectivityResult);
-
-    // Lyssna på ändringar
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-      _updateConnectionStatus,
-      onError: (error) {
-        AppLogger.error('❌ Connectivity stream error: $error');
-      },
+    _syncManager = OfflineSyncManager(
+      recipeBox: _initialization.recipeBox,
+      syncQueueBox: _initialization.syncQueueBox,
+      firestoreRepository: _firestoreRepository,
+      authRepository: _authRepository,
+      onSyncStateChanged: () => notifyListeners(),
     );
   }
 
-  /// Uppdatera connection status
-  void _updateConnectionStatus(List<ConnectivityResult> results) {
-    final wasOnline = _isOnline;
-    _isOnline = results.isNotEmpty && results.first != ConnectivityResult.none;
-
-    AppLogger.info('📶 Connection status: ${_isOnline ? "ONLINE" : "OFFLINE"}');
-
-    if (!wasOnline && _isOnline) {
-      AppLogger.info('🔄 Återansluten - startar synkronisering...');
-      _syncPendingChanges();
-    }
-
-    notifyListeners();
-  }
-
-  // ===== USER-SPECIFIC METHODS - PERMANENT SOLUTION =====
+  // ===== USER-SPECIFIC METHODS =====
 
   /// Get recipes for specific user
   List<Recipe> getRecipesForUser(String userId) {
-    if (!_isInitialized) return [];
-
-    try {
-      final userPrefix = '${userId}_';
-      final userRecipes = <Recipe>[];
-
-      // Find all recipes that belong to this user
-      for (final key in _recipeBox.keys) {
-        if (key.toString().startsWith(userPrefix)) {
-          final recipe = _recipeBox.get(key);
-          if (recipe != null) {
-            userRecipes.add(recipe);
-          }
-        }
-      }
-
-      AppLogger.info(
-          '📦 Hittade ${userRecipes.length} offline recept för användare: $userId');
-      return userRecipes;
-    } catch (e) {
-      AppLogger.error('❌ Error getting user recipes: $e');
-      return [];
-    }
+    if (!isInitialized) return [];
+    return _userStorage.getRecipesForUser(userId);
   }
 
   /// Save recipe with user-specific key
   Future<void> saveRecipeOfflineForUser(Recipe recipe, String userId) async {
-    try {
-      // Create user-specific key: "userId_recipeId"
-      final userSpecificKey = '${userId}_${recipe.id}';
-
-      // Save with user-specific key
-      await _recipeBox.put(userSpecificKey, recipe);
-
-      // Handle sync queue with user-specific key
-      if (!_isOnline) {
-        await _syncQueueBox.put(userSpecificKey, userSpecificKey);
-      }
-
-      AppLogger.info(
-          '💾 Recept sparat offline för användare $userId: ${recipe.title}');
-    } catch (e) {
-      AppLogger.error('❌ Fel vid user-specific offline-sparning: $e');
-      rethrow;
-    }
+    return _userStorage.saveRecipeForUser(recipe, userId, isOnline: isOnline);
   }
 
   /// Get specific offline recipe for user
   Recipe? getOfflineRecipeForUser(String recipeId, String userId) {
-    if (!_isInitialized) return null;
-
-    final userSpecificKey = '${userId}_$recipeId';
-    return _recipeBox.get(userSpecificKey);
+    if (!isInitialized) return null;
+    return _userStorage.getRecipeForUser(recipeId, userId);
   }
 
   /// Delete recipe for specific user
-  Future<void> deleteRecipeOfflineForUser(
-      String recipeId, String userId) async {
-    final userSpecificKey = '${userId}_$recipeId';
-    await _recipeBox.delete(userSpecificKey);
-    await _syncQueueBox.delete(userSpecificKey);
-    AppLogger.info(
-        '🗑️ Recept borttaget offline för användare $userId: $recipeId');
+  Future<void> deleteRecipeOfflineForUser(String recipeId, String userId) async {
+    return _userStorage.deleteRecipeForUser(recipeId, userId);
   }
 
   /// Clear data for specific user
   Future<void> clearUserData(String userId) async {
-    if (!_isInitialized) {
+    if (!isInitialized) {
       AppLogger.warning(
           '⚠️ OfflineService inte initialiserad, kan inte rensa user data');
       return;
     }
 
-    try {
-      final userPrefix = '${userId}_';
-      final keysToDelete = <dynamic>[];
-
-      // Find all keys that belong to this user
-      for (final key in _recipeBox.keys) {
-        if (key.toString().startsWith(userPrefix)) {
-          keysToDelete.add(key);
-        }
-      }
-
-      // Delete user-specific recipes
-      for (final key in keysToDelete) {
-        await _recipeBox.delete(key);
-      }
-
-      // Clear sync queue for this user
-      final syncKeysToDelete = <dynamic>[];
-      for (final key in _syncQueueBox.keys) {
-        if (key.toString().startsWith(userPrefix)) {
-          syncKeysToDelete.add(key);
-        }
-      }
-
-      for (final key in syncKeysToDelete) {
-        await _syncQueueBox.delete(key);
-      }
-
-      AppLogger.success(
-          '✅ Rensade offline data för användare: $userId (${keysToDelete.length} recept)');
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Fel vid rensning av user data: $e');
-    }
+    await _userStorage.clearUserData(userId);
+    notifyListeners();
   }
 
   /// Get all users who have offline data
   List<String> getUsersWithOfflineData() {
-    if (!_isInitialized) return [];
-
-    final users = <String>{};
-
-    for (final key in _recipeBox.keys) {
-      final keyStr = key.toString();
-      if (keyStr.contains('_')) {
-        final userId = keyStr.split('_').first;
-        users.add(userId);
-      }
-    }
-
-    return users.toList();
+    if (!isInitialized) return [];
+    return _userStorage.getUsersWithOfflineData();
   }
 
-  // ===== UPDATED LEGACY METHODS - BACKWARD COMPATIBLE =====
+  // ===== LEGACY METHODS - BACKWARD COMPATIBLE =====
 
-  /// Spara recept offline - UPPDATERAD för user support
+  /// Save recipe offline - with user support
   Future<void> saveRecipeOffline(Recipe recipe) async {
-    if (_currentUserId != null) {
-      // Use user-specific storage if user is set
-      await saveRecipeOfflineForUser(recipe, _currentUserId!);
-    } else {
-      // Fallback to old behavior for backward compatibility
-      try {
-        // Spara i Hive FÖRST (så objektet är i en box)
-        await _recipeBox.put(recipe.id, recipe);
-
-        // Nu kan vi säkert markera som modifierad
-        if (_isOnline && recipe.isInBox) {
-          recipe.isModifiedOffline = true;
-          await recipe
-              .save(); // Nu fungerar save() eftersom objektet är i boxen
-        }
-
-        // Lägg till i synk-kö om offline
-        if (!_isOnline) {
-          await _syncQueueBox.put(recipe.id, recipe.id);
-        }
-
-        AppLogger.info('💾 Recept sparat offline (legacy): ${recipe.title}');
-      } catch (e) {
-        AppLogger.error('❌ Fel vid offline-sparning: $e');
-        rethrow;
-      }
-    }
+    return _legacyStorage.saveRecipe(recipe, isOnline: isOnline);
   }
 
-  /// Hämta alla offline recept - UPPDATERAD för user support
+  /// Get all offline recipes - with user support
   List<Recipe> getAllOfflineRecipes() {
-    if (_currentUserId != null) {
-      // Return user-specific recipes if user is set
-      return getRecipesForUser(_currentUserId!);
-    } else {
-      // Fallback to all recipes for backward compatibility
-      return _recipeBox.values.toList();
-    }
+    return _legacyStorage.getAllRecipes();
   }
 
-  /// Hämta specifikt offline recept - UPPDATERAD för user support
+  /// Get specific offline recipe - with user support
   Recipe? getOfflineRecipe(String id) {
-    if (_currentUserId != null) {
-      // Use user-specific lookup if user is set
-      return getOfflineRecipeForUser(id, _currentUserId!);
-    } else {
-      // Fallback to old behavior
-      return _recipeBox.get(id);
-    }
+    return _legacyStorage.getRecipe(id);
   }
 
-  /// Ta bort recept offline - UPPDATERAD för user support
+  /// Delete recipe offline - with user support
   Future<void> deleteRecipeOffline(String id) async {
-    if (_currentUserId != null) {
-      // Use user-specific deletion if user is set
-      await deleteRecipeOfflineForUser(id, _currentUserId!);
-    } else {
-      // Fallback to old behavior
-      await _recipeBox.delete(id);
-      await _syncQueueBox.delete(id);
-      AppLogger.info('🗑️ Recept borttaget offline (legacy): $id');
-    }
+    return _legacyStorage.deleteRecipe(id);
   }
 
-  /// Rensa all offline data - UPPDATERAD för user support
+  /// Clear all offline data - with user support
   Future<void> clearOfflineData() async {
-    if (_currentUserId != null) {
-      // Clear only current user's data if user is set
-      await clearUserData(_currentUserId!);
-    } else {
-      // Clear all data (old behavior)
-      await _recipeBox.clear();
-      await _syncQueueBox.clear();
-      AppLogger.info('🧹 All offline data rensad');
-    }
+    return _legacyStorage.clearAllData();
   }
 
-  /// 🔄 SÄKER: Synkronisera väntande ändringar utan circular dependencies
-  Future<void> _syncPendingChanges() async {
-    if (!_isOnline || _syncQueueBox.isEmpty || _isSyncing) return;
+  // ===== SYNC METHODS =====
 
-    _isSyncing = true;
-    notifyListeners();
-
-    AppLogger.info(
-      '🔄 Synkroniserar ${_syncQueueBox.length} väntande ändringar...',
-    );
-
-    try {
-      final userId = _authRepository.currentUserId;
-      if (userId == null) {
-        AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
-        return;
-      }
-
-      final userRecipesRef =
-          _firestoreRepository.userRecipesCollection(userId);
-
-      final pendingIds = _syncQueueBox.values.toList();
-      int successCount = 0;
-      int failureCount = 0;
-      final List<String> failedRecipes = [];
-
-      for (final id in pendingIds) {
-        Recipe? recipe;
-        try {
-          recipe = _recipeBox.get(id);
-          if (recipe != null && recipe.needsSync) {
-            AppLogger.info('📤 Synkar recept: ${recipe.title}');
-
-            // Use retry logic for Firebase operations
-            await RetryHelper.retryFirebaseOperation(() async {
-              await _firestoreRepository.setDocument(
-                userRecipesRef.doc(recipe!.id),
-                recipe.toFirestore(),
-              );
-            });
-
-            // ✅ SÄKER: Synkningen lyckades
-            recipe.isModifiedOffline = false;
-            recipe.lastSyncedAt = DateTime.now();
-
-            // Spara uppdaterat recept offline
-            if (recipe.isInBox) {
-              await recipe.save();
-            } else {
-              await _recipeBox.put(id, recipe);
-            }
-
-            // Ta bort från sync queue
-            await _syncQueueBox.delete(id);
-            successCount++;
-            AppLogger.success('✅ Synkade recept: ${recipe.title}');
-          } else if (recipe == null) {
-            // ✅ CLEANUP: Ta bort invalid entries från kön
-            await _syncQueueBox.delete(id);
-            AppLogger.info('🗑️ Tog bort invalid sync entry: $id');
-          } else {
-            // Recept behöver inte synkas längre - ta bort från kö
-            await _syncQueueBox.delete(id);
-            AppLogger.info('✅ Recept $id behöver inte synkas längre');
-          }
-        } catch (e) {
-          failureCount++;
-          final recipeTitle = recipe?.title ?? id;
-          failedRecipes.add('$recipeTitle: ${e.toString()}');
-          AppLogger.error('❌ Fel vid synk av $id: $e');
-
-          // ROBUST ERROR HANDLING: Fortsätt med nästa recept
-          continue;
-        }
-      }
-
-      // ✅ DETALJERAD RAPPORTERING
-      if (successCount > 0) {
-        AppLogger.success('🎉 Synkade $successCount recept framgångsrikt!');
-      }
-
-      if (failureCount > 0) {
-        AppLogger.warning('⚠️ $failureCount recept kunde inte synkas:');
-        for (final failure in failedRecipes.take(3)) {
-          AppLogger.warning('  • $failure');
-        }
-        if (failedRecipes.length > 3) {
-          AppLogger.warning('  • ... och ${failedRecipes.length - 3} till');
-        }
-      }
-
-      // ✅ SMART RETRY: Om alla misslyckades, använd exponential backoff
-      if (successCount == 0 && failureCount > 0) {
-        AppLogger.info(
-            '⏰ Alla sync-försök misslyckades, använder exponential backoff...');
-        
-        // Use exponential backoff for retry attempts
-        RetryHelper.retryWithBackoff(() async {
-          if (_isOnline && _syncQueueBox.isNotEmpty) {
-            AppLogger.info('🔄 Retry-försök startar...');
-            await _syncPendingChanges();
-          }
-        }, maxRetries: 3, shouldRetry: (error) {
-          // Only retry if we still have items in the queue
-          return _syncQueueBox.isNotEmpty;
-        });
-      }
-    } catch (e) {
-      AppLogger.error('❌ Kritiskt fel vid synkronisering: $e');
-
-      // ✅ GRACEFUL DEGRADATION: Logga fel men krascha inte appen
-      AppLogger.info(
-          '🛡️ Synkronisering hoppar över denna omgång, försöker igen senare');
-    } finally {
-      _isSyncing = false;
-      notifyListeners();
-    }
-  }
-
-  /// ✅ FÖRBÄTTRAD: Manuell synkronisering med user feedback
+  /// Manual synchronization with user feedback
   Future<SyncResult> syncNow() async {
-    if (_isSyncing) {
-      AppLogger.info('🔄 Synkronisering pågår redan...');
-      return SyncResult(
-        success: false,
-        message: 'Synkronisering pågår redan',
-        isRetry: false,
-      );
-    }
-
-    if (!_isOnline) {
-      AppLogger.warning('⚠️ Kan inte synka offline');
-      return SyncResult(
-        success: false,
-        message: 'Du måste vara online för att synkronisera',
-        isRetry: false,
-      );
-    }
-
-    if (_syncQueueBox.isEmpty) {
-      AppLogger.info('✅ Inga ändringar att synkronisera');
-      return SyncResult(
-        success: true,
-        message: 'Inga väntande ändringar',
-        isRetry: false,
-      );
-    }
-
-    AppLogger.info('🔄 Manuell synkronisering startad...');
-    final itemsToSync = _syncQueueBox.length;
-
-    await _syncPendingChanges();
-
-    final remainingItems = _syncQueueBox.length;
-    final syncedItems = itemsToSync - remainingItems;
-
-    if (remainingItems == 0) {
-      return SyncResult(
-        success: true,
-        message: 'Alla $syncedItems ändringar synkade!',
-        isRetry: false,
-      );
-    } else if (syncedItems > 0) {
-      return SyncResult(
-        success: true,
-        message: '$syncedItems av $itemsToSync synkade, $remainingItems kvar',
-        isRetry: remainingItems > 0,
-      );
-    } else {
-      return SyncResult(
-        success: false,
-        message: 'Synkronisering misslyckades, försöker igen senare',
-        isRetry: true,
-      );
-    }
+    return _syncManager.syncNow(isOnline: isOnline);
   }
 
-  /// Städa upp resurser
+  // ===== RESOURCE MANAGEMENT =====
+
+  /// Clean up resources
   @override
   void dispose() {
-    _connectivitySubscription?.cancel();
+    _initialization.dispose();
     super.dispose();
   }
 
-  /// Stäng Hive boxes
+  /// Close Hive boxes
   Future<void> close() async {
-    await _recipeBox.close();
-    await _syncQueueBox.close();
-    await Hive.close();
-    _isInitialized = false;
-  }
-}
-
-/// Resultat av synkronisering operation
-class SyncResult {
-  final bool success;
-  final String message;
-  final bool isRetry; // Om fler försök behövs
-  final int? syncedCount;
-  final int? failedCount;
-
-  const SyncResult({
-    required this.success,
-    required this.message,
-    required this.isRetry,
-    this.syncedCount,
-    this.failedCount,
-  });
-
-  factory SyncResult.success(String message, {int? syncedCount}) {
-    return SyncResult(
-      success: true,
-      message: message,
-      isRetry: false,
-      syncedCount: syncedCount,
-    );
-  }
-
-  factory SyncResult.partialSuccess(
-    String message, {
-    required int syncedCount,
-    required int failedCount,
-  }) {
-    return SyncResult(
-      success: true,
-      message: message,
-      isRetry: failedCount > 0,
-      syncedCount: syncedCount,
-      failedCount: failedCount,
-    );
-  }
-
-  factory SyncResult.failure(String message, {bool willRetry = false}) {
-    return SyncResult(
-      success: false,
-      message: message,
-      isRetry: willRetry,
-    );
+    await _initialization.close();
   }
 }

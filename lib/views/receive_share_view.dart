@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../services/content_detector_service.dart';
 import '../services/social_media_extractor.dart';
 import '../services/analytics_service.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
 import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt SkeletonLoader
 
 /// View för att ta emot och hantera delningar från andra appar
@@ -212,14 +214,14 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
 
   Widget _buildLoadingView() {
     return Padding(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // ✅ MIGRATION: StateWidget skeleton loader
           StateWidget.skeletonRecipeList(itemCount: 1),
-          SizedBox(height: AppTheme.spacingLg),
-          Text('Analyserar innehåll...', style: AppTheme.subtitleStyle),
+          const SizedBox(height: AppDimensions.spacingL),
+          Text('Analyserar innehåll...', style: AppTextStyles.titleMedium),
         ],
       ),
     );
@@ -227,18 +229,22 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
 
   Widget _buildExtractingView() {
     return Padding(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          AppTheme.mediumLoadingIndicator(),
-          SizedBox(height: AppTheme.spacingLg),
+          SizedBox(
+            width: AppDimensions.iconSizeL,
+            height: AppDimensions.iconSizeL,
+            child: const CircularProgressIndicator(),
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(
             'Hämtar recept från ${_getPlatformName()}...',
-            style: AppTheme.subtitleStyle,
+            style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: AppTheme.spacingSm),
+          SizedBox(height: AppDimensions.spacingS),
           Text(
             'Detta kan ta några sekunder',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -252,16 +258,16 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
 
   Widget _buildContentView() {
     return Padding(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDetectionHeader(),
-          SizedBox(height: AppTheme.spacingLg),
+          const SizedBox(height: AppDimensions.spacingL),
           _buildContentPreview(),
           const Spacer(),
           _buildActionButtons(),
-          SizedBox(height: AppTheme.spacingMd),
+          SizedBox(height: AppDimensions.spacingL),
         ],
       ),
     );
@@ -276,17 +282,17 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       case ContentType.socialMediaUrl:
         icon = Icons.link;
         title = 'URL från ${_getPlatformName()}';
-        color = AppTheme.primaryColor;
+        color = AppColors.primaryBlue;
         break;
       case ContentType.recipeText:
         icon = Icons.restaurant_menu;
         title = 'Recepttext detekterad!';
-        color = AppTheme.successColor;
+        color = AppColors.success;
         break;
       case ContentType.recipeUrl:
         icon = Icons.public;
         title = 'Receptlänk detekterad';
-        color = AppTheme.primaryColor;
+        color = AppColors.primaryBlue;
         break;
       default:
         icon = Icons.text_fields;
@@ -297,21 +303,21 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(AppTheme.spacingSm),
+          padding: EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
-            borderRadius: AppTheme.smallRadius,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
-          child: Icon(icon, color: color, size: AppTheme.iconSizeAction),
+          child: Icon(icon, color: color, size: AppDimensions.iconSizeAction),
         ),
-        SizedBox(width: AppTheme.spacingMd),
+        SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppTheme.sectionHeaderStyle),
+              Text(title, style: AppTextStyles.titleLarge),
               if (_detectionResult.extractedUrl != null) ...[
-                SizedBox(height: AppTheme.spacingXxs),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   _detectionResult.extractedUrl!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -330,10 +336,10 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
 
   Widget _buildContentPreview() {
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: AppTheme.mediumRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: Theme.of(context).dividerColor, width: 1),
       ),
       constraints: BoxConstraints(
@@ -356,28 +362,28 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
           children: [
             if (_extractionError != null) ...[
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingMd),
+                padding: EdgeInsets.all(AppDimensions.spacingL),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.mediumRadius,
-                  border: Border.all(color: AppTheme.errorColor),
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.error),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: AppTheme.errorColor),
-                    SizedBox(width: AppTheme.spacingSm),
+                    Icon(Icons.error_outline, color: AppColors.error),
+                    SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
                         _extractionError!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.errorColor,
+                              color: AppColors.error,
                             ),
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: AppTheme.spacingMd),
+              SizedBox(height: AppDimensions.spacingL),
             ],
             ElevatedButton.icon(
               onPressed: _extractFromSocialMedia,
@@ -387,16 +393,37 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
                     ? 'Försök igen'
                     : 'Hämta recept automatiskt',
               ),
-              style: AppTheme.primaryButtonStyle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.cardWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+              ),
             ),
-            SizedBox(height: AppTheme.spacingMd),
+            SizedBox(height: AppDimensions.spacingL),
             Text('eller', style: Theme.of(context).textTheme.bodySmall),
-            SizedBox(height: AppTheme.spacingSm),
+            SizedBox(height: AppDimensions.spacingS),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
               label: const Text('Kopiera manuellt'),
-              style: AppTheme.secondaryButtonStyle,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryBlue,
+                backgroundColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+                side: BorderSide(color: AppColors.primaryBlue),
+              ),
             ),
           ],
         );
@@ -410,12 +437,22 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
               style: Theme.of(context).textTheme.titleSmall,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppTheme.spacingMd),
+            SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToUrlImport,
               icon: const Icon(Icons.download),
               label: const Text('Hämta recept från webbsida'),
-              style: AppTheme.primaryButtonStyle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.cardWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+              ),
             ),
           ],
         );
@@ -425,32 +462,42 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
         return Column(
           children: [
             Container(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
+              padding: EdgeInsets.all(AppDimensions.spacingL),
               decoration: BoxDecoration(
-                color: AppTheme.successColor.withValues(alpha: 0.1),
-                borderRadius: AppTheme.mediumRadius,
+                color: AppColors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle, color: AppTheme.successColor),
-                  SizedBox(width: AppTheme.spacingSm),
+                  Icon(Icons.check_circle, color: AppColors.success),
+                  SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
                       'Recepttext detekterad! Vi kan importera detta.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.successColor,
+                            color: AppColors.success,
                           ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: AppTheme.spacingMd),
+            SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.arrow_forward),
               label: const Text('Fortsätt med import'),
-              style: AppTheme.primaryButtonStyle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.cardWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+              ),
             ),
           ],
         );
@@ -464,12 +511,23 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppTheme.spacingMd),
+            SizedBox(height: AppDimensions.spacingL),
             OutlinedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.edit),
               label: const Text('Försök ändå'),
-              style: AppTheme.secondaryButtonStyle,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryBlue,
+                backgroundColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                ),
+                side: BorderSide(color: AppColors.primaryBlue),
+              ),
             ),
           ],
         );

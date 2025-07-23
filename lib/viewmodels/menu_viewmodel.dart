@@ -5,18 +5,22 @@ import 'package:flutter/foundation.dart';
 import '../constants/icon_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/menu_service.dart';
 import '../services/permission_service.dart';
+import '../services/unified/unified_friends_service.dart';
+import '../services/unified/operations/social_menu_operations.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// ViewModel för VeckomenyView
 /// ✅ INTEGRERAD med social import för seamless menu management
 class MenuViewModel extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
+  late final SocialMenuOperations _socialMenuOps;
 
   // BEFINTLIG State
   Map<String, List<Recipe>> _menu = {};
@@ -33,6 +37,12 @@ class MenuViewModel extends ChangeNotifier {
   })  : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
         _menuService = menuService ?? sl<MenuService>() {
     // ✅ NY INIT
+    
+    // Initialize social menu operations
+    _socialMenuOps = SocialMenuOperations(
+      firestore: FirebaseFirestore.instance,
+      friendsService: sl<UnifiedFriendsService>(),
+    );
 
     // Lyssna på ändringar från UnifiedRecipeService
     _recipeService.addListener(_onRecipesChanged);
@@ -50,14 +60,14 @@ class MenuViewModel extends ChangeNotifier {
   String get lastPrompt => _lastPrompt;
 
   int get totalRecipeCount =>
-      _menu.values.fold(0, (sum, recipes) => sum + recipes.length);
+      _menu.values.fold(0, (total, recipes) => total + recipes.length);
 
   List<Recipe> get availableRecipes {
     // Ensure service is initialized and get unified recipes
     if (!_recipeService.isInitialized) {
       return [];
     }
-    return _recipeService.legacyRecipes;
+    return _recipeService.recipes;
   }
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 
@@ -190,17 +200,21 @@ class MenuViewModel extends ChangeNotifier {
           selectedFriendIds != null &&
           selectedFriendIds.isNotEmpty) {
         try {
-          // TODO: Implement social sharing through UnifiedFriendsService
-          // await _socialService.shareMenuToFriends(
-          //   menu: savedMenu.menu,
-          //   friendUserIds: selectedFriendIds,
-          //   message: shareMessage?.trim(),
-          //   customTitle: savedMenu.name,
-          // );
-          debugPrint('Social sharing not yet implemented');
+          final shareSuccess = await _socialMenuOps.shareMenuWithFriends(
+            menu: savedMenu.menu,
+            friendUserIds: selectedFriendIds,
+            message: shareMessage?.trim(),
+            customTitle: savedMenu.name,
+          );
 
-          AppLogger.success(
-              '✅ Meny sparad OCH delad med ${selectedFriendIds.length} vänner: $menuName');
+          if (shareSuccess) {
+            AppLogger.success(
+                '✅ Meny sparad OCH delad med ${selectedFriendIds.length} vänner: $menuName');
+          } else {
+            AppLogger.warning(
+                '⚠️ Meny sparad lokalt, men social delning misslyckades');
+            _setError('Meny sparad, men kunde inte dela med vänner');
+          }
         } catch (e) {
           AppLogger.warning(
               '⚠️ Meny sparad lokalt, men social delning misslyckades: $e');
@@ -327,6 +341,93 @@ class MenuViewModel extends ChangeNotifier {
     await _loadAllMenus();
   }
 
+  // ===== SOCIAL MENU METHODS =====
+
+  /// Share current menu with selected friends
+  Future<bool> shareCurrentMenuWithFriends({
+    required List<String> friendUserIds,
+    String? message,
+    String? customTitle,
+  }) async {
+    if (!hasMenu) {
+      _setError('Ingen meny att dela');
+      return false;
+    }
+
+    try {
+      return await _socialMenuOps.shareMenuWithFriends(
+        menu: _menu,
+        friendUserIds: friendUserIds,
+        message: message,
+        customTitle: customTitle,
+      );
+    } catch (e) {
+      _setError('Kunde inte dela meny: $e');
+      return false;
+    }
+  }
+
+  /// Share current menu with friend group/category
+  Future<bool> shareCurrentMenuWithGroup({
+    required String categoryId,
+    String? message,
+    String? customTitle,
+  }) async {
+    if (!hasMenu) {
+      _setError('Ingen meny att dela');
+      return false;
+    }
+
+    try {
+      return await _socialMenuOps.shareMenuWithGroup(
+        menu: _menu,
+        categoryId: categoryId,
+        message: message,
+        customTitle: customTitle,
+      );
+    } catch (e) {
+      _setError('Kunde inte dela meny med grupp: $e');
+      return false;
+    }
+  }
+
+  /// Get menus shared with current user (not yet imported)
+  Future<List<Map<String, dynamic>>> getAvailableSharedMenus() async {
+    try {
+      final sharedMenus = await _socialMenuOps.getMenusSharedWithMe();
+      // Filter out already imported menus
+      return sharedMenus.where((menu) => menu['isImported'] != true).toList();
+    } catch (e) {
+      AppLogger.error('Failed to get available shared menus', e);
+      return [];
+    }
+  }
+
+  /// Import shared menu
+  Future<bool> importSharedMenu(String sharedMenuId) async {
+    try {
+      final success = await _socialMenuOps.importSharedMenu(sharedMenuId);
+      if (success) {
+        // Refresh saved menus to show newly imported menu
+        await _loadAllMenus();
+      }
+      return success;
+    } catch (e) {
+      _setError('Kunde inte importera meny: $e');
+      return false;
+    }
+  }
+
+  /// Mark shared menu as viewed
+  Future<void> markSharedMenuAsViewed(String sharedMenuId) async {
+    await _socialMenuOps.markMenuAsViewed(sharedMenuId);
+  }
+
+  /// Get sharing statistics
+  Future<Map<String, dynamic>> getSharingStats() async {
+    return await _socialMenuOps.getSharingStats();
+  }
+
   // ===== NYA METODER - Social Integration =====
 
   /// ✅ NY: Ladda alla menyer (lokala + importerade)
@@ -408,26 +509,30 @@ class MenuViewModel extends ChangeNotifier {
 
       final importedMenus = <SavedMenuInfo>[];
 
-      // TODO: Implement social menu loading through UnifiedFriendsService
-      // 🚀 PERFORMANCE FIX: Skip loading imported menus if social content hasn't been loaded yet
-      // This prevents triggering Firebase queries during app startup
-      // if (!_socialService.hasLoadedContent) {
-      //   AppLogger.info('🚀 Skipping imported menus - social content not loaded yet');
-      //   return [];
-      // }
-
       // Hämta importerade menyer från social service
-      const List<dynamic> sharedMenus = []; // Placeholder until social features implemented
+      final sharedMenus = await _socialMenuOps.getMenusSharedWithMe();
+      
       for (final sharedMenu in sharedMenus) {
-        if (sharedMenu.isImportedBy(currentUserId)) {
+        // Only include imported menus
+        if (sharedMenu['isImported'] == true) {
+          // Handle Firebase Timestamp
+          DateTime sharedDate;
+          final sharedAtData = sharedMenu['sharedAt'];
+          if (sharedAtData is Timestamp) {
+            sharedDate = sharedAtData.toDate();
+          } else if (sharedAtData is DateTime) {
+            sharedDate = sharedAtData;
+          } else {
+            sharedDate = DateTime.now(); // Fallback
+          }
+
           importedMenus.add(SavedMenuInfo(
-            key:
-                'imported_menu_${sharedMenu.id}', // Special key för importerade
-            name: sharedMenu.menuTitle,
-            savedDate: sharedMenu.sharedAt, // Använd delningsdatum
-            recipeCount: sharedMenu.totalRecipeCount,
-            comment: sharedMenu.shareMessage ?? '',
-            originalAuthor: sharedMenu.sharedByDisplayName,
+            key: 'imported_menu_${sharedMenu['id']}', // Special key för importerade
+            name: sharedMenu['title'] ?? 'Namnlös meny',
+            savedDate: sharedDate, // Använd delningsdatum
+            recipeCount: sharedMenu['totalRecipes'] ?? 0,
+            comment: sharedMenu['description'] ?? '',
+            originalAuthor: sharedMenu['sharedByDisplayName'] ?? 'Okänd användare',
             isModified: false,
             isOwned: false, // Inte ägd av användaren
           ));
@@ -446,32 +551,34 @@ class MenuViewModel extends ChangeNotifier {
     try {
       if (!menuKey.startsWith('imported_menu_')) return null;
 
-      // TODO: Implement social menu lookup through UnifiedFriendsService
-      // final sharedMenuId = menuKey.replaceFirst('imported_menu_', '');
-      // final sharedMenu = _socialService.menusSharedWithMe
-      //     .where((m) => m.id == sharedMenuId)
-      //     .firstOrNull;
-      const dynamic sharedMenu = null; // Placeholder until social features implemented
+      final sharedMenuId = menuKey.replaceFirst('imported_menu_', '');
+      final sharedMenuData = await _socialMenuOps.getSharedMenuData(sharedMenuId);
 
-      if (sharedMenu == null) return null;
+      if (sharedMenuData == null) return null;
 
-      final currentUserId = sl<PermissionService>().currentUserId;
-      if (currentUserId == null || !sharedMenu.isImportedBy(currentUserId)) {
-        return null;
+      // Handle Firebase Timestamp
+      DateTime sharedDate;
+      final sharedAtData = sharedMenuData['sharedAt'];
+      if (sharedAtData is Timestamp) {
+        sharedDate = sharedAtData.toDate();
+      } else if (sharedAtData is DateTime) {
+        sharedDate = sharedAtData;
+      } else {
+        sharedDate = DateTime.now(); // Fallback
       }
 
       // Skapa SavedMenuData från SharedMenu
       return SavedMenuData(
-        name: sharedMenu.menuTitle,
-        savedDate: sharedMenu.sharedAt,
-        recipeCount: sharedMenu.totalRecipeCount,
-        menu: sharedMenu.menuSnapshot,
-        lastPrompt: 'Importerad från ${sharedMenu.sharedByDisplayName}',
-        comment: sharedMenu.shareMessage ?? '',
-        originalAuthor: sharedMenu.sharedByDisplayName,
-        originalAuthorId: sharedMenu.sharedByUserId,
+        name: sharedMenuData['title'] ?? 'Namnlös meny',
+        savedDate: sharedDate,
+        recipeCount: sharedMenuData['totalRecipes'] ?? 0,
+        menu: sharedMenuData['menu'] as Map<String, List<Recipe>>? ?? {},
+        lastPrompt: 'Importerad från ${sharedMenuData['sharedByDisplayName'] ?? 'Okänd användare'}',
+        comment: sharedMenuData['description'] ?? '',
+        originalAuthor: sharedMenuData['sharedByDisplayName'],
+        originalAuthorId: sharedMenuData['sharedByUserId'],
         isModified: false,
-        firebaseId: sharedMenu.id,
+        firebaseId: sharedMenuData['id'],
       );
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av importerad meny: $e');

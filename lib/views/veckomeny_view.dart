@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // Models
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 import '../models/shared_menu.dart';
 
@@ -21,7 +21,12 @@ import '../widgets/common/universal_share_dialog.dart';
 import '../widgets/common/input_components.dart';
 
 // Theme
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+
+// Utils
+import '../core/utils/snackbar_utils.dart';
 
 // Core
 import '../core/injection.dart';
@@ -91,12 +96,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final viewModel = context.read<MenuViewModel>();
 
     if (!viewModel.hasMenu) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Skapa en meny först innan du kan spara den'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan spara den');
       return;
     }
 
@@ -126,13 +126,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veckomeny delad!'),
-          backgroundColor: AppTheme.successColor,
-          duration: AppTheme.wait2s,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Veckomeny delad!');
     }
   }
 
@@ -141,12 +135,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     // Kontrollera att meny finns
     if (!menuViewModel.hasMenu) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Skapa en meny först innan du kan dela den'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan dela den');
       return;
     }
 
@@ -175,12 +164,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     // Kontrollera att meny finns
     if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Skapa en meny först innan du kan skapa inköpslista'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
+      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan skapa inköpslista');
       return;
     }
 
@@ -209,7 +193,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppColors.error,
             ),
             child: const Text('Avsluta'),
           ),
@@ -240,7 +224,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         actions: [
           // ✨ NY: Ladda meny-knapp
           IconButton(
-            icon: AppTheme.actionIcon(context, Icons.folder_open),
+            icon: Icon(Icons.folder_open, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
             onPressed: _showLoadMenuBottomSheet,
             tooltip: 'Ladda sparad meny',
           ),
@@ -248,7 +232,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // ✨ NY: Spara meny-knapp (endast när meny finns)
           if (viewModel.hasMenu)
             IconButton(
-              icon: AppTheme.actionIcon(context, Icons.save),
+              icon: Icon(Icons.save, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
               onPressed: _showSaveMenuDialog,
               tooltip: 'Spara meny',
             ),
@@ -256,7 +240,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // ✨ NY: Enhanced social share ikon
           if (viewModel.hasMenu)
             IconButton(
-              icon: AppTheme.actionIcon(context, Icons.people_outline),
+              icon: Icon(Icons.people_outline, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
               onPressed: _showSocialMenuShareDialog,
               tooltip: _friendsService.friends.isEmpty
                   ? 'Lägg till vänner för att dela'
@@ -266,7 +250,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // BEFINTLIG: Regular share button
           if (viewModel.hasMenu)
             IconButton(
-              icon: AppTheme.actionIcon(context, Icons.share),
+              icon: Icon(Icons.share, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
               onPressed: _shareMenu,
               tooltip: 'Dela veckomeny',
             ),
@@ -274,7 +258,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // Clear menu button
           if (viewModel.hasMenu)
             IconButton(
-              icon: AppTheme.actionIcon(context, Icons.clear),
+              icon: Icon(Icons.clear, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
               onPressed: _clearMenu,
               tooltip: 'Rensa meny',
             ),
@@ -282,17 +266,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // Error indicator
           if (viewModel.hasError)
             IconButton(
-              icon: AppTheme.errorIcon(context),
+              icon: Icon(Icons.error, color: AppColors.error),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.error!),
-                    action: SnackBarAction(
-                      label: 'Stäng',
-                      onPressed: viewModel.clearError,
-                    ),
-                  ),
-                );
+                SnackBarUtils.showError(context, viewModel.error!);
               },
               tooltip: 'Visa fel',
             ),
@@ -302,16 +278,16 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingSm),
+                  padding: EdgeInsets.all(AppDimensions.spacingS),
                   child: Column(
                     children: [
                       // Prompt-input
                       _buildPromptInput(viewModel),
-                      SizedBox(height: AppTheme.spacingSmPlus),
+                      SizedBox(height: AppDimensions.spacingL),
 
                       // Generera-knapp
                       _buildGenerateButton(viewModel),
-                      AppTheme.mediumGap,
+                      const SizedBox(height: AppDimensions.spacingXl),
                     ],
                   ),
                 ),
@@ -319,7 +295,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingSm,
+                      horizontal: AppDimensions.spacingS,
                     ),
                     child: _buildMenuContent(viewModel),
                   ),
@@ -330,22 +306,22 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             // Loading overlay
             if (viewModel.isGenerating)
               Container(
-                color: AppTheme.overlayLight,
+                color: AppColors.neutralDark.withValues(alpha: 0.4),
                 child: Center(
                   child: Container(
-                    padding: AppTheme.cardPadding,
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
-                      borderRadius: AppTheme.largeRadius,
+                      color: AppColors.cardWhite,
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppTheme.mediumLoadingIndicator(),
-                        AppTheme.smallGap,
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: AppDimensions.spacingM),
                         Text(
                           'Genererar meny...',
-                          style: AppTheme.subtitleStyle,
+                          style: AppTextStyles.titleMedium,
                         ),
                       ],
                     ),
@@ -361,7 +337,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 onPressed: _showShoppingListSelector, // ✅ MIGRERAD METOD
                 icon: const Icon(Icons.shopping_cart),
                 label: const Text('Till inköpslista'),
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: AppColors.primaryBlue,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
               )
             : null,
@@ -371,10 +347,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   Widget _buildPromptInput(MenuViewModel viewModel) {
     return Container(
-      padding: AppTheme.cardPadding,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: AppTheme.mediumRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,31 +359,31 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             children: [
               Icon(
                 Icons.restaurant_menu,
-                size: AppTheme.iconSizeAction,
+                size: AppDimensions.iconSizeAction,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              SizedBox(width: AppTheme.spacingSm),
+              SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Vad vill du ha för meny?',
-                style: AppTheme.formLabelStyle.copyWith(
+                style: AppTextStyles.labelMedium.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           TextField(
             controller: _promptController,
             enabled: !viewModel.isGenerating,
             style: Theme.of(context).textTheme.bodyMedium,
             decoration: InputDecoration(
               hintText: 'Ex: 3 middagar, 2 luncher och 1 frukost',
-              hintStyle: AppTheme.inputHintStyle,
+              hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
               border: const OutlineInputBorder(),
               prefixIcon: const Icon(Icons.edit),
               suffixIcon: _promptController.text.isNotEmpty
                   ? IconButton(
-                      icon: AppTheme.actionIcon(context, Icons.clear),
+                      icon: Icon(Icons.clear, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                       onPressed: () {
                         _promptController.clear();
                       },
@@ -422,29 +398,48 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Widget _buildGenerateButton(MenuViewModel viewModel) {
-    return SizedBox(
-      width: double.infinity,
-      height: AppTheme.buttonHeight,
+    return Center(
       child: ElevatedButton.icon(
-        onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
-            ? _generateMenu
-            : null,
-        icon: viewModel.isGenerating
-            ? AppTheme.smallLoadingIndicator()
-            : const Icon(Icons.restaurant_menu),
-        label: Text(
-          viewModel.isGenerating
-              ? 'Genererar...'
-              : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
-        ),
-        style: AppTheme.primaryButtonStyle,
+          onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
+              ? _generateMenu
+              : null,
+          icon: viewModel.isGenerating
+              ? SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.neutralLight,
+                  ),
+                )
+              : const Icon(Icons.restaurant_menu),
+          label: Text(
+            viewModel.isGenerating
+                ? 'Genererar...'
+                : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.neutralLight,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+              vertical: AppDimensions.paddingM,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            ),
+          ),
       ),
     );
   }
 
   Widget _buildMenuContent(MenuViewModel viewModel) {
     if (!viewModel.hasMenu) {
-      return StateWidget.noMenu();
+      return StateWidget.empty(
+        title: 'Ingen meny genererad ännu',
+        subtitle: 'Skriv vad du vill ha eller tryck på knappen nedan',
+        icon: Icons.clear, // Use clear as "no icon" marker
+      );
     }
 
     return ListView(
@@ -459,27 +454,27 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ],
 
         // Extra padding för floating button
-        SizedBox(height: AppTheme.spacingXxl + AppTheme.spacingMd),
+        SizedBox(height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
       ],
     );
   }
 
   Widget _buildMenuSummary(MenuViewModel viewModel) {
     return Container(
-      padding: AppTheme.cardPadding,
-      margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      margin: EdgeInsets.only(bottom: AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: AppTheme.mediumRadius,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(
         children: [
           Icon(
             Icons.restaurant,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
-            size: AppTheme.iconSizeAction,
+            size: AppDimensions.iconSizeAction,
           ),
-          SizedBox(width: AppTheme.spacingSm),
+          SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,14 +508,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+          padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
           child: Row(
             children: [
               Expanded(
-                child: Text(category, style: AppTheme.sectionHeaderStyle),
+                child: Text(category, style: AppTextStyles.titleLarge),
               ),
               IconButton(
-                icon: AppTheme.actionIcon(context, Icons.refresh),
+                icon: Icon(Icons.refresh, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                 onPressed: viewModel.isGenerating
                     ? null
                     : () => viewModel.regenerateSection(category),
@@ -530,18 +525,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ),
         ),
         for (final recipe in recipes)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: AppTheme.spacingXs),
-            child: ContentCard.compactRecipe(
-              recipe: recipe,
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/receptDetalj',
-                  arguments: recipe,
-                );
-              },
-            ),
+          ContentCard.compactRecipe(
+            recipe: recipe,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/receptDetalj',
+                arguments: recipe,
+              );
+            },
           ),
       ],
     );

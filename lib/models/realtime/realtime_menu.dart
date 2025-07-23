@@ -1,7 +1,7 @@
 // lib/models/realtime/realtime_menu.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../recipe.dart';
+import '../recipe_unified.dart';
 import '../permissions/resource_permission.dart';
 import 'realtime_resource.dart';
 
@@ -771,7 +771,7 @@ class RealtimeMenu extends RealtimeResource {
       final categoryName = entry.key;
       final recipes = entry.value;
       menuData[categoryName] =
-          recipes.map((recipe) => recipe.toFirestore(isNested: true)).toList();
+          recipes.map((recipe) => recipe.toFirestore()).toList();
     }
 
     return {
@@ -800,20 +800,26 @@ class RealtimeMenu extends RealtimeResource {
 
       final recipes = recipesData
           .map((recipeData) => Recipe(
-                title: recipeData['title'] as String? ?? '',
-                description: recipeData['description'] as String? ?? '',
-                portions: recipeData['portions'] as int?,
-                timeMinutes: recipeData['timeMinutes'] as int?,
-                ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-                instructions:
-                    List<String>.from(recipeData['instructions'] ?? []),
-                tags: recipeData['tags'] != null
-                    ? List<String>.from(recipeData['tags'])
-                    : null,
-                rating: (recipeData['rating'] as num?)?.toDouble(),
-                imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-                mealType: recipeData['mealType'] as String? ?? 'Middag',
-                sourceUrl: recipeData['sourceUrl'] as String?,
+                core: RecipeCore(
+                  id: recipeData['id'] as String? ?? '',
+                  title: recipeData['title'] as String? ?? '',
+                  description: recipeData['description'] as String? ?? '',
+                  ingredients: List<String>.from(recipeData['ingredients'] ?? []),
+                  instructions: List<String>.from(recipeData['instructions'] ?? []),
+                  imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
+                  mealType: recipeData['mealType'] as String? ?? 'Middag',
+                  portions: recipeData['portions'] as int?,
+                  timeMinutes: recipeData['timeMinutes'] as int?,
+                  rating: (recipeData['rating'] as num?)?.toDouble(),
+                  tags: recipeData['tags'] != null
+                      ? List<String>.from(recipeData['tags'])
+                      : null,
+                  sourceUrl: recipeData['sourceUrl'] as String?,
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                  createdBy: '',
+                ),
+                type: RecipeType.personal,
               ))
           .toList();
 
@@ -858,10 +864,7 @@ class RealtimeMenu extends RealtimeResource {
       // Skapa kopior av recepten med ny attribution
       final personalRecipes = recipes
           .map((recipe) => recipe.copyWith(
-                id: '', // Nytt ID genereras
                 sourceUrl: 'Delad meny från $ownerDisplayName',
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
                 lastCookedAt: null,
               ))
           .toList();

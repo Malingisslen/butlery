@@ -3,8 +3,14 @@
 import 'package:flutter/material.dart';
 import '../../models/user_profile.dart';
 import '../../widgets/user/user_display_widgets.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../../widgets/common/navigation_components.dart';
+import '../../core/dialogs/dialog_factory.dart';
+import '../../core/utils/snackbar_utils.dart';
+import '../../viewmodels/friends_viewmodel.dart';
+import '../../core/injection.dart';
 
 /// Enkel vänprofilvy för att visa väninformation
 class FriendProfileView extends StatelessWidget {
@@ -20,44 +26,35 @@ class FriendProfileView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(friend.displayName),
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.neutralLight,
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.neutralLight,
       ),
       body: SingleChildScrollView(
-        padding: AppTheme.screenPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           children: [
             // Avatar och grundläggande info
             Center(
               child: Column(
                 children: [
-                  UserDisplayWidgets.editableAvatar(
+                  UserDisplayWidgets.avatar(
                     imageUrl: friend.avatarUrl,
                     displayName: friend.displayName,
-                    onEditTap: () {
-                      // För vänprofiler - visa bara ett meddelande
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Kan inte redigera vänners profiler'),
-                          backgroundColor: AppTheme.warningColor,
-                        ),
-                      );
-                    },
+                    size: ImageSize.extraLarge,
                   ),
-                  SizedBox(height: AppTheme.spacingMd),
+                  SizedBox(height: AppDimensions.spacingL),
                   Text(
                     friend.displayName,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    style: AppTextStyles.headlineMedium.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                   if (friend.bio?.isNotEmpty == true) ...[
-                    SizedBox(height: AppTheme.spacingSm),
+                    SizedBox(height: AppDimensions.spacingS),
                     Text(
                       friend.bio!,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                            color: AppColors.textMedium,
                           ),
                       textAlign: TextAlign.center,
                     ),
@@ -66,22 +63,22 @@ class FriendProfileView extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: AppTheme.spacingLg),
+            const SizedBox(height: AppDimensions.spacingL),
 
             // Statistik kort
             Card(
               child: Padding(
-                padding: EdgeInsets.all(AppTheme.spacingMd),
+                padding: EdgeInsets.all(AppDimensions.spacingL),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Statistik',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: AppTextStyles.titleLarge.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    SizedBox(height: AppTheme.spacingMd),
+                    SizedBox(height: AppDimensions.spacingL),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -104,26 +101,26 @@ class FriendProfileView extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: AppTheme.spacingMd),
+            SizedBox(height: AppDimensions.spacingL),
 
             // Aktivitet kort
             Card(
               child: Padding(
-                padding: EdgeInsets.all(AppTheme.spacingMd),
+                padding: EdgeInsets.all(AppDimensions.spacingL),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Aktivitet',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: AppTextStyles.titleLarge.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    SizedBox(height: AppTheme.spacingMd),
+                    SizedBox(height: AppDimensions.spacingL),
                     ListTile(
                       leading: Icon(
                         Icons.access_time,
-                        color: AppTheme.primaryColor,
+                        color: AppColors.primaryBlue,
                       ),
                       title: const Text('Senast aktiv'),
                       subtitle: Text(friend.lastActiveText),
@@ -131,7 +128,7 @@ class FriendProfileView extends StatelessWidget {
                     ListTile(
                       leading: Icon(
                         Icons.calendar_today,
-                        color: AppTheme.primaryColor,
+                        color: AppColors.primaryBlue,
                       ),
                       title: const Text('Medlem sedan'),
                       subtitle: Text(friend.memberSinceText),
@@ -141,31 +138,48 @@ class FriendProfileView extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: AppTheme.spacingLg),
+            const SizedBox(height: AppDimensions.spacingL),
 
             // Action buttons
-            Row(
+            Column(
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Meddelandefunktion kommer snart! 💌'),
-                          backgroundColor: AppTheme.warningColor,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.message),
-                    label: const Text('Skicka meddelande'),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Meddelandefunktion kommer snart! 💌'),
+                              backgroundColor: AppColors.warning,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.message),
+                        label: const Text('Skicka meddelande'),
+                      ),
+                    ),
+                    SizedBox(width: AppDimensions.spacingL),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () => _showRecipeSelection(context),
+                        icon: const Icon(Icons.share),
+                        label: const Text('Dela recept'),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: AppTheme.spacingMd),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => _showRecipeSelection(context),
-                    icon: const Icon(Icons.share),
-                    label: const Text('Dela recept'),
+                SizedBox(height: AppDimensions.spacingM),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showRemoveFriendDialog(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: BorderSide(color: AppColors.error),
+                    ),
+                    icon: const Icon(Icons.person_remove),
+                    label: const Text('Ta bort vän'),
                   ),
                 ),
               ],
@@ -184,6 +198,26 @@ class FriendProfileView extends StatelessWidget {
     );
   }
 
+  Future<void> _showRemoveFriendDialog(BuildContext context) async {
+    final shouldRemove = await DialogFactory.showDeleteConfirmation(
+      context,
+      itemName: friend.displayName,
+      itemType: 'vän från din vänlista',
+    );
+
+    if (shouldRemove == true && context.mounted) {
+      final viewModel = sl<FriendsViewModel>();
+      final success = await viewModel.removeFriend(friend.uid);
+      if (success && context.mounted) {
+        SnackBarUtils.showSuccess(
+          context,
+          '${friend.displayName} borttagen från vänlista',
+        );
+        Navigator.of(context).pop(); // Go back to friends list
+      }
+    }
+  }
+
   Widget _buildStatItem(
     BuildContext context,
     String label,
@@ -194,21 +228,21 @@ class FriendProfileView extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: AppTheme.primaryColor,
-          size: AppTheme.iconSizeDisplay,
+          color: AppColors.primaryBlue,
+          size: AppDimensions.iconSizeXl,
         ),
-        SizedBox(height: AppTheme.spacingXs),
+        SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppTheme.primaryColor,
+          style: AppTextStyles.headlineMedium.copyWith(
+                color: AppColors.primaryBlue,
                 fontWeight: FontWeight.bold,
               ),
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+          style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textMedium,
               ),
         ),
       ],

@@ -1,9 +1,10 @@
 // lib/models/user_profile.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/mixins/json_serializable_mixin.dart';
 
 
-class UserProfile {
+class UserProfile with JsonSerializableMixin {
   final String uid;
   final String displayName;
   final String email;
@@ -16,6 +17,11 @@ class UserProfile {
   final DateTime joinedAt;
   final DateTime lastActiveAt;
   final bool isOnline;
+  
+  // Notification system fields
+  final String? fcmToken;           // Firebase Cloud Messaging token
+  final DateTime? fcmTokenUpdatedAt; // When token was last updated
+  final bool notificationsEnabled;  // Master notification toggle
 
   UserProfile({
     required this.uid,
@@ -30,6 +36,10 @@ class UserProfile {
     required this.joinedAt,
     required this.lastActiveAt,
     this.isOnline = false,
+    // Notification fields
+    this.fcmToken,
+    this.fcmTokenUpdatedAt,
+    this.notificationsEnabled = true, // Default to enabled
   });
 
   /// Create copy with updated values
@@ -45,6 +55,10 @@ class UserProfile {
     DateTime? joinedAt,
     DateTime? lastActiveAt,
     bool? isOnline,
+    // Notification fields
+    String? fcmToken,
+    DateTime? fcmTokenUpdatedAt,
+    bool? notificationsEnabled,
   }) {
     return UserProfile(
       uid: uid,
@@ -59,6 +73,10 @@ class UserProfile {
       joinedAt: joinedAt ?? this.joinedAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       isOnline: isOnline ?? this.isOnline,
+      // Notification fields
+      fcmToken: fcmToken ?? this.fcmToken,
+      fcmTokenUpdatedAt: fcmTokenUpdatedAt ?? this.fcmTokenUpdatedAt,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 
@@ -104,6 +122,20 @@ class UserProfile {
     }
   }
 
+  /// Check if FCM token is valid (not older than 30 days)
+  bool get hasFreshFCMToken {
+    if (fcmToken == null || fcmTokenUpdatedAt == null) return false;
+    
+    final now = DateTime.now();
+    final tokenAge = now.difference(fcmTokenUpdatedAt!);
+    return tokenAge.inDays < 30; // FCM tokens should be refreshed regularly
+  }
+
+  /// Check if user can receive push notifications
+  bool get canReceiveNotifications {
+    return notificationsEnabled && fcmToken != null && fcmToken!.isNotEmpty;
+  }
+
   /// Time since joined
   String get memberSinceText {
     final now = DateTime.now();
@@ -132,6 +164,32 @@ class UserProfile {
       'joinedAt': Timestamp.fromDate(joinedAt),
       'lastActiveAt': Timestamp.fromDate(lastActiveAt),
       'isOnline': isOnline,
+      // Notification fields
+      'fcmToken': fcmToken,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? Timestamp.fromDate(fcmTokenUpdatedAt!) : null,
+      'notificationsEnabled': notificationsEnabled,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'displayName': displayName,
+      'email': email,
+      'bio': bio,
+      'avatarUrl': avatarUrl,
+      'isSearchable': isSearchable,
+      'allowEmailSearch': allowEmailSearch,
+      'publicRecipeCount': publicRecipeCount,
+      'friendsCount': friendsCount,
+      'joinedAt': serializeDateTime(joinedAt),
+      'lastActiveAt': serializeDateTime(lastActiveAt),
+      'isOnline': isOnline,
+      // Notification fields
+      'fcmToken': fcmToken,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? serializeDateTime(fcmTokenUpdatedAt!) : null,
+      'notificationsEnabled': notificationsEnabled,
     };
   }
 
@@ -153,26 +211,13 @@ class UserProfile {
       lastActiveAt:
           (data['lastActiveAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isOnline: data['isOnline'] as bool? ?? false,
+      // Notification fields
+      fcmToken: data['fcmToken'] as String?,
+      fcmTokenUpdatedAt: (data['fcmTokenUpdatedAt'] as Timestamp?)?.toDate(),
+      notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
     );
   }
 
-  /// JSON serialization för caching
-  Map<String, dynamic> toJson() {
-    return {
-      'uid': uid,
-      'displayName': displayName,
-      'email': email,
-      'bio': bio,
-      'avatarUrl': avatarUrl,
-      'isSearchable': isSearchable,
-      'allowEmailSearch': allowEmailSearch,
-      'publicRecipeCount': publicRecipeCount,
-      'friendsCount': friendsCount,
-      'joinedAt': joinedAt.toIso8601String(),
-      'lastActiveAt': lastActiveAt.toIso8601String(),
-      'isOnline': isOnline,
-    };
-  }
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -185,10 +230,20 @@ class UserProfile {
       allowEmailSearch: json['allowEmailSearch'] as bool? ?? false,
       publicRecipeCount: json['publicRecipeCount'] as int? ?? 0,
       friendsCount: json['friendsCount'] as int? ?? 0,
-      joinedAt: DateTime.parse(json['joinedAt'] as String),
-      lastActiveAt: DateTime.parse(json['lastActiveAt'] as String),
+      joinedAt: UserProfile._deserializeDateTime(json['joinedAt']) ?? DateTime.now(),
+      lastActiveAt: UserProfile._deserializeDateTime(json['lastActiveAt']) ?? DateTime.now(),
       isOnline: json['isOnline'] as bool? ?? false,
+      // Notification fields
+      fcmToken: json['fcmToken'] as String?,
+      fcmTokenUpdatedAt: UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
+      notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
     );
+  }
+
+  static DateTime? _deserializeDateTime(dynamic value) {
+    if (value is String) return DateTime.parse(value);
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:butlery/services/menu_service.dart';
-import 'package:butlery/models/recipe.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 abstract class RecipeRepository {
   List<Recipe> getAllRecipes();
@@ -22,25 +22,37 @@ void main() {
     test('generates menu using recipes from repository', () {
       final recipes = [
         Recipe(
-          title: 'Grönsallad',
-          description: '',
-          ingredients: const [],
-          instructions: const [],
-          mealType: 'Lunch',
+          core: RecipeCore(
+            id: '1',
+            title: 'Grönsallad',
+            description: '',
+            ingredients: const [],
+            instructions: const [],
+            mealType: 'Lunch',
+          ),
+          type: RecipeType.personal,
         ),
         Recipe(
-          title: 'Pasta',
-          description: '',
-          ingredients: const [],
-          instructions: const [],
-          mealType: 'Middag',
+          core: RecipeCore(
+            id: '2',
+            title: 'Pasta',
+            description: '',
+            ingredients: const [],
+            instructions: const [],
+            mealType: 'Middag',
+          ),
+          type: RecipeType.personal,
         ),
         Recipe(
-          title: 'Soppa',
-          description: '',
-          ingredients: const [],
-          instructions: const [],
-          mealType: 'Lunch',
+          core: RecipeCore(
+            id: '3',
+            title: 'Soppa',
+            description: '',
+            ingredients: const [],
+            instructions: const [],
+            mealType: 'Lunch',
+          ),
+          type: RecipeType.personal,
         ),
       ];
 

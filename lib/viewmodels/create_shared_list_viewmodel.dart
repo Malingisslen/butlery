@@ -1,8 +1,9 @@
 // lib/viewmodels/create_shared_list_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
+import '../models/recipe_unified.dart';
 import '../services/unified/unified_shopping_service.dart';
+import '../services/unified/unified_friends_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
@@ -10,6 +11,7 @@ import '../core/utils/logger.dart';
 
 class CreateSharedListViewModel extends ChangeNotifier {
   final UnifiedShoppingService _shoppingService;
+  final UnifiedFriendsService _friendsService;
 
   // Form state
   String _title = '';
@@ -23,7 +25,9 @@ class CreateSharedListViewModel extends ChangeNotifier {
 
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
-  })  : _shoppingService = shoppingService ?? sl<UnifiedShoppingService>();
+    UnifiedFriendsService? friendsService,
+  })  : _shoppingService = shoppingService ?? sl<UnifiedShoppingService>(),
+        _friendsService = friendsService ?? sl<UnifiedFriendsService>();
 
   // ===== GETTERS (UI State) =====
 
@@ -150,8 +154,11 @@ class CreateSharedListViewModel extends ChangeNotifier {
       // Skapa member display names map från friend IDs
       final memberDisplayNames = <String, String>{};
       for (final friendId in _selectedFriendIds) {
-        // I en riktig implementation skulle vi hämta displayName från friends service
-        memberDisplayNames[friendId] = 'Vän'; // Placeholder
+        // Hämta displayName från friends service
+        final friend = _friendsService.friendsList
+            .where((f) => f.uid == friendId)
+            .firstOrNull;
+        memberDisplayNames[friendId] = friend?.displayName ?? 'Okänd vän';
       }
 
       final listId = await _shoppingService.createCollaborativeList(

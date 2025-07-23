@@ -1,102 +1,201 @@
 // lib/viewmodels/text_import_viewmodel.dart
 
-import 'package:flutter/foundation.dart';
-import '../models/recipe.dart';
-import '../services/import/import_manager.dart';
+import 'import_base_viewmodel.dart';
 
 /// ViewModel för text-baserad receptimport (sociala medier, OCR, etc)
-/// Now using ImportManager with strategy pattern
-class TextImportViewModel extends ChangeNotifier {
-  final ImportManager _importManager;
+/// Refactored to use ImportBaseViewModel with TextImportMixin for consistency
+class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
 
-  // State
-  String _inputText = '';
-  bool _isParsing = false;
-  String? _error;
-  Recipe? _parsedRecipe;
-  String? _sourceUrl; // URL från import
+  TextImportViewModel({required super.importManager});
 
-  TextImportViewModel({required ImportManager importManager})
-      : _importManager = importManager;
+  // ===== TEXT-SPECIFIC METHODS =====
 
-  // Getters
-  String get inputText => _inputText;
-  bool get isParsing => _isParsing;
-  String? get error => _error;
-  bool get hasError => _error != null;
-  Recipe? get parsedRecipe => _parsedRecipe;
-  bool get hasParsedRecipe => _parsedRecipe != null;
-  bool get canParse => _inputText.trim().isNotEmpty;
-  String? get sourceUrl => _sourceUrl;
-
-  /// Sätt sourceUrl (används när recept importeras från URL)
-  void setSourceUrl(String url) {
-    _sourceUrl = url;
-    notifyListeners();
-  }
-
-  /// Uppdatera input-text
-  void updateInputText(String text) {
-    _inputText = text;
-    _error = null;
-    notifyListeners();
-  }
-
-  /// Rensa all input
-  void clearInput() {
-    _inputText = '';
-    _error = null;
-    _parsedRecipe = null;
-    _sourceUrl = null;
-    notifyListeners();
-  }
-
-  /// Parsa text till recept using ImportManager strategy pattern
+  /// Parse the current input text into a recipe
   Future<bool> parseText() async {
-    final input = _inputText.trim();
-    if (input.isEmpty) {
-      _setError('Ange text att tolka');
+    if (!hasValidInput) {
+      setError('Please provide text to parse');
       return false;
     }
-
-    _setParsing(true);
-    _error = null;
 
     try {
-      final result = await _importManager.autoImport(input);
-
-      if (result.isSuccess && result.importedRecipes.isNotEmpty) {
-        _parsedRecipe = result.importedRecipes.first;
-        if (_sourceUrl != null) {
-          _parsedRecipe = _parsedRecipe!.copyWith(sourceUrl: _sourceUrl);
-        }
-        return true;
-      } else {
-        throw Exception(result.error ?? 'Kunde inte tolka receptet från texten');
-      }
+      await performImport();
+      return hasParsedRecipe && !hasError;
     } catch (e) {
-      _setError('Kunde inte tolka text: ${e.toString()}');
+      setError('Failed to parse text: $e');
       return false;
-    } finally {
-      _setParsing(false);
     }
   }
 
-
-  /// Rensa fel
-  void clearError() {
-    _error = null;
-    notifyListeners();
+  /// Complete the import process: parse text and save recipe
+  Future<bool> importAndSave() async {
+    return await completeImport();
   }
 
-  // Private methods
-  void _setParsing(bool value) {
-    _isParsing = value;
-    notifyListeners();
+  /// Update both input text and source URL
+  void updateTextAndSource(String text, {String? sourceUrl}) {
+    updateInputText(text);
+    if (sourceUrl != null) {
+      setSourceUrl(sourceUrl);
+    }
   }
 
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
+  // ===== RECIPE EDITING =====
+
+  /// Update title of parsed recipe
+  void updateRecipeTitle(String title) {
+    updateParsedRecipe(title: title);
   }
+
+  /// Update description of parsed recipe
+  void updateRecipeDescription(String description) {
+    updateParsedRecipe(description: description);
+  }
+
+  /// Update meal type of parsed recipe
+  void updateRecipeMealType(String mealType) {
+    updateParsedRecipe(mealType: mealType);
+  }
+
+  /// Update portions of parsed recipe
+  void updateRecipePortions(int? portions) {
+    updateParsedRecipe(portions: portions);
+  }
+
+  /// Update cooking time of parsed recipe
+  void updateRecipeTime(int? timeMinutes) {
+    updateParsedRecipe(timeMinutes: timeMinutes);
+  }
+
+  /// Add ingredient to parsed recipe
+  void addIngredientToRecipe(String ingredient) {
+    if (parsedRecipe == null || ingredient.trim().isEmpty) return;
+    
+    final currentIngredients = List<String>.from(parsedRecipe!.ingredients);
+    currentIngredients.add(ingredient.trim());
+    updateParsedRecipe(ingredients: currentIngredients);
+  }
+
+  /// Remove ingredient from parsed recipe
+  void removeIngredientFromRecipe(int index) {
+    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.ingredients.length) return;
+    
+    final currentIngredients = List<String>.from(parsedRecipe!.ingredients);
+    currentIngredients.removeAt(index);
+    updateParsedRecipe(ingredients: currentIngredients);
+  }
+
+  /// Update ingredient in parsed recipe
+  void updateIngredientInRecipe(int index, String ingredient) {
+    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.ingredients.length) return;
+    
+    final currentIngredients = List<String>.from(parsedRecipe!.ingredients);
+    currentIngredients[index] = ingredient.trim();
+    updateParsedRecipe(ingredients: currentIngredients);
+  }
+
+  /// Add instruction to parsed recipe
+  void addInstructionToRecipe(String instruction) {
+    if (parsedRecipe == null || instruction.trim().isEmpty) return;
+    
+    final currentInstructions = List<String>.from(parsedRecipe!.instructions);
+    currentInstructions.add(instruction.trim());
+    updateParsedRecipe(instructions: currentInstructions);
+  }
+
+  /// Remove instruction from parsed recipe
+  void removeInstructionFromRecipe(int index) {
+    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.instructions.length) return;
+    
+    final currentInstructions = List<String>.from(parsedRecipe!.instructions);
+    currentInstructions.removeAt(index);
+    updateParsedRecipe(instructions: currentInstructions);
+  }
+
+  /// Update instruction in parsed recipe
+  void updateInstructionInRecipe(int index, String instruction) {
+    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.instructions.length) return;
+    
+    final currentInstructions = List<String>.from(parsedRecipe!.instructions);
+    currentInstructions[index] = instruction.trim();
+    updateParsedRecipe(instructions: currentInstructions);
+  }
+
+  /// Add tag to parsed recipe
+  void addTagToRecipe(String tag) {
+    if (parsedRecipe == null || tag.trim().isEmpty) return;
+    
+    final currentTags = List<String>.from(parsedRecipe!.tags ?? []);
+    if (!currentTags.contains(tag.trim())) {
+      currentTags.add(tag.trim());
+      updateParsedRecipe(tags: currentTags);
+    }
+  }
+
+  /// Remove tag from parsed recipe
+  void removeTagFromRecipe(String tag) {
+    if (parsedRecipe == null) return;
+    
+    final currentTags = List<String>.from(parsedRecipe!.tags ?? []);
+    currentTags.remove(tag);
+    updateParsedRecipe(tags: currentTags);
+  }
+
+  // ===== VALIDATION =====
+
+  /// Validate current input text
+  bool validateInput() {
+    if (!hasValidInput) {
+      setError('Please provide text to import');
+      return false;
+    }
+
+    if (inputText.trim().length < 10) {
+      setError('Text is too short to contain a recipe');
+      return false;
+    }
+
+    clearError();
+    return true;
+  }
+
+  /// Get suggestions for improving text parsing
+  List<String> getInputSuggestions() {
+    if (!hasValidInput) {
+      return ['Paste or type recipe text to get started'];
+    }
+
+    final text = inputText.toLowerCase();
+    final suggestions = <String>[];
+
+    if (!text.contains('ingredient')) {
+      suggestions.add('Include ingredients list for better parsing');
+    }
+
+    if (!text.contains('instruction') && !text.contains('step')) {
+      suggestions.add('Include cooking instructions or steps');
+    }
+
+    if (!text.contains('minute') && !text.contains('hour') && !text.contains('time')) {
+      suggestions.add('Include cooking time if available');
+    }
+
+    if (!text.contains('serve') && !text.contains('portion')) {
+      suggestions.add('Include serving size if known');
+    }
+
+    if (suggestions.isEmpty) {
+      suggestions.add('Text looks good for recipe parsing');
+    }
+
+    return suggestions;
+  }
+
+  // ===== DEBUGGING SUPPORT =====
+
+  @override
+  Map<String, dynamic> get debugState => {
+    ...super.debugState,
+    'inputSuggestions': getInputSuggestions(),
+    'validInput': validateInput(),
+  };
 }

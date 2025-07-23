@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../core/injection.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
 import '../widgets/common/state_widget.dart';
 import '../core/validators/form_validators.dart';
 
@@ -51,19 +53,19 @@ class _AuthViewState extends State<AuthView> {
     return ChangeNotifierProvider(
       create: (_) => sl<AuthViewModel>(),
       child: Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppColors.backgroundBeige,
         body: SafeArea(
           child: Consumer<AuthViewModel>(
             builder: (context, viewModel, _) {
               return Center(
                 child: SingleChildScrollView(
-                  padding: AppTheme.screenPadding,
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Logo/Header område
                       _buildHeader(context),
-                      AppTheme.hugeGap,
+                      const SizedBox(height: AppDimensions.spacingXxl),
 
                       // Auth-kort
                       _buildAuthCard(context, viewModel),
@@ -84,34 +86,34 @@ class _AuthViewState extends State<AuthView> {
       children: [
         // App-ikon (kan ersättas med logotyp senare)
         Container(
-          width: AppTheme.avatarSizeLarge,
-          height: AppTheme.avatarSizeLarge,
+          width: AppDimensions.imageSizeLarge,
+          height: AppDimensions.imageSizeLarge,
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor,
-            borderRadius: AppTheme.roundRadius,
+            color: AppColors.primaryBlue,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Icon(
             Icons.restaurant_menu,
-            size: AppTheme.iconSizeHero,
-            color: AppTheme.neutralLight,
+            size: AppDimensions.iconSizeXl,
+            color: AppColors.neutralLight,
           ),
         ),
-        AppTheme.mediumGap,
+        const SizedBox(height: AppDimensions.spacingXl),
 
         // App-namn
         Text(
           'Butlery',
           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            color: AppTheme.primaryColor,
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
           ),
         ),
-        AppTheme.smallGap,
+        const SizedBox(height: AppDimensions.spacingM),
 
         // Välkomsttext
         Text(
           'Smart recepthantering för din vardag',
-          style: AppTheme.subtitleStyle,
+          style: AppTextStyles.titleMedium,
           textAlign: TextAlign.center,
         ),
       ],
@@ -120,57 +122,60 @@ class _AuthViewState extends State<AuthView> {
 
   /// Bygger auth-kortet med formulär
   Widget _buildAuthCard(BuildContext context, AuthViewModel viewModel) {
-    return Container(
+    return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 400),
-      decoration: AppTheme.cardDecoration,
-      padding: AppTheme.sectionPadding,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
             // Rubrik
             Text(
               viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
-              style: AppTheme.sectionTitleStyle,
+              style: AppTextStyles.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            AppTheme.largeGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // Namn-fält (bara vid registrering)
             if (!viewModel.isLoginMode) ...[
               _buildNameField(viewModel),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
             ],
 
             // Email-fält
             _buildEmailField(viewModel),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // Lösenords-fält
             _buildPasswordField(viewModel),
 
             // Glömt lösenord (bara vid login)
             if (viewModel.isLoginMode) ...[
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
               _buildForgotPasswordButton(context, viewModel),
             ],
 
-            AppTheme.largeGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // Error-meddelande
             if (viewModel.errorMessage != null) ...[
               _buildErrorMessage(viewModel.errorMessage!),
-              AppTheme.mediumGap,
+              const SizedBox(height: AppDimensions.spacingXl),
             ],
 
             // Submit-knapp
             _buildSubmitButton(viewModel),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
-            // Toggle login/register
-            _buildToggleButton(viewModel),
-          ],
+                // Toggle login/register
+                _buildToggleButton(viewModel),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -186,7 +191,7 @@ class _AuthViewState extends State<AuthView> {
       decoration: InputDecoration(
         labelText: 'Ditt namn',
         hintText: 'Ange ditt namn',
-        prefixIcon: Icon(Icons.person_outline, size: AppTheme.iconSizeAction),
+        prefixIcon: Icon(Icons.person_outline, size: AppDimensions.iconSizeAction),
       ),
       validator: FormValidators.authName(),
       onFieldSubmitted: (_) {
@@ -206,7 +211,7 @@ class _AuthViewState extends State<AuthView> {
       decoration: InputDecoration(
         labelText: 'Email',
         hintText: 'din.email@exempel.se',
-        prefixIcon: Icon(Icons.email_outlined, size: AppTheme.iconSizeAction),
+        prefixIcon: Icon(Icons.email_outlined, size: AppDimensions.iconSizeAction),
       ),
       validator: FormValidators.authEmail(),
       onFieldSubmitted: (_) {
@@ -227,13 +232,13 @@ class _AuthViewState extends State<AuthView> {
         labelText: 'Lösenord',
         hintText:
             viewModel.isLoginMode ? 'Ange ditt lösenord' : 'Minst 6 tecken',
-        prefixIcon: Icon(Icons.lock_outline, size: AppTheme.iconSizeAction),
+        prefixIcon: Icon(Icons.lock_outline, size: AppDimensions.iconSizeAction),
         suffixIcon: IconButton(
           icon: Icon(
             viewModel.isPasswordVisible
                 ? Icons.visibility_off_outlined
                 : Icons.visibility_outlined,
-            size: AppTheme.iconSizeAction,
+            size: AppDimensions.iconSizeAction,
           ),
           onPressed: viewModel.togglePasswordVisibility,
         ),
@@ -257,7 +262,7 @@ class _AuthViewState extends State<AuthView> {
                 : () => _showPasswordResetDialog(context, viewModel),
         child: Text(
           'Glömt lösenord?',
-          style: AppTheme.captionStyle.copyWith(color: AppTheme.primaryColor),
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue),
         ),
       ),
     );
@@ -275,10 +280,16 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildSubmitButton(AuthViewModel viewModel) {
     return FilledButton(
       onPressed: viewModel.isLoading ? null : () => _handleSubmit(viewModel),
-      style: AppTheme.primaryButtonStyle,
       child:
           viewModel.isLoading
-              ? AppTheme.smallLoadingIndicator()
+              ? SizedBox(
+                  width: AppDimensions.iconSizeS,
+                  height: AppDimensions.iconSizeS,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                  ),
+                )
               : Text(viewModel.isLoginMode ? 'Logga in' : 'Skapa konto'),
     );
   }
@@ -298,7 +309,7 @@ class _AuthViewState extends State<AuthView> {
             TextSpan(
               text: viewModel.isLoginMode ? 'Skapa konto' : 'Logga in',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.primaryColor,
+                color: AppColors.primaryBlue,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -363,7 +374,7 @@ class _AuthViewState extends State<AuthView> {
                   'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                AppTheme.mediumGap,
+                const SizedBox(height: AppDimensions.spacingXl),
                 TextField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -404,7 +415,7 @@ class _AuthViewState extends State<AuthView> {
                 : viewModel.errorMessage ?? 'Kunde inte skicka email',
           ),
           backgroundColor:
-              success ? AppTheme.successColor : AppTheme.errorColor,
+              success ? AppColors.success : AppColors.error,
         ),
       );
     }

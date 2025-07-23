@@ -15,8 +15,8 @@
 /// Connected to: All recipe operation interfaces
 /// Used in phases: Phase 5 - Service Consolidation
 
-// Import RecipePermission from unified recipe model
-import '../../../models/unified/unified_recipe.dart';
+// Import ResourcePermission from unified recipe model
+import '../../../models/permissions/resource_permission.dart';
 
 /// Result class for recipe operations
 class RecipeOperationResult {
@@ -61,7 +61,7 @@ class SharedRecipeData {
   final String ownerId;
   final String ownerDisplayName;
   final DateTime sharedAt;
-  final Map<String, RecipePermission> permissions;
+  final Map<String, ResourcePermission> permissions;
   final bool allowGuestViewing;
   final bool allowMemberInvites;
 

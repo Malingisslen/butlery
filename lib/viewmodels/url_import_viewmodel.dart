@@ -1,222 +1,247 @@
 // lib/viewmodels/url_import_viewmodel.dart
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import '../utils/recipe_scraper.dart';
-import '../models/recipe.dart';
-import '../services/import/import_manager.dart';
+import 'import_base_viewmodel.dart';
 
 /// ViewModel för URL-baserad receptimport
-/// Now using ImportManager for text processing
-class UrlImportViewModel extends ChangeNotifier {
-  final ImportManager _importManager;
+/// Refactored to use ImportBaseViewModel with UrlImportMixin for consistency
+class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
 
-  // State
-  String _url = '';
-  String _extractedText = '';
-  bool _isLoading = false;
-  String? _error;
-  Recipe? _parsedRecipe;
+  UrlImportViewModel({required super.importManager});
 
-  UrlImportViewModel({required ImportManager importManager})
-      : _importManager = importManager;
+  // ===== URL-SPECIFIC METHODS =====
 
-  // Getters
-  String get url => _url;
-  String get extractedText => _extractedText;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get hasError => _error != null;
-  bool get hasExtractedText => _extractedText.isNotEmpty;
-  bool get canFetch => _url.trim().isNotEmpty && _isValidUrl(_url);
-  Recipe? get parsedRecipe => _parsedRecipe;
-  bool get hasParsedRecipe => _parsedRecipe != null;
-
-  // Getter för att få den rensade URL:en som sourceUrl
-  String? get sourceUrl => _url.trim().isNotEmpty ? _url.trim() : null;
-
-  /// Uppdatera URL
-  void updateUrl(String url) {
-    _url = url;
-    _error = null;
-    notifyListeners();
-  }
-
-  /// Hämta och extrahera recept från URL
-  Future<void> fetchFromUrl() async {
-    final trimmedUrl = _url.trim();
-
-    if (trimmedUrl.isEmpty) {
-      _setError('Ange en URL');
+  /// Fetch content from URL and parse it into a recipe
+  Future<void> fetchAndParse() async {
+    if (!canFetch) {
+      setError('Please provide a valid URL');
       return;
     }
 
-    if (!_isValidUrl(trimmedUrl)) {
-      _setError('Ogiltig URL');
-      return;
-    }
+    // First fetch content from URL
+    await fetchFromUrl();
 
-    _setLoading(true);
-    _error = null;
-    _extractedText = '';
-
-    try {
-      // Använd proxy för att undvika CORS
-      final encodedUrl = Uri.encodeComponent(trimmedUrl);
-      final proxyUrl = 'https://api.allorigins.win/raw?url=$encodedUrl';
-
-      final response = await http.get(Uri.parse(proxyUrl));
-
-      if (response.statusCode != 200) {
-        throw Exception('Hämtning misslyckades (kod ${response.statusCode})');
-      }
-
-      final html = response.body;
-      final recipeJson = extractRecipeFromHtml(html);
-
-      if (recipeJson == null) {
-        throw Exception('Kunde inte hitta receptdata på sidan.');
-      }
-
-      // Bygg text från JSON-LD data
-      _extractedText = _buildTextFromRecipeJson(recipeJson);
-
-      if (_extractedText.isEmpty) {
-        throw Exception('Ingen receptdata kunde extraheras från sidan.');
-      }
-
-      // Process extracted text through ImportManager
-      final importResult = await _importManager.autoImport(_extractedText);
-      if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
-        _parsedRecipe = importResult.importedRecipes.first.copyWith(
-          sourceUrl: trimmedUrl,
-        );
-      }
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
+    // If successful, perform import
+    if (hasExtractedText && !hasError) {
+      await performImport();
     }
   }
 
-  /// Bygg text från recipe JSON-LD
-  String _buildTextFromRecipeJson(Map<String, dynamic> recipeJson) {
-    final buffer = StringBuffer();
-
-    // Titel
-    if (recipeJson['name'] != null) {
-      buffer.writeln(recipeJson['name']);
-      buffer.writeln();
-    }
-
-    // Ingredienser
-    final ingredients = <String>[];
-    if (recipeJson['recipeIngredient'] is List) {
-      ingredients.addAll(
-        (recipeJson['recipeIngredient'] as List).cast<String>(),
-      );
-    }
-
-    if (ingredients.isNotEmpty) {
-      buffer.writeln('Ingredienser:');
-      for (var ingredient in ingredients) {
-        buffer.writeln('- $ingredient');
-      }
-      buffer.writeln();
-    }
-
-    // Instruktioner
-    final instructions = <String>[];
-    if (recipeJson['recipeInstructions'] is List) {
-      for (final step in recipeJson['recipeInstructions'] as List) {
-        if (step is Map<String, dynamic>) {
-          // Hantera HowToSection → itemListElement
-          if (step.containsKey('itemListElement') &&
-              step['itemListElement'] is List) {
-            for (final subStep in step['itemListElement'] as List) {
-              if (subStep is Map<String, dynamic> && subStep['text'] != null) {
-                instructions.add(subStep['text'].toString());
-              }
-            }
-          }
-          // Hantera vanligt "text"-fält
-          else if (step['text'] != null) {
-            instructions.add(step['text'].toString());
-          }
-        } else if (step is String) {
-          instructions.add(step);
-        }
-      }
-    }
-
-    if (instructions.isNotEmpty) {
-      buffer.writeln('Instruktioner:');
-      for (var i = 0; i < instructions.length; i++) {
-        buffer.writeln('${i + 1}. ${instructions[i]}');
-      }
-    }
-
-    return buffer.toString();
+  /// Complete the import process: fetch, parse, and save recipe
+  Future<bool> importAndSave() async {
+    return await completeImport();
   }
 
-  /// Validera URL
-  bool _isValidUrl(String url) {
+  @override
+  Future<String> fetchContentFromUrl(String url) async {
     try {
-      final uri = Uri.parse(url);
-      return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Parse current extracted text to recipe
-  Future<bool> parseExtractedText() async {
-    if (_extractedText.isEmpty) return false;
-
-    try {
-      _setLoading(true);
-      final result = await _importManager.autoImport(_extractedText);
+      // Fetch the HTML content
+      final response = await http.get(Uri.parse(url));
       
-      if (result.isSuccess && result.importedRecipes.isNotEmpty) {
-        _parsedRecipe = result.importedRecipes.first.copyWith(
-          sourceUrl: sourceUrl,
-        );
-        return true;
-      } else {
-        _setError(result.error ?? 'Could not parse recipe from extracted text');
-        return false;
+      if (response.statusCode != 200) {
+        throw Exception('Failed to fetch content from URL: ${response.statusCode}');
       }
+      
+      final htmlContent = response.body;
+      
+      if (htmlContent.isEmpty) {
+        throw Exception('No content found on this page');
+      }
+      
+      return htmlContent;
     } catch (e) {
-      _setError(e.toString());
-      return false;
-    } finally {
-      _setLoading(false);
+      // Fallback to basic HTTP fetch if scraping fails
+      return await _basicHttpFetch(url);
     }
   }
 
-  /// Rensa all state
-  void clearAll() {
-    _url = '';
-    _extractedText = '';
-    _error = null;
-    _parsedRecipe = null;
-    notifyListeners();
+  /// Basic HTTP fetch fallback when specialized scraping fails
+  Future<String> _basicHttpFetch(String url) async {
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch content: HTTP ${response.statusCode}');
+    }
+
+    // Basic HTML content extraction
+    String content = response.body;
+    
+    // Remove HTML tags for basic text extraction
+    content = content.replaceAll(RegExp(r'<[^>]*>'), ' ');
+    content = content.replaceAll(RegExp(r'\s+'), ' ');
+    content = content.trim();
+
+    if (content.length < 100) {
+      throw Exception('Content too short to contain a recipe');
+    }
+
+    return content;
   }
 
-  /// Rensa fel
-  void clearError() {
-    _error = null;
-    notifyListeners();
+  // ===== URL VALIDATION =====
+
+  /// Get validation errors for current URL
+  List<String> getUrlValidationErrors() {
+    if (url.trim().isEmpty) {
+      return ['URL is required'];
+    }
+
+    final errors = <String>[];
+    final trimmedUrl = url.trim();
+
+    try {
+      final uri = Uri.parse(trimmedUrl);
+      
+      if (!uri.hasScheme) {
+        errors.add('URL must include http:// or https://');
+      } else if (uri.scheme != 'http' && uri.scheme != 'https') {
+        errors.add('Only HTTP and HTTPS URLs are supported');
+      }
+
+      if (!uri.hasAuthority) {
+        errors.add('URL must include a domain name');
+      }
+    } catch (e) {
+      errors.add('Invalid URL format');
+    }
+
+    return errors;
   }
 
-  // Private methods
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+  /// Check if URL points to a known recipe site
+  bool isKnownRecipeSite() {
+    if (!canFetch) return false;
+
+    final domain = Uri.parse(url.trim()).host.toLowerCase();
+    final knownSites = [
+      'allrecipes.com',
+      'food.com',
+      'epicurious.com',
+      'foodnetwork.com',
+      'delish.com',
+      'tasty.co',
+      'ica.se',
+      'arla.se',
+      'koket.se',
+      'recepten.se',
+    ];
+
+    return knownSites.any((site) => domain.contains(site));
   }
 
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
+  /// Get suggestions for better URL processing
+  List<String> getUrlSuggestions() {
+    if (!canFetch) {
+      return getUrlValidationErrors();
+    }
+
+    final suggestions = <String>[];
+
+    if (isKnownRecipeSite()) {
+      suggestions.add('✅ URL from known recipe site - should work well');
+    } else {
+      suggestions.add('ℹ️ Unknown site - content extraction may vary');
+    }
+
+    if (url.contains('recipe') || url.contains('recept')) {
+      suggestions.add('✅ URL contains recipe keywords');
+    }
+
+    if (url.length > 200) {
+      suggestions.add('⚠️ Very long URL - try copying the main recipe page URL');
+    }
+
+    return suggestions;
   }
+
+  // ===== CONTENT ANALYSIS =====
+
+  /// Analyze extracted content quality
+  Map<String, dynamic> analyzeExtractedContent() {
+    if (!hasExtractedText) {
+      return {
+        'quality': 'none',
+        'score': 0,
+        'issues': ['No content extracted'],
+      };
+    }
+
+    final text = extractedText.toLowerCase();
+    int score = 0;
+    final issues = <String>[];
+    final positives = <String>[];
+
+    // Check for recipe indicators
+    if (text.contains('ingredient')) {
+      score += 25;
+      positives.add('Contains ingredients');
+    } else {
+      issues.add('No ingredients section found');
+    }
+
+    if (text.contains('instruction') || text.contains('step') || text.contains('method')) {
+      score += 25;
+      positives.add('Contains instructions');
+    } else {
+      issues.add('No instructions section found');
+    }
+
+    if (text.contains('minute') || text.contains('hour') || text.contains('time')) {
+      score += 15;
+      positives.add('Contains timing information');
+    }
+
+    if (text.contains('serve') || text.contains('portion') || text.contains('yield')) {
+      score += 10;
+      positives.add('Contains serving information');
+    }
+
+    // Check content length
+    if (extractedText.length > 500) {
+      score += 15;
+      positives.add('Good content length');
+    } else if (extractedText.length < 200) {
+      issues.add('Content seems too short');
+    }
+
+    // Check for recipe title patterns
+    if (text.contains('recipe') || text.contains('recept')) {
+      score += 10;
+      positives.add('Contains recipe keywords');
+    }
+
+    String quality;
+    if (score >= 75) {
+      quality = 'excellent';
+    } else if (score >= 50) {
+      quality = 'good';
+    } else if (score >= 25) {
+      quality = 'fair';
+    } else {
+      quality = 'poor';
+    }
+
+    return {
+      'quality': quality,
+      'score': score,
+      'issues': issues,
+      'positives': positives,
+    };
+  }
+
+  // ===== DEBUGGING SUPPORT =====
+
+  @override
+  Map<String, dynamic> get debugState => {
+    ...super.debugState,
+    'urlValidationErrors': getUrlValidationErrors(),
+    'isKnownRecipeSite': isKnownRecipeSite(),
+    'urlSuggestions': getUrlSuggestions(),
+    'contentAnalysis': analyzeExtractedContent(),
+  };
 }

@@ -1,7 +1,8 @@
 // lib/widgets/permissions/edit_mode_ui_helper.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../../models/permissions/edit_mode.dart';
 
 /// UI helper class for EditMode enum
@@ -11,13 +12,15 @@ class EditModeUIHelper {
   static Color getColor(EditMode mode, BuildContext context) {
     switch (mode) {
       case EditMode.owner:
-        return AppTheme.primaryColor;
+      case EditMode.edit:
+        return AppColors.primaryBlue;
       case EditMode.collaborative:
-        return AppTheme.successColor;
+        return AppColors.success;
       case EditMode.readOnlyWithFork:
-        return AppTheme.warningColor;
+      case EditMode.view:
+        return AppColors.warning;
       case EditMode.noAccess:
-        return AppTheme.errorColor;
+        return AppColors.error;
     }
   }
 
@@ -25,10 +28,12 @@ class EditModeUIHelper {
   static IconData getIcon(EditMode mode) {
     switch (mode) {
       case EditMode.owner:
+      case EditMode.edit:
         return Icons.edit;
       case EditMode.collaborative:
         return Icons.people;
       case EditMode.readOnlyWithFork:
+      case EditMode.view:
         return Icons.visibility;
       case EditMode.noAccess:
         return Icons.block;
@@ -47,7 +52,7 @@ class EditModeUIHelper {
   static Widget getStyledDescription(EditMode mode, BuildContext context) {
     return Text(
       mode.description,
-      style: AppTheme.bodyStyle.copyWith(
+      style: AppTextStyles.bodyLarge.copyWith(
         color: getColor(mode, context),
       ),
     );

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'core/constants/routes.dart';
 import 'core/router/app_router.dart';
+import 'theme/app_dimensions.dart';
+import 'package:receive_intent/receive_intent.dart' as receive_intent;
 
 // Firebase Analytics (för observer)
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -25,11 +27,13 @@ import 'core/injection.dart';
 // Services
 import 'services/offline_service.dart';
 import 'services/analytics_service.dart';
+import 'package:go_router/go_router.dart';
 
 // Removed unused model imports
 
 // Theme
 import 'theme/app_theme.dart';
+import 'theme/app_colors.dart';
 
 // Auth view
 import 'views/auth_view.dart';
@@ -101,12 +105,123 @@ class _ButleryAppState extends State<ButleryApp> {
     }
 
     try {
-      // TODO: Get initial deep link from platform
-      // This would typically come from app launch parameters
-      // For now, just log that deep link handling is ready
+      // Get initial deep link from app launch
+      final receivedIntent = await receive_intent.ReceiveIntent.getInitialIntent();
+      
+      if (receivedIntent != null && receivedIntent.data != null) {
+        debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
+        await _processDeepLink(receivedIntent.data!);
+      }
+      
+      // Note: receive_intent package doesn't support streaming
+      // Deep links while app is running would typically be handled by
+      // the operating system's intent system automatically
+      
       debugPrint('🔗 Deep link handling initialized');
     } catch (e) {
       debugPrint('⚠️ Deep link initialization failed: $e');
+    }
+  }
+
+  /// Process incoming deep link and navigate accordingly
+  Future<void> _processDeepLink(String deepLinkUrl) async {
+    try {
+      final uri = Uri.parse(deepLinkUrl);
+      debugPrint('🔗 Processing deep link: ${uri.path}');
+
+      // Wait for app to be ready
+      if (!AppInitializer.isBackgroundInitialized) {
+        debugPrint('🔗 Waiting for app initialization before processing deep link');
+        while (!AppInitializer.isBackgroundInitialized) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+      }
+
+      // Extract path and parameters
+      final path = uri.path;
+      final params = uri.queryParameters;
+
+      // Route based on deep link type
+      if (path.startsWith('/invite')) {
+        await _handleInvitationLink(params);
+      } else if (path.startsWith('/recipe')) {
+        await _handleRecipeLink(params);
+      } else if (path.startsWith('/menu')) {
+        await _handleMenuLink(params);
+      } else if (path.startsWith('/shopping')) {
+        await _handleShoppingLink(params);
+      } else {
+        debugPrint('⚠️ Unknown deep link path: $path');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error processing deep link: $e');
+    }
+  }
+
+  /// Handle friend invitation deep links
+  Future<void> _handleInvitationLink(Map<String, String> params) async {
+    final invitationId = params['id'];
+    final fromUserId = params['from'];
+    final type = params['type'];
+
+    if (invitationId != null && fromUserId != null) {
+      debugPrint('🔗 Handling invitation: $type from $fromUserId');
+      
+      // Navigate to appropriate view based on invitation type
+      if (mounted && context.mounted) {
+        if (type == 'friend') {
+          // Navigate to friend requests view
+          GoRouter.of(context).push(Routes.friendRequests);
+        } else {
+          // Default to friends list for unknown invitation types
+          GoRouter.of(context).push(Routes.friends);
+        }
+      }
+    }
+  }
+
+  /// Handle recipe sharing deep links
+  Future<void> _handleRecipeLink(Map<String, String> params) async {
+    final recipeId = params['id'];
+    final fromUserId = params['from'];
+
+    if (recipeId != null) {
+      debugPrint('🔗 Handling recipe link: $recipeId from $fromUserId');
+      
+      if (mounted && context.mounted) {
+        // Navigate to recipe detail view with recipe ID as query parameter
+        GoRouter.of(context).push('${Routes.receptDetalj}?recipeId=$recipeId');
+      }
+    }
+  }
+
+  /// Handle menu sharing deep links
+  Future<void> _handleMenuLink(Map<String, String> params) async {
+    final menuId = params['id'];
+    final fromUserId = params['from'];
+
+    if (menuId != null) {
+      debugPrint('🔗 Handling menu link: $menuId from $fromUserId');
+      
+      if (mounted && context.mounted) {
+        // Navigate to shared with me view to see the menu
+        GoRouter.of(context).push(Routes.shared);
+      }
+    }
+  }
+
+  /// Handle shopping list sharing deep links
+  Future<void> _handleShoppingLink(Map<String, String> params) async {
+    final listId = params['id'];
+    final fromUserId = params['from'];
+
+    if (listId != null) {
+      debugPrint('🔗 Handling shopping list link: $listId from $fromUserId');
+      
+      if (mounted && context.mounted) {
+        // Navigate to collaborative shopping view
+        GoRouter.of(context).push(Routes.collaborativeShopping);
+      }
     }
   }
 
@@ -128,7 +243,7 @@ class _ButleryAppState extends State<ButleryApp> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const CircularProgressIndicator(),
-                const SizedBox(height: 16),
+                SizedBox(height: AppDimensions.spacingXl),
                 Text('Initialiserar tjänster...', style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
@@ -189,36 +304,36 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
     // Show loading screen while initializing
     if (!_isInitialized) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppColors.backgroundBeige,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // App icon/logo
               Container(
-                width: AppTheme.iconSizeHero,
-                height: AppTheme.iconSizeHero,
+                width: AppDimensions.iconSizeHero,
+                height: AppDimensions.iconSizeHero,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  color: AppColors.primaryBlue,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
                 child: Icon(
                   Icons.restaurant_menu,
-                  size: AppTheme.iconSizeHero,
-                  color: AppTheme.neutralLight,
+                  size: AppDimensions.iconSizeHero,
+                  color: AppColors.neutralLight,
                 ),
               ),
-              AppTheme.largeGap,
+              SizedBox(height: AppDimensions.spacingXxxl),
               
               // Loading indicator
               const CircularProgressIndicator(),
-              AppTheme.mediumGap,
+              SizedBox(height: AppDimensions.spacingXl),
               
               // Loading text
               Text(
                 'Startar Butlery...',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.textTertiary,
+                  color: AppColors.textTertiary,
                 ),
               ),
             ],
@@ -246,17 +361,17 @@ class AuthWrapper extends StatelessWidget {
         // Medan vi väntar på auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: AppTheme.backgroundColor,
+            backgroundColor: AppColors.backgroundBeige,
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(),
-                  AppTheme.mediumGap,
+                  SizedBox(height: AppDimensions.spacingXl),
                   Text(
                     'Kontrollerar inloggning...',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.textTertiary,
+                      color: AppColors.textTertiary,
                     ),
                   ),
                 ],
@@ -268,21 +383,21 @@ class AuthWrapper extends StatelessWidget {
         // Om vi har ett fel
         if (snapshot.hasError) {
           return Scaffold(
-            backgroundColor: AppTheme.backgroundColor,
+            backgroundColor: AppColors.backgroundBeige,
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppTheme.errorIcon(context),
-                  AppTheme.mediumGap,
-                  Text('Ett fel uppstod', style: AppTheme.sectionTitleStyle),
-                  AppTheme.smallGap,
+                  Icon(Icons.error, color: AppColors.error, size: AppDimensions.iconSizeXl),
+                  SizedBox(height: AppDimensions.spacingXl),
+                  Text('Ett fel uppstod', style: Theme.of(context).textTheme.headlineSmall),
+                  SizedBox(height: AppDimensions.spacingM),
                   Text(
                     snapshot.error.toString(),
                     textAlign: TextAlign.center,
-                    style: AppTheme.bodyStyle,
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  AppTheme.mediumGap,
+                  SizedBox(height: AppDimensions.spacingXl),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pushReplacementNamed(Routes.home),
                     child: const Text('Försök igen'),

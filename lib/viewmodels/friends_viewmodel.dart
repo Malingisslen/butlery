@@ -8,7 +8,9 @@ import '../models/friend_category.dart';
 import '../services/unified/unified_friends_service.dart';
 import '../services/user_service.dart';
 import '../core/permissions/permission_mixins.dart';
-import '../core/utils/logger.dart'; // ✅ NYTT: För AppLogger
+import '../core/utils/logger.dart';
+import '../core/mixins/state_notifier_mixin.dart';
+import '../core/mixins/async_operation_mixin.dart';
 
 /// Represents the friendship status between two users
 enum FriendshipStatus {
@@ -25,7 +27,8 @@ enum FriendshipStatus {
 }
 
 
-class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPermissionMixin {
+class FriendsViewModel extends ChangeNotifier 
+    with StateNotifierMixin, AsyncOperationMixin, BasePermissionMixin, SocialPermissionMixin {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
 
@@ -35,7 +38,7 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
   // Search state
   String _searchQuery = '';
   List<UserProfile> _searchResults = [];
-  bool _isSearching = false;
+  final bool _isSearching = false;
   String? _searchError;
 
   // Selection state (för bulk operations)
@@ -43,7 +46,7 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
 
   // ✅ UserProfile cache för request användare
   final Map<String, UserProfile> _requestUserProfiles = {};
-  bool _isLoadingUserProfiles = false;
+  final bool _isLoadingUserProfiles = false;
 
   // ✅ NYTT: Group creation state
   bool _isCreatingGroup = false;
@@ -87,11 +90,13 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
   bool get hasSearchResults => _searchResults.isNotEmpty;
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
 
-  // Service state
+  // Service state (enhanced with local loading states)
+  @override
   bool get isLoading =>
-      _friendsService.isLoading || _isLoadingUserProfiles || _isCreatingGroup;
-  String? get error => _friendsService.error ?? _groupCreationError;
-  bool get hasError => _friendsService.hasError || _groupCreationError != null;
+      super.isLoading || _friendsService.isLoading || _isLoadingUserProfiles || _isCreatingGroup;
+  
+  @override  
+  String? get error => super.error ?? _friendsService.error ?? _groupCreationError;
 
   // Selection state
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
@@ -269,8 +274,26 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
 
   /// Get mutual friends with user
   Future<List<UserProfile>> getMutualFriends(String userId) async {
-    // TODO: Implement mutual friends in UnifiedFriendsService
-    return [];
+    if (_isDisposed) return [];
+
+    // PREVENT RACE CONDITION: Check if operation is already in progress
+    if (isOperationActive('get_mutual_friends_$userId')) {
+      AppLogger.debug('⏳ Mutual friends loading already in progress for $userId, skipping...');
+      return [];
+    }
+
+    try {
+      return await executeNamedOperation(
+        'get_mutual_friends_$userId',
+        () async {
+          return await _friendsService.management.getMutualFriends(userId);
+        },
+        errorPrefix: 'Failed to get mutual friends',
+      );
+    } catch (e) {
+      // Return empty list on error since executeNamedOperation rethrows
+      return [];
+    }
   }
 
   /// Check if user can be added as friend
@@ -325,72 +348,69 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
     // ✅ SÄKER: Kontrollera dispose innan asynkrona operationer
     if (_isDisposed) return;
 
-    try {
-      _isLoadingUserProfiles = true;
-      // Don't call notifyListeners() immediately during potential build phase
-
-      // Samla alla unika userId från requests
-      final userIds = <String>{};
-
-      // Lägg till från inkommande förfrågningar
-      for (final request in incomingRequests) {
-        userIds.add(request.fromUserId);
-      }
-
-      // Lägg till från skickade förfrågningar
-      for (final request in sentRequests) {
-        userIds.add(request.toUserId);
-      }
-
-      // Ta bort användare vi redan har i cache
-      final uncachedUserIds = userIds
-          .where((userId) => !_requestUserProfiles.containsKey(userId))
-          .toList();
-
-      if (uncachedUserIds.isNotEmpty) {
-        AppLogger.info(
-          '👥 Laddar ${uncachedUserIds.length} användaruppgifter för förfrågningar',
-        );
-
-        // Hämta användaruppgifter i batch för prestanda
-        final profiles = await _userService.getUserProfiles(uncachedUserIds);
-
-        // ✅ SÄKER: Kontrollera dispose efter asynkron operation
-        if (_isDisposed) return;
-
-        // Uppdatera cache
-        for (final profile in profiles) {
-          _requestUserProfiles[profile.uid] = profile;
-        }
-
-        // Logga resultat
-        AppLogger.success(
-          '✅ ${profiles.length}/${uncachedUserIds.length} användaruppgifter laddade',
-        );
-
-        // Logga saknade profiler (för debugging)
-        final loadedIds = profiles.map((p) => p.uid).toSet();
-        final missingIds =
-            uncachedUserIds.where((id) => !loadedIds.contains(id));
-        if (missingIds.isNotEmpty) {
-          AppLogger.warning(
-            '⚠️ Kunde inte ladda profiler för: ${missingIds.join(', ')}',
-          );
-        }
-      }
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte ladda användaruppgifter: $e');
-    } finally {
-      if (!_isDisposed) {
-        _isLoadingUserProfiles = false;
-        // Use scheduleMicrotask to avoid calling notifyListeners during build
-        scheduleMicrotask(() {
-          if (!_isDisposed) {
-            notifyListeners();
-          }
-        });
-      }
+    // ✅ PREVENT RACE CONDITION: Check if operation is already in progress
+    if (isOperationActive('load_user_profiles')) {
+      AppLogger.debug('⏳ User profiles loading already in progress, skipping...');
+      return;
     }
+
+    await executeNamedOperation(
+      'load_user_profiles',
+      () async {
+        // Samla alla unika userId från requests
+        final userIds = <String>{};
+
+        // Lägg till från inkommande förfrågningar
+        for (final request in incomingRequests) {
+          userIds.add(request.fromUserId);
+        }
+
+        // Lägg till från skickade förfrågningar
+        for (final request in sentRequests) {
+          userIds.add(request.toUserId);
+        }
+
+        // Ta bort användare vi redan har i cache
+        final uncachedUserIds = userIds
+            .where((userId) => !_requestUserProfiles.containsKey(userId))
+            .toList();
+
+        if (uncachedUserIds.isNotEmpty) {
+          AppLogger.info(
+            '👥 Laddar ${uncachedUserIds.length} användaruppgifter för förfrågningar',
+          );
+
+          // Hämta användaruppgifter i batch för prestanda
+          final profiles = await _userService.getUserProfiles(uncachedUserIds);
+
+          // ✅ SÄKER: Kontrollera dispose efter asynkron operation
+          if (_isDisposed) return profiles;
+
+          // Uppdatera cache
+          for (final profile in profiles) {
+            _requestUserProfiles[profile.uid] = profile;
+          }
+
+          // Logga resultat
+          AppLogger.success(
+            '✅ ${profiles.length}/${uncachedUserIds.length} användaruppgifter laddade',
+          );
+
+          // Logga saknade profiler (för debugging)
+          final loadedIds = profiles.map((p) => p.uid).toSet();
+          final missingIds =
+              uncachedUserIds.where((id) => !loadedIds.contains(id));
+          if (missingIds.isNotEmpty) {
+            AppLogger.warning(
+              '⚠️ Kunde inte ladda profiler för: ${missingIds.join(', ')}',
+            );
+          }
+        }
+        
+        return uncachedUserIds.length;
+      },
+      errorPrefix: 'Kunde inte ladda användaruppgifter',
+    );
   }
 
   /// Rensa användaruppgifter cache (användbart vid refresh)
@@ -427,30 +447,20 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
   Future<void> _performSearch() async {
     if (_searchQuery.isEmpty) return;
 
-    try {
-      _isSearching = true;
-      _searchError = null;
-      notifyListeners();
-
+    await searchData(() async {
       final results = await _friendsService.management.searchUsers(_searchQuery);
-
+      
       // ✅ SÄKER: Kontrollera dispose efter asynkron operation
-      if (_isDisposed) return;
+      if (_isDisposed) return results;
 
       _searchResults = results;
-
+      
       AppLogger.info(
         '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
       );
-    } catch (e) {
-      _searchError = 'Sökningen misslyckades: $e';
-      AppLogger.error('Search failed', e);
-    } finally {
-      if (!_isDisposed) {
-        _isSearching = false;
-        notifyListeners();
-      }
-    }
+      
+      return results;
+    });
   }
 
   void _clearSearch() {
@@ -463,8 +473,13 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
   void _onFriendsServiceChanged() {
     // ✅ SÄKER: Kontrollera om ViewModel är disposed innan notifiering
     if (!_isDisposed) {
-      loadUserProfilesForRequests();
-      notifyListeners();
+      // Use delayed execution to prevent multiple rapid calls
+      Future.delayed(Duration.zero, () {
+        if (!_isDisposed) {
+          loadUserProfilesForRequests();
+          notifyListeners();
+        }
+      });
     } else {
       AppLogger.warning(
           '⚠️ Ignorerar friends service change - ViewModel är disposed');
@@ -483,6 +498,7 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
 
 
   /// Clear errors
+  @override
   void clearError() {
     if (!_isDisposed) {
       _friendsService.clearError();
@@ -512,12 +528,17 @@ class FriendsViewModel extends ChangeNotifier with BasePermissionMixin, SocialPe
     // ✅ MARKERA som disposed för säkerhet
     _isDisposed = true;
 
-    // ✅ KRITISK FIX: FriendsViewModel är en SINGLETON som ska leva
-    AppLogger.warning(
-        '⚠️ FriendsViewModel.dispose() anropad - IGNORERAS för singleton safety');
+    AppLogger.info('🧹 FriendsViewModel.dispose() - Cleaning up memory leaks');
+    
+    // CRITICAL: Clean up to prevent memory leaks
+    _searchResults.clear();
+    _selectedFriendIds.clear();
+    _requestUserProfiles.clear();
+    
+    // Cancel any listeners that might be causing memory pressure
+    _friendsService.removeListener(_onFriendsServiceChanged);
+    _userService.removeListener(_onUserServiceChanged);
 
-    // ✅ ANROPA super.dispose() för att uppfylla @mustCallSuper
-    // Men ta INTE bort listeners eller rensa state
     super.dispose();
   }
 }

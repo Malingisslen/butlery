@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'repository.dart';
-import '../../models/recipe.dart';
+import '../../models/recipe_unified.dart';
 import '../../models/recipe_change.dart';
 
 abstract class RecipeRepository extends Repository<Recipe> {

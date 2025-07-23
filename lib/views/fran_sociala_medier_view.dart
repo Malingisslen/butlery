@@ -6,7 +6,9 @@ import '../viewmodels/text_import_viewmodel.dart';
 import '../views/skriv_sjalv_recept_view.dart';
 import '../widgets/common/utility_components.dart';
 import '../widgets/common/state_widget.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
 import '../core/injection.dart';
 
 /// ✨ MIGRERAD VY MED SOURCEURL-STÖD - Nu med UtilityComponents
@@ -87,32 +89,36 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Klistra in recepttext')),
       body: Padding(
-        padding: AppTheme.screenPadding,
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           children: [
             // Instruktionstext
             _buildInstructions(context),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // Visa om receptet kommer från URL
             if (viewModel.sourceUrl != null) ...[
               Container(
                 width: double.infinity,
-                padding: AppTheme.cardPadding,
-                decoration: AppTheme.infoBoxDecoration(context),
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundTint,
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.divider),
+                ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.link,
-                      size: AppTheme.iconSizeInfo,
+                      size: AppDimensions.iconSizeM,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    SizedBox(width: AppTheme.spacingSm),
+                    SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
                         'Importerat från: ${viewModel.sourceUrl}',
-                        style: AppTheme.captionStyle.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textMedium,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -121,7 +127,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                   ],
                 ),
               ),
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
             ],
 
             // Textfält för input
@@ -141,12 +147,12 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                       '1. Stek löken\n'
                       '2. Tillsätt färs och stek\n'
                       '3. Häll i tomaterna och låt sjuda',
-                  hintStyle: AppTheme.inputHintStyle,
+                  hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
                   border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
                   suffixIcon: viewModel.inputText.isNotEmpty
                       ? IconButton(
-                          icon: AppTheme.actionIcon(context, Icons.clear),
+                          icon: const Icon(Icons.clear),
                           onPressed: viewModel.clearInput,
                         )
                       : null,
@@ -159,7 +165,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                 textAlignVertical: TextAlignVertical.top,
               ),
             ),
-            AppTheme.mediumGap,
+            const SizedBox(height: AppDimensions.spacingXl),
 
             // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
             UtilityComponents.primaryButton(
@@ -176,7 +182,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
 
             // Error message
             if (viewModel.hasError) ...[
-              AppTheme.smallGap,
+              const SizedBox(height: AppDimensions.spacingM),
               StateWidget.error(
                 message: viewModel.error!,
               ),
@@ -190,8 +196,12 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
   Widget _buildInstructions(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: AppTheme.cardPadding,
-      decoration: AppTheme.infoBoxDecoration(context),
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundTint,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -199,24 +209,24 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
             children: [
               Icon(
                 Icons.info_outline,
-                size: AppTheme.iconSizeInfo,
+                size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              SizedBox(width: AppTheme.spacingSm),
+              SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Tips för bästa resultat',
-                style: AppTheme.formLabelStyle.copyWith(
+                style: AppTextStyles.labelLarge.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],
           ),
-          AppTheme.smallGap,
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
             '• Klistra in hela receptet inklusive ingredienser\n'
             '• Se till att ingredienser kommer före instruktioner\n'
             '• Texten kan komma från Instagram, TikTok, Facebook etc.',
-            style: AppTheme.captionStyle,
+            style: AppTextStyles.bodySmall,
           ),
         ],
       ),

@@ -1,0 +1,234 @@
+// lib/utils/text/unit_converter.dart
+
+import 'text_formatting.dart';
+
+/// SmartUnitConverter - Smart unit conversion utilities
+///
+/// Provides unit conversion logic with American to Swedish conversions.
+class SmartUnitConverter {
+  /// Konverterar enheter till mer läsbara format när det är vettigt
+  /// Exempel: 15 dl → 1,5 liter, 1200 g → 1,2 kg
+  static ConvertedMeasurement convertToReadableUnit(
+    double quantity,
+    String unit,
+  ) {
+    final lowerUnit = unit.toLowerCase();
+
+    switch (lowerUnit) {
+      // AMERIKANSKA ENHETER → SVENSKA ENHETER
+
+      // Volym: amerikanska → svenska
+      case 'cup':
+      case 'cups':
+        return ConvertedMeasurement(quantity * 2.37, 'dl'); // 1 cup ≈ 2.37 dl
+
+      case 'fl oz':
+      case 'floz':
+      case 'oz': // fluid ounce
+        if (quantity >= 3.4) {
+          // 3.4 fl oz ≈ 1 dl
+          return ConvertedMeasurement(quantity / 3.4, 'dl');
+        } else {
+          return ConvertedMeasurement(
+            quantity * 29.6,
+            'ml',
+          ); // 1 fl oz ≈ 29.6 ml
+        }
+
+      case 'tbsp':
+      case 'tablespoon':
+      case 'tablespoons':
+        return ConvertedMeasurement(
+          quantity * 0.89,
+          'msk',
+        ); // 1 tbsp ≈ 0.89 msk
+
+      case 'tsp':
+      case 'teaspoon':
+      case 'teaspoons':
+        return ConvertedMeasurement(quantity * 0.84, 'tsk'); // 1 tsp ≈ 0.84 tsk
+
+      case 'pint':
+      case 'pints':
+        return ConvertedMeasurement(quantity * 4.73, 'dl'); // 1 pint ≈ 4.73 dl
+
+      case 'quart':
+      case 'quarts':
+        return ConvertedMeasurement(quantity * 9.46, 'dl'); // 1 quart ≈ 9.46 dl
+
+      case 'gallon':
+      case 'gallons':
+        return ConvertedMeasurement(quantity * 3.79, 'l'); // 1 gallon ≈ 3.79 l
+
+      // Vikt: amerikanska → svenska
+      case 'lb':
+      case 'lbs':
+      case 'pound':
+      case 'pounds':
+        return ConvertedMeasurement(quantity * 454, 'g'); // 1 lb ≈ 454 g
+
+      case 'ounce':
+      case 'ounces':
+        return ConvertedMeasurement(quantity * 28.3, 'g'); // 1 oz ≈ 28.3 g
+
+      // SVENSKA ENHETER (befintliga konverteringar)
+
+      // Volym: ml → cl → dl → liter
+      case 'ml':
+        if (quantity >= 1000) {
+          return ConvertedMeasurement(quantity / 1000, 'l');
+        } else if (quantity >= 100) {
+          return ConvertedMeasurement(quantity / 100, 'dl');
+        } else if (quantity >= 10) {
+          return ConvertedMeasurement(quantity / 10, 'cl');
+        }
+        break;
+
+      case 'cl':
+        if (quantity >= 100) {
+          return ConvertedMeasurement(quantity / 100, 'l');
+        } else if (quantity >= 10) {
+          return ConvertedMeasurement(quantity / 10, 'dl');
+        }
+        break;
+
+      case 'dl':
+        if (quantity >= 10) {
+          return ConvertedMeasurement(quantity / 10, 'l');
+        }
+        break;
+
+      // Vikt: g → kg
+      case 'g':
+        if (quantity >= 1000) {
+          return ConvertedMeasurement(quantity / 1000, 'kg');
+        }
+        break;
+
+      case 'mg':
+        if (quantity >= 1000) {
+          return ConvertedMeasurement(quantity / 1000, 'g');
+        }
+        break;
+
+      // Teskedar/matskedar → dl (ungefärliga konverteringar)
+      case 'krm':
+        if (quantity >= 5) {
+          // 5 krm ≈ 1 tsk
+          return ConvertedMeasurement(quantity / 5, 'tsk');
+        }
+        break;
+
+      case 'tsk':
+        if (quantity >= 3) {
+          // 3 tsk = 1 msk
+          return ConvertedMeasurement(quantity / 3, 'msk');
+        } else if (quantity >= 15) {
+          // 15 tsk ≈ 1 dl (fallback för stora mängder)
+          return ConvertedMeasurement(quantity / 15, 'dl');
+        }
+        break;
+
+      case 'msk':
+        if (quantity >= 5) {
+          // 5 msk ≈ 1 dl
+          return ConvertedMeasurement(quantity / 5, 'dl');
+        }
+        break;
+    }
+
+    // Ingen konvertering gjord
+    return ConvertedMeasurement(quantity, unit);
+  }
+
+  /// Kontrollerar om en konvertering förbättrar läsbarheten
+  static bool shouldConvert(double quantity, String unit) {
+    final converted = convertToReadableUnit(quantity, unit);
+
+    // Konvertera om enheten faktiskt ändrades
+    if (converted.unit != unit) {
+      // AMERIKANSKA → SVENSKA: konvertera ALLTID
+      final americanUnits = {
+        'cup',
+        'cups',
+        'oz',
+        'fl oz',
+        'floz',
+        'tbsp',
+        'tsp',
+        'lb',
+        'lbs',
+        'pound',
+        'pounds',
+        'ounce',
+        'ounces',
+        'pint',
+        'pints',
+        'quart',
+        'quarts',
+        'gallon',
+        'gallons',
+        'tablespoon',
+        'tablespoons',
+        'teaspoon',
+        'teaspoons',
+      };
+
+      if (americanUnits.contains(unit.toLowerCase())) {
+        return true; // Konvertera alltid amerikanska enheter till svenska
+      }
+
+      // SVENSKA ENHETER: befintliga regler
+      // För volym: konvertera alltid om vi går från dl till liter
+      if (unit.toLowerCase() == 'dl' && converted.unit == 'l') {
+        return true;
+      }
+
+      // För vikt: konvertera alltid om vi går från g till kg
+      if (unit.toLowerCase() == 'g' && converted.unit == 'kg') {
+        return true;
+      }
+
+      // För små enheter: konvertera alltid uppåt
+      if (unit.toLowerCase() == 'krm' && converted.unit == 'tsk') {
+        return true;
+      }
+
+      if (unit.toLowerCase() == 'tsk' &&
+          (converted.unit == 'msk' || converted.unit == 'dl')) {
+        return true;
+      }
+
+      if (unit.toLowerCase() == 'msk' && converted.unit == 'dl') {
+        return true;
+      }
+
+      // För andra konverteringar: kolla om det blir mer läsbart
+      final originalDecimals = _countDecimals(quantity);
+      final convertedDecimals = _countDecimals(converted.quantity);
+
+      return convertedDecimals <= originalDecimals ||
+          converted.quantity.round() == converted.quantity;
+    }
+
+    return false;
+  }
+
+  static int _countDecimals(double value) {
+    final str = value.toString();
+    if (str.contains('.')) {
+      return str.split('.')[1].length;
+    }
+    return 0;
+  }
+}
+
+class ConvertedMeasurement {
+  final double quantity;
+  final String unit;
+
+  ConvertedMeasurement(this.quantity, this.unit);
+
+  @override
+  String toString() => '${TextFormatting.toSwedishHalfFraction(quantity)} $unit';
+}
