@@ -138,10 +138,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
               // Recept-lista
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
-                  child: _buildRecipeList(context, viewModel),
-                ),
+                child: _buildRecipeList(context, viewModel),
               ),
 
               // Import-knappar
@@ -320,7 +317,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
-          child: ContentCard.compactRecipe(
+          child: ContentCard.recipe(
             recipe: recipe,
             onTap: () => Navigator.pushNamed(
               context,

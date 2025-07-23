@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
+import '../../../theme/app_dimensions.dart';
 import '../../../models/unified/unified_shopping_item.dart';
 
 /// Individual shopping item tile components
@@ -16,35 +17,35 @@ class ShoppingItemTiles {
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 2),
+      margin: EdgeInsets.only(bottom: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
         color: AppColors.neutralLight,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
           color: AppColors.neutralMedium.withValues(alpha: 0.2),
-          width: 1,
+          width: AppDimensions.borderWidthStandard,
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => onItemTap(item),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(AppDimensions.paddingM),
             child: Row(
               children: [
                 // Checkbox
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: AppDimensions.iconSizeL,
+                  height: AppDimensions.iconSizeL,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isCompleted
                           ? AppColors.success
                           : AppColors.neutralMedium.withValues(alpha: 0.6),
-                      width: 2,
+                      width: AppDimensions.borderWidthThick,
                     ),
                     color: isCompleted
                         ? AppColors.success
@@ -53,13 +54,13 @@ class ShoppingItemTiles {
                   child: isCompleted
                       ? Icon(
                           Icons.check,
-                          size: 16,
+                          size: AppDimensions.iconSizeS,
                           color: AppColors.neutralLight,
                         )
                       : null,
                 ),
 
-                const SizedBox(width: 12),
+                SizedBox(width: AppDimensions.paddingM),
 
                 // Item details
                 Expanded(
@@ -121,26 +122,26 @@ class ShoppingItemTiles {
                     IconButton(
                       icon: Icon(
                         Icons.edit,
-                        size: 16,
+                        size: AppDimensions.iconSizeS,
                         color: AppColors.neutralMedium,
                       ),
                       onPressed: () => onEditItem(item),
                       tooltip: 'Redigera',
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      padding: EdgeInsets.all(AppDimensions.spacingM),
+                      constraints: BoxConstraints(minWidth: AppDimensions.minTouchTarget, minHeight: AppDimensions.minTouchTarget),
                     ),
 
                     // Delete button
                     IconButton(
                       icon: Icon(
                         Icons.delete,
-                        size: 16,
+                        size: AppDimensions.iconSizeS,
                         color: AppColors.error.withValues(alpha: 0.7),
                       ),
                       onPressed: () => onDeleteItem(item),
                       tooltip: 'Ta bort',
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      padding: EdgeInsets.all(AppDimensions.spacingM),
+                      constraints: BoxConstraints(minWidth: AppDimensions.minTouchTarget, minHeight: AppDimensions.minTouchTarget),
                     ),
                   ],
                 ),

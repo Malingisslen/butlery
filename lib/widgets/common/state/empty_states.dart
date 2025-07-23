@@ -32,13 +32,15 @@ class EmptyStates {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Ikon
-              Icon(
-                icon ?? emptyConfig.icon,
-                size: iconSize ?? AppDimensions.iconSizeXl,
-                color: iconColor ?? Theme.of(context).colorScheme.outline,
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              // Ikon (hide if Icons.clear is used as "no icon" marker)
+              if (icon != Icons.clear) ...[
+                Icon(
+                  icon ?? emptyConfig.icon,
+                  size: iconSize ?? AppDimensions.iconSizeXl,
+                  color: iconColor ?? Theme.of(context).colorScheme.outline,
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
+              ],
 
               // Titel
               Text(
@@ -98,12 +100,26 @@ class EmptyStates {
           subtitle: 'Prova att söka på något annat eller rensa sökningen',
           actionIcon: Icons.clear,
         );
+      case EmptyStateVariant.noFriendsSearchResults:
+        return _EmptyStateConfig(
+          icon: Icons.search_off,
+          title: 'Inga vänner matchade din sökning',
+          subtitle: 'Prova att söka på något annat eller rensa sökningen',
+          actionIcon: Icons.clear,
+        );
+      case EmptyStateVariant.noGroupsSearchResults:
+        return _EmptyStateConfig(
+          icon: Icons.search_off,
+          title: 'Inga grupper matchade din sökning',
+          subtitle: 'Prova att söka på något annat eller rensa sökningen',
+          actionIcon: Icons.clear,
+        );
       case EmptyStateVariant.noMenu:
         return _EmptyStateConfig(
-          icon: Icons.restaurant,
+          icon: Icons.restaurant_menu,
           title: 'Ingen meny genererad ännu',
           subtitle: 'Skriv vad du vill ha eller tryck på knappen nedan',
-          actionIcon: Icons.auto_awesome,
+          actionIcon: null,
         );
       case EmptyStateVariant.noShoppingList:
         return _EmptyStateConfig(

@@ -162,7 +162,6 @@ class GroupInvitationsView extends StatelessWidget {
     return Card(
       elevation: AppDimensions.elevationLow,
       // ✅ KORRIGERAT: Använd largeRadius som finns definierat
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
@@ -219,14 +218,6 @@ class GroupInvitationsView extends StatelessWidget {
                   onPressed: isJoining
                       ? null
                       : () => _showJoinConfirmation(context, group, viewModel),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: AppColors.cardWhite,
-                    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                    ),
-                  ),
                   child: isJoining
                       ? Row(
                           mainAxisSize: MainAxisSize.min,
@@ -351,8 +342,7 @@ class GroupInvitationsView extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         // ✅ KORRIGERAT: Använd largeRadius istället för icke-existerande dialogShape
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
-        title: Text(
+          title: Text(
           'Gå med i ${group.name}?',
           // ✅ KORRIGERAT: Använd sectionTitleStyle istället för icke-existerande dialogTitleStyle
           style: AppTextStyles.titleLarge,

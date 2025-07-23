@@ -21,6 +21,7 @@ dependencies:
   firebase_storage: ^12.3.2
   firebase_analytics: ^11.3.3
   firebase_app_check: ^0.3.2+7
+  firebase_messaging: ^15.1.3  # For push notifications
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
@@ -66,6 +67,7 @@ dependencies:
   badges: ^3.1.2
   flutter_mentions: ^2.0.1  
   share_handler: ^0.0.22     # UPPDATERAD: Senaste stabila versionen för inkommande shares
+  receive_intent: ^0.2.0     # För hantering av deep links och app launch intents
 
 dev_dependencies:
   flutter_test:

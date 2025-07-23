@@ -681,6 +681,10 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   void dispose() {
     AppLogger.info('🗑️ RealtimeMenuViewModel disposing...');
 
+    // CRITICAL: Ensure subscription cleanup
+    _menuSubscription?.cancel();
+    _menuSubscription = null;
+    
     stopWatching();
     _menuService.removeListener(_onServiceStateChanged);
 

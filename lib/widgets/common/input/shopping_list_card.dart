@@ -36,16 +36,8 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        side: BorderSide(
-          color: isSelected ? AppColors.primaryBlue : AppColors.divider,
-          width: isSelected ? 2 : 1,
-        ),
-      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
@@ -74,7 +66,7 @@ class ShoppingListCard extends StatelessWidget {
           padding: EdgeInsets.all(AppDimensions.spacingXs),
           decoration: BoxDecoration(
             color: _getListTypeColor().withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Icon(
             _getListTypeIcon(),
@@ -174,7 +166,7 @@ class ShoppingListCard extends StatelessWidget {
       padding: EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +227,7 @@ class ShoppingListCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

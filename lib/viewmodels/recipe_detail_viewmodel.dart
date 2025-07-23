@@ -67,8 +67,14 @@ class RecipeDetailViewModel extends ChangeNotifier {
       final success = await _recipeService.deleteRecipe(_recipe.id);
 
       if (success) {
-        // Logga analytics - använd Firebase Analytics direkt för nu
-        // TODO: Lägg till dedikerad metod i AnalyticsService för recipe_deleted
+        // Logga analytics för recipe deletion
+        await _analyticsService.logRecipeDeleted(
+          recipeId: _recipe.id,
+          recipeTitle: _recipe.title,
+          mealType: _recipe.mealType,
+          isPersonal: _recipe.isPersonal,
+          createdAt: _recipe.createdAt,
+        );
 
         return true;
       } else {

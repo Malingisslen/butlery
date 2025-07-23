@@ -19,43 +19,18 @@ class ConfirmationDialogs {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            ),
             title: Text(title, style: AppTextStyles.headlineSmall),
             content: Text(message, style: AppTextStyles.bodyLarge),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryBlue,
-                  backgroundColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                  side: BorderSide(color: AppColors.primaryBlue),
-                ),
                 child: Text(cancelText, style: AppTextStyles.labelLarge),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: confirmColor != null
                     ? TextButton.styleFrom(foregroundColor: confirmColor)
-                    : ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
-                        foregroundColor: AppColors.cardWhite,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.paddingL,
-                          vertical: AppDimensions.paddingM,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                        ),
-                      ),
+                    : null,
                 child: Text(confirmText, style: AppTextStyles.labelLarge),
               ),
             ],
@@ -93,9 +68,6 @@ class ConfirmationDialogs {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            ),
             title: Text(title, style: AppTextStyles.headlineSmall),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -128,33 +100,10 @@ class ConfirmationDialogs {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryBlue,
-                  backgroundColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                  side: BorderSide(color: AppColors.primaryBlue),
-                ),
                 child: Text(cancelText, style: AppTextStyles.labelLarge),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: AppColors.cardWhite,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                ),
                 child: Text(confirmText, style: AppTextStyles.labelLarge),
               ),
             ],
@@ -175,9 +124,6 @@ class ConfirmationDialogs {
     return await showDialog<int?>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
         title: Text(title, style: AppTextStyles.titleLarge),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -203,9 +149,6 @@ class ConfirmationDialogs {
                       style: AppTextStyles.bodyLarge,
                     ),
                     onTap: () => Navigator.of(context).pop(index),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                    ),
                   );
                 },
               ),
@@ -215,17 +158,6 @@ class ConfirmationDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.backgroundBeige,
-              foregroundColor: AppColors.textDark,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
-                vertical: AppDimensions.paddingM,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              ),
-            ),
             child: Text(cancelText, style: AppTextStyles.labelLarge),
           ),
         ],
@@ -250,9 +182,6 @@ class ConfirmationDialogs {
     return await showDialog<String?>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
         title: Text(title, style: AppTextStyles.titleLarge),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -268,16 +197,6 @@ class ConfirmationDialogs {
               maxLength: maxLength,
               decoration: InputDecoration(
                 hintText: hintText,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  borderSide: BorderSide(
-                    color: AppColors.primaryBlue,
-                    width: 2,
-                  ),
-                ),
               ),
             ),
           ],
@@ -285,17 +204,6 @@ class ConfirmationDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.backgroundBeige,
-              foregroundColor: AppColors.textDark,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
-                vertical: AppDimensions.paddingM,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              ),
-            ),
             child: Text(cancelText, style: AppTextStyles.labelLarge),
           ),
           TextButton(
@@ -306,17 +214,6 @@ class ConfirmationDialogs {
               }
               Navigator.of(context).pop(text);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: AppColors.neutralLight,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
-                vertical: AppDimensions.paddingM,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              ),
-            ),
             child: Text(confirmText, style: AppTextStyles.labelLarge),
           ),
         ],

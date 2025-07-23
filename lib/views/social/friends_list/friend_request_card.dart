@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import '../../../models/friend_request.dart';
 import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../widgets/common/social_components.dart';
+import '../../../widgets/common/content_card.dart';
 import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_colors.dart';
 import '../../../core/utils/snackbar_utils.dart';
 
 /// FriendRequestCard - Friend request card component
@@ -16,81 +17,49 @@ class FriendRequestCard {
     FriendRequest request,
     FriendsViewModel viewModel,
   ) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(AppDimensions.spacingL),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                SocialComponents.avatar(
-                  size: ImageSize.small,
-                  imageUrl: viewModel.getAvatarUrlForUser(request.fromUserId),
-                  displayName: viewModel.getDisplayNameForUser(request.fromUserId),
+    return ContentCard.friendRequest(
+      request: request,
+      showFullDetails: true,
+      trailing: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: AppDimensions.buttonWidth, // Fixed width for consistent button sizes
+            child: FilledButton.icon(
+              onPressed: viewModel.isLoading
+                  ? null
+                  : () => _acceptRequest(context, request, viewModel),
+              icon: Icon(Icons.check, size: AppDimensions.iconSizeS),
+              label: const Text('Acceptera'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXs,
                 ),
-                SizedBox(width: AppDimensions.spacingL),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Vänskapsförfrågan',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      if (request.message?.isNotEmpty == true)
-                        Text(
-                          request.message!,
-                          style: Theme.of(context).textTheme.bodySmall,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        'Skickat ${request.timeAgoText}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-            SizedBox(height: AppDimensions.spacingL),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _rejectRequest(context, request, viewModel),
-                    icon: const Icon(Icons.close),
-                    label: const Text('Avböj'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ),
+          ),
+          SizedBox(height: AppDimensions.spacingXs),
+          SizedBox(
+            width: AppDimensions.buttonWidth, // Match width for consistency
+            child: OutlinedButton.icon(
+              onPressed: viewModel.isLoading
+                  ? null
+                  : () => _rejectRequest(context, request, viewModel),
+              icon: Icon(Icons.close, size: AppDimensions.iconSizeS),
+              label: const Text('Avböj'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.error,
+                side: BorderSide(color: AppColors.error),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXs,
                 ),
-                SizedBox(width: AppDimensions.spacingL),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _acceptRequest(context, request, viewModel),
-                    icon: const Icon(Icons.check),
-                    label: const Text('Acceptera'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

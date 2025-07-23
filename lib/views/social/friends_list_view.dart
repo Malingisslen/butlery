@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/friends_viewmodel.dart';
 import '../../services/unified/unified_friends_service.dart';
-import '../../models/group_invitation.dart';
 import '../../widgets/common/social_components.dart';
 import '../../widgets/common/layout_components.dart';
 import '../../widgets/common/search_filter_widget.dart';
@@ -18,6 +17,7 @@ import 'friends_list/friends_tab.dart';
 import 'friends_list/requests_tab.dart';
 import 'friends_list/search_tab.dart';
 import 'friends_list/groups_tab.dart';
+import 'friends_list/group_search_tab.dart';
 
 class FriendsListView extends StatelessWidget {
   const FriendsListView({super.key});
@@ -51,7 +51,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() {
@@ -65,7 +65,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null && args['tabIndex'] != null) {
         final tabIndex = args['tabIndex'] as int;
-        if (tabIndex >= 0 && tabIndex < 4) {
+        if (tabIndex >= 0 && tabIndex < 3) {
           _tabController.animateTo(tabIndex);
           setState(() {
             _currentTabIndex = tabIndex;
@@ -93,53 +93,45 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   Widget build(BuildContext context) {
     return Consumer2<FriendsViewModel, UnifiedFriendsService>(
       builder: (context, viewModel, friendsService, child) {
-        final pendingInvitationsCount =
-            friendsService.sentInvitations.where((inv) => inv.status == GroupInvitationStatus.pending).length;
 
         return LayoutComponents.mainMenu(
           currentIndex: null,
-          body: Scaffold(
-            appBar: AppBar(
-              title: const Text('Vänner & Grupper'),
-              bottom: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelPadding:
-                    EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
-                tabs: [
-                  Tab(
-                    icon: const Icon(Icons.people),
-                    text: 'Vänner (${viewModel.friends.length})',
-                  ),
-                  Tab(
-                    icon: Badge(
-                      isLabelVisible: viewModel.incomingRequests.isNotEmpty,
-                      label: Text('${viewModel.incomingRequests.length}'),
-                      child: const Icon(Icons.person_add),
+          title: 'Vänner & Grupper',
+          body: Column(
+            children: [
+              // TabBar with proper styling
+              Container(
+                color: Theme.of(context).colorScheme.surface,
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: false, // Center the tabs
+                  tabAlignment: TabAlignment.fill, // Fill available space
+                  labelColor: AppColors.primaryBlue,
+                  unselectedLabelColor: AppColors.textMedium,
+                  indicatorColor: AppColors.primaryBlue,
+                  indicatorWeight: AppDimensions.borderWidthThick,
+                  tabs: [
+                    Tab(
+                      icon: const Icon(Icons.people),
+                      text: 'Vänner',
                     ),
-                    text: 'Förfrågningar',
-                  ),
-                  Tab(
-                    icon: const Icon(Icons.search),
-                    text: 'Sök',
-                  ),
-                  Tab(
-                    icon: Badge(
-                      isLabelVisible: pendingInvitationsCount > 0,
-                      label: Text('$pendingInvitationsCount'),
-                      backgroundColor: AppColors.warning,
-                      child: const Icon(Icons.group),
+                    Tab(
+                      icon: const Icon(Icons.groups),
+                      text: 'Grupper',
                     ),
-                    text: 'Grupper (${friendsService.categories.categoriesList.length})',
-                  ),
-                ],
+                    Tab(
+                      icon: Badge(
+                        isLabelVisible: viewModel.incomingRequests.isNotEmpty,
+                        label: Text('${viewModel.incomingRequests.length}'),
+                        child: const Icon(Icons.person_add),
+                      ),
+                      text: 'Förfrågningar',
+                    ),
+                  ],
+                ),
               ),
-            ),
-            body: Column(
-              children: [
-                // Error display
-                if (viewModel.hasError)
+              // Error display
+              if (viewModel.hasError)
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(AppDimensions.spacingL),
@@ -166,62 +158,98 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         ),
                       ],
                     ),
-                  ),
+                ),
 
-                // SearchFilterWidget för sök-tab (index 2)
-                if (_currentTabIndex == 2)
-                  SearchFilterWidget.searchOnly(
-                    searchQuery: _searchQuery,
-                    onSearchChanged: _onSearchChanged,
-                    searchHint: 'Sök efter vänner...',
-                    autofocus: false,
-                    padding: EdgeInsets.all(AppDimensions.spacingL),
-                    showStats: true,
-                    resultCount: viewModel.searchResults.length,
-                  ),
+              // Search functionality in both friends and groups tabs
+              if (_currentTabIndex == 0)
+                SearchFilterWidget.searchOnly(
+                  searchQuery: _searchQuery,
+                  onSearchChanged: _onSearchChanged,
+                  searchHint: 'Sök efter vänner...',
+                  autofocus: false,
+                  padding: EdgeInsets.all(AppDimensions.spacingL),
+                  showStats: true,
+                  resultCount: viewModel.searchResults.length,
+                ),
+              if (_currentTabIndex == 1)
+                SearchFilterWidget.searchOnly(
+                  searchQuery: _searchQuery,
+                  onSearchChanged: _onSearchChanged,
+                  searchHint: 'Sök efter grupper...',
+                  autofocus: false,
+                  padding: EdgeInsets.all(AppDimensions.spacingL),
+                  showStats: true,
+                  resultCount: viewModel.searchResults.length,
+                ),
 
-                // Tab content
-                Expanded(
-                  child: IndexedStack(
-                    index: _currentTabIndex,
+              // Tab content
+              Expanded(
+                child: IndexedStack(
+                  index: _currentTabIndex,
+                  children: [
+                    _buildFriendsTab(viewModel), // Vänner
+                    _buildGroupsTab(friendsService), // Grupper (with search)
+                    _buildRequestsTab(viewModel), // Förfrågningar
+                  ],
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: _currentTabIndex == 1
+              ? FloatingActionButton(
+                  onPressed: () => _showCreateGroupDialog(viewModel),
+                  child: Stack(
                     children: [
-                      _buildFriendsTab(viewModel),
-                      _buildRequestsTab(viewModel),
-                      _buildSearchTab(viewModel),
-                      _buildGroupsTab(friendsService),
+                      Center(
+                        child: Icon(
+                          Icons.groups, 
+                          size: AppDimensions.iconSizeL,
+                        ),
+                      ),
+                      Positioned(
+                        top: AppDimensions.spacingXs,
+                        right: AppDimensions.spacingXs,
+                        child: Container(
+                          width: AppDimensions.iconSizeS,
+                          height: AppDimensions.iconSizeS,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.add, 
+                            size: AppDimensions.iconSizeS,
+                            color: AppColors.cardWhite,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            floatingActionButton: _currentTabIndex == 3
-                ? FloatingActionButton.extended(
-                    onPressed: () => _showCreateGroupDialog(viewModel),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Skapa grupp'),
-                  )
-                : null,
-          ),
+                )
+              : null,
         );
       },
     );
   }
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
-    return FriendsTab.build(context, viewModel);
+    // Friends tab with search functionality
+    return _searchQuery.isEmpty 
+        ? FriendsTab.build(context, viewModel)
+        : SearchTab.build(context, viewModel, _searchQuery, isGroupsSearch: false);
   }
 
   Widget _buildRequestsTab(FriendsViewModel viewModel) {
     return RequestsTab.build(context, viewModel);
   }
 
-  Widget _buildSearchTab(FriendsViewModel viewModel) {
-    return SearchTab.build(context, viewModel, _searchQuery);
+  Widget _buildGroupsTab(UnifiedFriendsService friendsService) {
+    // Groups tab with search functionality
+    return _searchQuery.isEmpty 
+        ? GroupsTab.build(context, friendsService)
+        : GroupSearchTab.build(context, friendsService, _searchQuery);
   }
 
-  Widget _buildGroupsTab(UnifiedFriendsService friendsService) {
-    return GroupsTab.build(context, friendsService);
-  }
 
   // ✅ UPPDATERAD: Använd SocialComponents.showCreateGroupDialog
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {

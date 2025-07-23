@@ -17,6 +17,11 @@ class UserProfile with JsonSerializableMixin {
   final DateTime joinedAt;
   final DateTime lastActiveAt;
   final bool isOnline;
+  
+  // Notification system fields
+  final String? fcmToken;           // Firebase Cloud Messaging token
+  final DateTime? fcmTokenUpdatedAt; // When token was last updated
+  final bool notificationsEnabled;  // Master notification toggle
 
   UserProfile({
     required this.uid,
@@ -31,6 +36,10 @@ class UserProfile with JsonSerializableMixin {
     required this.joinedAt,
     required this.lastActiveAt,
     this.isOnline = false,
+    // Notification fields
+    this.fcmToken,
+    this.fcmTokenUpdatedAt,
+    this.notificationsEnabled = true, // Default to enabled
   });
 
   /// Create copy with updated values
@@ -46,6 +55,10 @@ class UserProfile with JsonSerializableMixin {
     DateTime? joinedAt,
     DateTime? lastActiveAt,
     bool? isOnline,
+    // Notification fields
+    String? fcmToken,
+    DateTime? fcmTokenUpdatedAt,
+    bool? notificationsEnabled,
   }) {
     return UserProfile(
       uid: uid,
@@ -60,6 +73,10 @@ class UserProfile with JsonSerializableMixin {
       joinedAt: joinedAt ?? this.joinedAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       isOnline: isOnline ?? this.isOnline,
+      // Notification fields
+      fcmToken: fcmToken ?? this.fcmToken,
+      fcmTokenUpdatedAt: fcmTokenUpdatedAt ?? this.fcmTokenUpdatedAt,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 
@@ -105,6 +122,20 @@ class UserProfile with JsonSerializableMixin {
     }
   }
 
+  /// Check if FCM token is valid (not older than 30 days)
+  bool get hasFreshFCMToken {
+    if (fcmToken == null || fcmTokenUpdatedAt == null) return false;
+    
+    final now = DateTime.now();
+    final tokenAge = now.difference(fcmTokenUpdatedAt!);
+    return tokenAge.inDays < 30; // FCM tokens should be refreshed regularly
+  }
+
+  /// Check if user can receive push notifications
+  bool get canReceiveNotifications {
+    return notificationsEnabled && fcmToken != null && fcmToken!.isNotEmpty;
+  }
+
   /// Time since joined
   String get memberSinceText {
     final now = DateTime.now();
@@ -133,6 +164,10 @@ class UserProfile with JsonSerializableMixin {
       'joinedAt': Timestamp.fromDate(joinedAt),
       'lastActiveAt': Timestamp.fromDate(lastActiveAt),
       'isOnline': isOnline,
+      // Notification fields
+      'fcmToken': fcmToken,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? Timestamp.fromDate(fcmTokenUpdatedAt!) : null,
+      'notificationsEnabled': notificationsEnabled,
     };
   }
 
@@ -151,6 +186,10 @@ class UserProfile with JsonSerializableMixin {
       'joinedAt': serializeDateTime(joinedAt),
       'lastActiveAt': serializeDateTime(lastActiveAt),
       'isOnline': isOnline,
+      // Notification fields
+      'fcmToken': fcmToken,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? serializeDateTime(fcmTokenUpdatedAt!) : null,
+      'notificationsEnabled': notificationsEnabled,
     };
   }
 
@@ -172,6 +211,10 @@ class UserProfile with JsonSerializableMixin {
       lastActiveAt:
           (data['lastActiveAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isOnline: data['isOnline'] as bool? ?? false,
+      // Notification fields
+      fcmToken: data['fcmToken'] as String?,
+      fcmTokenUpdatedAt: (data['fcmTokenUpdatedAt'] as Timestamp?)?.toDate(),
+      notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
     );
   }
 
@@ -190,6 +233,10 @@ class UserProfile with JsonSerializableMixin {
       joinedAt: UserProfile._deserializeDateTime(json['joinedAt']) ?? DateTime.now(),
       lastActiveAt: UserProfile._deserializeDateTime(json['lastActiveAt']) ?? DateTime.now(),
       isOnline: json['isOnline'] as bool? ?? false,
+      // Notification fields
+      fcmToken: json['fcmToken'] as String?,
+      fcmTokenUpdatedAt: UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
+      notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
     );
   }
 

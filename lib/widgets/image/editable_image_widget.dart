@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../services/image_picker_service.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
@@ -349,11 +350,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       message: tooltip,
       child: Material(
         color: isDestructive ? AppColors.error : AppColors.cardColor,
-        borderRadius: BorderRadius.circular(20),
-        elevation: 4,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Container(
             padding: const EdgeInsets.all(8),
             child: Icon(

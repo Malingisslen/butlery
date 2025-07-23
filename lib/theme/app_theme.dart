@@ -16,8 +16,6 @@ class AppTheme {
   /// Create the complete light theme for the app
   static ThemeData get lightTheme => _createTheme(AppColors.lightColorScheme);
 
-  /// Create the dark theme for the app (future enhancement)
-  static ThemeData get darkTheme => _createTheme(AppColors.darkColorScheme);
 
   /// Private helper to create theme with given color scheme
   /// Eliminates duplication between light and dark themes
@@ -55,6 +53,9 @@ class AppTheme {
       sliderTheme: ComponentThemes.sliderTheme,
       progressIndicatorTheme: ComponentThemes.progressIndicatorTheme,
       
+      // Background colors - explicit for consistency
+      scaffoldBackgroundColor: AppColors.backgroundBeige,
+      
       // Page transitions
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -70,33 +71,6 @@ class AppTheme {
     );
   }
 
-  // ===== ESSENTIAL TEXT CONSTANTS =====
-  // These are content formatting constants, not theme properties
-
-  /// Text divider character for recipes
-  static const String dividerChar = ' • ';
-
-  /// Bullet point character for lists
-  static const String bulletPoint = '• ';
-
-  /// Number divider for numbered lists
-  static const String numberDivider = '. ';
-
-  // ===== UNICODE SYMBOLS =====
-  // UI symbols for various elements
-
-  /// Unicode symbols for various UI elements
-  static const String checkMark = '✓';
-  static const String xMark = '✗';
-  static const String star = '★';
-  static const String starOutline = '☆';
-  static const String heart = '♥';
-  static const String heartOutline = '♡';
-  static const String clock = '⏰';
-  static const String portions = '👥';
-  static const String difficulty = '🔥';
-  static const String share = '📤';
-  static const String download = '📥';
 }
 
 /// Extension for additional theme properties

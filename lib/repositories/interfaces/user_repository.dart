@@ -26,4 +26,13 @@ abstract class UserRepository extends Repository<UserProfile> {
 
   /// Check if a display name is available
   Future<bool> isDisplayNameAvailable(String displayName);
+
+  /// Update FCM token for push notifications
+  Future<void> updateFCMToken(String userId, String token);
+
+  /// Update notification settings
+  Future<void> updateNotificationSettings(String userId, bool enabled);
+
+  /// Clear FCM token (e.g., on logout)
+  Future<void> clearFCMToken(String userId);
 }

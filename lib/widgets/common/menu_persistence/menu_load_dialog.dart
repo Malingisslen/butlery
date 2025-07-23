@@ -39,12 +39,12 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     });
 
     try {
-      // TODO: Implement actual load logic
-      await Future.delayed(const Duration(seconds: 1));
+      // FIXED: Use actual ViewModel saved menus
+      await widget.viewModel.refreshSavedMenus(); // Ensure menus are loaded
       
       if (mounted) {
         setState(() {
-          _savedMenus = []; // Empty for now
+          _savedMenus = widget.viewModel.savedMenus;
           _isLoading = false;
         });
       }
@@ -219,17 +219,26 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
   Future<void> _loadMenu(dynamic menu) async {
     try {
-      // TODO: Implement actual load logic
-      await Future.delayed(const Duration(milliseconds: 500));
+      // FIXED: Use actual ViewModel load logic
+      final success = await widget.viewModel.loadSavedMenu(menu.key);
       
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Meny laddad!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Meny "${menu.name}" laddad!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.viewModel.error ?? 'Kunde inte ladda meny'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -267,19 +276,28 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
     if (shouldDelete == true) {
       try {
-        // TODO: Implement actual delete logic
-        await Future.delayed(const Duration(milliseconds: 500));
+        // FIXED: Use actual ViewModel delete logic
+        final success = await widget.viewModel.deleteSavedMenu(menu.key);
         
         if (mounted) {
-          setState(() {
-            _savedMenus.remove(menu);
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Meny borttagen'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          if (success) {
+            setState(() {
+              _savedMenus.remove(menu);
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Meny "${menu.name}" borttagen'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(widget.viewModel.error ?? 'Kunde inte ta bort meny'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
         }
       } catch (e) {
         if (mounted) {

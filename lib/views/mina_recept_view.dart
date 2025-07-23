@@ -204,7 +204,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           children: [
             SocialComponents.avatar(
               user: userService.currentUserProfile,
-              size: ImageSize.medium,
+              size: ImageSize.extraLarge,
               showOnlineStatus: true,
               isClickable: true,
               onTap: () => LayoutComponents.showProfileMenu(
@@ -494,30 +494,24 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         }
       },
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+        padding: EdgeInsets.zero, // Remove all ListView padding
         itemCount: recipes.length,
         itemBuilder: (context, index) {
           final recipe = recipes[index];
 
-          return Padding(
+          return ContentCard.recipe(
             key: ValueKey(recipe.id),
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
-              vertical: AppDimensions.spacingXs,
-            ),
-            child: ContentCard.recipe(
-              recipe: recipe,
-              onTap: () async {
-                // Navigera till detaljer
-                await Navigator.pushNamed(
-                  context,
-                  '/receptDetalj',
-                  arguments: recipe,
-                );
+            recipe: recipe,
+            onTap: () async {
+              // Navigera till detaljer
+              await Navigator.pushNamed(
+                context,
+                '/receptDetalj',
+                arguments: recipe,
+              );
 
-                // Ingen refresh behövs - ViewModel lyssnar på RecipeService
-              },
-            ),
+              // Ingen refresh behövs - ViewModel lyssnar på RecipeService
+            },
           );
         },
       ),

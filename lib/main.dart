@@ -6,6 +6,7 @@ import 'dart:async';
 import 'core/constants/routes.dart';
 import 'core/router/app_router.dart';
 import 'theme/app_dimensions.dart';
+import 'package:receive_intent/receive_intent.dart' as receive_intent;
 
 // Firebase Analytics (för observer)
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -26,6 +27,7 @@ import 'core/injection.dart';
 // Services
 import 'services/offline_service.dart';
 import 'services/analytics_service.dart';
+import 'package:go_router/go_router.dart';
 
 // Removed unused model imports
 
@@ -103,12 +105,123 @@ class _ButleryAppState extends State<ButleryApp> {
     }
 
     try {
-      // TODO: Get initial deep link from platform
-      // This would typically come from app launch parameters
-      // For now, just log that deep link handling is ready
+      // Get initial deep link from app launch
+      final receivedIntent = await receive_intent.ReceiveIntent.getInitialIntent();
+      
+      if (receivedIntent != null && receivedIntent.data != null) {
+        debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
+        await _processDeepLink(receivedIntent.data!);
+      }
+      
+      // Note: receive_intent package doesn't support streaming
+      // Deep links while app is running would typically be handled by
+      // the operating system's intent system automatically
+      
       debugPrint('🔗 Deep link handling initialized');
     } catch (e) {
       debugPrint('⚠️ Deep link initialization failed: $e');
+    }
+  }
+
+  /// Process incoming deep link and navigate accordingly
+  Future<void> _processDeepLink(String deepLinkUrl) async {
+    try {
+      final uri = Uri.parse(deepLinkUrl);
+      debugPrint('🔗 Processing deep link: ${uri.path}');
+
+      // Wait for app to be ready
+      if (!AppInitializer.isBackgroundInitialized) {
+        debugPrint('🔗 Waiting for app initialization before processing deep link');
+        while (!AppInitializer.isBackgroundInitialized) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+      }
+
+      // Extract path and parameters
+      final path = uri.path;
+      final params = uri.queryParameters;
+
+      // Route based on deep link type
+      if (path.startsWith('/invite')) {
+        await _handleInvitationLink(params);
+      } else if (path.startsWith('/recipe')) {
+        await _handleRecipeLink(params);
+      } else if (path.startsWith('/menu')) {
+        await _handleMenuLink(params);
+      } else if (path.startsWith('/shopping')) {
+        await _handleShoppingLink(params);
+      } else {
+        debugPrint('⚠️ Unknown deep link path: $path');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error processing deep link: $e');
+    }
+  }
+
+  /// Handle friend invitation deep links
+  Future<void> _handleInvitationLink(Map<String, String> params) async {
+    final invitationId = params['id'];
+    final fromUserId = params['from'];
+    final type = params['type'];
+
+    if (invitationId != null && fromUserId != null) {
+      debugPrint('🔗 Handling invitation: $type from $fromUserId');
+      
+      // Navigate to appropriate view based on invitation type
+      if (mounted && context.mounted) {
+        if (type == 'friend') {
+          // Navigate to friend requests view
+          GoRouter.of(context).push(Routes.friendRequests);
+        } else {
+          // Default to friends list for unknown invitation types
+          GoRouter.of(context).push(Routes.friends);
+        }
+      }
+    }
+  }
+
+  /// Handle recipe sharing deep links
+  Future<void> _handleRecipeLink(Map<String, String> params) async {
+    final recipeId = params['id'];
+    final fromUserId = params['from'];
+
+    if (recipeId != null) {
+      debugPrint('🔗 Handling recipe link: $recipeId from $fromUserId');
+      
+      if (mounted && context.mounted) {
+        // Navigate to recipe detail view with recipe ID as query parameter
+        GoRouter.of(context).push('${Routes.receptDetalj}?recipeId=$recipeId');
+      }
+    }
+  }
+
+  /// Handle menu sharing deep links
+  Future<void> _handleMenuLink(Map<String, String> params) async {
+    final menuId = params['id'];
+    final fromUserId = params['from'];
+
+    if (menuId != null) {
+      debugPrint('🔗 Handling menu link: $menuId from $fromUserId');
+      
+      if (mounted && context.mounted) {
+        // Navigate to shared with me view to see the menu
+        GoRouter.of(context).push(Routes.shared);
+      }
+    }
+  }
+
+  /// Handle shopping list sharing deep links
+  Future<void> _handleShoppingLink(Map<String, String> params) async {
+    final listId = params['id'];
+    final fromUserId = params['from'];
+
+    if (listId != null) {
+      debugPrint('🔗 Handling shopping list link: $listId from $fromUserId');
+      
+      if (mounted && context.mounted) {
+        // Navigate to collaborative shopping view
+        GoRouter.of(context).push(Routes.collaborativeShopping);
+      }
     }
   }
 

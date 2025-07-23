@@ -47,6 +47,48 @@ class UtilityComponents {
     );
   }
 
+  /// Square button for grid layouts (recipe upload view)
+  static Widget squareButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isLoading = false,
+    String? loadingText,
+  }) {
+    return ActionButtons.squareButton(
+      context,
+      label: label,
+      icon: icon,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      loadingText: loadingText,
+    );
+  }
+
+  /// Large prominent button for important actions
+  static Widget largeButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isLoading = false,
+    String? loadingText,
+    double height = 100,
+    EdgeInsets? margin,
+  }) {
+    return ActionButtons.largeButton(
+      context,
+      label: label,
+      icon: icon,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      loadingText: loadingText,
+      height: height,
+      margin: margin,
+    );
+  }
+
   /// Primary action button convenience method
   static Widget primaryButton(
     BuildContext context, {

@@ -28,8 +28,8 @@ class ShareDialogActions {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(AppDimensions.radiusLarge),
-          bottomRight: Radius.circular(AppDimensions.radiusLarge),
+          bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
+          bottomRight: Radius.circular(AppDimensions.borderRadiusM),
         ),
         border: Border(
           top: BorderSide(
@@ -42,17 +42,6 @@ class ShareDialogActions {
           Expanded(
             child: OutlinedButton(
               onPressed: isLoading ? null : onCancel,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingL,
-                ),
-                side: BorderSide(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
               child: Text(
                 'Avbryt',
                 style: AppTextStyles.bodyLarge.copyWith(
@@ -65,16 +54,6 @@ class ShareDialogActions {
           Expanded(
             child: ElevatedButton(
               onPressed: (!hasSelectedFriends || isLoading) ? null : onShare,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingL,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
               child: isLoading
                   ? SizedBox(
                       width: 16,
@@ -132,7 +111,7 @@ class ShareDialogActions {
         ),
         decoration: BoxDecoration(
           color: AppColors.warning.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
             color: AppColors.warning.withValues(alpha: 0.3),
           ),

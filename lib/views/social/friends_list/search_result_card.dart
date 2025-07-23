@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import '../../../models/user_profile.dart';
 import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../widgets/common/social_components.dart';
+import '../../../widgets/common/content_card.dart';
 import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_colors.dart';
 import '../../../core/utils/snackbar_utils.dart';
 
 /// SearchResultCard - Search result card component
@@ -19,31 +20,15 @@ class SearchResultCard {
     final isFriend = viewModel.friends.any((friend) => friend.uid == user.uid);
     final hasPendingRequest = viewModel.sentRequests.any((req) => req.toUserId == user.uid);
 
-    return Card(
-      child: ListTile(
-        leading: SocialComponents.avatar(
-          size: ImageSize.small,
-          imageUrl: viewModel.getAvatarUrlForUser(user.uid),
-          displayName: viewModel.getDisplayNameForUser(user.uid),
-        ),
-        title: Text(
-          user.displayName,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: user.bio?.isNotEmpty == true
-            ? Text(
-                user.bio!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
-        trailing: _buildActionButton(
-          context,
-          user,
-          viewModel,
-          isFriend,
-          hasPendingRequest,
-        ),
+    return ContentCard.friend(
+      friend: user,
+      showFullDetails: true,
+      trailing: _buildActionButton(
+        context,
+        user,
+        viewModel,
+        isFriend,
+        hasPendingRequest,
       ),
     );
   }
@@ -62,7 +47,7 @@ class SearchResultCard {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          color: AppColors.accent.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: Row(
@@ -70,14 +55,14 @@ class SearchResultCard {
           children: [
             Icon(
               Icons.check_circle,
-              color: Theme.of(context).colorScheme.primary,
+              color: AppColors.accent,
               size: AppDimensions.iconSizeM,
             ),
             SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Vänner',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.accent,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -93,7 +78,7 @@ class SearchResultCard {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
+          color: AppColors.warning.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: Row(
@@ -101,14 +86,14 @@ class SearchResultCard {
           children: [
             Icon(
               Icons.schedule,
-              color: Theme.of(context).colorScheme.tertiary,
+              color: AppColors.warning,
               size: AppDimensions.iconSizeM,
             ),
             SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Väntande',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.tertiary,
+                color: AppColors.warning,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -123,12 +108,12 @@ class SearchResultCard {
           : () => _sendFriendRequest(context, user, viewModel),
       icon: viewModel.isLoading
           ? SizedBox(
-              width: 16,
-              height: 16,
+              width: AppDimensions.iconSizeS,
+              height: AppDimensions.iconSizeS,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
+                strokeWidth: AppDimensions.borderWidthThick,
                 valueColor: AlwaysStoppedAnimation(
-                  Theme.of(context).colorScheme.onPrimary,
+                  AppColors.cardWhite,
                 ),
               ),
             )

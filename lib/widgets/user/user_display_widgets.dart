@@ -128,6 +128,7 @@ class UserDisplayWidgets {
                 width: avatarSize,
                 height: avatarSize,
                 fit: BoxFit.cover,
+                alignment: Alignment.center,
                 placeholder: (context, url) => _buildInitialsAvatar(displayName,
                     avatarSize, effectiveBackgroundColor, effectiveTextColor),
                 errorWidget: (context, url, error) => _buildInitialsAvatar(
@@ -135,8 +136,6 @@ class UserDisplayWidgets {
                     avatarSize,
                     effectiveBackgroundColor,
                     effectiveTextColor),
-                memCacheWidth: (avatarSize * 2).toInt(),
-                memCacheHeight: (avatarSize * 2).toInt(),
                 fadeInDuration: const Duration(milliseconds: 300),
                 fadeOutDuration: const Duration(milliseconds: 300),
               ),

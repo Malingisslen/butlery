@@ -90,7 +90,7 @@ class _AuthViewState extends State<AuthView> {
           height: AppDimensions.imageSizeLarge,
           decoration: BoxDecoration(
             color: AppColors.primaryBlue,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Icon(
             Icons.restaurant_menu,
@@ -104,7 +104,7 @@ class _AuthViewState extends State<AuthView> {
         Text(
           'Butlery',
           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            color: AppColors.primaryBlue,
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -122,25 +122,16 @@ class _AuthViewState extends State<AuthView> {
 
   /// Bygger auth-kortet med formulär
   Widget _buildAuthCard(BuildContext context, AuthViewModel viewModel) {
-    return Container(
+    return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 400),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor.withValues(alpha: 0.1),
-            blurRadius: AppDimensions.elevationLow,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
             // Rubrik
             Text(
               viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
@@ -180,9 +171,11 @@ class _AuthViewState extends State<AuthView> {
             _buildSubmitButton(viewModel),
             const SizedBox(height: AppDimensions.spacingXl),
 
-            // Toggle login/register
-            _buildToggleButton(viewModel),
-          ],
+                // Toggle login/register
+                _buildToggleButton(viewModel),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -287,17 +280,6 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildSubmitButton(AuthViewModel viewModel) {
     return FilledButton(
       onPressed: viewModel.isLoading ? null : () => _handleSubmit(viewModel),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: AppColors.cardWhite,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        ),
-      ),
       child:
           viewModel.isLoading
               ? SizedBox(
