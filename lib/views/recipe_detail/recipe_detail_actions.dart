@@ -10,6 +10,7 @@ import '../../widgets/common/universal_share_dialog.dart';
 import '../../viewmodels/universal_share_dialog_viewmodel.dart';
 import '../../theme/app_colors.dart';
 import '../../core/injection.dart';
+import '../../core/constants/routes.dart';
 import '../../services/share_service.dart';
 import '../../services/user_service.dart';
 import 'fullscreen_image_viewer.dart';
@@ -289,6 +290,29 @@ class RecipeDetailActions {
       showSnackBarSafely(
         context,
         'Kunde inte markera som lagat',
+        backgroundColor: AppColors.error,
+      );
+    }
+  }
+
+  /// Navigate to edit recipe view
+  Future<void> editRecipe(BuildContext context) async {
+    if (!context.mounted) return;
+
+    final viewModel = context.read<RecipeDetailViewModel>();
+    
+    try {
+      // Navigate to edit recipe view with the current recipe
+      await Navigator.pushNamed(
+        context,
+        Routes.redigeraRecept,
+        arguments: viewModel.recipe,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      showSnackBarSafely(
+        context,
+        'Kunde inte öppna redigeringsvy',
         backgroundColor: AppColors.error,
       );
     }

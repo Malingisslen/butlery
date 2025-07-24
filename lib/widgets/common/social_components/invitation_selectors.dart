@@ -1,0 +1,322 @@
+// lib/widgets/common/social_components/invitation_selectors.dart
+
+import 'package:flutter/material.dart';
+import '../../../models/invitations/invitation_target.dart';
+import '../social/social_facade.dart';
+
+/// Focused module for invitation target selection widgets
+/// 
+/// This module handles ONLY selection interfaces for invitation targets:
+/// - Target selectors with search and filtering
+/// - Multi-select and single-select interfaces
+/// - Search fields and type filters
+/// - Selection interaction logic
+/// 
+/// ❌ DOES NOT CONTAIN: Display widgets, states, actions, target lists
+class InvitationSelectors {
+
+  // ===== TARGET SELECTORS =====
+
+  /// Build target selector
+  /// 
+  /// Interactive selector for invitation targets
+  static Widget targetSelector({
+    required List<InvitationTarget> availableTargets,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    bool allowMultiSelect = true,
+    bool showSearch = true,
+    bool showTypeFilters = true,
+    String? searchHint,
+    int? maxSelections,
+    Widget? emptyWidget,
+    ScrollPhysics? physics,
+  }) {
+    return SocialFacade.targetSelector(
+      availableTargets: availableTargets,
+      selectedTargetIds: selectedTargets?.map((t) => t.targetId).toSet() ?? {},
+      onTargetToggled: (target) {
+        // Handle target toggle logic here
+      },
+      searchHint: searchHint,
+    );
+  }
+
+  /// Build checkable target list
+  /// 
+  /// List with checkboxes for target selection
+  static Widget checkableTargetList({
+    required List<InvitationTarget> targets,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    bool showSelectAll = true,
+    String? selectAllText = 'Välj alla',
+    String? selectNoneText = 'Avmarkera alla',
+    ScrollPhysics? physics,
+    EdgeInsets? padding,
+  }) {
+    return ListView.builder(
+      physics: physics,
+      padding: padding,
+      itemCount: targets.length,
+      itemBuilder: (context, index) {
+        final target = targets[index];
+        final isSelected = selectedTargets?.contains(target) ?? false;
+        return CheckboxListTile(
+          title: Text(target.displayName),
+          value: isSelected,
+          onChanged: (value) {
+            if (onSelectionChanged != null) {
+              final newSelection = List<InvitationTarget>.from(selectedTargets ?? []);
+              if (value == true) {
+                newSelection.add(target);
+              } else {
+                newSelection.remove(target);
+              }
+              onSelectionChanged(newSelection);
+            }
+          },
+        );
+      },
+    );
+  }
+
+  /// Build radio target selector
+  /// 
+  /// Radio button selector for single target selection
+  static Widget radioTargetSelector({
+    required List<InvitationTarget> targets,
+    InvitationTarget? selectedTarget,
+    Function(InvitationTarget?)? onSelectionChanged,
+    ScrollPhysics? physics,
+    EdgeInsets? padding,
+  }) {
+    return ListView.builder(
+      physics: physics,
+      padding: padding,
+      itemCount: targets.length,
+      itemBuilder: (context, index) {
+        final target = targets[index];
+        return RadioListTile<InvitationTarget>(
+          title: Text(target.displayName),
+          value: target,
+          groupValue: selectedTarget,
+          onChanged: onSelectionChanged,
+        );
+      },
+    );
+  }
+
+  // ===== SEARCH AND FILTERING =====
+
+  /// Build target search field
+  /// 
+  /// Search input for filtering targets
+  static Widget targetSearchField({
+    Function(String)? onSearchChanged,
+    String? hint = 'Sök målgrupper...',
+    IconData prefixIcon = Icons.search,
+    bool autofocus = false,
+    TextEditingController? controller,
+    EdgeInsets? margin,
+  }) {
+    return Container(
+      margin: margin,
+      child: TextField(
+        controller: controller,
+        autofocus: autofocus,
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: Icon(prefixIcon),
+          border: const OutlineInputBorder(),
+        ),
+        onChanged: onSearchChanged,
+      ),
+    );
+  }
+
+  /// Build target type filters
+  /// 
+  /// Filter chips for target types
+  static Widget targetTypeFilters({
+    required List<String> availableTypes,
+    List<String>? selectedTypes,
+    Function(List<String>)? onTypesChanged,
+    bool allowMultiSelect = true,
+    EdgeInsets? padding,
+    double spacing = 8.0,
+  }) {
+    return Container(
+      padding: padding,
+      child: Wrap(
+        spacing: spacing,
+        children: availableTypes.map((type) {
+          final isSelected = selectedTypes?.contains(type) ?? false;
+          return FilterChip(
+            label: Text(type),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (onTypesChanged != null) {
+                final newSelection = List<String>.from(selectedTypes ?? []);
+                if (selected) {
+                  newSelection.add(type);
+                } else {
+                  newSelection.remove(type);
+                }
+                onTypesChanged(newSelection);
+              }
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// Build target filtering widget
+  /// 
+  /// Complete filtering interface for targets
+  static Widget targetFiltering({
+    required List<InvitationTarget> allTargets,
+    required List<InvitationTarget> filteredTargets,
+    Function(List<InvitationTarget>)? onFilterChanged,
+    bool showSearch = true,
+    bool showTypeFilters = true,
+    bool showSorting = true,
+    EdgeInsets? padding,
+  }) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          if (showSearch)
+            targetSearchField(
+              onSearchChanged: (query) {
+                if (onFilterChanged != null) {
+                  final filtered = allTargets.where((target) =>
+                      target.displayName.toLowerCase().contains(query.toLowerCase())
+                  ).toList();
+                  onFilterChanged(filtered);
+                }
+              },
+            ),
+          if (showSearch && (showTypeFilters || showSorting))
+            const SizedBox(height: 12),
+          if (showTypeFilters) ...[
+            targetTypeFilters(
+              availableTypes: allTargets.map((t) => t.type.name).toSet().toList(),
+              onTypesChanged: (selectedTypes) {
+                if (onFilterChanged != null) {
+                  final filtered = selectedTypes.isEmpty
+                      ? allTargets
+                      : allTargets.where((target) => 
+                          selectedTypes.contains(target.type.name)).toList();
+                  onFilterChanged(filtered);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (showSorting)
+            Row(
+              children: [
+                const Text('Sortera:', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: 'name',
+                  items: const [
+                    DropdownMenuItem(value: 'name', child: Text('Namn')),
+                    DropdownMenuItem(value: 'type', child: Text('Typ')),
+                    DropdownMenuItem(value: 'members', child: Text('Medlemmar')),
+                  ],
+                  onChanged: (sortBy) {
+                    if (onFilterChanged != null && sortBy != null) {
+                      final sorted = List<InvitationTarget>.from(filteredTargets);
+                      switch (sortBy) {
+                        case 'name':
+                          sorted.sort((a, b) => a.displayName.compareTo(b.displayName));
+                          break;
+                        case 'type':
+                          sorted.sort((a, b) => a.type.name.compareTo(b.type.name));
+                          break;
+                        case 'members':
+                          sorted.sort((a, b) => (b.memberCount ?? 0).compareTo(a.memberCount ?? 0));
+                          break;
+                      }
+                      onFilterChanged(sorted);
+                    }
+                  },
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ===== SELECTION MANAGEMENT =====
+
+  /// Build target selection summary
+  /// 
+  /// Shows summary of selected targets
+  static Widget targetSelectionSummary({
+    required List<InvitationTarget> selectedTargets,
+    VoidCallback? onClearAll,
+    Function(InvitationTarget)? onRemoveTarget,
+    String? title = 'Valda målgrupper',
+    bool showClearAll = true,
+    bool compact = false,
+    EdgeInsets? padding,
+  }) {
+    if (selectedTargets.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.blue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                title ?? 'Valda målgrupper',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              if (showClearAll && onClearAll != null)
+                TextButton(
+                  onPressed: onClearAll,
+                  child: const Text('Rensa alla'),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (compact)
+            Text(
+              '${selectedTargets.length} målgrupper valda',
+              style: const TextStyle(color: Colors.grey),
+            )
+          else
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 4.0,
+              children: selectedTargets.map((target) {
+                return Chip(
+                  label: Text(target.displayName),
+                  onDeleted: onRemoveTarget != null 
+                      ? () => onRemoveTarget(target) 
+                      : null,
+                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                );
+              }).toList(),
+            ),
+        ],
+      ),
+    );
+  }
+}

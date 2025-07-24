@@ -1,362 +1,341 @@
-/// 🔐 PERMISSION MIXINS - Eliminates 20+ permission check duplications
+/// 🔐 PERMISSION MIXINS - Eliminates 20+ permission check duplications (Refactored with Facade Pattern)
 /// File: lib/core/permissions/permission_mixins.dart
 /// Purpose: Provide reusable permission checking methods for ViewModels
-/// Dependencies: PermissionService
-/// Usage: Mix into ViewModels to get permission methods instead of direct service calls
+/// Dependencies: Focused permission modules
+/// Usage: Mix into ViewModels to get permission methods through clean facades
 
-import 'package:flutter/foundation.dart';
-import '../../services/permission_service.dart';
-import '../../core/injection.dart';
+// Import focused modules
+import 'modules/base_permission_manager.dart';
+import 'modules/recipe_permission_handler.dart';
+import 'modules/shopping_permission_handler.dart';
+import 'modules/group_permission_handler.dart';
+import 'modules/social_permission_handler.dart';
+import 'modules/permission_action_builder.dart';
+import 'modules/permission_debug_tools.dart';
 
-/// Base permission mixin with common functionality
+/// Base permission mixin with common functionality (Refactored with Facade Pattern)
+/// 
+/// This is a clean facade that delegates to focused modules:
+/// - BasePermissionManager: Authentication and user context
+/// - RecipePermissionHandler: Recipe-specific permissions
+/// - ShoppingPermissionHandler: Shopping list permissions
+/// - GroupPermissionHandler: Group permissions
+/// - SocialPermissionHandler: Social/profile permissions
+/// - PermissionActionBuilder: Action lists and permission levels
+/// - PermissionDebugTools: Development utilities
+/// 
+/// ✅ SINGLE RESPONSIBILITY: Orchestrates permission checking through focused modules
 mixin BasePermissionMixin {
-  PermissionService get _permissionService => sl<PermissionService>();
   
+  // ===== BASE PERMISSION DELEGATION =====
+
   /// Current authenticated user ID
-  String? get currentUserId => _permissionService.currentUserId;
+  String? get currentUserId => BasePermissionManager.currentUserId;
   
   /// Check if user is authenticated
-  bool get isAuthenticated => _permissionService.isAuthenticated;
+  bool get isAuthenticated => BasePermissionManager.isAuthenticated;
   
   /// Check if user is logged in
-  bool get isLoggedIn => _permissionService.hasValidSession;
+  bool get isLoggedIn => BasePermissionManager.isLoggedIn;
   
   /// Get current user display name
-  String? get currentUserDisplayName => _permissionService.currentUser?.displayName;
+  String? get currentUserDisplayName => BasePermissionManager.currentUserDisplayName;
 }
 
 /// Recipe permission mixin - eliminates recipe permission duplications
 mixin RecipePermissionMixin on BasePermissionMixin {
+  
+  // ===== CORE RECIPE PERMISSIONS =====
+  
   /// Check if user can view a recipe
   bool canViewRecipe(String recipeId) {
-    return _permissionService.canViewRecipe(recipeId);
+    return RecipePermissionHandler.canViewRecipe(recipeId);
   }
   
   /// Check if user can edit a recipe
   bool canEditRecipe(String recipeId) {
-    return _permissionService.canEditRecipe(recipeId);
+    return RecipePermissionHandler.canEditRecipe(recipeId);
   }
   
   /// Check if user can delete a recipe
   bool canDeleteRecipe(String recipeId) {
-    return _permissionService.canDeleteRecipe(recipeId);
+    return RecipePermissionHandler.canDeleteRecipe(recipeId);
   }
   
   /// Check if user can share a recipe
   bool canShareRecipe(String recipeId) {
-    return _permissionService.canShareRecipe(recipeId);
+    return RecipePermissionHandler.canShareRecipe(recipeId);
   }
   
   /// Check if user can duplicate a recipe
   bool canDuplicateRecipe(String recipeId) {
-    return canViewRecipe(recipeId); // Can duplicate if can view
+    return RecipePermissionHandler.canDuplicateRecipe(recipeId);
   }
   
   /// Check if user is the owner of a recipe
   bool isRecipeOwner(String recipeId) {
-    return _permissionService.isRecipeOwner(recipeId);
+    return RecipePermissionHandler.isRecipeOwner(recipeId);
   }
   
   /// Check if user can comment on a recipe
   bool canCommentOnRecipe(String recipeId) {
-    return canViewRecipe(recipeId); // Can comment if can view
+    return RecipePermissionHandler.canCommentOnRecipe(recipeId);
   }
   
   /// Check if user can rate a recipe
   bool canRateRecipe(String recipeId) {
-    return canViewRecipe(recipeId); // Can rate if can view
+    return RecipePermissionHandler.canRateRecipe(recipeId);
   }
   
   /// Check if user can add recipe to favorites
   bool canFavoriteRecipe(String recipeId) {
-    return canViewRecipe(recipeId); // Can favorite if can view
+    return RecipePermissionHandler.canFavoriteRecipe(recipeId);
   }
+  
+  // ===== RECIPE PERMISSION HELPERS =====
   
   /// Get recipe permission level for UI display
   String getRecipePermissionLevel(String recipeId) {
-    if (isRecipeOwner(recipeId)) return 'owner';
-    if (canEditRecipe(recipeId)) return 'editor';
-    if (canViewRecipe(recipeId)) return 'viewer';
-    return 'none';
+    return PermissionActionBuilder.getRecipePermissionLevel(recipeId);
   }
   
   /// Check if user can perform any action on recipe
   bool hasRecipeAccess(String recipeId) {
-    return canViewRecipe(recipeId);
+    return RecipePermissionHandler.hasRecipeAccess(recipeId);
   }
   
   /// Get recipe actions available to user
   List<String> getAvailableRecipeActions(String recipeId) {
-    final actions = <String>[];
-    
-    if (canViewRecipe(recipeId)) actions.add('view');
-    if (canEditRecipe(recipeId)) actions.add('edit');
-    if (canDeleteRecipe(recipeId)) actions.add('delete');
-    if (canShareRecipe(recipeId)) actions.add('share');
-    if (canDuplicateRecipe(recipeId)) actions.add('duplicate');
-    if (canCommentOnRecipe(recipeId)) actions.add('comment');
-    if (canRateRecipe(recipeId)) actions.add('rate');
-    if (canFavoriteRecipe(recipeId)) actions.add('favorite');
-    
-    return actions;
+    return PermissionActionBuilder.getAvailableRecipeActions(recipeId);
   }
 }
 
 /// Shopping list permission mixin - eliminates shopping list permission duplications  
 mixin ShoppingListPermissionMixin on BasePermissionMixin {
+  
+  // ===== CORE SHOPPING LIST PERMISSIONS =====
+  
   /// Check if user can view a shopping list
   bool canViewShoppingList(String listId) {
-    return _permissionService.canViewShoppingList(listId);
+    return ShoppingPermissionHandler.canViewShoppingList(listId);
   }
   
   /// Check if user can edit a shopping list
   bool canEditShoppingList(String listId) {
-    return _permissionService.canEditShoppingList(listId);
+    return ShoppingPermissionHandler.canEditShoppingList(listId);
   }
   
   /// Check if user can manage a shopping list
   bool canManageShoppingList(String listId) {
-    return _permissionService.canManageShoppingList(listId);
+    return ShoppingPermissionHandler.canManageShoppingList(listId);
   }
   
   /// Check if user can delete a shopping list
   bool canDeleteShoppingList(String listId) {
-    return _permissionService.canDeleteShoppingList(listId);
+    return ShoppingPermissionHandler.canDeleteShoppingList(listId);
   }
   
   /// Check if user can share a shopping list
   bool canShareShoppingList(String listId) {
-    return _permissionService.canShareShoppingList(listId);
+    return ShoppingPermissionHandler.canShareShoppingList(listId);
   }
   
   /// Check if user can invite to a shopping list
   bool canInviteToShoppingList(String listId) {
-    return canManageShoppingList(listId); // Can invite if can manage
+    return ShoppingPermissionHandler.canInviteToShoppingList(listId);
   }
   
   /// Check if user is the owner of a shopping list
   bool isShoppingListOwner(String listId) {
-    return _permissionService.isShoppingListOwner(listId);
+    return ShoppingPermissionHandler.isShoppingListOwner(listId);
   }
   
   /// Check if user can add items to shopping list
   bool canAddItemsToShoppingList(String listId) {
-    return canEditShoppingList(listId);
+    return ShoppingPermissionHandler.canAddItemsToShoppingList(listId);
   }
   
   /// Check if user can remove items from shopping list
   bool canRemoveItemsFromShoppingList(String listId) {
-    return canEditShoppingList(listId);
+    return ShoppingPermissionHandler.canRemoveItemsFromShoppingList(listId);
   }
   
   /// Check if user can modify item status in shopping list
   bool canModifyItemStatus(String listId) {
-    return canEditShoppingList(listId);
+    return ShoppingPermissionHandler.canModifyItemStatus(listId);
   }
+  
+  // ===== SHOPPING LIST PERMISSION HELPERS =====
   
   /// Get shopping list permission level for UI display
   String getShoppingListPermissionLevel(String listId) {
-    if (isShoppingListOwner(listId)) return 'owner';
-    if (canManageShoppingList(listId)) return 'manager';
-    if (canEditShoppingList(listId)) return 'editor';
-    if (canViewShoppingList(listId)) return 'viewer';
-    return 'none';
+    return PermissionActionBuilder.getShoppingListPermissionLevel(listId);
   }
   
   /// Check if user can perform any action on shopping list
   bool hasShoppingListAccess(String listId) {
-    return canViewShoppingList(listId);
+    return ShoppingPermissionHandler.hasShoppingListAccess(listId);
   }
   
   /// Get shopping list actions available to user
   List<String> getAvailableShoppingListActions(String listId) {
-    final actions = <String>[];
-    
-    if (canViewShoppingList(listId)) actions.add('view');
-    if (canEditShoppingList(listId)) actions.add('edit');
-    if (canManageShoppingList(listId)) actions.add('manage');
-    if (canDeleteShoppingList(listId)) actions.add('delete');
-    if (canShareShoppingList(listId)) actions.add('share');
-    if (canInviteToShoppingList(listId)) actions.add('invite');
-    if (canAddItemsToShoppingList(listId)) actions.add('add_items');
-    if (canRemoveItemsFromShoppingList(listId)) actions.add('remove_items');
-    if (canModifyItemStatus(listId)) actions.add('modify_items');
-    
-    return actions;
+    return PermissionActionBuilder.getAvailableShoppingListActions(listId);
   }
 }
 
 /// Group permission mixin - eliminates group permission duplications
 mixin GroupPermissionMixin on BasePermissionMixin {
+  
+  // ===== CORE GROUP PERMISSIONS =====
+  
   /// Check if user can view a group
   bool canViewGroup(String groupId) {
-    return isAuthenticated; // All authenticated users can view groups
+    return GroupPermissionHandler.canViewGroup(groupId);
   }
   
   /// Check if user can edit a group
   bool canEditGroup(String groupId) {
-    return isGroupAdmin(groupId); // Only admins can edit
+    return GroupPermissionHandler.canEditGroup(groupId);
   }
   
   /// Check if user can manage a group
   bool canManageGroup(String groupId) {
-    return isGroupAdmin(groupId); // Only admins can manage
+    return GroupPermissionHandler.canManageGroup(groupId);
   }
   
   /// Check if user can delete a group
   bool canDeleteGroup(String groupId) {
-    return _permissionService.canDeleteGroup(groupId);
+    return GroupPermissionHandler.canDeleteGroup(groupId);
   }
   
   /// Check if user can invite to a group
   bool canInviteToGroup(String groupId) {
-    return _permissionService.canInviteToGroup(groupId);
+    return GroupPermissionHandler.canInviteToGroup(groupId);
   }
   
   /// Check if user can remove from a group
   bool canRemoveFromGroup(String groupId, String userId) {
-    return _permissionService.canRemoveFromGroup(groupId, userId);
+    return GroupPermissionHandler.canRemoveFromGroup(groupId, userId);
   }
   
   /// Check if user is group admin
   bool isGroupAdmin(String groupId) {
-    return _permissionService.isGroupAdmin(groupId);
+    return GroupPermissionHandler.isGroupAdmin(groupId);
   }
   
   /// Check if user is group owner
   bool isGroupOwner(String groupId) {
-    return isGroupAdmin(groupId); // Owner is admin in this implementation
+    return GroupPermissionHandler.isGroupOwner(groupId);
   }
   
   /// Check if user is group member
   bool isGroupMember(String groupId) {
-    return canViewGroup(groupId); // If can view, is member
+    return GroupPermissionHandler.isGroupMember(groupId);
   }
   
   /// Check if user can leave group
   bool canLeaveGroup(String groupId) {
-    return _permissionService.canLeaveGroup(groupId);
+    return GroupPermissionHandler.canLeaveGroup(groupId);
   }
   
   /// Check if user can change group settings
   bool canChangeGroupSettings(String groupId) {
-    return canManageGroup(groupId);
+    return GroupPermissionHandler.canChangeGroupSettings(groupId);
   }
+  
+  // ===== GROUP PERMISSION HELPERS =====
   
   /// Get group permission level for UI display
   String getGroupPermissionLevel(String groupId) {
-    if (isGroupOwner(groupId)) return 'owner';
-    if (isGroupAdmin(groupId)) return 'admin';
-    if (isGroupMember(groupId)) return 'member';
-    if (canViewGroup(groupId)) return 'viewer';
-    return 'none';
+    return PermissionActionBuilder.getGroupPermissionLevel(groupId);
   }
   
   /// Check if user can perform any action on group
   bool hasGroupAccess(String groupId) {
-    return canViewGroup(groupId);
+    return GroupPermissionHandler.hasGroupAccess(groupId);
   }
   
   /// Get group actions available to user
   List<String> getAvailableGroupActions(String groupId) {
-    final actions = <String>[];
-    
-    if (canViewGroup(groupId)) actions.add('view');
-    if (canEditGroup(groupId)) actions.add('edit');
-    if (canManageGroup(groupId)) actions.add('manage');
-    if (canDeleteGroup(groupId)) actions.add('delete');
-    if (canInviteToGroup(groupId)) actions.add('invite');
-    if (isGroupAdmin(groupId)) actions.add('remove_members'); // Admin can remove members
-    if (canLeaveGroup(groupId)) actions.add('leave');
-    if (canChangeGroupSettings(groupId)) actions.add('settings');
-    
-    return actions;
+    return PermissionActionBuilder.getAvailableGroupActions(groupId);
   }
 }
 
 /// Social permission mixin - eliminates social permission duplications
 mixin SocialPermissionMixin on BasePermissionMixin {
+  
+  // ===== CORE SOCIAL PERMISSIONS =====
+  
   /// Check if user can view a profile
   bool canViewProfile(String userId) {
-    return _permissionService.canViewProfile(userId);
+    return SocialPermissionHandler.canViewProfile(userId);
   }
   
   /// Check if user can edit a profile
   bool canEditProfile(String userId) {
-    return _permissionService.canEditProfile(userId);
+    return SocialPermissionHandler.canEditProfile(userId);
   }
   
   /// Check if user can send friend request
   bool canSendFriendRequest(String userId) {
-    return _permissionService.canSendFriendRequest(userId);
+    return SocialPermissionHandler.canSendFriendRequest(userId);
   }
   
   /// Check if user can accept friend request
   bool canAcceptFriendRequest(String requestId) {
-    return isAuthenticated; // Authenticated users can accept friend requests
+    return SocialPermissionHandler.canAcceptFriendRequest(requestId);
   }
   
   /// Check if user can reject friend request
   bool canRejectFriendRequest(String requestId) {
-    return isAuthenticated; // Authenticated users can reject friend requests
+    return SocialPermissionHandler.canRejectFriendRequest(requestId);
   }
   
   /// Check if user can cancel friend request
   bool canCancelFriendRequest(String requestId) {
-    return isAuthenticated; // Authenticated users can cancel their own friend requests
+    return SocialPermissionHandler.canCancelFriendRequest(requestId);
   }
   
   /// Check if user can remove friend
   bool canRemoveFriend(String userId) {
-    return isAuthenticated && currentUserId != userId; // Can remove friend if authenticated and not self
+    return SocialPermissionHandler.canRemoveFriend(userId);
   }
   
   /// Check if user can block another user
   bool canBlockUser(String userId) {
-    return isAuthenticated && currentUserId != userId; // Can block if authenticated and not self
+    return SocialPermissionHandler.canBlockUser(userId);
   }
   
   /// Check if user can unblock another user
   bool canUnblockUser(String userId) {
-    return isAuthenticated && currentUserId != userId; // Can unblock if authenticated and not self
+    return SocialPermissionHandler.canUnblockUser(userId);
   }
   
   /// Check if user can message another user
   bool canMessageUser(String userId) {
-    return isAuthenticated && currentUserId != userId; // Can message if authenticated and not self
+    return SocialPermissionHandler.canMessageUser(userId);
   }
   
   /// Check if user is own profile
   bool isOwnProfile(String userId) {
-    return currentUserId == userId;
+    return SocialPermissionHandler.isOwnProfile(userId);
   }
   
   /// Check if users are friends
   bool areFriends(String userId) {
-    return isAuthenticated; // Simplified - can be enhanced later
+    return SocialPermissionHandler.areFriends(userId);
   }
+  
+  // ===== SOCIAL PERMISSION HELPERS =====
   
   /// Get social permission level for UI display
   String getSocialPermissionLevel(String userId) {
-    if (isOwnProfile(userId)) return 'own';
-    if (areFriends(userId)) return 'friend';
-    if (canViewProfile(userId)) return 'viewer';
-    return 'none';
+    return PermissionActionBuilder.getSocialPermissionLevel(userId);
   }
   
   /// Get social actions available to user
   List<String> getAvailableSocialActions(String userId) {
-    final actions = <String>[];
-    
-    if (canViewProfile(userId)) actions.add('view');
-    if (canEditProfile(userId)) actions.add('edit');
-    if (canSendFriendRequest(userId)) actions.add('send_friend_request');
-    if (canRemoveFriend(userId)) actions.add('remove_friend');
-    if (canBlockUser(userId)) actions.add('block');
-    if (canUnblockUser(userId)) actions.add('unblock');
-    if (canMessageUser(userId)) actions.add('message');
-    
-    return actions;
+    return PermissionActionBuilder.getAvailableSocialActions(userId);
   }
 }
 
@@ -364,235 +343,170 @@ mixin SocialPermissionMixin on BasePermissionMixin {
 mixin CombinedPermissionMixin on BasePermissionMixin
     implements RecipePermissionMixin, ShoppingListPermissionMixin, GroupPermissionMixin, SocialPermissionMixin {
   
-  // Recipe permissions
-  @override
-  bool canViewRecipe(String recipeId) => _permissionService.canViewRecipe(recipeId);
-  @override
-  bool canEditRecipe(String recipeId) => _permissionService.canEditRecipe(recipeId);
-  @override
-  bool canDeleteRecipe(String recipeId) => _permissionService.canDeleteRecipe(recipeId);
-  @override
-  bool canShareRecipe(String recipeId) => _permissionService.canShareRecipe(recipeId);
-  @override
-  bool canDuplicateRecipe(String recipeId) => canViewRecipe(recipeId);
-  @override
-  bool isRecipeOwner(String recipeId) => _permissionService.isRecipeOwner(recipeId);
-  @override
-  bool canCommentOnRecipe(String recipeId) => canViewRecipe(recipeId);
-  @override
-  bool canRateRecipe(String recipeId) => canViewRecipe(recipeId);
-  @override
-  bool canFavoriteRecipe(String recipeId) => canViewRecipe(recipeId);
-  @override
-  String getRecipePermissionLevel(String recipeId) {
-    if (isRecipeOwner(recipeId)) return 'owner';
-    if (canEditRecipe(recipeId)) return 'editor';
-    if (canViewRecipe(recipeId)) return 'viewer';
-    return 'none';
-  }
-  @override
-  bool hasRecipeAccess(String recipeId) => canViewRecipe(recipeId);
-  @override
-  List<String> getAvailableRecipeActions(String recipeId) {
-    final actions = <String>[];
-    if (canViewRecipe(recipeId)) actions.add('view');
-    if (canEditRecipe(recipeId)) actions.add('edit');
-    if (canDeleteRecipe(recipeId)) actions.add('delete');
-    if (canShareRecipe(recipeId)) actions.add('share');
-    if (canDuplicateRecipe(recipeId)) actions.add('duplicate');
-    if (canCommentOnRecipe(recipeId)) actions.add('comment');
-    if (canRateRecipe(recipeId)) actions.add('rate');
-    if (canFavoriteRecipe(recipeId)) actions.add('favorite');
-    return actions;
-  }
+  // ===== RECIPE PERMISSIONS IMPLEMENTATION =====
   
-  // Shopping list permissions
   @override
-  bool canViewShoppingList(String listId) => _permissionService.canViewShoppingList(listId);
+  bool canViewRecipe(String recipeId) => RecipePermissionHandler.canViewRecipe(recipeId);
   @override
-  bool canEditShoppingList(String listId) => _permissionService.canEditShoppingList(listId);
+  bool canEditRecipe(String recipeId) => RecipePermissionHandler.canEditRecipe(recipeId);
   @override
-  bool canManageShoppingList(String listId) => _permissionService.canManageShoppingList(listId);
+  bool canDeleteRecipe(String recipeId) => RecipePermissionHandler.canDeleteRecipe(recipeId);
   @override
-  bool canDeleteShoppingList(String listId) => _permissionService.canDeleteShoppingList(listId);
+  bool canShareRecipe(String recipeId) => RecipePermissionHandler.canShareRecipe(recipeId);
   @override
-  bool canShareShoppingList(String listId) => _permissionService.canShareShoppingList(listId);
+  bool canDuplicateRecipe(String recipeId) => RecipePermissionHandler.canDuplicateRecipe(recipeId);
   @override
-  bool canInviteToShoppingList(String listId) => canManageShoppingList(listId);
+  bool isRecipeOwner(String recipeId) => RecipePermissionHandler.isRecipeOwner(recipeId);
   @override
-  bool isShoppingListOwner(String listId) => _permissionService.isShoppingListOwner(listId);
+  bool canCommentOnRecipe(String recipeId) => RecipePermissionHandler.canCommentOnRecipe(recipeId);
   @override
-  bool canAddItemsToShoppingList(String listId) => canEditShoppingList(listId);
+  bool canRateRecipe(String recipeId) => RecipePermissionHandler.canRateRecipe(recipeId);
   @override
-  bool canRemoveItemsFromShoppingList(String listId) => canEditShoppingList(listId);
+  bool canFavoriteRecipe(String recipeId) => RecipePermissionHandler.canFavoriteRecipe(recipeId);
   @override
-  bool canModifyItemStatus(String listId) => canEditShoppingList(listId);
+  String getRecipePermissionLevel(String recipeId) => PermissionActionBuilder.getRecipePermissionLevel(recipeId);
   @override
-  String getShoppingListPermissionLevel(String listId) {
-    if (isShoppingListOwner(listId)) return 'owner';
-    if (canManageShoppingList(listId)) return 'manager';
-    if (canEditShoppingList(listId)) return 'editor';
-    if (canViewShoppingList(listId)) return 'viewer';
-    return 'none';
-  }
+  bool hasRecipeAccess(String recipeId) => RecipePermissionHandler.hasRecipeAccess(recipeId);
   @override
-  bool hasShoppingListAccess(String listId) => canViewShoppingList(listId);
-  @override
-  List<String> getAvailableShoppingListActions(String listId) {
-    final actions = <String>[];
-    if (canViewShoppingList(listId)) actions.add('view');
-    if (canEditShoppingList(listId)) actions.add('edit');
-    if (canManageShoppingList(listId)) actions.add('manage');
-    if (canDeleteShoppingList(listId)) actions.add('delete');
-    if (canShareShoppingList(listId)) actions.add('share');
-    if (canInviteToShoppingList(listId)) actions.add('invite');
-    if (canAddItemsToShoppingList(listId)) actions.add('add_items');
-    if (canRemoveItemsFromShoppingList(listId)) actions.add('remove_items');
-    if (canModifyItemStatus(listId)) actions.add('modify_items');
-    return actions;
-  }
+  List<String> getAvailableRecipeActions(String recipeId) => PermissionActionBuilder.getAvailableRecipeActions(recipeId);
   
-  // Group permissions
-  @override
-  bool canViewGroup(String groupId) => isAuthenticated;
-  @override
-  bool canEditGroup(String groupId) => isGroupAdmin(groupId);
-  @override
-  bool canManageGroup(String groupId) => isGroupAdmin(groupId);
-  @override
-  bool canDeleteGroup(String groupId) => _permissionService.canDeleteGroup(groupId);
-  @override
-  bool canInviteToGroup(String groupId) => _permissionService.canInviteToGroup(groupId);
-  @override
-  bool canRemoveFromGroup(String groupId, String userId) => _permissionService.canRemoveFromGroup(groupId, userId);
-  @override
-  bool isGroupAdmin(String groupId) => _permissionService.isGroupAdmin(groupId);
-  @override
-  bool isGroupOwner(String groupId) => isGroupAdmin(groupId);
-  @override
-  bool isGroupMember(String groupId) => canViewGroup(groupId);
-  @override
-  bool canLeaveGroup(String groupId) => _permissionService.canLeaveGroup(groupId);
-  @override
-  bool canChangeGroupSettings(String groupId) => canManageGroup(groupId);
-  @override
-  String getGroupPermissionLevel(String groupId) {
-    if (isGroupOwner(groupId)) return 'owner';
-    if (isGroupAdmin(groupId)) return 'admin';
-    if (isGroupMember(groupId)) return 'member';
-    if (canViewGroup(groupId)) return 'viewer';
-    return 'none';
-  }
-  @override
-  bool hasGroupAccess(String groupId) => canViewGroup(groupId);
-  @override
-  List<String> getAvailableGroupActions(String groupId) {
-    final actions = <String>[];
-    if (canViewGroup(groupId)) actions.add('view');
-    if (canEditGroup(groupId)) actions.add('edit');
-    if (canManageGroup(groupId)) actions.add('manage');
-    if (canDeleteGroup(groupId)) actions.add('delete');
-    if (canInviteToGroup(groupId)) actions.add('invite');
-    if (isGroupAdmin(groupId)) actions.add('remove_members'); // Admin can remove members
-    if (canLeaveGroup(groupId)) actions.add('leave');
-    if (canChangeGroupSettings(groupId)) actions.add('settings');
-    return actions;
-  }
+  // ===== SHOPPING LIST PERMISSIONS IMPLEMENTATION =====
   
-  // Social permissions
   @override
-  bool canViewProfile(String userId) => _permissionService.canViewProfile(userId);
+  bool canViewShoppingList(String listId) => ShoppingPermissionHandler.canViewShoppingList(listId);
   @override
-  bool canEditProfile(String userId) => _permissionService.canEditProfile(userId);
+  bool canEditShoppingList(String listId) => ShoppingPermissionHandler.canEditShoppingList(listId);
   @override
-  bool canSendFriendRequest(String userId) => _permissionService.canSendFriendRequest(userId);
+  bool canManageShoppingList(String listId) => ShoppingPermissionHandler.canManageShoppingList(listId);
   @override
-  bool canAcceptFriendRequest(String requestId) => isAuthenticated;
+  bool canDeleteShoppingList(String listId) => ShoppingPermissionHandler.canDeleteShoppingList(listId);
   @override
-  bool canRejectFriendRequest(String requestId) => isAuthenticated;
+  bool canShareShoppingList(String listId) => ShoppingPermissionHandler.canShareShoppingList(listId);
   @override
-  bool canCancelFriendRequest(String requestId) => isAuthenticated;
+  bool canInviteToShoppingList(String listId) => ShoppingPermissionHandler.canInviteToShoppingList(listId);
   @override
-  bool canRemoveFriend(String userId) => isAuthenticated && currentUserId != userId;
+  bool isShoppingListOwner(String listId) => ShoppingPermissionHandler.isShoppingListOwner(listId);
   @override
-  bool canBlockUser(String userId) => isAuthenticated && currentUserId != userId;
+  bool canAddItemsToShoppingList(String listId) => ShoppingPermissionHandler.canAddItemsToShoppingList(listId);
   @override
-  bool canUnblockUser(String userId) => isAuthenticated && currentUserId != userId;
+  bool canRemoveItemsFromShoppingList(String listId) => ShoppingPermissionHandler.canRemoveItemsFromShoppingList(listId);
   @override
-  bool canMessageUser(String userId) => isAuthenticated && currentUserId != userId;
+  bool canModifyItemStatus(String listId) => ShoppingPermissionHandler.canModifyItemStatus(listId);
   @override
-  bool isOwnProfile(String userId) => currentUserId == userId;
+  String getShoppingListPermissionLevel(String listId) => PermissionActionBuilder.getShoppingListPermissionLevel(listId);
   @override
-  bool areFriends(String userId) => isAuthenticated;
+  bool hasShoppingListAccess(String listId) => ShoppingPermissionHandler.hasShoppingListAccess(listId);
   @override
-  String getSocialPermissionLevel(String userId) {
-    if (isOwnProfile(userId)) return 'own';
-    if (areFriends(userId)) return 'friend';
-    if (canViewProfile(userId)) return 'viewer';
-    return 'none';
-  }
+  List<String> getAvailableShoppingListActions(String listId) => PermissionActionBuilder.getAvailableShoppingListActions(listId);
+  
+  // ===== GROUP PERMISSIONS IMPLEMENTATION =====
+  
   @override
-  List<String> getAvailableSocialActions(String userId) {
-    final actions = <String>[];
-    if (canViewProfile(userId)) actions.add('view');
-    if (canEditProfile(userId)) actions.add('edit');
-    if (canSendFriendRequest(userId)) actions.add('send_friend_request');
-    if (canRemoveFriend(userId)) actions.add('remove_friend');
-    if (canBlockUser(userId)) actions.add('block');
-    if (canUnblockUser(userId)) actions.add('unblock');
-    if (canMessageUser(userId)) actions.add('message');
-    return actions;
-  }
+  bool canViewGroup(String groupId) => GroupPermissionHandler.canViewGroup(groupId);
+  @override
+  bool canEditGroup(String groupId) => GroupPermissionHandler.canEditGroup(groupId);
+  @override
+  bool canManageGroup(String groupId) => GroupPermissionHandler.canManageGroup(groupId);
+  @override
+  bool canDeleteGroup(String groupId) => GroupPermissionHandler.canDeleteGroup(groupId);
+  @override
+  bool canInviteToGroup(String groupId) => GroupPermissionHandler.canInviteToGroup(groupId);
+  @override
+  bool canRemoveFromGroup(String groupId, String userId) => GroupPermissionHandler.canRemoveFromGroup(groupId, userId);
+  @override
+  bool isGroupAdmin(String groupId) => GroupPermissionHandler.isGroupAdmin(groupId);
+  @override
+  bool isGroupOwner(String groupId) => GroupPermissionHandler.isGroupOwner(groupId);
+  @override
+  bool isGroupMember(String groupId) => GroupPermissionHandler.isGroupMember(groupId);
+  @override
+  bool canLeaveGroup(String groupId) => GroupPermissionHandler.canLeaveGroup(groupId);
+  @override
+  bool canChangeGroupSettings(String groupId) => GroupPermissionHandler.canChangeGroupSettings(groupId);
+  @override
+  String getGroupPermissionLevel(String groupId) => PermissionActionBuilder.getGroupPermissionLevel(groupId);
+  @override
+  bool hasGroupAccess(String groupId) => GroupPermissionHandler.hasGroupAccess(groupId);
+  @override
+  List<String> getAvailableGroupActions(String groupId) => PermissionActionBuilder.getAvailableGroupActions(groupId);
+  
+  // ===== SOCIAL PERMISSIONS IMPLEMENTATION =====
+  
+  @override
+  bool canViewProfile(String userId) => SocialPermissionHandler.canViewProfile(userId);
+  @override
+  bool canEditProfile(String userId) => SocialPermissionHandler.canEditProfile(userId);
+  @override
+  bool canSendFriendRequest(String userId) => SocialPermissionHandler.canSendFriendRequest(userId);
+  @override
+  bool canAcceptFriendRequest(String requestId) => SocialPermissionHandler.canAcceptFriendRequest(requestId);
+  @override
+  bool canRejectFriendRequest(String requestId) => SocialPermissionHandler.canRejectFriendRequest(requestId);
+  @override
+  bool canCancelFriendRequest(String requestId) => SocialPermissionHandler.canCancelFriendRequest(requestId);
+  @override
+  bool canRemoveFriend(String userId) => SocialPermissionHandler.canRemoveFriend(userId);
+  @override
+  bool canBlockUser(String userId) => SocialPermissionHandler.canBlockUser(userId);
+  @override
+  bool canUnblockUser(String userId) => SocialPermissionHandler.canUnblockUser(userId);
+  @override
+  bool canMessageUser(String userId) => SocialPermissionHandler.canMessageUser(userId);
+  @override
+  bool isOwnProfile(String userId) => SocialPermissionHandler.isOwnProfile(userId);
+  @override
+  bool areFriends(String userId) => SocialPermissionHandler.areFriends(userId);
+  @override
+  String getSocialPermissionLevel(String userId) => PermissionActionBuilder.getSocialPermissionLevel(userId);
+  @override
+  List<String> getAvailableSocialActions(String userId) => PermissionActionBuilder.getAvailableSocialActions(userId);
 }
 
 /// Debug permission mixin - for development and testing
 mixin DebugPermissionMixin on BasePermissionMixin {
+  
   /// Print all permissions for a resource
   void debugPrintPermissions(String resourceType, String resourceId) {
-    if (kDebugMode) {
-      print('=== PERMISSIONS DEBUG: $resourceType:$resourceId ===');
-      print('User ID: $currentUserId');
-      print('Is Authenticated: $isAuthenticated');
-      
-      switch (resourceType) {
-        case 'recipe':
-          if (this is RecipePermissionMixin) {
-            final mixin = this as RecipePermissionMixin;
-            print('Recipe Permissions:');
-            print('  - Can View: ${mixin.canViewRecipe(resourceId)}');
-            print('  - Can Edit: ${mixin.canEditRecipe(resourceId)}');
-            print('  - Can Delete: ${mixin.canDeleteRecipe(resourceId)}');
-            print('  - Can Share: ${mixin.canShareRecipe(resourceId)}');
-            print('  - Is Owner: ${mixin.isRecipeOwner(resourceId)}');
-            print('  - Permission Level: ${mixin.getRecipePermissionLevel(resourceId)}');
-          }
-          break;
-        case 'shopping_list':
-          if (this is ShoppingListPermissionMixin) {
-            final mixin = this as ShoppingListPermissionMixin;
-            print('Shopping List Permissions:');
-            print('  - Can View: ${mixin.canViewShoppingList(resourceId)}');
-            print('  - Can Edit: ${mixin.canEditShoppingList(resourceId)}');
-            print('  - Can Manage: ${mixin.canManageShoppingList(resourceId)}');
-            print('  - Can Delete: ${mixin.canDeleteShoppingList(resourceId)}');
-            print('  - Is Owner: ${mixin.isShoppingListOwner(resourceId)}');
-            print('  - Permission Level: ${mixin.getShoppingListPermissionLevel(resourceId)}');
-          }
-          break;
-        case 'group':
-          if (this is GroupPermissionMixin) {
-            final mixin = this as GroupPermissionMixin;
-            print('Group Permissions:');
-            print('  - Can View: ${mixin.canViewGroup(resourceId)}');
-            print('  - Can Edit: ${mixin.canEditGroup(resourceId)}');
-            print('  - Can Manage: ${mixin.canManageGroup(resourceId)}');
-            print('  - Is Admin: ${mixin.isGroupAdmin(resourceId)}');
-            print('  - Is Owner: ${mixin.isGroupOwner(resourceId)}');
-            print('  - Permission Level: ${mixin.getGroupPermissionLevel(resourceId)}');
-          }
-          break;
-      }
-      print('===============================================');
-    }
+    PermissionDebugTools.debugPrintPermissions(resourceType, resourceId);
+  }
+  
+  /// Test all permission combinations for a resource
+  Map<String, bool> testAllPermissions(String resourceType, String resourceId) {
+    return PermissionDebugTools.testAllPermissions(resourceType, resourceId);
+  }
+  
+  /// Compare permissions between resources
+  void compareResourcePermissions(Map<String, String> resources) {
+    PermissionDebugTools.compareResourcePermissions(resources);
+  }
+  
+  /// Debug permission context for all resource types
+  void debugPermissionContext({
+    String? recipeId,
+    String? shoppingListId,
+    String? groupId,
+    String? userId,
+  }) {
+    PermissionDebugTools.debugPermissionContext(
+      recipeId: recipeId,
+      shoppingListId: shoppingListId,
+      groupId: groupId,
+      userId: userId,
+    );
+  }
+  
+  /// Benchmark permission checking performance
+  void benchmarkPermissions(String resourceType, List<String> resourceIds) {
+    PermissionDebugTools.benchmarkPermissions(resourceType, resourceIds);
+  }
+  
+  /// Debug permission errors
+  void debugPermissionError(String operation, String resourceType, String resourceId) {
+    PermissionDebugTools.debugPermissionError(operation, resourceType, resourceId);
+  }
+  
+  /// Validate permission consistency across handlers
+  List<String> validatePermissionConsistency(String resourceType, String resourceId) {
+    return PermissionDebugTools.validatePermissionConsistency(resourceType, resourceId);
   }
 }

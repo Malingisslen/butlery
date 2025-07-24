@@ -27,7 +27,10 @@ class RecipeInteractionHandler {
 
     if (result != null && result.isNotEmpty) {
       for (final recipe in result) {
-        await viewModel.addRecipeToCategory(categoryName, recipe);
+        await viewModel.addRecipeToCategory(
+          categoryName: categoryName,
+          recipe: recipe,
+        );
       }
 
       // ✅ BONUS: Visa bekräftelse
@@ -121,10 +124,12 @@ class RecipeInteractionHandler {
     AppLogger.info(
         '🔄 Reordering recipe: $oldIndex -> $newIndex in $categoryName');
 
-    // TODO: Implementera viewModel.reorderRecipeInCategory() metod
-    // För nu - bara logga att funktionen anropas
-    AppLogger.info(
-        '📝 Recipe reordering inom $categoryName kommer implementeras');
+    // Anropa viewModel för att ändra ordning på recept
+    viewModel.reorderRecipeInCategory(
+      categoryName: categoryName,
+      fromIndex: oldIndex,
+      toIndex: newIndex,
+    );
   }
 
   /// Navigera till receptdetaljer

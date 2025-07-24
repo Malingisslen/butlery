@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/recipe_unified.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 import '../viewmodels/social_recipe_viewmodel.dart';
+import '../viewmodels/collaborative_status_viewmodel.dart';
 import '../widgets/common/layout_components.dart';
 import '../widgets/common/social_components.dart';
 import '../theme/app_colors.dart';
@@ -41,6 +42,9 @@ class RecipeDetailView extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => sl<SocialRecipeViewModel>(param1: recipe),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => sl<CollaborativeStatusViewModel>(),
         ),
       ],
       child: _RecipeDetailViewContent(recipe: recipe),
@@ -121,11 +125,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           ),
           title: recipe.title,
           actions: [
-            // Collaborative status
-            SocialComponents.collaborativeAppBar(
-              context: context,
-              contentId: recipe.id,
-              recipe: recipe,
+            // Edit button
+            IconButton(
+              onPressed: () => _actions.editRecipe(context),
+              icon: Icon(Icons.edit),
+              tooltip: 'Redigera recept',
             ),
             
             // More actions menu
@@ -201,7 +205,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           SocialComponents.smartCollaborativeBanner(
             context: context,
             contentId: viewModel.recipe.id,
-            recipe: viewModel.recipe,
           ),
         ],
       ),

@@ -44,7 +44,7 @@ class FriendsManagementOperations {
       final currentUserId = _parent.currentUserId;
       if (currentUserId != null) {
         _notificationService = NotificationService(
-          firestore: _parent._firestore,
+          firestore: _parent.firestore,
           userId: currentUserId,
         );
         _notificationService?.initialize();

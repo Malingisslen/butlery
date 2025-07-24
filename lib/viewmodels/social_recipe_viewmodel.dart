@@ -175,23 +175,23 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
       notifyListeners();
 
       // Implement comment functionality through UnifiedRecipeService social operations
-      final success = await _recipeService.social.addComment(
+      final commentId = await _recipeService.social.addComment(
         recipeId: _recipe.id,
-        comment: _newCommentText.trim(),
+        content: _newCommentText.trim(),
         parentCommentId: _replyToCommentId,
       );
 
       // Handle success case
-      if (success) {
+      if (commentId != null) {
         _newCommentText = '';
         _replyToCommentId = null;
         await _loadComments(); // Refresh comments
         AppLogger.success('✅ Kommentar postad');
+        return true;
       } else {
         AppLogger.error('❌ Kunde inte posta kommentar');
+        return false;
       }
-
-      return success;
     } catch (e) {
       AppLogger.error('Post comment failed', e);
       return false;
@@ -205,7 +205,10 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   Future<bool> editComment(String commentId, String newText) async {
     try {
       setLoading(true);
-      final success = await _recipeService.social.editComment(commentId, newText);
+      final success = await _recipeService.social.editComment(
+        commentId: commentId,
+        newContent: newText,
+      );
       
       if (success) {
         await _loadComments(); // Refresh to show edit
@@ -303,7 +306,9 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
       clearError();
       notifyListeners();
 
-      final comments = await _recipeService.social.getComments(_recipe.id);
+      final comments = await _recipeService.social.getComments(
+        recipeId: _recipe.id,
+      );
 
       // Sort comments: top-level first (newest first), then replies by date
       _comments = List.from(comments);

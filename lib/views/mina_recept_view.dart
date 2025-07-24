@@ -206,7 +206,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               user: userService.currentUserProfile,
               size: ImageSize.extraLarge,
               showOnlineStatus: true,
-              isClickable: true,
               onTap: () => LayoutComponents.showProfileMenu(
                 context,
                 userImageUrl: userService.currentUserProfile?.avatarUrl,
@@ -500,7 +499,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           final recipe = recipes[index];
 
           return ContentCard.recipe(
-            key: ValueKey(recipe.id),
             recipe: recipe,
             onTap: () async {
               // Navigera till detaljer

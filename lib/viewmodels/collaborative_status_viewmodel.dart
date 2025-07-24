@@ -1,7 +1,7 @@
 /// lib/viewmodels/collaborative_status_viewmodel.dart
 
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../services/permission_service.dart';
 import '../services/social_recipe_service.dart';
 import '../models/recipe_unified.dart';
@@ -175,7 +175,11 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
 
       // Sätt loading state
       _statusCache[key] = CollaborativeStatus.loading();
-      notifyListeners();
+      
+      // Defer notification to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
       AppLogger.info(
           '🔍 Async check: ${type.name} $contentId collaborative status');
@@ -226,7 +230,10 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
         lastChecked: DateTime.now(),
       );
 
-      notifyListeners();
+      // Defer notification to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
       AppLogger.info(
           '✅ ${type.name} $contentId status cached: $isShared (${participants.length} participants)');
@@ -235,7 +242,11 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
           '❌ Failed ${type.name} collaborative check for $contentId', e);
 
       _statusCache[key] = CollaborativeStatus.error(e.toString());
-      notifyListeners();
+      
+      // Defer notification to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } finally {
       _checkingKeys.remove(key);
     }
@@ -371,7 +382,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
   void invalidateContent(String contentId, CollaborativeContentType type) {
     final key = _buildCacheKey(contentId, type);
     _statusCache.remove(key);
-    notifyListeners();
+    
+    // Defer notification to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+    
     AppLogger.info('🗑️ Invalidated cache för ${type.name} $contentId');
   }
 
@@ -386,7 +402,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
   void clearAllCache() {
     _statusCache.clear();
     _checkingKeys.clear();
-    notifyListeners();
+    
+    // Defer notification to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+    
     AppLogger.info('🗑️ Cleared all collaborative status cache');
   }
 

@@ -241,8 +241,8 @@ class RecipeSelectionViewModel extends ChangeNotifier {
   Future<void> _loadSharedRecipes() async {
     try {
       // Get all collaborative recipes that the current user owns or participates in
-      final collaborativeRecipes = _recipeService.social.getSharedByMe();
-      final sharedWithMeRecipes = _recipeService.social.getSharedWithMe();
+      final collaborativeRecipes = await _recipeService.social.getSharedByMe();
+      final sharedWithMeRecipes = await _recipeService.social.getSharedWithMe();
       
       final sharedRecipeIds = <String>{};
       

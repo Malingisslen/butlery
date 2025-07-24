@@ -198,14 +198,16 @@ class _GroupDetailViewState extends State<GroupDetailView> {
   // ✅ UPPDATERAD: Använd SocialComponents.showEditGroupDialog
   void _showEditGroupDialog(FriendCategory group) async {
     final result = await SocialComponents.showEditGroupDialog(
-      context,
-      group: group,
+      context: context,
+      groupId: group.id,
+      currentGroupName: group.name,
+      currentMemberIds: group.memberIds,
     );
 
-    if (result != null && mounted) {
+    if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Gruppen "${result.name}" uppdaterades! ✅'),
+          content: Text('Gruppen uppdaterades! ✅'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -237,8 +239,9 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     if (_isNavigating) return;
 
     final shouldDelete = await SocialComponents.showDeleteGroupDialog(
-      context,
-      group: group,
+      context: context,
+      groupId: group.id,
+      groupName: group.name,
     );
 
     if (shouldDelete == true && mounted && !_isNavigating) {

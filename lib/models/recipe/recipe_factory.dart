@@ -1,0 +1,442 @@
+// lib/models/recipe/recipe_factory.dart
+
+import '../recipe_unified.dart';
+import '../permissions/resource_permission.dart';
+
+/// Focused module for recipe factory methods
+/// 
+/// This module handles ONLY recipe construction:
+/// - Factory methods for different recipe types
+/// - Recipe conversion between types
+/// - Default value setting for different recipe types
+/// - Recipe initialization helpers
+/// 
+/// ❌ DOES NOT CONTAIN: Recipe operations, serialization, validation logic
+class RecipeFactory {
+  
+  // ===== PERSONAL RECIPE FACTORIES =====
+
+  /// Create a basic personal recipe
+  static Recipe createPersonal({
+    required String title,
+    required String description,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required String mealType,
+    String? createdBy,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? tags,
+    String? sourceUrl,
+    List<String>? imageUrls,
+    bool isPublic = false,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        mealType: mealType,
+        createdBy: createdBy,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+        imageUrls: imageUrls,
+        isPublic: isPublic,
+      ),
+      type: RecipeType.personal,
+    );
+  }
+
+  /// Create a quick personal recipe with minimal data
+  static Recipe createQuickPersonal({
+    required String title,
+    required List<String> ingredients,
+    required List<String> instructions,
+    String mealType = 'Middag',
+    String? createdBy,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: '', // Can be filled later
+        ingredients: ingredients,
+        instructions: instructions,
+        mealType: mealType,
+        createdBy: createdBy,
+      ),
+      type: RecipeType.personal,
+    );
+  }
+
+  // ===== SHARED RECIPE FACTORIES =====
+
+  /// Create a shared recipe (read-only for others)
+  static Recipe createShared({
+    required String title,
+    required String description,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required String mealType,
+    required String ownerId,
+    required String ownerDisplayName,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? tags,
+    String? sourceUrl,
+    List<String>? imageUrls,
+    bool allowGuestViewing = true,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        mealType: mealType,
+        createdBy: ownerId,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+        imageUrls: imageUrls,
+        isPublic: true,
+      ),
+      type: RecipeType.shared,
+      socialData: RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: ownerDisplayName,
+        allowGuestViewing: allowGuestViewing,
+        allowMemberInvites: false, // Shared recipes don't allow invites
+      ),
+    );
+  }
+
+  // ===== COLLABORATIVE RECIPE FACTORIES =====
+
+  /// Create a collaborative recipe (can be co-edited)
+  static Recipe createCollaborative({
+    required String title,
+    required String description,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required String mealType,
+    required String ownerId,
+    required String ownerDisplayName,
+    Map<String, ResourcePermission>? memberPermissions,
+    bool allowGuestViewing = false,
+    bool allowMemberInvites = true,
+    String? descriptionCollaborative,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? tags,
+    String? sourceUrl,
+    List<String>? imageUrls,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        mealType: mealType,
+        createdBy: ownerId,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+        imageUrls: imageUrls,
+        isPublic: true, // Collaborative recipes are typically public to members
+      ),
+      type: RecipeType.collaborative,
+      socialData: RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: ownerDisplayName,
+        memberPermissions: memberPermissions ?? {},
+        allowGuestViewing: allowGuestViewing,
+        allowMemberInvites: allowMemberInvites,
+        descriptionCollaborative: descriptionCollaborative,
+      ),
+    );
+  }
+
+  // ===== REALTIME RECIPE FACTORIES =====
+
+  /// Create a realtime recipe (live editing)
+  static Recipe createRealtime({
+    required String title,
+    required String description,
+    required List<String> ingredients,  
+    required List<String> instructions,
+    required String mealType,
+    required String ownerId,
+    required String ownerDisplayName,
+    Map<String, ResourcePermission>? memberPermissions,
+    List<String>? activeEditorIds,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? tags,
+    String? sourceUrl,
+    List<String>? imageUrls,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        mealType: mealType,
+        createdBy: ownerId,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+        imageUrls: imageUrls,
+        isPublic: true,
+      ),
+      type: RecipeType.realtime,
+      socialData: RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: ownerDisplayName,
+        memberPermissions: memberPermissions ?? {},
+        allowGuestViewing: true,
+        allowMemberInvites: true,
+      ),
+      realtimeData: RecipeRealtimeData(
+        activeEditorIds: activeEditorIds,
+        lastEditedByUserId: ownerId,
+        lastEditedByDisplayName: ownerDisplayName,
+        lastEditedAt: DateTime.now(),
+        editCount: 0,
+        isActive: true,
+      ),
+    );
+  }
+
+  // ===== CONVERSION METHODS =====
+
+  /// Convert personal recipe to shared
+  static Recipe convertToShared(
+    Recipe personalRecipe, {
+    required String ownerId,
+    required String ownerDisplayName,
+    bool allowGuestViewing = true,
+  }) {
+    if (personalRecipe.type != RecipeType.personal) {
+      throw ArgumentError('Only personal recipes can be converted to shared');
+    }
+
+    return Recipe(
+      core: personalRecipe.core.copyWith(
+        isPublic: true,
+        createdBy: ownerId,
+      ),
+      type: RecipeType.shared,
+      socialData: RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: ownerDisplayName,
+        allowGuestViewing: allowGuestViewing,
+        allowMemberInvites: false,
+      ),
+      offlineData: personalRecipe.offlineData,
+    );
+  }
+
+  /// Convert personal recipe to collaborative
+  static Recipe convertToCollaborative(
+    Recipe personalRecipe, {
+    required String ownerId,
+    required String ownerDisplayName,
+    Map<String, ResourcePermission>? initialMembers,
+    bool allowGuestViewing = false,
+    bool allowMemberInvites = true,
+    String? descriptionCollaborative,
+  }) {
+    if (personalRecipe.type != RecipeType.personal) {
+      throw ArgumentError('Only personal recipes can be converted to collaborative');
+    }
+
+    return Recipe(
+      core: personalRecipe.core.copyWith(
+        isPublic: true,
+        createdBy: ownerId,
+      ),
+      type: RecipeType.collaborative,
+      socialData: RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: ownerDisplayName,
+        memberPermissions: initialMembers ?? {},
+        allowGuestViewing: allowGuestViewing,
+        allowMemberInvites: allowMemberInvites,
+        descriptionCollaborative: descriptionCollaborative,
+      ),
+      offlineData: personalRecipe.offlineData,
+    );
+  }
+
+  /// Convert collaborative recipe to realtime
+  static Recipe convertToRealtime(
+    Recipe collaborativeRecipe, {
+    List<String>? activeEditorIds,
+  }) {
+    if (collaborativeRecipe.type != RecipeType.collaborative) {
+      throw ArgumentError('Only collaborative recipes can be converted to realtime');
+    }
+
+    return Recipe(
+      core: collaborativeRecipe.core,
+      type: RecipeType.realtime,
+      socialData: collaborativeRecipe.socialData,
+      realtimeData: RecipeRealtimeData(
+        activeEditorIds: activeEditorIds,
+        lastEditedByUserId: collaborativeRecipe.socialData?.ownerId,
+        lastEditedByDisplayName: collaborativeRecipe.socialData?.ownerDisplayName,
+        lastEditedAt: DateTime.now(),
+        editCount: 0,
+        isActive: true,
+      ),
+      offlineData: collaborativeRecipe.offlineData,
+    );
+  }
+
+  /// Create personal copy from any recipe type
+  static Recipe createPersonalCopy(
+    Recipe sourceRecipe, {
+    required String newOwnerId,
+    String? customTitle,
+  }) {
+    final titleSuffix = sourceRecipe.socialData?.ownerDisplayName != null 
+        ? ' (från ${sourceRecipe.socialData!.ownerDisplayName})'
+        : ' (kopia)';
+    
+    return Recipe(
+      core: RecipeCore(
+        title: customTitle ?? '${sourceRecipe.core.title}$titleSuffix',
+        description: sourceRecipe.core.description,
+        ingredients: [...sourceRecipe.core.ingredients],
+        instructions: [...sourceRecipe.core.instructions],
+        mealType: sourceRecipe.core.mealType,
+        createdBy: newOwnerId,
+        portions: sourceRecipe.core.portions,
+        timeMinutes: sourceRecipe.core.timeMinutes,
+        rating: sourceRecipe.core.rating,
+        tags: sourceRecipe.core.tags != null ? [...sourceRecipe.core.tags!] : null,
+        sourceUrl: 'Kopierat från: ${sourceRecipe.core.title}',
+        imageUrls: [...sourceRecipe.core.imageUrls],
+        isPublic: false, // Personal copies are private by default
+      ),
+      type: RecipeType.personal,
+    );
+  }
+
+  // ===== TEMPLATE RECIPES =====
+
+  /// Create an empty recipe template
+  static Recipe createEmptyTemplate({
+    String title = 'Nytt recept',
+    String mealType = 'Middag',
+    String? createdBy,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: '',
+        ingredients: [''],
+        instructions: [''],
+        mealType: mealType,
+        createdBy: createdBy,
+      ),
+      type: RecipeType.personal,
+    );
+  }
+
+  /// Create recipe from URL/import data
+  static Recipe createFromImport({
+    required String title,
+    required String description,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required String sourceUrl,
+    String mealType = 'Middag',
+    String? createdBy,
+    int? portions,
+    int? timeMinutes,
+    List<String>? imageUrls,
+  }) {
+    return Recipe(
+      core: RecipeCore(
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        mealType: mealType,
+        createdBy: createdBy,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        sourceUrl: sourceUrl,
+        imageUrls: imageUrls ?? [],
+      ),
+      type: RecipeType.personal,
+    );
+  }
+
+  // ===== VALIDATION HELPERS =====
+
+  /// Validate factory parameters
+  static bool validateBasicRecipeData({
+    required String title,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required String mealType,
+  }) {
+    if (title.trim().isEmpty) return false;
+    if (ingredients.isEmpty) return false;
+    if (instructions.isEmpty) return false;
+    if (mealType.trim().isEmpty) return false;
+    
+    // Check that ingredients and instructions are not empty
+    if (ingredients.every((ingredient) => ingredient.trim().isEmpty)) return false;
+    if (instructions.every((instruction) => instruction.trim().isEmpty)) return false;
+    
+    return true;
+  }
+
+  /// Get default meal types
+  static List<String> getDefaultMealTypes() {
+    return [
+      'Frukost',
+      'Lunch', 
+      'Middag',
+      'Mellanmål',
+      'Efterrätt',
+      'Dryck',
+      'Bakning',
+    ];
+  }
+
+  /// Get default recipe tags
+  static List<String> getCommonTags() {
+    return [
+      'Snabbt',
+      'Vegetariskt',
+      'Veganskt',
+      'Glutenfritt',
+      'Laktosfritt',
+      'Barnvänligt',
+      'Festmat',
+      'Vardagsmat',
+      'Hälsosamt',
+      'Billigt',
+    ];
+  }
+}

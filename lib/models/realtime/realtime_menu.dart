@@ -4,37 +4,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../recipe_unified.dart';
 import '../permissions/resource_permission.dart';
 import 'realtime_resource.dart';
+import 'realtime_menu_data.dart';
+import 'realtime_menu_operations.dart';
+import 'realtime_menu_analytics.dart';
+import 'realtime_menu_factory.dart';
 
-
-/// Realtidsresurs för gemensam kategori-baserad menyplanering
+/// Realtime resource for collaborative category-based menu planning
 ///
-/// Denna klass innehåller BARA:
-/// - Menu data representation
-/// - Business logic för menu operations
-/// - Serialization methods
-/// - Utility methods för menu manipulation
+/// This class provides a clean API that delegates to focused components:
+/// - RealtimeMenuData: Pure data representation and serialization
+/// - RealtimeMenuOperations: Business logic and menu operations
+/// - RealtimeMenuAnalytics: Search, filtering, and analytics
 ///
-/// ❌ INNEHÅLLER INTE: UI widgets, styling, theme methods, Flutter UI imports
+/// ❌ DOES NOT CONTAIN: Business logic implementation, search algorithms, UI concerns
 class RealtimeMenu extends RealtimeResource {
-  /// Titel för menyn (t.ex. "Familj Anderssons veckomeny")
-  final String menuTitle;
-
-  /// När menyn skapades/planerades för
-  final DateTime createdForDate;
-
-  /// Kategori-baserad meny-struktur: Kategori -> Lista av recept
-  /// Key: 'Middag', 'Lunch', 'Frukost', etc. (samma som befintlig menystruktur)
-  /// Value: Lista av Recipe objekt för den kategorin
-  final Map<String, List<Recipe>> menuSnapshot;
-
-  /// Extra anteckningar för hela menyn
-  final String? menuNotes;
-
-  /// Favoritrecept som ofta används (för quick-add)
-  final List<String>? favoriteRecipeIds;
-
-  /// Ursprunglig prompt som användes för att generera menyn (om tillämpligt)
-  final String? originalPrompt;
+  /// The core menu data
+  final RealtimeMenuData _data;
 
   RealtimeMenu({
     required super.id,
@@ -48,18 +33,15 @@ class RealtimeMenu extends RealtimeResource {
     super.editCount,
     super.isActive,
     super.metadata,
-    required this.menuTitle,
-    DateTime? createdForDate,
-    required this.menuSnapshot,
-    this.menuNotes,
-    this.favoriteRecipeIds,
-    this.originalPrompt,
-  })  : createdForDate = createdForDate ?? DateTime.now(),
+    required RealtimeMenuData data,
+  })  : _data = data,
         super(
           type: RealtimeResourceType.menu,
         );
 
-  /// Factory för att skapa ny realtidsmeny från befintlig MenuViewModel-struktur
+  // ===== FACTORY CONSTRUCTORS =====
+
+  /// Factory to create new realtime menu from existing MenuViewModel structure
   factory RealtimeMenu.fromMenuCategories({
     required String menuTitle,
     required Map<String, List<Recipe>> menuSnapshot,
@@ -72,49 +54,99 @@ class RealtimeMenu extends RealtimeResource {
     String? originalPrompt,
     DateTime? createdForDate,
   }) {
-    // Skapa participants map
-    final participants = <String, ResourcePermission>{};
-
-    // Ägaren får owner-behörighet
-    participants[ownerId] = ResourcePermission.owner;
-
-    // Lägg till redigerare
-    if (editorUserIds != null) {
-      for (final userId in editorUserIds) {
-        if (userId != ownerId) {
-          participants[userId] = ResourcePermission.editor;
-        }
-      }
-    }
-
-    // Lägg till betraktare
-    if (viewerUserIds != null) {
-      for (final userId in viewerUserIds) {
-        if (userId != ownerId && !participants.containsKey(userId)) {
-          participants[userId] = ResourcePermission.viewer;
-        }
-      }
-    }
-
-    return RealtimeMenu(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+    final params = RealtimeMenuFactory.createFromMenuCategories(
+      menuTitle: menuTitle,
+      menuSnapshot: menuSnapshot,
       ownerId: ownerId,
       ownerDisplayName: ownerDisplayName,
-      participants: participants,
-      lastEditedBy: ownerId,
-      lastEditedByDisplayName: ownerDisplayName,
-      menuTitle: menuTitle,
-      createdForDate: createdForDate ?? DateTime.now(),
-      menuSnapshot: menuSnapshot,
+      editorUserIds: editorUserIds,
+      viewerUserIds: viewerUserIds,
       menuNotes: menuNotes,
       favoriteRecipeIds: favoriteRecipeIds,
       originalPrompt: originalPrompt,
+      createdForDate: createdForDate,
+    );
+
+    return RealtimeMenu(
+      id: params['id'] as String,
+      ownerId: params['ownerId'] as String,
+      ownerDisplayName: params['ownerDisplayName'] as String,
+      participants: params['participants'] as Map<String, ResourcePermission>,
+      lastEditedBy: params['lastEditedBy'] as String,
+      lastEditedByDisplayName: params['lastEditedByDisplayName'] as String,
+      data: params['data'] as RealtimeMenuData,
     );
   }
 
-  // ===== MENU CONTENT OPERATIONS =====
+  /// Create from Firestore document
+  factory RealtimeMenu.fromFirestore(DocumentSnapshot doc) {
+    final params = RealtimeMenuFactory.parseFirestoreData(doc);
 
-  /// Uppdatera grundläggande menyinformation
+    return RealtimeMenu(
+      id: params['id'] as String,
+      ownerId: params['ownerId'] as String,
+      ownerDisplayName: params['ownerDisplayName'] as String,
+      participants: params['participants'] as Map<String, ResourcePermission>,
+      createdAt: params['createdAt'] as DateTime,
+      lastEditedAt: params['lastEditedAt'] as DateTime,
+      lastEditedBy: params['lastEditedBy'] as String,
+      lastEditedByDisplayName: params['lastEditedByDisplayName'] as String,
+      editCount: params['editCount'] as int,
+      isActive: params['isActive'] as bool,
+      metadata: params['metadata'] as Map<String, dynamic>,
+      data: params['data'] as RealtimeMenuData,
+    );
+  }
+
+  /// Create from JSON
+  factory RealtimeMenu.fromJson(Map<String, dynamic> json) {
+    final params = RealtimeMenuFactory.parseJsonData(json);
+
+    return RealtimeMenu(
+      id: params['id'] as String,
+      ownerId: params['ownerId'] as String,
+      ownerDisplayName: params['ownerDisplayName'] as String,
+      participants: params['participants'] as Map<String, ResourcePermission>,
+      createdAt: params['createdAt'] as DateTime,
+      lastEditedAt: params['lastEditedAt'] as DateTime,
+      lastEditedBy: params['lastEditedBy'] as String,
+      lastEditedByDisplayName: params['lastEditedByDisplayName'] as String,
+      editCount: params['editCount'] as int,
+      isActive: params['isActive'] as bool,
+      metadata: params['metadata'] as Map<String, dynamic>,
+      data: params['data'] as RealtimeMenuData,
+    );
+  }
+
+  // ===== DATA ACCESS PROPERTIES =====
+
+  /// Menu title (delegates to data)
+  String get menuTitle => _data.menuTitle;
+
+  /// Created for date (delegates to data)
+  DateTime get createdForDate => _data.createdForDate;
+
+  /// Menu snapshot (delegates to data)
+  Map<String, List<Recipe>> get menuSnapshot => _data.menuSnapshot;
+
+  /// Menu notes (delegates to data)
+  String? get menuNotes => _data.menuNotes;
+
+  /// Favorite recipe IDs (delegates to data)
+  List<String>? get favoriteRecipeIds => _data.favoriteRecipeIds;
+
+  /// Original prompt (delegates to data)
+  String? get originalPrompt => _data.originalPrompt;
+
+  /// All categories (delegates to data)
+  List<String> get categories => _data.categories;
+
+  /// All unique recipes (delegates to data)
+  List<Recipe> get allUniqueRecipes => _data.allUniqueRecipes;
+
+  // ===== MENU OPERATIONS (DELEGATE TO OPERATIONS) =====
+
+  /// Update basic menu information
   RealtimeMenu updateBasicInfo({
     String? menuTitle,
     DateTime? createdForDate,
@@ -124,71 +156,62 @@ class RealtimeMenu extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    return copyWith(
+    final updatedData = _data.copyWith(
       menuTitle: menuTitle,
       createdForDate: createdForDate,
       menuNotes: menuNotes,
       favoriteRecipeIds: favoriteRecipeIds,
       originalPrompt: originalPrompt,
+    );
+
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Lägg till recept till specifik kategori
+  /// Add recipe to specific category
   RealtimeMenu addRecipeToCategory({
     required String categoryName,
     required Recipe recipe,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(menuSnapshot);
+    final updatedData = RealtimeMenuOperations.addRecipeToCategory(
+      _data,
+      categoryName: categoryName,
+      recipe: recipe,
+    );
 
-    // Initiera kategori om den inte finns
-    if (!updatedMenu.containsKey(categoryName)) {
-      updatedMenu[categoryName] = [];
-    }
-
-    // Lägg till recept till kategorin
-    updatedMenu[categoryName] = [...updatedMenu[categoryName]!, recipe];
-
-    return copyWith(
-      menuSnapshot: updatedMenu,
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Ta bort recept från specifik kategori
+  /// Remove recipe from specific category
   RealtimeMenu removeRecipeFromCategory({
     required String categoryName,
     required int recipeIndex,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(menuSnapshot);
+    final updatedData = RealtimeMenuOperations.removeRecipeFromCategory(
+      _data,
+      categoryName: categoryName,
+      recipeIndex: recipeIndex,
+    );
 
-    if (!updatedMenu.containsKey(categoryName) ||
-        recipeIndex < 0 ||
-        recipeIndex >= updatedMenu[categoryName]!.length) {
-      throw ArgumentError(
-          'Ogiltigt recept-index för kategori $categoryName: $recipeIndex');
-    }
-
-    // Ta bort recept från kategorin
-    final updatedCategoryRecipes =
-        List<Recipe>.from(updatedMenu[categoryName]!);
-    updatedCategoryRecipes.removeAt(recipeIndex);
-    updatedMenu[categoryName] = updatedCategoryRecipes;
-
-    return copyWith(
-      menuSnapshot: updatedMenu,
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Flytta recept mellan kategorier
+  /// Move recipe between categories
   RealtimeMenu moveRecipeBetweenCategories({
     required String fromCategory,
     required int fromIndex,
@@ -197,44 +220,22 @@ class RealtimeMenu extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(menuSnapshot);
+    final updatedData = RealtimeMenuOperations.moveRecipeBetweenCategories(
+      _data,
+      fromCategory: fromCategory,
+      fromIndex: fromIndex,
+      toCategory: toCategory,
+      toIndex: toIndex,
+    );
 
-    // Validera from-kategori
-    if (!updatedMenu.containsKey(fromCategory) ||
-        fromIndex < 0 ||
-        fromIndex >= updatedMenu[fromCategory]!.length) {
-      throw ArgumentError(
-          'Ogiltigt från-index för kategori $fromCategory: $fromIndex');
-    }
-
-    // Initiera to-kategori om den inte finns
-    if (!updatedMenu.containsKey(toCategory)) {
-      updatedMenu[toCategory] = [];
-    }
-
-    // Hämta receptet som ska flyttas
-    final recipe = updatedMenu[fromCategory]![fromIndex];
-
-    // Ta bort från ursprunglig kategori
-    final updatedFromCategory = List<Recipe>.from(updatedMenu[fromCategory]!);
-    updatedFromCategory.removeAt(fromIndex);
-    updatedMenu[fromCategory] = updatedFromCategory;
-
-    // Lägg till på ny kategori
-    final updatedToCategory = List<Recipe>.from(updatedMenu[toCategory]!);
-    final insertIndex = toIndex ?? updatedToCategory.length;
-    updatedToCategory.insert(
-        insertIndex.clamp(0, updatedToCategory.length), recipe);
-    updatedMenu[toCategory] = updatedToCategory;
-
-    return copyWith(
-      menuSnapshot: updatedMenu,
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Ersätt recept i specifik kategori och position
+  /// Replace recipe in specific category and position
   RealtimeMenu replaceRecipeInCategory({
     required String categoryName,
     required int recipeIndex,
@@ -242,394 +243,235 @@ class RealtimeMenu extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(menuSnapshot);
+    final updatedData = RealtimeMenuOperations.replaceRecipeInCategory(
+      _data,
+      categoryName: categoryName,
+      recipeIndex: recipeIndex,
+      newRecipe: newRecipe,
+    );
 
-    if (!updatedMenu.containsKey(categoryName) ||
-        recipeIndex < 0 ||
-        recipeIndex >= updatedMenu[categoryName]!.length) {
-      throw ArgumentError(
-          'Ogiltigt recept-index för kategori $categoryName: $recipeIndex');
-    }
-
-    // Ersätt receptet
-    final updatedCategoryRecipes =
-        List<Recipe>.from(updatedMenu[categoryName]!);
-    updatedCategoryRecipes[recipeIndex] = newRecipe;
-    updatedMenu[categoryName] = updatedCategoryRecipes;
-
-    return copyWith(
-      menuSnapshot: updatedMenu,
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Rensa hela kategorin (ta bort alla recept)
+  /// Clear entire category (remove all recipes)
   RealtimeMenu clearCategory({
     required String categoryName,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(menuSnapshot);
-    updatedMenu[categoryName] = [];
+    final updatedData = RealtimeMenuOperations.clearCategory(
+      _data,
+      categoryName: categoryName,
+    );
 
-    return copyWith(
-      menuSnapshot: updatedMenu,
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Uppdatera hela kategorin med nya recept
+  /// Update entire category with new recipes
   RealtimeMenu updateWholeCategory({
     required String categoryName,
     required List<Recipe> recipes,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(menuSnapshot);
-    updatedMenu[categoryName] = List<Recipe>.from(recipes);
+    final updatedData = RealtimeMenuOperations.updateWholeCategory(
+      _data,
+      categoryName: categoryName,
+      recipes: recipes,
+    );
 
-    return copyWith(
-      menuSnapshot: updatedMenu,
+    return _copyWithUpdatedData(
+      data: updatedData,
       lastEditedBy: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Regenerera specifik kategori (för AI-generering)
+  /// Regenerate specific category (for AI generation)
   RealtimeMenu regenerateCategory({
     required String categoryName,
     required List<Recipe> newRecipes,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    return updateWholeCategory(
+    final updatedData = RealtimeMenuOperations.regenerateCategory(
+      _data,
       categoryName: categoryName,
-      recipes: newRecipes,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
+      newRecipes: newRecipes,
+    );
+
+    return _copyWithUpdatedData(
+      data: updatedData,
+      lastEditedBy: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  // ===== BUSINESS LOGIC GETTERS =====
+  // ===== STATISTICS (DELEGATE TO OPERATIONS) =====
 
-  /// Vanliga meny-kategorier (kan utökas)
-  static const List<String> commonCategories = [
-    'Middag',
-    'Lunch',
-    'Frukost',
-    'Mellanmål',
-    'Dessert',
-    'Bakningar',
-  ];
+  /// Common menu categories
+  static List<String> get commonCategories => RealtimeMenuOperations.commonCategories;
 
-  /// Alla kategorier i denna meny
-  List<String> get categories => menuSnapshot.keys.toList();
+  /// Categories sorted in logical order
+  List<String> get categoriesSorted => RealtimeMenuOperations.getCategoriesSorted(_data);
 
-  /// Kategorier sorterade i logisk ordning
-  List<String> get categoriesSorted {
-    final sorted = List<String>.from(categories);
-    sorted.sort((a, b) {
-      // Prioritera vanliga kategorier i ordning
-      final aIndex = commonCategories.indexOf(a);
-      final bIndex = commonCategories.indexOf(b);
+  /// Total number of recipes in entire menu
+  int get totalRecipeCount => RealtimeMenuOperations.getTotalRecipeCount(_data);
 
-      if (aIndex != -1 && bIndex != -1) {
-        return aIndex.compareTo(bIndex);
-      } else if (aIndex != -1) {
-        return -1;
-      } else if (bIndex != -1) {
-        return 1;
-      } else {
-        return a.compareTo(b);
-      }
-    });
-    return sorted;
+  /// Number of categories that have recipes
+  int get categoriesWithRecipes => RealtimeMenuOperations.getCategoriesWithRecipes(_data);
+
+  /// Number of empty categories
+  int get emptyCategoriesCount => RealtimeMenuOperations.getEmptyCategoriesCount(_data);
+
+  /// Is menu complete? (has recipes in at least 2 categories)
+  bool get isComplete => RealtimeMenuOperations.isComplete(_data);
+
+  /// Is menu well balanced? (has recipes in at least 3 categories)
+  bool get isWellBalanced => RealtimeMenuOperations.isWellBalanced(_data);
+
+  /// Get average number of recipes per category
+  double get averageRecipesPerCategory => RealtimeMenuOperations.getAverageRecipesPerCategory(_data);
+
+  /// Check if menu has favorites defined
+  bool get hasFavorites => RealtimeMenuOperations.hasFavorites(_data);
+
+  /// Number of favorite recipes
+  int get favoritesCount => RealtimeMenuOperations.getFavoritesCount(_data);
+
+  /// Check if menu has notes
+  bool get hasNotes => RealtimeMenuOperations.hasNotes(_data);
+
+  /// Check if menu was generated from prompt
+  bool get wasGenerated => RealtimeMenuOperations.wasGenerated(_data);
+
+  /// Menu summary for UI
+  String get menuSummary => RealtimeMenuOperations.getMenuSummary(_data);
+
+  /// Detailed menu summary with statistics
+  String get detailedMenuSummary => RealtimeMenuOperations.getDetailedMenuSummary(_data);
+
+  /// Get meal type distribution
+  Map<String, int> get mealTypeDistribution => RealtimeMenuOperations.getMealTypeDistribution(_data);
+
+  /// Get most active category
+  String? get mostActiveCategory => RealtimeMenuOperations.getMostActiveCategory(_data);
+
+  /// Get least active category
+  String? get leastActiveCategory => RealtimeMenuOperations.getLeastActiveCategory(_data);
+
+  /// Get menu completion percentage
+  double get completionPercentage => RealtimeMenuOperations.getCompletionPercentage(_data);
+
+  /// Get completion status text
+  String get completionStatus => RealtimeMenuOperations.getCompletionStatus(_data);
+
+  /// Get progress color name
+  String get progressColorName => RealtimeMenuOperations.getProgressColorName(_data);
+
+  // ===== DATA ACCESS METHODS (DELEGATE TO DATA) =====
+
+  /// Get recipes for specific category
+  List<Recipe> getRecipesForCategory(String categoryName) => _data.getRecipesForCategory(categoryName);
+
+  /// Check if category has recipes
+  bool categoryHasRecipes(String categoryName) => _data.categoryHasRecipes(categoryName);
+
+  /// Convert to MenuViewModel format
+  Map<String, List<Recipe>> toMenuViewModelFormat() => _data.toMenuViewModelFormat();
+
+  /// Check if menu contains a specific recipe
+  bool containsRecipe(String recipeId) => _data.containsRecipe(recipeId);
+
+  /// Find which category a recipe belongs to
+  String? findRecipeCategory(String recipeId) => _data.findRecipeCategory(recipeId);
+
+  /// Get recipes that need attention
+  List<Recipe> get recipesNeedingAttention => RealtimeMenuOperations.getRecipesNeedingAttention(_data);
+
+  /// Create a personal copy of the menu
+  Map<String, List<Recipe>> createPersonalMenuCopy() {
+    return RealtimeMenuOperations.createPersonalMenuCopy(_data, ownerDisplayName);
   }
 
-  /// Totalt antal recept i hela menyn
-  int get totalRecipeCount {
-    return menuSnapshot.values
-        .fold(0, (total, categoryRecipes) => total + categoryRecipes.length);
-  }
+  // ===== SEARCH AND ANALYTICS (DELEGATE TO ANALYTICS) =====
 
-  /// Antal kategorier som har recept
-  int get categoriesWithRecipes {
-    return menuSnapshot.values
-        .where((categoryRecipes) => categoryRecipes.isNotEmpty)
-        .length;
-  }
+  /// Search recipes in menu
+  List<Recipe> searchRecipes(String query) => RealtimeMenuAnalytics.searchRecipes(_data, query);
 
-  /// Antal tomma kategorier
-  int get emptyCategoriesCount {
-    return menuSnapshot.values
-        .where((categoryRecipes) => categoryRecipes.isEmpty)
-        .length;
-  }
+  /// Advanced recipe search
+  List<Recipe> searchRecipesAdvanced({
+    String? query,
+    String? mealType,
+    List<String>? tags,
+    int? maxTimeMinutes,
+    int? minPortions,
+    int? maxPortions,
+    double? minRating,
+  }) => RealtimeMenuAnalytics.searchRecipesAdvanced(
+    _data,
+    query: query,
+    mealType: mealType,
+    tags: tags,
+    maxTimeMinutes: maxTimeMinutes,
+    minPortions: minPortions,
+    maxPortions: maxPortions,
+    minRating: minRating,
+  );
 
-  /// Är menyn komplett? (har recept i minst 2 kategorier)
-  bool get isComplete => categoriesWithRecipes >= 2;
+  /// Filter menu by specific meal type
+  Map<String, List<Recipe>> filterByMealType(String mealType) => 
+      RealtimeMenuAnalytics.filterByMealType(_data, mealType);
 
-  /// Är menyn väl balanserad? (har recept i minst 3 kategorier)
-  bool get isWellBalanced => categoriesWithRecipes >= 3;
+  /// Filter menu by max cooking time
+  Map<String, List<Recipe>> filterByMaxTime(int maxMinutes) => 
+      RealtimeMenuAnalytics.filterByMaxTime(_data, maxMinutes);
 
-  /// Hämta recept för specifik kategori
-  List<Recipe> getRecipesForCategory(String categoryName) {
-    return menuSnapshot[categoryName] ?? [];
-  }
+  /// Filter menu by minimum rating
+  Map<String, List<Recipe>> filterByMinRating(double minRating) => 
+      RealtimeMenuAnalytics.filterByMinRating(_data, minRating);
 
-  /// Kontrollera om kategori har recept
-  bool categoryHasRecipes(String categoryName) {
-    return getRecipesForCategory(categoryName).isNotEmpty;
-  }
+  /// Filter menu by tags
+  Map<String, List<Recipe>> filterByTags(List<String> requiredTags) => 
+      RealtimeMenuAnalytics.filterByTags(_data, requiredTags);
 
-  /// Hämta alla unika recept i menyn (för ingredienslista)
-  List<Recipe> get allUniqueRecipes {
-    final allRecipes = <Recipe>[];
-    final seenIds = <String>{};
+  /// Get cooking time distribution
+  Map<String, int> get cookingTimeDistribution => RealtimeMenuAnalytics.getCookingTimeDistribution(_data);
 
-    for (final categoryRecipes in menuSnapshot.values) {
-      for (final recipe in categoryRecipes) {
-        if (!seenIds.contains(recipe.id)) {
-          allRecipes.add(recipe);
-          seenIds.add(recipe.id);
-        }
-      }
-    }
+  /// Get difficulty distribution
+  Map<String, int> get difficultyDistribution => RealtimeMenuAnalytics.getDifficultyDistribution(_data);
 
-    return allRecipes;
-  }
+  /// Get rating distribution
+  Map<String, int> get ratingDistribution => RealtimeMenuAnalytics.getRatingDistribution(_data);
 
-  /// Meny-sammanfattning för UI (kompatibel med befintlig SharedMenu)
-  String get menuSummary {
-    if (totalRecipeCount == 0) {
-      return 'Tom meny';
-    }
+  /// Get all unique tags in menu
+  List<String> get allTags => RealtimeMenuAnalytics.getAllTags(_data);
 
-    final parts = <String>[];
-    for (final entry in menuSnapshot.entries) {
-      final categoryName = entry.key;
-      final count = entry.value.length;
-      if (count > 0) {
-        parts.add('$count $categoryName');
-      }
-    }
-    return parts.join(', ');
-  }
+  /// Get tag frequency distribution
+  Map<String, int> get tagFrequency => RealtimeMenuAnalytics.getTagFrequency(_data);
 
-  /// Detaljerad meny-sammanfattning med statistik
-  String get detailedMenuSummary {
-    if (totalRecipeCount == 0) {
-      return 'Tom meny - inga recept tillagda än';
-    }
+  /// Get most popular tags
+  List<String> getMostPopularTags({int limit = 10}) => 
+      RealtimeMenuAnalytics.getMostPopularTags(_data, limit: limit);
 
-    final parts = <String>[];
-    parts.add('$totalRecipeCount recept');
-    parts.add('$categoriesWithRecipes kategorier');
+  /// Get healthiness score
+  double get healthinessScore => RealtimeMenuAnalytics.getHealthinessScore(_data);
 
-    if (isWellBalanced) {
-      parts.add('väl balanserad');
-    } else if (isComplete) {
-      parts.add('komplett');
-    } else {
-      parts.add('pågående');
-    }
+  /// Get balance insights
+  MenuBalanceInsights get balanceInsights => RealtimeMenuAnalytics.getBalanceInsights(_data);
 
-    return parts.join(' • ');
-  }
+  /// Get recipe recommendations
+  List<String> get recipeRecommendations => RealtimeMenuAnalytics.getRecipeRecommendations(_data);
 
-  /// Konvertera till format som är kompatibelt med MenuViewModel
-  Map<String, List<Recipe>> toMenuViewModelFormat() {
-    return Map<String, List<Recipe>>.from(menuSnapshot);
-  }
-
-  /// Få mest populära måltidstyper i menyn
-  Map<String, int> get mealTypeDistribution {
-    final distribution = <String, int>{};
-
-    for (final recipes in menuSnapshot.values) {
-      for (final recipe in recipes) {
-        distribution[recipe.mealType] =
-            (distribution[recipe.mealType] ?? 0) + 1;
-      }
-    }
-
-    return distribution;
-  }
-
-  /// Få mest aktiva kategorin (med flest recept)
-  String? get mostActiveCategory {
-    if (menuSnapshot.isEmpty) return null;
-
-    String? maxCategory;
-    int maxCount = 0;
-
-    for (final entry in menuSnapshot.entries) {
-      if (entry.value.length > maxCount) {
-        maxCount = entry.value.length;
-        maxCategory = entry.key;
-      }
-    }
-
-    return maxCategory;
-  }
-
-  /// Få minst aktiva kategorin (med minst recept, men inte tom)
-  String? get leastActiveCategory {
-    if (menuSnapshot.isEmpty) return null;
-
-    String? minCategory;
-    int minCount = double.maxFinite.toInt();
-
-    for (final entry in menuSnapshot.entries) {
-      if (entry.value.isNotEmpty && entry.value.length < minCount) {
-        minCount = entry.value.length;
-        minCategory = entry.key;
-      }
-    }
-
-    return minCategory;
-  }
-
-  /// Kontrollera om menyn innehåller ett specifikt recept
-  bool containsRecipe(String recipeId) {
-    for (final recipes in menuSnapshot.values) {
-      if (recipes.any((recipe) => recipe.id == recipeId)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /// Hitta vilken kategori ett recept tillhör
-  String? findRecipeCategory(String recipeId) {
-    for (final entry in menuSnapshot.entries) {
-      if (entry.value.any((recipe) => recipe.id == recipeId)) {
-        return entry.key;
-      }
-    }
-    return null;
-  }
-
-  /// Få genomsnittligt antal recept per kategori
-  double get averageRecipesPerCategory {
-    if (categories.isEmpty) return 0.0;
-    return totalRecipeCount / categories.length;
-  }
-
-  /// Kontrollera om menyn har favoritrecept definierade
-  bool get hasFavorites => favoriteRecipeIds?.isNotEmpty == true;
-
-  /// Antal favoritrecept
-  int get favoritesCount => favoriteRecipeIds?.length ?? 0;
-
-  /// Kontrollera om menyn har anteckningar
-  bool get hasNotes => menuNotes?.isNotEmpty == true;
-
-  /// Kontrollera om menyn genererades från prompt
-  bool get wasGenerated => originalPrompt?.isNotEmpty == true;
-
-  /// Få menu completion percentage (för progress indicators)
-  double get completionPercentage {
-    if (commonCategories.isEmpty) return 0.0;
-
-    int completedCategories = 0;
-    for (final category in commonCategories) {
-      if (categoryHasRecipes(category)) {
-        completedCategories++;
-      }
-    }
-
-    return completedCategories / commonCategories.length;
-  }
-
-  /// Få completion status text
-  String get completionStatus {
-    if (completionPercentage >= 1.0) {
-      return 'Komplett meny';
-    } else if (completionPercentage >= 0.8) {
-      return 'Nästan klar';
-    } else if (completionPercentage >= 0.5) {
-      return 'Halvfärdig';
-    } else if (completionPercentage >= 0.2) {
-      return 'Påbörjad';
-    } else {
-      return 'Tom meny';
-    }
-  }
-
-  /// Få progress color name (för UI widgets att använda med AppTheme)
-  String get progressColorName {
-    if (completionPercentage >= 0.8) {
-      return 'success';
-    } else if (completionPercentage >= 0.5) {
-      return 'primary';
-    } else if (completionPercentage >= 0.2) {
-      return 'warning';
-    } else {
-      return 'error';
-    }
-  }
-
-  // ===== MENU SEARCH AND FILTERING =====
-
-  /// Sök recept i menyn baserat på query
-  List<Recipe> searchRecipes(String query) {
-    if (query.isEmpty) return allUniqueRecipes;
-
-    final lowerQuery = query.toLowerCase();
-    final results = <Recipe>[];
-
-    for (final recipes in menuSnapshot.values) {
-      for (final recipe in recipes) {
-        if (recipe.title.toLowerCase().contains(lowerQuery) ||
-            recipe.description.toLowerCase().contains(lowerQuery) ||
-            recipe.ingredients.any((ingredient) =>
-                ingredient.toLowerCase().contains(lowerQuery)) ||
-            recipe.mealType.toLowerCase().contains(lowerQuery)) {
-          results.add(recipe);
-        }
-      }
-    }
-
-    return results;
-  }
-
-  /// Filtrera menyn efter specifik måltidstyp
-  Map<String, List<Recipe>> filterByMealType(String mealType) {
-    final filtered = <String, List<Recipe>>{};
-
-    for (final entry in menuSnapshot.entries) {
-      final filteredRecipes =
-          entry.value.where((recipe) => recipe.mealType == mealType).toList();
-
-      if (filteredRecipes.isNotEmpty) {
-        filtered[entry.key] = filteredRecipes;
-      }
-    }
-
-    return filtered;
-  }
-
-  /// Få recept som behöver uppmärksamhet (ofullständiga)
-  List<Recipe> get recipesNeedingAttention {
-    final needingAttention = <Recipe>[];
-
-    for (final recipes in menuSnapshot.values) {
-      for (final recipe in recipes) {
-        if (recipe.title.isEmpty ||
-            recipe.ingredients.isEmpty ||
-            recipe.instructions.isEmpty) {
-          needingAttention.add(recipe);
-        }
-      }
-    }
-
-    return needingAttention;
-  }
-
-  // ===== PARTICIPANT MANAGEMENT (OVERRIDE från RealtimeResource) =====
+  // ===== PARTICIPANT MANAGEMENT (OVERRIDE FROM REALTIMERESOURCE) =====
 
   @override
   RealtimeMenu addParticipant(
@@ -637,8 +479,7 @@ class RealtimeMenu extends RealtimeResource {
     String userDisplayName,
     ResourcePermission permission,
   ) {
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(participants);
     updatedParticipants[userId] = permission;
 
     return copyWithMetadata(
@@ -653,11 +494,10 @@ class RealtimeMenu extends RealtimeResource {
   @override
   RealtimeMenu removeParticipant(String userId) {
     if (userId == ownerId) {
-      throw ArgumentError('Kan inte ta bort ägaren från menyn');
+      throw ArgumentError('Cannot remove owner from menu');
     }
 
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(participants);
     updatedParticipants.remove(userId);
 
     return copyWithMetadata(
@@ -675,11 +515,10 @@ class RealtimeMenu extends RealtimeResource {
     ResourcePermission newPermission,
   ) {
     if (userId == ownerId && newPermission != ResourcePermission.owner) {
-      throw ArgumentError('Ägaren måste behålla owner-behörighet');
+      throw ArgumentError('Owner must maintain owner permission');
     }
 
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(participants);
     updatedParticipants[userId] = newPermission;
 
     return copyWithMetadata(
@@ -691,7 +530,7 @@ class RealtimeMenu extends RealtimeResource {
     );
   }
 
-  // ===== OVERRIDE ABSTRACT METHODS =====
+  // ===== COPY METHODS =====
 
   @override
   RealtimeMenu copyWithMetadata({
@@ -711,21 +550,15 @@ class RealtimeMenu extends RealtimeResource {
       createdAt: createdAt,
       lastEditedAt: lastEditedAt ?? DateTime.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
-      lastEditedByDisplayName:
-          lastEditedByDisplayName ?? this.lastEditedByDisplayName,
+      lastEditedByDisplayName: lastEditedByDisplayName ?? this.lastEditedByDisplayName,
       editCount: editCount ?? (this.editCount + 1),
       isActive: isActive ?? this.isActive,
       metadata: metadata ?? this.metadata,
-      menuTitle: menuTitle,
-      createdForDate: createdForDate,
-      menuSnapshot: menuSnapshot,
-      menuNotes: menuNotes,
-      favoriteRecipeIds: favoriteRecipeIds,
-      originalPrompt: originalPrompt,
+      data: _data,
     );
   }
 
-  /// Skapa kopia med uppdaterat meny-innehåll och metadata
+  /// Create copy with updated menu data and metadata
   RealtimeMenu copyWith({
     String? menuTitle,
     DateTime? createdForDate,
@@ -741,6 +574,15 @@ class RealtimeMenu extends RealtimeResource {
     bool? isActive,
     Map<String, dynamic>? metadata,
   }) {
+    final updatedData = _data.copyWith(
+      menuTitle: menuTitle,
+      createdForDate: createdForDate,
+      menuSnapshot: menuSnapshot,
+      menuNotes: menuNotes,
+      favoriteRecipeIds: favoriteRecipeIds,
+      originalPrompt: originalPrompt,
+    );
+
     return RealtimeMenu(
       id: id,
       ownerId: ownerId,
@@ -749,203 +591,63 @@ class RealtimeMenu extends RealtimeResource {
       createdAt: createdAt,
       lastEditedAt: lastEditedAt ?? DateTime.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
-      lastEditedByDisplayName:
-          lastEditedByDisplayName ?? this.lastEditedByDisplayName,
+      lastEditedByDisplayName: lastEditedByDisplayName ?? this.lastEditedByDisplayName,
       editCount: editCount ?? (this.editCount + 1),
       isActive: isActive ?? this.isActive,
       metadata: metadata ?? this.metadata,
-      menuTitle: menuTitle ?? this.menuTitle,
-      createdForDate: createdForDate ?? this.createdForDate,
-      menuSnapshot: menuSnapshot ?? this.menuSnapshot,
-      menuNotes: menuNotes ?? this.menuNotes,
-      favoriteRecipeIds: favoriteRecipeIds ?? this.favoriteRecipeIds,
-      originalPrompt: originalPrompt ?? this.originalPrompt,
+      data: updatedData,
     );
   }
+
+  /// Helper method for copying with updated data
+  RealtimeMenu _copyWithUpdatedData({
+    required RealtimeMenuData data,
+    required String lastEditedBy,
+    required String lastEditedByDisplayName,
+  }) {
+    final params = RealtimeMenuFactory.createCopyParameters(
+      id: id,
+      ownerId: ownerId,
+      ownerDisplayName: ownerDisplayName,
+      participants: participants,
+      createdAt: createdAt,
+      lastEditedAt: super.lastEditedAt,
+      lastEditedBy: super.lastEditedBy,
+      lastEditedByDisplayName: super.lastEditedByDisplayName,
+      editCount: editCount,
+      isActive: isActive,
+      metadata: metadata,
+      data: data,
+      newLastEditedBy: lastEditedBy,
+      newLastEditedByDisplayName: lastEditedByDisplayName,
+    );
+
+    return RealtimeMenu(
+      id: params['id'] as String,
+      ownerId: params['ownerId'] as String,
+      ownerDisplayName: params['ownerDisplayName'] as String,
+      participants: params['participants'] as Map<String, ResourcePermission>,
+      createdAt: params['createdAt'] as DateTime,
+      lastEditedAt: params['lastEditedAt'] as DateTime,
+      lastEditedBy: params['lastEditedBy'] as String,
+      lastEditedByDisplayName: params['lastEditedByDisplayName'] as String,
+      editCount: params['editCount'] as int,
+      isActive: params['isActive'] as bool,
+      metadata: params['metadata'] as Map<String, dynamic>,
+      data: params['data'] as RealtimeMenuData,
+    );
+  }
+
+  // ===== SERIALIZATION (DELEGATE TO DATA) =====
 
   @override
-  Map<String, dynamic> serializeContent() {
-    // Serialisera menuSnapshot till Firestore-format (samma som SharedMenu)
-    final menuData = <String, List<Map<String, dynamic>>>{};
-    for (final entry in menuSnapshot.entries) {
-      final categoryName = entry.key;
-      final recipes = entry.value;
-      menuData[categoryName] =
-          recipes.map((recipe) => recipe.toFirestore()).toList();
-    }
+  Map<String, dynamic> serializeContent() => _data.serializeContent();
 
-    return {
-      'menuTitle': menuTitle,
-      'createdForDate': Timestamp.fromDate(createdForDate),
-      'menuSnapshot': menuData,
-      'menuNotes': menuNotes,
-      'favoriteRecipeIds': favoriteRecipeIds,
-      'originalPrompt': originalPrompt,
-    };
-  }
-
-  /// Skapa från Firestore dokument
-  factory RealtimeMenu.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    final metadataMap = RealtimeResource.parseFirestoreMetadata(data, doc.id);
-
-    // Parse menu-specifik data (samma struktur som SharedMenu)
-    final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
-    final menuSnapshot = <String, List<Recipe>>{};
-
-    // Konvertera menu data tillbaka till Recipe objekt
-    for (final entry in menuData.entries) {
-      final categoryName = entry.key;
-      final recipesData = entry.value as List<dynamic>? ?? [];
-
-      final recipes = recipesData
-          .map((recipeData) => Recipe(
-                core: RecipeCore(
-                  id: recipeData['id'] as String? ?? '',
-                  title: recipeData['title'] as String? ?? '',
-                  description: recipeData['description'] as String? ?? '',
-                  ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-                  instructions: List<String>.from(recipeData['instructions'] ?? []),
-                  imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-                  mealType: recipeData['mealType'] as String? ?? 'Middag',
-                  portions: recipeData['portions'] as int?,
-                  timeMinutes: recipeData['timeMinutes'] as int?,
-                  rating: (recipeData['rating'] as num?)?.toDouble(),
-                  tags: recipeData['tags'] != null
-                      ? List<String>.from(recipeData['tags'])
-                      : null,
-                  sourceUrl: recipeData['sourceUrl'] as String?,
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                  createdBy: '',
-                ),
-                type: RecipeType.personal,
-              ))
-          .toList();
-
-      menuSnapshot[categoryName] = recipes;
-    }
-
-    return RealtimeMenu(
-      id: metadataMap['id'] as String,
-      ownerId: metadataMap['ownerId'] as String,
-      ownerDisplayName: metadataMap['ownerDisplayName'] as String,
-      participants:
-          metadataMap['participants'] as Map<String, ResourcePermission>,
-      createdAt: metadataMap['createdAt'] as DateTime,
-      lastEditedAt: metadataMap['lastEditedAt'] as DateTime,
-      lastEditedBy: metadataMap['lastEditedBy'] as String,
-      lastEditedByDisplayName: metadataMap['lastEditedByDisplayName'] as String,
-      editCount: metadataMap['editCount'] as int,
-      isActive: metadataMap['isActive'] as bool,
-      metadata: metadataMap['metadata'] as Map<String, dynamic>,
-      menuTitle: data['menuTitle'] as String? ?? '',
-      createdForDate:
-          (data['createdForDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      menuSnapshot: menuSnapshot,
-      menuNotes: data['menuNotes'] as String?,
-      favoriteRecipeIds: data['favoriteRecipeIds'] != null
-          ? List<String>.from(data['favoriteRecipeIds'])
-          : null,
-      originalPrompt: data['originalPrompt'] as String?,
-    );
-  }
-
-  // ===== UTILITY METHODS =====
-
-  /// Skapa en personlig kopia av menyn (kompatibel med MenuViewModel)
-  Map<String, List<Recipe>> createPersonalMenuCopy() {
-    final personalMenu = <String, List<Recipe>>{};
-
-    for (final entry in menuSnapshot.entries) {
-      final categoryName = entry.key;
-      final recipes = entry.value;
-
-      // Skapa kopior av recepten med ny attribution
-      final personalRecipes = recipes
-          .map((recipe) => recipe.copyWith(
-                sourceUrl: 'Delad meny från $ownerDisplayName',
-                lastCookedAt: null,
-              ))
-          .toList();
-
-      personalMenu[categoryName] = personalRecipes;
-    }
-
-    return personalMenu;
-  }
-
-  /// JSON serialization för caching
+  /// JSON serialization for caching
   Map<String, dynamic> toJson() {
     final json = toJsonMetadata();
-
-    // Serialisera menuSnapshot för JSON
-    final menuData = <String, List<Map<String, dynamic>>>{};
-    for (final entry in menuSnapshot.entries) {
-      menuData[entry.key] =
-          entry.value.map((recipe) => recipe.toJson()).toList();
-    }
-
-    json['menuTitle'] = menuTitle;
-    json['createdForDate'] = createdForDate.toIso8601String();
-    json['menuSnapshot'] = menuData;
-    json['menuNotes'] = menuNotes;
-    json['favoriteRecipeIds'] = favoriteRecipeIds;
-    json['originalPrompt'] = originalPrompt;
-
+    json.addAll(_data.toJson());
     return json;
-  }
-
-  factory RealtimeMenu.fromJson(Map<String, dynamic> json) {
-    // Parse participants
-    final participantsData =
-        json['participants'] as Map<String, dynamic>? ?? {};
-    final participants = <String, ResourcePermission>{};
-
-    for (final entry in participantsData.entries) {
-      try {
-        participants[entry.key] = ResourcePermissionHelper.fromString(
-          entry.value as String,
-        );
-      } catch (e) {
-        continue;
-      }
-    }
-
-    // Parse menuSnapshot från JSON
-    final menuData = json['menuSnapshot'] as Map<String, dynamic>? ?? {};
-    final menuSnapshot = <String, List<Recipe>>{};
-
-    for (final entry in menuData.entries) {
-      final recipesData = entry.value as List<dynamic>? ?? [];
-      final recipes = recipesData
-          .map((recipeData) =>
-              Recipe.fromJson(recipeData as Map<String, dynamic>))
-          .toList();
-      menuSnapshot[entry.key] = recipes;
-    }
-
-    return RealtimeMenu(
-      id: json['id'] as String,
-      ownerId: json['ownerId'] as String,
-      ownerDisplayName: json['ownerDisplayName'] as String,
-      participants: participants,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      lastEditedAt: DateTime.parse(json['lastEditedAt'] as String),
-      lastEditedBy: json['lastEditedBy'] as String,
-      lastEditedByDisplayName: json['lastEditedByDisplayName'] as String,
-      editCount: json['editCount'] as int? ?? 0,
-      isActive: json['isActive'] as bool? ?? true,
-      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
-      menuTitle: json['menuTitle'] as String? ?? '',
-      createdForDate: DateTime.parse(json['createdForDate'] as String),
-      menuSnapshot: menuSnapshot,
-      menuNotes: json['menuNotes'] as String?,
-      favoriteRecipeIds: json['favoriteRecipeIds'] != null
-          ? List<String>.from(json['favoriteRecipeIds'])
-          : null,
-      originalPrompt: json['originalPrompt'] as String?,
-    );
   }
 
   @override

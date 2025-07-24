@@ -6,6 +6,11 @@ import 'package:hive/hive.dart';
 import '../core/mixins/json_serializable_mixin.dart';
 import 'permissions/resource_permission.dart';
 
+// Focused modules
+import 'recipe/recipe_operations.dart';
+import 'recipe/recipe_factory.dart';
+import 'recipe/recipe_serialization.dart';
+
 part 'recipe_unified.g.dart';
 
 /// Recipe type determines how the recipe behaves
@@ -168,9 +173,22 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   };
 
   Map<String, dynamic> toFirestore() => {
-    ...toJson(),
+    'id': id,
+    'title': title,
+    'description': description,
+    'portions': portions,
+    'timeMinutes': timeMinutes,
+    'ingredients': ingredients,
+    'instructions': instructions,
+    'tags': tags,
+    'rating': rating,
+    'mealType': mealType,
+    'sourceUrl': sourceUrl,
+    'imageUrls': imageUrls,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': Timestamp.fromDate(updatedAt),
+    'createdBy': createdBy,
+    'isPublic': isPublic,
     'lastCookedAt': lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
   };
 
@@ -183,7 +201,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     ingredients: List<String>.from(json['ingredients'] ?? []),
     instructions: List<String>.from(json['instructions'] ?? []),
     tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
-    rating: json['rating']?.toDouble(),
+    rating: (json['rating'] as num?)?.toDouble(),
     mealType: json['mealType'] as String,
     sourceUrl: json['sourceUrl'] as String?,
     imageUrls: List<String>.from(json['imageUrls'] ?? []),
@@ -191,7 +209,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     updatedAt: DateTime.parse(json['updatedAt'] as String),
     createdBy: json['createdBy'] as String?,
     isPublic: json['isPublic'] as bool? ?? false,
-    lastCookedAt: json['lastCookedAt'] != null ? DateTime.parse(json['lastCookedAt']) : null,
+    lastCookedAt: json['lastCookedAt'] != null ? DateTime.parse(json['lastCookedAt'] as String) : null,
   );
 
   factory RecipeCore.fromFirestore(DocumentSnapshot doc) {
@@ -261,6 +279,26 @@ class RecipeSocialData {
     categoryIds: json['categoryIds'] != null ? List<String>.from(json['categoryIds']) : null,
     descriptionCollaborative: json['descriptionCollaborative'] as String?,
   );
+
+  RecipeSocialData copyWith({
+    String? ownerId,
+    String? ownerDisplayName,
+    Map<String, ResourcePermission>? memberPermissions,
+    bool? allowGuestViewing,
+    bool? allowMemberInvites,
+    List<String>? categoryIds,
+    String? descriptionCollaborative,
+  }) {
+    return RecipeSocialData(
+      ownerId: ownerId ?? this.ownerId,
+      ownerDisplayName: ownerDisplayName ?? this.ownerDisplayName,
+      memberPermissions: memberPermissions ?? this.memberPermissions,
+      allowGuestViewing: allowGuestViewing ?? this.allowGuestViewing,
+      allowMemberInvites: allowMemberInvites ?? this.allowMemberInvites,
+      categoryIds: categoryIds ?? this.categoryIds,
+      descriptionCollaborative: descriptionCollaborative ?? this.descriptionCollaborative,
+    );
+  }
 }
 
 /// Realtime collaboration metadata
@@ -335,7 +373,14 @@ class RecipeOfflineData {
   );
 }
 
-/// Main unified recipe model supporting all features through composition
+/// Clean facade for unified recipe using focused modules
+///
+/// This facade provides a unified API that delegates to focused modules:
+/// - RecipeOperations: Content manipulation (ingredients, instructions, etc.)
+/// - RecipeFactory: Construction and conversion methods  
+/// - RecipeSerialization: JSON/Firestore serialization
+///
+/// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class Recipe {
   final RecipeCore core;
   final RecipeType type;
@@ -389,17 +434,19 @@ class Recipe {
   bool get isRealtime => type == RecipeType.realtime;
   bool get needsSync => offlineData?.needsSync ?? false;
 
+  // ===== OPERATIONS (DELEGATE TO RECIPE_OPERATIONS) =====
+
   /// Add ingredient with user tracking
   Recipe addIngredient(
     String ingredient, {
     String? userId,
     String? userDisplayName,
   }) {
-    final updatedIngredients = [...core.ingredients, ingredient];
-    return copyWith(
-      ingredients: updatedIngredients,
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.addIngredient(
+      this,
+      ingredient,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
@@ -410,13 +457,12 @@ class Recipe {
     String? userId,
     String? userDisplayName,
   }) {
-    if (index < 0 || index >= core.ingredients.length) return this;
-    final updatedIngredients = [...core.ingredients];
-    updatedIngredients[index] = newIngredient;
-    return copyWith(
-      ingredients: updatedIngredients,
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.updateIngredient(
+      this,
+      index,
+      newIngredient,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
@@ -426,13 +472,11 @@ class Recipe {
     String? userId,
     String? userDisplayName,
   }) {
-    if (index < 0 || index >= core.ingredients.length) return this;
-    final updatedIngredients = [...core.ingredients];
-    updatedIngredients.removeAt(index);
-    return copyWith(
-      ingredients: updatedIngredients,
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.removeIngredient(
+      this,
+      index,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
@@ -442,11 +486,11 @@ class Recipe {
     String? userId,
     String? userDisplayName,
   }) {
-    final updatedInstructions = [...core.instructions, instruction];
-    return copyWith(
-      instructions: updatedInstructions,
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.addInstruction(
+      this,
+      instruction,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
@@ -457,13 +501,12 @@ class Recipe {
     String? userId,
     String? userDisplayName,
   }) {
-    if (index < 0 || index >= core.instructions.length) return this;
-    final updatedInstructions = [...core.instructions];
-    updatedInstructions[index] = newInstruction;
-    return copyWith(
-      instructions: updatedInstructions,
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.updateInstruction(
+      this,
+      index,
+      newInstruction,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
@@ -473,13 +516,11 @@ class Recipe {
     String? userId,
     String? userDisplayName,
   }) {
-    if (index < 0 || index >= core.instructions.length) return this;
-    final updatedInstructions = [...core.instructions];
-    updatedInstructions.removeAt(index);
-    return copyWith(
-      instructions: updatedInstructions,
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.removeInstruction(
+      this,
+      index,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
@@ -488,81 +529,16 @@ class Recipe {
     String? userId,
     String? userDisplayName,
   }) {
-    return copyWith(
-      lastCookedAt: DateTime.now(),
-      lastEditedByUserId: userId,
-      lastEditedByDisplayName: userDisplayName,
+    return RecipeOperations.markAsCooked(
+      this,
+      userId: userId,
+      userDisplayName: userDisplayName,
     );
   }
 
-  /// Create copy with updated core data
-  Recipe copyWith({
-    String? title,
-    String? description,
-    int? portions,
-    int? timeMinutes,
-    List<String>? ingredients,
-    List<String>? instructions,
-    List<String>? tags,
-    double? rating,
-    String? mealType,
-    String? sourceUrl,
-    List<String>? imageUrls,
-    String? createdBy,
-    bool? isPublic,
-    DateTime? lastCookedAt,
-    RecipeType? type,
-    RecipeSocialData? socialData,
-    RecipeRealtimeData? realtimeData,
-    RecipeOfflineData? offlineData,
-    String? lastEditedByUserId,
-    String? lastEditedByDisplayName,
-  }) {
-    // Create updated social data if we have editor info and social features
-    RecipeSocialData? updatedSocialData = socialData;
-    if ((lastEditedByUserId != null || lastEditedByDisplayName != null) && 
-        (isCollaborative || isRealtime)) {
-      updatedSocialData = socialData ?? RecipeSocialData(
-        ownerId: core.createdBy,
-        ownerDisplayName: lastEditedByDisplayName ?? 'Unknown',
-      );
-    }
+  // ===== FACTORY METHODS (DELEGATE TO RECIPE_FACTORY) =====
 
-    // Create updated realtime data if we have editor info and realtime features
-    RecipeRealtimeData? updatedRealtimeData = realtimeData;
-    if ((lastEditedByUserId != null || lastEditedByDisplayName != null) && isRealtime) {
-      updatedRealtimeData = realtimeData ?? RecipeRealtimeData(
-        lastEditedByUserId: lastEditedByUserId,
-        lastEditedByDisplayName: lastEditedByDisplayName,
-        lastEditedAt: DateTime.now(),
-      );
-    }
-
-    return Recipe(
-      core: core.copyWith(
-        title: title,
-        description: description,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        ingredients: ingredients,
-        instructions: instructions,
-        tags: tags,
-        rating: rating,
-        mealType: mealType,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
-        createdBy: createdBy,
-        isPublic: isPublic,
-        lastCookedAt: lastCookedAt,
-      ),
-      type: type ?? this.type,
-      socialData: updatedSocialData,
-      realtimeData: updatedRealtimeData,
-      offlineData: offlineData ?? this.offlineData,
-    );
-  }
-
-  /// Factory constructors for different recipe types
+  /// Create personal recipe
   factory Recipe.personal({
     required String title,
     required String description,
@@ -577,29 +553,25 @@ class Recipe {
     String? sourceUrl,
     List<String>? imageUrls,
     bool isPublic = false,
-    DateTime? lastCookedAt,
   }) {
-    return Recipe(
-      core: RecipeCore(
-        title: title,
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        mealType: mealType,
-        createdBy: createdBy,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
-        isPublic: isPublic,
-        lastCookedAt: lastCookedAt,
-      ),
-      type: RecipeType.personal,
+    return RecipeFactory.createPersonal(
+      title: title,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      mealType: mealType,
+      createdBy: createdBy,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+      imageUrls: imageUrls,
+      isPublic: isPublic,
     );
   }
 
+  /// Create collaborative recipe
   factory Recipe.collaborative({
     required String title,
     required String description,
@@ -619,75 +591,82 @@ class Recipe {
     String? sourceUrl,
     List<String>? imageUrls,
   }) {
-    return Recipe(
-      core: RecipeCore(
-        title: title,
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        mealType: mealType,
-        createdBy: ownerId,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
-        isPublic: true, // Collaborative recipes are typically public to members
-      ),
-      type: RecipeType.collaborative,
-      socialData: RecipeSocialData(
-        ownerId: ownerId,
-        ownerDisplayName: ownerDisplayName,
-        memberPermissions: memberPermissions,
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        descriptionCollaborative: descriptionCollaborative,
-      ),
+    return RecipeFactory.createCollaborative(
+      title: title,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      mealType: mealType,
+      ownerId: ownerId,
+      ownerDisplayName: ownerDisplayName,
+      memberPermissions: memberPermissions,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      descriptionCollaborative: descriptionCollaborative,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+      imageUrls: imageUrls,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'core': core.toJson(),
-    'type': type.index,
-    'socialData': socialData?.toJson(),
-    'realtimeData': realtimeData?.toJson(),
-    'offlineData': offlineData?.toJson(),
-  };
+  // ===== SERIALIZATION (DELEGATE TO RECIPE_SERIALIZATION) =====
 
-  Map<String, dynamic> toFirestore() => {
-    'core': core.toFirestore(),
-    'type': type.index,
-    'socialData': socialData?.toJson(),
-    'realtimeData': realtimeData?.toJson(),
-    // Don't include offline data in Firestore
-  };
+  Map<String, dynamic> toJson() => RecipeSerialization.toJson(this);
+  Map<String, dynamic> toFirestore() => RecipeSerialization.toFirestore(this);
+  
+  factory Recipe.fromJson(Map<String, dynamic> json) => RecipeSerialization.fromJson(json);
+  factory Recipe.fromFirestore(DocumentSnapshot doc) => RecipeSerialization.fromFirestore(doc);
 
-  factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
-    core: RecipeCore.fromJson(json['core'] as Map<String, dynamic>),
-    type: RecipeType.values[json['type'] as int],
-    socialData: json['socialData'] != null 
-        ? RecipeSocialData.fromJson(json['socialData'] as Map<String, dynamic>)
-        : null,
-    realtimeData: json['realtimeData'] != null
-        ? RecipeRealtimeData.fromJson(json['realtimeData'] as Map<String, dynamic>)
-        : null,
-    offlineData: json['offlineData'] != null
-        ? RecipeOfflineData.fromJson(json['offlineData'] as Map<String, dynamic>)
-        : null,
-  );
+  // ===== CORE COPY METHOD =====
 
-  factory Recipe.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  /// Create copy with updated core data
+  Recipe copyWith({
+    String? title,
+    String? description,
+    int? portions,
+    int? timeMinutes,
+    List<String>? ingredients,
+    List<String>? instructions,
+    List<String>? tags,
+    double? rating,
+    String? mealType,
+    String? sourceUrl,
+    List<String>? imageUrls,
+    String? createdBy,
+    bool? isPublic,
+    DateTime? lastCookedAt,
+    String? lastEditedByUserId,
+    String? lastEditedByDisplayName,
+    RecipeType? type,
+    RecipeSocialData? socialData,
+    RecipeRealtimeData? realtimeData,
+    RecipeOfflineData? offlineData,
+  }) {
     return Recipe(
-      core: RecipeCore.fromFirestore(doc),
-      type: RecipeType.values[data['type'] as int? ?? 0],
-      socialData: data['socialData'] != null 
-          ? RecipeSocialData.fromJson(data['socialData'] as Map<String, dynamic>)
-          : null,
-      realtimeData: data['realtimeData'] != null
-          ? RecipeRealtimeData.fromJson(data['realtimeData'] as Map<String, dynamic>)
-          : null,
+      core: core.copyWith(
+        title: title,
+        description: description,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        ingredients: ingredients,
+        instructions: instructions,
+        tags: tags,
+        rating: rating,
+        mealType: mealType,
+        sourceUrl: sourceUrl,
+        imageUrls: imageUrls,
+        createdBy: createdBy,
+        isPublic: isPublic,
+        lastCookedAt: lastCookedAt,
+        updatedAt: DateTime.now(),
+      ),
+      type: type ?? this.type,
+      socialData: socialData ?? this.socialData,
+      realtimeData: realtimeData ?? this.realtimeData,
+      offlineData: offlineData ?? this.offlineData,
     );
   }
 }
