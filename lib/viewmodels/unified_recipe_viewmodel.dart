@@ -199,7 +199,9 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
 
   /// Convert collaborative recipe back to personal
   Future<String?> makeRecipePersonal(String collaborativeRecipeId) async {
-    return await _recipeService.social.makeRecipePersonal(collaborativeRecipeId);
+    return await _recipeService.social.makeRecipePersonal(
+      collaborativeRecipeId: collaborativeRecipeId,
+    );
   }
 
   Future<bool> updateRecipe(Recipe recipe) async {

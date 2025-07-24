@@ -6,163 +6,177 @@
 /// Dependencies OUT: Used by ViewModels for real-time collaborative editing
 /// Data flow: ViewModels -> RealtimeRecipeOperations -> RealtimeSyncService -> Firebase
 /// State management: Real-time streams with conflict resolution
-/// Purpose: Separate real-time editing concerns from unified service
+/// Purpose: Clean coordinator that delegates to focused single-responsibility modules
 /// Common issues: Conflict resolution, connection management, permission validation
 /// Test coverage: Unit tests for real-time operations and conflict resolution
 /// Performance: Real-time updates with optimistic UI updates
 /// Analytics: Collaborative editing events, conflict resolution stats
 /// Code smells: None - follows single responsibility principle
 /// Connected to: UnifiedRecipeService, RealtimeSyncService, Collaborative ViewModels
-/// Used in phases: Phase 5 - Service Consolidation
+/// Used in phases: Phase 5 - Service Consolidation, Phase 9.5 - Large File SRP Refactoring
 
 import 'dart:async';
 import '../../../models/recipe_unified.dart';
-import '../../../models/realtime/realtime_recipe.dart';
 import '../../../core/utils/logger.dart';
-import '../../../core/injection.dart';
-import '../../../services/permission_service.dart';
-import '../../notifications/notification_service.dart';
-import '../../notifications/notification_types.dart';
+import 'realtime_recipe/realtime_watching_module.dart';
+import 'realtime_recipe/realtime_editing_module.dart';
+import 'realtime_recipe/collaboration_management_module.dart';
+import 'realtime_recipe/presence_tracking_module.dart';
+import 'realtime_recipe/realtime_notification_module.dart';
 
 /// Realtime recipe operations feature interface
 /// 
-/// Handles all operations related to real-time collaborative recipe editing:
-/// - Real-time recipe watching and updates
-/// - Conflict resolution for simultaneous edits
-/// - Connection state management
-/// - Integration with RealtimeSyncService
-/// - Conversion between Recipe and RealtimeRecipe
+/// Clean coordinator that delegates to focused single-responsibility modules:
+/// - RealtimeWatchingModule: Stream management for watching recipes
+/// - RealtimeEditingModule: Edit operations and conflict resolution
+/// - CollaborationManagementModule: Enable/disable collaborative editing
+/// - PresenceTrackingModule: User presence tracking and management
+/// - RealtimeNotificationModule: Collaboration notifications
+/// 
+/// This coordinator maintains backward compatibility while providing
+/// a clean, modular architecture for real-time collaborative editing.
+
+// Export conflict info class for backward compatibility
+export 'realtime_recipe/realtime_editing_module.dart' show ConflictInfo;
+export 'realtime_recipe/realtime_watching_module.dart' show ConnectionStatus;
+
 class RealtimeRecipeOperations {
   final dynamic _parent; // UnifiedRecipeService
   final dynamic _realtimeSyncService; // RealtimeSyncService?
-  late final NotificationService? _notificationService;
+
+  // Focused single-responsibility modules
+  late final RealtimeWatchingModule _watchingModule;
+  late final RealtimeEditingModule _editingModule;
+  late final CollaborationManagementModule _collaborationModule; 
+  late final PresenceTrackingModule _presenceModule;
+  late final RealtimeNotificationModule _notificationModule;
 
   RealtimeRecipeOperations(this._parent, [this._realtimeSyncService]) {
-    // Initialize notification service if user is authenticated
-    try {
-      final currentUserId = _parent.currentUserId;
-      if (currentUserId != null) {
-        _notificationService = NotificationService(
-          firestore: _parent._firestore,
-          userId: currentUserId,
-        );
-        _notificationService?.initialize();
-      } else {
-        _notificationService = null;
-      }
-    } catch (e) {
-      AppLogger.warning('⚠️ Could not initialize notification service: $e');
-      _notificationService = null;
-    }
+    // Initialize focused modules
+    _watchingModule = RealtimeWatchingModule(_parent, _realtimeSyncService);
+    _editingModule = RealtimeEditingModule(_parent, _realtimeSyncService);
+    _collaborationModule = CollaborationManagementModule(_parent, _realtimeSyncService);
+    _presenceModule = PresenceTrackingModule(_parent, _realtimeSyncService);
+    _notificationModule = RealtimeNotificationModule(_parent);
+
+    AppLogger.info('RealtimeRecipeOperations initialized with modular architecture');
   }
 
-  // ===== REAL-TIME WATCHING =====
+  // ===== REAL-TIME WATCHING (Delegated to RealtimeWatchingModule) =====
 
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
-    if (_realtimeSyncService == null) {
-      AppLogger.warning('RealtimeSyncService not available, falling back to periodic updates');
-      return _watchRecipeWithPolling(recipeId);
-    }
+    return _watchingModule.watchRecipe(recipeId);
+  }
 
-    return _realtimeSyncService!
-        .watchResource<RealtimeRecipe>(recipeId)
-        .map((realtimeRecipe) => _convertToRecipe(realtimeRecipe))
-        .handleError((error) {
-          AppLogger.error('Error watching recipe $recipeId', error);
-        });
+  /// Watch recipe with automatic retry on connection failure
+  Stream<Recipe> watchRecipeWithRetry(String recipeId, {
+    int maxRetries = 3,
+    Duration retryDelay = const Duration(seconds: 2),
+  }) {
+    return _watchingModule.watchRecipeWithRetry(
+      recipeId,
+      maxRetries: maxRetries,
+      retryDelay: retryDelay,
+    );
   }
 
   /// Watch multiple recipes for real-time updates
   Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) {
-    if (_realtimeSyncService == null) {
-      return Stream.periodic(Duration(seconds: 2), (_) {
-        return recipeIds
-            .map((id) => _parent.recipes.where((r) => r.id == id).firstOrNull)
-            .where((r) => r != null)
-            .cast<Recipe>()
-            .toList();
-      });
-    }
+    return _watchingModule.watchMultipleRecipes(recipeIds);
+  }
 
-    // Combine streams from multiple recipes
-    return Stream.fromIterable(recipeIds)
-        .asyncMap((recipeId) => watchRecipe(recipeId).first)
-        .fold<List<Recipe>>([], (previous, recipe) {
-          return [...previous, recipe];
-        })
-        .asStream();
+  /// Watch multiple recipes with individual error handling
+  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(List<String> recipeIds) {
+    return _watchingModule.watchMultipleRecipesIndividually(recipeIds);
   }
 
   /// Get connection status for real-time operations
-  bool get isConnected => _realtimeSyncService?.isConnected ?? false;
+  bool get isConnected => _watchingModule.isConnected;
 
   /// Get connection status stream
-  Stream<bool> get connectionStream => 
-      _realtimeSyncService?.connectionStream ?? Stream.value(false);
+  Stream<bool> get connectionStream => _watchingModule.connectionStream;
 
-  // ===== REAL-TIME EDITING =====
+  /// Wait for connection to be established
+  Future<bool> waitForConnection({Duration timeout = const Duration(seconds: 10)}) {
+    return _watchingModule.waitForConnection(timeout: timeout);
+  }
+
+  /// Monitor connection status changes
+  Stream<ConnectionStatus> monitorConnectionStatus() {
+    return _watchingModule.monitorConnectionStatus();
+  }
+
+  /// Start watching recipe with callback
+  StreamSubscription<Recipe> startWatchingRecipe(
+    String recipeId, 
+    void Function(Recipe) onRecipeUpdated, {
+    void Function(dynamic)? onError,
+  }) {
+    return _watchingModule.startWatchingRecipe(
+      recipeId, 
+      onRecipeUpdated,
+      onError: onError,
+    );
+  }
+
+  /// Start watching multiple recipes with callback
+  StreamSubscription<List<Recipe>> startWatchingMultipleRecipes(
+    List<String> recipeIds,
+    void Function(List<Recipe>) onRecipesUpdated, {
+    void Function(dynamic)? onError,
+  }) {
+    return _watchingModule.startWatchingMultipleRecipes(
+      recipeIds,
+      onRecipesUpdated,
+      onError: onError,
+    );
+  }
+
+  /// Check if recipe watching is available
+  bool isWatchingAvailable() {
+    return _watchingModule.isWatchingAvailable();
+  }
+
+  /// Get watching capabilities
+  Map<String, bool> getWatchingCapabilities() {
+    return _watchingModule.getWatchingCapabilities();
+  }
+
+  // ===== REAL-TIME EDITING (Delegated to RealtimeEditingModule) =====
 
   /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
-    try {
+    final success = await _editingModule.startRealtimeEditing(recipeId);
+    
+    if (success) {
+      // Show presence and send notification
+      await _presenceModule.showPresence(recipeId);
       final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) {
-        AppLogger.error('Cannot start realtime editing: Recipe not found');
-        return false;
+      if (recipe != null) {
+        await _notificationModule.sendCollaborationJoinedNotification(recipe);
       }
-
-      if (!recipe.isCollaborative) {
-        AppLogger.error('Cannot start realtime editing: Recipe is not collaborative');
-        return false;
-      }
-
-      if (!sl<PermissionService>().canEditRecipe(recipe.id)) {
-        AppLogger.error('Cannot start realtime editing: No edit permission');
-        return false;
-      }
-
-      if (_realtimeSyncService == null) {
-        AppLogger.warning('RealtimeSyncService not available');
-        return false;
-      }
-
-      // Convert to realtime recipe if needed
-      await _convertToRealtimeRecipe(recipe);
-      
-      // Start watching for real-time updates
-      watchRecipe(recipeId).listen((updatedRecipe) {
-        _parent.updateLocalRecipe(updatedRecipe);
-      });
-
-      // Send notification to other members that user joined collaboration
-      await _sendCollaborationJoinedNotification(recipe);
-
-      AppLogger.info('Started realtime editing for recipe: ${recipe.title}');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to start realtime editing', e);
-      return false;
     }
+    
+    return success;
   }
 
   /// Stop real-time editing session for recipe
   Future<bool> stopRealtimeEditing(String recipeId) async {
-    try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      
-      // Send notification to other members that user left collaboration
-      if (recipe != null) {
-        await _sendCollaborationLeftNotification(recipe);
-      }
-      
-      // This would stop the real-time listeners for the specific recipe
-      AppLogger.info('Stopped realtime editing for recipe: $recipeId');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to stop realtime editing', e);
-      return false;
+    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+    
+    // Hide presence and send notification before stopping
+    await _presenceModule.hidePresence(recipeId);
+    if (recipe != null) {
+      await _notificationModule.sendCollaborationLeftNotification(recipe);
     }
+    
+    return await _editingModule.stopRealtimeEditing(recipeId);
+  }
+
+  /// Check if recipe is in realtime editing mode
+  bool isInRealtimeEditingMode(String recipeId) {
+    return _editingModule.isInRealtimeEditingMode(recipeId);
   }
 
   /// Make real-time edit to recipe with conflict resolution
@@ -171,268 +185,57 @@ class RealtimeRecipeOperations {
     required Map<String, dynamic> changes,
     String? editDescription,
   }) async {
-    if (_realtimeSyncService == null) {
-      AppLogger.warning('RealtimeSyncService not available, falling back to regular edit');
-      return _makeRegularEdit(recipeId, changes);
-    }
-
-    try {
+    final success = await _editingModule.makeRealtimeEdit(
+      recipeId: recipeId,
+      changes: changes,
+      editDescription: editDescription,
+    );
+    
+    if (success) {
+      // Send notification about the edit
       final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) return false;
-
-      if (_parent.currentUserId == null || !sl<PermissionService>().canEditRecipe(recipeId)) {
-        AppLogger.error('No permission to edit recipe');
-        return false;
+      if (recipe != null) {
+        await _notificationModule.sendRealtimeEditNotification(
+          recipe,
+          changes,
+          editDescription,
+        );
       }
-
-      // Convert to realtime recipe for editing
-      final realtimeRecipe = await _convertToRealtimeRecipe(recipe);
-      
-      // Apply changes to realtime recipe
-      _applyChangesToRealtimeRecipe(
-        realtimeRecipe, 
-        changes,
-        editDescription,
-      );
-
-      // Update through realtime sync service (handles conflict resolution)
-      // await _realtimeSyncService!.updateResource(updatedRealtimeRecipe);
-
-      // Send notification about the real-time edit
-      await _sendRealtimeEditNotification(recipe, changes, editDescription);
-
-      AppLogger.info('Made realtime edit to recipe: ${recipe.title}');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to make realtime edit', e);
-      return false;
     }
+    
+    return success;
   }
 
-  // ===== COLLABORATION FEATURES =====
-
-  /// Enable collaborative editing for a personal recipe
-  Future<bool> enableCollaborativeEditing(String recipeId, List<String> memberIds) async {
-    try {
+  /// Make batch realtime edits
+  Future<bool> makeBatchRealtimeEdits({
+    required String recipeId,
+    required List<Map<String, dynamic>> changeList,
+    String? batchDescription,
+  }) async {
+    final success = await _editingModule.makeBatchRealtimeEdits(
+      recipeId: recipeId,
+      changeList: changeList,
+      batchDescription: batchDescription,
+    );
+    
+    if (success) {
+      // Send batch notification
       final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) {
-        AppLogger.error('Cannot enable collaborative editing: Recipe not found');
-        return false;
+      if (recipe != null) {
+        await _notificationModule.sendBatchEditNotification(
+          recipe,
+          changeList,
+          batchDescription,
+        );
       }
-
-      if (recipe.isCollaborative) {
-        AppLogger.warning('Recipe is already collaborative');
-        return true;
-      }
-
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
-        AppLogger.error('Only recipe owner can enable collaborative editing');
-        return false;
-      }
-
-      // Convert to collaborative recipe
-      final collaborativeRecipeId = await _parent.createCollaborativeRecipe(
-        title: recipe.title,
-        memberIds: memberIds,
-        memberDisplayNames: {}, // Would be populated from user service
-        description: recipe.description,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions,
-        imageUrls: recipe.imageUrls,
-        mealType: recipe.mealType,
-        portions: recipe.portions,
-        timeMinutes: recipe.timeMinutes,
-        rating: recipe.rating,
-        tags: recipe.tags,
-        sourceUrl: recipe.sourceUrl,
-      );
-
-      if (collaborativeRecipeId != null) {
-        // Delete original personal recipe
-        await _parent.deleteRecipe(recipeId);
-        
-        // Send notifications to all members about collaboration enabled
-        await _sendCollaborationEnabledNotification(recipe, memberIds);
-        
-        AppLogger.success('Enabled collaborative editing for recipe: ${recipe.title}');
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      AppLogger.error('Failed to enable collaborative editing', e);
-      return false;
     }
+    
+    return success;
   }
 
-  /// Disable collaborative editing and convert back to personal recipe
-  Future<bool> disableCollaborativeEditing(String recipeId) async {
-    try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) {
-        AppLogger.error('Cannot disable collaborative editing: Recipe not found');
-        return false;
-      }
-
-      if (!recipe.isCollaborative) {
-        AppLogger.warning('Recipe is not collaborative');
-        return true;
-      }
-
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
-        AppLogger.error('Only recipe owner can disable collaborative editing');
-        return false;
-      }
-
-      // Convert back to personal recipe
-      final personalRecipeId = await _parent.createPersonalRecipe(
-        title: recipe.title,
-        description: recipe.description,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions,
-        imageUrls: recipe.imageUrls,
-        mealType: recipe.mealType,
-        portions: recipe.portions,
-        timeMinutes: recipe.timeMinutes,
-        rating: recipe.rating,
-        tags: recipe.tags,
-        sourceUrl: recipe.sourceUrl,
-      );
-
-      if (personalRecipeId != null) {
-        // Delete collaborative recipe
-        await _parent.deleteRecipe(recipeId);
-        AppLogger.success('Disabled collaborative editing for recipe: ${recipe.title}');
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      AppLogger.error('Failed to disable collaborative editing', e);
-      return false;
-    }
-  }
-
-  /// Get collaboration statistics for a recipe
-  Map<String, dynamic> getCollaborationStats(String recipeId) {
-    try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null || !recipe.isCollaborative) return {};
-
-      final memberCount = recipe.socialData?.memberPermissions?.length ?? 0;
-      final activeEditors = getActiveEditors(recipeId);
-      final lastEditedAt = recipe.realtimeData?.lastEditedAt ?? recipe.updatedAt;
-      final daysSinceLastEdit = DateTime.now().difference(lastEditedAt).inDays;
-
-      return {
-        'memberCount': memberCount,
-        'activeEditorsCount': activeEditors.length,
-        'lastEditedAt': lastEditedAt,
-        'daysSinceLastEdit': daysSinceLastEdit,
-        'isActivelyCollaborated': activeEditors.length > 1,
-        'collaborationLevel': memberCount > 5 ? 'high' : memberCount > 2 ? 'medium' : 'low',
-        'editCount': recipe.realtimeData?.editCount ?? 1,
-      };
-    } catch (e) {
-      AppLogger.error('Failed to get collaboration stats', e);
-      return {};
-    }
-  }
-
-  /// Get active editors for recipe
-  List<String> getActiveEditors(String recipeId) {
-    try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null || !recipe.isCollaborative) return [];
-
-      // Get members who are currently active (have edited in last 5 minutes)
-      final recentThreshold = DateTime.now().subtract(Duration(minutes: 5));
-      final activeEditors = <String>[];
-
-      if (recipe.realtimeData?.lastEditedAt?.isAfter(recentThreshold) == true) {
-        final lastEditor = recipe.realtimeData?.lastEditedByUserId;
-        if (lastEditor != null && !activeEditors.contains(lastEditor)) {
-          activeEditors.add(lastEditor);
-        }
-      }
-
-      // Add other members who might be viewing (presence simulation)
-      final allMembers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
-      for (final memberId in allMembers) {
-        if (!activeEditors.contains(memberId) && _isUserActivelyViewing(memberId, recipeId)) {
-          activeEditors.add(memberId);
-        }
-      }
-
-      return activeEditors;
-    } catch (e) {
-      AppLogger.error('Failed to get active editors', e);
-      return [];
-    }
-  }
-
-  /// Check if user is actively viewing recipe (presence simulation)
-  bool _isUserActivelyViewing(String userId, String recipeId) {
-    // This would check presence data from Firebase or local tracking
-    // For now, simulate some active users randomly
-    return DateTime.now().millisecond % 3 == 0; // ~33% chance
-  }
-
-  /// Get edit history for recipe
-  Future<List<Map<String, dynamic>>> getEditHistory(String recipeId) async {
-    try {
-      // This would fetch edit history from Firebase or realtime system
-      // For now, simulate edit history based on recipe metadata
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) return [];
-
-      final history = <Map<String, dynamic>>[];
-
-      // Add creation event
-      history.add({
-        'timestamp': recipe.createdAt,
-        'userId': recipe.core.createdBy,
-        'userName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
-        'action': 'Created recipe',
-        'details': 'Initial recipe creation',
-      });
-
-      // Add last update event if different from creation
-      if (recipe.updatedAt.isAfter(recipe.createdAt.add(Duration(seconds: 1)))) {
-        history.add({
-          'timestamp': recipe.updatedAt,
-          'userId': recipe.realtimeData?.lastEditedByUserId ?? recipe.core.createdBy,
-          'userName': recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
-          'action': 'Updated recipe',
-          'details': 'Recipe content modified',
-        });
-      }
-
-      // Add collaborative events if it's a collaborative recipe
-      if (recipe.isCollaborative && recipe.socialData?.memberPermissions?.isNotEmpty == true) {
-        for (final member in recipe.socialData!.memberPermissions!.entries) {
-          if (member.key != recipe.socialData!.ownerId) {
-            // Simulate member addition event
-            history.add({
-              'timestamp': recipe.createdAt.add(Duration(hours: 1)),
-              'userId': recipe.socialData!.ownerId,
-              'userName': recipe.socialData!.ownerDisplayName,
-              'action': 'Added collaborator',
-              'details': 'Added user with ${member.value.toString().split('.').last} permission',
-              'targetUserId': member.key,
-            });
-          }
-        }
-      }
-
-      // Sort by timestamp (newest first)
-      history.sort((a, b) => (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
-
-      return history;
-    } catch (e) {
-      AppLogger.error('Failed to get edit history', e);
-      return [];
-    }
+  /// Undo last realtime edit
+  Future<bool> undoLastRealtimeEdit(String recipeId) {
+    return _editingModule.undoLastRealtimeEdit(recipeId);
   }
 
   /// Resolve edit conflict manually
@@ -440,414 +243,338 @@ class RealtimeRecipeOperations {
     required String recipeId,
     required Recipe localVersion,
     required Recipe remoteVersion,
-    required String resolution, // 'local', 'remote', or 'merge'
+    required String resolution,
   }) async {
-    try {
-      if (_realtimeSyncService == null) {
-        AppLogger.warning('RealtimeSyncService not available for conflict resolution');
-        return false;
+    final success = await _editingModule.resolveConflict(
+      recipeId: recipeId,
+      localVersion: localVersion,
+      remoteVersion: remoteVersion,
+      resolution: resolution,
+    );
+    
+    if (success) {
+      // Send conflict resolved notification
+      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      if (recipe != null) {
+        final affectedUsers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+        await _notificationModule.sendConflictResolvedNotification(
+          recipe,
+          resolution,
+          affectedUsers,
+        );
       }
-
-      Recipe resolvedRecipe;
-      
-      switch (resolution) {
-        case 'local':
-          resolvedRecipe = localVersion;
-          break;
-        case 'remote':
-          resolvedRecipe = remoteVersion;
-          break;
-        case 'merge':
-          resolvedRecipe = _mergeRecipeVersions(localVersion, remoteVersion);
-          break;
-        default:
-          throw ArgumentError('Invalid resolution type: $resolution');
-      }
-
-      // Apply resolved version
-      await _convertToRealtimeRecipe(resolvedRecipe);
-      // await _realtimeSyncService!.updateResource(realtimeRecipe);
-
-      AppLogger.info('Resolved conflict for recipe: $recipeId using $resolution strategy');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to resolve conflict', e);
-      return false;
     }
+    
+    return success;
   }
 
-  // ===== PRESENCE FEATURES =====
+  /// Auto-resolve conflict using default strategy
+  Future<bool> autoResolveConflict({
+    required String recipeId,
+    required Recipe localVersion,
+    required Recipe remoteVersion,
+    String strategy = 'merge',
+  }) {
+    return _editingModule.autoResolveConflict(
+      recipeId: recipeId,
+      localVersion: localVersion,
+      remoteVersion: remoteVersion,
+      strategy: strategy,
+    );
+  }
+
+  /// Check for pending conflicts
+  Future<List<ConflictInfo>> getPendingConflicts(String recipeId) {
+    return _editingModule.getPendingConflicts(recipeId);
+  }
+
+  /// Validate edit changes before applying
+  bool validateEditChanges(String recipeId, Map<String, dynamic> changes) {
+    return _editingModule.validateEditChanges(recipeId, changes);
+  }
+
+  /// Get edit validation rules
+  Map<String, dynamic> getEditValidationRules() {
+    return _editingModule.getEditValidationRules();
+  }
+
+  /// Get editing session status
+  Map<String, dynamic> getEditingStatus(String recipeId) {
+    return _editingModule.getEditingStatus(recipeId);
+  }
+
+  // ===== COLLABORATION FEATURES (Delegated to CollaborationManagementModule) =====
+
+  /// Enable collaborative editing for a personal recipe
+  Future<bool> enableCollaborativeEditing(String recipeId, List<String> memberIds) async {
+    final success = await _collaborationModule.enableCollaborativeEditing(recipeId, memberIds);
+    
+    if (success) {
+      // Send notification to members
+      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      if (recipe != null) {
+        await _notificationModule.sendCollaborationEnabledNotification(recipe, memberIds);
+      }
+    }
+    
+    return success;
+  }
+
+  /// Disable collaborative editing and convert back to personal recipe
+  Future<bool> disableCollaborativeEditing(String recipeId) async {
+    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+    
+    // Send notification before disabling
+    if (recipe != null) {
+      await _notificationModule.sendCollaborationDisabledNotification(recipe);
+    }
+    
+    return await _collaborationModule.disableCollaborativeEditing(recipeId);
+  }
+
+  /// Check if recipe can be made collaborative
+  bool canEnableCollaboration(String recipeId) {
+    return _collaborationModule.canEnableCollaboration(recipeId);
+  }
+
+  /// Check if recipe collaboration can be disabled
+  bool canDisableCollaboration(String recipeId) {
+    return _collaborationModule.canDisableCollaboration(recipeId);
+  }
+
+  /// Add members to collaborative recipe
+  Future<bool> addCollaborators(String recipeId, List<String> memberIds) async {
+    final success = await _collaborationModule.addCollaborators(recipeId, memberIds);
+    
+    if (success) {
+      // Send notification about new members
+      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      if (recipe != null) {
+        await _notificationModule.sendMembersAddedNotification(recipe, memberIds);
+      }
+    }
+    
+    return success;
+  }
+
+  /// Remove members from collaborative recipe
+  Future<bool> removeCollaborators(String recipeId, List<String> memberIds) async {
+    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+    
+    // Send notification before removing
+    if (recipe != null) {
+      await _notificationModule.sendMembersRemovedNotification(recipe, memberIds);
+    }
+    
+    return await _collaborationModule.removeCollaborators(recipeId, memberIds);
+  }
+
+  /// Update member permissions in collaborative recipe
+  Future<bool> updateMemberPermissions(String recipeId, Map<String, String> memberPermissions) {
+    return _collaborationModule.updateMemberPermissions(recipeId, memberPermissions);
+  }
+
+  /// Transfer ownership of collaborative recipe
+  Future<bool> transferOwnership(String recipeId, String newOwnerId) {
+    return _collaborationModule.transferOwnership(recipeId, newOwnerId);
+  }
+
+  /// Leave collaborative recipe as a member
+  Future<bool> leaveCollaboration(String recipeId) {
+    return _collaborationModule.leaveCollaboration(recipeId);
+  }
+
+  /// Get collaboration details for recipe
+  Map<String, dynamic> getCollaborationDetails(String recipeId) {
+    return _collaborationModule.getCollaborationDetails(recipeId);
+  }
+
+  /// Get collaboration statistics
+  Map<String, dynamic> getCollaborationStats(String recipeId) {
+    return _collaborationModule.getCollaborationStats(recipeId);
+  }
+
+  /// Get collaboration history for recipe
+  Future<List<Map<String, dynamic>>> getCollaborationHistory(String recipeId) {
+    return _collaborationModule.getCollaborationHistory(recipeId);
+  }
+
+  /// Get edit history for recipe (legacy method - delegates to collaboration module)
+  Future<List<Map<String, dynamic>>> getEditHistory(String recipeId) {
+    return _collaborationModule.getCollaborationHistory(recipeId);
+  }
+
+  /// Validate collaboration settings
+  Map<String, String> validateCollaborationSettings({
+    required List<String> memberIds,
+    Map<String, String>? memberPermissions,
+  }) {
+    return _collaborationModule.validateCollaborationSettings(
+      memberIds: memberIds,
+      memberPermissions: memberPermissions,
+    );
+  }
+
+  /// Check collaboration limits
+  bool isWithinCollaborationLimits(String recipeId, int additionalMembers) {
+    return _collaborationModule.isWithinCollaborationLimits(recipeId, additionalMembers);
+  }
+
+  /// Get collaboration status for recipe
+  Map<String, dynamic> getCollaborationStatus(String recipeId) {
+    return _collaborationModule.getCollaborationStatus(recipeId);
+  }
+
+  // ===== PRESENCE FEATURES (Delegated to PresenceTrackingModule) =====
 
   /// Show user presence in recipe (who's viewing/editing)
-  Future<bool> showPresence(String recipeId) async {
-    try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
-      
-      final currentUser = sl<PermissionService>().currentUser;
-      if (currentUser == null) return false;
-
-      // Update local presence tracking
-      _updateUserPresence(recipeId, currentUser.uid, true);
-      
-      // In a real implementation, this would update Firebase presence
-      // await FirebaseFirestore.instance
-      //     .collection('recipePresence')
-      //     .doc(recipeId)
-      //     .collection('activeUsers')
-      //     .doc(currentUser.uid)
-      //     .set({
-      //   'userId': currentUser.uid,
-      //   'displayName': currentUser.displayName,
-      //   'avatarUrl': currentUser.avatarUrl,
-      //   'joinedAt': FieldValue.serverTimestamp(),
-      //   'lastSeen': FieldValue.serverTimestamp(),
-      //   'isActive': true,
-      // }, SetOptions(merge: true));
-
-      AppLogger.info('Showing presence for ${currentUser.displayName} in recipe: $recipeId');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to show presence', e);
-      return false;
-    }
+  Future<bool> showPresence(String recipeId) {
+    return _presenceModule.showPresence(recipeId);
   }
 
   /// Hide user presence in recipe
-  Future<bool> hidePresence(String recipeId) async {
-    try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
-      
-      final currentUser = sl<PermissionService>().currentUser;
-      if (currentUser == null) return false;
+  Future<bool> hidePresence(String recipeId) {
+    return _presenceModule.hidePresence(recipeId);
+  }
 
-      // Update local presence tracking
-      _updateUserPresence(recipeId, currentUser.uid, false);
-      
-      // In a real implementation, this would update Firebase presence
-      // await FirebaseFirestore.instance
-      //     .collection('recipePresence')
-      //     .doc(recipeId)
-      //     .collection('activeUsers')
-      //     .doc(currentUser.uid)
-      //     .update({
-      //   'isActive': false,
-      //   'leftAt': FieldValue.serverTimestamp(),
-      // });
-
-      AppLogger.info('Hiding presence for ${currentUser.displayName} in recipe: $recipeId');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to hide presence', e);
-      return false;
-    }
+  /// Update presence heartbeat (keep user active)
+  Future<bool> updatePresenceHeartbeat(String recipeId) {
+    return _presenceModule.updatePresenceHeartbeat(recipeId);
   }
 
   /// Get users currently viewing/editing the recipe
-  Future<List<Map<String, dynamic>>> getRecipePresence(String recipeId) async {
-    try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null || !recipe.isCollaborative) return [];
+  Future<List<Map<String, dynamic>>> getRecipePresence(String recipeId) {
+    return _presenceModule.getRecipePresence(recipeId);
+  }
 
-      final presence = <Map<String, dynamic>>[];
-      
-      // Add active editors
-      final activeEditors = getActiveEditors(recipeId);
-      for (final editorId in activeEditors) {
-        final member = recipe.socialData?.memberPermissions?[editorId];
-        if (member != null) {
-          presence.add({
-            'userId': editorId,
-            'displayName': 'User ${editorId.substring(0, 6)}...', // Would get from user service
-            'avatarUrl': null,
-            'isEditing': true,
-            'permission': member.toString().split('.').last,
-            'lastSeen': DateTime.now(),
-          });
-        }
-      }
+  /// Get presence for multiple recipes
+  Future<Map<String, List<Map<String, dynamic>>>> getMultipleRecipePresence(
+    List<String> recipeIds
+  ) {
+    return _presenceModule.getMultipleRecipePresence(recipeIds);
+  }
 
-      // In real implementation, this would fetch from Firebase presence collection
-      AppLogger.debug('Recipe presence for $recipeId: ${presence.length} active users');
-      return presence;
-    } catch (e) {
-      AppLogger.error('Failed to get recipe presence', e);
-      return [];
-    }
+  /// Check if user is present in recipe
+  bool isUserPresent(String recipeId, String userId) {
+    return _presenceModule.isUserPresent(recipeId, userId);
+  }
+
+  /// Get presence count for recipe
+  int getPresenceCount(String recipeId) {
+    return _presenceModule.getPresenceCount(recipeId);
   }
 
   /// Stream of presence updates for a recipe
   Stream<List<Map<String, dynamic>>> watchRecipePresence(String recipeId) {
-    return Stream.periodic(Duration(seconds: 5), (_) async {
-      return await getRecipePresence(recipeId);
-    }).asyncMap((future) => future);
+    return _presenceModule.watchRecipePresence(recipeId);
   }
 
-  /// Update user presence tracking (local)
-  void _updateUserPresence(String recipeId, String userId, bool isActive) {
-    // This would maintain local presence state
-    // In a complete implementation, this would sync with Firebase
-    AppLogger.debug('Updated presence: $userId ${isActive ? 'joined' : 'left'} recipe $recipeId');
-  }
-
-  // ===== PRIVATE HELPER METHODS =====
-
-  /// Convert Recipe to RealtimeRecipe
-  Future<Map<String, dynamic>> _convertToRealtimeRecipe(Recipe recipe) async {
-    return {
-      'id': recipe.id,
-      'name': recipe.title,
-      'description': recipe.description,
-      'ingredients': recipe.ingredients,
-      'instructions': recipe.instructions,
-      'imageUrls': recipe.imageUrls,
-      'ownerId': recipe.socialData?.ownerId ?? recipe.core.createdBy,
-      'ownerDisplayName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
-      'editCount': 1,
-    };
-  }
-
-  /// Convert RealtimeRecipe to Recipe
-  Recipe _convertToRecipe(dynamic realtimeRecipe) {
-    // This would be implemented with proper RealtimeRecipe model
-    // For now, return a dummy recipe to fix compilation
-    return Recipe(
-      core: RecipeCore(
-        id: realtimeRecipe['id'] ?? '',
-        title: realtimeRecipe['name'] ?? '',
-        description: realtimeRecipe['description'] ?? '',
-        ingredients: List<String>.from(realtimeRecipe['ingredients'] ?? []),
-        instructions: List<String>.from(realtimeRecipe['instructions'] ?? []),
-        imageUrls: List<String>.from(realtimeRecipe['imageUrls'] ?? []),
-        mealType: realtimeRecipe['mealType'] ?? 'Lunch',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      type: RecipeType.realtime,
-    );
-  }
-
-  /// Apply changes to realtime recipe
-  Map<String, dynamic> _applyChangesToRealtimeRecipe(
-    Map<String, dynamic> recipe, 
-    Map<String, dynamic> changes,
-    String? editDescription,
+  /// Stream of presence updates for multiple recipes
+  Stream<Map<String, List<Map<String, dynamic>>>> watchMultipleRecipePresence(
+    List<String> recipeIds
   ) {
+    return _presenceModule.watchMultipleRecipePresence(recipeIds);
+  }
+
+  /// Stream of presence count for recipe
+  Stream<int> watchPresenceCount(String recipeId) {
+    return _presenceModule.watchPresenceCount(recipeId);
+  }
+
+  /// Start automatic presence tracking for recipe
+  StreamSubscription<void>? startAutomaticPresenceTracking(
+    String recipeId, {
+    Duration heartbeatInterval = const Duration(seconds: 30),
+  }) {
+    return _presenceModule.startAutomaticPresenceTracking(
+      recipeId,
+      heartbeatInterval: heartbeatInterval,
+    );
+  }
+
+  /// Bulk update presence for multiple recipes
+  Future<void> updateMultipleRecipePresence(
+    Map<String, bool> recipePresenceMap
+  ) {
+    return _presenceModule.updateMultipleRecipePresence(recipePresenceMap);
+  }
+
+  /// Clear all presence for current user
+  Future<void> clearAllPresence() {
+    return _presenceModule.clearAllPresence();
+  }
+
+  /// Get presence statistics
+  Map<String, dynamic> getPresenceStatistics() {
+    return _presenceModule.getPresenceStatistics();
+  }
+
+  /// Get user's presence history
+  List<Map<String, dynamic>> getUserPresenceHistory(String userId) {
+    return _presenceModule.getUserPresenceHistory(userId);
+  }
+
+  // ===== LEGACY METHODS (For backward compatibility) =====
+
+  /// Get active editors for recipe (legacy method)
+  List<String> getActiveEditors(String recipeId) {
+    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+    if (recipe == null || !recipe.isCollaborative) return [];
+
+    // Get active editors from presence module
+    final currentUserId = _parent.currentUserId;
+    if (currentUserId != null && _presenceModule.isUserPresent(recipeId, currentUserId)) {
+      return [currentUserId];
+    }
+
+    return [];
+  }
+
+  // ===== MODULE STATUS AND DIAGNOSTICS =====
+
+  /// Get module status information
+  Map<String, dynamic> getModuleStatus() {
     return {
-      ...recipe,
-      'name': changes['title'] ?? recipe['name'],
-      'description': changes['description'] ?? recipe['description'],
-      'ingredients': changes['ingredients'] ?? recipe['ingredients'],
-      'instructions': changes['instructions'] ?? recipe['instructions'],
-      'imageUrls': changes['imageUrls'] ?? recipe['imageUrls'],
-      'lastEditedAt': DateTime.now().toIso8601String(),
-      'lastEditedByUserId': _parent.currentUserId,
-      'lastEditedByDisplayName': _parent.currentUserDisplayName,
-      'editCount': (recipe['editCount'] ?? 0) + 1,
+      'watchingModule': {
+        'isAvailable': _watchingModule.isWatchingAvailable(),
+        'capabilities': _watchingModule.getWatchingCapabilities(),
+        'isConnected': _watchingModule.isConnected,
+      },
+      'editingModule': {
+        'isInitialized': true,
+      },
+      'collaborationModule': {
+        'isInitialized': true,
+      },
+      'presenceModule': {
+        'statistics': _presenceModule.getPresenceStatistics(),
+      },
+      'notificationModule': {
+        'isAvailable': _notificationModule.isNotificationAvailable,
+        'statistics': _notificationModule.getNotificationStatistics(),
+      },
     };
   }
 
-  /// Merge two recipe versions for conflict resolution
-  Recipe _mergeRecipeVersions(Recipe local, Recipe remote) {
-    // Simple merge strategy - prefer remote for most fields, local for user-specific data
-    return local.copyWith(
-      title: remote.title,
-      description: remote.description,
-      ingredients: remote.ingredients,
-      instructions: remote.instructions,
-      imageUrls: <String>{...local.imageUrls, ...remote.imageUrls}.toList(),
-      rating: local.rating ?? remote.rating,
-      tags: <String>{...(local.tags ?? []), ...(remote.tags ?? [])}.toList(),
-      lastEditedByUserId: _parent.currentUserId,
-      lastEditedByDisplayName: _parent.currentUserDisplayName,
-    );
+  /// Get comprehensive realtime operations status
+  Map<String, dynamic> getRealtimeOperationsStatus() {
+    return {
+      'hasRealtimeService': _realtimeSyncService != null,
+      'isConnected': isConnected,
+      'moduleStatus': getModuleStatus(),
+      'currentUserId': _parent.currentUserId,
+      'architecture': 'modular',
+      'version': '2.0', // Refactored version
+    };
   }
 
-  /// Fallback watching with polling when RealtimeSyncService unavailable
-  Stream<Recipe> _watchRecipeWithPolling(String recipeId) {
-    return Stream.periodic(Duration(seconds: 2), (_) {
-      return _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    }).where((recipe) => recipe != null).cast<Recipe>();
-  }
-
-  /// Make regular edit when realtime not available
-  Future<bool> _makeRegularEdit(String recipeId, Map<String, dynamic> changes) async {
-    return await _parent.updateRecipeContent(
-      recipeId: recipeId,
-      title: changes['title'],
-      description: changes['description'],
-      ingredients: changes['ingredients']?.cast<String>(),
-      instructions: changes['instructions']?.cast<String>(),
-      imageUrls: changes['imageUrls']?.cast<String>(),
-      mealType: changes['mealType'],
-      portions: changes['portions'],
-      timeMinutes: changes['timeMinutes'],
-      rating: changes['rating']?.toDouble(),
-      tags: changes['tags']?.cast<String>(),
-      sourceUrl: changes['sourceUrl'],
-    );
-  }
-
-  // ===== NOTIFICATION HELPERS =====
-
-  /// Send notification when user joins collaborative editing session
-  Future<void> _sendCollaborationJoinedNotification(Recipe recipe) async {
-    if (_notificationService == null || !recipe.isCollaborative) {
-      AppLogger.debug('Notification service not available or recipe not collaborative - skipping collaboration joined notification');
-      return;
-    }
-
-    final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
-
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
-
+  /// Dispose resources
+  void dispose() {
     try {
-      // Notify all other members that someone joined the collaboration
-      for (final memberId in recipe.socialData!.memberPermissions!.keys) {
-        if (memberId == currentUserId) continue; // Don't notify the user joining
-
-        await _notificationService.sendSilentNotification(
-          targetUserIds: [memberId],
-          data: {
-            'type': 'collaboration_joined',
-            'recipeId': recipe.id,
-            'recipeTitle': recipe.title,
-            'joinerUserId': currentUserId,
-            'joinerDisplayName': currentUserDisplayName,
-          },
-        );
-      }
-
-      AppLogger.success('Collaboration joined notifications sent for recipe: ${recipe.title}');
+      _presenceModule.dispose();
+      AppLogger.info('RealtimeRecipeOperations disposed successfully');
     } catch (e) {
-      AppLogger.warning('Failed to send collaboration joined notifications: $e');
-    }
-  }
-
-  /// Send notification when user leaves collaborative editing session
-  Future<void> _sendCollaborationLeftNotification(Recipe recipe) async {
-    if (_notificationService == null || !recipe.isCollaborative) {
-      AppLogger.debug('Notification service not available or recipe not collaborative - skipping collaboration left notification');
-      return;
-    }
-
-    final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
-
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
-
-    try {
-      // Notify all other members that someone left the collaboration
-      for (final memberId in recipe.socialData!.memberPermissions!.keys) {
-        if (memberId == currentUserId) continue; // Don't notify the user leaving
-
-        await _notificationService.sendSilentNotification(
-          targetUserIds: [memberId],
-          data: {
-            'type': 'collaboration_left',
-            'recipeId': recipe.id,
-            'recipeTitle': recipe.title,
-            'leaverUserId': currentUserId,
-            'leaverDisplayName': currentUserDisplayName,
-          },
-        );
-      }
-
-      AppLogger.success('Collaboration left notifications sent for recipe: ${recipe.title}');
-    } catch (e) {
-      AppLogger.warning('Failed to send collaboration left notifications: $e');
-    }
-  }
-
-  /// Send notification about real-time edit to recipe
-  Future<void> _sendRealtimeEditNotification(
-    Recipe recipe,
-    Map<String, dynamic> changes,
-    String? editDescription,
-  ) async {
-    if (_notificationService == null || !recipe.isCollaborative) {
-      AppLogger.debug('Notification service not available or recipe not collaborative - skipping realtime edit notification');
-      return;
-    }
-
-    final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
-
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
-
-    try {
-      // Determine what was changed for the notification
-      final changedFields = <String>[];
-      if (changes.containsKey('title')) changedFields.add('titel');
-      if (changes.containsKey('description')) changedFields.add('beskrivning');
-      if (changes.containsKey('ingredients')) changedFields.add('ingredienser');
-      if (changes.containsKey('instructions')) changedFields.add('instruktioner');
-      if (changes.containsKey('imageUrls')) changedFields.add('bilder');
-
-      final changeDescription = changedFields.isNotEmpty 
-          ? changedFields.join(', ')
-          : 'receptet';
-
-      // Notify all other members about the real-time edit
-      for (final memberId in recipe.socialData!.memberPermissions!.keys) {
-        if (memberId == currentUserId) continue; // Don't notify the editor
-
-        await _notificationService.sendSilentNotification(
-          targetUserIds: [memberId],
-          data: {
-            'type': 'realtime_edit',
-            'recipeId': recipe.id,
-            'recipeTitle': recipe.title,
-            'editorUserId': currentUserId,
-            'editorDisplayName': currentUserDisplayName,
-            'changeDescription': changeDescription,
-            'editDescription': editDescription ?? '',
-          },
-        );
-      }
-
-      AppLogger.success('Realtime edit notifications sent for recipe: ${recipe.title}');
-    } catch (e) {
-      AppLogger.warning('Failed to send realtime edit notifications: $e');
-    }
-  }
-
-  /// Send notification when collaborative editing is enabled for a recipe
-  Future<void> _sendCollaborationEnabledNotification(Recipe recipe, List<String> memberIds) async {
-    if (_notificationService == null) {
-      AppLogger.debug('Notification service not available - skipping collaboration enabled notification');
-      return;
-    }
-
-    final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
-
-    if (currentUserId == null) return;
-
-    try {
-      // Notify all invited members that collaborative editing has been enabled
-      for (final memberId in memberIds) {
-        if (memberId == currentUserId) continue; // Don't notify the owner
-
-        await _notificationService.sendImmediateNotification(
-          targetUserIds: [memberId],
-          strategy: NotificationStrategy.collaborationEnabled,
-          variables: {
-            'enablerName': currentUserDisplayName,
-            'recipeTitle': recipe.title,
-          },
-          additionalData: {
-            'recipeId': recipe.id,
-            'enablerUserId': currentUserId,
-          },
-        );
-      }
-
-      AppLogger.success('Collaboration enabled notifications sent to ${memberIds.length} members');
-    } catch (e) {
-      AppLogger.warning('Failed to send collaboration enabled notifications: $e');
+      AppLogger.error('Error disposing RealtimeRecipeOperations', e);
     }
   }
 }
-
-// RecipePermission is now imported from ../types/recipe_types.dart

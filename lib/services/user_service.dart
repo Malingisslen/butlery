@@ -3,6 +3,7 @@
 import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
 import '../core/error/error_handler.dart';
@@ -12,12 +13,15 @@ import '../core/injection.dart';
 class UserService extends ChangeNotifier {
   final UserRepository _repository;
   final AuthRepository _authRepository;
+  final FirebaseFirestore _firestore;
 
   UserService({
     required UserRepository repository,
     required AuthRepository authRepository,
+    FirebaseFirestore? firestore,
   })  : _repository = repository,
-        _authRepository = authRepository;
+        _authRepository = authRepository,
+        _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
@@ -301,6 +305,9 @@ class UserService extends ChangeNotifier {
     if (user == null) return;
 
     try {
+      // NYTT: Skapa base user document i 'users' collection för friends system
+      await _ensureBaseUserDocument(user.uid);
+
       _currentUserProfile = await _repository.fetchProfile(user.uid);
 
       // NY: Om profil inte finns, skapa en automatiskt
@@ -340,6 +347,23 @@ class UserService extends ChangeNotifier {
       AppLogger.error('❌ Kunde inte ladda nuvarande profil: $e');
       _setError('Kunde inte ladda profil: $e');
       notifyListeners();
+    }
+  }
+
+  /// Ensures base user document exists in 'users' collection for friends system
+  Future<void> _ensureBaseUserDocument(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).set({
+        'uid': userId,
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastActiveAt': FieldValue.serverTimestamp(),
+        'initialized': true,
+      }, SetOptions(merge: true));
+      
+      AppLogger.info('✅ Base user document ensured for: $userId');
+    } catch (e) {
+      AppLogger.warning('⚠️ Could not ensure base user document: $e');
+      // Don't throw - this is not critical for user functionality
     }
   }
 

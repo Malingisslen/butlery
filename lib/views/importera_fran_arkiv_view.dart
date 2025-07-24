@@ -313,7 +313,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       itemCount: recipes.length,
       itemBuilder: (context, index) {
         final recipe = recipes[index];
-        final selected = viewModel.selectedRecipeIds.contains(recipe.id);
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
@@ -323,13 +322,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               context,
               '/receptDetalj',
               arguments: recipe,
-            ),
-            trailing: Checkbox(
-              value: selected,
-              onChanged: (_) => viewModel.toggleRecipeSelection(recipe.id),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
             ),
           ),
         );

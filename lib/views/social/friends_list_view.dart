@@ -253,10 +253,12 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   // ✅ UPPDATERAD: Använd SocialComponents.showCreateGroupDialog
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
-    final result = await SocialComponents.showCreateGroupDialog(context);
+    final result = await SocialComponents.showCreateGroupDialog(
+      context: context,
+    );
 
-    if (result != null && mounted) {
-      SnackBarUtils.showSuccess(context, 'Gruppen "${result.name}" skapades! 🎉');
+    if (result == true && mounted) {
+      SnackBarUtils.showSuccess(context, 'Gruppen skapades! 🎉');
       setState(() {}); // Uppdatera vyn
     }
   }

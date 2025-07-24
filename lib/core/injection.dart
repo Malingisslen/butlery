@@ -6,6 +6,7 @@ library;
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import '../repositories/interfaces/recipe_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
@@ -127,14 +128,6 @@ Future<void> initializeDependencies() async {
     );
     debugPrint('✅ RealtimeSyncService registrerad');
 
-    sl.registerLazySingleton<RealtimeRecipeService>(
-      () => RealtimeRecipeService(
-        syncService: sl<RealtimeSyncService>(),
-        permissionService: sl<PermissionService>(),
-      ),
-    );
-    debugPrint('✅ RealtimeRecipeService registrerad');
-
     sl.registerLazySingleton<RealtimeMenuService>(
       () => RealtimeMenuService(
         syncService: sl<RealtimeSyncService>(),
@@ -143,6 +136,14 @@ Future<void> initializeDependencies() async {
     );
     debugPrint('✅ RealtimeMenuService registrerad');
 
+    sl.registerLazySingleton<RealtimeRecipeService>(
+      () => RealtimeRecipeService(
+        syncService: sl<RealtimeSyncService>(),
+        permissionService: sl<PermissionService>(),
+      ),
+    );
+    debugPrint('✅ RealtimeRecipeService registrerad');
+
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
     sl.registerSingleton<UserRepository>(
         FirebaseUserRepository(authRepository: sl<AuthRepository>()));
@@ -150,6 +151,7 @@ Future<void> initializeDependencies() async {
       UserService(
         repository: sl<UserRepository>(),
         authRepository: sl<AuthRepository>(),
+        firestore: FirebaseFirestore.instance,
       ),
     );
 
@@ -157,6 +159,7 @@ Future<void> initializeDependencies() async {
 
     sl.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: sl<AuthRepository>()));
+    debugPrint('✅ FriendsRepository registrerad');
 
     // ==================== INVITATION SERVICES (FAS 2) ====================
 
@@ -180,6 +183,25 @@ Future<void> initializeDependencies() async {
     ));
     debugPrint('✅ UnifiedFriendsService registrerad');
 
+    // ==================== UNIFIED SHOPPING SYSTEM ====================
+    sl.registerLazySingleton<UnifiedShoppingService>(
+      () => UnifiedShoppingService(
+        firestoreRepository: sl<FirestoreRepository>(),
+        authRepository: sl<AuthRepository>(),
+      ),
+    );
+    debugPrint('✅ UnifiedShoppingService registrerad');
+
+    // ==================== PERMISSION SERVICE ====================
+    sl.registerSingleton<PermissionService>(PermissionService(
+      sl<AuthService>(),
+      sl<UserService>(),
+      sl<UnifiedRecipeService>(),
+      sl<UnifiedShoppingService>(),
+      sl<UnifiedFriendsService>(),
+    ));
+    debugPrint('✅ PermissionService registrerad');
+
     sl.registerSingleton<MenuService>(MenuService());
     sl.registerSingleton<SearchService>(SearchService());
     sl.registerSingleton<ShareService>(ShareService());
@@ -196,27 +218,6 @@ Future<void> initializeDependencies() async {
     );
     sl.registerSingleton<AnalyticsService>(AnalyticsService());
     debugPrint('✅ Alla core services registrerade');
-
-    // ==================== PERMISSION SERVICE ====================
-    sl.registerLazySingleton<PermissionService>(
-      () => PermissionService(
-        sl<AuthService>(),
-        sl<UserService>(),
-        sl<UnifiedRecipeService>(),
-        sl<UnifiedShoppingService>(),
-        sl<UnifiedFriendsService>(),
-      ),
-    );
-    debugPrint('✅ PermissionService registrerad');
-
-    // ==================== UNIFIED SHOPPING SYSTEM ====================
-    sl.registerLazySingleton<UnifiedShoppingService>(
-      () => UnifiedShoppingService(
-        firestoreRepository: sl<FirestoreRepository>(),
-        authRepository: sl<AuthRepository>(),
-      ),
-    );
-    debugPrint('✅ UnifiedShoppingService registrerad');
 
     // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
     sl.registerSingleton<SocialRecipeRepository>(
@@ -429,6 +430,14 @@ Future<void> initializeDependencies() async {
     sl<RealtimeMenuService>(); // ✅ NYTT: Validera RealtimeMenuService
     sl<UserService>();
     sl<UnifiedFriendsService>();
+    debugPrint('🔄 About to validate PermissionService...');
+    try {
+      sl<PermissionService>(); // ✅ VALIDERA: PermissionService
+      debugPrint('✅ PermissionService validation successful');
+    } catch (e) {
+      debugPrint('❌ PermissionService validation failed: $e');
+      rethrow;
+    }
     sl<SocialRecipeService>();
 
     // Test ViewModels

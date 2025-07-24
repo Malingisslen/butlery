@@ -5,16 +5,20 @@ import '../recipe_unified.dart';
 import '../permissions/resource_permission.dart';
 import 'realtime_resource.dart';
 
+// Focused modules
+import 'recipe_operations.dart';
+import 'recipe_serialization.dart';
+import 'realtime_participants.dart';
 
-/// Realtidsresurs för gemensam receptredigering
+/// Clean facade for realtime recipe using focused modules
 ///
-/// Denna klass innehåller BARA:
-/// - Recipe data wrapper
-/// - Business logic för recipe operations
-/// - Serialization methods
-/// - Utility methods för recipe manipulation
+/// This facade provides a unified API that delegates to focused modules:
+/// - RecipeOperations: Recipe content manipulation (CRUD operations)
+/// - RealtimeMetadata: Edit tracking and activity management
+/// - RecipeSerialization: Firestore conversion and data validation
+/// - RealtimeParticipants: Permission and participant management
 ///
-/// ❌ INNEHÅLLER INTE: UI widgets, styling, theme methods, Flutter UI imports
+/// ❌ DOES NOT CONTAIN: Complex business logic, direct Firestore operations, UI concerns
 class RealtimeRecipe extends RealtimeResource {
   /// Det underliggande receptet som alla redigerar tillsammans
   final Recipe recipe;
@@ -44,29 +48,12 @@ class RealtimeRecipe extends RealtimeResource {
     List<String>? editorUserIds,
     List<String>? viewerUserIds,
   }) {
-    // Skapa participants map
-    final participants = <String, ResourcePermission>{};
-
-    // Ägaren får owner-behörighet
-    participants[ownerId] = ResourcePermission.owner;
-
-    // Lägg till redigerare
-    if (editorUserIds != null) {
-      for (final userId in editorUserIds) {
-        if (userId != ownerId) {
-          participants[userId] = ResourcePermission.editor;
-        }
-      }
-    }
-
-    // Lägg till betraktare
-    if (viewerUserIds != null) {
-      for (final userId in viewerUserIds) {
-        if (userId != ownerId && !participants.containsKey(userId)) {
-          participants[userId] = ResourcePermission.viewer;
-        }
-      }
-    }
+    // Use focused participant module to create participants
+    final participants = RealtimeParticipants.createDefaultParticipants(
+      ownerId: ownerId,
+      editorIds: editorUserIds,
+      viewerIds: viewerUserIds,
+    );
 
     return RealtimeRecipe(
       id: recipe.id.isNotEmpty
@@ -81,7 +68,7 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  // ===== RECIPE CONTENT UPDATES =====
+  // ===== RECIPE CONTENT OPERATIONS (DELEGATE TO RECIPE_OPERATIONS) =====
 
   /// Uppdatera receptets grundläggande information
   RealtimeRecipe updateBasicInfo({
@@ -95,7 +82,8 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedRecipe = recipe.copyWith(
+    final updatedRecipe = RecipeOperations.updateBasicInfo(
+      recipe,
       title: title,
       description: description,
       mealType: mealType,
@@ -103,8 +91,8 @@ class RealtimeRecipe extends RealtimeResource {
       timeMinutes: timeMinutes,
       rating: rating,
       tags: tags,
-      lastEditedByUserId: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
+      editedBy: editedBy,
+      editedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -120,10 +108,11 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedRecipe = recipe.copyWith(
+    final updatedRecipe = RecipeOperations.updateIngredients(
+      recipe,
       ingredients: ingredients,
-      lastEditedByUserId: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
+      editedBy: editedBy,
+      editedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -139,13 +128,17 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedIngredients = List<String>.from(recipe.ingredients);
-    updatedIngredients.add(ingredient);
-
-    return updateIngredients(
-      ingredients: updatedIngredients,
+    final updatedRecipe = RecipeOperations.addIngredient(
+      recipe,
+      ingredient: ingredient,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
+    );
+
+    return copyWith(
+      recipe: updatedRecipe,
+      lastEditedBy: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
@@ -155,17 +148,17 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    if (index < 0 || index >= recipe.ingredients.length) {
-      throw ArgumentError('Ogiltigt ingrediensindex: $index');
-    }
-
-    final updatedIngredients = List<String>.from(recipe.ingredients);
-    updatedIngredients.removeAt(index);
-
-    return updateIngredients(
-      ingredients: updatedIngredients,
+    final updatedRecipe = RecipeOperations.removeIngredient(
+      recipe,
+      index: index,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
+    );
+
+    return copyWith(
+      recipe: updatedRecipe,
+      lastEditedBy: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
@@ -175,10 +168,11 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedRecipe = recipe.copyWith(
+    final updatedRecipe = RecipeOperations.updateInstructions(
+      recipe,
       instructions: instructions,
-      lastEditedByUserId: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
+      editedBy: editedBy,
+      editedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -194,13 +188,17 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedInstructions = List<String>.from(recipe.instructions);
-    updatedInstructions.add(instruction);
-
-    return updateInstructions(
-      instructions: updatedInstructions,
+    final updatedRecipe = RecipeOperations.addInstruction(
+      recipe,
+      instruction: instruction,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
+    );
+
+    return copyWith(
+      recipe: updatedRecipe,
+      lastEditedBy: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
@@ -210,30 +208,31 @@ class RealtimeRecipe extends RealtimeResource {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    if (index < 0 || index >= recipe.instructions.length) {
-      throw ArgumentError('Ogiltigt instruktionsindex: $index');
-    }
-
-    final updatedInstructions = List<String>.from(recipe.instructions);
-    updatedInstructions.removeAt(index);
-
-    return updateInstructions(
-      instructions: updatedInstructions,
+    final updatedRecipe = RecipeOperations.removeInstruction(
+      recipe,
+      index: index,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
+    );
+
+    return copyWith(
+      recipe: updatedRecipe,
+      lastEditedBy: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
   /// Uppdatera bildurlar
-  RealtimeRecipe updateImages({
+  RealtimeRecipe updateImageUrls({
     required List<String> imageUrls,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedRecipe = recipe.copyWith(
+    final updatedRecipe = RecipeOperations.updateImageUrls(
+      recipe,
       imageUrls: imageUrls,
-      lastEditedByUserId: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
+      editedBy: editedBy,
+      editedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -244,153 +243,16 @@ class RealtimeRecipe extends RealtimeResource {
   }
 
   /// Lägg till en bild
-  RealtimeRecipe addImage({
+  RealtimeRecipe addImageUrl({
     required String imageUrl,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    final updatedImageUrls = List<String>.from(recipe.imageUrls);
-    updatedImageUrls.add(imageUrl);
-
-    return updateImages(
-      imageUrls: updatedImageUrls,
+    final updatedRecipe = RecipeOperations.addImageUrl(
+      recipe,
+      imageUrl: imageUrl,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
-    );
-  }
-
-  /// Ta bort en bild
-  RealtimeRecipe removeImage({
-    required int index,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    if (index < 0 || index >= recipe.imageUrls.length) {
-      throw ArgumentError('Ogiltigt bildindex: $index');
-    }
-
-    final updatedImageUrls = List<String>.from(recipe.imageUrls);
-    updatedImageUrls.removeAt(index);
-
-    return updateImages(
-      imageUrls: updatedImageUrls,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-  }
-
-  // ===== BUSINESS LOGIC GETTERS =====
-
-  /// Få receptets titel för UI
-  String get title => recipe.title;
-
-  /// Få receptets beskrivning
-  String get description => recipe.description;
-
-  /// Antal ingredienser
-  int get ingredientsCount => recipe.ingredients.length;
-
-  /// Antal instruktioner
-  int get instructionsCount => recipe.instructions.length;
-
-  /// Antal bilder
-  int get imageCount => recipe.imageUrls.length;
-
-  /// Är receptet komplett? (har titel, ingredienser och instruktioner)
-  bool get isComplete {
-    return recipe.title.isNotEmpty &&
-        recipe.ingredients.isNotEmpty &&
-        recipe.instructions.isNotEmpty;
-  }
-
-  /// Receptets måltidstyp
-  String get mealType => recipe.mealType;
-
-  /// Beräknad tid för receptet
-  int? get timeMinutes => recipe.timeMinutes;
-
-  /// Antal portioner
-  int? get portions => recipe.portions;
-
-  /// Receptets betyg
-  double? get rating => recipe.rating;
-
-  /// Receptets taggar
-  List<String> get tags => recipe.tags ?? [];
-
-  /// Har receptet betyg?
-  bool get hasRating => rating != null && rating! > 0;
-
-  /// Har receptet taggar?
-  bool get hasTags => tags.isNotEmpty;
-
-  /// Har receptet bilder?
-  bool get hasImages => imageCount > 0;
-
-  /// Är receptet redo för delning? (komplett med minst grundinfo)
-  bool get isReadyForSharing {
-    return isComplete && mealType.isNotEmpty;
-  }
-
-  /// Få completion percentage (för progress bars)
-  double get completionPercentage {
-    int completed = 0;
-    int total = 5; // title, description, ingredients, instructions, mealType
-
-    if (title.isNotEmpty) completed++;
-    if (description.isNotEmpty) completed++;
-    if (recipe.ingredients.isNotEmpty) completed++;
-    if (recipe.instructions.isNotEmpty) completed++;
-    if (mealType.isNotEmpty) completed++;
-
-    return completed / total;
-  }
-
-  /// Få completion status text
-  String get completionStatus {
-    if (completionPercentage >= 1.0) {
-      return 'Komplett';
-    } else if (completionPercentage >= 0.6) {
-      return 'Nästan klar';
-    } else if (completionPercentage >= 0.3) {
-      return 'Pågående';
-    } else {
-      return 'Påbörjat';
-    }
-  }
-
-  /// Få progress color name (för UI widgets att använda med AppTheme)
-  String get progressColorName {
-    if (completionPercentage >= 1.0) {
-      return 'success';
-    } else if (completionPercentage >= 0.6) {
-      return 'primary';
-    } else if (completionPercentage >= 0.3) {
-      return 'warning';
-    } else {
-      return 'error';
-    }
-  }
-
-  // ===== RECIPE OPERATIONS =====
-
-  /// Skala receptet för ett annat antal portioner
-  RealtimeRecipe scaleRecipe({
-    required int newPortions,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    if (recipe.portions == null || newPortions <= 0) {
-      throw ArgumentError(
-          'Kan inte skala recept utan ursprungligt portionsantal');
-    }
-
-    // Här skulle vi implementera intelligent skalning av ingredienser
-    // För nu, bara uppdatera portionsantalet
-    final updatedRecipe = recipe.copyWith(
-      portions: newPortions,
-      lastEditedByUserId: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
     );
 
     return copyWith(
@@ -400,78 +262,126 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  /// Duplikera ingrediens för variation
-  RealtimeRecipe duplicateIngredient({
+  /// Ta bort en bild
+  RealtimeRecipe removeImageUrl({
     required int index,
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    if (index < 0 || index >= recipe.ingredients.length) {
-      throw ArgumentError('Ogiltigt ingrediensindex: $index');
-    }
-
-    final ingredient = recipe.ingredients[index];
-    final updatedIngredients = List<String>.from(recipe.ingredients);
-    updatedIngredients.insert(index + 1, ingredient);
-
-    return updateIngredients(
-      ingredients: updatedIngredients,
+    final updatedRecipe = RecipeOperations.removeImageUrl(
+      recipe,
+      index: index,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
     );
-  }
 
-  /// Flytta ingrediens upp eller ner i listan
-  RealtimeRecipe reorderIngredient({
-    required int fromIndex,
-    required int toIndex,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    if (fromIndex < 0 ||
-        fromIndex >= recipe.ingredients.length ||
-        toIndex < 0 ||
-        toIndex >= recipe.ingredients.length) {
-      throw ArgumentError('Ogiltiga index för omsortering');
-    }
-
-    final updatedIngredients = List<String>.from(recipe.ingredients);
-    final ingredient = updatedIngredients.removeAt(fromIndex);
-    updatedIngredients.insert(toIndex, ingredient);
-
-    return updateIngredients(
-      ingredients: updatedIngredients,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
+    return copyWith(
+      recipe: updatedRecipe,
+      lastEditedBy: editedBy,
+      lastEditedByDisplayName: editedByDisplayName,
     );
   }
 
-  /// Flytta instruktion upp eller ner i listan
-  RealtimeRecipe reorderInstruction({
-    required int fromIndex,
-    required int toIndex,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    if (fromIndex < 0 ||
-        fromIndex >= recipe.instructions.length ||
-        toIndex < 0 ||
-        toIndex >= recipe.instructions.length) {
-      throw ArgumentError('Ogiltiga index för omsortering');
-    }
+  // ===== BUSINESS LOGIC GETTERS (DELEGATE TO RECIPE_OPERATIONS) =====
 
-    final updatedInstructions = List<String>.from(recipe.instructions);
-    final instruction = updatedInstructions.removeAt(fromIndex);
-    updatedInstructions.insert(toIndex, instruction);
+  int get ingredientsCount => recipe.ingredients.length;
+  int get instructionsCount => recipe.instructions.length;
+  int get imagesCount => recipe.imageUrls.length;
+  String get title => recipe.title;
+  String get description => recipe.description;
+  int? get portions => recipe.portions;
+  int? get timeMinutes => recipe.timeMinutes;
+  double? get rating => recipe.rating;
+  List<String>? get tags => recipe.tags;
+  String get mealType => recipe.mealType;
+  bool get hasRating => recipe.rating != null;
+  bool get isValidRecipe => RecipeOperations.isValidRecipe(recipe);
+  List<String> get validationErrors => RecipeOperations.getValidationErrors(recipe);
+  bool get isPublishable => RecipeOperations.isPublishable(recipe);
+  Map<String, int> get recipeStats => RecipeOperations.getRecipeStats(recipe);
+  int get complexityScore => RecipeOperations.getComplexityScore(recipe);
 
-    return updateInstructions(
-      instructions: updatedInstructions,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
+  // ===== PARTICIPANT OPERATIONS (DELEGATE TO REALTIME_PARTICIPANTS) =====
+
+  /// Lägg till deltagare
+  @override
+  RealtimeRecipe addParticipant(String userId, String userDisplayName, ResourcePermission permission) {
+    final updatedParticipants = RealtimeParticipants.addParticipant(
+      participants,
+      userId,
+      permission,
+    );
+
+    return copyWithMetadata(participants: updatedParticipants);
+  }
+
+  /// Ta bort deltagare
+  @override
+  RealtimeRecipe removeParticipant(String userId) {
+    final updatedParticipants = RealtimeParticipants.removeParticipant(
+      participants,
+      userId,
+    );
+
+    return copyWithMetadata(participants: updatedParticipants);
+  }
+
+  /// Uppdatera deltagarebehörighet
+  @override
+  RealtimeRecipe updateParticipantPermission(String userId, ResourcePermission permission) {
+    final updatedParticipants = RealtimeParticipants.updateParticipantPermission(
+      participants,
+      userId,
+      permission,
+    );
+
+    return copyWithMetadata(participants: updatedParticipants);
+  }
+
+  /// Kontrollera om användare kan redigera
+  bool canEdit(String userId) {
+    return RealtimeParticipants.canEdit(participants, userId);
+  }
+
+  /// Kontrollera om användare kan visa
+  bool canView(String userId) {
+    return RealtimeParticipants.canView(participants, userId);
+  }
+
+  /// Kontrollera om användare är ägare
+  @override
+  bool isOwner(String userId) {
+    return RealtimeParticipants.isOwner(participants, userId);
+  }
+
+  // ===== SERIALIZATION (DELEGATE TO RECIPE_SERIALIZATION) =====
+
+  @override
+  Map<String, dynamic> serializeContent() {
+    return RecipeSerialization.serializeRealtimeContent(recipe);
+  }
+
+  /// Skapa från Firestore dokument
+  factory RealtimeRecipe.fromFirestore(DocumentSnapshot doc) {
+    final (recipe, metadataMap) = RecipeSerialization.deserializeRealtimeRecipe(doc);
+
+    return RealtimeRecipe(
+      id: metadataMap['id'] as String,
+      ownerId: metadataMap['ownerId'] as String,
+      ownerDisplayName: metadataMap['ownerDisplayName'] as String,
+      participants: metadataMap['participants'] as Map<String, ResourcePermission>,
+      createdAt: metadataMap['createdAt'] as DateTime?,
+      lastEditedAt: metadataMap['lastEditedAt'] as DateTime?,
+      lastEditedBy: metadataMap['lastEditedBy'] as String,
+      lastEditedByDisplayName: metadataMap['lastEditedByDisplayName'] as String,
+      editCount: metadataMap['editCount'] as int? ?? 0,
+      isActive: metadataMap['isActive'] as bool? ?? true,
+      metadata: metadataMap['metadata'] as Map<String, dynamic>?,
+      recipe: recipe,
     );
   }
 
-  // ===== OVERRIDE ABSTRACT METHODS =====
+  // ===== COPY METHODS =====
 
   @override
   RealtimeRecipe copyWithMetadata({
@@ -528,173 +438,6 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  @override
-  Map<String, dynamic> serializeContent() {
-    return {
-      'recipe': recipe.toFirestore(),
-    };
-  }
-
-  /// Skapa från Firestore dokument
-  factory RealtimeRecipe.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    final metadataMap = RealtimeResource.parseFirestoreMetadata(data, doc.id);
-
-    // Parse recipe data
-    final recipeData = data['recipe'] as Map<String, dynamic>? ?? {};
-
-    // Create Recipe from nested data
-    final recipe = Recipe(
-      core: RecipeCore(
-        id: recipeData['id'] as String? ?? doc.id,
-        title: recipeData['title'] as String? ?? '',
-        description: recipeData['description'] as String? ?? '',
-        portions: recipeData['portions'] as int?,
-        timeMinutes: recipeData['timeMinutes'] as int?,
-        ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-        instructions: List<String>.from(recipeData['instructions'] ?? []),
-        tags: recipeData['tags'] != null
-            ? List<String>.from(recipeData['tags'])
-            : null,
-        rating: (recipeData['rating'] as num?)?.toDouble(),
-        imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-        mealType: recipeData['mealType'] as String? ?? 'Middag',
-        sourceUrl: recipeData['sourceUrl'] as String?,
-        createdAt: recipeData['createdAt'] != null 
-            ? (recipeData['createdAt'] as Timestamp).toDate()
-            : DateTime.now(),
-        updatedAt: recipeData['updatedAt'] != null 
-            ? (recipeData['updatedAt'] as Timestamp).toDate()
-            : DateTime.now(),
-        createdBy: recipeData['createdBy'] as String?,
-        isPublic: recipeData['isPublic'] as bool? ?? false,
-        lastCookedAt: recipeData['lastCookedAt'] != null 
-            ? (recipeData['lastCookedAt'] as Timestamp).toDate()
-            : null,
-      ),
-      type: RecipeType.realtime,
-    );
-
-    return RealtimeRecipe(
-      id: metadataMap['id'] as String,
-      ownerId: metadataMap['ownerId'] as String,
-      ownerDisplayName: metadataMap['ownerDisplayName'] as String,
-      participants:
-          metadataMap['participants'] as Map<String, ResourcePermission>,
-      createdAt: metadataMap['createdAt'] as DateTime,
-      lastEditedAt: metadataMap['lastEditedAt'] as DateTime,
-      lastEditedBy: metadataMap['lastEditedBy'] as String,
-      lastEditedByDisplayName: metadataMap['lastEditedByDisplayName'] as String,
-      editCount: metadataMap['editCount'] as int,
-      isActive: metadataMap['isActive'] as bool,
-      metadata: metadataMap['metadata'] as Map<String, dynamic>,
-      recipe: recipe,
-    );
-  }
-
-  /// JSON serialization för caching
-  Map<String, dynamic> toJson() {
-    final json = toJsonMetadata();
-    json['recipe'] = recipe.toJson();
-    return json;
-  }
-
-  factory RealtimeRecipe.fromJson(Map<String, dynamic> json) {
-    final recipe = Recipe.fromJson(json['recipe'] as Map<String, dynamic>);
-
-    // Parse participants
-    final participantsData =
-        json['participants'] as Map<String, dynamic>? ?? {};
-    final participants = <String, ResourcePermission>{};
-
-    for (final entry in participantsData.entries) {
-      try {
-        participants[entry.key] = ResourcePermissionHelper.fromString(
-          entry.value as String,
-        );
-      } catch (e) {
-        continue;
-      }
-    }
-
-    return RealtimeRecipe(
-      id: json['id'] as String,
-      ownerId: json['ownerId'] as String,
-      ownerDisplayName: json['ownerDisplayName'] as String,
-      participants: participants,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      lastEditedAt: DateTime.parse(json['lastEditedAt'] as String),
-      lastEditedBy: json['lastEditedBy'] as String,
-      lastEditedByDisplayName: json['lastEditedByDisplayName'] as String,
-      editCount: json['editCount'] as int? ?? 0,
-      isActive: json['isActive'] as bool? ?? true,
-      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
-      recipe: recipe,
-    );
-  }
-
-  // ===== PARTICIPANT MANAGEMENT (OVERRIDE från RealtimeResource) =====
-
-  @override
-  RealtimeRecipe addParticipant(
-    String userId,
-    String userDisplayName,
-    ResourcePermission permission,
-  ) {
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
-    updatedParticipants[userId] = permission;
-
-    return copyWithMetadata(
-      participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
-      lastEditedBy: ownerId,
-      lastEditedByDisplayName: ownerDisplayName,
-      editCount: editCount + 1,
-    );
-  }
-
-  @override
-  RealtimeRecipe removeParticipant(String userId) {
-    if (userId == ownerId) {
-      throw ArgumentError('Kan inte ta bort ägaren från resursen');
-    }
-
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
-    updatedParticipants.remove(userId);
-
-    return copyWithMetadata(
-      participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
-      lastEditedBy: ownerId,
-      lastEditedByDisplayName: ownerDisplayName,
-      editCount: editCount + 1,
-    );
-  }
-
-  @override
-  RealtimeRecipe updateParticipantPermission(
-    String userId,
-    ResourcePermission newPermission,
-  ) {
-    if (userId == ownerId && newPermission != ResourcePermission.owner) {
-      throw ArgumentError('Ägaren måste behålla owner-behörighet');
-    }
-
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
-    updatedParticipants[userId] = newPermission;
-
-    return copyWithMetadata(
-      participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
-      lastEditedBy: ownerId,
-      lastEditedByDisplayName: ownerDisplayName,
-      editCount: editCount + 1,
-    );
-  }
-
   // ===== UTILITY METHODS =====
 
   /// Skapa en personlig kopia av receptet (för "Spara kopia" funktionen)
@@ -747,39 +490,26 @@ class RealtimeRecipe extends RealtimeResource {
 
   /// Kontrollera om receptet matchar söktermer
   bool matchesSearchQuery(String query) {
-    if (query.isEmpty) return true;
-
     final lowerQuery = query.toLowerCase();
-
-    // Sök i titel
+    
     if (title.toLowerCase().contains(lowerQuery)) return true;
-
-    // Sök i beskrivning
     if (description.toLowerCase().contains(lowerQuery)) return true;
-
-    // Sök i ingredienser
-    if (recipe.ingredients
-        .any((ingredient) => ingredient.toLowerCase().contains(lowerQuery))) {
-      return true;
-    }
-
-    // Sök i taggar
-    if (tags.any((tag) => tag.toLowerCase().contains(lowerQuery))) return true;
-
-    // Sök i måltidstyp
     if (mealType.toLowerCase().contains(lowerQuery)) return true;
-
+    
+    for (final ingredient in recipe.ingredients) {
+      if (ingredient.toLowerCase().contains(lowerQuery)) return true;
+    }
+    
+    for (final instruction in recipe.instructions) {
+      if (instruction.toLowerCase().contains(lowerQuery)) return true;
+    }
+    
+    if (tags != null) {
+      for (final tag in tags!) {
+        if (tag.toLowerCase().contains(lowerQuery)) return true;
+      }
+    }
+    
     return false;
-  }
-
-  @override
-  String toString() {
-    return 'RealtimeRecipe('
-        'id: $id, '
-        'title: $title, '
-        'participants: $participantCount, '
-        'completion: ${(completionPercentage * 100).toInt()}%, '
-        'lastEdit: $lastEditedTimeAgo'
-        ')';
   }
 }

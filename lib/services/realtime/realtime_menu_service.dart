@@ -11,64 +11,25 @@ import '../permission_service.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
 
+// Focused modules
+import 'modules/menu_operations.dart';
+import 'modules/menu_participants.dart';
 
-/// Typ av menu-operationer för analytics och logging
-enum MenuOperationType {
-  createFromExisting,
-  updateBasicInfo,
-  addRecipeToCategory,
-  removeRecipeFromCategory,
-  moveRecipeBetweenCategories,
-  replaceRecipeInCategory,
-  clearCategory,
-  updateWholeCategory,
-  regenerateCategory,
-  addParticipant,
-  removeParticipant,
-  updatePermissions,
-}
-
-/// Menu-specifika fel
-class MenuOperationError {
-  final MenuOperationType operation;
-  final String message;
-  final String? resourceId;
-  final String? categoryName;
-  final dynamic originalError;
-
-  MenuOperationError({
-    required this.operation,
-    required this.message,
-    this.resourceId,
-    this.categoryName,
-    this.originalError,
-  });
-
-  @override
-  String toString() => 'MenuOperationError(${operation.name}): $message';
-}
-
-/// RealtimeMenuService - SINGLE RESPONSIBILITY: Kategori-baserade menu-operationer
+/// Clean facade for realtime menu management using focused modules
 ///
-/// Denna service hanterar BARA:
-/// - Menu business logic för kategori-baserade realtidsmenyer
-/// - Category-based recipe operations och validation
-/// - Menu-specifika CRUD operationer
-/// - User context för menu operations
+/// This facade provides a unified API that delegates to focused modules:
+/// - MenuOperations: Menu content management (categories, recipes, basic info)
+/// - MenuParticipants: Participant management (adding, removing, permissions)
 ///
-/// Den hanterar INTE:
-/// - Firebase synkronisering (det gör RealtimeSyncService)
-/// - UI logic eller presentation
-/// - Generic realtidsoperationer
-/// - Permission management (det finns i modellerna)
+/// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class RealtimeMenuService extends ChangeNotifier {
   final RealtimeSyncService _syncService;
   final AuthService _authService;
 
-  // State för menu-specifika operationer
+  // State management
   bool _isProcessing = false;
   MenuOperationError? _lastError;
-  RealtimeMenu? _currentMenu; // Cache för current menu
+  RealtimeMenu? _currentMenu; // Cache for current menu
 
   RealtimeMenuService({
     required RealtimeSyncService syncService,
@@ -78,27 +39,25 @@ class RealtimeMenuService extends ChangeNotifier {
 
   // ===== GETTERS =====
 
-  /// Pågår menu operation?
+  /// Is menu operation in progress?
   bool get isProcessing => _isProcessing;
 
-  /// Senaste menu operation error
+  /// Latest menu operation error
   MenuOperationError? get lastError => _lastError;
 
-  /// Aktuell användare
+  /// Current user ID
   String? get _currentUserId => _authService.currentUserId;
 
-  /// Aktuell användarens display name
+  /// Current user display name
   String get _currentUserDisplayName =>
       sl<PermissionService>().currentUser?.displayName ?? 'Okänd användare';
 
-  /// Få kategori-namn från aktuell meny
+  /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];
 
-  // ===== CORE MENU OPERATIONS =====
+  // ===== CORE MENU OPERATIONS (DELEGATE TO MENU_OPERATIONS) =====
 
-  /// Skapa realtidsmeny från befintlig kategori-meny (från MenuViewModel)
-  ///
-  /// Tar en vanlig kategori-meny och gör den till en RealtimeMenu som kan delas
+  /// Create realtime menu from existing category menu
   Future<RealtimeMenu> createRealtimeMenu({
     required String menuTitle,
     required Map<String, List<Recipe>> menuSnapshot,
@@ -123,7 +82,7 @@ class RealtimeMenuService extends ChangeNotifier {
     try {
       AppLogger.info('📅 Skapar realtidsmeny: $menuTitle');
 
-      // Skapa RealtimeMenu från kategori-data
+      // Create RealtimeMenu from category data
       final realtimeMenu = RealtimeMenu.fromMenuCategories(
         menuTitle: menuTitle,
         menuSnapshot: menuSnapshot,
@@ -137,10 +96,10 @@ class RealtimeMenuService extends ChangeNotifier {
         createdForDate: createdForDate,
       );
 
-      // Använd RealtimeSyncService för att spara (SRP - vi delegerar synkronisering)
+      // Use RealtimeSyncService for saving (SRP - delegate synchronization)
       await _syncService.updateResource(realtimeMenu);
 
-      // Cache menyn
+      // Cache the menu
       _currentMenu = realtimeMenu;
 
       AppLogger.success('✅ Realtidsmeny skapad: ${realtimeMenu.id}');
@@ -158,21 +117,19 @@ class RealtimeMenuService extends ChangeNotifier {
     }
   }
 
-  /// Titta på realtidsmeny med live updates
-  ///
-  /// Wrapper runt RealtimeSyncService.watchResource för type safety
+  /// Watch realtime menu with live updates
   Stream<RealtimeMenu> watchRealtimeMenu(String resourceId) {
     AppLogger.info('👀 Startar watching av realtidsmeny: $resourceId');
 
     try {
       return _syncService.watchResource<RealtimeMenu>(resourceId).map((menu) {
-        // Cache menyn för senare användning
+        // Cache the menu for later use
         _currentMenu = menu;
         return menu;
       });
     } catch (e) {
       _handleError(
-        MenuOperationType.createFromExisting, // Generisk operation
+        MenuOperationType.createFromExisting, // Generic operation
         'Kunde inte starta watching av meny: $e',
         resourceId: resourceId,
         originalError: e,
@@ -181,9 +138,9 @@ class RealtimeMenuService extends ChangeNotifier {
     }
   }
 
-  // ===== MENU CONTENT OPERATIONS =====
+  // ===== MENU CONTENT OPERATIONS (DELEGATE TO MENU_OPERATIONS) =====
 
-  /// Uppdatera grundläggande menyinformation
+  /// Update basic menu information
   Future<void> updateBasicInfo({
     required String resourceId,
     String? menuTitle,
@@ -196,7 +153,8 @@ class RealtimeMenuService extends ChangeNotifier {
       resourceId: resourceId,
       operation: MenuOperationType.updateBasicInfo,
       operationName: 'uppdatera grundinfo',
-      updateFunction: (menu) => menu.updateBasicInfo(
+      updateFunction: (menu) => MenuOperations.updateBasicInfo(
+        menu,
         menuTitle: menuTitle,
         createdForDate: createdForDate,
         menuNotes: menuNotes,
@@ -208,26 +166,18 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Lägg till recept till specifik kategori
+  /// Add recipe to specific category
   Future<void> addRecipeToCategory({
     required String resourceId,
     required String categoryName,
     required Recipe recipe,
   }) async {
-    if (!_isValidCategoryName(categoryName)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.addRecipeToCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
-        resourceId: resourceId,
-        categoryName: categoryName,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.addRecipeToCategory,
       operationName: 'lägga till recept i $categoryName',
-      updateFunction: (menu) => menu.addRecipeToCategory(
+      updateFunction: (menu) => MenuOperations.addRecipeToCategory(
+        menu,
         categoryName: categoryName,
         recipe: recipe,
         editedBy: _currentUserId!,
@@ -236,26 +186,18 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Ta bort recept från specifik kategori
+  /// Remove recipe from specific category
   Future<void> removeRecipeFromCategory({
     required String resourceId,
     required String categoryName,
     required int recipeIndex,
   }) async {
-    if (!_isValidCategoryName(categoryName)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.removeRecipeFromCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
-        resourceId: resourceId,
-        categoryName: categoryName,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.removeRecipeFromCategory,
       operationName: 'ta bort recept från $categoryName',
-      updateFunction: (menu) => menu.removeRecipeFromCategory(
+      updateFunction: (menu) => MenuOperations.removeRecipeFromCategory(
+        menu,
         categoryName: categoryName,
         recipeIndex: recipeIndex,
         editedBy: _currentUserId!,
@@ -264,7 +206,7 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Flytta recept mellan kategorier
+  /// Move recipe between categories
   Future<void> moveRecipeBetweenCategories({
     required String resourceId,
     required String fromCategory,
@@ -272,20 +214,12 @@ class RealtimeMenuService extends ChangeNotifier {
     required String toCategory,
     int? toIndex,
   }) async {
-    if (!_isValidCategoryName(fromCategory) ||
-        !_isValidCategoryName(toCategory)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.moveRecipeBetweenCategories,
-        message: 'Ogiltiga kategorinamn: $fromCategory -> $toCategory',
-        resourceId: resourceId,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.moveRecipeBetweenCategories,
       operationName: 'flytta recept från $fromCategory till $toCategory',
-      updateFunction: (menu) => menu.moveRecipeBetweenCategories(
+      updateFunction: (menu) => MenuOperations.moveRecipeBetweenCategories(
+        menu,
         fromCategory: fromCategory,
         fromIndex: fromIndex,
         toCategory: toCategory,
@@ -296,27 +230,19 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Ersätt recept i specifik kategori och position
+  /// Replace recipe in specific category and position
   Future<void> replaceRecipeInCategory({
     required String resourceId,
     required String categoryName,
     required int recipeIndex,
     required Recipe newRecipe,
   }) async {
-    if (!_isValidCategoryName(categoryName)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.replaceRecipeInCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
-        resourceId: resourceId,
-        categoryName: categoryName,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.replaceRecipeInCategory,
       operationName: 'ersätta recept i $categoryName',
-      updateFunction: (menu) => menu.replaceRecipeInCategory(
+      updateFunction: (menu) => MenuOperations.replaceRecipeInCategory(
+        menu,
         categoryName: categoryName,
         recipeIndex: recipeIndex,
         newRecipe: newRecipe,
@@ -326,25 +252,17 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Rensa hela kategorin
+  /// Clear entire category
   Future<void> clearCategory({
     required String resourceId,
     required String categoryName,
   }) async {
-    if (!_isValidCategoryName(categoryName)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.clearCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
-        resourceId: resourceId,
-        categoryName: categoryName,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.clearCategory,
       operationName: 'rensa $categoryName',
-      updateFunction: (menu) => menu.clearCategory(
+      updateFunction: (menu) => MenuOperations.clearCategory(
+        menu,
         categoryName: categoryName,
         editedBy: _currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
@@ -352,26 +270,18 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Uppdatera hela kategorin med nya recept
+  /// Update entire category with new recipes
   Future<void> updateWholeCategory({
     required String resourceId,
     required String categoryName,
     required List<Recipe> recipes,
   }) async {
-    if (!_isValidCategoryName(categoryName)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.updateWholeCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
-        resourceId: resourceId,
-        categoryName: categoryName,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.updateWholeCategory,
       operationName: 'uppdatera hela $categoryName',
-      updateFunction: (menu) => menu.updateWholeCategory(
+      updateFunction: (menu) => MenuOperations.updateWholeCategory(
+        menu,
         categoryName: categoryName,
         recipes: recipes,
         editedBy: _currentUserId!,
@@ -380,26 +290,18 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  /// Regenerera kategori med nya AI-genererade recept
+  /// Regenerate category with new AI-generated recipes
   Future<void> regenerateCategory({
     required String resourceId,
     required String categoryName,
     required List<Recipe> newRecipes,
   }) async {
-    if (!_isValidCategoryName(categoryName)) {
-      throw MenuOperationError(
-        operation: MenuOperationType.regenerateCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
-        resourceId: resourceId,
-        categoryName: categoryName,
-      );
-    }
-
     await _performMenuOperation(
       resourceId: resourceId,
       operation: MenuOperationType.regenerateCategory,
       operationName: 'regenerera $categoryName',
-      updateFunction: (menu) => menu.regenerateCategory(
+      updateFunction: (menu) => MenuOperations.regenerateCategory(
+        menu,
         categoryName: categoryName,
         newRecipes: newRecipes,
         editedBy: _currentUserId!,
@@ -408,9 +310,9 @@ class RealtimeMenuService extends ChangeNotifier {
     );
   }
 
-  // ===== PARTICIPANT MANAGEMENT =====
+  // ===== PARTICIPANT MANAGEMENT (DELEGATE TO MENU_PARTICIPANTS) =====
 
-  /// Lägg till deltagare till realtidsmeny
+  /// Add participant to realtime menu
   Future<void> addParticipant({
     required String resourceId,
     required String userId,
@@ -421,15 +323,16 @@ class RealtimeMenuService extends ChangeNotifier {
       resourceId: resourceId,
       operation: MenuOperationType.addParticipant,
       operationName: 'lägga till deltagare',
-      updateFunction: (menu) => menu.addParticipant(
-        userId,
-        userDisplayName,
-        permission,
+      updateFunction: (menu) => MenuParticipants.addParticipant(
+        menu,
+        userId: userId,
+        userDisplayName: userDisplayName,
+        permission: permission,
       ),
     );
   }
 
-  /// Ta bort deltagare från realtidsmeny
+  /// Remove participant from realtime menu
   Future<void> removeParticipant({
     required String resourceId,
     required String userId,
@@ -438,11 +341,14 @@ class RealtimeMenuService extends ChangeNotifier {
       resourceId: resourceId,
       operation: MenuOperationType.removeParticipant,
       operationName: 'ta bort deltagare',
-      updateFunction: (menu) => menu.removeParticipant(userId),
+      updateFunction: (menu) => MenuParticipants.removeParticipant(
+        menu,
+        userId: userId,
+      ),
     );
   }
 
-  /// Uppdatera deltagares behörighet
+  /// Update participant permission
   Future<void> updateParticipantPermission({
     required String resourceId,
     required String userId,
@@ -452,18 +358,17 @@ class RealtimeMenuService extends ChangeNotifier {
       resourceId: resourceId,
       operation: MenuOperationType.updatePermissions,
       operationName: 'uppdatera behörighet',
-      updateFunction: (menu) => menu.updateParticipantPermission(
-        userId,
-        newPermission,
+      updateFunction: (menu) => MenuParticipants.updateParticipantPermission(
+        menu,
+        userId: userId,
+        newPermission: newPermission,
       ),
     );
   }
 
-  // ===== UTILITY METHODS =====
+  // ===== UTILITY METHODS (DELEGATE TO MODULES) =====
 
-  /// Skapa personlig kopia av realtidsmeny
-  ///
-  /// Använder RealtimeMenu.createPersonalMenuCopy för att skapa vanlig meny
+  /// Create personal copy of realtime menu
   Map<String, List<Recipe>> createPersonalCopy(RealtimeMenu realtimeMenu) {
     final userId = _currentUserId;
     if (userId == null) {
@@ -474,30 +379,22 @@ class RealtimeMenuService extends ChangeNotifier {
       );
     }
 
-    AppLogger.info('📋 Skapar personlig kopia av: ${realtimeMenu.menuTitle}');
-
-    return realtimeMenu.createPersonalMenuCopy();
+    return MenuOperations.createPersonalCopy(realtimeMenu);
   }
 
-  /// Kontrollera om menyn har ändrats sedan tidpunkt
+  /// Check if menu has changed since timestamp
   bool hasMenuChangedSince(RealtimeMenu menu, DateTime timestamp) {
-    return menu.hasChangedSince(timestamp);
+    return MenuOperations.hasMenuChangedSince(menu, timestamp);
   }
 
-  /// Få sammanfattning av senaste ändringar
+  /// Get summary of recent changes
   String getMenuChangesSummary(RealtimeMenu menu) {
-    return menu.getChangesSummary();
+    return MenuOperations.getMenuChangesSummary(menu);
   }
 
-  // ===== PRIVATE HELPER METHODS =====
+  // ===== MENU OPERATIONS HELPER =====
 
-  /// Validera kategorinamn
-  bool _isValidCategoryName(String categoryName) {
-    // Acceptera alla icke-tomma kategorier (flexibelt system)
-    return categoryName.trim().isNotEmpty;
-  }
-
-  /// Generisk metod för att utföra menu-operationer med error handling
+  /// Generic method for performing menu operations with error handling
   Future<void> _performMenuOperation({
     required String resourceId,
     required MenuOperationType operation,
@@ -519,7 +416,7 @@ class RealtimeMenuService extends ChangeNotifier {
     try {
       AppLogger.info('🔄 $operationName för meny: $resourceId');
 
-      // Hämta nuvarande meny från cache eller Firebase
+      // Get current menu from cache or Firebase
       final currentMenu = _currentMenu ??
           _syncService.getCachedResource<RealtimeMenu>(resourceId);
 
@@ -531,8 +428,8 @@ class RealtimeMenuService extends ChangeNotifier {
         );
       }
 
-      // Kontrollera behörighet (från modellen, inte business logic här)
-      if (!currentMenu.canUserEdit(userId)) {
+      // Check permission (from model, not business logic here)
+      if (!MenuParticipants.canUserEdit(currentMenu, userId)) {
         throw MenuOperationError(
           operation: operation,
           message: 'Ingen redigeringsbehörighet',
@@ -540,13 +437,13 @@ class RealtimeMenuService extends ChangeNotifier {
         );
       }
 
-      // Utför uppdatering
+      // Perform update
       final updatedMenu = updateFunction(currentMenu);
 
-      // Använd RealtimeSyncService för synkronisering (SRP)
+      // Use RealtimeSyncService for synchronization (SRP)
       await _syncService.updateResource(updatedMenu);
 
-      // Uppdatera cache
+      // Update cache
       _currentMenu = updatedMenu;
 
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
@@ -559,13 +456,49 @@ class RealtimeMenuService extends ChangeNotifier {
     }
   }
 
-  /// Sätt processing state
+  // ===== DELETE OPERATION =====
+
+  /// Delete realtime menu completely
+  Future<void> deleteRealtimeMenu(String resourceId) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw MenuOperationError(
+        operation: MenuOperationType.removeParticipant, // Closest operation
+        message: 'Användare inte inloggad',
+        resourceId: resourceId,
+      );
+    }
+
+    AppLogger.info('🗑️ Tar bort realtidsmeny: $resourceId');
+
+    try {
+      // Delegate to RealtimeSyncService (SRP) - Use menu type
+      await _syncService.deleteResource(resourceId, RealtimeResourceType.menu);
+
+      // Clear cache
+      _currentMenu = null;
+
+      AppLogger.success('✅ Realtidsmeny borttaget: $resourceId');
+    } catch (e) {
+      _handleError(
+        MenuOperationType.removeParticipant, // Closest operation
+        'Kunde inte ta bort realtidsmeny: $e',
+        resourceId: resourceId,
+        originalError: e,
+      );
+      rethrow;
+    }
+  }
+
+  // ===== STATE MANAGEMENT =====
+
+  /// Set processing state
   void _setProcessing(bool processing) {
     _isProcessing = processing;
     notifyListeners();
   }
 
-  /// Hantera fel
+  /// Handle error
   void _handleError(
     MenuOperationType operation,
     String message, {
@@ -585,48 +518,14 @@ class RealtimeMenuService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Rensa fel
+  /// Clear error
   void _clearError() {
     _lastError = null;
   }
 
-  // ===== PUBLIC UTILITY METHODS =====
-
-  /// Rensa felstatus
+  /// Clear error status (public method)
   void clearError() {
     _clearError();
     notifyListeners();
-  }
-
-  /// Ta bort realtidsmeny helt
-  Future<void> deleteRealtimeMenu(String resourceId) async {
-    final userId = _currentUserId;
-    if (userId == null) {
-      throw MenuOperationError(
-        operation: MenuOperationType.removeParticipant, // Närmaste operation
-        message: 'Användare inte inloggad',
-        resourceId: resourceId,
-      );
-    }
-
-    AppLogger.info('🗑️ Tar bort realtidsmeny: $resourceId');
-
-    try {
-      // Delegera till RealtimeSyncService (SRP) - Använd menu type
-      await _syncService.deleteResource(resourceId, RealtimeResourceType.menu);
-
-      // Rensa cache
-      _currentMenu = null;
-
-      AppLogger.success('✅ Realtidsmeny borttaget: $resourceId');
-    } catch (e) {
-      _handleError(
-        MenuOperationType.removeParticipant, // Närmaste operation
-        'Kunde inte ta bort realtidsmeny: $e',
-        resourceId: resourceId,
-        originalError: e,
-      );
-      rethrow;
-    }
   }
 }

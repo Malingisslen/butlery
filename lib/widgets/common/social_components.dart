@@ -7,25 +7,35 @@ import '../../models/invitations/invitation_target.dart';
 import '../../models/recipe_unified.dart';
 import '../../viewmodels/recipe_form_viewmodel.dart';
 
-// Import facade
-import 'social/social_facade.dart';
+// Import focused modules
+import 'social_components/social_avatar_components.dart';
+import 'social_components/social_collaborative_components.dart';
+import 'social_components/social_group_components.dart';
+import 'social_components/social_invitation_components.dart';
+import 'social_components/social_builder_components.dart';
 
 // ✅ Re-export ImageSize for easier imports
 export '../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
+export 'social_components/social_avatar_components.dart';
+export 'social_components/social_collaborative_components.dart';
+export 'social_components/social_group_components.dart';
+export 'social_components/social_invitation_components.dart';
+export 'social_components/social_builder_components.dart';
 
 // Import ImageSize for local usage
 import '../user/user_display_widgets.dart' show ImageSize;
 
 /// 🚀 SocialComponents - The ultimate social widget API
 ///
-/// Consolidates all social-related widgets into a unified API through delegation:
-/// - ✅ Avatar widgets (delegates to AvatarWidgets)
-/// - ✅ Collaborative indicators (delegates to CollaborativeIndicators)
-/// - ✅ Friend category management (delegates to FriendCategoryWidgets)
-/// - ✅ Group dialogs (delegates to GroupDialogs)
-/// - ✅ Invitation target widgets (delegates to InvitationTargetDisplays/Inputs/States)
-/// - ✅ Social builders and helpers (delegates to SocialBuilders/Helpers)
-/// - ✅ 100% AppTheme compliance and consistent patterns
+/// Clean barrel export that consolidates all social-related widgets into a unified API 
+/// through delegation to focused single-responsibility modules:
+/// - ✅ Avatar widgets (delegates to SocialAvatarComponents)
+/// - ✅ Collaborative indicators (delegates to SocialCollaborativeComponents)
+/// - ✅ Friend category management (delegates to SocialGroupComponents)
+/// - ✅ Invitation target widgets (delegates to SocialInvitationComponents)
+/// - ✅ Social builders and helpers (delegates to SocialBuilderComponents)
+/// - ✅ 100% backward compatibility maintained
+/// - ✅ Clean modular architecture for maintainability
 ///
 /// MIGRATION GUIDE:
 /// ```dart
@@ -37,8 +47,16 @@ import '../user/user_display_widgets.dart' show ImageSize;
 /// import '../../widgets/common/social_components.dart';
 /// SocialComponents.avatar(user: user)
 /// ```
+///
+/// ARCHITECTURE:
+/// This file now serves as a clean facade that delegates to focused modules:
+/// - Each module has a single responsibility
+/// - Backward compatibility maintained through delegation
+/// - Better maintainability with focused concerns
+/// - Easier testing with isolated modules
 class SocialComponents {
-  // ===== USER DISPLAY & AVATARS =====
+  
+  // ===== USER DISPLAY & AVATARS (Delegated to SocialAvatarComponents) =====
 
   /// Build user avatar - MAIN METHOD that replaces UserDisplayWidgets.avatar()
   static Widget avatar({
@@ -50,16 +68,10 @@ class SocialComponents {
     bool showOnlineStatus = false,
     bool isOnline = false,
     EdgeInsets? padding,
-    bool showBorder = true,
-    Color? borderColor,
-    bool showPlaceholder = true,
-    String? placeholderText,
-    double? customSize,
-    bool isClickable = true,
-    Widget? overlay,
-    AlignmentGeometry overlayAlignment = Alignment.bottomRight,
+    Color? backgroundColor,
+    bool showBorder = false,
   }) {
-    return SocialFacade.avatar(
+    return SocialAvatarComponents.avatar(
       user: user,
       imageUrl: imageUrl,
       displayName: displayName,
@@ -68,22 +80,15 @@ class SocialComponents {
       showOnlineStatus: showOnlineStatus,
       isOnline: isOnline,
       padding: padding,
+      backgroundColor: backgroundColor,
       showBorder: showBorder,
-      borderColor: borderColor,
-      showPlaceholder: showPlaceholder,
-      placeholderText: placeholderText,
-      customSize: customSize,
-      isClickable: isClickable,
-      overlay: overlay,
-      overlayAlignment: overlayAlignment,
     );
   }
 
-  /// Build user card with avatar and info
+  /// Build user card with avatar and information
   static Widget userCard({
     required UserProfile user,
     VoidCallback? onTap,
-    Widget? trailing,
     ImageSize avatarSize = ImageSize.medium,
     bool showOnlineStatus = false,
     bool isOnline = false,
@@ -91,12 +96,11 @@ class SocialComponents {
     bool showSubtitle = true,
     String? subtitle,
     Color? backgroundColor,
-    bool showBorder = true,
+    bool showBorder = false,
   }) {
-    return SocialFacade.userCard(
+    return SocialAvatarComponents.userCard(
       user: user,
       onTap: onTap,
-      trailing: trailing,
       avatarSize: avatarSize,
       showOnlineStatus: showOnlineStatus,
       isOnline: isOnline,
@@ -120,7 +124,7 @@ class SocialComponents {
     bool enabled = true,
     Color? backgroundColor,
   }) {
-    return SocialFacade.userListTile(
+    return SocialAvatarComponents.userListTile(
       user: user,
       onTap: onTap,
       trailing: trailing,
@@ -133,7 +137,7 @@ class SocialComponents {
     );
   }
 
-  // ===== COLLABORATIVE INDICATORS =====
+  // ===== COLLABORATIVE INDICATORS (Delegated to SocialCollaborativeComponents) =====
 
   /// Build collaborative status badge
   static Widget collaborativeStatusBadge({
@@ -142,7 +146,7 @@ class SocialComponents {
     Color? color,
     EdgeInsets? padding,
   }) {
-    return SocialFacade.collaborativeStatusBadge(
+    return SocialCollaborativeComponents.collaborativeStatusBadge(
       text: text,
       icon: icon,
       color: color,
@@ -161,7 +165,7 @@ class SocialComponents {
     Widget? trailing,
     BuildContext? context,
   }) {
-    return SocialFacade.collaborativeBanner(
+    return SocialCollaborativeComponents.collaborativeBanner(
       title: title,
       subtitle: subtitle,
       contentId: contentId,
@@ -178,7 +182,7 @@ class SocialComponents {
     required BuildContext context,
     required RecipeFormViewModel viewModel,
   }) {
-    return SocialFacade.smartPermissionsBanner(
+    return SocialCollaborativeComponents.smartPermissionsBanner(
       context: context,
       viewModel: viewModel,
     );
@@ -194,7 +198,7 @@ class SocialComponents {
     int maxParticipants = 3,
     VoidCallback? onTap,
   }) {
-    return SocialFacade.collaborativeAppBar(
+    return SocialCollaborativeComponents.collaborativeAppBar(
       context: context,
       contentId: contentId,
       recipe: recipe,
@@ -209,621 +213,624 @@ class SocialComponents {
   static Widget smartCollaborativeBanner({
     required BuildContext context,
     required String contentId,
-    Recipe? recipe,
-    bool showIfNotCollaborative = false,
-    EdgeInsets? padding,
-    bool showAnimation = true,
+    String contentType = 'recipe',
+    VoidCallback? onTap,
+    Widget? trailing,
   }) {
-    return SocialFacade.smartCollaborativeBanner(
+    return SocialCollaborativeComponents.smartCollaborativeBanner(
       context: context,
       contentId: contentId,
-      recipe: recipe,
-      showIfNotCollaborative: showIfNotCollaborative,
-      padding: padding,
-      showAnimation: showAnimation,
+      contentType: contentType,
+      onTap: onTap,
+      trailing: trailing,
     );
   }
 
   /// Build collaborative status indicator
   static Widget collaborativeStatusIndicator({
-    required BuildContext context,
     required String contentId,
-    bool showLabel = true,
-    bool showAnimation = true,
-    VoidCallback? onTap,
+    String contentType = 'recipe',
+    bool showText = true,
+    Color? activeColor,
+    Color? inactiveColor,
   }) {
-    return SocialFacade.collaborativeStatusIndicator(
-      context: context,
+    return SocialCollaborativeComponents.collaborativeStatusIndicator(
       contentId: contentId,
-      showLabel: showLabel,
-      showAnimation: showAnimation,
-      onTap: onTap,
+      contentType: contentType,
+      showText: showText,
+      activeColor: activeColor,
+      inactiveColor: inactiveColor,
     );
   }
 
   /// Build participants list
   static Widget participantsList({
-    required BuildContext context,
     required String contentId,
-    int maxVisible = 3,
-    ImageSize avatarSize = ImageSize.small,
-    bool showCount = true,
-    bool showAnimation = true,
-    VoidCallback? onTap,
+    String contentType = 'recipe',
+    int maxParticipants = 5,
+    bool horizontal = true,
+    VoidCallback? onViewAll,
   }) {
-    return SocialFacade.participantsList(
-      context: context,
+    return SocialCollaborativeComponents.participantsList(
       contentId: contentId,
-      maxVisible: maxVisible,
-      avatarSize: avatarSize,
-      showCount: showCount,
-      showAnimation: showAnimation,
-      onTap: onTap,
+      contentType: contentType,
+      maxParticipants: maxParticipants,
+      horizontal: horizontal,
+      onViewAll: onViewAll,
     );
   }
 
-  // ===== FRIEND CATEGORY MANAGEMENT =====
+  // ===== FRIEND CATEGORY MANAGEMENT (Delegated to SocialGroupComponents) =====
 
   /// Build friend category selector
   static Widget friendCategorySelector({
     required List<FriendCategory> categories,
-    required Set<String> selectedCategoryIds,
-    required Function(String) onCategoryToggled,
-    bool allowMultipleSelection = true,
-    String? title,
+    FriendCategory? selectedCategory,
+    Function(FriendCategory?)? onCategoryChanged,
+    String? hint,
+    bool enabled = true,
+    Widget? leading,
+    Widget? trailing,
     EdgeInsets? padding,
-    bool showSelectAll = true,
-    bool showCreateNew = true,
-    VoidCallback? onCreateNew,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
   }) {
-    return SocialFacade.friendCategorySelector(
+    return SocialGroupComponents.friendCategorySelector(
       categories: categories,
-      selectedCategoryIds: selectedCategoryIds,
-      onCategoryToggled: onCategoryToggled,
-      allowMultipleSelection: allowMultipleSelection,
-      title: title,
+      selectedCategory: selectedCategory,
+      onCategoryChanged: onCategoryChanged,
+      hint: hint,
+      enabled: enabled,
+      leading: leading,
+      trailing: trailing,
       padding: padding,
-      showSelectAll: showSelectAll,
-      showCreateNew: showCreateNew,
-      onCreateNew: onCreateNew,
+      backgroundColor: backgroundColor,
+      borderRadius: borderRadius,
     );
   }
 
   /// Build friend category chip
   static Widget friendCategoryChip({
     required FriendCategory category,
-    required bool isSelected,
-    required VoidCallback onTap,
-    bool showCount = true,
-    bool enabled = true,
+    bool selected = false,
+    VoidCallback? onTap,
+    VoidCallback? onDeleted,
+    Color? backgroundColor,
+    Color? selectedColor,
+    EdgeInsets? padding,
   }) {
-    return SocialFacade.friendCategoryChip(
+    return SocialGroupComponents.friendCategoryChip(
       category: category,
-      isSelected: isSelected,
+      selected: selected,
       onTap: onTap,
-      showCount: showCount,
-      enabled: enabled,
+      onDeleted: onDeleted,
+      backgroundColor: backgroundColor,
+      selectedColor: selectedColor,
+      padding: padding,
     );
   }
 
-  // ===== GROUP DIALOGS =====
+  // ===== GROUP DIALOGS (Delegated to SocialGroupComponents) =====
 
   /// Show create group dialog
-  static Future<FriendCategory?> showCreateGroupDialog(
-    BuildContext context, {
-    List<UserProfile>? preSelectedMembers,
-    String? initialName,
-    String? initialDescription,
-    VoidCallback? onSuccess,
+  static Future<bool?> showCreateGroupDialog({
+    required BuildContext context,
+    List<String>? preselectedMemberIds,
+    String? initialGroupName,
+    Function(String groupName, List<String> memberIds)? onGroupCreated,
   }) {
-    return SocialFacade.showCreateGroupDialog(
-      context,
-      preSelectedMembers: preSelectedMembers,
-      initialName: initialName,
-      initialDescription: initialDescription,
-      onSuccess: onSuccess,
+    return SocialGroupComponents.showCreateGroupDialog(
+      context: context,
+      preselectedMemberIds: preselectedMemberIds,
+      initialGroupName: initialGroupName,
+      onGroupCreated: onGroupCreated,
     );
   }
 
   /// Show edit group dialog
-  static Future<FriendCategory?> showEditGroupDialog(
-    BuildContext context, {
-    required FriendCategory group,
-    String? currentName,
-    String? currentDescription,
-    VoidCallback? onSuccess,
+  static Future<bool?> showEditGroupDialog({
+    required BuildContext context,
+    required String groupId,
+    String? currentGroupName,
+    List<String>? currentMemberIds,
+    Function(String groupName, List<String> memberIds)? onGroupUpdated,
   }) {
-    return SocialFacade.showEditGroupDialog(
-      context,
-      group: group,
-      currentName: currentName,
-      currentDescription: currentDescription,
-      onSuccess: onSuccess,
+    return SocialGroupComponents.showEditGroupDialog(
+      context: context,
+      groupId: groupId,
+      currentGroupName: currentGroupName,
+      currentMemberIds: currentMemberIds,
+      onGroupUpdated: onGroupUpdated,
     );
   }
 
   /// Show delete group dialog
-  static Future<bool> showDeleteGroupDialog(
-    BuildContext context, {
-    required FriendCategory group,
-    String? groupName,
-    VoidCallback? onSuccess,
+  static Future<bool?> showDeleteGroupDialog({
+    required BuildContext context,
+    required String groupId,
+    required String groupName,
+    VoidCallback? onGroupDeleted,
   }) {
-    return SocialFacade.showDeleteGroupDialog(
-      context,
-      group: group,
+    return SocialGroupComponents.showDeleteGroupDialog(
+      context: context,
+      groupId: groupId,
       groupName: groupName,
-      onSuccess: onSuccess,
+      onGroupDeleted: onGroupDeleted,
     );
   }
 
   /// Show remove member dialog
-  static Future<bool> showRemoveMemberDialog(
-    BuildContext context, {
-    required FriendCategory group,
-    required UserProfile member,
-    String? groupName,
-    VoidCallback? onSuccess,
+  static Future<bool?> showRemoveMemberDialog({
+    required BuildContext context,
+    required String groupId,
+    required String memberId,
+    required String memberName,
+    VoidCallback? onMemberRemoved,
   }) {
-    return SocialFacade.showRemoveMemberDialog(
-      context,
-      group: group,
-      member: member,
-      groupName: groupName,
-      onSuccess: onSuccess,
+    return SocialGroupComponents.showRemoveMemberDialog(
+      context: context,
+      groupId: groupId,
+      memberId: memberId,
+      memberName: memberName,
+      onMemberRemoved: onMemberRemoved,
     );
   }
 
-  // ===== INVITATION TARGET WIDGETS =====
+  // ===== INVITATION TARGET WIDGETS (Delegated to SocialInvitationComponents) =====
 
   /// Build invitation target display
   static Widget invitationTargetDisplay({
     required InvitationTarget target,
-    ImageSize avatarSize = ImageSize.medium,
-    bool showStatus = true,
-    bool showTypeIcon = true,
     VoidCallback? onTap,
+    bool selected = false,
+    bool compact = false,
     Widget? trailing,
+    EdgeInsets? padding,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
   }) {
-    return SocialFacade.invitationTargetDisplay(
+    return SocialInvitationComponents.invitationTargetDisplay(
       target: target,
-      avatarSize: avatarSize,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
       onTap: onTap,
+      selected: selected,
+      compact: compact,
       trailing: trailing,
+      padding: padding,
+      backgroundColor: backgroundColor,
+      borderRadius: borderRadius,
     );
   }
 
   /// Build target card
   static Widget targetCard({
     required InvitationTarget target,
-    bool showStatus = true,
-    bool showTypeIcon = true,
     VoidCallback? onTap,
+    bool selected = false,
     Widget? trailing,
+    bool showType = true,
+    bool showMemberCount = true,
+    EdgeInsets? padding,
+    Color? backgroundColor,
   }) {
-    return SocialFacade.targetCard(
+    return SocialInvitationComponents.targetCard(
       target: target,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
       onTap: onTap,
+      selected: selected,
       trailing: trailing,
+      showType: showType,
+      showMemberCount: showMemberCount,
+      padding: padding,
+      backgroundColor: backgroundColor,
     );
   }
 
   /// Build target chip
   static Widget targetChip({
     required InvitationTarget target,
-    bool showTypeIcon = true,
     VoidCallback? onTap,
+    VoidCallback? onDeleted,
+    bool selected = false,
+    Color? backgroundColor,
+    Color? selectedColor,
+    EdgeInsets? padding,
   }) {
-    return SocialFacade.targetChip(
+    return SocialInvitationComponents.targetChip(
       target: target,
-      showTypeIcon: showTypeIcon,
       onTap: onTap,
+      onDeleted: onDeleted,
+      selected: selected,
+      backgroundColor: backgroundColor,
+      selectedColor: selectedColor,
+      padding: padding,
     );
   }
 
   /// Build target list tile
   static Widget targetListTile({
     required InvitationTarget target,
-    bool showStatus = true,
-    bool showTypeIcon = true,
     VoidCallback? onTap,
+    bool selected = false,
     Widget? trailing,
+    bool showSubtitle = true,
+    bool enabled = true,
+    EdgeInsets? contentPadding,
   }) {
-    return SocialFacade.targetListTile(
+    return SocialInvitationComponents.targetListTile(
       target: target,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
       onTap: onTap,
+      selected: selected,
       trailing: trailing,
+      showSubtitle: showSubtitle,
+      enabled: enabled,
+      contentPadding: contentPadding,
     );
   }
 
   /// Build target badge
   static Widget targetBadge({
     required InvitationTarget target,
-    bool showTypeIcon = true,
+    bool showCount = false,
+    Color? backgroundColor,
+    Color? textColor,
+    EdgeInsets? padding,
+    double? fontSize,
   }) {
-    return SocialFacade.targetBadge(
+    return SocialInvitationComponents.targetBadge(
       target: target,
-      showTypeIcon: showTypeIcon,
+      showCount: showCount,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
+      padding: padding,
+      fontSize: fontSize,
     );
   }
 
   /// Build target list
   static Widget targetList({
     required List<InvitationTarget> targets,
-    bool showStatus = true,
-    bool showTypeIcon = true,
-    Function(InvitationTarget)? onTap,
+    Function(InvitationTarget)? onTargetTap,
+    bool allowMultiSelect = false,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    bool showTrailing = true,
+    ScrollPhysics? physics,
+    EdgeInsets? padding,
   }) {
-    return SocialFacade.targetList(
+    return SocialInvitationComponents.targetList(
       targets: targets,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
-      onTap: onTap,
+      onTargetTap: onTargetTap,
+      allowMultiSelect: allowMultiSelect,
+      selectedTargets: selectedTargets,
+      onSelectionChanged: onSelectionChanged,
+      showTrailing: showTrailing,
+      physics: physics,
+      padding: padding,
     );
   }
 
   /// Build target grid
   static Widget targetGrid({
     required List<InvitationTarget> targets,
-    bool showStatus = true,
-    bool showTypeIcon = true,
-    Function(InvitationTarget)? onTap,
+    Function(InvitationTarget)? onTargetTap,
+    bool allowMultiSelect = false,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    int crossAxisCount = 2,
+    double crossAxisSpacing = 8.0,
+    double mainAxisSpacing = 8.0,
+    EdgeInsets? padding,
   }) {
-    return SocialFacade.targetGrid(
+    return SocialInvitationComponents.targetGrid(
       targets: targets,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
-      onTap: onTap,
+      onTargetTap: onTargetTap,
+      allowMultiSelect: allowMultiSelect,
+      selectedTargets: selectedTargets,
+      onSelectionChanged: onSelectionChanged,
+      crossAxisCount: crossAxisCount,
+      crossAxisSpacing: crossAxisSpacing,
+      mainAxisSpacing: mainAxisSpacing,
+      padding: padding,
     );
   }
 
   /// Build target selector
   static Widget targetSelector({
     required List<InvitationTarget> availableTargets,
-    required Set<String> selectedTargetIds,
-    required Function(InvitationTarget) onTargetToggled,
-    bool allowMultipleSelection = true,
-    String? title,
-    String? emptyMessage,
-    EdgeInsets? padding,
-    bool showSelectAll = true,
-    bool showSearchBar = true,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    bool allowMultiSelect = true,
+    bool showSearch = true,
+    bool showTypeFilters = true,
     String? searchHint,
+    int? maxSelections,
+    Widget? emptyWidget,
+    ScrollPhysics? physics,
   }) {
-    return SocialFacade.targetSelector(
+    return SocialInvitationComponents.targetSelector(
       availableTargets: availableTargets,
-      selectedTargetIds: selectedTargetIds,
-      onTargetToggled: onTargetToggled,
-      allowMultipleSelection: allowMultipleSelection,
-      title: title,
-      emptyMessage: emptyMessage,
-      padding: padding,
-      showSelectAll: showSelectAll,
-      showSearchBar: showSearchBar,
+      selectedTargets: selectedTargets,
+      onSelectionChanged: onSelectionChanged,
+      allowMultiSelect: allowMultiSelect,
+      showSearch: showSearch,
+      showTypeFilters: showTypeFilters,
       searchHint: searchHint,
+      maxSelections: maxSelections,
+      emptyWidget: emptyWidget,
+      physics: physics,
     );
   }
 
   /// Build checkable target list
   static Widget checkableTargetList({
     required List<InvitationTarget> targets,
-    required Set<String> selectedTargetIds,
-    required Function(InvitationTarget) onTargetToggled,
-    bool showTypeIcon = true,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    bool showSelectAll = true,
+    String? selectAllText = 'Välj alla',
+    String? selectNoneText = 'Avmarkera alla',
+    ScrollPhysics? physics,
+    EdgeInsets? padding,
   }) {
-    return SocialFacade.targetList(
+    return SocialInvitationComponents.checkableTargetList(
       targets: targets,
-      showStatus: true,
-      showTypeIcon: showTypeIcon,
-      onTap: onTargetToggled,
+      selectedTargets: selectedTargets,
+      onSelectionChanged: onSelectionChanged,
+      showSelectAll: showSelectAll,
+      selectAllText: selectAllText,
+      selectNoneText: selectNoneText,
+      physics: physics,
+      padding: padding,
     );
   }
 
   /// Build radio target selector
   static Widget radioTargetSelector({
     required List<InvitationTarget> targets,
-    required String? selectedTargetId,
-    required Function(InvitationTarget) onTargetSelected,
-    bool showTypeIcon = true,
+    InvitationTarget? selectedTarget,
+    Function(InvitationTarget?)? onSelectionChanged,
+    ScrollPhysics? physics,
+    EdgeInsets? padding,
   }) {
-    return SocialFacade.targetList(
+    return SocialInvitationComponents.radioTargetSelector(
       targets: targets,
-      showStatus: true,
-      showTypeIcon: showTypeIcon,
-      onTap: onTargetSelected,
+      selectedTarget: selectedTarget,
+      onSelectionChanged: onSelectionChanged,
+      physics: physics,
+      padding: padding,
     );
   }
 
   /// Build target search field
   static Widget targetSearchField({
-    required ValueChanged<String> onChanged,
-    String? hint,
-    String? initialValue,
+    Function(String)? onSearchChanged,
+    String? hint = 'Sök målgrupper...',
+    IconData prefixIcon = Icons.search,
+    bool autofocus = false,
+    TextEditingController? controller,
+    EdgeInsets? margin,
   }) {
-    return SocialFacade.targetSelector(
-      availableTargets: [],
-      selectedTargetIds: {},
-      onTargetToggled: (_) {},
-      searchHint: hint,
-      showSearchBar: true,
+    return SocialInvitationComponents.targetSearchField(
+      onSearchChanged: onSearchChanged,
+      hint: hint,
+      prefixIcon: prefixIcon,
+      autofocus: autofocus,
+      controller: controller,
+      margin: margin,
     );
   }
 
   /// Build target type filters
   static Widget targetTypeFilters({
     required List<String> availableTypes,
-    required Set<String> selectedTypes,
-    required Function(String) onTypeToggled,
+    List<String>? selectedTypes,
+    Function(List<String>)? onTypesChanged,
+    bool allowMultiSelect = true,
+    EdgeInsets? padding,
+    double spacing = 8.0,
   }) {
-    return SocialFacade.targetSelector(
-      availableTargets: [],
-      selectedTargetIds: {},
-      onTargetToggled: (_) {},
-      showSearchBar: false,
+    return SocialInvitationComponents.targetTypeFilters(
+      availableTypes: availableTypes,
+      selectedTypes: selectedTypes,
+      onTypesChanged: onTypesChanged,
+      allowMultiSelect: allowMultiSelect,
+      padding: padding,
+      spacing: spacing,
     );
   }
 
   /// Build quick selection buttons
   static Widget quickSelectionButtons({
-    required VoidCallback onSelectAll,
-    required VoidCallback onDeselectAll,
-    required VoidCallback onInvertSelection,
+    VoidCallback? onSelectAll,
+    VoidCallback? onSelectNone,
+    VoidCallback? onSelectFriends,
+    VoidCallback? onSelectGroups,
+    String? selectAllText = 'Alla',
+    String? selectNoneText = 'Inga',
+    String? selectFriendsText = 'Vänner',
+    String? selectGroupsText = 'Grupper',
+    EdgeInsets? padding,
+    MainAxisAlignment alignment = MainAxisAlignment.spaceEvenly,
   }) {
-    return SocialFacade.quickSelectionButtons(
+    return SocialInvitationComponents.quickSelectionButtons(
       onSelectAll: onSelectAll,
-      onDeselectAll: onDeselectAll,
-      onInvertSelection: onInvertSelection,
-    );
-  }
-
-  /// Build invitation target list
-  static Widget invitationTargetList({
-    required List<InvitationTarget> targets,
-    ImageSize avatarSize = ImageSize.small,
-    bool showStatus = true,
-    bool showTypeIcon = true,
-    Function(InvitationTarget)? onTap,
-    Widget Function(InvitationTarget)? trailingBuilder,
-    EdgeInsets? padding,
-    bool shrinkWrap = false,
-  }) {
-    return SocialFacade.targetList(
-      targets: targets,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
-      onTap: onTap,
-    );
-  }
-
-  /// Build invitation target selector
-  static Widget invitationTargetSelector({
-    required List<InvitationTarget> availableTargets,
-    required Set<String> selectedTargetIds,
-    required Function(InvitationTarget) onTargetToggled,
-    bool allowMultipleSelection = true,
-    String? title,
-    String? emptyMessage,
-    EdgeInsets? padding,
-    bool showSelectAll = true,
-    bool showSearchBar = true,
-    String? searchHint,
-  }) {
-    return SocialFacade.targetSelector(
-      availableTargets: availableTargets,
-      selectedTargetIds: selectedTargetIds,
-      onTargetToggled: onTargetToggled,
-      allowMultipleSelection: allowMultipleSelection,
-      title: title,
-      emptyMessage: emptyMessage,
+      onSelectNone: onSelectNone,
+      onSelectFriends: onSelectFriends,
+      onSelectGroups: onSelectGroups,
+      selectAllText: selectAllText,
+      selectNoneText: selectNoneText,
+      selectFriendsText: selectFriendsText,
+      selectGroupsText: selectGroupsText,
       padding: padding,
-      showSelectAll: showSelectAll,
-      showSearchBar: showSearchBar,
-      searchHint: searchHint,
+      alignment: alignment,
     );
   }
 
-  /// Build invitation target chip
-  static Widget invitationTargetChip({
-    required InvitationTarget target,
-    required bool isSelected,
-    required VoidCallback onTap,
-    bool showTypeIcon = true,
-    bool enabled = true,
-  }) {
-    return SocialFacade.targetChip(
-      target: target,
-      showTypeIcon: showTypeIcon,
-      onTap: onTap,
-    );
-  }
-
-  // ===== SOCIAL BUILDERS =====
+  // ===== SOCIAL BUILDERS (Delegated to SocialBuilderComponents) =====
 
   /// Build social action button
   static Widget socialActionButton({
-    required IconData icon,
-    required String label,
+    required String text,
     required VoidCallback onPressed,
-    bool enabled = true,
-    bool isLoading = false,
+    IconData? icon,
     Color? backgroundColor,
-    Color? foregroundColor,
+    Color? textColor,
     EdgeInsets? padding,
-    double? iconSize,
+    bool outlined = false,
+    bool compact = false,
+    bool loading = false,
   }) {
-    return SocialFacade.socialActionButton(
-      icon: icon,
-      label: label,
+    return SocialBuilderComponents.socialActionButton(
+      text: text,
       onPressed: onPressed,
-      enabled: enabled,
-      isLoading: isLoading,
+      icon: icon,
       backgroundColor: backgroundColor,
-      foregroundColor: foregroundColor,
+      textColor: textColor,
       padding: padding,
-      iconSize: iconSize,
+      outlined: outlined,
+      compact: compact,
+      loading: loading,
     );
   }
 
   /// Build social stats widget
   static Widget socialStats({
     required Map<String, dynamic> stats,
-    bool showLabels = true,
     bool horizontal = true,
     EdgeInsets? padding,
-    Color? textColor,
-    TextStyle? valueStyle,
-    TextStyle? labelStyle,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
+    bool showLabels = true,
+    bool showIcons = true,
   }) {
-    return SocialFacade.socialStats(
+    return SocialBuilderComponents.socialStats(
       stats: stats,
-      showLabels: showLabels,
       horizontal: horizontal,
       padding: padding,
-      textColor: textColor,
-      valueStyle: valueStyle,
-      labelStyle: labelStyle,
+      backgroundColor: backgroundColor,
+      borderRadius: borderRadius,
+      showLabels: showLabels,
+      showIcons: showIcons,
     );
   }
 
-  // ===== SOCIAL HELPERS =====
+  // ===== SOCIAL HELPERS (Delegated to SocialBuilderComponents) =====
 
-  /// Format user display name
-  static String formatUserDisplayName(UserProfile? user, {String fallback = 'Okänd användare'}) {
-    return SocialFacade.formatUserDisplayName(user, fallback: fallback);
+  /// Format user display name consistently
+  static String formatUserDisplayName(dynamic user) {
+    return SocialBuilderComponents.formatUserDisplayName(user);
   }
 
-  /// Check if user is online
-  static bool isUserOnline(UserProfile? user) {
-    return SocialFacade.isUserOnline(user);
+  /// Check if user is currently online
+  static bool isUserOnline(dynamic user) {
+    return SocialBuilderComponents.isUserOnline(user);
   }
 
-  /// Get user avatar URL
-  static String? getUserAvatarUrl(UserProfile? user) {
-    return SocialFacade.getUserAvatarUrl(user);
+  /// Get user avatar URL with fallbacks
+  static String? getUserAvatarUrl(dynamic user) {
+    return SocialBuilderComponents.getUserAvatarUrl(user);
   }
 
   /// Format invitation target display name
   static String formatInvitationTargetDisplayName(InvitationTarget target) {
-    return SocialFacade.formatInvitationTargetDisplayName(target);
+    return SocialBuilderComponents.formatInvitationTargetDisplayName(target);
   }
 
   /// Get invitation target type icon
-  static IconData getInvitationTargetTypeIcon(InvitationTarget target) {
-    return SocialFacade.getInvitationTargetTypeIcon(target);
+  static IconData getInvitationTargetTypeIcon(String targetType) {
+    return SocialBuilderComponents.getInvitationTargetTypeIcon(targetType);
   }
 
-  // ===== INVITATION TARGET STATES =====
+  // ===== INVITATION TARGET STATES (Delegated to SocialInvitationComponents) =====
 
   /// Build target list loading state
-  static Widget targetListLoading() {
-    return const Center(child: CircularProgressIndicator());
+  static Widget targetListLoading({
+    String? text = 'Laddar målgrupper...',
+  }) {
+    return SocialInvitationComponents.targetListLoading(text: text);
   }
 
   /// Build target card loading state
-  static Widget targetCardLoading() {
-    return const Card(child: Center(child: CircularProgressIndicator()));
+  static Widget targetCardLoading({
+    int count = 3,
+  }) {
+    return SocialInvitationComponents.targetCardLoading(count: count);
   }
 
   /// Build target loading error state
   static Widget targetLoadingError({
-    String? message,
+    String? title = 'Kunde inte ladda målgrupper',
+    String? message = 'Kontrollera din internetanslutning och försök igen.',
     VoidCallback? onRetry,
+    String? retryText = 'Försök igen',
+    IconData errorIcon = Icons.error_outline,
   }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(message ?? 'Ett fel inträffade'),
-          if (onRetry != null) ...[
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('Försök igen'),
-            ),
-          ],
-        ],
-      ),
+    return SocialInvitationComponents.targetLoadingError(
+      title: title,
+      message: message,
+      onRetry: onRetry,
+      retryText: retryText,
+      errorIcon: errorIcon,
     );
   }
 
   /// Build no targets available state
   static Widget noTargetsAvailable({
-    String? message,
-    VoidCallback? onAction,
-    String? actionLabel,
+    String? title = 'Inga målgrupper tillgängliga',
+    String? message = 'Du har inte lagt till några vänner eller grupper än.',
+    IconData icon = Icons.group_outlined,
+    VoidCallback? onAddTargets,
+    String? addButtonText = 'Lägg till vänner',
+    bool showAddButton = true,
   }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.people_outline, size: 48, color: Colors.grey),
-          const SizedBox(height: 16),
-          Text(message ?? 'Inga mål tillgängliga'),
-          if (onAction != null && actionLabel != null) ...[
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onAction,
-              child: Text(actionLabel),
-            ),
-          ],
-        ],
-      ),
+    return SocialInvitationComponents.noTargetsAvailable(
+      title: title,
+      message: message,
+      icon: icon,
+      onAddTargets: onAddTargets,
+      addButtonText: addButtonText,
+      showAddButton: showAddButton,
     );
   }
 
   /// Build no search results state
   static Widget noSearchResults({
-    String? searchQuery,
+    String? query,
+    String? title = 'Inga sökresultat',
+    String? message = 'Prova att söka med andra ord eller kontrollera stavningen.',
+    IconData icon = Icons.search_off,
     VoidCallback? onClearSearch,
+    String? clearButtonText = 'Rensa sökning',
+    bool showClearButton = true,
   }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off, size: 48, color: Colors.grey),
-          const SizedBox(height: 16),
-          Text('Inga resultat för "${searchQuery ?? ''}"'),
-          if (onClearSearch != null) ...[
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onClearSearch,
-              child: const Text('Rensa sökning'),
-            ),
-          ],
-        ],
-      ),
+    return SocialInvitationComponents.noSearchResults(
+      query: query,
+      title: title,
+      message: message,
+      icon: icon,
+      onClearSearch: onClearSearch,
+      clearButtonText: clearButtonText,
+      showClearButton: showClearButton,
     );
   }
 
   /// Build targets selected success state
   static Widget targetsSelectedSuccess({
-    required int count,
+    required int selectedCount,
+    String? title = 'Målgrupper valda',
+    String? message = 'Du har valt {count} målgrupper för inbjudan.',
+    IconData icon = Icons.check_circle_outline,
     VoidCallback? onContinue,
+    String? continueButtonText = 'Fortsätt',
+    Color? successColor = Colors.green,
   }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_circle, size: 48, color: Colors.green),
-          const SizedBox(height: 16),
-          Text('$count mål valda'),
-          if (onContinue != null) ...[
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onContinue,
-              child: const Text('Fortsätt'),
-            ),
-          ],
-        ],
-      ),
+    return SocialInvitationComponents.targetsSelectedSuccess(
+      selectedCount: selectedCount,
+      title: title,
+      message: message,
+      icon: icon,
+      onContinue: onContinue,
+      continueButtonText: continueButtonText,
+      successColor: successColor,
     );
   }
 }

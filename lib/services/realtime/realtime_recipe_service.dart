@@ -9,61 +9,22 @@ import '../realtime_sync_service.dart';
 import '../permission_service.dart';
 import '../../core/utils/logger.dart';
 
+// Focused modules
+import 'modules/recipe_content_operations.dart';
+import 'modules/recipe_participants.dart';
 
-/// Typ av recipe-operationer för analytics och logging
-enum RecipeOperationType {
-  createFromExisting,
-  updateBasicInfo,
-  addIngredient,
-  removeIngredient,
-  updateIngredients,
-  addInstruction,
-  removeInstruction,
-  updateInstructions,
-  addImage,
-  removeImage,
-  updateImages,
-  addParticipant,
-  removeParticipant,
-  updatePermissions,
-}
-
-/// Recipe-specifika fel
-class RecipeOperationError {
-  final RecipeOperationType operation;
-  final String message;
-  final String? resourceId;
-  final dynamic originalError;
-
-  RecipeOperationError({
-    required this.operation,
-    required this.message,
-    this.resourceId,
-    this.originalError,
-  });
-
-  @override
-  String toString() => 'RecipeOperationError(${operation.name}): $message';
-}
-
-/// RealtimeRecipeService - SINGLE RESPONSIBILITY: Recipe-specifika operationer
+/// Clean facade for realtime recipe management using focused modules
 ///
-/// Denna service hanterar BARA:
-/// - Recipe business logic för realtidsrecept
-/// - Recipe content validation och formatering
-/// - Recipe-specifika CRUD operationer
-/// - User context för recipe operations
+/// This facade provides a unified API that delegates to focused modules:
+/// - RecipeContentOperations: Recipe content management (ingredients, instructions, images, basic info)
+/// - RecipeParticipants: Participant management (adding, removing, permissions)
 ///
-/// Den hanterar INTE:
-/// - Firebase synkronisering (det gör RealtimeSyncService)
-/// - UI logic eller presentation
-/// - Generic realtidsoperationer
-/// - Permission management (det finns i modellerna)
+/// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class RealtimeRecipeService extends ChangeNotifier {
   final RealtimeSyncService _syncService;
   final PermissionService _permissionService;
 
-  // State för recipe-specifika operationer
+  // State management
   bool _isProcessing = false;
   RecipeOperationError? _lastError;
 
@@ -75,22 +36,19 @@ class RealtimeRecipeService extends ChangeNotifier {
 
   // ===== GETTERS =====
 
-  /// Pågår recipe operation?
+  /// Is recipe operation in progress?
   bool get isProcessing => _isProcessing;
 
-  /// Senaste recipe operation error
+  /// Latest recipe operation error
   RecipeOperationError? get lastError => _lastError;
 
-
-  /// Aktuell användarens display name
+  /// Current user display name
   String get _currentUserDisplayName =>
       _permissionService.currentUser?.displayName ?? 'Okänd användare';
 
   // ===== CORE RECIPE OPERATIONS =====
 
-  /// Skapa realtidsrecept från befintligt recept
-  ///
-  /// Tar ett vanligt Recipe och gör det till ett RealtimeRecipe som kan delas
+  /// Create realtime recipe from existing recipe
   Future<RealtimeRecipe> createRealtimeRecipe({
     required Recipe recipe,
     List<String>? editorUserIds,
@@ -110,7 +68,7 @@ class RealtimeRecipeService extends ChangeNotifier {
     try {
       AppLogger.info('🍳 Skapar realtidsrecept från: ${recipe.title}');
 
-      // Skapa RealtimeRecipe från befintligt recept
+      // Create RealtimeRecipe from existing recipe
       final realtimeRecipe = RealtimeRecipe.fromRecipe(
         recipe: recipe,
         ownerId: userId,
@@ -119,7 +77,7 @@ class RealtimeRecipeService extends ChangeNotifier {
         viewerUserIds: viewerUserIds,
       );
 
-      // Använd RealtimeSyncService för att spara (SRP - vi delegerar synkronisering)
+      // Use RealtimeSyncService for saving (SRP - delegate synchronization)
       await _syncService.updateResource(realtimeRecipe);
 
       AppLogger.success('✅ Realtidsrecept skapat: ${realtimeRecipe.id}');
@@ -137,9 +95,7 @@ class RealtimeRecipeService extends ChangeNotifier {
     }
   }
 
-  /// Titta på realtidsrecept med live updates
-  ///
-  /// Wrapper runt RealtimeSyncService.watchResource för type safety
+  /// Watch realtime recipe with live updates
   Stream<RealtimeRecipe> watchRealtimeRecipe(String resourceId) {
     AppLogger.info('👀 Startar watching av realtidsrecept: $resourceId');
 
@@ -147,7 +103,7 @@ class RealtimeRecipeService extends ChangeNotifier {
       return _syncService.watchResource<RealtimeRecipe>(resourceId);
     } catch (e) {
       _handleError(
-        RecipeOperationType.createFromExisting, // Generisk operation
+        RecipeOperationType.createFromExisting, // Generic operation
         'Kunde inte starta watching av recept: $e',
         resourceId: resourceId,
         originalError: e,
@@ -156,9 +112,9 @@ class RealtimeRecipeService extends ChangeNotifier {
     }
   }
 
-  // ===== RECIPE CONTENT OPERATIONS =====
+  // ===== RECIPE CONTENT OPERATIONS (DELEGATE TO RECIPE_CONTENT_OPERATIONS) =====
 
-  /// Uppdatera grundläggande receptinformation
+  /// Update basic recipe information
   Future<void> updateBasicInfo({
     required String resourceId,
     String? title,
@@ -173,7 +129,8 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.updateBasicInfo,
       operationName: 'uppdatera grundinfo',
-      updateFunction: (recipe) => recipe.updateBasicInfo(
+      updateFunction: (recipe) => RecipeContentOperations.updateBasicInfo(
+        recipe,
         title: title,
         description: description,
         mealType: mealType,
@@ -187,32 +144,25 @@ class RealtimeRecipeService extends ChangeNotifier {
     );
   }
 
-  /// Lägg till ingrediens
+  /// Add ingredient to recipe
   Future<void> addIngredient({
     required String resourceId,
     required String ingredient,
   }) async {
-    if (ingredient.trim().isEmpty) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.addIngredient,
-        message: 'Ingrediens kan inte vara tom',
-        resourceId: resourceId,
-      );
-    }
-
     await _performRecipeOperation(
       resourceId: resourceId,
       operation: RecipeOperationType.addIngredient,
       operationName: 'lägga till ingrediens',
-      updateFunction: (recipe) => recipe.addIngredient(
-        ingredient: ingredient.trim(),
+      updateFunction: (recipe) => RecipeContentOperations.addIngredient(
+        recipe,
+        ingredient: ingredient,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
   }
 
-  /// Ta bort ingrediens
+  /// Remove ingredient from recipe
   Future<void> removeIngredient({
     required String resourceId,
     required int index,
@@ -221,78 +171,52 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.removeIngredient,
       operationName: 'ta bort ingrediens',
-      updateFunction: (recipe) {
-        if (index < 0 || index >= recipe.ingredientsCount) {
-          throw RecipeOperationError(
-            operation: RecipeOperationType.removeIngredient,
-            message: 'Ogiltigt ingrediensindex: $index',
-            resourceId: resourceId,
-          );
-        }
-        return recipe.removeIngredient(
-          index: index,
-          editedBy: _permissionService.currentUserId!,
-          editedByDisplayName: _currentUserDisplayName,
-        );
-      },
+      updateFunction: (recipe) => RecipeContentOperations.removeIngredient(
+        recipe,
+        index: index,
+        editedBy: _permissionService.currentUserId!,
+        editedByDisplayName: _currentUserDisplayName,
+      ),
     );
   }
 
-  /// Uppdatera alla ingredienser
+  /// Update all ingredients
   Future<void> updateIngredients({
     required String resourceId,
     required List<String> ingredients,
   }) async {
-    // Validera ingredienser
-    final validIngredients =
-        ingredients.map((i) => i.trim()).where((i) => i.isNotEmpty).toList();
-
-    if (validIngredients.isEmpty) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.updateIngredients,
-        message: 'Minst en ingrediens krävs',
-        resourceId: resourceId,
-      );
-    }
-
     await _performRecipeOperation(
       resourceId: resourceId,
       operation: RecipeOperationType.updateIngredients,
       operationName: 'uppdatera ingredienser',
-      updateFunction: (recipe) => recipe.updateIngredients(
-        ingredients: validIngredients,
+      updateFunction: (recipe) => RecipeContentOperations.updateIngredients(
+        recipe,
+        ingredients: ingredients,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
   }
 
-  /// Lägg till instruktion
+  /// Add instruction to recipe
   Future<void> addInstruction({
     required String resourceId,
     required String instruction,
   }) async {
-    if (instruction.trim().isEmpty) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.addInstruction,
-        message: 'Instruktion kan inte vara tom',
-        resourceId: resourceId,
-      );
-    }
-
     await _performRecipeOperation(
       resourceId: resourceId,
       operation: RecipeOperationType.addInstruction,
       operationName: 'lägga till instruktion',
-      updateFunction: (recipe) => recipe.addInstruction(
-        instruction: instruction.trim(),
+      updateFunction: (recipe) => RecipeContentOperations.addInstruction(
+        recipe,
+        instruction: instruction,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
   }
 
-  /// Ta bort instruktion
+  /// Remove instruction from recipe
   Future<void> removeInstruction({
     required String resourceId,
     required int index,
@@ -301,78 +225,52 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.removeInstruction,
       operationName: 'ta bort instruktion',
-      updateFunction: (recipe) {
-        if (index < 0 || index >= recipe.instructionsCount) {
-          throw RecipeOperationError(
-            operation: RecipeOperationType.removeInstruction,
-            message: 'Ogiltigt instruktionsindex: $index',
-            resourceId: resourceId,
-          );
-        }
-        return recipe.removeInstruction(
-          index: index,
-          editedBy: _permissionService.currentUserId!,
-          editedByDisplayName: _currentUserDisplayName,
-        );
-      },
+      updateFunction: (recipe) => RecipeContentOperations.removeInstruction(
+        recipe,
+        index: index,
+        editedBy: _permissionService.currentUserId!,
+        editedByDisplayName: _currentUserDisplayName,
+      ),
     );
   }
 
-  /// Uppdatera alla instruktioner
+  /// Update all instructions
   Future<void> updateInstructions({
     required String resourceId,
     required List<String> instructions,
   }) async {
-    // Validera instruktioner
-    final validInstructions =
-        instructions.map((i) => i.trim()).where((i) => i.isNotEmpty).toList();
-
-    if (validInstructions.isEmpty) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.updateInstructions,
-        message: 'Minst en instruktion krävs',
-        resourceId: resourceId,
-      );
-    }
-
     await _performRecipeOperation(
       resourceId: resourceId,
       operation: RecipeOperationType.updateInstructions,
       operationName: 'uppdatera instruktioner',
-      updateFunction: (recipe) => recipe.updateInstructions(
-        instructions: validInstructions,
+      updateFunction: (recipe) => RecipeContentOperations.updateInstructions(
+        recipe,
+        instructions: instructions,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
   }
 
-  /// Lägg till bild
+  /// Add image to recipe
   Future<void> addImage({
     required String resourceId,
     required String imageUrl,
   }) async {
-    if (imageUrl.trim().isEmpty) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.addImage,
-        message: 'Bild-URL kan inte vara tom',
-        resourceId: resourceId,
-      );
-    }
-
     await _performRecipeOperation(
       resourceId: resourceId,
       operation: RecipeOperationType.addImage,
       operationName: 'lägga till bild',
-      updateFunction: (recipe) => recipe.addImage(
-        imageUrl: imageUrl.trim(),
+      updateFunction: (recipe) => RecipeContentOperations.addImage(
+        recipe,
+        imageUrl: imageUrl,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
   }
 
-  /// Ta bort bild
+  /// Remove image from recipe
   Future<void> removeImage({
     required String resourceId,
     required int index,
@@ -381,49 +279,36 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.removeImage,
       operationName: 'ta bort bild',
-      updateFunction: (recipe) {
-        if (index < 0 || index >= recipe.imageCount) {
-          throw RecipeOperationError(
-            operation: RecipeOperationType.removeImage,
-            message: 'Ogiltigt bildindex: $index',
-            resourceId: resourceId,
-          );
-        }
-        return recipe.removeImage(
-          index: index,
-          editedBy: _permissionService.currentUserId!,
-          editedByDisplayName: _currentUserDisplayName,
-        );
-      },
-    );
-  }
-
-  /// Uppdatera alla bilder
-  Future<void> updateImages({
-    required String resourceId,
-    required List<String> imageUrls,
-  }) async {
-    // Validera bild-URLs
-    final validImageUrls = imageUrls
-        .map((url) => url.trim())
-        .where((url) => url.isNotEmpty)
-        .toList();
-
-    await _performRecipeOperation(
-      resourceId: resourceId,
-      operation: RecipeOperationType.updateImages,
-      operationName: 'uppdatera bilder',
-      updateFunction: (recipe) => recipe.updateImages(
-        imageUrls: validImageUrls,
+      updateFunction: (recipe) => RecipeContentOperations.removeImage(
+        recipe,
+        index: index,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),
     );
   }
 
-  // ===== PARTICIPANT MANAGEMENT =====
+  /// Update all images
+  Future<void> updateImages({
+    required String resourceId,
+    required List<String> imageUrls,
+  }) async {
+    await _performRecipeOperation(
+      resourceId: resourceId,
+      operation: RecipeOperationType.updateImages,
+      operationName: 'uppdatera bilder',
+      updateFunction: (recipe) => RecipeContentOperations.updateImages(
+        recipe,
+        imageUrls: imageUrls,
+        editedBy: _permissionService.currentUserId!,
+        editedByDisplayName: _currentUserDisplayName,
+      ),
+    );
+  }
 
-  /// Lägg till deltagare till realtidsrecept
+  // ===== PARTICIPANT MANAGEMENT (DELEGATE TO RECIPE_PARTICIPANTS) =====
+
+  /// Add participant to realtime recipe
   Future<void> addParticipant({
     required String resourceId,
     required String userId,
@@ -434,15 +319,16 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.addParticipant,
       operationName: 'lägga till deltagare',
-      updateFunction: (recipe) => recipe.addParticipant(
-        userId,
-        userDisplayName,
-        permission,
+      updateFunction: (recipe) => RecipeParticipants.addParticipant(
+        recipe,
+        userId: userId,
+        userDisplayName: userDisplayName,
+        permission: permission,
       ),
     );
   }
 
-  /// Ta bort deltagare från realtidsrecept
+  /// Remove participant from realtime recipe
   Future<void> removeParticipant({
     required String resourceId,
     required String userId,
@@ -451,11 +337,14 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.removeParticipant,
       operationName: 'ta bort deltagare',
-      updateFunction: (recipe) => recipe.removeParticipant(userId),
+      updateFunction: (recipe) => RecipeParticipants.removeParticipant(
+        recipe,
+        userId: userId,
+      ),
     );
   }
 
-  /// Uppdatera deltagares behörighet
+  /// Update participant permission
   Future<void> updateParticipantPermission({
     required String resourceId,
     required String userId,
@@ -465,18 +354,17 @@ class RealtimeRecipeService extends ChangeNotifier {
       resourceId: resourceId,
       operation: RecipeOperationType.updatePermissions,
       operationName: 'uppdatera behörighet',
-      updateFunction: (recipe) => recipe.updateParticipantPermission(
-        userId,
-        newPermission,
+      updateFunction: (recipe) => RecipeParticipants.updateParticipantPermission(
+        recipe,
+        userId: userId,
+        newPermission: newPermission,
       ),
     );
   }
 
-  // ===== UTILITY METHODS =====
+  // ===== UTILITY METHODS (DELEGATE TO MODULES) =====
 
-  /// Skapa personlig kopia av realtidsrecept
-  ///
-  /// Använder RealtimeRecipe.createPersonalCopy för att skapa en vanlig Recipe
+  /// Create personal copy of realtime recipe
   Recipe createPersonalCopy(RealtimeRecipe realtimeRecipe) {
     if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
@@ -487,24 +375,25 @@ class RealtimeRecipeService extends ChangeNotifier {
     }
     final userId = _permissionService.currentUserId!;
 
-    AppLogger.info('📋 Skapar personlig kopia av: ${realtimeRecipe.title}');
-
-    return realtimeRecipe.createPersonalCopy(newOwnerId: userId);
+    return RecipeContentOperations.createPersonalCopy(
+      realtimeRecipe,
+      newOwnerId: userId,
+    );
   }
 
-  /// Kontrollera om receptet har ändrats sedan tidpunkt
+  /// Check if recipe has changed since timestamp
   bool hasRecipeChangedSince(RealtimeRecipe recipe, DateTime timestamp) {
-    return recipe.hasChangedSince(timestamp);
+    return RecipeContentOperations.hasRecipeChangedSince(recipe, timestamp);
   }
 
-  /// Få sammanfattning av senaste ändringar
+  /// Get summary of recent changes
   String getRecipeChangesSummary(RealtimeRecipe recipe) {
-    return recipe.getChangesSummary();
+    return RecipeContentOperations.getRecipeChangesSummary(recipe);
   }
 
-  // ===== PRIVATE HELPER METHODS =====
+  // ===== RECIPE OPERATIONS HELPER =====
 
-  /// Generisk metod för att utföra recipe-operationer med error handling
+  /// Generic method for performing recipe operations with error handling
   Future<void> _performRecipeOperation({
     required String resourceId,
     required RecipeOperationType operation,
@@ -525,9 +414,8 @@ class RealtimeRecipeService extends ChangeNotifier {
     try {
       AppLogger.info('🔄 $operationName för recept: $resourceId');
 
-      // Hämta nuvarande recept från cache eller Firebase
-      final currentRecipe =
-          _syncService.getCachedResource<RealtimeRecipe>(resourceId);
+      // Get current recipe from cache or Firebase
+      final currentRecipe = _syncService.getCachedResource<RealtimeRecipe>(resourceId);
 
       if (currentRecipe == null) {
         throw RecipeOperationError(
@@ -537,7 +425,7 @@ class RealtimeRecipeService extends ChangeNotifier {
         );
       }
 
-      // Kontrollera behörighet via PermissionService
+      // Check permission via PermissionService
       if (!_permissionService.canEditRecipe(resourceId)) {
         throw RecipeOperationError(
           operation: operation,
@@ -546,10 +434,10 @@ class RealtimeRecipeService extends ChangeNotifier {
         );
       }
 
-      // Utför uppdatering
+      // Perform update
       final updatedRecipe = updateFunction(currentRecipe);
 
-      // Använd RealtimeSyncService för synkronisering (SRP)
+      // Use RealtimeSyncService for synchronization (SRP)
       await _syncService.updateResource(updatedRecipe);
 
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
@@ -562,13 +450,45 @@ class RealtimeRecipeService extends ChangeNotifier {
     }
   }
 
-  /// Sätt processing state
+  // ===== DELETE OPERATION =====
+
+  /// Delete realtime recipe completely
+  Future<void> deleteRealtimeRecipe(String resourceId) async {
+    if (!_permissionService.isAuthenticated) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.removeParticipant, // Closest operation
+        message: 'Användare inte inloggad',
+        resourceId: resourceId,
+      );
+    }
+
+    AppLogger.info('🗑️ Tar bort realtidsrecept: $resourceId');
+
+    try {
+      // Delegate to RealtimeSyncService (SRP)
+      await _syncService.deleteResource(resourceId, RealtimeResourceType.recipe);
+
+      AppLogger.success('✅ Realtidsrecept borttaget: $resourceId');
+    } catch (e) {
+      _handleError(
+        RecipeOperationType.removeParticipant, // Closest operation
+        'Kunde inte ta bort realtidsrecept: $e',
+        resourceId: resourceId,
+        originalError: e,
+      );
+      rethrow;
+    }
+  }
+
+  // ===== STATE MANAGEMENT =====
+
+  /// Set processing state
   void _setProcessing(bool processing) {
     _isProcessing = processing;
     notifyListeners();
   }
 
-  /// Hantera fel
+  /// Handle error
   void _handleError(
     RecipeOperationType operation,
     String message, {
@@ -586,45 +506,14 @@ class RealtimeRecipeService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Rensa fel
+  /// Clear error
   void _clearError() {
     _lastError = null;
   }
 
-  // ===== PUBLIC UTILITY METHODS =====
-
-  /// Rensa felstatus
+  /// Clear error status (public method)
   void clearError() {
     _clearError();
     notifyListeners();
-  }
-
-  /// Ta bort realtidsrecept helt
-  Future<void> deleteRealtimeRecipe(String resourceId) async {
-    if (!_permissionService.isAuthenticated) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.removeParticipant, // Närmaste operation
-        message: 'Användare inte inloggad',
-        resourceId: resourceId,
-      );
-    }
-
-    AppLogger.info('🗑️ Tar bort realtidsrecept: $resourceId');
-
-    try {
-      // Delegera till RealtimeSyncService (SRP)
-      await _syncService.deleteResource(
-          resourceId, RealtimeResourceType.recipe);
-
-      AppLogger.success('✅ Realtidsrecept borttaget: $resourceId');
-    } catch (e) {
-      _handleError(
-        RecipeOperationType.removeParticipant, // Närmaste operation
-        'Kunde inte ta bort realtidsrecept: $e',
-        resourceId: resourceId,
-        originalError: e,
-      );
-      rethrow;
-    }
   }
 }

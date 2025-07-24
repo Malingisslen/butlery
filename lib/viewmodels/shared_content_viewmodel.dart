@@ -2,23 +2,32 @@
 
 import 'package:flutter/foundation.dart';
 import '../services/social_recipe_service.dart';
-import '../services/permission_service.dart';
 import '../services/unified/unified_friends_service.dart';
 import '../services/unified/unified_shopping_service.dart';
 import '../models/shared_recipe.dart';
 import '../models/shared_menu.dart';
-import '../models/unified/unified_shopping_list.dart'; // ✅ Lägg till för shopping
+import '../models/unified/unified_shopping_list.dart';
 import '../models/user_profile.dart';
-import '../core/injection.dart';
 import '../core/utils/logger.dart';
 
+// Focused modules
+import 'shared_content/content_operations.dart';
+import 'shared_content/social_content_features.dart';
 
+/// Clean facade for shared content management using focused modules
+///
+/// This facade provides a unified API that delegates to focused modules:
+/// - ContentOperations: Content management (loading, filtering, status)
+/// - SocialContentFeatures: Social features (friends, sharing, social interactions)
+///
+/// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class SharedContentViewModel extends ChangeNotifier {
   final SocialRecipeService _socialRecipeService;
   final UnifiedFriendsService _friendsService;
   final UnifiedShoppingService _shoppingService;
 
-  // ==================== BEFINTLIG STATE ====================
+  // ===== STATE MANAGEMENT =====
+
   // Search and filtering state
   String _searchQuery = '';
   int _currentTabIndex = 0;
@@ -28,11 +37,11 @@ class SharedContentViewModel extends ChangeNotifier {
   String? _error;
   bool _isImporting = false;
 
-  // Cached data (filtrerat baserat på dismiss status)
+  // Content state (filtered based on dismiss status)
   List<SharedRecipe> _visibleSharedRecipes = [];
   List<SharedMenu> _visibleSharedMenus = [];
 
-  // ==================== NYT: SHOPPING SHARE STATE ====================
+  // Social features state
   bool _isSharing = false;
   List<UserProfile> _availableFriends = [];
   final List<String> _selectedFriendIds = [];
@@ -45,11 +54,12 @@ class SharedContentViewModel extends ChangeNotifier {
   })  : _socialRecipeService = socialRecipeService,
         _friendsService = friendsService,
         _shoppingService = shoppingService {
-    // ✅ Initiera
     _initialize();
   }
 
-  // ==================== BEFINTLIGA GETTERS ====================
+  // ===== GETTERS =====
+
+  // Basic state getters
   String get searchQuery => _searchQuery;
   int get currentTabIndex => _currentTabIndex;
   bool get isLoading => _isLoading;
@@ -57,97 +67,55 @@ class SharedContentViewModel extends ChangeNotifier {
   bool get hasError => _error != null;
   bool get isImporting => _isImporting;
 
-  // Visible content (excluding dismissed items)
+  // Content getters
   List<SharedRecipe> get visibleSharedRecipes => _visibleSharedRecipes;
   List<SharedMenu> get visibleSharedMenus => _visibleSharedMenus;
 
-  // Content availability checks
-  bool get hasSharedContent =>
-      visibleSharedRecipes.isNotEmpty || visibleSharedMenus.isNotEmpty;
-  bool get hasFilteredContent =>
-      filteredSharedRecipes.isNotEmpty || filteredSharedMenus.isNotEmpty;
+  // Content availability checks (delegate to ContentOperations)
+  bool get hasSharedContent => ContentOperations.hasSharedContent(
+      visibleSharedRecipes, visibleSharedMenus);
 
-  // Filtered content baserat på search query
-  List<SharedRecipe> get filteredSharedRecipes {
-    if (_searchQuery.isEmpty) return visibleSharedRecipes;
+  bool get hasFilteredContent => ContentOperations.hasFilteredContent(
+      filteredSharedRecipes, filteredSharedMenus);
 
-    final query = _searchQuery.toLowerCase();
-    return visibleSharedRecipes.where((sharedRecipe) {
-      final recipe = sharedRecipe.recipeSnapshot;
-      return recipe.title.toLowerCase().contains(query) ||
-          recipe.description.toLowerCase().contains(query) ||
-          sharedRecipe.sharedByDisplayName.toLowerCase().contains(query) ||
-          recipe.ingredients
-              .any((ingredient) => ingredient.toLowerCase().contains(query)) ||
-          (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ??
-              false);
-    }).toList();
-  }
+  // Filtered content (delegate to ContentOperations)
+  List<SharedRecipe> get filteredSharedRecipes => 
+      ContentOperations.filterRecipes(visibleSharedRecipes, _searchQuery);
 
-  List<SharedMenu> get filteredSharedMenus {
-    if (_searchQuery.isEmpty) return visibleSharedMenus;
+  List<SharedMenu> get filteredSharedMenus => 
+      ContentOperations.filterMenus(visibleSharedMenus, _searchQuery);
 
-    final query = _searchQuery.toLowerCase();
-    return visibleSharedMenus.where((sharedMenu) {
-      return sharedMenu.menuTitle.toLowerCase().contains(query) ||
-          sharedMenu.sharedByDisplayName.toLowerCase().contains(query) ||
-          sharedMenu.menuSummary.toLowerCase().contains(query) ||
-          sharedMenu.categories
-              .any((category) => category.toLowerCase().contains(query)) ||
-          sharedMenu.menuSnapshot.values.any((recipes) => recipes.any(
-              (recipe) =>
-                  recipe.title.toLowerCase().contains(query) ||
-                  recipe.description.toLowerCase().contains(query)));
-    }).toList();
-  }
-
-  // Counts för UI badges
+  // Content counts
   int get totalSharedRecipes => visibleSharedRecipes.length;
   int get totalSharedMenus => visibleSharedMenus.length;
 
-  int get unreadRecipesCount {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    if (currentUserId == null) return 0;
+  int get unreadRecipesCount => 
+      ContentOperations.getUnreadRecipesCount(visibleSharedRecipes);
 
-    return visibleSharedRecipes
-        .where((recipe) => !recipe.isViewedBy(currentUserId))
-        .length;
-  }
-
-  int get unreadMenusCount {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    if (currentUserId == null) return 0;
-
-    return visibleSharedMenus
-        .where((menu) => !menu.isViewedBy(currentUserId))
-        .length;
-  }
+  int get unreadMenusCount => 
+      ContentOperations.getUnreadMenusCount(visibleSharedMenus);
 
   int get totalUnreadCount => unreadRecipesCount + unreadMenusCount;
 
-  // ==================== NYA GETTERS FÖR SHOPPING SHARE ====================
+  // Social features getters (delegate to SocialContentFeatures)
   bool get isSharing => _isSharing;
-  List<UserProfile> get availableFriends =>
-      List.unmodifiable(_availableFriends);
+  List<UserProfile> get availableFriends => List.unmodifiable(_availableFriends);
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
   String get shareMessage => _shareMessage;
 
-  bool get hasFriends => _availableFriends.isNotEmpty;
-  bool get hasSelectedFriends => _selectedFriendIds.isNotEmpty;
-  int get selectedFriendsCount => _selectedFriendIds.length;
-  bool get canShareShopping => hasSelectedFriends && !_isSharing;
+  bool get hasFriends => SocialContentFeatures.hasFriends(_availableFriends);
+  bool get hasSelectedFriends => SocialContentFeatures.hasSelectedFriends(_selectedFriendIds);
+  int get selectedFriendsCount => SocialContentFeatures.getSelectedFriendsCount(_selectedFriendIds);
+  bool get canShareShopping => SocialContentFeatures.canShareShopping(_selectedFriendIds, _isSharing);
 
-  List<UserProfile> get selectedFriends {
-    return _availableFriends
-        .where((friend) => _selectedFriendIds.contains(friend.uid))
-        .toList();
-  }
+  List<UserProfile> get selectedFriends => 
+      SocialContentFeatures.getSelectedFriends(_availableFriends, _selectedFriendIds);
 
-  // ==================== BEFINTLIGA METODER (OFÖRÄNDRADE) ====================
+  // ===== INITIALIZATION =====
 
   Future<void> _initialize() async {
     await loadSharedContent();
-    await _loadFriendsForSharing(); // ✅ Ladda vänner för shopping share
+    await _loadFriendsForSharing();
 
     // Listen to service changes
     _socialRecipeService.addListener(_onServiceDataChanged);
@@ -159,56 +127,40 @@ class SharedContentViewModel extends ChangeNotifier {
   }
 
   void _updateVisibleContent() {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    if (currentUserId == null) {
-      _visibleSharedRecipes = [];
-      _visibleSharedMenus = [];
-      return;
-    }
-
-    _visibleSharedRecipes =
-        _socialRecipeService.getVisibleSharedRecipes(currentUserId);
-
-    _visibleSharedMenus =
-        _socialRecipeService.getVisibleSharedMenus(currentUserId);
-
-    AppLogger.info(
-        '👁️ Visible content updated: ${_visibleSharedRecipes.length} recept, ${_visibleSharedMenus.length} menyer');
+    ContentOperations.updateVisibleContent(
+      _socialRecipeService,
+      (recipes) => _visibleSharedRecipes = recipes,
+      (menus) => _visibleSharedMenus = menus,
+    );
   }
 
+  // ===== CONTENT OPERATIONS (DELEGATE TO CONTENT_OPERATIONS) =====
+
+  /// Load shared content
   Future<void> loadSharedContent() async {
-    try {
-      _setLoading(true);
-      _clearError();
-
-      AppLogger.info('🔄 Loading shared content...');
-
-      await _socialRecipeService.refresh();
-      _updateVisibleContent();
-
-      AppLogger.success('✅ Shared content loaded successfully');
-    } catch (e) {
-      AppLogger.error('Failed to load shared content', e);
-      _setError('Kunde inte ladda delat innehåll: ${e.toString()}');
-    } finally {
-      _setLoading(false);
-    }
+    await ContentOperations.loadSharedContent(
+      _socialRecipeService,
+      _setLoading,
+      _setError,
+      _updateVisibleContent,
+    );
   }
 
-  // Search functionality
+  /// Update search query
   void updateSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
     AppLogger.info('🔍 Search query updated: "$query"');
   }
 
+  /// Clear search
   void clearSearch() {
     _searchQuery = '';
     notifyListeners();
     AppLogger.info('🧹 Search cleared');
   }
 
-  // Tab management
+  /// Set tab index
   void setTabIndex(int index) {
     if (index != _currentTabIndex) {
       _currentTabIndex = index;
@@ -217,417 +169,203 @@ class SharedContentViewModel extends ChangeNotifier {
     }
   }
 
-  // ==================== NYA METODER FÖR SHOPPING SHARE ====================
+  // Read status management (delegate to ContentOperations)
+  bool isRecipeRead(SharedRecipe sharedRecipe) => 
+      ContentOperations.isRecipeRead(sharedRecipe);
 
-  /// ✅ Ladda vänner för shopping share functionality
+  bool isMenuRead(SharedMenu sharedMenu) => 
+      ContentOperations.isMenuRead(sharedMenu);
+
+  Future<void> markRecipeAsRead(SharedRecipe sharedRecipe) async {
+    await ContentOperations.markRecipeAsRead(
+      sharedRecipe,
+      _socialRecipeService,
+      _visibleSharedRecipes,
+      (recipes) => _visibleSharedRecipes = recipes,
+      notifyListeners,
+      _updateVisibleContent,
+    );
+  }
+
+  Future<void> markMenuAsRead(SharedMenu sharedMenu) async {
+    await ContentOperations.markMenuAsRead(
+      sharedMenu,
+      _socialRecipeService,
+      _visibleSharedMenus,
+      (menus) => _visibleSharedMenus = menus,
+      notifyListeners,
+      _updateVisibleContent,
+    );
+  }
+
+  // Import status management (delegate to ContentOperations)
+  bool isRecipeImported(SharedRecipe sharedRecipe) => 
+      ContentOperations.isRecipeImported(sharedRecipe);
+
+  bool isMenuImported(SharedMenu sharedMenu) => 
+      ContentOperations.isMenuImported(sharedMenu);
+
+  Future<bool> importSharedRecipe(SharedRecipe sharedRecipe) async {
+    return await ContentOperations.importSharedRecipe(
+      sharedRecipe,
+      _socialRecipeService,
+      _visibleSharedRecipes,
+      (recipes) => _visibleSharedRecipes = recipes,
+      _setImporting,
+      _setError,
+      notifyListeners,
+    );
+  }
+
+  Future<bool> importSharedMenu(SharedMenu sharedMenu) async {
+    return await ContentOperations.importSharedMenu(
+      sharedMenu,
+      _socialRecipeService,
+      _visibleSharedMenus,
+      (menus) => _visibleSharedMenus = menus,
+      _setImporting,
+      _setError,
+      notifyListeners,
+    );
+  }
+
+  // Dismiss functionality (delegate to ContentOperations)
+  Future<bool> dismissSharedRecipe(SharedRecipe sharedRecipe) async {
+    return await ContentOperations.dismissSharedRecipe(
+      sharedRecipe,
+      _socialRecipeService,
+      _visibleSharedRecipes,
+      (recipes) => _visibleSharedRecipes = recipes,
+      _setError,
+      notifyListeners,
+      _updateVisibleContent,
+    );
+  }
+
+  Future<bool> dismissSharedMenu(SharedMenu sharedMenu) async {
+    return await ContentOperations.dismissSharedMenu(
+      sharedMenu,
+      _socialRecipeService,
+      _visibleSharedMenus,
+      (menus) => _visibleSharedMenus = menus,
+      _setError,
+      notifyListeners,
+      _updateVisibleContent,
+    );
+  }
+
+  Future<bool> undismissSharedRecipe(SharedRecipe sharedRecipe) async {
+    return await ContentOperations.undismissSharedRecipe(
+      sharedRecipe,
+      _socialRecipeService,
+      _updateVisibleContent,
+      notifyListeners,
+    );
+  }
+
+  Future<bool> undismissSharedMenu(SharedMenu sharedMenu) async {
+    return await ContentOperations.undismissSharedMenu(
+      sharedMenu,
+      _socialRecipeService,
+      _updateVisibleContent,
+      notifyListeners,
+    );
+  }
+
+  // ===== SOCIAL FEATURES (DELEGATE TO SOCIAL_CONTENT_FEATURES) =====
+
+  /// Load friends for sharing functionality
   Future<void> _loadFriendsForSharing() async {
-    try {
-      _availableFriends = _friendsService.management.getAllFriends();
-      AppLogger.info(
-          '👥 Laddade ${_availableFriends.length} vänner för shopping share');
-    } catch (e) {
-      AppLogger.error('Kunde inte ladda vänner för shopping share', e);
-    }
+    _availableFriends = await SocialContentFeatures.loadFriendsForSharing(_friendsService);
   }
 
-  /// ✅ Toggle friend selection för shopping share
+  /// Toggle friend selection for sharing
   void toggleFriendSelection(String friendId) {
-    if (_selectedFriendIds.contains(friendId)) {
-      _selectedFriendIds.remove(friendId);
-    } else {
-      _selectedFriendIds.add(friendId);
-    }
-    notifyListeners();
-    AppLogger.info(
-        '👤 Friend selection toggled: $friendId, selected: ${_selectedFriendIds.length}');
-  }
-
-  /// ✅ Select all friends
-  void selectAllFriends() {
+    final updatedSelection = SocialContentFeatures.toggleFriendSelection(
+      friendId, _selectedFriendIds);
+    
     _selectedFriendIds.clear();
-    _selectedFriendIds.addAll(_availableFriends.map((f) => f.uid));
+    _selectedFriendIds.addAll(updatedSelection);
     notifyListeners();
-    AppLogger.info('👥 All friends selected: ${_selectedFriendIds.length}');
   }
 
-  /// ✅ Clear all selections
+  /// Select all friends
+  void selectAllFriends() {
+    final allSelected = SocialContentFeatures.selectAllFriends(_availableFriends);
+    _selectedFriendIds.clear();
+    _selectedFriendIds.addAll(allSelected);
+    notifyListeners();
+  }
+
+  /// Clear all friend selections
   void clearAllSelections() {
     _selectedFriendIds.clear();
     notifyListeners();
     AppLogger.info('🧹 All friend selections cleared');
   }
 
-  /// ✅ Update share message
+  /// Update share message
   void updateShareMessage(String message) {
-    _shareMessage = message.trim();
+    _shareMessage = SocialContentFeatures.updateShareMessage(message);
     notifyListeners();
   }
 
-  /// ✅ HUVUDMETOD: Share shopping list with selected friends
+  /// Share shopping list with selected friends
   Future<bool> shareShoppingList(UnifiedShoppingList shoppingList) async {
-    if (!canShareShopping) {
-      _setError('Kan inte dela - välj minst en vän');
-      return false;
+    final result = await SocialContentFeatures.shareShoppingList(
+      shoppingList,
+      _selectedFriendIds,
+      _shareMessage,
+      _shoppingService,
+      _setSharing,
+      _setError,
+      _clearSharingForm,
+    );
+    
+    if (result) {
+      notifyListeners();
     }
-
-    _setSharing(true);
-    _clearError();
-
-    try {
-      AppLogger.info(
-          '🛒 Delar inköpslista "${shoppingList.name}" med ${_selectedFriendIds.length} vänner');
-
-      // Konvertera UnifiedShoppingList till shareData format
-      final shareData = {
-        'type': 'shopping_list',
-        'listId': shoppingList.id,
-        'listName': shoppingList.name,
-        'itemCount': shoppingList.totalItems,
-        'items': shoppingList.items
-            .map((item) => {
-                  'name': item.name,
-                  'amount': item.amount,
-                  'unit': item.unit,
-                  'category': item.category,
-                  'bought': item.bought,
-                })
-            .toList(),
-        'message': _shareMessage.isNotEmpty
-            ? _shareMessage
-            : 'Kolla in min inköpslista!',
-        'sharedAt': DateTime.now().toIso8601String(),
-      };
-      
-      AppLogger.debug('Share data prepared: ${shareData['itemCount']} items');
-
-      // Dela med varje vald vän via UnifiedShoppingService
-      bool allSuccessful = true;
-      for (final friendId in _selectedFriendIds) {
-        try {
-          final success = await _shoppingService.sharing.shareListWithFriend(
-            shoppingList.id,
-            friendId,
-          );
-          if (success) {
-            AppLogger.info('   ✅ Delad med vän: $friendId');
-          } else {
-            AppLogger.error('   ❌ Misslyckades med vän $friendId', 'Sharing failed');
-            allSuccessful = false;
-          }
-        } catch (e) {
-          AppLogger.error('   ❌ Misslyckades med vän $friendId', e);
-          allSuccessful = false;
-        }
-      }
-
-      if (allSuccessful) {
-        // Rensa formulär efter lyckad delning
-        _clearSharingForm();
-        AppLogger.success('🎉 Shopping list delning slutförd framgångsrikt');
-        return true;
-      } else {
-        _setError('Vissa delningar misslyckades');
-        return false;
-      }
-    } catch (e) {
-      _setError('Misslyckades med delning: $e');
-      AppLogger.error('❌ Shopping list delning misslyckades', e);
-      return false;
-    } finally {
-      _setSharing(false);
-    }
+    
+    return result;
   }
 
-  /// ✅ Clear sharing form after successful share
-  void _clearSharingForm() {
-    _shareMessage = '';
-    _selectedFriendIds.clear();
-    // Don't notify here, calling method will notify
+  /// Get sharing summary for confirmation
+  String getSharingSummary() {
+    return SocialContentFeatures.getSharingSummary(_availableFriends, _selectedFriendIds);
   }
 
-  /// ✅ Refresh friends list
+  /// Refresh friends list
   Future<void> refreshFriends() async {
-    AppLogger.info('🔄 Refreshing friends for shopping share');
-    await _loadFriendsForSharing();
+    _availableFriends = await SocialContentFeatures.refreshFriends(_friendsService);
     notifyListeners();
   }
 
-  /// ✅ Get sharing summary for confirmation
-  String getSharingSummary() {
-    final friendNames = selectedFriends.map((f) => f.displayName).join(', ');
-    return 'Dela med: $friendNames';
+  /// Clear sharing form after successful share
+  void _clearSharingForm() {
+    final clearedForm = SocialContentFeatures.clearSharingForm();
+    _shareMessage = clearedForm['shareMessage'] as String;
+    _selectedFriendIds.clear();
+    _selectedFriendIds.addAll(clearedForm['selectedFriendIds'] as List<String>);
   }
 
-  // ==================== BEFINTLIGA METODER FÖR RECIPES/MENUS (OFÖRÄNDRADE) ====================
+  // ===== REFRESH =====
 
-  // Read status management
-  bool isRecipeRead(SharedRecipe sharedRecipe) {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    return currentUserId != null && sharedRecipe.isViewedBy(currentUserId);
-  }
-
-  bool isMenuRead(SharedMenu sharedMenu) {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    return currentUserId != null && sharedMenu.isViewedBy(currentUserId);
-  }
-
-  Future<void> markRecipeAsRead(SharedRecipe sharedRecipe) async {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    if (currentUserId == null || sharedRecipe.isViewedBy(currentUserId)) {
-      return;
-    }
-
-    try {
-      final index =
-          _visibleSharedRecipes.indexWhere((r) => r.id == sharedRecipe.id);
-      if (index >= 0) {
-        _visibleSharedRecipes[index] = sharedRecipe.markViewedBy(currentUserId);
-        notifyListeners();
-      }
-
-      await _socialRecipeService.markSharedRecipeAsViewed(
-          sharedRecipe.id, currentUserId);
-
-      AppLogger.info(
-          '✅ Recipe marked as read: ${sharedRecipe.recipeSnapshot.title}');
-    } catch (e) {
-      AppLogger.error('Failed to mark recipe as read', e);
-      _updateVisibleContent();
-      notifyListeners();
-    }
-  }
-
-  Future<void> markMenuAsRead(SharedMenu sharedMenu) async {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    if (currentUserId == null || sharedMenu.isViewedBy(currentUserId)) {
-      return;
-    }
-
-    try {
-      final index =
-          _visibleSharedMenus.indexWhere((m) => m.id == sharedMenu.id);
-      if (index >= 0) {
-        _visibleSharedMenus[index] = sharedMenu.markViewedBy(currentUserId);
-        notifyListeners();
-      }
-
-      await _socialRecipeService.markSharedMenuAsViewed(
-          sharedMenu.id, currentUserId);
-
-      AppLogger.info('✅ Menu marked as read: ${sharedMenu.menuTitle}');
-    } catch (e) {
-      AppLogger.error('Failed to mark menu as read', e);
-      _updateVisibleContent();
-      notifyListeners();
-    }
-  }
-
-  // Import status management
-  bool isRecipeImported(SharedRecipe sharedRecipe) {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    return currentUserId != null && sharedRecipe.isImportedBy(currentUserId);
-  }
-
-  bool isMenuImported(SharedMenu sharedMenu) {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    return currentUserId != null && sharedMenu.isImportedBy(currentUserId);
-  }
-
-  // Import functionality
-  Future<bool> importSharedRecipe(SharedRecipe sharedRecipe) async {
-    try {
-      _setImporting(true);
-      _clearError();
-
-      final success =
-          await _socialRecipeService.importSharedRecipe(sharedRecipe.id);
-
-      if (success) {
-        final currentUserId = sl<PermissionService>().currentUserId;
-        if (currentUserId != null) {
-          final index =
-              _visibleSharedRecipes.indexWhere((r) => r.id == sharedRecipe.id);
-          if (index >= 0) {
-            _visibleSharedRecipes[index] =
-                sharedRecipe.markImportedBy(currentUserId);
-            notifyListeners();
-          }
-        }
-
-        AppLogger.success(
-            '✅ Recipe imported: ${sharedRecipe.recipeSnapshot.title}');
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('Failed to import recipe', e);
-      _setError('Kunde inte importera recept: ${e.toString()}');
-      return false;
-    } finally {
-      _setImporting(false);
-    }
-  }
-
-  Future<bool> importSharedMenu(SharedMenu sharedMenu) async {
-    try {
-      _setImporting(true);
-      _clearError();
-
-      final success =
-          await _socialRecipeService.importSharedMenu(sharedMenu.id);
-
-      if (success) {
-        final currentUserId = sl<PermissionService>().currentUserId;
-        if (currentUserId != null) {
-          final index =
-              _visibleSharedMenus.indexWhere((m) => m.id == sharedMenu.id);
-          if (index >= 0) {
-            _visibleSharedMenus[index] =
-                sharedMenu.markImportedBy(currentUserId);
-            notifyListeners();
-          }
-        }
-
-        AppLogger.success('✅ Menu imported: ${sharedMenu.menuTitle}');
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('Failed to import menu', e);
-      _setError('Kunde inte importera meny: ${e.toString()}');
-      return false;
-    } finally {
-      _setImporting(false);
-    }
-  }
-
-  // Dismiss functionality
-  Future<bool> dismissSharedRecipe(SharedRecipe sharedRecipe) async {
-    try {
-      _clearError();
-
-      _visibleSharedRecipes.removeWhere((r) => r.id == sharedRecipe.id);
-      notifyListeners();
-
-      final success =
-          await _socialRecipeService.dismissSharedRecipe(sharedRecipe.id);
-
-      if (!success) {
-        _updateVisibleContent();
-        notifyListeners();
-
-        if (_socialRecipeService.hasError) {
-          _setError(_socialRecipeService.error!);
-        }
-      } else {
-        AppLogger.success(
-            '✅ Recipe dismissed: ${sharedRecipe.recipeSnapshot.title}');
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('Failed to dismiss recipe', e);
-      _setError('Kunde inte dölja recept: ${e.toString()}');
-
-      _updateVisibleContent();
-      notifyListeners();
-
-      return false;
-    }
-  }
-
-  Future<bool> dismissSharedMenu(SharedMenu sharedMenu) async {
-    try {
-      _clearError();
-
-      _visibleSharedMenus.removeWhere((m) => m.id == sharedMenu.id);
-      notifyListeners();
-
-      final success =
-          await _socialRecipeService.dismissSharedMenu(sharedMenu.id);
-
-      if (!success) {
-        _updateVisibleContent();
-        notifyListeners();
-
-        if (_socialRecipeService.hasError) {
-          _setError(_socialRecipeService.error!);
-        }
-      } else {
-        AppLogger.success('✅ Menu dismissed: ${sharedMenu.menuTitle}');
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('Failed to dismiss menu', e);
-      _setError('Kunde inte dölja meny: ${e.toString()}');
-
-      _updateVisibleContent();
-      notifyListeners();
-
-      return false;
-    }
-  }
-
-  Future<bool> undismissSharedRecipe(SharedRecipe sharedRecipe) async {
-    try {
-      final success =
-          await _socialRecipeService.undismissSharedRecipe(sharedRecipe.id);
-
-      if (success) {
-        _updateVisibleContent();
-        notifyListeners();
-
-        AppLogger.success(
-            '✅ Recipe restored: ${sharedRecipe.recipeSnapshot.title}');
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('Failed to restore recipe', e);
-      return false;
-    }
-  }
-
-  Future<bool> undismissSharedMenu(SharedMenu sharedMenu) async {
-    try {
-      final success =
-          await _socialRecipeService.undismissSharedMenu(sharedMenu.id);
-
-      if (success) {
-        _updateVisibleContent();
-        notifyListeners();
-
-        AppLogger.success('✅ Menu restored: ${sharedMenu.menuTitle}');
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('Failed to restore menu', e);
-      return false;
-    }
-  }
-
-  // Refresh functionality
+  /// Refresh all content and friends
   Future<void> refresh() async {
     await loadSharedContent();
-    await refreshFriends(); // ✅ Refresh friends också
+    await refreshFriends();
   }
 
-  // ==================== HELPER METHODS ====================
+  // ===== STATE MANAGEMENT HELPERS =====
 
   void clearError() {
     _error = null;
     notifyListeners();
   }
 
-  void _setError(String message) {
+  void _setError(String? message) {
     _error = message;
     notifyListeners();
-  }
-
-  void _clearError() {
-    _error = null;
   }
 
   void _setLoading(bool loading) {

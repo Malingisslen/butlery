@@ -1,0 +1,472 @@
+// lib/services/notifications/modules/notification_batch_manager.dart
+
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../notification_types.dart';
+import '../notification_repository.dart';
+import '../../../core/utils/logger.dart';
+
+/// Focused module for notification batching and spam prevention
+/// 
+/// This module handles ONLY batching and spam prevention responsibilities:
+/// - Intelligent notification grouping to prevent spam
+/// - Batch window management and timer coordination
+/// - Spam detection based on frequency and content similarity
+/// - Rate limiting per user and per category
+/// - Batch processing and queue management
+/// 
+/// ❌ DOES NOT CONTAIN: FCM token management, content generation, preferences, analytics
+class NotificationBatchManager {
+  final String _userId;
+  final NotificationRepository _repository;
+  
+  // Batch timers for different notification types
+  final Map<String, Timer> _batchTimers = {};
+  
+  // Rate limiting tracking
+  final Map<String, List<DateTime>> _rateLimitingTracker = {};
+  
+  // Batch processing state
+  bool _isBatchProcessing = false;
+  
+  // Optional callback for when batches are ready to send
+  Future<void> Function(NotificationBatch)? _sendBatchCallback;
+
+  NotificationBatchManager({
+    required FirebaseFirestore firestore,
+    required String userId,
+    required NotificationRepository repository,
+    Future<void> Function(NotificationBatch)? sendBatchCallback,
+  }) : _userId = userId, 
+       _repository = repository,
+       _sendBatchCallback = sendBatchCallback;
+
+  // ===== BATCH CREATION AND MANAGEMENT =====
+
+  /// Add notification to appropriate batch queue
+  /// 
+  /// This is the main entry point for batchable notifications
+  Future<bool> addToBatch({
+    required List<String> targetUserIds,
+    required NotificationStrategy strategy,
+    required Map<String, String> variables,
+    Map<String, dynamic>? additionalData,
+    String? imageUrl,
+    List<NotificationAction>? actions,
+  }) async {
+    try {
+      AppLogger.debug('🔔 Adding notification to batch for ${targetUserIds.length} users');
+
+      // Check if notification should be batched at all
+      if (strategy.type != NotificationType.batchable) {
+        AppLogger.debug('📋 Strategy is not batchable, skipping batch processing');
+        return false;
+      }
+
+      bool anyBatched = false;
+
+      for (final targetUserId in targetUserIds) {
+        // Check rate limiting first
+        if (_isRateLimited(targetUserId, strategy.category)) {
+          AppLogger.warning('⚠️ Rate limit exceeded for user $targetUserId in ${strategy.category.name}');
+          continue;
+        }
+
+        // Generate batch key for this user/category/time window
+        final batchKey = _generateBatchKey(targetUserId, strategy);
+        
+        // Create notification template
+        final template = NotificationTemplate.fromStrategy(
+          strategy,
+          variables,
+          additionalData: additionalData,
+          imageUrl: imageUrl,
+          actions: actions,
+        );
+
+        // Add to batch in repository
+        await _repository.addToBatch(
+          batchKey: batchKey,
+          notification: template,
+          batchWindow: strategy.batchWindow ?? const Duration(minutes: 5),
+        );
+
+        // Set up batch timer if not already running
+        _scheduleBatchProcessing(batchKey, strategy);
+        
+        // Track for rate limiting
+        _trackNotificationForRateLimit(targetUserId, strategy.category);
+        
+        anyBatched = true;
+        AppLogger.debug('✅ Added notification to batch: $batchKey');
+      }
+
+      if (anyBatched) {
+        AppLogger.success('✅ Successfully batched notification for ${targetUserIds.length} users');
+      }
+      
+      return anyBatched;
+    } catch (e) {
+      AppLogger.error('❌ Failed to add notification to batch', e);
+      return false;
+    }
+  }
+
+  /// Force process a specific batch (for testing or manual trigger)
+  Future<void> forceBatchProcessing(String batchKey) async {
+    AppLogger.info('🔄 Manually forcing batch processing for: $batchKey');
+    await _processBatch(batchKey);
+  }
+
+  /// Get current batch statistics
+  Map<String, dynamic> getBatchStatistics() {
+    return {
+      'active_batch_timers': _batchTimers.length,
+      'batch_keys': _batchTimers.keys.toList(),
+      'is_processing': _isBatchProcessing,
+      'rate_limit_tracking': _rateLimitingTracker.map((key, value) => 
+          MapEntry(key, value.length)),
+    };
+  }
+
+  // ===== SPAM PREVENTION AND RATE LIMITING =====
+
+  /// Check if user has exceeded rate limit for category
+  bool _isRateLimited(String userId, NotificationCategory category) {
+    final key = '${userId}_${category.name}';
+    final now = DateTime.now();
+    final window = const Duration(minutes: 15); // 15-minute window
+    
+    // Get recent notifications for this user/category
+    final recentNotifications = _rateLimitingTracker[key] ?? [];
+    
+    // Remove old entries outside the window
+    recentNotifications.removeWhere((timestamp) => 
+        now.difference(timestamp) > window);
+    
+    // Check limits based on category
+    int maxNotifications;
+    switch (category) {
+      case NotificationCategory.friends:
+        maxNotifications = 10; // Friend activities can be frequent
+        break;
+      case NotificationCategory.recipes:
+        maxNotifications = 8;  // Recipe comments/likes
+        break;
+      case NotificationCategory.collaboration:
+        maxNotifications = 15; // Real-time collaboration
+        break;
+      case NotificationCategory.shopping:
+        maxNotifications = 5;  // Shopping updates
+        break;
+      case NotificationCategory.social:
+        maxNotifications = 6;  // General social activity
+        break;
+      case NotificationCategory.system:
+        maxNotifications = 3;  // System notifications are rare
+        break;
+    }
+
+    final isLimited = recentNotifications.length >= maxNotifications;
+    
+    if (isLimited) {
+      AppLogger.warning('⚠️ Rate limit exceeded: ${recentNotifications.length}/$maxNotifications for $key');
+    }
+    
+    return isLimited;
+  }
+
+  /// Track notification for rate limiting
+  void _trackNotificationForRateLimit(String userId, NotificationCategory category) {
+    final key = '${userId}_${category.name}';
+    final now = DateTime.now();
+    
+    _rateLimitingTracker.putIfAbsent(key, () => []).add(now);
+    
+    // Keep only recent entries to prevent memory bloat
+    final window = const Duration(minutes: 15);
+    _rateLimitingTracker[key]!.removeWhere((timestamp) => 
+        now.difference(timestamp) > window);
+  }
+
+  /// Detect potential spam patterns
+  bool _isSpamPattern(List<NotificationTemplate> notifications) {
+    if (notifications.length < 3) return false;
+    
+    // Check for identical content (potential spam)
+    final uniqueTitles = notifications.map((n) => n.title).toSet();
+    if (uniqueTitles.length == 1 && notifications.length > 5) {
+      AppLogger.warning('⚠️ Detected potential spam pattern: identical titles');
+      return true;
+    }
+    
+    // Check for rapid succession (all within 1 minute)
+    final timestamps = notifications
+        .map((n) => DateTime.parse(n.data['timestamp'] as String))
+        .toList()
+        ..sort();
+    
+    if (timestamps.isNotEmpty) {
+      final timeSpan = timestamps.last.difference(timestamps.first);
+      if (timeSpan.inMinutes < 1 && notifications.length > 8) {
+        AppLogger.warning('⚠️ Detected potential spam pattern: rapid succession');
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  // ===== BATCH PROCESSING =====
+
+  /// Process all pending batches that are ready
+  Future<void> processAllPendingBatches() async {
+    if (_isBatchProcessing) {
+      AppLogger.debug('📋 Batch processing already in progress');
+      return;
+    }
+
+    _isBatchProcessing = true;
+
+    try {
+      AppLogger.info('🔔 Processing all pending notification batches');
+
+      final batches = await _repository.getPendingBatches();
+      int processedCount = 0;
+      int errorCount = 0;
+
+      for (final batch in batches) {
+        try {
+          await _processBatch(batch.batchKey);
+          processedCount++;
+        } catch (e) {
+          AppLogger.error('❌ Failed to process batch ${batch.batchKey}', e);
+          errorCount++;
+        }
+      }
+
+      AppLogger.success('✅ Processed $processedCount batches, $errorCount errors');
+    } catch (e) {
+      AppLogger.error('❌ Failed to process pending batches', e);
+    } finally {
+      _isBatchProcessing = false;
+    }
+  }
+
+  /// Schedule batch processing with timer
+  void _scheduleBatchProcessing(String batchKey, NotificationStrategy strategy) {
+    // Don't create duplicate timers
+    if (_batchTimers.containsKey(batchKey)) {
+      AppLogger.debug('📋 Batch timer already exists for: $batchKey');
+      return;
+    }
+
+    final batchWindow = strategy.batchWindow ?? const Duration(minutes: 5);
+    
+    _batchTimers[batchKey] = Timer(batchWindow, () {
+      AppLogger.info('⏰ Batch timer expired, processing: $batchKey');
+      _processBatch(batchKey);
+    });
+
+    AppLogger.debug('⏰ Scheduled batch processing for $batchKey in ${batchWindow.inMinutes} minutes');
+  }
+
+  /// Process a specific batch of notifications
+  Future<void> _processBatch(String batchKey) async {
+    try {
+      AppLogger.info('🔔 Processing notification batch: $batchKey');
+
+      // Get the batch from repository
+      final batches = await _repository.getPendingBatches();
+      final matchingBatches = batches.where((b) => b.batchKey == batchKey);
+      final batch = matchingBatches.isNotEmpty ? matchingBatches.first : null;
+      
+      if (batch == null) {
+        AppLogger.warning('⚠️ Batch not found: $batchKey');
+        _cleanupBatchTimer(batchKey);
+        return;
+      }
+
+      // Check for spam patterns
+      if (_isSpamPattern(batch.notifications)) {
+        AppLogger.warning('⚠️ Discarding batch due to spam pattern: $batchKey');
+        await _repository.removeBatch(batchKey);
+        _cleanupBatchTimer(batchKey);
+        return;
+      }
+
+      // Build combined notification from batch
+      final combinedNotification = _buildBatchedNotification(batch.notifications);
+      
+      // Create updated batch with combined notification
+      final processedBatch = NotificationBatch(
+        batchKey: batch.batchKey,
+        userId: batch.userId,
+        notifications: [combinedNotification],
+        createdAt: batch.createdAt,
+        scheduledFor: batch.scheduledFor,
+      );
+
+      // Use callback if provided
+      if (_sendBatchCallback != null) {
+        await _sendBatchCallback!(processedBatch);
+      } else {
+        AppLogger.info('📋 [DEV] Would send batched notification to ${batch.userId}: ${combinedNotification.title}');
+      }
+      
+      // Remove the processed batch
+      await _repository.removeBatch(batchKey);
+      _cleanupBatchTimer(batchKey);
+
+      AppLogger.success('✅ Processed batch with ${batch.notifications.length} notifications');
+    } catch (e) {
+      AppLogger.error('❌ Failed to process batch: $batchKey', e);
+      _cleanupBatchTimer(batchKey);
+      rethrow;
+    }
+  }
+
+  /// Build combined notification from multiple templates
+  NotificationTemplate _buildBatchedNotification(List<NotificationTemplate> notifications) {
+    if (notifications.isEmpty) {
+      throw ArgumentError('Cannot batch empty notification list');
+    }
+
+    if (notifications.length == 1) {
+      return notifications.first;
+    }
+
+    // Combine multiple notifications into a summary
+    final firstNotification = notifications.first;
+    final category = firstNotification.data['category'] as String;
+    
+    String title;
+    String body;
+    
+    // Build localized batched content based on category
+    switch (category) {
+      case 'NotificationCategory.recipes':
+        title = 'Ny receptaktivitet';
+        body = '${notifications.length} nya händelser på dina recept';
+        break;
+      case 'NotificationCategory.friends':
+        title = 'Vänaktivitet';
+        body = '${notifications.length} nya aktiviteter från dina vänner';
+        break;
+      case 'NotificationCategory.collaboration':
+        title = 'Samarbetsaktivitet';
+        body = '${notifications.length} nya samarbetshändelser';
+        break;
+      case 'NotificationCategory.shopping':
+        title = 'Inköpslistor';
+        body = '${notifications.length} uppdateringar av inköpslistor';
+        break;
+      case 'NotificationCategory.social':
+        title = 'Social aktivitet';
+        body = '${notifications.length} nya sociala händelser';
+        break;
+      default:
+        title = 'Ny aktivitet';
+        body = '${notifications.length} nya händelser i Butlery';
+    }
+
+    // Extract unique data from all notifications
+    final combinedData = <String, dynamic>{
+      ...firstNotification.data,
+      'batched': true,
+      'count': notifications.length,
+      'batch_categories': notifications
+          .map((n) => n.data['category'])
+          .toSet()
+          .toList(),
+      'batch_types': notifications
+          .map((n) => n.data['type'])
+          .toSet()
+          .toList(),
+    };
+
+    return NotificationTemplate(
+      title: title,
+      body: body,
+      data: combinedData,
+      imageUrl: firstNotification.imageUrl, // Use first image if any
+      actions: firstNotification.actions,   // Use first actions if any
+    );
+  }
+
+  /// Generate batch key for grouping notifications
+  String _generateBatchKey(String targetUserId, NotificationStrategy strategy) {
+    final now = DateTime.now();
+    final batchWindow = strategy.batchWindow ?? const Duration(minutes: 5);
+    
+    // Create time-based grouping (e.g., 5-minute windows)
+    final windowStart = DateTime(
+      now.year, 
+      now.month, 
+      now.day, 
+      now.hour,
+      (now.minute ~/ batchWindow.inMinutes) * batchWindow.inMinutes,
+    );
+    
+    final windowKey = '${windowStart.millisecondsSinceEpoch ~/ 1000}';
+    return '${strategy.category.name}_${targetUserId}_$windowKey';
+  }
+
+  /// Clean up batch timer
+  void _cleanupBatchTimer(String batchKey) {
+    final timer = _batchTimers.remove(batchKey);
+    timer?.cancel();
+    AppLogger.debug('🧹 Cleaned up batch timer: $batchKey');
+  }
+
+  // ===== LIFECYCLE METHODS =====
+
+  /// Set callback for when batches are ready to send
+  void setSendBatchCallback(Future<void> Function(NotificationBatch) callback) {
+    _sendBatchCallback = callback;
+  }
+
+  /// Clean up old rate limiting data
+  void cleanupRateLimitData() {
+    try {
+      final now = DateTime.now();
+      final window = const Duration(minutes: 15);
+      int removedEntries = 0;
+
+      _rateLimitingTracker.forEach((key, timestamps) {
+        final initialSize = timestamps.length;
+        timestamps.removeWhere((timestamp) => 
+            now.difference(timestamp) > window);
+        removedEntries += initialSize - timestamps.length;
+      });
+
+      // Remove empty entries
+      _rateLimitingTracker.removeWhere((key, timestamps) => timestamps.isEmpty);
+
+      if (removedEntries > 0) {
+        AppLogger.debug('🧹 Cleaned up $removedEntries old rate limit entries');
+      }
+    } catch (e) {
+      AppLogger.error('❌ Failed to cleanup rate limit data', e);
+    }
+  }
+
+  /// Dispose resources and cleanup
+  void dispose() {
+    AppLogger.info('🔔 Disposing NotificationBatchManager for user $_userId');
+
+    // Cancel all batch timers
+    for (final timer in _batchTimers.values) {
+      timer.cancel();
+    }
+    _batchTimers.clear();
+
+    // Clear rate limiting data
+    _rateLimitingTracker.clear();
+
+    // Clear callback
+    _sendBatchCallback = null;
+
+    AppLogger.debug('✅ NotificationBatchManager disposed');
+  }
+}

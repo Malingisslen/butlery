@@ -1,0 +1,378 @@
+// lib/services/unified/operations/modules/recipe_social_stats.dart
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../models/recipe_unified.dart';
+import '../../../../core/utils/logger.dart';
+import '../../../notifications/notification_service.dart';
+
+// Focused modules
+import 'recipe_rating_system.dart';
+import 'social_engagement_metrics.dart';
+import 'rating_statistics.dart';
+import 'rating_notifications.dart';
+
+/// Clean facade for recipe social statistics using focused modules
+///
+/// This facade provides a unified API that delegates to focused modules:
+/// - RecipeRatingSystem: Individual rating operations and validation
+/// - SocialEngagementMetrics: Engagement scoring and social statistics
+/// - RatingStatistics: Rating aggregation and top-rated queries
+/// - RatingNotifications: Rating notification management
+///
+/// ❌ DOES NOT CONTAIN: Complex implementation details, direct Firebase operations
+class RecipeSocialStats {
+  final dynamic _parent; // UnifiedRecipeService
+  final FirebaseFirestore _firestore;
+  final NotificationService? _notificationService;
+
+  RecipeSocialStats(this._parent, this._firestore, this._notificationService);
+
+  // ===== GETTERS FOR DELEGATION =====
+
+  String? get currentUserId => _parent.currentUserId;
+  String get currentUserDisplayName => _parent.currentUserDisplayName ?? 'Okänd användare';
+  List<Recipe> get recipes => _parent.recipes;
+
+  Recipe? _getRecipe(String recipeId) {
+    return recipes.where((r) => r.id == recipeId).firstOrNull;
+  }
+
+  // ===== RECIPE RATING SYSTEM (DELEGATE TO RECIPE_RATING_SYSTEM) =====
+
+  /// Rate a recipe
+  Future<bool> rateRecipe({
+    required String recipeId,
+    required double rating,
+    String? review,
+  }) async {
+    if (currentUserId == null) {
+      AppLogger.error('❌ User must be logged in to rate recipes');
+      return false;
+    }
+
+    final result = await RecipeRatingSystem.rateRecipe(
+      firestore: _firestore,
+      recipeId: recipeId,
+      rating: rating,
+      currentUserId: currentUserId!,
+      currentUserDisplayName: currentUserDisplayName,
+      review: review,
+      canRateValidator: _canRateRecipe,
+      recipeGetter: _getRecipe,
+    );
+
+    if (result) {
+      // Update aggregated rating using RatingStatistics
+      await RatingStatistics.updateRecipeRatingAggregate(
+        firestore: _firestore,
+        recipeId: recipeId,
+      );
+
+      // Send notification using RatingNotifications
+      final recipe = _getRecipe(recipeId);
+      if (recipe != null) {
+        final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+        if (ownerId != currentUserId) {
+          await RatingNotifications.sendRatingNotification(
+            notificationService: _notificationService,
+            recipe: recipe,
+            rating: rating,
+            raterName: currentUserDisplayName,
+            review: review,
+          );
+        }
+      }
+
+      // Log rating for analytics
+      _logRatingAction(
+        recipeId: recipeId,
+        rating: rating,
+        hasReview: review?.isNotEmpty ?? false,
+      );
+    }
+
+    return result;
+  }
+
+  /// Get user's rating for a specific recipe
+  Future<Map<String, dynamic>?> getUserRating(String recipeId) async {
+    if (currentUserId == null) return null;
+
+    return RecipeRatingSystem.getUserRating(
+      firestore: _firestore,
+      recipeId: recipeId,
+      userId: currentUserId!,
+    );
+  }
+
+  // ===== RECIPE STATISTICS (DELEGATE TO RATING_STATISTICS) =====
+
+  /// Get recipe rating statistics
+  Future<Map<String, dynamic>> getRecipeStats(String recipeId) async {
+    final recipe = _getRecipe(recipeId);
+    if (recipe == null) {
+      AppLogger.warning('⚠️ Recipe not found for statistics');
+      return {'error': 'Recipe not found'};
+    }
+
+    try {
+      // Get comprehensive statistics using RatingStatistics
+      final stats = await RatingStatistics.getRecipeStatistics(
+        firestore: _firestore,
+        recipeId: recipeId,
+        recipe: recipe,
+      );
+
+      // Add social engagement metrics using SocialEngagementMetrics
+      final socialMetrics = SocialEngagementMetrics.calculateRecipeEngagement(recipe);
+
+      // Combine statistics with social metrics
+      final result = {
+        ...stats,
+        'social': socialMetrics,
+      };
+
+      AppLogger.debug('📋 Generated comprehensive recipe statistics');
+      return result;
+    } catch (e) {
+      AppLogger.error('❌ Failed to get recipe statistics', e);
+      return {'error': 'Failed to calculate statistics'};
+    }
+  }
+
+  /// Get top-rated recipes
+  Future<List<Map<String, dynamic>>> getTopRatedRecipes({
+    int limit = 10,
+    double minRating = 4.0,
+    int minRatingCount = 3,
+  }) async {
+    // Get accessible recipes
+    final allRecipes = recipes;
+    final accessibleRecipes = allRecipes.where((recipe) {
+      return _hasAccessToRecipe(recipe);
+    }).toList();
+
+    return RatingStatistics.getTopRatedRecipes(
+      firestore: _firestore,
+      accessibleRecipes: accessibleRecipes,
+      limit: limit,
+      minRating: minRating,
+      minRatingCount: minRatingCount,
+    );
+  }
+
+  // ===== SOCIAL ENGAGEMENT METRICS (DELEGATE TO SOCIAL_ENGAGEMENT_METRICS) =====
+
+  /// Get social statistics for user
+  Future<Map<String, dynamic>> getUserSocialStats() async {
+    if (currentUserId == null) {
+      return {'error': 'No current user'};
+    }
+
+    // Get user's recipes
+    final allRecipes = recipes;
+    final userRecipes = allRecipes.where((r) {
+      final ownerId = r.socialData?.ownerId ?? r.core.createdBy;
+      return ownerId == currentUserId;
+    }).toList();
+
+    return SocialEngagementMetrics.calculateUserSocialStats(
+      firestore: _firestore,
+      userId: currentUserId!,
+      userRecipes: userRecipes,
+    );
+  }
+
+  /// Get top engaging recipes
+  Future<List<Map<String, dynamic>>> getTopEngagingRecipes({
+    int limit = 10,
+  }) async {
+    return SocialEngagementMetrics.getTopEngagingRecipes(
+      recipes: recipes,
+      limit: limit,
+      currentUserId: currentUserId,
+    );
+  }
+
+  /// Get engagement insights for recipe
+  Map<String, dynamic> getEngagementInsights(String recipeId) {
+    final recipe = _getRecipe(recipeId);
+    if (recipe == null) {
+      return {'error': 'Recipe not found'};
+    }
+
+    return SocialEngagementMetrics.getEngagementInsights(recipe);
+  }
+
+  // ===== PERMISSION CHECKING (DELEGATE TO RECIPE_RATING_SYSTEM) =====
+
+  /// Check if user can rate a recipe
+  bool _canRateRecipe(Recipe recipe) {
+    return RecipeRatingSystem.canUserRateRecipe(
+      recipe: recipe,
+      currentUserId: currentUserId,
+    );
+  }
+
+  /// Check if user has access to view recipe stats
+  bool _hasAccessToRecipe(Recipe recipe) {
+    return RecipeRatingSystem.canUserViewRatings(
+      recipe: recipe,
+      currentUserId: currentUserId,
+    );
+  }
+
+  // ===== BATCH OPERATIONS =====
+
+  /// Update multiple rating aggregates
+  Future<void> updateMultipleRatingAggregates(List<String> recipeIds) async {
+    return RatingStatistics.updateMultipleRatingAggregates(
+      firestore: _firestore,
+      recipeIds: recipeIds,
+    );
+  }
+
+  /// Get statistics for multiple recipes
+  Future<Map<String, Map<String, dynamic>>> getMultipleRecipeStatistics(
+    List<String> recipeIds,
+  ) async {
+    final recipeMap = <String, Recipe>{};
+    
+    for (final recipeId in recipeIds) {
+      final recipe = _getRecipe(recipeId);
+      if (recipe != null) {
+        recipeMap[recipeId] = recipe;
+      }
+    }
+
+    return RatingStatistics.getMultipleRecipeStatistics(
+      firestore: _firestore,
+      recipeMap: recipeMap,
+    );
+  }
+
+  // ===== RATING ANALYTICS =====
+
+  /// Analyze rating distribution for recipe
+  Future<Map<String, dynamic>> analyzeRatingDistribution(String recipeId) async {
+    try {
+      final ratings = await RecipeRatingSystem.getRecipeRatings(
+        firestore: _firestore,
+        recipeId: recipeId,
+      );
+
+      final stats = RatingStatistics.calculateRatingStatistics(ratings);
+      final distribution = stats['distribution'] as Map<int, int>;
+
+      return RatingStatistics.analyzeRatingDistribution(distribution);
+    } catch (e) {
+      AppLogger.error('❌ Failed to analyze rating distribution', e);
+      return {'error': 'Failed to analyze distribution'};
+    }
+  }
+
+  /// Get rating trends for recipe
+  Future<Map<String, dynamic>> getRatingTrends(String recipeId) async {
+    try {
+      final ratings = await RecipeRatingSystem.getRecipeRatings(
+        firestore: _firestore,
+        recipeId: recipeId,
+      );
+
+      return RatingStatistics.calculateRatingTrends(ratings);
+    } catch (e) {
+      AppLogger.error('❌ Failed to get rating trends', e);
+      return {'error': 'Failed to calculate trends'};
+    }
+  }
+
+  // ===== NOTIFICATION MANAGEMENT =====
+
+  /// Send rating milestone notification
+  Future<void> sendRatingMilestone({
+    required String recipeId,
+    required int totalRatings,
+    required double averageRating,
+  }) async {
+    final recipe = _getRecipe(recipeId);
+    if (recipe == null) return;
+
+    await RatingNotifications.sendRatingMilestoneNotification(
+      notificationService: _notificationService,
+      recipe: recipe,
+      totalRatings: totalRatings,
+      averageRating: averageRating,
+    );
+  }
+
+  /// Send first rating notification
+  Future<void> sendFirstRatingNotification({
+    required String recipeId,
+    required double rating,
+    String? review,
+  }) async {
+    final recipe = _getRecipe(recipeId);
+    if (recipe == null) return;
+
+    await RatingNotifications.sendFirstRatingNotification(
+      notificationService: _notificationService,
+      recipe: recipe,
+      rating: rating,
+      raterName: currentUserDisplayName,
+      review: review,
+    );
+  }
+
+  // ===== ANALYTICS LOGGING =====
+
+  /// Log rating action for analytics
+  void _logRatingAction({
+    required String recipeId,
+    required double rating,
+    required bool hasReview,
+  }) {
+    try {
+      AppLogger.info('📊 Rating action logged: $rating stars');
+      // Future analytics implementation would log detailed data:
+      // final logData = {
+      //   'recipeId': recipeId,
+      //   'rating': rating,
+      //   'hasReview': hasReview,
+      //   'userId': currentUserId,
+      //   'timestamp': DateTime.now().toIso8601String(),
+      // };
+      // Analytics.logEvent('recipe_rated', logData);
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to log rating action: $e');
+    }
+  }
+
+  // ===== UTILITY METHODS =====
+
+  /// Format rating for display
+  String formatRating(double rating) {
+    return RecipeRatingSystem.formatRating(rating);
+  }
+
+  /// Get star representation
+  String getStarRepresentation(double rating) {
+    return RecipeRatingSystem.getStarRepresentation(rating);
+  }
+
+  /// Get rating category
+  String getRatingCategory(double rating) {
+    return RecipeRatingSystem.getRatingCategory(rating);
+  }
+
+  /// Compare recipe engagement
+  Map<String, dynamic> compareRecipeEngagement(String recipeId1, String recipeId2) {
+    final recipe1 = _getRecipe(recipeId1);
+    final recipe2 = _getRecipe(recipeId2);
+    
+    if (recipe1 == null || recipe2 == null) {
+      return {'error': 'One or both recipes not found'};
+    }
+
+    return SocialEngagementMetrics.compareRecipeEngagement(recipe1, recipe2);
+  }
+}

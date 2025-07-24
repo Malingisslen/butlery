@@ -1,9 +1,8 @@
 // lib/widgets/common/saved_menu_ui_helper.dart
 
 import 'package:flutter/material.dart';
-import '../../constants/icon_constants.dart';
 import '../../theme/app_colors.dart';
-import '../../viewmodels/menu_viewmodel.dart';
+import '../../viewmodels/menu/menu_state_manager.dart';
 
 /// UI Helper for SavedMenuInfo
 /// Provides UI-specific methods for saved menu information
@@ -25,12 +24,14 @@ class SavedMenuUIHelper {
   /// Get icon data from icon type
   static IconData getStatusIconData(SavedMenuInfo menuInfo) {
     switch (menuInfo.statusIcon) {
-      case IconType.restaurantMenu:
+      case 'restaurantMenu':
         return Icons.restaurant_menu;
-      case IconType.autoFixHigh:
+      case 'autoFixHigh':
         return Icons.auto_fix_high;
-      case IconType.person:
+      case 'person':
         return Icons.person;
+      default:
+        return Icons.restaurant_menu; // Default fallback
     }
   }
 }

@@ -1,22 +1,4 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Unified Recipe Service - Consolidated service with feature interfaces
-/// File: lib/services/unified/unified_recipe_service.dart
-/// Quick Guide: Main recipe service with separated feature interfaces for personal, social, and realtime operations
-/// Dependencies IN: Firebase, Hive, UnifiedRecipe model, Feature operations
-/// Dependencies OUT: Used by all recipe ViewModels through feature interfaces
-/// Data flow: ViewModels -> Feature Interfaces -> UnifiedRecipeService -> Firebase/Cache
-/// State management: ChangeNotifier with optimistic updates and offline sync
-/// Purpose: Single consolidated service for all recipe operations with clean separation
-/// Common issues: Offline/online sync, permission validation, conflict resolution
-/// Test coverage: Unit tests for all operations and feature interfaces
-/// Performance: Optimistic updates with debounced Firebase sync
-/// Analytics: Recipe operations, collaboration events, import/export usage
-/// Code smells: Large file - separated into feature interfaces for maintainability
-/// Connected to: All recipe ViewModels, Import strategies, Social features
-/// Used in phases: Phase 5 - Service Consolidation
-
 // lib/services/unified/unified_recipe_service.dart
-// ✅ ENHANCED VERSION: Feature interface separation for Phase 5 consolidation
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -26,48 +8,42 @@ import '../../core/cache/json_cache_helper.dart';
 import '../../models/recipe_unified.dart';
 import '../../models/permissions/resource_permission.dart';
 import '../../core/utils/logger.dart';
-import '../../core/mixins/firebase_sync_mixin.dart';
 
-// Feature interfaces
+// Focused modules
+import 'modules/personal_recipe_module.dart';
+import 'modules/social_recipe_module.dart';
+import 'modules/realtime_recipe_module.dart';
+import 'modules/recipe_cache_module.dart';
+
+// Legacy feature interfaces (for backward compatibility)
 import 'operations/personal_recipe_operations.dart';
 import 'operations/social_recipe_operations.dart';
 import 'operations/realtime_recipe_operations.dart';
 import 'types/recipe_types.dart';
-import '../permission_service.dart';
-import '../../core/injection.dart';
 
-class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe> {
+/// Unified Recipe Service - Clean coordinator with focused module delegation
+///
+/// This service provides a clean API that coordinates between focused modules:
+/// - PersonalRecipeModule: Personal recipe CRUD operations
+/// - SocialRecipeModule: Social recipe sharing and collaboration
+/// - RealtimeRecipeModule: Real-time collaborative editing
+/// - RecipeCacheModule: Caching and sync management
+///
+/// ❌ DOES NOT CONTAIN: Business logic implementation, Firebase operations, caching logic
+class UnifiedRecipeService extends ChangeNotifier {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
-  
-  /// JSON cache helper for recipe data
-  late final JsonCacheHelper _cacheHelper;
 
-  // ===== FEATURE INTERFACES - Phase 5 Enhancement =====
-  
-  /// Personal recipe operations - handles personal recipe CRUD, import/export
+  // Focused modules
+  late final PersonalRecipeModule _personalModule;
+  late final SocialRecipeModule _socialModule;
+  late final RealtimeRecipeModule _realtimeModule;
+  late final RecipeCacheModule _cacheModule;
+
+  // Legacy feature interfaces (maintained for backward compatibility)
   late final PersonalRecipeOperations personal;
-  
-  /// Social recipe operations - handles sharing, collaboration, member management
   late final SocialRecipeOperations social;
-  
-  /// Realtime recipe operations - handles real-time collaborative editing
   late final RealtimeRecipeOperations realtime;
-
-  UnifiedRecipeService({
-    FirebaseFirestore? firestore,
-    FirebaseAuthRepository? authRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository ?? FirebaseAuthRepository() {
-    
-    // Initialize feature interfaces
-    personal = PersonalRecipeOperations(this);
-    social = SocialRecipeOperations(this);
-    realtime = RealtimeRecipeOperations(this);
-    
-    AppLogger.info('✅ UnifiedRecipeService initialized with feature interfaces');
-  }
-
 
   // State
   final List<Recipe> _recipes = [];
@@ -75,39 +51,89 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
   bool _isLoading = false;
   String? _error;
 
-  // ===== GETTERS - Same API as your existing RecipeService =====
+  UnifiedRecipeService({
+    FirebaseFirestore? firestore,
+    FirebaseAuthRepository? authRepository,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _authRepository = authRepository ?? FirebaseAuthRepository() {
+    
+    // Initialize both modules and legacy interfaces
+    _initializeModules();
+    _initializeLegacyInterfaces();
+    
+    AppLogger.info('✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
+  }
+
+  // ===== MODULE INITIALIZATION =====
+
+  void _initializeModules() {
+    final cacheHelper = JsonCacheFactory.recipeCache();
+    
+    _personalModule = PersonalRecipeModule(
+      firestore: _firestore,
+      cacheHelper: cacheHelper,
+      getCurrentUserId: () => currentUserId,
+      getCurrentUserDisplayName: () => currentUserDisplayName,
+      setError: _setError,
+      notifyListeners: notifyListeners,
+    );
+
+    _socialModule = SocialRecipeModule(
+      firestore: _firestore,
+      cacheHelper: cacheHelper,
+      getCurrentUserId: () => currentUserId,
+      getCurrentUserDisplayName: () => currentUserDisplayName,
+      setError: _setError,
+      notifyListeners: notifyListeners,
+      getRecipe: (String id) async => getRecipeById(id),
+      saveRecipe: updateRecipe,
+    );
+
+    _realtimeModule = RealtimeRecipeModule(
+      firestore: _firestore,
+      cacheHelper: cacheHelper,
+      getCurrentUserId: () => currentUserId,
+      getCurrentUserDisplayName: () => currentUserDisplayName,
+      setError: _setError,
+      notifyListeners: notifyListeners,
+      getRecipe: (String id) async => getRecipeById(id),
+    );
+
+    _cacheModule = RecipeCacheModule(
+      firestore: _firestore,
+      cacheHelper: cacheHelper,
+      getCurrentUserId: () => currentUserId,
+      setError: _setError,
+      notifyListeners: notifyListeners,
+    );
+  }
+
+  void _initializeLegacyInterfaces() {
+    // Initialize legacy interfaces for backward compatibility
+    personal = PersonalRecipeOperations(this);
+    social = SocialRecipeOperations(this);
+    realtime = RealtimeRecipeOperations(this);
+  }
+
+  // ===== GETTERS =====
 
   List<Recipe> get recipes => List.unmodifiable(_recipes);
-  List<Recipe> get personalRecipes =>
-      recipes.where((r) => r.isPersonal).toList();
-  List<Recipe> get collaborativeRecipes =>
-      recipes.where((r) => r.isCollaborative).toList();
+  List<Recipe> get personalRecipes => recipes.where((r) => r.isPersonal).toList();
+  List<Recipe> get collaborativeRecipes => recipes.where((r) => r.isCollaborative).toList();
 
   bool get hasRecipes => _recipes.isNotEmpty;
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
+  String? get lastError => _error; // Legacy property
+
+  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserDisplayName => _authRepository.currentUser?.displayName ?? 'Du';
+  bool get isSyncing => _cacheModule.isSyncing;
   
-  @override
-  String? get currentUserId => sl<PermissionService>().currentUserId;
-  
-  @override
+  /// Public getter for firestore instance (for legacy interfaces)
   FirebaseFirestore get firestore => _firestore;
-  String? get currentUserDisplayName =>
-      _authRepository.currentUser?.displayName ?? 'Du';
-
-
-  // ===== UNIFIED RECIPE ACCESS =====
-
-  /// Get recipe by ID - returns unified Recipe
-  Recipe? getRecipeById(String id) {
-    return _recipes.where((r) => r.id == id).firstOrNull;
-  }
-
-
-  /// Legacy property for error access
-  String? get lastError => _error;
 
   // ===== INITIALIZATION =====
 
@@ -115,51 +141,50 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     if (_isInitialized) return;
 
     try {
-      AppLogger.info('🔄 Initialiserar UnifiedRecipeService...');
+      AppLogger.info('🔄 Initializing UnifiedRecipeService...');
+      _isLoading = true;
+      notifyListeners();
 
-      // Firestore configuration för emulator
+      // Configure Firestore settings
       if (kDebugMode) {
         try {
-          firestore.settings = const Settings(
+          _firestore.settings = const Settings(
             persistenceEnabled: true,
             cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
           );
         } catch (e) {
-          AppLogger.debug('Firestore settings redan satta');
+          AppLogger.debug('Firestore settings already configured');
         }
       }
 
-      // Initialize cache helper
-      _cacheHelper = JsonCacheFactory.recipeCache();
-      _cacheHelper.setCurrentUser(currentUserId);
+      // Initialize cache and load cached recipes
+      final cachedRecipes = await _cacheModule.initializeCache();
+      _recipes.clear();
+      _recipes.addAll(cachedRecipes);
 
-      // Ladda cached data först (offline-first)
-      await _loadCachedRecipes();
-
-      // Lyssna på auth changes using mixin
+      // Listen to auth state changes
       _authRepository.authStateChanges().listen((user) {
-        onAuthStateChanged(user?.uid);
-        _cacheHelper.setCurrentUser(user?.uid);
-        if (user == null) {
-          _clearAll();
-        }
+        _handleAuthStateChange(user?.uid);
       });
 
-      // Starta Firebase sync om inloggad using mixin
+      // Start Firebase sync if authenticated
       if (_authRepository.currentUser != null) {
-        startFirebaseSync();
+        await _cacheModule.startFirebaseSync();
       }
 
       _isInitialized = true;
-      AppLogger.success('✅ UnifiedRecipeService initialiserad');
+      _isLoading = false;
+      AppLogger.success('✅ UnifiedRecipeService initialized');
       notifyListeners();
     } catch (e) {
-      AppLogger.error('❌ Fel vid initialisering: $e');
+      AppLogger.error('❌ Initialization error: $e');
       _setError('Kunde inte ladda recept: $e');
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  // ===== RECIPE MANAGEMENT =====
+  // ===== PERSONAL RECIPE OPERATIONS (DELEGATE TO PERSONAL MODULE) =====
 
   Future<String?> createPersonalRecipe({
     required String title,
@@ -174,50 +199,64 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     List<String>? tags,
     String? sourceUrl,
   }) async {
-    if (!sl<PermissionService>().isAuthenticated) {
-      _setError('Du måste vara inloggad');
-      return null;
+    final recipeId = await _personalModule.createPersonalRecipe(
+      title: title,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      imageUrls: imageUrls,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+    );
+
+    if (recipeId != null) {
+      // Add to local list
+      final recipe = await _cacheModule.loadRecipeFromCache(recipeId);
+      if (recipe != null) {
+        _recipes.add(recipe);
+        notifyListeners();
+      }
     }
 
-    if (title.trim().isEmpty) {
-      _setError('Receptnamn kan inte vara tomt');
-      return null;
-    }
-
-    try {
-      final newRecipe = Recipe.personal(
-        title: title.trim(),
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        mealType: mealType,
-        createdBy: currentUserId!,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
-      );
-
-      // Lägg till lokalt (optimistic update)
-      _recipes.add(newRecipe);
-      notifyListeners();
-
-      // Spara till cache
-      await _saveToCache(newRecipe);
-
-      // Synka till Firebase
-      _scheduleSyncForRecipe(newRecipe.id);
-
-      AppLogger.success('✅ Personligt recept "$title" skapat');
-      return newRecipe.id;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte skapa personligt recept: $e');
-      _setError('Kunde inte skapa recept: $e');
-      return null;
-    }
+    return recipeId;
   }
+
+  Future<bool> updateRecipe(Recipe updatedRecipe) async {
+    final success = await _personalModule.updatePersonalRecipe(updatedRecipe);
+    
+    if (success) {
+      // Update local list
+      final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
+      if (index != -1) {
+        _recipes[index] = updatedRecipe;
+        notifyListeners();
+      }
+    }
+
+    return success;
+  }
+
+  Future<bool> deleteRecipe(String recipeId) async {
+    final success = await _personalModule.deletePersonalRecipe(recipeId);
+    
+    if (success) {
+      // Remove from local list
+      _recipes.removeWhere((r) => r.id == recipeId);
+      notifyListeners();
+    }
+
+    return success;
+  }
+
+  Future<bool> markAsCooked(String recipeId) async {
+    return await _personalModule.markRecipeAsCooked(recipeId);
+  }
+
+  // ===== COLLABORATIVE RECIPE OPERATIONS (DELEGATE TO SOCIAL MODULE) =====
 
   Future<String?> createCollaborativeRecipe({
     required String title,
@@ -232,124 +271,73 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     double? rating,
     List<String>? tags,
     String? sourceUrl,
-    String? descriptionCollaborative, // ✅ ÄNDRAT
+    String? descriptionCollaborative,
     bool allowGuestViewing = false,
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    if (!sl<PermissionService>().isAuthenticated) {
-      _setError('Du måste vara inloggad');
-      return null;
-    }
+    final recipeId = await _socialModule.createCollaborativeRecipe(
+      title: title,
+      memberIds: memberIds,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      imageUrls: imageUrls,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+      descriptionCollaborative: descriptionCollaborative,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      categoryIds: categoryIds,
+    );
 
-    if (title.trim().isEmpty) {
-      _setError('Receptnamn kan inte vara tomt');
-      return null;
-    }
-
-    try {
-      // Skapa member permissions
-      final memberPermissions = <String, ResourcePermission>{};
-      for (final memberId in memberIds) {
-        memberPermissions[memberId] = ResourcePermission.editor;
+    if (recipeId != null) {
+      // Add to local list
+      final recipe = await _cacheModule.loadRecipeFromCache(recipeId);
+      if (recipe != null) {
+        _recipes.add(recipe);
+        notifyListeners();
       }
-
-      final newRecipe = Recipe.collaborative(
-        title: title.trim(),
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        mealType: mealType,
-        ownerId: currentUserId!,
-        ownerDisplayName: currentUserDisplayName!,
-        memberPermissions: memberPermissions,
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        descriptionCollaborative: descriptionCollaborative,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
-      );
-
-      // Lägg till lokalt (optimistic update)
-      _recipes.add(newRecipe);
-      notifyListeners();
-
-      // Spara till cache
-      await _saveToCache(newRecipe);
-
-      // Synka till Firebase (collaborative recipes använder annan collection)
-      _scheduleSyncForRecipe(newRecipe.id);
-
-      AppLogger.success(
-          '✅ Kollaborativt recept "$title" skapat med ${memberIds.length} medlemmar');
-      return newRecipe.id;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte skapa kollaborativt recept: $e');
-      _setError('Kunde inte skapa kollaborativt recept: $e');
-      return null;
     }
+
+    return recipeId;
   }
 
-  Future<bool> updateRecipe(Recipe updatedRecipe) async {
-    try {
-      final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
-      if (index == -1) {
-        _setError('Recept hittades inte');
-        return false;
-      }
-
-      // Uppdatera lokalt (optimistic update)
-      _recipes[index] = updatedRecipe.copyWith(
-        lastEditedByUserId: currentUserId,
-        lastEditedByDisplayName: currentUserDisplayName,
-      );
-      notifyListeners();
-
-      // Spara till cache
-      await _saveToCache(_recipes[index]);
-
-      // Schemalägg synk (debounced)
-      _scheduleSyncForRecipe(updatedRecipe.id);
-
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte uppdatera recept: $e');
-      _setError('Kunde inte uppdatera recept: $e');
-      return false;
-    }
+  Future<bool> addMemberToRecipe(String recipeId, String userId, ResourcePermission permission) async {
+    return await _socialModule.addMemberToRecipe(recipeId, userId, permission);
   }
 
-  Future<bool> deleteRecipe(String recipeId) async {
-    try {
-      final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) {
-        _setError('Recept hittades inte');
-        return false;
-      }
-
-      // Ta bort lokalt
-      _recipes.removeWhere((r) => r.id == recipeId);
-      notifyListeners();
-
-      // Ta bort från cache
-      await _removeFromCache(recipeId);
-
-      // Ta bort från Firebase
-      _scheduleDeleteForRecipe(recipeId, recipe.isCollaborative);
-
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte ta bort recept: $e');
-      _setError('Kunde inte ta bort recept: $e');
-      return false;
-    }
+  Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
+    return await _socialModule.removeMemberFromRecipe(recipeId, userId);
   }
 
-  // ===== COLLABORATIVE EDITING METHODS =====
+  Future<bool> updateMemberPermission(String recipeId, String userId, ResourcePermission permission) async {
+    return await _socialModule.updateMemberPermission(recipeId, userId, permission);
+  }
+
+  // ===== REAL-TIME EDITING OPERATIONS (DELEGATE TO REALTIME MODULE) =====
+
+  Future<bool> startRealtimeEditing(String recipeId) async {
+    return await _realtimeModule.startRealtimeEditing(recipeId);
+  }
+
+  Future<bool> stopRealtimeEditing(String recipeId) async {
+    return await _realtimeModule.stopRealtimeEditing(recipeId);
+  }
+
+  Future<bool> makeRealtimeEdit(String recipeId, Map<String, dynamic> changes) async {
+    return await _realtimeModule.makeRealtimeEdit(recipeId, changes);
+  }
+
+  bool isInRealtimeEditingSession(String recipeId) {
+    return _realtimeModule.isInRealtimeEditingSession(recipeId);
+  }
+
+  // ===== CONTENT OPERATIONS =====
 
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -365,18 +353,10 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     List<String>? tags,
     String? sourceUrl,
   }) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
+    final recipe = getRecipeById(recipeId);
     if (recipe == null) {
       _setError('Recept hittades inte');
       return false;
-    }
-
-    // Check permissions for collaborative recipes
-    if (recipe.isCollaborative) {
-      if (!sl<PermissionService>().canEditRecipe(recipe.id)) {
-        _setError('Du har inte behörighet att redigera detta recept');
-        return false;
-      }
     }
 
     final updatedRecipe = recipe.copyWith(
@@ -398,196 +378,63 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     return await updateRecipe(updatedRecipe);
   }
 
+  // Ingredient operations
   Future<bool> addIngredient(String recipeId, String ingredient) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.addIngredient(
-      ingredient,
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+    if (isInRealtimeEditingSession(recipeId)) {
+      return await _realtimeModule.addIngredientRealtime(recipeId, ingredient, null);
+    } else {
+      return await _personalModule.addIngredient(recipeId, ingredient);
+    }
   }
 
-  Future<bool> updateIngredient(
-      String recipeId, int index, String newIngredient) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.updateIngredient(
-      index,
-      newIngredient,
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
+    if (isInRealtimeEditingSession(recipeId)) {
+      return await _realtimeModule.updateIngredientRealtime(recipeId, index, newIngredient);
+    } else {
+      return await _personalModule.updateIngredient(recipeId, index, newIngredient);
+    }
   }
 
   Future<bool> removeIngredient(String recipeId, int index) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.removeIngredient(
-      index,
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+    if (isInRealtimeEditingSession(recipeId)) {
+      return await _realtimeModule.removeIngredientRealtime(recipeId, index);
+    } else {
+      return await _personalModule.removeIngredient(recipeId, index);
+    }
   }
 
+  // Instruction operations
   Future<bool> addInstruction(String recipeId, String instruction) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.addInstruction(
-      instruction,
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+    if (isInRealtimeEditingSession(recipeId)) {
+      return await _realtimeModule.addInstructionRealtime(recipeId, instruction, null);
+    } else {
+      return await _personalModule.addInstruction(recipeId, instruction);
+    }
   }
 
-  Future<bool> updateInstruction(
-      String recipeId, int index, String newInstruction) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.updateInstruction(
-      index,
-      newInstruction,
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
+    if (isInRealtimeEditingSession(recipeId)) {
+      return await _realtimeModule.updateInstructionRealtime(recipeId, index, newInstruction);
+    } else {
+      return await _personalModule.updateInstruction(recipeId, index, newInstruction);
+    }
   }
 
   Future<bool> removeInstruction(String recipeId, int index) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.removeInstruction(
-      index,
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+    if (isInRealtimeEditingSession(recipeId)) {
+      return await _realtimeModule.removeInstructionRealtime(recipeId, index);
+    } else {
+      return await _personalModule.removeInstruction(recipeId, index);
+    }
   }
 
   Future<bool> markRecipeAsCooked(String recipeId) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-
-    final updatedRecipe = recipe.markAsCooked(
-      userId: currentUserId,
-      userDisplayName: currentUserDisplayName,
-    );
-
-    return await updateRecipe(updatedRecipe);
+    return await _personalModule.markRecipeAsCooked(recipeId);
   }
 
-  // ===== COLLABORATIVE MEMBER MANAGEMENT =====
+  // ===== LEGACY COMPATIBILITY =====
 
-  Future<bool> addMemberToRecipe(
-      String recipeId, String userId, ResourcePermission permission) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || recipe.isPersonal) return false;
-
-    // Check admin permission
-    if (!sl<PermissionService>().canManageRecipeMembers(recipe.id)) {
-      _setError('Du har inte behörighet att lägga till medlemmar');
-      return false;
-    }
-
-    // This method needs to be implemented in the new Recipe model
-    // For now, we'll create a new recipe with updated social data
-    if (recipe.socialData == null) return false;
-    final newSocialData = RecipeSocialData(
-      ownerId: recipe.socialData!.ownerId,
-      ownerDisplayName: recipe.socialData!.ownerDisplayName,
-      memberPermissions: {
-        ...?recipe.socialData?.memberPermissions,
-        userId: permission,
-      },
-      allowGuestViewing: recipe.socialData!.allowGuestViewing,
-      allowMemberInvites: recipe.socialData!.allowMemberInvites,
-      categoryIds: recipe.socialData!.categoryIds,
-      descriptionCollaborative: recipe.socialData!.descriptionCollaborative,
-    );
-    final updatedRecipe = recipe.copyWith(socialData: newSocialData);
-    return await updateRecipe(updatedRecipe);
-  }
-
-  Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || recipe.isPersonal) return false;
-
-    // Check admin permission
-    if (!sl<PermissionService>().canManageRecipeMembers(recipe.id)) {
-      _setError('Du har inte behörighet att ta bort medlemmar');
-      return false;
-    }
-
-    // This method needs to be implemented in the new Recipe model
-    // For now, we'll create a new recipe with updated social data
-    if (recipe.socialData == null) return false;
-    final updatedPermissions = Map<String, ResourcePermission>.from(
-      recipe.socialData?.memberPermissions ?? {},
-    );
-    updatedPermissions.remove(userId);
-    final newSocialData = RecipeSocialData(
-      ownerId: recipe.socialData!.ownerId,
-      ownerDisplayName: recipe.socialData!.ownerDisplayName,
-      memberPermissions: updatedPermissions,
-      allowGuestViewing: recipe.socialData!.allowGuestViewing,
-      allowMemberInvites: recipe.socialData!.allowMemberInvites,
-      categoryIds: recipe.socialData!.categoryIds,
-      descriptionCollaborative: recipe.socialData!.descriptionCollaborative,
-    );
-    final updatedRecipe = recipe.copyWith(socialData: newSocialData);
-    return await updateRecipe(updatedRecipe);
-  }
-
-  Future<bool> updateMemberPermission(
-      String recipeId, String userId, ResourcePermission permission) async {
-    final recipe = _recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || recipe.isPersonal) return false;
-
-    // Check admin permission
-    if (!sl<PermissionService>().canManageRecipeMembers(recipe.id)) {
-      _setError('Du har inte behörighet att ändra behörigheter');
-      return false;
-    }
-
-    // This method needs to be implemented in the new Recipe model
-    // For now, we'll create a new recipe with updated social data
-    if (recipe.socialData == null) return false;
-    final updatedPermissions = Map<String, ResourcePermission>.from(
-      recipe.socialData?.memberPermissions ?? {},
-    );
-    updatedPermissions[userId] = permission;
-    final newSocialData = RecipeSocialData(
-      ownerId: recipe.socialData!.ownerId,
-      ownerDisplayName: recipe.socialData!.ownerDisplayName,
-      memberPermissions: updatedPermissions,
-      allowGuestViewing: recipe.socialData!.allowGuestViewing,
-      allowMemberInvites: recipe.socialData!.allowMemberInvites,
-      categoryIds: recipe.socialData!.categoryIds,
-      descriptionCollaborative: recipe.socialData!.descriptionCollaborative,
-    );
-    final updatedRecipe = recipe.copyWith(socialData: newSocialData);
-    return await updateRecipe(updatedRecipe);
-  }
-
-  // ===== LEGACY COMPATIBILITY METHODS =====
-
-  /// Create recipe using legacy interface
+  /// Legacy createRecipe method
   Future<String?> createRecipe({
     required String title,
     required String description,
@@ -616,26 +463,14 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     );
   }
 
-  /// Mark recipe as cooked using legacy interface
-  Future<bool> markAsCooked(String recipeId) async {
-    return await markRecipeAsCooked(recipeId);
-  }
-
-  /// För befintlig kod
+  /// Legacy deleteRecipeById method
   Future<RecipeOperationResult> deleteRecipeById(String id) async {
     final success = await deleteRecipe(id);
     if (success) {
       return RecipeOperationResult.success();
     } else {
-      return RecipeOperationResult.failure(
-          _error ?? 'Kunde inte ta bort recept');
+      return RecipeOperationResult.failure(_error ?? 'Kunde inte ta bort recept');
     }
-  }
-
-  /// Clear current error
-  void clearError() {
-    _error = null;
-    notifyListeners();
   }
 
   /// Legacy refresh method
@@ -647,13 +482,14 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
       // Clear local data
       _recipes.clear();
 
-      // Reload from cache first
-      await _loadCachedRecipes();
+      // Reload from cache
+      final cachedRecipes = await _cacheModule.initializeCache();
+      _recipes.addAll(cachedRecipes);
 
-      // Restart Firebase sync to get latest data
-      stopFirebaseSync();
+      // Restart Firebase sync
+      await _cacheModule.stopFirebaseSync();
       if (_authRepository.currentUser != null) {
-        startFirebaseSync();
+        await _cacheModule.startFirebaseSync();
       }
 
       _isLoading = false;
@@ -665,226 +501,24 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     }
   }
 
-  // ===== PRIVATE SYNC METHODS =====
+  // ===== UTILITY METHODS =====
 
-  void _scheduleSyncForRecipe(String recipeId) {
-    // Use mixin's debounced sync method
-    scheduleSyncForItem(recipeId);
+  Recipe? getRecipeById(String id) {
+    return _recipes.where((r) => r.id == id).firstOrNull;
   }
 
-  void _scheduleDeleteForRecipe(String recipeId, bool isCollaborative) {
-    // För borttagning, gör direkt utan debounce
-    _deleteRecipeFromFirebase(recipeId, isCollaborative);
-  }
-
-  // Sync pending recipes now handled by mixin's processSyncItems method
-
-  // ===== FIREBASE SYNC METHODS =====
-
-  Future<void> _syncRecipeToFirebase(Recipe recipe) async {
-    if (currentUserId == null) return;
-
-    try {
-      await firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('unified_recipes')
-          .doc(recipe.id)
-          .set(recipe.toFirestore(), SetOptions(merge: true));
-
-      AppLogger.debug('Recept synkat: ${recipe.title}');
-    } catch (e) {
-      AppLogger.error('Firebase synk-fel för recept ${recipe.id}: $e');
-    }
-  }
-
-  Future<void> _syncCollaborativeRecipeToFirebase(Recipe recipe) async {
-    if (currentUserId == null) return;
-
-    try {
-      await firestore
-          .collection('unified_collaborative_recipes')
-          .doc(recipe.id)
-          .set(recipe.toFirestore(), SetOptions(merge: true));
-
-      AppLogger.debug('Kollaborativt recept synkat: ${recipe.title}');
-    } catch (e) {
-      AppLogger.error(
-          'Firebase synk-fel för kollaborativt recept ${recipe.id}: $e');
-    }
-  }
-
-  // ===== FIREBASE SYNC MIXIN IMPLEMENTATION =====
-  
-  @override
-  List<SyncCollection> get syncCollections => [
-    SyncCollection(
-      name: 'personal_recipes',
-      query: () => firestore
-          .collection('users')
-          .doc(currentUserId!)
-          .collection('unified_recipes'),
-      onAdded: (doc) => _handlePersonalRecipesChange(doc, DocumentChangeType.added),
-      onModified: (doc) => _handlePersonalRecipesChange(doc, DocumentChangeType.modified),
-      onRemoved: (doc) => _handlePersonalRecipesChange(doc, DocumentChangeType.removed),
-      onError: (error) => _setError('Personal recipes sync error: $error'),
-    ),
-    SyncCollection(
-      name: 'collaborative_recipes',
-      query: () => firestore
-          .collection('unified_collaborative_recipes')
-          .where('memberPermissions.$currentUserId', isNotEqualTo: null),
-      onAdded: (doc) => _handleCollaborativeRecipesChange(doc, DocumentChangeType.added),
-      onModified: (doc) => _handleCollaborativeRecipesChange(doc, DocumentChangeType.modified),
-      onRemoved: (doc) => _handleCollaborativeRecipesChange(doc, DocumentChangeType.removed),
-      onError: (error) => _setError('Collaborative recipes sync error: $error'),
-    ),
-  ];
-  
-  @override
-  Future<void> syncItemToFirebase(String itemId) async {
-    final recipe = _recipes.where((r) => r.id == itemId).firstOrNull;
-    if (recipe == null) return;
-
-    if (recipe.isCollaborative) {
-      await _syncCollaborativeRecipeToFirebase(recipe);
-    } else {
-      await _syncRecipeToFirebase(recipe);
-    }
-  }
-
-  // Firebase sync now handled by mixin - removed manual subscription management
-
-  void _handlePersonalRecipesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
-    try {
-      final recipe = Recipe.fromFirestore(doc);
-
-      switch (changeType) {
-        case DocumentChangeType.added:
-        case DocumentChangeType.modified:
-          _updateLocalRecipe(recipe);
-          break;
-        case DocumentChangeType.removed:
-          _removeLocalRecipe(recipe.id);
-          break;
-      }
-    } catch (e) {
-      AppLogger.error('Fel vid hantering av personal recipes change: $e');
-    }
-  }
-
-  void _handleCollaborativeRecipesChange(DocumentSnapshot doc, DocumentChangeType changeType) {
-    try {
-      final recipe = Recipe.fromFirestore(doc);
-
-      switch (changeType) {
-        case DocumentChangeType.added:
-        case DocumentChangeType.modified:
-          _updateLocalRecipe(recipe);
-          break;
-        case DocumentChangeType.removed:
-          _removeLocalRecipe(recipe.id);
-          break;
-      }
-    } catch (e) {
-      AppLogger.error(
-          'Fel vid hantering av collaborative recipes change: $e');
-    }
-  }
-
-  void _updateLocalRecipe(Recipe updatedRecipe) {
-    final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
-    if (index != -1) {
-      _recipes[index] = updatedRecipe;
-    } else {
-      _recipes.add(updatedRecipe);
-    }
-    _saveToCache(updatedRecipe);
-  }
-
-  /// Public method for feature interfaces to update local recipe
-  void updateLocalRecipe(Recipe updatedRecipe) {
-    _updateLocalRecipe(updatedRecipe);
+  void clearError() {
+    _error = null;
     notifyListeners();
   }
 
-  void _removeLocalRecipe(String recipeId) {
-    _recipes.removeWhere((r) => r.id == recipeId);
-    _removeFromCache(recipeId);
-  }
+  // ===== AUTH STATE HANDLING =====
 
-  // ===== CACHE METHODS =====
-
-  Future<void> _loadCachedRecipes() async {
-    try {
-      final cachedRecipeIds = await _cacheHelper.getAllKeys();
-
-      for (final recipeId in cachedRecipeIds) {
-        final recipeData = await _cacheHelper.loadJson(recipeId);
-        if (recipeData != null) {
-          try {
-            final recipe = Recipe.fromJson(recipeData);
-            _recipes.add(recipe);
-            AppLogger.debug('Laddat cached recept: ${recipe.title}');
-          } catch (e) {
-            AppLogger.error('Fel vid parsing av cached recept $recipeId: $e');
-            await _cacheHelper.delete(recipeId);
-          }
-        }
-      }
-
-      AppLogger.debug('✅ ${_recipes.length} cached recipes laddade');
-    } catch (e) {
-      AppLogger.error('Fel vid laddning av cached recipes: $e');
+  void _handleAuthStateChange(String? userId) {
+    _cacheModule.onAuthStateChanged(userId);
+    if (userId == null) {
+      _clearAll();
     }
-  }
-
-  Future<void> _saveToCache(Recipe recipe) async {
-    try {
-      final recipeData = recipe.toJson();
-      await _cacheHelper.saveJson(recipe.id, recipeData);
-      AppLogger.debug('Recept cachat: ${recipe.title}');
-    } catch (e) {
-      AppLogger.error('Fel vid sparande till cache: $e');
-    }
-  }
-
-  Future<void> _removeFromCache(String recipeId) async {
-    try {
-      await _cacheHelper.delete(recipeId);
-      AppLogger.debug('Recept borttaget från cache: $recipeId');
-    } catch (e) {
-      AppLogger.error('Fel vid borttagning från cache: $e');
-    }
-  }
-
-  Future<void> _deleteRecipeFromFirebase(
-      String recipeId, bool isCollaborative) async {
-    try {
-      if (isCollaborative) {
-        await firestore
-            .collection('unified_collaborative_recipes')
-            .doc(recipeId)
-            .delete();
-      } else {
-        await firestore
-            .collection('users')
-            .doc(currentUserId)
-            .collection('unified_recipes')
-            .doc(recipeId)
-            .delete();
-      }
-      AppLogger.debug('Recept borttaget från Firebase: $recipeId');
-    } catch (e) {
-      AppLogger.error('Fel vid borttagning från Firebase: $e');
-    }
-  }
-
-  // ===== ERROR HANDLING =====
-
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
   }
 
   void _clearAll() {
@@ -894,14 +528,31 @@ class UnifiedRecipeService extends ChangeNotifier with FirebaseSyncMixin<Recipe>
     notifyListeners();
   }
 
-  // Error handling methods already exist in the class
+  void _setError(String message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  // ===== DIAGNOSTICS =====
+
+  /// Get service status for debugging
+  Map<String, dynamic> getServiceStatus() {
+    return {
+      'initialized': _isInitialized,
+      'loading': _isLoading,
+      'error': _error,
+      'recipeCount': _recipes.length,
+      'personalCount': personalRecipes.length,
+      'collaborativeCount': collaborativeRecipes.length,
+      'cacheStatus': _cacheModule.getSyncStatus(),
+      'realtimeStatus': _realtimeModule.getRealtimeStatus(),
+    };
+  }
 
   @override
   void dispose() {
-    stopFirebaseSync();
+    _cacheModule.dispose();
+    _realtimeModule.dispose();
     super.dispose();
   }
 }
-
-// ===== LEGACY COMPATIBILITY =====
-// RecipeOperationResult moved to types/recipe_types.dart to avoid duplication

@@ -29,7 +29,9 @@
       "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/widgets/common/content_card.dart\")",
       "Bash(cmd.exe /c \"flutter pub get\")",
       "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/services/notifications/\")",
-      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/models/user_profile.dart lib/services/user_service.dart lib/repositories/\")"
+      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/models/user_profile.dart lib/services/user_service.dart lib/repositories/\")",
+      "Bash(cmd.exe:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   },

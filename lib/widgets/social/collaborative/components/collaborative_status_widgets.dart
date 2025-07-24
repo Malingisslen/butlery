@@ -145,49 +145,13 @@ class CollaborativeStatusWidgets {
     String? title,
     List<Widget>? actions,
   }) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: Consumer<CollaborativeStatusViewModel>(
-        builder: (context, viewModel, child) {
-          // Get status object and use .isCollaborative
-          final status = contentType == 'recipe'
-              ? viewModel.getRecipeCollaborativeStatus(
-                  contentId, 
-                  recipe
-                )
-              : viewModel.getMenuCollaborativeStatus(
-                  contentId, 
-                  menuData?.map((key, recipes) => MapEntry(
-                    key,
-                    recipes,
-                  ))
-                );
-
-          final isCollaborative = status.isCollaborative;
-
-          return AppBar(
-            title: Text(title ?? 'Redigera innehåll'),
-            backgroundColor: isCollaborative
-                ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                : null,
-            actions: [
-              // Collaborative badge if relevant
-              if (isCollaborative)
-                Padding(
-                  padding: EdgeInsets.only(right: AppDimensions.spacingL),
-                  child: Center(
-                    child: statusBadge(
-                      text: 'Delat',
-                      icon: Icons.people,
-                    ),
-                  ),
-                ),
-              // Other actions
-              if (actions != null) ...actions,
-            ],
-          );
-        },
-      ),
+    return _CollaborativeAppBar(
+      contentId: contentId,
+      contentType: contentType,
+      recipe: recipe,
+      menuData: menuData,
+      title: title,
+      actions: actions,
     );
   }
 
@@ -250,4 +214,77 @@ class CollaborativeStatusWidgets {
       debugPrint('Could not refresh collaborative status: $e');
     }
   }
+}
+
+/// Private AppBar widget that properly implements PreferredSizeWidget
+class _CollaborativeAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String contentId;
+  final String contentType;
+  final Recipe? recipe;
+  final Map<String, List<Recipe>>? menuData;
+  final String? title;
+  final List<Widget>? actions;
+
+  const _CollaborativeAppBar({
+    required this.contentId,
+    this.contentType = 'recipe',
+    this.recipe,
+    this.menuData,
+    this.title,
+    this.actions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CollaborativeStatusViewModel>(
+      builder: (context, viewModel, child) {
+        // Get collaborative status
+        final status = contentType == 'recipe'
+            ? viewModel.getRecipeCollaborativeStatus(contentId, recipe)
+            : viewModel.getMenuCollaborativeStatus(
+                contentId,
+                menuData?.map((key, recipes) => MapEntry(key, recipes)),
+              );
+
+        final isCollaborative = status.isCollaborative;
+        final participants = status.participants;
+
+        return AppBar(
+          title: Text(title ?? 'Innehåll'),
+          backgroundColor: isCollaborative
+              ? AppColors.primaryBlue.withValues(alpha: 0.1)
+              : null,
+          elevation: isCollaborative ? 2 : null,
+          actions: [
+            // Show collaborative badge if content is collaborative
+            if (isCollaborative) ...[
+              Padding(
+                padding: EdgeInsets.only(right: AppDimensions.spacingS),
+                child: Center(
+                  child: Tooltip(
+                    message: participants.isNotEmpty
+                        ? 'Delat med ${participants.length} ${participants.length == 1 ? 'person' : 'personer'}'
+                        : 'Delat innehåll',
+                    child: CollaborativeStatusWidgets.statusBadge(
+                      text: participants.isNotEmpty 
+                          ? '${participants.length}'
+                          : 'Delat',
+                      icon: Icons.people,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            
+            // Include other actions
+            if (actions != null) ...actions!,
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

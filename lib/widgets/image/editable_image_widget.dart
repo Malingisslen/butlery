@@ -118,57 +118,60 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           onTap: _isAddingImage ? null : _addImage,
           borderRadius: widget.config.effectiveBorderRadius,
           child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_isAddingImage) ...[
-                  SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primaryBlue,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isAddingImage) ...[
+                    SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryBlue,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Adding image...',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary.withValues(alpha: 0.7),
+                    const SizedBox(height: 8), // Reduced from 12
+                    Text(
+                      'Adding image...',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textPrimary.withValues(alpha: 0.7),
+                      ),
                     ),
-                  ),
-                ] else ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(12), // Reduced from 16
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                      ),
+                      child: Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 28, // Reduced from 32
+                        color: AppColors.primaryBlue,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 32,
-                      color: AppColors.primaryBlue,
+                    const SizedBox(height: 8), // Reduced from 12
+                    Text(
+                      'Add images',
+                      style: AppTextStyles.bodyMedium.copyWith( // Changed from bodyLarge
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Add images',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 2), // Reduced from 4
+                    Text(
+                      'Tap to add up to ${widget.config.maxImages} images',
+                      style: AppTextStyles.bodySmall.copyWith( // Changed from bodyMedium
+                        color: AppColors.textPrimary.withValues(alpha: 0.7),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Tap to add up to ${widget.config.maxImages} images',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary.withValues(alpha: 0.7),
-                    ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
