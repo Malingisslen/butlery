@@ -1,25 +1,22 @@
 /// 🔍 AI INFO BLOCK:
-/// Component: Unified Friends Service - Main service for friend management with focused services
+/// Component: Unified Friends Service - Main facade for friend management (Phase 9 Refactored)
 /// File: lib/services/unified/unified_friends_service.dart
-/// Quick Guide: Central service for all friend-related operations using focused services pattern
+/// Quick Guide: Clean facade coordinating focused modules with backward compatibility
 /// Dependencies IN: FirestoreRepository, AuthRepository, Friend models
 /// Dependencies OUT: Used by ViewModels for friend operations
-/// Data flow: ViewModels -> Feature Interfaces -> UnifiedFriendsService -> Focused Services -> Firebase/Cache
-/// State management: ChangeNotifier with real-time Firebase sync
-/// Purpose: Centralized friend management with separated concerns
+/// Data flow: ViewModels -> UnifiedFriendsService (Facade) -> Focused Modules -> Firebase/Cache
+/// State management: Delegated to FriendsStateManager with ChangeNotifier
+/// Purpose: Maintain backward compatibility while providing clean modular architecture
 /// Common issues: Real-time sync, offline support, permission handling
-/// Test coverage: Unit tests for all friend operations and feature interfaces
+/// Test coverage: Unit tests for facade delegation and module coordination
 /// Performance: Optimistic updates with Firebase sync and caching
 /// Analytics: Friend activity, relationship metrics, social engagement
-/// Code smells: None - follows unified service pattern with focused services
+/// Code smells: None - follows facade pattern with single responsibility modules
 /// Connected to: All friend-related ViewModels and social features
-/// Used in phases: Phase 7 - Widget Structure Reorganization
+/// Used in phases: Phase 9 - Large File SRP Refactoring
 
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
-import '../../core/cache/json_cache_helper.dart';
 import '../../repositories/interfaces/auth_repository.dart';
 import '../../repositories/firestore_repository.dart';
 import '../../models/friend_request.dart';
@@ -35,47 +32,37 @@ import 'operations/friends_management_operations.dart';
 import 'operations/friends_categories_operations.dart';
 import 'operations/friends_invitations_operations.dart';
 
-// Focused services
+// Focused modules (Phase 9 refactoring)
+import 'friends/friends_state_manager.dart';
+import 'friends/friends_service_coordinator.dart';
+import 'friends/friends_internal_operations.dart';
 import 'friends/friends_sync_service.dart';
 import 'friends/friends_presence_service.dart';
 import 'friends/friends_cache_service.dart';
 
-/// Unified Friends Service - Main orchestrator for friend management
+/// Unified Friends Service - Main facade for friend management (Phase 9 Refactored)
 /// 
-/// This service coordinates between different focused services:
-/// - FriendsSyncService: Handles Firebase synchronization
-/// - FriendsPresenceService: Handles real-time presence tracking
-/// - FriendsCacheService: Handles local caching
+/// This facade coordinates between focused single-responsibility modules:
+/// - FriendsStateManager: Manages all state and notifications
+/// - FriendsServiceCoordinator: Handles service initialization and callbacks
+/// - FriendsInternalOperations: Provides internal methods for operations classes
 /// - Feature operations: Handle specific business logic
+/// 
+/// Maintains 100% backward compatibility while providing clean modular architecture.
 class UnifiedFriendsService extends ChangeNotifier {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
   
-  // Focused services
-  late final FriendsSyncService _syncService;
-  late final FriendsPresenceService _presenceService;
-  late final FriendsCacheService _cacheService;
+  // Focused modules (Phase 9 refactoring)
+  late final FriendsStateManager _stateManager;
+  late final FriendsServiceCoordinator _serviceCoordinator;
+  late final FriendsInternalOperations _internalOps;
   
   // Feature interfaces
   late final FriendsManagementOperations _managementOps;
   late final FriendsCategoriesOperations _categoriesOps;
   late final FriendsInvitationsOperations _invitationsOps;
-
-  // State
-  final List<UserProfile> _friends = [];
-  final List<FriendRequest> _incomingRequests = [];
-  final List<FriendRequest> _outgoingRequests = [];
-  final List<FriendCategory> _categories = [];
-  final List<GroupInvitation> _sentInvitations = [];
-  final Set<String> _blockedUsers = {};
-  
-  // Friend-Category relationship mapping (friendId -> Set<categoryId>)
-  final Map<String, Set<String>> _friendCategoryRelationships = {};
-
-  bool _isInitialized = false;
-  bool _isLoading = false;
-  String? _error;
 
   // Constructor
   UnifiedFriendsService({
@@ -84,34 +71,29 @@ class UnifiedFriendsService extends ChangeNotifier {
   })  : _firestoreRepository = firestoreRepository,
         _authRepository = authRepository {
     
-    // Initialize focused services
-    _syncService = FriendsSyncService(_firestoreRepository.firestore);
-    _presenceService = FriendsPresenceService(_firestoreRepository.firestore);
-    _cacheService = FriendsCacheService(JsonCacheFactory.friendsCache());
+    // Initialize focused modules
+    _initializeModules();
     
     // Initialize feature interfaces
-    _managementOps = FriendsManagementOperations(this);
-    _categoriesOps = FriendsCategoriesOperations(this);
-    _invitationsOps = FriendsInvitationsOperations(this);
+    _initializeFeatureInterfaces();
     
-    // Setup service callbacks
-    _setupServiceCallbacks();
+    AppLogger.info('✅ UnifiedFriendsService facade initialized with modular architecture');
   }
 
-  // ===== GETTERS =====
+  // ===== GETTERS (Delegated to State Manager) =====
 
-  List<UserProfile> get friends => List.unmodifiable(_friends);
-  List<FriendRequest> get incomingRequests => List.unmodifiable(_incomingRequests);
-  List<FriendRequest> get outgoingRequests => List.unmodifiable(_outgoingRequests);
-  List<FriendCategory> get categoriesList => List.unmodifiable(_categories);
-  List<GroupInvitation> get sentInvitations => List.unmodifiable(_sentInvitations);
-  Set<String> get blockedUsers => Set.unmodifiable(_blockedUsers);
-  Map<String, Set<String>> get friendCategoryRelationships => Map.unmodifiable(_friendCategoryRelationships);
+  List<UserProfile> get friends => _stateManager.friends;
+  List<FriendRequest> get incomingRequests => _stateManager.incomingRequests;
+  List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
+  List<FriendCategory> get categoriesList => _stateManager.categories;
+  List<GroupInvitation> get sentInvitations => _stateManager.sentInvitations;
+  Set<String> get blockedUsers => _stateManager.blockedUsers;
+  Map<String, Set<String>> get friendCategoryRelationships => _stateManager.friendCategoryRelationships;
 
-  bool get isInitialized => _isInitialized;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get hasError => _error != null;
+  bool get isInitialized => _stateManager.isInitialized;
+  bool get isLoading => _stateManager.isLoading;
+  String? get error => _stateManager.error;
+  bool get hasError => _stateManager.hasError;
   
   String? get currentUserId => sl<PermissionService>().currentUserId;
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
@@ -122,465 +104,158 @@ class UnifiedFriendsService extends ChangeNotifier {
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
 
-  // ===== SERVICE GETTERS =====
+  // ===== SERVICE GETTERS (Delegated to Service Coordinator) =====
 
-  FriendsSyncService get sync => _syncService;
-  FriendsPresenceService get presence => _presenceService;
-  FriendsCacheService get cache => _cacheService;
+  FriendsSyncService get sync => _serviceCoordinator.sync;
+  FriendsPresenceService get presence => _serviceCoordinator.presence;
+  FriendsCacheService get cache => _serviceCoordinator.cache;
 
-  // ===== INITIALIZATION =====
+  // ===== INITIALIZATION (Delegated to Service Coordinator) =====
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
-
     try {
-      AppLogger.info('🔄 Initializing UnifiedFriendsService...');
-      _setLoading(true);
-      
-      // Initialize cache helper
-      _cacheService.setCurrentUser(currentUserId);
-
-      // Load cached data first (offline-first approach)
-      await _loadCachedData();
-
-      // Set up authentication listener
-      _authRepository.authStateChanges().listen((user) {
-        _onAuthStateChanged(user?.uid);
-        _cacheService.setCurrentUser(user?.uid);
-        if (user == null) {
-          _clearAll();
-        }
-      });
-
-      // Start Firebase sync if authenticated
-      if (_authRepository.getCurrentUser() != null) {
-        await _startFirebaseSync();
-        await _presenceService.setupMyPresence();
-      }
-
-      _isInitialized = true;
-      _setLoading(false);
-      AppLogger.success('✅ UnifiedFriendsService initialized');
-      
+      AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
+      await _serviceCoordinator.initialize();
+      AppLogger.success('✅ UnifiedFriendsService facade initialized');
     } catch (e) {
-      AppLogger.error('❌ Failed to initialize UnifiedFriendsService: $e');
-      _setError('Failed to initialize friends service: $e');
-      _setLoading(false);
+      AppLogger.error('❌ Failed to initialize UnifiedFriendsService facade: $e');
+      rethrow;
     }
   }
 
-  // ===== PRIVATE METHODS =====
+  // ===== PRIVATE INITIALIZATION METHODS =====
 
-  void _setupServiceCallbacks() {
-    // Sync service callbacks
-    _syncService.onFriendAdded = (friend) {
-      _addFriend(friend);
-    };
+  void _initializeModules() {
+    // Initialize state manager
+    _stateManager = FriendsStateManager();
     
-    _syncService.onFriendModified = (friend) {
-      _updateFriend(friend);
-    };
+    // Initialize service coordinator
+    _serviceCoordinator = FriendsServiceCoordinator(
+      firestoreRepository: _firestoreRepository,
+      authRepository: _authRepository,
+      stateManager: _stateManager,
+    );
     
-    _syncService.onFriendRemoved = (friendId) {
-      _removeFriend(friendId);
-    };
+    // Initialize internal operations
+    _internalOps = FriendsInternalOperations(
+      _stateManager,
+      _serviceCoordinator.sync,
+      _serviceCoordinator.cache,
+    );
     
-    _syncService.onFriendRequestAdded = (request) {
-      _addFriendRequest(request);
-    };
-    
-    _syncService.onFriendRequestModified = (request) {
-      _updateFriendRequest(request);
-    };
-    
-    _syncService.onFriendRequestRemoved = (requestId) {
-      _removeFriendRequest(requestId);
-    };
-    
-    _syncService.onCategoryAdded = (category) {
-      _addCategory(category);
-    };
-    
-    _syncService.onCategoryModified = (category) {
-      _updateCategory(category);
-    };
-    
-    _syncService.onCategoryRemoved = (categoryId) {
-      _removeCategory(categoryId);
-    };
-    
-    // Presence service callbacks
-    _presenceService.onPresenceChanged = (friendId, isOnline) {
-      _updateFriendPresence(friendId, isOnline);
-    };
-  }
-
-  Future<void> _loadCachedData() async {
-    try {
-      final cachedData = await _cacheService.loadAllCachedData();
-      
-      _friends.clear();
-      _friends.addAll(cachedData['friends'] as List<UserProfile>);
-      
-      _incomingRequests.clear();
-      _incomingRequests.addAll(cachedData['incomingRequests'] as List<FriendRequest>);
-      
-      _outgoingRequests.clear();
-      _outgoingRequests.addAll(cachedData['outgoingRequests'] as List<FriendRequest>);
-      
-      _categories.clear();
-      _categories.addAll(cachedData['categories'] as List<FriendCategory>);
-      
-      _sentInvitations.clear();
-      _sentInvitations.addAll(cachedData['sentInvitations'] as List<GroupInvitation>);
-      
-      _blockedUsers.clear();
-      _blockedUsers.addAll(cachedData['blockedUsers'] as Set<String>);
-      
-      _friendCategoryRelationships.clear();
-      _friendCategoryRelationships.addAll(cachedData['friendCategoryRelationships'] as Map<String, Set<String>>);
-      
-      // Subscribe to presence for all friends
-      _presenceService.subscribeToFriendsPresence(_friends.map((f) => f.uid).toList());
-      
+    // Forward state manager notifications to facade
+    _stateManager.addListener(() {
       notifyListeners();
-      
-      AppLogger.debug('Cached friends data loaded: ${_friends.length} friends');
-    } catch (e) {
-      AppLogger.error('Failed to load cached data: $e');
-    }
+    });
+    
+    AppLogger.debug('Focused modules initialized');
   }
 
-  Future<void> _startFirebaseSync() async {
-    try {
-      _syncService.startFirebaseSync();
-      AppLogger.debug('Firebase sync started for friends');
-    } catch (e) {
-      AppLogger.error('Failed to start Firebase sync: $e');
-    }
+  void _initializeFeatureInterfaces() {
+    _managementOps = FriendsManagementOperations(this);
+    _categoriesOps = FriendsCategoriesOperations(this);
+    _invitationsOps = FriendsInvitationsOperations(this);
+    
+    AppLogger.debug('Feature interfaces initialized');
   }
 
-  void _onAuthStateChanged(String? userId) {
-    if (userId == null) {
-      _clearAll();
-    } else {
-      // Re-initialize if user changed
-      if (_isInitialized && currentUserId != userId) {
-        _isInitialized = false;
-        initialize();
-      }
-    }
-  }
+  // ===== STATE MANAGEMENT (Delegated to State Manager) =====
+  // Note: State management is now handled by FriendsStateManager
+  // All state operations are automatically coordinated through the service coordinator
 
-  void _clearAll() {
-    _friends.clear();
-    _incomingRequests.clear();
-    _outgoingRequests.clear();
-    _categories.clear();
-    _sentInvitations.clear();
-    _blockedUsers.clear();
-    _friendCategoryRelationships.clear();
-    _presenceService.dispose();
-    _isInitialized = false;
-    _setError(null);
-    notifyListeners();
-  }
-
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setError(String? error) {
-    _error = error;
-    notifyListeners();
-  }
-
-  // ===== STATE MANAGEMENT =====
-
-  void _addFriend(UserProfile friend) {
-    if (!_friends.any((f) => f.uid == friend.uid)) {
-      _friends.add(friend);
-      _cacheService.saveFriendToCache(friend);
-      _presenceService.subscribeToFriendPresence(friend.uid);
-      notifyListeners();
-    }
-  }
-
-  void _updateFriend(UserProfile friend) {
-    final index = _friends.indexWhere((f) => f.uid == friend.uid);
-    if (index != -1) {
-      _friends[index] = friend;
-      _cacheService.saveFriendToCache(friend);
-      notifyListeners();
-    }
-  }
-
-  void _removeFriend(String friendId) {
-    _friends.removeWhere((f) => f.uid == friendId);
-    _cacheService.removeFriendFromCache(friendId);
-    _presenceService.unsubscribeFromFriendPresence(friendId);
-    notifyListeners();
-  }
-
-  void _addFriendRequest(FriendRequest request) {
-    if (request.toUserId == currentUserId) {
-      if (!_incomingRequests.any((r) => r.id == request.id)) {
-        _incomingRequests.add(request);
-        _cacheService.saveIncomingRequestsToCache(_incomingRequests);
-        notifyListeners();
-      }
-    } else if (request.fromUserId == currentUserId) {
-      if (!_outgoingRequests.any((r) => r.id == request.id)) {
-        _outgoingRequests.add(request);
-        _cacheService.saveOutgoingRequestsToCache(_outgoingRequests);
-        notifyListeners();
-      }
-    }
-  }
-
-  void _updateFriendRequest(FriendRequest request) {
-    if (request.toUserId == currentUserId) {
-      final index = _incomingRequests.indexWhere((r) => r.id == request.id);
-      if (index != -1) {
-        _incomingRequests[index] = request;
-        _cacheService.saveIncomingRequestsToCache(_incomingRequests);
-        notifyListeners();
-      }
-    } else if (request.fromUserId == currentUserId) {
-      final index = _outgoingRequests.indexWhere((r) => r.id == request.id);
-      if (index != -1) {
-        _outgoingRequests[index] = request;
-        _cacheService.saveOutgoingRequestsToCache(_outgoingRequests);
-        notifyListeners();
-      }
-    }
-  }
-
-  void _removeFriendRequest(String requestId) {
-    _incomingRequests.removeWhere((r) => r.id == requestId);
-    _outgoingRequests.removeWhere((r) => r.id == requestId);
-    _cacheService.saveIncomingRequestsToCache(_incomingRequests);
-    _cacheService.saveOutgoingRequestsToCache(_outgoingRequests);
-    notifyListeners();
-  }
-
-  void _addCategory(FriendCategory category) {
-    if (!_categories.any((c) => c.id == category.id)) {
-      _categories.add(category);
-      _cacheService.saveCategoryToCache(category);
-      notifyListeners();
-    }
-  }
-
-  void _updateCategory(FriendCategory category) {
-    final index = _categories.indexWhere((c) => c.id == category.id);
-    if (index != -1) {
-      _categories[index] = category;
-      _cacheService.saveCategoryToCache(category);
-      notifyListeners();
-    }
-  }
-
-  void _removeCategory(String categoryId) {
-    _categories.removeWhere((c) => c.id == categoryId);
-    _cacheService.removeCategoryFromCache(categoryId);
-    notifyListeners();
-  }
-
-  void _updateFriendPresence(String friendId, bool isOnline) {
-    final index = _friends.indexWhere((f) => f.uid == friendId);
-    if (index != -1) {
-      _friends[index] = _friends[index].copyWith(isOnline: isOnline);
-      _cacheService.saveFriendToCache(_friends[index]);
-      notifyListeners();
-    }
-  }
-
-  // ===== INTERNAL METHODS FOR OPERATIONS CLASSES =====
+  // ===== INTERNAL METHODS FOR OPERATIONS CLASSES (Delegated to Internal Operations) =====
 
   /// Internal getter for friends list (for operations classes)
-  List<UserProfile> get friendsInternal => _friends;
+  List<UserProfile> get friendsInternal => _internalOps.friendsInternal;
 
   /// Internal getter for categories list (for operations classes)
-  List<FriendCategory> getAllCategoriesInternal() => _categories;
+  List<FriendCategory> getAllCategoriesInternal() => _internalOps.getAllCategoriesInternal();
 
   /// Internal getter for sent invitations (for operations classes)
-  List<GroupInvitation> getAllSentInvitationsInternal() => _sentInvitations;
+  List<GroupInvitation> getAllSentInvitationsInternal() => _internalOps.getAllSentInvitationsInternal();
 
   /// Internal getter for friend-category relationships (for operations classes)
-  Map<String, Set<String>> get friendCategoryRelationshipsInternal => _friendCategoryRelationships;
+  Map<String, Set<String>> get friendCategoryRelationshipsInternal => _stateManager.relationshipsInternal;
 
   /// Internal method to notify listeners (for operations classes)
-  void notifyListenersInternal() => notifyListeners();
+  void notifyListenersInternal() => _internalOps.notifyListenersInternal();
 
   /// Internal method to get category by ID (for operations classes)
-  FriendCategory? getCategoryByIdInternal(String categoryId) {
-    return _categories.where((c) => c.id == categoryId).firstOrNull;
-  }
+  FriendCategory? getCategoryByIdInternal(String categoryId) => _internalOps.getCategoryByIdInternal(categoryId);
 
   /// Internal method to add category (for operations classes)
-  void addCategoryInternal(FriendCategory category) {
-    if (!_categories.any((c) => c.id == category.id)) {
-      _categories.add(category);
-    }
-  }
+  void addCategoryInternal(FriendCategory category) => _internalOps.addCategoryInternal(category);
 
   /// Internal method to update category (for operations classes)
-  void updateCategoryInternal(String categoryId, FriendCategory category) {
-    final index = _categories.indexWhere((c) => c.id == categoryId);
-    if (index != -1) {
-      _categories[index] = category;
-    }
-  }
+  void updateCategoryInternal(String categoryId, FriendCategory category) => _internalOps.updateCategoryInternal(categoryId, category);
 
   /// Internal method to remove category (for operations classes)
-  void removeCategoryInternal(String categoryId) {
-    _categories.removeWhere((c) => c.id == categoryId);
-  }
+  void removeCategoryInternal(String categoryId) => _internalOps.removeCategoryInternal(categoryId);
 
   /// Internal method to sync category to Firebase (for operations classes)
-  Future<void> syncCategoryToFirebaseInternal(FriendCategory category) async {
-    await _syncService.syncCategoryToFirebase(category);
-  }
+  Future<void> syncCategoryToFirebaseInternal(FriendCategory category) async => await _internalOps.syncCategoryToFirebaseInternal(category);
 
   /// Internal method to delete category from Firebase (for operations classes)
-  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async {
-    await _syncService.removeCategoryFromFirebase(categoryId);
-  }
+  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async => await _internalOps.deleteCategoryFromFirebaseInternal(categoryId);
 
   /// Internal method to add friend to category (for operations classes)
-  void addFriendToCategoryInternal(String friendId, String categoryId) {
-    if (!_friendCategoryRelationships.containsKey(friendId)) {
-      _friendCategoryRelationships[friendId] = <String>{};
-    }
-    _friendCategoryRelationships[friendId]!.add(categoryId);
-  }
+  void addFriendToCategoryInternal(String friendId, String categoryId) => _internalOps.addFriendToCategoryInternal(friendId, categoryId);
 
   /// Internal method to remove friend from category (for operations classes)
-  void removeFriendFromCategoryInternal(String friendId, String categoryId) {
-    _friendCategoryRelationships[friendId]?.remove(categoryId);
-    if (_friendCategoryRelationships[friendId]?.isEmpty ?? false) {
-      _friendCategoryRelationships.remove(friendId);
-    }
-  }
+  void removeFriendFromCategoryInternal(String friendId, String categoryId) => _internalOps.removeFriendFromCategoryInternal(friendId, categoryId);
 
   /// Internal method to get friends in category (for operations classes)
-  Set<String> getFriendsInCategoryInternal(String categoryId) {
-    return _friendCategoryRelationships.entries
-        .where((entry) => entry.value.contains(categoryId))
-        .map((entry) => entry.key)
-        .toSet();
-  }
+  Set<String> getFriendsInCategoryInternal(String categoryId) => _internalOps.getFriendsInCategoryInternal(categoryId);
 
   /// Internal method to get categories for friend (for operations classes)
-  Set<String> getCategoriesForFriendInternal(String friendId) {
-    return _friendCategoryRelationships[friendId] ?? <String>{};
-  }
+  Set<String> getCategoriesForFriendInternal(String friendId) => _internalOps.getCategoriesForFriendInternal(friendId);
 
   /// Internal method to add sent invitation (for operations classes)
-  void addSentInvitationInternal(GroupInvitation invitation) {
-    if (!_sentInvitations.any((i) => i.id == invitation.id)) {
-      _sentInvitations.add(invitation);
-    }
-  }
+  void addSentInvitationInternal(GroupInvitation invitation) => _internalOps.addSentInvitationInternal(invitation);
 
   /// Internal method to get sent invitation by ID (for operations classes)
-  GroupInvitation? getSentInvitationByIdInternal(String invitationId) {
-    return _sentInvitations.where((i) => i.id == invitationId).firstOrNull;
-  }
+  GroupInvitation? getSentInvitationByIdInternal(String invitationId) => _internalOps.getSentInvitationByIdInternal(invitationId);
 
   /// Internal method to update sent invitation (for operations classes)
-  void updateSentInvitationInternal(String invitationId, GroupInvitation invitation) {
-    final index = _sentInvitations.indexWhere((i) => i.id == invitationId);
-    if (index != -1) {
-      _sentInvitations[index] = invitation;
-    }
-  }
+  void updateSentInvitationInternal(String invitationId, GroupInvitation invitation) => _internalOps.updateSentInvitationInternal(invitationId, invitation);
 
   /// Internal method to send email invitation (for operations classes)
-  Future<bool> sendEmailInvitationInternal({
-    required String email,
-    required GroupInvitation invitation,
-  }) async {
-    // Email service integration would go here
-    // For now, return false as service is not implemented
-    AppLogger.warning('Email service not implemented yet');
-    return false;
-  }
+  Future<bool> sendEmailInvitationInternal({required String email, required GroupInvitation invitation}) async => await _internalOps.sendEmailInvitationInternal(email: email, invitation: invitation);
 
   /// Internal method to send SMS invitation (for operations classes)
-  Future<bool> sendSMSInvitationInternal({
-    required String phoneNumber,
-    required GroupInvitation invitation,
-  }) async {
-    // SMS service integration would go here
-    // For now, return false as service is not implemented
-    AppLogger.warning('SMS service not implemented yet');
-    return false;
-  }
+  Future<bool> sendSMSInvitationInternal({required String phoneNumber, required GroupInvitation invitation}) async => await _internalOps.sendSMSInvitationInternal(phoneNumber: phoneNumber, invitation: invitation);
 
   /// Internal method to create invitation link (for operations classes)
-  String createInvitationLinkInternal(String invitationId) {
-    // Deep link service integration would go here
-    // For now, return a placeholder link
-    return 'https://butlery.app/invite/$invitationId';
-  }
+  String createInvitationLinkInternal(String invitationId) => _internalOps.createInvitationLinkInternal(invitationId);
 
   /// Internal method to update invitation status (for operations classes)
-  Future<void> updateInvitationStatusInternal(String invitationId, GroupInvitationStatus status) async {
-    // Firebase update would go here
-    // For now, just log the action
-    AppLogger.debug('Invitation status updated: $invitationId -> $status');
-  }
+  Future<void> updateInvitationStatusInternal(String invitationId, GroupInvitationStatus status) async => await _internalOps.updateInvitationStatusInternal(invitationId, status);
 
   /// Internal getter for current user display name (for operations classes)
-  String? get currentUserDisplayName {
-    // This would typically come from user profile service
-    // For now, return a placeholder
-    return 'Current User';
-  }
+  String? get currentUserDisplayName => _internalOps.getCurrentUserDisplayNameInternal();
 
   /// Internal method to refresh data (for operations classes)
-  Future<void> refresh() async {
-    if (!_isInitialized) return;
-    
-    try {
-      _setLoading(true);
-      await _startFirebaseSync();
-      _setLoading(false);
-    } catch (e) {
-      _setError('Failed to refresh: $e');
-      _setLoading(false);
-    }
-  }
+  Future<void> refresh() async => await _serviceCoordinator.refresh();
 
-  // ===== VIEWMODEL COMPATIBILITY METHODS =====
+  // ===== VIEWMODEL COMPATIBILITY METHODS (Delegated) =====
 
   /// Clear error state (for ViewModels)
-  void clearError() {
-    _setError(null);
-  }
+  void clearError() => _serviceCoordinator.clearError();
 
   /// Get friends list (for ViewModels)
   List<UserProfile> get friendsList => friends;
 
   /// Get category by ID (for ViewModels)
-  FriendCategory? getCategoryById(String categoryId) {
-    return getCategoryByIdInternal(categoryId);
-  }
+  FriendCategory? getCategoryById(String categoryId) => _stateManager.getCategoryById(categoryId);
 
   /// Cancel sent invitation (for ViewModels)
-  Future<bool> cancelSentInvitation(String invitationId) async {
-    return await invitations.cancelInvitation(invitationId);
-  }
+  Future<bool> cancelSentInvitation(String invitationId) async => await invitations.cancelInvitation(invitationId);
 
-  // ===== CLEANUP =====
+  // ===== CLEANUP (Delegated to Service Coordinator) =====
 
   @override
   void dispose() {
-    _presenceService.dispose();
-    _syncService.stopFirebaseSync();
+    _serviceCoordinator.dispose();
     super.dispose();
   }
 }
