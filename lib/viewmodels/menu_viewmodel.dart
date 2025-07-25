@@ -5,11 +5,9 @@ import 'package:flutter/foundation.dart';
 import '../models/recipe_unified.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/menu_service.dart';
-import '../services/unified/unified_friends_service.dart';
 import '../services/unified/operations/social_menu_operations.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/mixins/error_handling_mixin.dart';
 
 // Focused modules
@@ -51,10 +49,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
     _storage = MenuStorage();
     _socialManager = MenuSocialManager(
-      socialMenuOps: SocialMenuOperations(
-        firestore: FirebaseFirestore.instance,
-        friendsService: sl<UnifiedFriendsService>(),
-      ),
+      socialMenuOps: sl<SocialMenuOperations>(),
     );
 
     // Forward state manager notifications

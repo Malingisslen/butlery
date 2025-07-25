@@ -208,4 +208,16 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       'fcmTokenUpdatedAt': null,
     });
   }
+
+  /// Ensure base user document exists in 'users' collection for friends system
+  @override
+  Future<void> ensureBaseUserDocument(String userId) async {
+    final usersCollection = firestore.collection('users');
+    await usersCollection.doc(userId).set({
+      'uid': userId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'lastActiveAt': FieldValue.serverTimestamp(),
+      'initialized': true,
+    }, SetOptions(merge: true));
+  }
 }

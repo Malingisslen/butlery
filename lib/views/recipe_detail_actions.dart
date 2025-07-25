@@ -13,13 +13,16 @@ import '../core/injection.dart';
 import '../services/share_service.dart';
 import '../services/user_service.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
-import '../core/dialogs/dialog_factory.dart';
-import '../core/utils/snackbar_utils.dart';
+import '../core/base/base_action_handler.dart';
 
-/// A helper class containing action methods and helper methods for RecipeDetailView
-/// This class can be used as a mixin or helper class to provide common functionality
-/// for recipe detail view actions.
-class RecipeDetailActions {
+/// Refactored RecipeDetailActions using BaseActionHandler patterns
+/// 
+/// This class provides standardized action methods for recipe detail operations
+/// with consistent error handling, user feedback, and validation.
+class RecipeDetailActions extends BaseActionHandler with ActionStateMixin {
+  @override
+  String get serviceName => 'RecipeDetailActions';
+  
   /// Reference to the share service
   final ShareService _shareService = sl<ShareService>();
   
@@ -37,24 +40,6 @@ class RecipeDetailActions {
   bool get isScaled => _isScaled;
   bool get isCommentsExpanded => _isCommentsExpanded;
   
-  /// Helper method to safely show snackbar messages
-  void showSnackBarSafely(BuildContext context, String message, {bool isError = false}) {
-    if (context.mounted) {
-      if (isError) {
-        SnackBarUtils.showError(context, message);
-      } else {
-        SnackBarUtils.showSuccess(context, message);
-      }
-    }
-  }
-  
-  /// Helper method to safely pop navigation
-  void popSafely(BuildContext context) {
-    if (context.mounted) {
-      Navigator.pop(context);
-    }
-  }
-  
   /// Initialize the actions with recipe data
   void initializeActions(BuildContext context) {
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -62,77 +47,89 @@ class RecipeDetailActions {
     _scaledIngredients = List.from(viewModel.recipe.ingredients);
   }
   
-  /// Delete recipe action with confirmation dialog
+  /// Delete recipe action with confirmation dialog using BaseActionHandler
   Future<void> deleteRecipe(BuildContext context) async {
-    if (!context.mounted) return;
+    if (!validateContext(context)) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
+    final recipeName = viewModel.recipe.title;
 
-    final confirmed = await DialogFactory.showConfirmation(
-      context,
-      title: 'Ta bort recept',
-      message: 'Är du säker på att du vill ta bort "${viewModel.recipe.title}"?',
-      isDangerous: true,
+    await executeDeleteAction(
+      context: context,
+      deleteAction: () => viewModel.deleteRecipe(),
+      itemName: recipeName,
+      itemType: 'recept',
+      warningMessage: 'Receptet kommer att tas bort permanent.',
+      icon: Icons.restaurant,
+      successMessage: 'Receptet "$recipeName" har tagits bort',
+      errorMessage: 'Kunde inte ta bort receptet',
+      popOnSuccess: true,
+      metadata: {
+        'recipe_id': viewModel.recipe.id,
+        'recipe_name': recipeName,
+      },
     );
-
-    if (!context.mounted || confirmed != true) return;
-
-    final success = await viewModel.deleteRecipe();
-
-    if (!context.mounted) return;
-
-    if (success) {
-      showSnackBarSafely(context, 'Recept borttaget');
-      popSafely(context);
-    } else {
-      showSnackBarSafely(
-        context,
-        viewModel.error ?? 'Kunde inte ta bort recept',
-        isError: true,
-      );
-    }
   }
   
-  /// Share recipe action
+  /// Share recipe action using BaseActionHandler
   Future<void> shareRecipe(BuildContext context) async {
-    if (!context.mounted) return;
+    if (!validateContext(context)) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
 
-    // Share with scaled ingredients if user has adjusted portions
-    final recipeToShare = _isScaled
-        ? viewModel.recipe.copyWith(
-            portions: _currentPortions,
-            ingredients: _scaledIngredients,
-          )
-        : viewModel.recipe;
+    await executeAction(
+      context: context,
+      action: () async {
+        // Share with scaled ingredients if user has adjusted portions
+        final recipeToShare = _isScaled
+            ? viewModel.recipe.copyWith(
+                portions: _currentPortions,
+                ingredients: _scaledIngredients,
+              )
+            : viewModel.recipe;
 
-    await _shareService.shareRecipe(recipeToShare);
-    if (!context.mounted) return;
-
-    final message = _isScaled
-        ? 'Recept delat med $_currentPortions portioner!'
-        : 'Recept delat!';
-
-    showSnackBarSafely(context, message);
+        await _shareService.shareRecipe(recipeToShare);
+        return true;
+      },
+      successMessage: _isScaled
+          ? 'Recept delat med $_currentPortions portioner!'
+          : 'Recept delat!',
+      errorMessage: 'Kunde inte dela recept',
+      metadata: {
+        'recipe_id': viewModel.recipe.id,
+        'is_scaled': _isScaled,
+        'portions': _currentPortions,
+      },
+    );
   }
   
-  /// Show social share dialog
+  /// Show social share dialog using BaseActionHandler
   Future<void> showSocialShareDialog(BuildContext context) async {
-    if (!context.mounted) return;
+    if (!validateContext(context)) return;
 
     final socialViewModel = context.read<SocialRecipeViewModel>();
 
-    await showDialog(
+    await executeAction(
       context: context,
-      builder: (context) => UniversalShareDialog.recipe(
-        recipe: socialViewModel.recipe,
-        viewModel: sl<UniversalShareDialogViewModel>(),
-        initialMessage: "Kolla detta recept!",
-        availableFriends: socialViewModel.friends,
-      ),
+      action: () async {
+        await showDialog(
+          context: context,
+          builder: (context) => UniversalShareDialog.recipe(
+            recipe: socialViewModel.recipe,
+            viewModel: sl<UniversalShareDialogViewModel>(),
+            initialMessage: "Kolla detta recept!",
+            availableFriends: socialViewModel.friends,
+          ),
+        );
+        return true;
+      },
+      successMessage: 'Delningsalternativ visade',
+      errorMessage: 'Kunde inte visa delningsalternativ',
+      metadata: {
+        'recipe_id': socialViewModel.recipe.id,
+        'friends_count': socialViewModel.friends.length,
+      },
     );
-    if (!context.mounted) return;
   }
   
   /// Handle portion changes
@@ -142,29 +139,39 @@ class RecipeDetailActions {
     _isScaled = newPortions != (context.read<RecipeDetailViewModel>().recipe.portions ?? 4);
   }
   
-  /// Show fullscreen image viewer
+  /// Show fullscreen image viewer using BaseActionHandler
   Future<void> showFullscreenImages(
     BuildContext context,
     List<String> imageUrls,
     int initialIndex,
   ) async {
-    if (!context.mounted) return;
+    if (!validateContext(context) || !validateRequired([imageUrls], 'showing fullscreen images')) {
+      return;
+    }
 
-    await Navigator.push(
+    if (imageUrls.isEmpty) {
+      showErrorMessage(context, 'Inga bilder tillgängliga');
+      return;
+    }
+
+    await navigateTo(
       context,
-      MaterialPageRoute(
-        builder: (context) => FullscreenImageViewer(
-          imageUrls: imageUrls,
-          initialIndex: initialIndex,
-        ),
+      FullscreenImageViewer(
+        imageUrls: imageUrls,
+        initialIndex: initialIndex,
       ),
     );
-    if (!context.mounted) return;
   }
   
-  /// Toggle comments expansion
+  /// Toggle comments expansion with feedback
   void toggleCommentsExpansion(BuildContext context) {
+    if (!validateContext(context)) return;
+    
     _isCommentsExpanded = !_isCommentsExpanded;
+    showInfoMessage(
+      context,
+      _isCommentsExpanded ? 'Kommentarer utvidgade' : 'Kommentarer dolda',
+    );
     
     // Load comments when expanding for the first time
     if (_isCommentsExpanded) {
@@ -180,7 +187,7 @@ class RecipeDetailActions {
     final success = await socialViewModel.postComment();
     if (!context.mounted) return;
     if (success) {
-      showSnackBarSafely(context, 'Kommentar publicerad!');
+      showSuccessMessage(context, 'Kommentar publicerad!');
     }
   }
   
@@ -200,7 +207,7 @@ class RecipeDetailActions {
       
       if (profile != null) {
         if (context.mounted) {
-          showSnackBarSafely(context, 'Profil skapad! Starta om appen.');
+          showSuccessMessage(context, 'Profil skapad! Starta om appen.');
         }
       }
     }
@@ -216,7 +223,7 @@ class RecipeDetailActions {
         final message = viewModel.recipe.lastCookedText == null
             ? 'Markerad som tillagad för första gången! 🎉'
             : 'Uppdaterad som tillagad idag!';
-        showSnackBarSafely(context, message);
+        showSuccessMessage(context, message);
       }
     }
   }
@@ -233,11 +240,7 @@ class RecipeDetailActions {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (context.mounted) {
-        showSnackBarSafely(
-          context,
-          'Kunde inte öppna länken: $sourceUrl',
-          isError: true,
-        );
+        showErrorMessage(context, 'Kunde inte öppna länken: $sourceUrl');
       }
     }
   }

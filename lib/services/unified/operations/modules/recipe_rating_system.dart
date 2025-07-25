@@ -1,8 +1,9 @@
 // lib/services/unified/operations/modules/recipe_rating_system.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../models/recipe_unified.dart';
+import '../../../../repositories/interfaces/ratings_repository.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/injection.dart';
 
 /// Focused module for recipe rating system
 /// 
@@ -14,13 +15,16 @@ import '../../../../core/utils/logger.dart';
 /// 
 /// ❌ DOES NOT CONTAIN: Statistics aggregation, social metrics, notifications, top-rated queries
 class RecipeRatingSystem {
-  static const String _ratingsCollection = 'recipe_ratings';
+  final RatingsRepository _ratingsRepository;
+
+  RecipeRatingSystem({
+    RatingsRepository? ratingsRepository,
+  }) : _ratingsRepository = ratingsRepository ?? sl<RatingsRepository>();
 
   // ===== RATING OPERATIONS =====
 
   /// Rate a recipe with validation
-  static Future<bool> rateRecipe({
-    required FirebaseFirestore firestore,
+  Future<bool> rateRecipe({
     required String recipeId,
     required double rating,
     required String currentUserId,
@@ -50,22 +54,13 @@ class RecipeRatingSystem {
         return false;
       }
 
-      // Create or update rating
-      final ratingId = '${recipeId}_$currentUserId';
-      final ratingData = {
-        'recipeId': recipeId,
-        'userId': currentUserId,
-        'userDisplayName': currentUserDisplayName,
-        'rating': rating,
-        'review': review?.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      await firestore
-          .collection(_ratingsCollection)
-          .doc(ratingId)
-          .set(ratingData, SetOptions(merge: true));
+      // Create or update rating using repository
+      await _ratingsRepository.rateRecipe(
+        recipeId: recipeId,
+        userId: currentUserId,
+        rating: rating,
+        review: review?.trim(),
+      );
 
       AppLogger.success('✅ Recipe rated successfully');
       return true;
@@ -76,27 +71,12 @@ class RecipeRatingSystem {
   }
 
   /// Get user's rating for a specific recipe
-  static Future<Map<String, dynamic>?> getUserRating({
-    required FirebaseFirestore firestore,
+  Future<RecipeRating?> getUserRating({
     required String recipeId,
     required String userId,
   }) async {
     try {
-      final ratingId = '${recipeId}_$userId';
-      final ratingDoc = await firestore
-          .collection(_ratingsCollection)
-          .doc(ratingId)
-          .get();
-
-      if (!ratingDoc.exists) return null;
-
-      final data = ratingDoc.data()!;
-      return {
-        'rating': data['rating'],
-        'review': data['review'],
-        'createdAt': data['createdAt'],
-        'updatedAt': data['updatedAt'],
-      };
+      return await _ratingsRepository.getUserRating(recipeId, userId);
     } catch (e) {
       AppLogger.error('❌ Failed to get user rating', e);
       return null;
@@ -104,32 +84,12 @@ class RecipeRatingSystem {
   }
 
   /// Get all ratings for a recipe
-  static Future<List<Map<String, dynamic>>> getRecipeRatings({
-    required FirebaseFirestore firestore,
+  Future<List<RecipeRating>> getRecipeRatings({
     required String recipeId,
   }) async {
     try {
       AppLogger.debug('📊 Getting ratings for recipe $recipeId');
-
-      final ratingsSnapshot = await firestore
-          .collection(_ratingsCollection)
-          .where('recipeId', isEqualTo: recipeId)
-          .get();
-
-      final ratings = ratingsSnapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'userId': data['userId'],
-          'userDisplayName': data['userDisplayName'],
-          'rating': data['rating'],
-          'review': data['review'],
-          'createdAt': data['createdAt'],
-          'updatedAt': data['updatedAt'],
-        };
-      }).toList();
-
-      AppLogger.debug('📋 Found ${ratings.length} ratings');
-      return ratings;
+      return await _ratingsRepository.getRecipeRatings(recipeId);
     } catch (e) {
       AppLogger.error('❌ Failed to get recipe ratings', e);
       return [];
@@ -137,8 +97,7 @@ class RecipeRatingSystem {
   }
 
   /// Update existing rating
-  static Future<bool> updateRating({
-    required FirebaseFirestore firestore,
+  Future<bool> updateRating({
     required String recipeId,
     required String userId,
     required double rating,
@@ -152,28 +111,20 @@ class RecipeRatingSystem {
         return false;
       }
 
-      final ratingId = '${recipeId}_$userId';
-      
       // Check if rating exists
-      final ratingDoc = await firestore
-          .collection(_ratingsCollection)
-          .doc(ratingId)
-          .get();
-
-      if (!ratingDoc.exists) {
+      final existingRating = await _ratingsRepository.getUserRating(recipeId, userId);
+      if (existingRating == null) {
         AppLogger.error('❌ Cannot update: Rating not found');
         return false;
       }
 
-      // Update rating
-      await firestore
-          .collection(_ratingsCollection)
-          .doc(ratingId)
-          .update({
-        'rating': rating,
-        'review': review?.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      // Update rating using repository
+      await _ratingsRepository.updateRating(
+        recipeId: recipeId,
+        userId: userId,
+        rating: rating,
+        review: review?.trim(),
+      );
 
       AppLogger.success('✅ Rating updated successfully');
       return true;
@@ -184,19 +135,14 @@ class RecipeRatingSystem {
   }
 
   /// Delete user's rating for a recipe
-  static Future<bool> deleteRating({
-    required FirebaseFirestore firestore,
+  Future<bool> deleteRating({
     required String recipeId,
     required String userId,
   }) async {
     try {
       AppLogger.info('🗑️ Deleting rating for recipe $recipeId');
 
-      final ratingId = '${recipeId}_$userId';
-      await firestore
-          .collection(_ratingsCollection)
-          .doc(ratingId)
-          .delete();
+      await _ratingsRepository.removeRating(recipeId, userId);
 
       AppLogger.success('✅ Rating deleted successfully');
       return true;
@@ -209,17 +155,12 @@ class RecipeRatingSystem {
   // ===== RATING QUERIES =====
 
   /// Get rating count for a recipe
-  static Future<int> getRatingCount({
-    required FirebaseFirestore firestore,
+  Future<int> getRatingCount({
     required String recipeId,
   }) async {
     try {
-      final ratingsSnapshot = await firestore
-          .collection(_ratingsCollection)
-          .where('recipeId', isEqualTo: recipeId)
-          .get();
-
-      return ratingsSnapshot.docs.length;
+      final statistics = await _ratingsRepository.getRatingStatistics(recipeId);
+      return statistics.totalRatings;
     } catch (e) {
       AppLogger.error('❌ Failed to get rating count', e);
       return 0;
@@ -227,19 +168,13 @@ class RecipeRatingSystem {
   }
 
   /// Check if user has rated a recipe
-  static Future<bool> hasUserRated({
-    required FirebaseFirestore firestore,
+  Future<bool> hasUserRated({
     required String recipeId,
     required String userId,
   }) async {
     try {
-      final ratingId = '${recipeId}_$userId';
-      final ratingDoc = await firestore
-          .collection(_ratingsCollection)
-          .doc(ratingId)
-          .get();
-
-      return ratingDoc.exists;
+      final rating = await _ratingsRepository.getUserRating(recipeId, userId);
+      return rating != null;
     } catch (e) {
       AppLogger.error('❌ Failed to check if user has rated', e);
       return false;
@@ -247,35 +182,18 @@ class RecipeRatingSystem {
   }
 
   /// Get ratings given by a specific user
-  static Future<List<Map<String, dynamic>>> getUserGivenRatings({
-    required FirebaseFirestore firestore,
+  Future<List<RecipeRating>> getUserGivenRatings({
     required String userId,
     int? limit,
   }) async {
     try {
       AppLogger.debug('📊 Getting ratings given by user $userId');
-
-      Query query = firestore
-          .collection(_ratingsCollection)
-          .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true);
-
-      if (limit != null) {
-        query = query.limit(limit);
+      final ratings = await _ratingsRepository.getUserRatings(userId);
+      
+      if (limit != null && ratings.length > limit) {
+        return ratings.take(limit).toList();
       }
-
-      final snapshot = await query.get();
-      final ratings = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return {
-          'recipeId': data['recipeId'],
-          'rating': data['rating'],
-          'review': data['review'],
-          'createdAt': data['createdAt'],
-          'updatedAt': data['updatedAt'],
-        };
-      }).toList();
-
+      
       AppLogger.debug('📋 Found ${ratings.length} ratings given by user');
       return ratings;
     } catch (e) {
@@ -285,46 +203,28 @@ class RecipeRatingSystem {
   }
 
   /// Get ratings received for user's recipes
-  static Future<List<Map<String, dynamic>>> getUserReceivedRatings({
-    required FirebaseFirestore firestore,
+  Future<List<RecipeRating>> getUserReceivedRatings({
     required List<String> userRecipeIds,
     int? limit,
   }) async {
     try {
       AppLogger.debug('📊 Getting ratings received for ${userRecipeIds.length} recipes');
 
-      final allRatings = <Map<String, dynamic>>[];
+      final allRatings = <RecipeRating>[];
 
-      // Process in batches to avoid Firestore query limits
+      // Process in batches using repository bulk method
       const batchSize = 10;
       for (int i = 0; i < userRecipeIds.length; i += batchSize) {
         final batch = userRecipeIds.skip(i).take(batchSize).toList();
         
-        final batchRatings = await firestore
-            .collection(_ratingsCollection)
-            .where('recipeId', whereIn: batch)
-            .get();
-
-        for (final doc in batchRatings.docs) {
-          final data = doc.data();
-          allRatings.add({
-            'recipeId': data['recipeId'],
-            'userId': data['userId'],
-            'userDisplayName': data['userDisplayName'],
-            'rating': data['rating'],
-            'review': data['review'],
-            'createdAt': data['createdAt'],
-          });
+        for (final recipeId in batch) {
+          final ratings = await _ratingsRepository.getRecipeRatings(recipeId);
+          allRatings.addAll(ratings);
         }
       }
 
       // Sort by creation date (most recent first)
-      allRatings.sort((a, b) {
-        final aTime = a['createdAt'] as Timestamp?;
-        final bTime = b['createdAt'] as Timestamp?;
-        if (aTime == null || bTime == null) return 0;
-        return bTime.compareTo(aTime);
-      });
+      allRatings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       // Apply limit if specified
       final result = limit != null 
@@ -448,13 +348,31 @@ class RecipeRatingSystem {
   }
 
   /// Check if rating is recent
-  static bool isRecentRating(Timestamp? createdAt, {int daysThreshold = 7}) {
+  static bool isRecentRating(DateTime? createdAt, {int daysThreshold = 7}) {
     if (createdAt == null) return false;
     
     final now = DateTime.now();
-    final ratingDate = createdAt.toDate();
-    final daysDifference = now.difference(ratingDate).inDays;
+    final daysDifference = now.difference(createdAt).inDays;
     
     return daysDifference <= daysThreshold;
+  }
+
+  // ===== RATING STATISTICS =====
+
+  /// Get rating statistics for a recipe
+  Future<RatingStatistics> getRatingStatistics({
+    required String recipeId,
+  }) async {
+    try {
+      return await _ratingsRepository.getRatingStatistics(recipeId);
+    } catch (e) {
+      AppLogger.error('❌ Failed to get rating statistics', e);
+      return RatingStatistics(
+        recipeId: recipeId,
+        averageRating: 0.0,
+        totalRatings: 0,
+        ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+      );
+    }
   }
 }

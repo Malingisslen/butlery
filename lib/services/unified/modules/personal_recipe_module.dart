@@ -6,6 +6,7 @@ import '../../../models/recipe_unified.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/cache/json_cache_helper.dart';
 import '../types/recipe_types.dart';
+import 'service_adapters/recipe_service_adapter.dart';
 
 /// Personal recipe operations module
 /// 
@@ -23,6 +24,7 @@ class PersonalRecipeModule {
   final String? Function() _getCurrentUserDisplayName;
   final void Function(String) _setError;
   final void Function() _notifyListeners;
+  final RecipeServiceAdapter _serviceAdapter;
 
   PersonalRecipeModule({
     required FirebaseFirestore firestore,
@@ -31,12 +33,14 @@ class PersonalRecipeModule {
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
+    RecipeServiceAdapter? serviceAdapter,
   })  : _firestore = firestore,
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,
-        _notifyListeners = notifyListeners;
+        _notifyListeners = notifyListeners,
+        _serviceAdapter = serviceAdapter ?? RecipeServiceAdapter();
 
   // ===== PERSONAL RECIPE CRUD =====
 
@@ -84,11 +88,17 @@ class PersonalRecipeModule {
       // Save to cache first (optimistic update)
       await _saveToCache(newRecipe);
 
-      // Sync to Firebase
-      await _syncPersonalRecipeToFirebase(newRecipe);
-
-      AppLogger.success('✅ Personal recipe "$title" created');
-      return newRecipe.id;
+      // Create recipe using repository pattern
+      final createdId = await _serviceAdapter.createRecipe(newRecipe);
+      if (createdId != null) {
+        AppLogger.success('✅ Personal recipe "$title" created');
+        return createdId;
+      } else {
+        // Remove from cache if creation failed
+        await _removeFromCache(newRecipe.id);
+        _setError('Kunde inte spara recept till servern');
+        return null;
+      }
     } catch (e) {
       AppLogger.error('❌ Could not create personal recipe: $e');
       _setError('Kunde inte skapa recept: $e');
@@ -118,10 +128,14 @@ class PersonalRecipeModule {
       // Save to cache (optimistic update)
       await _saveToCache(editedRecipe);
 
-      // Sync to Firebase
-      await _syncPersonalRecipeToFirebase(editedRecipe);
-
-      AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated');
+      // Update recipe using repository pattern
+      final updateSuccess = await _serviceAdapter.updateRecipe(editedRecipe);
+      if (updateSuccess) {
+        AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated');
+      } else {
+        _setError('Kunde inte uppdatera recept på servern');
+        return false;
+      }
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update personal recipe: $e');
@@ -142,10 +156,14 @@ class PersonalRecipeModule {
       // Remove from cache
       await _removeFromCache(recipeId);
 
-      // Remove from Firebase
-      await _deletePersonalRecipeFromFirebase(recipeId);
-
-      AppLogger.success('✅ Personal recipe deleted');
+      // Delete from Firebase using repository pattern
+      final deleteSuccess = await _serviceAdapter.deleteRecipe(recipeId);
+      if (deleteSuccess) {
+        AppLogger.success('✅ Personal recipe deleted');
+      } else {
+        _setError('Kunde inte ta bort recept från servern');
+        return false;
+      }
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not delete personal recipe: $e');
@@ -374,47 +392,10 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== FIREBASE OPERATIONS =====
-
-  /// Sync personal recipe to Firebase
-  Future<void> _syncPersonalRecipeToFirebase(Recipe recipe) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) return;
-
-    try {
-      await _firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('unified_recipes')
-          .doc(recipe.id)
-          .set(recipe.toFirestore(), SetOptions(merge: true));
-
-      AppLogger.debug('Personal recipe synced: ${recipe.title}');
-    } catch (e) {
-      AppLogger.error('Firebase sync error for recipe ${recipe.id}: $e');
-      rethrow;
-    }
-  }
-
-  /// Delete personal recipe from Firebase
-  Future<void> _deletePersonalRecipeFromFirebase(String recipeId) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) return;
-
-    try {
-      await _firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('unified_recipes')
-          .doc(recipeId)
-          .delete();
-
-      AppLogger.debug('Recipe deleted from Firebase: $recipeId');
-    } catch (e) {
-      AppLogger.error('Firebase deletion error: $e');
-      rethrow;
-    }
-  }
+  // ===== FIREBASE OPERATIONS (DEPRECATED - Use Repository Pattern) =====
+  
+  // These methods are now handled by the RecipeServiceAdapter
+  // They are kept for potential backward compatibility but should not be used
 
   /// Get Firebase query for personal recipes
   Query<Map<String, dynamic>>? getPersonalRecipesQuery() {
@@ -452,7 +433,7 @@ class PersonalRecipeModule {
           );
 
           await _saveToCache(personalRecipe);
-          await _syncPersonalRecipeToFirebase(personalRecipe);
+          await _serviceAdapter.createRecipe(personalRecipe);
           
           importedIds.add(personalRecipe.id);
           AppLogger.info('Imported recipe: ${personalRecipe.title}');

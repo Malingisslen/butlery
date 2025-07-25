@@ -8,7 +8,7 @@ import '../services/unified/unified_friends_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
-import '../core/error/error_handler.dart';
+import '../core/utils/error_handler.dart';
 
 
 class GroupInvitationsViewModel extends ChangeNotifier {
@@ -128,9 +128,9 @@ class GroupInvitationsViewModel extends ChangeNotifier {
       // Ladda medlemmar för varje grupp
       await _loadMembersForGroups();
     } catch (e) {
-      final failure = ErrorHandler.handleError(e);
+      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Kunde inte ladda tillgängliga grupper', e);
-      _setError(failure.message);
+      _setError(failure.userMessage);
     } finally {
       _setLoading(false);
     }
@@ -243,9 +243,9 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      final failure = ErrorHandler.handleError(e);
+      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Fel vid gruppmedlemskap', e);
-      _setError(failure.message);
+      _setError(failure.userMessage);
     } finally {
       _joiningGroupIds.remove(groupId);
       notifyListeners();
@@ -297,9 +297,9 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      final failure = ErrorHandler.handleError(e);
+      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Fel vid acceptans av inbjudan', e);
-      _setError(failure.message);
+      _setError(failure.userMessage);
     } finally {
       _respondingInvitationIds.remove(invitationId);
       notifyListeners();
@@ -345,9 +345,9 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      final failure = ErrorHandler.handleError(e);
+      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Fel vid avvisning av inbjudan', e);
-      _setError(failure.message);
+      _setError(failure.userMessage);
     } finally {
       _respondingInvitationIds.remove(invitationId);
       notifyListeners();

@@ -2,7 +2,8 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/connectivity_monitoring_service.dart';
+import '../../core/injection.dart';
 import '../../models/recipe_unified.dart';
 import '../../models/user_profile.dart';
 import '../../models/realtime/realtime_recipe.dart';
@@ -13,12 +14,11 @@ import '../../models/shared_recipe.dart';
 import '../../services/permission_service.dart';
 import '../../repositories/collaborative_recipe_repository.dart';
 import '../../core/utils/logger.dart';
-import '../../core/injection.dart';
-
 /// Manages real-time collaborative editing for recipe forms
 class RecipeCollaborativeManager extends ChangeNotifier {
   final PermissionService _permissionService;
   final CollaborativeRecipeRepository _collaborativeRepository;
+  final ConnectivityMonitoringService _connectivityService;
 
   // ===== COLLABORATIVE STATE (Firebase) =====
   RealtimeRecipe? _realtimeRecipe;
@@ -39,8 +39,10 @@ class RecipeCollaborativeManager extends ChangeNotifier {
   RecipeCollaborativeManager({
     PermissionService? permissionService,
     CollaborativeRecipeRepository? collaborativeRepository,
+    ConnectivityMonitoringService? connectivityService,
   }) : _permissionService = permissionService ?? sl<PermissionService>(),
-       _collaborativeRepository = collaborativeRepository ?? sl<CollaborativeRecipeRepository>();
+       _collaborativeRepository = collaborativeRepository ?? sl<CollaborativeRecipeRepository>(),
+       _connectivityService = connectivityService ?? sl<ConnectivityMonitoringService>();
 
   // ===== GETTERS =====
 
@@ -231,8 +233,8 @@ class RecipeCollaborativeManager extends ChangeNotifier {
       },
     );
 
-    // Setup Firebase connection monitoring
-    _setupFirebaseConnectionMonitoring();
+    // Setup Firebase connection monitoring via service  
+    _setupConnectivityMonitoring();
   }
 
   /// Hantera real-time uppdateringar från Firebase
@@ -321,25 +323,23 @@ class RecipeCollaborativeManager extends ChangeNotifier {
     }
   }
 
-  /// Setup Firebase connection monitoring
-  void _setupFirebaseConnectionMonitoring() {
-    // Lyssna på Firebase connection state
-    FirebaseFirestore.instance
-        .collection('system')
-        .doc('connection')
-        .snapshots()
-        .listen(
-      (snapshot) {
-        _isConnectedToFirebase = snapshot.exists;
-        _connectionStatusText = _isConnectedToFirebase ? 'Ansluten' : 'Frånkopplad';
-        notifyListeners();
-      },
-      onError: (error) {
-        _isConnectedToFirebase = false;
-        _connectionStatusText = 'Anslutningsfel';
-        notifyListeners();
-      },
-    );
+  /// Setup connectivity monitoring via service
+  void _setupConnectivityMonitoring() {
+    // Start the service monitoring
+    _connectivityService.startMonitoring();
+    
+    // Listen to connectivity changes
+    _connectivityService.addListener(_onConnectivityChanged);
+    
+    // Initialize current state
+    _onConnectivityChanged();
+  }
+  
+  /// Handle connectivity changes from service
+  void _onConnectivityChanged() {
+    _isConnectedToFirebase = _connectivityService.isConnectedToFirebase;
+    _connectionStatusText = _connectivityService.connectionStatusText;
+    notifyListeners();
   }
 
   /// Cleanup realtime listeners
@@ -359,6 +359,7 @@ class RecipeCollaborativeManager extends ChangeNotifier {
   void dispose() {
     _cleanupRealtimeListeners();
     _clearPresence();
+    _connectivityService.removeListener(_onConnectivityChanged);
     super.dispose();
   }
 }

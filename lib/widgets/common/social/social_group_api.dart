@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../models/friend_category.dart';
 import '../../../models/user_profile.dart';
 import '../../social/groups/group_dialogs.dart';
-import 'friend_category_widgets.dart';
+import '../friends/friend_category_widgets.dart';
 
 /// Group API delegation for SocialComponents
 class SocialGroupApi {

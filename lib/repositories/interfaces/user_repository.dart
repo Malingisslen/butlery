@@ -35,4 +35,7 @@ abstract class UserRepository extends Repository<UserProfile> {
 
   /// Clear FCM token (e.g., on logout)
   Future<void> clearFCMToken(String userId);
+
+  /// Ensure base user document exists in 'users' collection for friends system
+  Future<void> ensureBaseUserDocument(String userId);
 }

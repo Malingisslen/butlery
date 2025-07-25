@@ -1,10 +1,15 @@
 // lib/views/social/friend_requests/friend_request_actions.dart
 
 import 'package:flutter/material.dart';
+import '../../../core/base/base_action_handler.dart';
 import '../../../viewmodels/friends_viewmodel.dart';
 import '../../../theme/app_colors.dart';
 
-class FriendRequestActions {
+class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
+  @override
+  String get serviceName => 'FriendRequestActions';
+
+  /// Build floating action button for batch operations
   static Widget? buildFloatingActionButton(
     BuildContext context,
     TabController tabController,
@@ -22,165 +27,169 @@ class FriendRequestActions {
     return null;
   }
 
-  static Future<void> showBatchAcceptDialog(
+  Future<void> showBatchAcceptDialog(
     BuildContext context,
     int count,
     VoidCallback onConfirm,
   ) async {
-    final shouldAccept = await showDialog<bool>(
+    await executeWithConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Acceptera alla valda?'),
-        content: Text('Vill du acceptera $count vänskapsförfrågningar?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.success),
-            child: const Text('Acceptera alla'),
-          ),
-        ],
-      ),
+      action: () async {
+        onConfirm();
+        return true;
+      },
+      confirmationTitle: 'Acceptera alla valda?',
+      confirmationMessage: 'Vill du acceptera $count vänskapsförfrågningar?',
+      confirmActionText: 'Acceptera alla',
+      confirmationIcon: Icons.check_circle,
+      metadata: {
+        'request_count': count,
+        'action': 'batch_accept_dialog',
+      },
     );
-
-    if (shouldAccept == true) {
-      onConfirm();
-    }
   }
 
-  static Future<void> showBatchRejectDialog(
+  Future<void> showBatchRejectDialog(
     BuildContext context,
     int count,
     VoidCallback onConfirm,
   ) async {
-    final shouldReject = await showDialog<bool>(
+    await executeWithConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Avböj alla valda?'),
-        content: Text('Vill du avböja $count vänskapsförfrågningar?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Avböj alla'),
-          ),
-        ],
-      ),
+      action: () async {
+        onConfirm();
+        return true;
+      },
+      confirmationTitle: 'Avböj alla valda?',
+      confirmationMessage: 'Vill du avböja $count vänskapsförfrågningar?',
+      confirmActionText: 'Avböj alla',
+      confirmationIcon: Icons.person_remove,
+      isDangerous: true,
+      metadata: {
+        'request_count': count,
+        'action': 'batch_reject_dialog',
+      },
     );
-
-    if (shouldReject == true) {
-      onConfirm();
-    }
   }
 
-  static Future<void> showCancelSentDialog(
+  Future<void> showCancelSentDialog(
     BuildContext context,
     int count,
     VoidCallback onConfirm,
   ) async {
-    final shouldCancel = await showDialog<bool>(
+    await executeWithConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Avbryt valda förfrågningar?'),
-        content: Text('Vill du avbryta $count skickade förfrågningar?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Nej'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Avbryt alla'),
-          ),
-        ],
-      ),
+      action: () async {
+        onConfirm();
+        return true;
+      },
+      confirmationTitle: 'Avbryt valda förfrågningar?',
+      confirmationMessage: 'Vill du avbryta $count skickade förfrågningar?',
+      confirmActionText: 'Avbryt alla',
+      confirmationIcon: Icons.cancel,
+      isDangerous: true,
+      metadata: {
+        'request_count': count,
+        'action': 'cancel_sent_dialog',
+      },
     );
-
-    if (shouldCancel == true) {
-      onConfirm();
-    }
   }
 
-  static Future<void> performBatchAccept(
+  Future<void> performBatchAccept(
     BuildContext context,
     FriendsViewModel viewModel,
     Set<String> selectedIncoming,
     VoidCallback onComplete,
   ) async {
-    int successCount = 0;
+    if (!validateContext(context)) return;
 
-    for (final requestId in selectedIncoming) {
-      final success = await viewModel.acceptFriendRequest(requestId);
-      if (success) successCount++;
-    }
+    await executeWithLoadingState(
+      context: context,
+      action: () async {
+        int successCount = 0;
 
-    onComplete();
+        for (final requestId in selectedIncoming) {
+          final success = await viewModel.acceptFriendRequest(requestId);
+          if (success) successCount++;
+        }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$successCount vänskapsförfrågningar accepterade! 🎉'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    }
+        onComplete();
+        return successCount;
+      },
+      successMessage: '${selectedIncoming.length} vänskapsförfrågningar accepterade! 🎉',
+      errorMessage: 'Kunde inte acceptera alla förfrågningar',
+      metadata: {
+        'request_count': selectedIncoming.length,
+        'request_ids': selectedIncoming.toList(),
+        'action': 'batch_accept',
+      },
+    );
   }
 
-  static Future<void> performBatchReject(
+  Future<void> performBatchReject(
     BuildContext context,
     FriendsViewModel viewModel,
     Set<String> selectedIncoming,
     VoidCallback onComplete,
   ) async {
-    int successCount = 0;
+    if (!validateContext(context)) return;
 
-    for (final requestId in selectedIncoming) {
-      final success = await viewModel.rejectFriendRequest(requestId);
-      if (success) successCount++;
-    }
+    await executeWithLoadingState(
+      context: context,
+      action: () async {
+        int successCount = 0;
 
-    onComplete();
+        for (final requestId in selectedIncoming) {
+          final success = await viewModel.rejectFriendRequest(requestId);
+          if (success) successCount++;
+        }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$successCount vänskapsförfrågningar avböjda'),
-          backgroundColor: AppColors.warning,
-        ),
-      );
-    }
+        onComplete();
+        return successCount;
+      },
+      successMessage: '${selectedIncoming.length} vänskapsförfrågningar avböjda',
+      errorMessage: 'Kunde inte avböja alla förfrågningar',
+      metadata: {
+        'request_count': selectedIncoming.length,
+        'request_ids': selectedIncoming.toList(),
+        'action': 'batch_reject',
+      },
+    );
   }
 
-  static Future<void> performBatchCancel(
+  Future<void> performBatchCancel(
     BuildContext context,
     FriendsViewModel viewModel,
     Set<String> selectedSent,
     VoidCallback onComplete,
   ) async {
-    int successCount = 0;
+    if (!validateContext(context)) return;
 
-    for (final requestId in selectedSent) {
-      final success = await viewModel.cancelSentRequest(requestId);
-      if (success) successCount++;
-    }
+    await executeWithLoadingState(
+      context: context,
+      action: () async {
+        int successCount = 0;
 
-    onComplete();
+        for (final requestId in selectedSent) {
+          final success = await viewModel.cancelSentRequest(requestId);
+          if (success) successCount++;
+        }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$successCount förfrågningar avbrutna'),
-          backgroundColor: AppColors.warning,
-        ),
-      );
-    }
+        onComplete();
+        return successCount;
+      },
+      successMessage: '${selectedSent.length} förfrågningar avbrutna',
+      errorMessage: 'Kunde inte avbryta alla förfrågningar',
+      metadata: {
+        'request_count': selectedSent.length,
+        'request_ids': selectedSent.toList(),
+        'action': 'batch_cancel',
+      },
+    );
+  }
+
+  /// Dispose resources
+  void dispose() {
+    clearError();
   }
 }

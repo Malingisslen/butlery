@@ -3,10 +3,9 @@
 import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/auth_repository.dart';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_profile.dart';
 import '../core/utils/logger.dart'; // Importerar AppLogger
-import '../core/error/error_handler.dart';
+import '../core/utils/error_handler.dart';
 import 'permission_service.dart';
 import '../core/injection.dart';
 import '../core/mixins/error_handling_mixin.dart';
@@ -16,15 +15,12 @@ import '../core/mixins/stream_management_mixin.dart';
 class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
   final UserRepository _repository;
   final AuthRepository _authRepository;
-  final FirebaseFirestore _firestore;
 
   UserService({
     required UserRepository repository,
     required AuthRepository authRepository,
-    FirebaseFirestore? firestore,
   })  : _repository = repository,
-        _authRepository = authRepository,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+        _authRepository = authRepository;
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
@@ -135,9 +131,9 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
       notifyListeners();
       return profile;
     } catch (e) {
-      final failure = ErrorHandler.handleError(e);
+      final failure = ErrorHandler().handleError(error: e, context: 'saveProfile');
       AppLogger.error('❌ Kunde inte spara profil: $e');
-      _setError(failure.message);
+      _setError(failure.userMessage);
       return null;
     } finally {
       _setLoading(false);
@@ -365,12 +361,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
   /// Ensures base user document exists in 'users' collection for friends system
   Future<void> _ensureBaseUserDocument(String userId) async {
     try {
-      await _firestore.collection('users').doc(userId).set({
-        'uid': userId,
-        'createdAt': FieldValue.serverTimestamp(),
-        'lastActiveAt': FieldValue.serverTimestamp(),
-        'initialized': true,
-      }, SetOptions(merge: true));
+      await _repository.ensureBaseUserDocument(userId);
       
       AppLogger.info('✅ Base user document ensured for: $userId');
     } catch (e) {
