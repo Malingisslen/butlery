@@ -5,7 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/recipe_unified.dart';
 import '../core/utils/logger.dart';
 import '../repositories/firestore_repository.dart';
-import '../repositories/interfaces/auth_repository.dart';
+import '../repositories/interfaces/auth_repository.dart' as auth_repo;
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'offline/offline_initialization.dart';
 import 'offline/offline_user_storage.dart';
@@ -25,24 +25,31 @@ export 'offline/sync_result.dart';
 /// - offline_sync_manager.dart - Sync operations and retry handling
 /// - sync_result.dart - Result type definitions
 class OfflineService extends ChangeNotifier {
-  // Singleton pattern
-  static final OfflineService _instance = OfflineService._internal();
-  factory OfflineService({
-    FirestoreRepository? firestoreRepository,
-    AuthRepository? authRepository,
-  }) {
-    _instance._firestoreRepository =
-        firestoreRepository ?? _instance._firestoreRepository;
-    _instance._authRepository = authRepository ?? _instance._authRepository;
-    return _instance;
-  }
+  // Singleton pattern using SingletonServiceMixin approach
+  static OfflineService? _instance;
+  
+  // Private constructor for singleton
   OfflineService._internal() {
     _firestoreRepository = FirestoreRepository();
     _authRepository = FirebaseAuthRepository();
   }
+  
+  // Factory constructor with dependency injection
+  factory OfflineService({
+    FirestoreRepository? firestoreRepository,
+    auth_repo.AuthRepository? authRepository,
+  }) {
+    _instance ??= OfflineService._internal();
+    
+    // Set dependencies if provided
+    if (firestoreRepository != null) _instance!._firestoreRepository = firestoreRepository;
+    if (authRepository != null) _instance!._authRepository = authRepository;
+    
+    return _instance!;
+  }
 
   late FirestoreRepository _firestoreRepository;
-  late AuthRepository _authRepository;
+  late auth_repo.AuthRepository _authRepository;
 
   // Focused components
   late OfflineInitialization _initialization;
@@ -213,7 +220,7 @@ class OfflineService extends ChangeNotifier {
   @override
   void dispose() {
     _initialization.dispose();
-    super.dispose();
+    super.dispose(); // Call ChangeNotifier dispose
   }
 
   /// Close Hive boxes

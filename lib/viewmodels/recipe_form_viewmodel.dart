@@ -13,6 +13,7 @@ import '../services/unified/unified_recipe_service.dart';
 import '../services/analytics_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 // Import focused managers
 import 'recipe_form/recipe_form_state.dart';
@@ -22,7 +23,7 @@ import 'recipe_form/recipe_permission_manager.dart';
 
 /// Main coordinator for recipe form operations
 /// Delegates to focused managers for specific responsibilities
-class RecipeFormViewModel extends ChangeNotifier {
+class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   // final AnalyticsService _analyticsService; // Currently unused
   final _uuid = const Uuid();
@@ -125,40 +126,46 @@ class RecipeFormViewModel extends ChangeNotifier {
       return null;
     }
 
+    _state.setSaving(true);
+    _state.clearError();
+
     try {
-      _state.setSaving(true);
-      _state.clearError();
+      return await safeExecute<Recipe>(
+        () async {
+          // Skapa recept från state
+          final recipe = _state.createRecipe(
+            recipeId: _state.isEditing ? _state.originalRecipe!.id : _uuid.v4(),
+          );
 
-      // Skapa recept från state
-      final recipe = _state.createRecipe(
-        recipeId: _state.isEditing ? _state.originalRecipe!.id : _uuid.v4(),
+          // Spara via service
+          Recipe savedRecipe;
+          if (_state.isEditing) {
+            final result = await _recipeService.personal.updateUnifiedRecipe(recipe);
+            if (result.isSuccess) {
+              savedRecipe = recipe;
+            } else {
+              throw Exception(result.message ?? 'Failed to update recipe');
+            }
+          } else {
+            final result = await _recipeService.personal.addUnifiedRecipe(recipe);
+            if (result.isSuccess) {
+              savedRecipe = recipe;
+            } else {
+              throw Exception(result.message ?? 'Failed to create recipe');
+            }
+          }
+
+          // Uppdatera collaborative state om aktivt
+          if (isCollaborative) {
+            await _collaborativeManager.updateRecipeInFirebase(savedRecipe);
+          }
+
+          AppLogger.info('Recept sparat: ${savedRecipe.id}');
+          return savedRecipe;
+        },
+        operationName: 'Save Recipe',
+        customErrorMessage: null, // Handle error with custom logic below
       );
-
-      // Spara via service
-      Recipe savedRecipe;
-      if (_state.isEditing) {
-        final result = await _recipeService.personal.updateUnifiedRecipe(recipe);
-        if (result.isSuccess) {
-          savedRecipe = recipe;
-        } else {
-          throw Exception(result.message ?? 'Failed to update recipe');
-        }
-      } else {
-        final result = await _recipeService.personal.addUnifiedRecipe(recipe);
-        if (result.isSuccess) {
-          savedRecipe = recipe;
-        } else {
-          throw Exception(result.message ?? 'Failed to create recipe');
-        }
-      }
-
-      // Uppdatera collaborative state om aktivt
-      if (isCollaborative) {
-        await _collaborativeManager.updateRecipeInFirebase(savedRecipe);
-      }
-
-      AppLogger.info('Recept sparat: ${savedRecipe.id}');
-      return savedRecipe;
     } catch (e) {
       AppLogger.error('Fel vid sparande av recept: $e');
       _state.setError('Kunde inte spara recept: $e');
@@ -175,24 +182,30 @@ class RecipeFormViewModel extends ChangeNotifier {
       return null;
     }
 
-    try {
-      _state.setForking(true);
-      _state.clearError();
+    _state.setForking(true);
+    _state.clearError();
 
-      // Skapa nytt recept från state
-      final newRecipe = _state.createRecipe(recipeId: _uuid.v4());
-      
-      // Spara som nytt recipe
-      final result = await _recipeService.personal.addUnifiedRecipe(newRecipe);
-      if (!result.isSuccess) {
-        throw Exception(result.message ?? 'Failed to fork recipe');
-      }
-      final savedRecipe = newRecipe;
-      
-      // _analyticsService.trackRecipeForked(_state.originalRecipe!.id, savedRecipe.id);
-      AppLogger.info('Recept forkat: ${savedRecipe.id}');
-      
-      return savedRecipe;
+    try {
+      return await safeExecute<Recipe>(
+        () async {
+          // Skapa nytt recept från state
+          final newRecipe = _state.createRecipe(recipeId: _uuid.v4());
+          
+          // Spara som nytt recipe
+          final result = await _recipeService.personal.addUnifiedRecipe(newRecipe);
+          if (!result.isSuccess) {
+            throw Exception(result.message ?? 'Failed to fork recipe');
+          }
+          final savedRecipe = newRecipe;
+          
+          // _analyticsService.trackRecipeForked(_state.originalRecipe!.id, savedRecipe.id);
+          AppLogger.info('Recept forkat: ${savedRecipe.id}');
+          
+          return savedRecipe;
+        },
+        operationName: 'Fork Recipe',
+        customErrorMessage: null, // Handle error with custom logic below
+      );
     } catch (e) {
       AppLogger.error('Fel vid forkning av recept: $e');
       _state.setError('Kunde inte forka recept: $e');
@@ -214,28 +227,35 @@ class RecipeFormViewModel extends ChangeNotifier {
       return false;
     }
 
-    try {
-      _state.clearError();
-      
-      await _recipeService.deleteRecipe(_state.originalRecipe!.id);
-      
-      // Cleanup collaborative state
-      if (isCollaborative) {
-        await _collaborativeManager.leaveCollaborativeMode();
-      }
-      
-      // Cleanup images
-      await _imageManager.clearAllImages();
-      
-      // _analyticsService.trackRecipeDeleted(_state.originalRecipe!.id);
-      AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');
-      
-      return true;
-    } catch (e) {
-      AppLogger.error('Fel vid borttagning av recept: $e');
-      _state.setError('Kunde inte ta bort recept: $e');
+    _state.clearError();
+
+    final result = await safeExecute<bool>(
+      () async {
+        await _recipeService.deleteRecipe(_state.originalRecipe!.id);
+        
+        // Cleanup collaborative state
+        if (isCollaborative) {
+          await _collaborativeManager.leaveCollaborativeMode();
+        }
+        
+        // Cleanup images
+        await _imageManager.clearAllImages();
+        
+        // _analyticsService.trackRecipeDeleted(_state.originalRecipe!.id);
+        AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');
+        
+        return true;
+      },
+      operationName: 'Delete Recipe',
+      customErrorMessage: null, // Handle error with custom logic below
+    );
+
+    if (result == null) {
+      _state.setError('Kunde inte ta bort recept');
       return false;
     }
+
+    return result;
   }
 
   // ===== FORM SETTERS (Delegate to state) =====
@@ -519,11 +539,13 @@ class RecipeFormViewModel extends ChangeNotifier {
   }
 
   Future<void> _loadInitialPermissions(Recipe recipe) async {
-    try {
-      await _permissionManager.loadPermissions(recipe);
-    } catch (e) {
-      AppLogger.error('Fel vid laddning av permissions: $e');
-    }
+    await safeExecute(
+      () async {
+        await _permissionManager.loadPermissions(recipe);
+      },
+      operationName: 'Load Initial Permissions',
+      customErrorMessage: 'Fel vid laddning av permissions',
+    );
   }
 
   void _syncToCollaborative() {

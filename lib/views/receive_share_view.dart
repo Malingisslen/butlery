@@ -7,7 +7,9 @@ import '../services/analytics_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
-import '../widgets/common/state_widget.dart'; // ✅ MIGRATION: Ersätt SkeletonLoader
+import '../widgets/common/scaffolds/base_scaffold.dart';
+import '../core/dialogs/dialog_factory.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 /// View för att ta emot och hantera delningar från andra appar
 class ReceiveShareView extends StatefulWidget {
@@ -24,7 +26,7 @@ class ReceiveShareView extends StatefulWidget {
   State<ReceiveShareView> createState() => _ReceiveShareViewState();
 }
 
-class _ReceiveShareViewState extends State<ReceiveShareView> {
+class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingMixin {
   final ContentDetectorService _detector = ContentDetectorService();
   final SocialMediaExtractor _extractor = SocialMediaExtractor();
   final AnalyticsService _analytics = AnalyticsService();
@@ -52,8 +54,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
     // Simulera lite processing för bättre UX
     await Future.delayed(const Duration(milliseconds: 500));
 
+    final result = await _detector.detectContent(widget.content);
     setState(() {
-      _detectionResult = _detector.detectContent(widget.content);
+      _detectionResult = result;
       _isProcessing = false;
     });
 
@@ -108,47 +111,53 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       _extractionError = null;
     });
 
-    try {
-      final result = await _extractor.extractFromUrl(
-        _detectionResult.extractedUrl!,
-      );
+    await safeExecute(
+      () async {
+        final result = await _extractor.extractFromUrl(
+          _detectionResult.extractedUrl!,
+        );
 
-      if (mounted) {
-        if (result.success && result.extractedText != null) {
-          // Logga lyckad extraktion
-          _analytics.logImportSuccess(
-            source: 'share_extraction',
-            platform: _detectionResult.platform?.toString().split('.').last,
-            recipeLength: result.extractedText!.length,
-          );
+        if (mounted) {
+          if (result.success && result.extractedText != null) {
+            // Logga lyckad extraktion
+            _analytics.logImportSuccess(
+              source: 'share_extraction',
+              platform: _detectionResult.platform?.toString().split('.').last,
+              recipeLength: result.extractedText!.length,
+            );
 
-          // Navigera till text import med extraherad text
-          Navigator.pushReplacementNamed(
-            context,
-            '/franSocialaMedier',
-            arguments: {
-              'text': result.extractedText,
-              'sourceUrl': _detectionResult.extractedUrl,
-            },
-          );
-        } else {
-          // Logga misslyckad extraktion
-          final errorMessage = result.error ?? 'Kunde inte extrahera text';
+            // Navigera till text import med extraherad text
+            Navigator.pushReplacementNamed(
+              context,
+              '/franSocialaMedier',
+              arguments: {
+                'text': result.extractedText,
+                'sourceUrl': _detectionResult.extractedUrl,
+              },
+            );
+          } else {
+            // Logga misslyckad extraktion
+            final errorMessage = result.error ?? 'Kunde inte extrahera text';
 
-          _analytics.logExtractionError(
-            url: _detectionResult.extractedUrl!,
-            platform: _detectionResult.platform ?? SourcePlatform.unknown,
-            error: errorMessage,
-            errorType: result.metadata['reason'] as String?,
-          );
+            _analytics.logExtractionError(
+              url: _detectionResult.extractedUrl!,
+              platform: _detectionResult.platform ?? SourcePlatform.unknown,
+              error: errorMessage,
+              errorType: result.metadata['reason'] as String?,
+            );
 
-          setState(() {
-            _extractionError = errorMessage;
-            _isExtracting = false;
-          });
+            if (mounted) {
+              setState(() {
+                _extractionError = errorMessage;
+                _isExtracting = false;
+              });
+            }
+          }
         }
-      }
-    } catch (e) {
+      },
+      operationName: 'Extract from Social Media',
+      customErrorMessage: null, // Handle error in catch block below
+    ).catchError((e) {
       if (mounted) {
         // Logga oväntat fel
         _analytics.logExtractionError(
@@ -163,7 +172,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
           _isExtracting = false;
         });
       }
-    }
+    });
   }
 
   /// Hantera när användare väljer manuell kopiering
@@ -174,87 +183,43 @@ class _ReceiveShareViewState extends State<ReceiveShareView> {
       reason: _extractionError != null ? 'after_error' : 'user_choice',
     );
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Manuell kopiering'),
-        content: Text(
-          '1. Gå tillbaka till ${_getPlatformName()}\n'
-          '2. Kopiera recepttexten från inlägget\n'
-          '3. Kom tillbaka hit och välj "Klistra in text"',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _navigateToTextImport();
-            },
-            child: const Text('Klistra in text'),
-          ),
-        ],
-      ),
-    );
+    DialogFactory.showConfirmation(
+      context,
+      title: 'Manuell kopiering',
+      message: '1. Gå tillbaka till ${_getPlatformName()}\n'
+               '2. Kopiera recepttexten från inlägget\n'
+               '3. Kom tillbaka hit och välj "Klistra in text"',
+      confirmText: 'Klistra in text',
+      cancelText: 'Avbryt',
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _navigateToTextImport();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Importera recept')),
-      body: _isProcessing
-          ? _buildLoadingView()
-          : _isExtracting
-              ? _buildExtractingView()
-              : _buildContentView(),
+    if (_isProcessing) {
+      return LoadingScaffold(
+        title: 'Importera recept',
+        loadingMessage: 'Analyserar innehåll...',
+      );
+    }
+    
+    if (_isExtracting) {
+      return LoadingScaffold(
+        title: 'Importera recept',
+        loadingMessage: 'Hämtar recept från ${_getPlatformName()}...',
+      );
+    }
+    
+    return BaseScaffold(
+      title: 'Importera recept',
+      body: _buildContentView(),
     );
   }
 
-  Widget _buildLoadingView() {
-    return Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // ✅ MIGRATION: StateWidget skeleton loader
-          StateWidget.skeletonRecipeList(itemCount: 1),
-          const SizedBox(height: AppDimensions.spacingL),
-          Text('Analyserar innehåll...', style: AppTextStyles.titleMedium),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExtractingView() {
-    return Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: AppDimensions.iconSizeL,
-            height: AppDimensions.iconSizeL,
-            child: const CircularProgressIndicator(),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          Text(
-            'Hämtar recept från ${_getPlatformName()}...',
-            style: AppTextStyles.titleMedium,
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: AppDimensions.spacingS),
-          Text(
-            'Detta kan ta några sekunder',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildContentView() {
     return Padding(

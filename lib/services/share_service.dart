@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/recipe_unified.dart';
 import '../models/unified/unified_shopping_item.dart';
+import '../core/base/base_service.dart';
 
 /// Format-alternativ för receptdelning
 enum RecipeShareFormat {
@@ -14,7 +15,10 @@ enum RecipeShareFormat {
 
 /// Service som hanterar all delningsfunktionalitet i appen
 /// Modulär design för enkel utbyggnad och testning
-class ShareService {
+class ShareService extends BaseService {
+  
+  @override
+  String get serviceName => 'ShareService';
   // ===== FORMATERINGS-KONSTANTER =====
   // Använder nu AppTheme för formaterings-symboler
 
@@ -328,8 +332,15 @@ class ShareService {
 
   /// Dela recept via native share sheet
   Future<void> shareRecipe(Recipe recipe) async {
-    final text = getSmartFormat(recipe);
-    await Share.share(text, subject: recipe.title);
+    await executeServiceOperation(
+      () async {
+        final text = getSmartFormat(recipe);
+        await Share.share(text, subject: recipe.title);
+      },
+      operationName: 'Share recipe',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
   }
 
   /// Dela recept med formatval
@@ -337,19 +348,33 @@ class ShareService {
     Recipe recipe,
     RecipeShareFormat format,
   ) async {
-    final text = switch (format) {
-      RecipeShareFormat.complete => formatRecipeComplete(recipe),
-      RecipeShareFormat.compact => formatRecipeCompact(recipe),
-      RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
-    };
+    await executeServiceOperation(
+      () async {
+        final text = switch (format) {
+          RecipeShareFormat.complete => formatRecipeComplete(recipe),
+          RecipeShareFormat.compact => formatRecipeCompact(recipe),
+          RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
+        };
 
-    await Share.share(text, subject: recipe.title);
+        await Share.share(text, subject: recipe.title);
+      },
+      operationName: 'Share recipe with format',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
   }
 
   /// Dela inköpslista
   Future<void> shareShoppingList(List<UnifiedShoppingItem> items) async {
-    final text = formatShoppingList(items);
-    await Share.share(text, subject: 'Inköpslista');
+    await executeServiceOperation(
+      () async {
+        final text = formatShoppingList(items);
+        await Share.share(text, subject: 'Inköpslista');
+      },
+      operationName: 'Share shopping list',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
   }
 
   /// Dela veckomeny från kategorier (den faktiska strukturen från MenuViewModel)

@@ -19,6 +19,8 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../utils/logger.dart';
+import '../mixins/error_handling_mixin.dart';
+import '../utils/validation_utils.dart';
 
 /// Factory class that eliminates duplicated dialog creation patterns
 /// 
@@ -48,9 +50,23 @@ import '../utils/logger.dart';
 /// // After (centralized):
 /// DialogFactory.showConfirmation(context, title: 'Bekräfta', message: 'Är du säker?');
 /// ```
-class DialogFactory {
+class DialogFactory with ErrorHandlingMixin {
   // Prevent instantiation
   DialogFactory._();
+  
+  /// Consolidated dialog execution with error handling
+  static Future<T?> _safeShowDialog<T>(
+    String operationName,
+    Future<T?> Function() dialogOperation,
+  ) async {
+    try {
+      AppLogger.info('Showing dialog: $operationName');
+      return await dialogOperation();
+    } catch (e) {
+      AppLogger.error('Failed to show dialog ($operationName): $e');
+      return null;
+    }
+  }
   
   // ===== CONFIRMATION DIALOGS =====
   
@@ -64,8 +80,14 @@ class DialogFactory {
     Color? confirmColor,
     bool isDangerous = false,
   }) async {
-    try {
-      return await showDialog<bool>(
+    // Validate inputs
+    if (ValidationUtils.isNullOrEmpty(title) || ValidationUtils.isNullOrEmpty(message)) {
+      return null;
+    }
+
+    return await _safeShowDialog<bool>(
+      'Show Confirmation Dialog',
+      () => showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(title),
@@ -86,11 +108,8 @@ class DialogFactory {
             ),
           ],
         ),
-      );
-    } catch (e) {
-      AppLogger.error('Failed to show confirmation dialog: $e');
-      return null;
-    }
+      ),
+    );
   }
   
   /// Show delete confirmation (specialized dangerous confirmation)
@@ -136,8 +155,14 @@ class DialogFactory {
     VoidCallback? onRetry,
     String dismissText = 'OK',
   }) async {
-    try {
-      return await showDialog<bool>(
+    // Validate inputs
+    if (ValidationUtils.isNullOrEmpty(message)) {
+      return null;
+    }
+
+    return await _safeShowDialog<bool>(
+      'Show Error Dialog',
+      () => showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: Row(
@@ -163,11 +188,8 @@ class DialogFactory {
               ),
           ],
         ),
-      );
-    } catch (e) {
-      AppLogger.error('Failed to show error dialog: $e');
-      return null;
-    }
+      ),
+    );
   }
   
   /// Show network error dialog with retry
@@ -196,8 +218,14 @@ class DialogFactory {
     VoidCallback? onAction,
     String dismissText = 'OK',
   }) async {
-    try {
-      return await showDialog<bool>(
+    // Validate inputs
+    if (ValidationUtils.isNullOrEmpty(message)) {
+      return null;
+    }
+
+    return await _safeShowDialog<bool>(
+      'Show Success Dialog',
+      () => showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: Row(
@@ -226,11 +254,8 @@ class DialogFactory {
               ),
           ],
         ),
-      );
-    } catch (e) {
-      AppLogger.error('Failed to show success dialog: $e');
-      return null;
-    }
+      ),
+    );
   }
   
   // ===== INFO DIALOGS =====

@@ -8,6 +8,7 @@ import '../models/recipe_unified.dart';
 import '../models/user_profile.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 /// 🎯 Content type enum för type safety
 enum CollaborativeContentType {
@@ -51,7 +52,7 @@ class CollaborativeStatus {
 ///
 /// Skalbar system för att hantera kollaborativ status över alla content-typer
 /// med robust caching, batch operations och comprehensive error handling
-class CollaborativeStatusViewModel extends ChangeNotifier {
+class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final SocialRecipeService _socialRecipeService;
 
   // ===== GENERIC CACHING SYSTEM =====
@@ -170,17 +171,17 @@ class CollaborativeStatusViewModel extends ChangeNotifier {
     final key = _buildCacheKey(contentId, type);
     if (_checkingKeys.contains(key)) return;
 
+    _checkingKeys.add(key);
+
+    // Sätt loading state
+    _statusCache[key] = CollaborativeStatus.loading();
+    
+    // Defer notification to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+
     try {
-      _checkingKeys.add(key);
-
-      // Sätt loading state
-      _statusCache[key] = CollaborativeStatus.loading();
-      
-      // Defer notification to avoid setState during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
-      });
-
       AppLogger.info(
           '🔍 Async check: ${type.name} $contentId collaborative status');
 

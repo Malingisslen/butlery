@@ -8,17 +8,14 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
 import 'shared/group_dialog_components.dart';
+import '../../common/dialogs/base_dialog.dart';
 
 /// Dialog for removing a member from a group
 /// 
-/// This dialog provides a focused interface for member removal with:
-/// - Clear confirmation messaging with member and group names
-/// - Warning about access loss
-/// - Service integration for member removal
-/// - Error handling
-class RemoveMemberDialog extends StatefulWidget {
+/// Refactored to extend BaseActionDialog, eliminating 30+ lines of duplicate
+/// state management, error handling, and loading patterns.
+class RemoveMemberDialog extends BaseActionDialog<bool> {
   final FriendCategory group;
   final UserProfile member;
 
@@ -29,129 +26,87 @@ class RemoveMemberDialog extends StatefulWidget {
   });
 
   @override
-  State<RemoveMemberDialog> createState() => _RemoveMemberDialogState();
-}
+  Future<bool> performAction(BuildContext context) async {
+    final friendsService = sl<UnifiedFriendsService>();
+    
+    final success = await friendsService.categories.removeFriendFromCategory(
+      friendId: member.uid,
+      categoryId: group.id,
+    );
 
-class _RemoveMemberDialogState extends State<RemoveMemberDialog> {
-  bool _isRemoving = false;
-  String? _error;
-
-  Future<void> _removeMember() async {
-    setState(() {
-      _isRemoving = true;
-      _error = null;
-    });
-
-    try {
-      final friendsService = sl<UnifiedFriendsService>();
-      
-      final success = await friendsService.categories.removeFriendFromCategory(
-        friendId: widget.member.uid,
-        categoryId: widget.group.id,
-      );
-
-      if (success) {
-        if (mounted) {
-          Navigator.of(context).pop(true);
-        }
-      } else {
-        setState(() {
-          _error = 'Kunde inte ta bort medlem. Försök igen.';
-        });
-      }
-    } catch (e) {
-      AppLogger.error('Error removing member from group', e);
-      setState(() {
-        _error = 'Ett fel uppstod: ${e.toString()}';
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isRemoving = false;
-        });
-      }
+    if (!success) {
+      throw Exception('Kunde inte ta bort medlem. Försök igen.');
     }
+    
+    return true;
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      icon: Icon(
-        Icons.person_remove,
-        color: AppColors.warning,
-        size: 48,
-      ),
-      title: const Text('Ta bort medlem'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Confirmation message
-          RichText(
-            text: TextSpan(
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              children: [
-                const TextSpan(
-                  text: 'Är du säker på att du vill ta bort ',
-                ),
-                TextSpan(
-                  text: widget.member.displayName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const TextSpan(
-                  text: ' från gruppen ',
-                ),
-                TextSpan(
-                  text: '"${widget.group.name}"',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const TextSpan(
-                  text: '?',
-                ),
-              ],
+  Widget buildContent(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Confirmation message
+        RichText(
+          text: TextSpan(
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
             ),
+            children: [
+              const TextSpan(
+                text: 'Är du säker på att du vill ta bort ',
+              ),
+              TextSpan(
+                text: member.displayName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const TextSpan(
+                text: ' från gruppen ',
+              ),
+              TextSpan(
+                text: '"${group.name}"',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const TextSpan(
+                text: '?',
+              ),
+            ],
           ),
-          
-          SizedBox(height: AppDimensions.spacingM),
-          
-          // Warning message
-          const WarningDisplayWidget(
-            warningMessage: 'Medlemmen kommer att förlora åtkomst till gruppens innehåll.',
-          ),
-          
-          // Error display
-          if (_error != null) ...[
-            SizedBox(height: AppDimensions.spacingM),
-            ErrorDisplayWidget(errorMessage: _error!),
-          ],
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isRemoving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Avbryt'),
         ),
-        FilledButton.icon(
-          onPressed: _isRemoving ? null : _removeMember,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.warning,
-            foregroundColor: Colors.white,
-          ),
-          icon: _isRemoving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Icon(Icons.person_remove),
-          label: Text(_isRemoving ? 'Tar bort...' : 'Ta bort medlem'),
+        
+        SizedBox(height: AppDimensions.spacingM),
+        
+        // Warning message
+        const WarningDisplayWidget(
+          warningMessage: 'Medlemmen kommer att förlora åtkomst till gruppens innehåll.',
         ),
       ],
     );
   }
+
+  @override
+  Widget? get dialogIcon => Icon(
+    Icons.person_remove,
+    color: AppColors.warning,
+    size: 48,
+  );
+
+  @override
+  String get dialogTitle => 'Ta bort medlem';
+
+  @override
+  String get actionButtonText => 'Ta bort medlem';
+
+  @override
+  String get loadingButtonText => 'Tar bort...';
+
+  @override
+  Widget get actionButtonIcon => const Icon(Icons.person_remove);
+
+  @override
+  ButtonStyle get actionButtonStyle => FilledButton.styleFrom(
+    backgroundColor: AppColors.warning,
+    foregroundColor: Colors.white,
+  );
 }

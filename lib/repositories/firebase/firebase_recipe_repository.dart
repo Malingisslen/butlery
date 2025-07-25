@@ -4,91 +4,76 @@ import '../interfaces/auth_repository.dart';
 import '../interfaces/recipe_repository.dart';
 import '../../models/recipe_unified.dart';
 import '../../models/recipe_change.dart';
+import 'base_firebase_repository.dart';
 
-class FirebaseRecipeRepository implements RecipeRepository {
-  final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
-
+/// Firebase repository for user recipes stored in /users/{userId}/recipes collection.
+///
+/// Refactored to extend BaseFirebaseRepository with UserScopedFirebaseRepository mixin,
+/// eliminating 40+ lines of duplicate CRUD code and authentication checks.
+class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
+    with UserScopedFirebaseRepository<Recipe>
+    implements RecipeRepository {
+  // ignore: use_super_parameters
   FirebaseRecipeRepository({
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository;
+  }) : super(
+          firestore: firestore,
+          authRepository: authRepository,
+        );
 
-  CollectionReference<Map<String, dynamic>>? get _userCollection {
-    final uid = _authRepository.currentUserId;
-    if (uid == null) return null;
-    return _firestore.collection('users').doc(uid).collection('recipes');
-  }
+  // ===== BASE CLASS IMPLEMENTATION =====
 
   @override
-  Future<Recipe> create(Recipe recipe) async {
-    final ref = _userCollection;
-    if (ref == null) throw Exception('No authenticated user');
-    await ref.doc(recipe.id).set(recipe.toFirestore());
-    return recipe;
-  }
+  String get collectionName => 'recipes';
 
   @override
-  Future<void> update(Recipe recipe) async {
-    final ref = _userCollection;
-    if (ref == null) throw Exception('No authenticated user');
-    await ref.doc(recipe.id).update(recipe.toFirestore());
-  }
+  Recipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      Recipe.fromFirestore(doc);
 
   @override
-  Future<void> delete(String id) async {
-    final ref = _userCollection;
-    if (ref == null) throw Exception('No authenticated user');
-    await ref.doc(id).delete();
-  }
+  Map<String, dynamic> toFirestore(Recipe entity) => entity.toFirestore();
+
+  @override
+  String getId(Recipe entity) => entity.id;
+
+  // ===== ENHANCED BASE CLASS METHODS =====
 
   @override
   Future<List<Recipe>> readAll() async {
-    final ref = _userCollection;
-    if (ref == null) return [];
-    final snapshot = await ref.orderBy('updatedAt', descending: true).get();
-    return snapshot.docs.map((d) => Recipe.fromFirestore(d)).toList();
+    // Override to add ordering that was in original implementation
+    try {
+      final ref = getCollectionRef();
+      final snapshot = await ref.orderBy('updatedAt', descending: true).get();
+      return snapshot.docs.map(fromFirestore).toList();
+    } catch (e) {
+      // Fall back to safe version if no user
+      return await readAllSafe();
+    }
   }
 
-  @override
-  Future<Recipe?> read(String id) async {
-    final ref = _userCollection;
-    if (ref == null) return null;
-    final doc = await ref.doc(id).get();
-    if (!doc.exists) return null;
-    return Recipe.fromFirestore(doc);
-  }
+  // ===== SPECIALIZED RECIPE OPERATIONS =====
 
   @override
   Stream<List<Recipe>> watchRecipes(String userId) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('recipes')
+    // Use the mixin method to get user-specific collection
+    return getCollectionForUser(userId)
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => Recipe.fromFirestore(d)).toList());
+        .map((snap) => snap.docs.map(fromFirestore).toList());
   }
 
   @override
   Future<List<Recipe>> searchRecipes(String query) async {
     final lower = query.toLowerCase();
     final all = await readAll();
-    return all
-        .where((r) => r.title.toLowerCase().contains(lower))
-        .toList();
+    return all.where((r) => r.title.toLowerCase().contains(lower)).toList();
   }
 
   @override
   Future<void> addRecipes(List<Recipe> recipes) async {
-    final ref = _userCollection;
-    if (ref == null) throw Exception('No authenticated user');
-    final batch = _firestore.batch();
-    for (final recipe in recipes) {
-      batch.set(ref.doc(recipe.id), recipe.toFirestore());
-    }
-    await batch.commit();
+    // Use the base class batch method
+    await createBatch(recipes);
   }
 
   @override
@@ -97,15 +82,12 @@ class FirebaseRecipeRepository implements RecipeRepository {
     void Function(List<RecipeChange>) onData, {
     Function? onError,
   }) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('recipes')
+    return getCollectionForUser(userId)
         .orderBy('updatedAt', descending: true)
         .snapshots()
         .listen((snapshot) {
       final changes = snapshot.docChanges.map((change) {
-        final recipe = Recipe.fromFirestore(change.doc);
+        final recipe = fromFirestore(change.doc);
         final type = switch (change.type) {
           DocumentChangeType.added => RecipeChangeType.added,
           DocumentChangeType.modified => RecipeChangeType.modified,
@@ -120,27 +102,31 @@ class FirebaseRecipeRepository implements RecipeRepository {
 
   @override
   Future<List<Recipe>> fetchArchiveRecipes() async {
-    final snap = await _firestore.collection('butlery_archive').get();
-    return snap.docs.map((d) => Recipe.fromFirestore(d)).toList();
+    // Archive recipes are stored in a global collection, not user-scoped
+    final snap =
+        await FirebaseFirestore.instance.collection('butlery_archive').get();
+    return snap.docs.map(fromFirestore).toList();
   }
 
   @override
   Future<Recipe> fetchArchiveRecipe(String id) async {
-    final doc = await _firestore.collection('butlery_archive').doc(id).get();
+    // Archive recipes are stored in a global collection, not user-scoped
+    final doc = await FirebaseFirestore.instance
+        .collection('butlery_archive')
+        .doc(id)
+        .get();
     if (!doc.exists) {
       throw Exception('Archive recipe not found');
     }
-    return Recipe.fromFirestore(doc);
+    return fromFirestore(doc);
   }
 
   @override
   Future<List<Recipe>> fetchUserRecipes(String userId) async {
-    final snap = await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('recipes')
+    // Use the mixin method for user-specific collection
+    final snap = await getCollectionForUser(userId)
         .orderBy('updatedAt', descending: true)
         .get();
-    return snap.docs.map((d) => Recipe.fromFirestore(d)).toList();
+    return snap.docs.map(fromFirestore).toList();
   }
 }

@@ -5,64 +5,51 @@ import '../interfaces/auth_repository.dart';
 import 'firebase_auth_repository.dart';
 import '../../models/user_profile.dart';
 import '../interfaces/user_repository.dart';
+import 'base_firebase_repository.dart';
 
 /// Repository for user profile data stored in the `public_profiles` collection.
-class FirebaseUserRepository implements UserRepository {
+///
+/// Refactored to extend BaseFirebaseRepository, eliminating 45 lines of duplicate CRUD code
+/// while preserving all specialized user profile operations.
+class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
+    implements UserRepository {
   FirebaseUserRepository({
-    FirebaseFirestore? firestore,
+    super.firestore,
     AuthRepository? authRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository ?? FirebaseAuthRepository();
+  }) : super(
+          authRepository: authRepository ?? FirebaseAuthRepository(),
+        );
 
-  final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
-
-  CollectionReference<Map<String, dynamic>> get _profilesRef =>
-      _firestore.collection('public_profiles');
+  // ===== BASE CLASS IMPLEMENTATION =====
 
   @override
-  Future<UserProfile> create(UserProfile profile) async {
-    await _profilesRef.doc(profile.uid).set(profile.toFirestore());
-    return profile;
-  }
+  String get collectionName => 'public_profiles';
 
   @override
-  Future<UserProfile?> read(String id) async {
-    final doc = await _profilesRef.doc(id).get();
-    if (!doc.exists) return null;
-    return UserProfile.fromFirestore(doc);
-  }
+  UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      UserProfile.fromFirestore(doc);
 
   @override
-  Future<List<UserProfile>> readAll() async {
-    final snapshot = await _profilesRef.get();
-    return snapshot.docs.map(UserProfile.fromFirestore).toList();
-  }
+  Map<String, dynamic> toFirestore(UserProfile entity) => entity.toFirestore();
 
   @override
-  Future<void> update(UserProfile profile) async {
-    await _profilesRef.doc(profile.uid).update(profile.toFirestore());
-  }
+  String getId(UserProfile entity) => entity.uid;
 
-  @override
-  Future<void> delete(String id) async {
-    await _profilesRef.doc(id).delete();
-  }
+  // ===== SPECIALIZED USER PROFILE OPERATIONS =====
 
   /// Create or update the current user's profile.
   @override
   Future<void> saveProfile(UserProfile profile) async {
     final data = profile.toFirestore();
     data['displayNameLower'] = profile.displayName.toLowerCase();
-    await _profilesRef.doc(profile.uid).set(data);
+    await collection.doc(profile.uid).set(data);
   }
 
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
   @override
   Future<UserProfile?> fetchProfile(String userId) async {
-    final doc = await _profilesRef.doc(userId).get();
-    if (!doc.exists) return null;
-    return UserProfile.fromFirestore(doc);
+    // Use the base class read method for consistency
+    return await read(userId);
   }
 
   /// Fetch multiple profiles in batches (Firestore limit 10 per query).
@@ -75,11 +62,10 @@ class FirebaseUserRepository implements UserRepository {
 
     for (var i = 0; i < userIds.length; i += batchSize) {
       final batch = userIds.skip(i).take(batchSize).toList();
-      final query = await _profilesRef
-          .where(FieldPath.documentId, whereIn: batch)
-          .get();
+      final query =
+          await collection.where(FieldPath.documentId, whereIn: batch).get();
       for (final doc in query.docs) {
-        results.add(UserProfile.fromFirestore(doc));
+        results.add(fromFirestore(doc));
       }
     }
 
@@ -95,17 +81,19 @@ class FirebaseUserRepository implements UserRepository {
   }) async {
     final updates = <String, dynamic>{};
     if (friendsCount != null) updates['friendsCount'] = friendsCount;
-    if (publicRecipeCount != null) updates['publicRecipeCount'] = publicRecipeCount;
+    if (publicRecipeCount != null) {
+      updates['publicRecipeCount'] = publicRecipeCount;
+    }
 
     if (updates.isNotEmpty) {
-      await _profilesRef.doc(userId).update(updates);
+      await collection.doc(userId).update(updates);
     }
   }
 
   /// Update the online status for a user.
   @override
   Future<void> updateOnlineStatus(String userId, bool isOnline) async {
-    await _profilesRef.doc(userId).update({
+    await collection.doc(userId).update({
       'isOnline': isOnline,
       'lastActiveAt': FieldValue.serverTimestamp(),
     });
@@ -119,10 +107,10 @@ class FirebaseUserRepository implements UserRepository {
     final normalizedQuery = query.trim().toLowerCase();
     final results = <UserProfile>[];
     final seen = <String>{};
-    final currentUserId = _authRepository.currentUserId;
+    final uid = currentUserId;
 
     try {
-      final nameQuery = await _profilesRef
+      final nameQuery = await collection
           .where('isSearchable', isEqualTo: true)
           .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
           .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
@@ -130,8 +118,8 @@ class FirebaseUserRepository implements UserRepository {
           .get();
 
       for (final doc in nameQuery.docs) {
-        if (doc.id == currentUserId) continue;
-        final profile = UserProfile.fromFirestore(doc);
+        if (doc.id == uid) continue;
+        final profile = fromFirestore(doc);
         if (!seen.contains(profile.uid)) {
           results.add(profile);
           seen.add(profile.uid);
@@ -139,14 +127,14 @@ class FirebaseUserRepository implements UserRepository {
       }
     } catch (_) {
       // If indexed search fails, fall back to a slower name search
-      final slowQuery = await _profilesRef
+      final slowQuery = await collection
           .where('isSearchable', isEqualTo: true)
           .orderBy('displayName')
           .limit(100)
           .get();
       for (final doc in slowQuery.docs) {
-        if (doc.id == currentUserId) continue;
-        final profile = UserProfile.fromFirestore(doc);
+        if (doc.id == uid) continue;
+        final profile = fromFirestore(doc);
         if (profile.displayName.toLowerCase().contains(normalizedQuery) &&
             !seen.contains(profile.uid)) {
           results.add(profile);
@@ -158,14 +146,14 @@ class FirebaseUserRepository implements UserRepository {
 
     // Optional email search
     if (normalizedQuery.contains('@') && results.length < 5) {
-      final emailQuery = await _profilesRef
+      final emailQuery = await collection
           .where('allowEmailSearch', isEqualTo: true)
           .where('email', isEqualTo: normalizedQuery)
           .limit(5)
           .get();
       for (final doc in emailQuery.docs) {
-        if (doc.id == currentUserId) continue;
-        final profile = UserProfile.fromFirestore(doc);
+        if (doc.id == uid) continue;
+        final profile = fromFirestore(doc);
         if (!seen.contains(profile.uid)) {
           results.add(profile);
           seen.add(profile.uid);
@@ -186,19 +174,19 @@ class FirebaseUserRepository implements UserRepository {
   /// Check if a display name is available (case sensitive).
   @override
   Future<bool> isDisplayNameAvailable(String displayName) async {
-    final query = await _profilesRef
+    final query = await collection
         .where('displayName', isEqualTo: displayName.trim())
         .limit(1)
         .get();
     if (query.docs.isEmpty) return true;
-    final currentId = _authRepository.currentUserId;
+    final currentId = currentUserId;
     return query.docs.first.id == currentId;
   }
 
   /// Update FCM token for push notifications
   @override
   Future<void> updateFCMToken(String userId, String token) async {
-    await _profilesRef.doc(userId).update({
+    await collection.doc(userId).update({
       'fcmToken': token,
       'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
     });
@@ -207,7 +195,7 @@ class FirebaseUserRepository implements UserRepository {
   /// Update notification settings
   @override
   Future<void> updateNotificationSettings(String userId, bool enabled) async {
-    await _profilesRef.doc(userId).update({
+    await collection.doc(userId).update({
       'notificationsEnabled': enabled,
     });
   }
@@ -215,10 +203,9 @@ class FirebaseUserRepository implements UserRepository {
   /// Clear FCM token (e.g., on logout)
   @override
   Future<void> clearFCMToken(String userId) async {
-    await _profilesRef.doc(userId).update({
+    await collection.doc(userId).update({
       'fcmToken': null,
       'fcmTokenUpdatedAt': null,
     });
   }
 }
-

@@ -16,11 +16,15 @@
 /// Used in phases: Phase 5 - Service Consolidation
 
 import '../../../models/friend_request.dart';
-import '../../../models/user_profile.dart';
+import '../../../models/user_profile.dart' as model;
 import '../../../core/utils/logger.dart';
-import '../../../services/user_service.dart';
+import '../../../core/base/base_service.dart';
+import '../../../core/utils/validation_utils.dart';
+import '../../../core/utils/logging_utils.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../../services/user_service.dart' as user_svc;
 import '../../../core/injection.dart';
-import '../../notifications/notification_service.dart';
+import '../../notifications/notification_service.dart' as notif;
 import '../../notifications/notification_types.dart';
 
 /// Friends management operations feature interface
@@ -31,149 +35,152 @@ import '../../notifications/notification_types.dart';
 /// - Managing friend relationships
 /// - Blocking and unblocking users
 /// - Friend search and discovery
-class FriendsManagementOperations {
+class FriendsManagementOperations extends BaseService {
+  @override
+  String get serviceName => 'FriendsManagementOperations';
   final dynamic _parent; // UnifiedFriendsService
-  late final UserService _userService;
-  late final NotificationService? _notificationService;
+  late final user_svc.UserService _userService;
+  late final notif.NotificationService? _notificationService;
 
   FriendsManagementOperations(this._parent) {
-    _userService = sl<UserService>();
+    _userService = sl<user_svc.UserService>();
     
     // Initialize notification service if user is authenticated
-    try {
-      final currentUserId = _parent.currentUserId;
-      if (currentUserId != null) {
-        _notificationService = NotificationService(
-          firestore: _parent.firestore,
-          userId: currentUserId,
-        );
-        _notificationService?.initialize();
-      } else {
-        _notificationService = null;
-      }
-    } catch (e) {
-      AppLogger.warning('⚠️ Could not initialize notification service: $e');
-      _notificationService = null;
-    }
+    _notificationService = safeExecuteSync<notif.NotificationService?>(
+      () {
+        final currentUserId = _parent.currentUserId;
+        if (currentUserId != null) {
+          final service = notif.NotificationService(
+            firestore: _parent.firestore,
+            userId: currentUserId,
+          );
+          service.initialize();
+          return service;
+        }
+        return null;
+      },
+      operationName: 'Initialize notification service',
+      customErrorMessage: 'Could not initialize friend notifications',
+    );
   }
 
   // ===== FRIEND REQUEST MANAGEMENT =====
 
   /// Send a friend request to another user
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
-    // For now, use recipientId as display name until we can fetch user profile
-    final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
-    try {
-      if (_parent.currentUserId == null) {
-        AppLogger.error('Cannot send friend request: User not authenticated');
-        return false;
-      }
-
-      if (recipientId == _parent.currentUserId) {
-        AppLogger.error('Cannot send friend request to yourself');
-        return false;
-      }
-
-      // Check if already friends
-      if (isFriend(recipientId)) {
-        AppLogger.warning('Already friends with this user');
-        return false;
-      }
-
-      // Check if request already exists
-      if (hasOutgoingRequest(recipientId)) {
-        AppLogger.warning('Friend request already sent to this user');
-        return false;
-      }
-
-      // Check if there's an incoming request from this user
-      if (hasIncomingRequest(recipientId)) {
-        AppLogger.warning('This user has already sent you a friend request');
-        return false;
-      }
-
-      final currentUserId = _parent.currentUserId;
-      final currentUserDisplayName = _parent.currentUserDisplayName;
-      
-      if (currentUserId == null || currentUserDisplayName == null) {
-        AppLogger.error('Cannot send friend request: User information not available');
-        return false;
-      }
-      
-      final request = FriendRequest(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        fromUserId: currentUserId,
-        toUserId: recipientId,
-        message: message,
-        sentAt: DateTime.now(),
-        status: FriendRequestStatus.pending,
-      );
-
-      // Add to local state (optimistic update)
-      _parent._outgoingRequests.add(request);
-      _parent._notifyListeners();
-
-      // Send to Firebase
-      await _parent._syncFriendRequestToFirebase(request);
-
-      // Send notification to recipient
-      await _sendFriendRequestNotification(request, currentUserDisplayName, recipientDisplayName);
-
-      AppLogger.success('Friend request sent to $recipientDisplayName');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to send friend request', e);
+    // Validate input
+    if (ValidationUtils.isNullOrEmpty(recipientId)) {
       return false;
     }
+
+    return await LoggingUtils.loggedCreate(
+      'Friend Request',
+      () async {
+        // Check authentication
+        final currentUserId = _parent.currentUserId;
+        final currentUserDisplayName = _parent.currentUserDisplayName;
+        
+        if (ValidationUtils.isNullOrEmpty(currentUserId) || ValidationUtils.isNullOrEmpty(currentUserDisplayName)) {
+          throw Exception(AppStrings.authenticationError);
+        }
+
+        // Validate not sending to self
+        if (recipientId == currentUserId) {
+          throw Exception('Cannot send friend request to yourself');
+        }
+
+        // Check if already friends
+        if (isFriend(recipientId)) {
+          throw Exception('Already friends with this user');
+        }
+
+        // Check if request already exists
+        if (hasOutgoingRequest(recipientId)) {
+          throw Exception('Friend request already sent to this user');
+        }
+
+        // Check if there's an incoming request from this user
+        if (hasIncomingRequest(recipientId)) {
+          throw Exception('This user has already sent you a friend request');
+        }
+        
+        final request = FriendRequest(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          fromUserId: currentUserId!,
+          toUserId: recipientId,
+          message: message,
+          sentAt: DateTime.now(),
+          status: FriendRequestStatus.pending,
+        );
+
+        // Add to local state (optimistic update)
+        _parent._outgoingRequests.add(request);
+        _parent._notifyListeners();
+
+        // Send to Firebase
+        await _parent._syncFriendRequestToFirebase(request);
+
+        // Send notification to recipient
+        final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
+        await _sendFriendRequestNotification(request, currentUserDisplayName!, recipientDisplayName);
+
+        return true;
+      },
+      metadata: {'recipient_id': recipientId, 'has_message': message != null},
+    ) == true;
   }
 
   /// Accept an incoming friend request
   Future<bool> acceptFriendRequest(String requestId) async {
-    try {
-      final request = _parent._incomingRequests
-          .where((r) => r.id == requestId)
-          .firstOrNull;
-
-      if (request == null) {
-        AppLogger.error('Friend request not found');
-        return false;
-      }
-
-      // Update request status
-      final acceptedRequest = request.copyWith(
-        status: FriendRequestStatus.accepted,
-        respondedAt: DateTime.now(),
-      );
-
-      // Add as friend
-      final friend = UserProfile(
-        uid: request.fromUserId,
-        displayName: 'User ${request.fromUserId.substring(0, 6)}...', // Would be fetched from user profile
-        email: '', // Would be fetched from user profile
-        avatarUrl: null, // Would be fetched from user profile
-        bio: null,
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      );
-
-      // Update local state
-      _parent._friends.add(friend);
-      _parent._incomingRequests.removeWhere((r) => r.id == requestId);
-      _parent._notifyListeners();
-
-      // Sync to Firebase
-      await _parent._syncFriendToFirebase(friend);
-      await _parent._updateFriendRequestStatus(acceptedRequest);
-
-      // Send notification to the original sender
-      await _sendFriendRequestAcceptedNotification(request, _parent.currentUserDisplayName ?? 'Unknown User');
-
-      AppLogger.success('Friend request accepted from ${request.fromUserId}');
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to accept friend request', e);
+    if (ValidationUtils.isNullOrEmpty(requestId)) {
       return false;
     }
+
+    return await LoggingUtils.loggedUpdate(
+      'Friend Request',
+      () async {
+        final request = _parent._incomingRequests
+            .where((r) => r.id == requestId)
+            .firstOrNull;
+
+        if (request == null) {
+          throw Exception('Friend request not found');
+        }
+
+        // Update request status
+        final acceptedRequest = request.copyWith(
+          status: FriendRequestStatus.accepted,
+          respondedAt: DateTime.now(),
+        );
+
+        // Add as friend
+        final friend = model.UserProfile(
+          uid: request.fromUserId,
+          displayName: 'User ${request.fromUserId.substring(0, 6)}...', // Would be fetched from user profile
+          email: '', // Would be fetched from user profile
+          avatarUrl: null, // Would be fetched from user profile
+          bio: null,
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+
+        // Update local state
+        _parent._friends.add(friend);
+        _parent._incomingRequests.removeWhere((r) => r.id == requestId);
+        _parent._notifyListeners();
+
+        // Sync to Firebase
+        await _parent._syncFriendToFirebase(friend);
+        await _parent._updateFriendRequestStatus(acceptedRequest);
+
+        // Send notification to the original sender
+        await _sendFriendRequestAcceptedNotification(request, _parent.currentUserDisplayName ?? 'Unknown User');
+
+        return true;
+      },
+      itemId: requestId,
+      metadata: {'action': 'accept'},
+    ) == true;
   }
 
   /// Reject an incoming friend request
@@ -319,12 +326,12 @@ class FriendsManagementOperations {
   // ===== FRIEND QUERIES =====
 
   /// Get all friends
-  List<UserProfile> getAllFriends() {
+  List<model.UserProfile> getAllFriends() {
     return List.unmodifiable(_parent._friends);
   }
 
   /// Get friend by ID
-  UserProfile? getFriendById(String friendId) {
+  model.UserProfile? getFriendById(String friendId) {
     return _parent._friends.where((f) => f.uid == friendId).firstOrNull;
   }
 
@@ -334,19 +341,19 @@ class FriendsManagementOperations {
   }
 
   /// Get online friends
-  List<UserProfile> getOnlineFriends() {
-    // UserProfile doesn't have isOnline property, so return all friends for now
+  List<model.UserProfile> getOnlineFriends() {
+    // model.UserProfile doesn't have isOnline property, so return all friends for now
     return _parent._friends.toList();
   }
 
   /// Get friends by category
-  List<UserProfile> getFriendsByCategory(String category) {
+  List<model.UserProfile> getFriendsByCategory(String category) {
     // This would need to be implemented with category relationships
     return _parent._friends.toList();
   }
 
   /// Search friends by name
-  List<UserProfile> searchFriends(String query) {
+  List<model.UserProfile> searchFriends(String query) {
     final searchTerm = query.toLowerCase();
     return _parent._friends
         .where((f) => f.displayName.toLowerCase().contains(searchTerm))
@@ -354,7 +361,7 @@ class FriendsManagementOperations {
   }
   
   /// Search users (both current friends and new users to add)
-  Future<List<UserProfile>> searchUsers(String query) async {
+  Future<List<model.UserProfile>> searchUsers(String query) async {
     try {
       AppLogger.info('Searching users with query: $query');
       
@@ -365,7 +372,7 @@ class FriendsManagementOperations {
       final allUsers = await _userService.searchUsers(query);
       
       // Combine results, prioritizing current friends
-      final combinedResults = <UserProfile>[];
+      final combinedResults = <model.UserProfile>[];
       
       // Add current friends first
       combinedResults.addAll(currentFriends);
@@ -425,7 +432,7 @@ class FriendsManagementOperations {
   /// Get friend statistics
   Map<String, dynamic> getFriendStats() {
     final totalFriends = _parent._friends.length;
-    final onlineFriends = 0; // UserProfile doesn't have isOnline property
+    final onlineFriends = 0; // model.UserProfile doesn't have isOnline property
     final categoryCounts = <String, int>{};
 
     return {
@@ -440,7 +447,7 @@ class FriendsManagementOperations {
   }
 
   /// Get mutual friends with another user
-  Future<List<UserProfile>> getMutualFriends(String userId) async {
+  Future<List<model.UserProfile>> getMutualFriends(String userId) async {
     try {
       if (_parent.currentUserId == null) {
         AppLogger.error('Cannot get mutual friends: User not authenticated');
@@ -483,8 +490,8 @@ class FriendsManagementOperations {
         return [];
       }
 
-      // Get UserProfile objects for mutual friends
-      final mutualFriends = <UserProfile>[];
+      // Get model.UserProfile objects for mutual friends
+      final mutualFriends = <model.UserProfile>[];
       for (final friendId in mutualFriendIds) {
         final friend = _parent._friends
             .where((f) => f.uid == friendId)

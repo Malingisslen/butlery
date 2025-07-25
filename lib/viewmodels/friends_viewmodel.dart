@@ -9,8 +9,7 @@ import '../services/unified/unified_friends_service.dart';
 import '../services/user_service.dart';
 import '../core/permissions/permission_mixins.dart';
 import '../core/utils/logger.dart';
-import '../core/mixins/state_notifier_mixin.dart';
-import '../core/mixins/async_operation_mixin.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 /// Represents the friendship status between two users
 enum FriendshipStatus {
@@ -28,7 +27,7 @@ enum FriendshipStatus {
 
 
 class FriendsViewModel extends ChangeNotifier 
-    with StateNotifierMixin, AsyncOperationMixin, BasePermissionMixin, SocialPermissionMixin {
+    with ErrorHandlingMixin, BasePermissionMixin, SocialPermissionMixin {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
 
@@ -91,12 +90,11 @@ class FriendsViewModel extends ChangeNotifier
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
 
   // Service state (enhanced with local loading states)
-  @override
   bool get isLoading =>
-      super.isLoading || _friendsService.isLoading || _isLoadingUserProfiles || _isCreatingGroup;
+      _friendsService.isLoading || _isLoadingUserProfiles || _isCreatingGroup;
   
-  @override  
-  String? get error => super.error ?? _friendsService.error ?? _groupCreationError;
+  String? get error => _friendsService.error ?? _groupCreationError ?? _searchError;
+  bool get hasError => _friendsService.hasError || _groupCreationError != null || _searchError != null;
 
   // Selection state
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
@@ -195,31 +193,35 @@ class FriendsViewModel extends ChangeNotifier
     String? emoji,
     List<String>? selectedFriendIds,
   }) async {
+    _isCreatingGroup = true;
+    _groupCreationError = null;
+    notifyListeners();
+    
     try {
-      _isCreatingGroup = true;
-      _groupCreationError = null;
-      notifyListeners();
+      final result = await safeExecute(
+        () async {
+          AppLogger.info('🔄 Skapar grupp: $name');
 
-      AppLogger.info('🔄 Skapar grupp: $name');
+          final categoryId = await _friendsService.categories.createCategory(
+            name: name,
+            description: description ?? '',
+            initialMemberIds: selectedFriendIds,
+          );
 
-      final categoryId = await _friendsService.categories.createCategory(
-        name: name,
-        description: description ?? '',
-        initialMemberIds: selectedFriendIds,
+          final success = categoryId != null;
+          if (success) {
+            AppLogger.success('✅ Grupp "$name" skapad!');
+            return true;
+          } else {
+            _groupCreationError = _friendsService.error ?? 'Kunde inte skapa grupp';
+            throw Exception(_groupCreationError!);
+          }
+        },
+        operationName: 'Create group',
+        customErrorMessage: 'Fel vid skapande av grupp',
       );
-
-      final success = categoryId != null;
-      if (success) {
-        AppLogger.success('✅ Grupp "$name" skapad!');
-      } else {
-        _groupCreationError = _friendsService.error ?? 'Kunde inte skapa grupp';
-      }
-
-      return success;
-    } catch (e) {
-      AppLogger.error('❌ Fel vid skapande av grupp', e);
-      _groupCreationError = 'Fel vid skapande av grupp: $e';
-      return false;
+      
+      return result ?? false;
     } finally {
       _isCreatingGroup = false;
       notifyListeners();
@@ -276,24 +278,12 @@ class FriendsViewModel extends ChangeNotifier
   Future<List<UserProfile>> getMutualFriends(String userId) async {
     if (_isDisposed) return [];
 
-    // PREVENT RACE CONDITION: Check if operation is already in progress
-    if (isOperationActive('get_mutual_friends_$userId')) {
-      AppLogger.debug('⏳ Mutual friends loading already in progress for $userId, skipping...');
-      return [];
-    }
-
-    try {
-      return await executeNamedOperation(
-        'get_mutual_friends_$userId',
-        () async {
-          return await _friendsService.management.getMutualFriends(userId);
-        },
-        errorPrefix: 'Failed to get mutual friends',
-      );
-    } catch (e) {
-      // Return empty list on error since executeNamedOperation rethrows
-      return [];
-    }
+    return await safeExecute(
+      () async {
+        return await _friendsService.management.getMutualFriends(userId);
+      },
+      operationName: 'Get mutual friends',
+    ) ?? [];
   }
 
   /// Check if user can be added as friend
@@ -348,14 +338,7 @@ class FriendsViewModel extends ChangeNotifier
     // ✅ SÄKER: Kontrollera dispose innan asynkrona operationer
     if (_isDisposed) return;
 
-    // ✅ PREVENT RACE CONDITION: Check if operation is already in progress
-    if (isOperationActive('load_user_profiles')) {
-      AppLogger.debug('⏳ User profiles loading already in progress, skipping...');
-      return;
-    }
-
-    await executeNamedOperation(
-      'load_user_profiles',
+    await safeExecute(
       () async {
         // Samla alla unika userId från requests
         final userIds = <String>{};
@@ -384,7 +367,7 @@ class FriendsViewModel extends ChangeNotifier
           final profiles = await _userService.getUserProfiles(uncachedUserIds);
 
           // ✅ SÄKER: Kontrollera dispose efter asynkron operation
-          if (_isDisposed) return profiles;
+          if (_isDisposed) return;
 
           // Uppdatera cache
           for (final profile in profiles) {
@@ -406,10 +389,8 @@ class FriendsViewModel extends ChangeNotifier
             );
           }
         }
-        
-        return uncachedUserIds.length;
       },
-      errorPrefix: 'Kunde inte ladda användaruppgifter',
+      operationName: 'Load user profiles for requests',
     );
   }
 
@@ -447,20 +428,21 @@ class FriendsViewModel extends ChangeNotifier
   Future<void> _performSearch() async {
     if (_searchQuery.isEmpty) return;
 
-    await searchData(() async {
-      final results = await _friendsService.management.searchUsers(_searchQuery);
-      
-      // ✅ SÄKER: Kontrollera dispose efter asynkron operation
-      if (_isDisposed) return results;
+    await safeExecute(
+      () async {
+        final results = await _friendsService.management.searchUsers(_searchQuery);
+        
+        // ✅ SÄKER: Kontrollera dispose efter asynkron operation
+        if (_isDisposed) return;
 
-      _searchResults = results;
-      
-      AppLogger.info(
-        '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
-      );
-      
-      return results;
-    });
+        _searchResults = results;
+        
+        AppLogger.info(
+          '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
+        );
+      },
+      operationName: 'Search users',
+    );
   }
 
   void _clearSearch() {
@@ -498,7 +480,6 @@ class FriendsViewModel extends ChangeNotifier
 
 
   /// Clear errors
-  @override
   void clearError() {
     if (!_isDisposed) {
       _friendsService.clearError();

@@ -5,11 +5,12 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../../widgets/user/user_display_widgets.dart';
 import '../../widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
+import '../../widgets/common/scaffolds/base_scaffold.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
 import '../../core/injection.dart';
-import '../../core/validators/form_validators.dart';
+import '../../core/utils/validation_utils.dart';
 import '../../core/utils/snackbar_utils.dart';
 
 
@@ -74,7 +75,8 @@ class _UserProfileEditViewContentState
 
   void _checkDisplayNameAvailability() {
     final viewModel = context.read<UserProfileViewModel>();
-    if (_displayNameController.text.trim() != viewModel.displayName) {
+    final displayName = ValidationUtils.safeTrim(_displayNameController.text);
+    if (displayName != viewModel.displayName) {
       viewModel.checkDisplayNameAvailability();
     }
   }
@@ -116,9 +118,13 @@ class _UserProfileEditViewContentState
 
     final viewModel = context.read<UserProfileViewModel>();
 
+    // Use ValidationUtils for safe text processing
+    final displayName = ValidationUtils.safeTrim(_displayNameController.text);
+    final bio = ValidationUtils.safeTrim(_bioController.text);
+
     // Update ViewModel with current form values
-    viewModel.updateDisplayName(_displayNameController.text);
-    viewModel.updateBio(_bioController.text);
+    viewModel.updateDisplayName(displayName);
+    viewModel.updateBio(bio);
 
     final success = await viewModel.saveProfile();
 
@@ -191,80 +197,66 @@ class _UserProfileEditViewContentState
       child: LayoutComponents.mainMenu(
         // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
         currentIndex: null,
-        body: Scaffold(
-          appBar: AppBar(
-            title: const Text('Redigera profil'),
-            actions: [
-              // Clear error button
-              if (viewModel.hasError)
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: viewModel.clearError,
-                  tooltip: 'Rensa fel',
-                ),
-
-              // Save button
-              TextButton(
-                onPressed: viewModel.isLoading || !viewModel.isFormValid
-                    ? null
-                    : _saveProfile,
-                child: viewModel.isLoading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: const CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Spara'),
+        body: FormScaffold(
+          title: 'Redigera profil',
+          form: _buildForm(viewModel),
+          onSave: viewModel.isLoading || !viewModel.isFormValid ? null : _saveProfile,
+          isLoading: viewModel.isLoading,
+          showSaveButton: true,
+          showCancelButton: false,
+          additionalActions: [
+            // Clear error button
+            if (viewModel.hasError)
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: viewModel.clearError,
+                tooltip: 'Rensa fel',
               ),
-            ],
-          ),
-          body: _buildBody(viewModel),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildBody(UserProfileViewModel viewModel) {
+  Widget _buildForm(UserProfileViewModel viewModel) {
+    // Show loading state for initial profile load
     if (viewModel.isLoading && !viewModel.hasProfile) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
-            SizedBox(height: AppDimensions.spacingL),
-            const Text('Laddar profil...'),
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Laddar profil...'),
           ],
         ),
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Avatar section
-            _buildAvatarSection(viewModel),
-            SizedBox(height: AppDimensions.spacingXl),
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar section
+          _buildAvatarSection(viewModel),
+          SizedBox(height: AppDimensions.spacingXl),
 
-            // Display name field
-            _buildDisplayNameField(viewModel),
-            SizedBox(height: AppDimensions.spacingL),
+          // Display name field
+          _buildDisplayNameField(viewModel),
+          SizedBox(height: AppDimensions.spacingL),
 
-            // Bio field
-            _buildBioField(viewModel),
-            SizedBox(height: AppDimensions.spacingXl),
+          // Bio field
+          _buildBioField(viewModel),
+          SizedBox(height: AppDimensions.spacingXl),
 
-            // Privacy settings
-            _buildPrivacySettings(viewModel),
-            SizedBox(height: AppDimensions.spacingXxl),
+          // Privacy settings
+          _buildPrivacySettings(viewModel),
+          SizedBox(height: AppDimensions.spacingXxl),
 
-            // Action buttons
-            _buildActionButtons(viewModel),
-          ],
-        ),
+          // Action buttons
+          _buildActionButtons(viewModel),
+        ],
       ),
     );
   }
@@ -372,7 +364,10 @@ class _UserProfileEditViewContentState
                     ? Icon(Icons.check_circle, color: AppColors.success)
                     : null,
           ),
-          validator: FormValidators.requiredDisplayName(),
+          validator: (value) => ValidationUtils.validateRequired(
+            value,
+            fieldName: 'Visningsnamn',
+          ),
           onChanged: (value) {
             viewModel.updateDisplayName(value);
             // Clear previous validation errors when user types
@@ -418,7 +413,11 @@ class _UserProfileEditViewContentState
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.info_outline),
           ),
-          validator: FormValidators.bio(),
+          validator: (value) => ValidationUtils.validateLength(
+            value,
+            maxLength: 150,
+            fieldName: 'Beskrivning',
+          ),
           onChanged: viewModel.updateBio,
         ),
         if (viewModel.bioError != null)

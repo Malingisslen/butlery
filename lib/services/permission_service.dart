@@ -19,13 +19,15 @@ import '../models/permissions/resource_permission.dart';
 import '../models/permissions/edit_mode.dart';
 import '../models/recipe_unified.dart';
 import '../models/unified/unified_shopping_list.dart';
-import '../models/user_profile.dart';
+import '../models/user_profile.dart' as model;
 import '../services/auth_service.dart';
-import '../services/user_service.dart';
+import '../services/user_service.dart' as user_svc;
 import '../services/unified/unified_recipe_service.dart';
 import '../services/unified/unified_shopping_service.dart';
 import '../services/unified/unified_friends_service.dart';
 import '../core/utils/logger.dart';
+import '../core/base/base_service.dart';
+import '../core/utils/validation_utils.dart';
 
 /// Centralized permission service that eliminates duplicated permission logic
 /// 
@@ -48,9 +50,11 @@ import '../core/utils/logger.dart';
 /// if (permissionService.canCreateSharedList()) { ... }
 /// ```
 // Service registered manually in injection.dart
-class PermissionService {
+class PermissionService extends BaseService {
+  @override
+  String get serviceName => 'PermissionService';
   final AuthService _authService;
-  final UserService _userService;
+  final user_svc.UserService _userService;
   final UnifiedRecipeService _recipeService;
   final UnifiedShoppingService _shoppingService;
   final UnifiedFriendsService _friendsService;
@@ -75,7 +79,7 @@ class PermissionService {
   String? get currentUserId => _authService.currentUserId;
 
   /// Get current user profile
-  UserProfile? get currentUser => _userService.currentUserProfile;
+  model.UserProfile? get currentUser => _userService.currentUserProfile;
 
   /// Check if user is logged in and has valid session
   bool get hasValidSession => isAuthenticated && currentUserId != null;
@@ -84,14 +88,14 @@ class PermissionService {
 
   /// Check if current user owns a resource
   bool isOwner(String? resourceOwnerId) {
-    if (!isAuthenticated || resourceOwnerId == null) return false;
-    return currentUserId == resourceOwnerId;
+    if (!isAuthenticated || ValidationUtils.isNullOrEmpty(resourceOwnerId)) return false;
+    return ValidationUtils.canAccess(currentUserId, resourceOwnerId);
   }
 
   /// Check if current user is member of a resource
   bool isMember(Map<String, dynamic>? memberPermissions) {
-    if (!isAuthenticated || memberPermissions == null) return false;
-    return memberPermissions.containsKey(currentUserId);
+    if (!isAuthenticated || ValidationUtils.isNullOrEmptyMap(memberPermissions)) return false;
+    return memberPermissions!.containsKey(currentUserId);
   }
 
   /// Check if current user has higher permission than another user
@@ -102,32 +106,30 @@ class PermissionService {
 
   // ===== RECIPE PERMISSIONS =====
 
-  /// Check if current user can view a recipe
-  bool canViewRecipe(String recipeId) {
-    return _getCachedPermission('recipe_view_$recipeId', () {
+  /// Consolidated recipe permission check - eliminates duplicate patterns
+  bool _checkRecipePermission(String recipeId, String permissionType) {
+    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
+    
+    return _getCachedPermission('recipe_${permissionType}_$recipeId', () {
       if (!isAuthenticated) return false;
       
       final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) return false;
       
-      return _hasRecipePermission(recipe, currentUserId!, 'view');
+      return _hasRecipePermission(recipe, currentUserId!, permissionType);
     });
   }
 
+  /// Check if current user can view a recipe
+  bool canViewRecipe(String recipeId) => _checkRecipePermission(recipeId, 'view');
+
   /// Check if current user can edit a recipe
-  bool canEditRecipe(String recipeId) {
-    return _getCachedPermission('recipe_edit_$recipeId', () {
-      if (!isAuthenticated) return false;
-      
-      final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) return false;
-      
-      return _hasRecipePermission(recipe, currentUserId!, 'edit');
-    });
-  }
+  bool canEditRecipe(String recipeId) => _checkRecipePermission(recipeId, 'edit');
 
   /// Check if current user can delete a recipe
   bool canDeleteRecipe(String recipeId) {
+    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
+    
     return _getCachedPermission('recipe_delete_$recipeId', () {
       if (!isAuthenticated) return false;
       
@@ -140,30 +142,17 @@ class PermissionService {
   }
 
   /// Check if current user can invite members to a recipe
-  bool canInviteToRecipe(String recipeId) {
-    return _getCachedPermission('recipe_invite_$recipeId', () {
-      if (!isAuthenticated) return false;
-      
-      final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) return false;
-      
-      return _hasRecipePermission(recipe, currentUserId!, 'admin');
-    });
-  }
+  bool canInviteToRecipe(String recipeId) => _checkRecipePermission(recipeId, 'admin');
 
   /// Check if current user can create a recipe
-  bool canCreateRecipe() {
-    return isAuthenticated; // All authenticated users can create recipes
-  }
+  bool canCreateRecipe() => isAuthenticated; // All authenticated users can create recipes
 
   /// Check if current user can share a recipe
-  bool canShareRecipe(String recipeId) {
-    return canViewRecipe(recipeId); // Can share if can view
-  }
+  bool canShareRecipe(String recipeId) => canViewRecipe(recipeId); // Can share if can view
 
   /// Get edit mode for a recipe
   EditMode getRecipeEditMode(String recipeId) {
-    if (!isAuthenticated) return EditMode.noAccess;
+    if (!isAuthenticated || ValidationUtils.isNullOrEmpty(recipeId)) return EditMode.noAccess;
     
     final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
     if (recipe == null) return EditMode.noAccess;
@@ -188,67 +177,43 @@ class PermissionService {
   }
 
   /// Check if current user is recipe owner
-  bool isRecipeOwner(String recipeId) {
-    return _getCachedPermission('recipe_owner_$recipeId', () {
-      if (!isAuthenticated) return false;
-      
-      final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) return false;
-      
-      return isOwner(recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '');
-    });
-  }
+  bool isRecipeOwner(String recipeId) => _checkRecipePermission(recipeId, 'owner');
 
   // ===== SHOPPING LIST PERMISSIONS =====
 
-  /// Check if current user can view a shopping list
-  bool canViewShoppingList(String listId) {
-    return _getCachedPermission('shopping_view_$listId', () {
+  /// Consolidated shopping list permission check - eliminates duplicate patterns
+  bool _checkShoppingListPermission(String listId, String permissionType) {
+    if (ValidationUtils.isNullOrEmpty(listId)) return false;
+    
+    return _getCachedPermission('shopping_${permissionType}_$listId', () {
       if (!isAuthenticated) return false;
       
       final list = _shoppingService.lists.where((l) => l.id == listId).firstOrNull;
       if (list == null) return false;
       
-      return _hasShoppingListPermission(list, currentUserId!, 'view');
+      return _hasShoppingListPermission(list, currentUserId!, permissionType);
     });
   }
+
+  /// Check if current user can view a shopping list
+  bool canViewShoppingList(String listId) => _checkShoppingListPermission(listId, 'view');
 
   /// Check if current user can edit a shopping list
-  bool canEditShoppingList(String listId) {
-    return _getCachedPermission('shopping_edit_$listId', () {
-      if (!isAuthenticated) return false;
-      
-      final list = _shoppingService.lists.where((l) => l.id == listId).firstOrNull;
-      if (list == null) return false;
-      
-      return _hasShoppingListPermission(list, currentUserId!, 'edit');
-    });
-  }
+  bool canEditShoppingList(String listId) => _checkShoppingListPermission(listId, 'edit');
 
   /// Check if current user can manage a shopping list
-  bool canManageShoppingList(String listId) {
-    return _getCachedPermission('shopping_manage_$listId', () {
-      if (!isAuthenticated) return false;
-      
-      final list = _shoppingService.lists.where((l) => l.id == listId).firstOrNull;
-      if (list == null) return false;
-      
-      return _hasShoppingListPermission(list, currentUserId!, 'manage');
-    });
-  }
+  bool canManageShoppingList(String listId) => _checkShoppingListPermission(listId, 'manage');
 
   /// Check if current user can create a shopping list
-  bool canCreateShoppingList() {
-    return isAuthenticated; // All authenticated users can create shopping lists
-  }
+  bool canCreateShoppingList() => isAuthenticated; // All authenticated users can create shopping lists
 
   /// Check if current user can share a shopping list
-  bool canShareShoppingList(String listId) {
-    return canViewShoppingList(listId); // Can share if can view
-  }
+  bool canShareShoppingList(String listId) => canViewShoppingList(listId); // Can share if can view
 
   /// Check if current user can delete a shopping list
   bool canDeleteShoppingList(String listId) {
+    if (ValidationUtils.isNullOrEmpty(listId)) return false;
+    
     return _getCachedPermission('shopping_delete_$listId', () {
       if (!isAuthenticated) return false;
       
@@ -260,19 +225,12 @@ class PermissionService {
   }
 
   /// Check if current user is owner of a shopping list
-  bool isShoppingListOwner(String listId) {
-    return _getCachedPermission('shopping_owner_$listId', () {
-      if (!isAuthenticated) return false;
-      
-      final list = _shoppingService.lists.where((l) => l.id == listId).firstOrNull;
-      if (list == null) return false;
-      
-      return isOwner(list.ownerId);
-    });
-  }
+  bool isShoppingListOwner(String listId) => _checkShoppingListPermission(listId, 'owner');
 
   /// Check if current user is member of a shopping list
   bool isShoppingListMember(String listId) {
+    if (ValidationUtils.isNullOrEmpty(listId)) return false;
+    
     return _getCachedPermission('shopping_member_$listId', () {
       if (!isAuthenticated) return false;
       
@@ -280,8 +238,8 @@ class PermissionService {
       if (list == null) return false;
       
       return list.isPersonal 
-        ? currentUserId == list.ownerId 
-        : list.memberPermissions.containsKey(currentUserId);
+        ? ValidationUtils.canAccess(currentUserId, list.ownerId)
+        : !ValidationUtils.isNullOrEmptyMap(list.memberPermissions) && list.memberPermissions.containsKey(currentUserId);
     });
   }
 
@@ -503,7 +461,7 @@ class PermissionService {
   // ===== ASYNC METHODS FOR COLLABORATIVE FEATURES =====
 
   /// Get user profile by ID
-  Future<UserProfile?> getUserProfile(String userId) async {
+  Future<model.UserProfile?> getUserProfile(String userId) async {
     try {
       return await _userService.getUserProfile(userId);
     } catch (e) {

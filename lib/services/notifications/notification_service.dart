@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../core/utils/logger.dart';
+import '../../core/base/base_service.dart';
 import 'notification_types.dart';
 import 'notification_repository.dart';
 import 'fcm_service.dart';
@@ -33,7 +34,9 @@ import 'modules/notification_analytics_manager.dart';
 /// 🔧 DEVELOPMENT STATUS:
 /// All notification logic is fully functional with intentional logging for development.
 /// Production deployment requires only updating FCM delivery to use Cloud Functions.
-class NotificationService {
+class NotificationService extends BaseService {
+  @override
+  String get serviceName => 'NotificationService';
   final String _userId;
   late final NotificationRepository _repository;
   
@@ -92,40 +95,42 @@ class NotificationService {
 
   /// Initialize the notification service
   /// Should be called after user authentication
-  Future<void> initialize() async {
+  @override
+  Future<void> onInitialize() async {
     if (_isInitialized) {
       AppLogger.warning('🔔 NotificationService already initialized');
       return;
     }
 
-    try {
-      AppLogger.info('🔔 Initializing NotificationService coordinator for user: $_userId');
+    await safeExecute(
+      () async {
+        AppLogger.info('🔔 Initializing NotificationService coordinator for user: $_userId');
 
-      // Initialize FCM service
-      await FCMService.initialize(
-        onMessageReceived: _handleForegroundMessage,
-        onMessageOpenedApp: _handleMessageOpened,
-      );
+        // Initialize FCM service
+        await FCMService.initialize(
+          onMessageReceived: _handleForegroundMessage,
+          onMessageOpenedApp: _handleMessageOpened,
+        );
 
-      // Initialize FCM token manager
-      await _tokenManager.initialize();
+        // Initialize FCM token manager
+        await _tokenManager.initialize();
 
-      // Subscribe to user-specific topics based on preferences
-      final preferences = await _preferenceManager.getPreferences();
-      await _tokenManager.updateTopicSubscriptions(preferences);
+        // Subscribe to user-specific topics based on preferences
+        final preferences = await _preferenceManager.getPreferences();
+        await _tokenManager.updateTopicSubscriptions(preferences);
 
-      // Process any pending batches
-      await _batchManager.processAllPendingBatches();
+        // Process any pending batches
+        await _batchManager.processAllPendingBatches();
 
-      // Process offline queue if any notifications are queued
-      await _offlineManager.processOfflineQueue();
+        // Process offline queue if any notifications are queued
+        await _offlineManager.processOfflineQueue();
 
-      _isInitialized = true;
-      AppLogger.success('✅ NotificationService coordinator initialized successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to initialize NotificationService coordinator', e);
-      rethrow;
-    }
+        _isInitialized = true;
+        AppLogger.success('✅ NotificationService coordinator initialized successfully');
+      },
+      operationName: 'Initialize NotificationService',
+      customErrorMessage: 'Failed to initialize NotificationService coordinator',
+    );
   }
 
   /// Send immediate notification (friend requests, direct shares, etc.)
@@ -138,65 +143,69 @@ class NotificationService {
     List<NotificationAction>? actions,
   }) async {
     try {
-      AppLogger.info('🔔 Coordinator: Sending immediate notification to ${targetUserIds.length} users');
+      await safeExecute(
+        () async {
+          AppLogger.info('🔔 Coordinator: Sending immediate notification to ${targetUserIds.length} users');
 
-      // Filter users based on preferences and quiet hours
-      final filteredUserIds = await _preferenceManager.filterUsersForNotification(
-        targetUserIds,
-        strategy.category,
-        strategy.type,
+          // Filter users based on preferences and quiet hours
+          final filteredUserIds = await _preferenceManager.filterUsersForNotification(
+            targetUserIds,
+            strategy.category,
+            strategy.type,
+          );
+
+          if (filteredUserIds.isEmpty) {
+            AppLogger.info('📋 No users eligible for notification after preference filtering');
+            return;
+          }
+
+          for (final targetUserId in filteredUserIds) {
+            // Generate unique notification ID
+            final notificationId = _contentManager.generateNotificationId(targetUserId, strategy);
+
+            // Check if already sent (prevent duplicates)
+            final alreadySent = await _repository.wasNotificationSent(notificationId);
+            if (alreadySent) {
+              AppLogger.info('📋 Notification $notificationId already sent, skipping');
+              continue;
+            }
+
+            // Create notification content
+            final template = _contentManager.createNotificationContent(
+              strategy: strategy,
+              variables: variables,
+              additionalData: additionalData,
+              imageUrl: imageUrl,
+              actions: actions,
+            );
+
+            // Send via FCM
+            await _sendFCMNotification(targetUserId, template, notificationId);
+
+            // Record analytics
+            await _analyticsManager.recordNotificationSent(
+              notificationId: notificationId,
+              category: strategy.category,
+              type: strategy.type,
+              targetUserId: targetUserId,
+              metadata: template.data,
+            );
+
+            // Record in history
+            await _repository.recordNotification(
+              notificationId: notificationId,
+              category: strategy.category,
+              type: strategy.type,
+              data: template.data,
+            );
+          }
+
+          AppLogger.success('✅ Immediate notification sent to ${filteredUserIds.length} users');
+        },
+        operationName: 'Send Immediate Notification',
+        customErrorMessage: 'Failed to send immediate notification',
       );
-
-      if (filteredUserIds.isEmpty) {
-        AppLogger.info('📋 No users eligible for notification after preference filtering');
-        return;
-      }
-
-      for (final targetUserId in filteredUserIds) {
-        // Generate unique notification ID
-        final notificationId = _contentManager.generateNotificationId(targetUserId, strategy);
-
-        // Check if already sent (prevent duplicates)
-        final alreadySent = await _repository.wasNotificationSent(notificationId);
-        if (alreadySent) {
-          AppLogger.info('📋 Notification $notificationId already sent, skipping');
-          continue;
-        }
-
-        // Create notification content
-        final template = _contentManager.createNotificationContent(
-          strategy: strategy,
-          variables: variables,
-          additionalData: additionalData,
-          imageUrl: imageUrl,
-          actions: actions,
-        );
-
-        // Send via FCM
-        await _sendFCMNotification(targetUserId, template, notificationId);
-
-        // Record analytics
-        await _analyticsManager.recordNotificationSent(
-          notificationId: notificationId,
-          category: strategy.category,
-          type: strategy.type,
-          targetUserId: targetUserId,
-          metadata: template.data,
-        );
-
-        // Record in history
-        await _repository.recordNotification(
-          notificationId: notificationId,
-          category: strategy.category,
-          type: strategy.type,
-          data: template.data,
-        );
-      }
-
-      AppLogger.success('✅ Immediate notification sent to ${filteredUserIds.length} users');
     } catch (e) {
-      AppLogger.error('❌ Failed to send immediate notification', e);
-      
       // Queue for offline retry
       if (!_offlineManager.isOnline) {
         _offlineManager.queueNotificationForOffline(
@@ -221,27 +230,28 @@ class NotificationService {
     Map<String, dynamic>? additionalData,
     String? imageUrl,
   }) async {
-    try {
-      AppLogger.info('🔔 Coordinator: Processing batchable notification for ${targetUserIds.length} users');
+    await safeExecute(
+      () async {
+        AppLogger.info('🔔 Coordinator: Processing batchable notification for ${targetUserIds.length} users');
 
-      // Delegate to batch manager
-      final batched = await _batchManager.addToBatch(
-        targetUserIds: targetUserIds,
-        strategy: strategy,
-        variables: variables,
-        additionalData: additionalData,
-        imageUrl: imageUrl,
-      );
+        // Delegate to batch manager
+        final batched = await _batchManager.addToBatch(
+          targetUserIds: targetUserIds,
+          strategy: strategy,
+          variables: variables,
+          additionalData: additionalData,
+          imageUrl: imageUrl,
+        );
 
-      if (batched) {
-        AppLogger.success('✅ Batchable notification queued successfully');
-      } else {
-        AppLogger.info('📋 Notification not eligible for batching');
-      }
-    } catch (e) {
-      AppLogger.error('❌ Failed to queue batchable notification', e);
-      rethrow;
-    }
+        if (batched) {
+          AppLogger.success('✅ Batchable notification queued successfully');
+        } else {
+          AppLogger.info('📋 Notification not eligible for batching');
+        }
+      },
+      operationName: 'Send Batchable Notification',
+      customErrorMessage: 'Failed to queue batchable notification',
+    );
   }
 
   /// Send silent notification (background sync, data updates)
@@ -249,19 +259,22 @@ class NotificationService {
     required List<String> targetUserIds,
     required Map<String, dynamic> data,
   }) async {
-    try {
-      AppLogger.info('🔔 Coordinator: Sending silent notification to ${targetUserIds.length} users');
+    // Silent notifications are less critical, don't rethrow errors
+    await safeExecute(
+      () async {
+        AppLogger.info('🔔 Coordinator: Sending silent notification to ${targetUserIds.length} users');
 
-      for (final targetUserId in targetUserIds) {
-        // Send data-only FCM message
-        await _sendSilentFCMNotification(targetUserId, data);
-      }
+        for (final targetUserId in targetUserIds) {
+          // Send data-only FCM message
+          await _sendSilentFCMNotification(targetUserId, data);
+        }
 
-      AppLogger.success('✅ Silent notification sent successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send silent notification', e);
-      // Silent notifications are less critical, don't rethrow
-    }
+        AppLogger.success('✅ Silent notification sent successfully');
+      },
+      operationName: 'Send Silent Notification',
+      customErrorMessage: 'Failed to send silent notification',
+      logError: true, // Log but don't throw
+    );
   }
 
   /// Send digest notification (daily/weekly summaries)
@@ -271,46 +284,49 @@ class NotificationService {
     required List<Map<String, String>> activityList,
     Map<String, dynamic>? additionalData,
   }) async {
-    try {
-      AppLogger.info('🔔 Coordinator: Sending digest notification to user: $targetUserId');
+    // Digest notifications are not critical, don't rethrow errors
+    await safeExecute(
+      () async {
+        AppLogger.info('🔔 Coordinator: Sending digest notification to user: $targetUserId');
 
-      // Check if user wants digest notifications
-      final digestEnabled = await _preferenceManager.areDigestNotificationsEnabled();
-      if (!digestEnabled) {
-        AppLogger.info('📋 User has disabled digest notifications');
-        return;
-      }
+        // Check if user wants digest notifications
+        final digestEnabled = await _preferenceManager.areDigestNotificationsEnabled();
+        if (!digestEnabled) {
+          AppLogger.info('📋 User has disabled digest notifications');
+          return;
+        }
 
-      // Build digest content
-      final digestContent = _contentManager.buildDigestContent(activityList, strategy);
-      
-      // Create notification template
-      final template = _contentManager.createNotificationContent(
-        strategy: strategy,
-        variables: digestContent,
-        additionalData: additionalData,
-      );
+        // Build digest content
+        final digestContent = _contentManager.buildDigestContent(activityList, strategy);
+        
+        // Create notification template
+        final template = _contentManager.createNotificationContent(
+          strategy: strategy,
+          variables: digestContent,
+          additionalData: additionalData,
+        );
 
-      // Generate notification ID
-      final notificationId = _contentManager.generateNotificationId(targetUserId, strategy);
+        // Generate notification ID
+        final notificationId = _contentManager.generateNotificationId(targetUserId, strategy);
 
-      // Send via FCM
-      await _sendFCMNotification(targetUserId, template, notificationId);
+        // Send via FCM
+        await _sendFCMNotification(targetUserId, template, notificationId);
 
-      // Record analytics
-      await _analyticsManager.recordNotificationSent(
-        notificationId: notificationId,
-        category: strategy.category,
-        type: strategy.type,
-        targetUserId: targetUserId,
-        metadata: template.data,
-      );
+        // Record analytics
+        await _analyticsManager.recordNotificationSent(
+          notificationId: notificationId,
+          category: strategy.category,
+          type: strategy.type,
+          targetUserId: targetUserId,
+          metadata: template.data,
+        );
 
-      AppLogger.success('✅ Digest notification sent successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send digest notification', e);
-      // Don't rethrow - digest notifications are not critical
-    }
+        AppLogger.success('✅ Digest notification sent successfully');
+      },
+      operationName: 'Send Digest Notification',
+      customErrorMessage: 'Failed to send digest notification',
+      logError: true, // Log but don't throw
+    );
   }
 
   /// Check if user should receive notification based on quiet hours
@@ -513,7 +529,8 @@ class NotificationService {
   }
 
   /// Clean up resources
-  Future<void> dispose() async {
+  @override
+  Future<void> onDispose() async {
     try {
       AppLogger.info('🔔 Disposing NotificationService coordinator...');
       

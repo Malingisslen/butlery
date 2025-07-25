@@ -9,8 +9,11 @@ import '../core/utils/logger.dart'; // Importerar AppLogger
 import '../core/error/error_handler.dart';
 import 'permission_service.dart';
 import '../core/injection.dart';
+import '../core/mixins/error_handling_mixin.dart';
+import '../core/mixins/firebase_service_mixin.dart';
+import '../core/mixins/stream_management_mixin.dart';
 
-class UserService extends ChangeNotifier {
+class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
   final UserRepository _repository;
   final AuthRepository _authRepository;
   final FirebaseFirestore _firestore;
@@ -47,17 +50,21 @@ class UserService extends ChangeNotifier {
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar UserService...');
 
-    // Lyssna på auth state changes
-    _authRepository.authStateChanges().listen((user) {
-      if (user != null) {
-        _loadCurrentUserProfile();
-      } else {
-        _currentUserProfile = null;
-        _profileCache.clear();
-        _cacheTimestamps.clear();
-        notifyListeners();
-      }
-    });
+    // Lyssna på auth state changes med StreamManagementMixin
+    listenToStream(
+      _authRepository.authStateChanges(),
+      (user) {
+        if (user != null) {
+          _loadCurrentUserProfile();
+        } else {
+          _currentUserProfile = null;
+          _profileCache.clear();
+          _cacheTimestamps.clear();
+          notifyListeners();
+        }
+      },
+      name: 'auth_state_changes',
+    );
 
     // Load current user if already authenticated
     if (_authRepository.currentUser != null) {
@@ -141,23 +148,26 @@ class UserService extends ChangeNotifier {
   Future<List<UserProfile>> searchUsers(String query) async {
     if (query.trim().isEmpty) return [];
 
+    _setLoading(true);
+    _clearError();
+    
     try {
-      _setLoading(true);
-      _clearError();
+      final result = await safeExecute(
+        () async {
+          final results = await _repository.searchProfiles(query);
 
-      final results = await _repository.searchProfiles(query);
+          for (final profile in results) {
+            _profileCache[profile.uid] = profile;
+            _cacheTimestamps[profile.uid] = DateTime.now();
+          }
 
-      for (final profile in results) {
-        _profileCache[profile.uid] = profile;
-        _cacheTimestamps[profile.uid] = DateTime.now();
-      }
-
-      return results;
-    } catch (e) {
-      final failure = ErrorHandler.handleError(e);
-      AppLogger.error('❌ Kunde inte söka användare: $e');
-      _setError(failure.message);
-      return [];
+          return results;
+        },
+        operationName: 'Search users',
+        defaultValue: <UserProfile>[],
+      );
+      
+      return result ?? [];
     } finally {
       _setLoading(false);
     }
@@ -178,17 +188,19 @@ class UserService extends ChangeNotifier {
     }
 
     // Fetch from repository
-    try {
-      final profile = await _getProfileFromRepository(userId);
-      if (profile != null) {
-        _profileCache[userId] = profile;
-        _cacheTimestamps[userId] = DateTime.now();
-      }
-      return profile;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte hämta profil $userId: $e');
-      return null;
-    }
+    final profile = await safeExecute(
+      () async {
+        final profile = await _getProfileFromRepository(userId);
+        if (profile != null) {
+          _profileCache[userId] = profile;
+          _cacheTimestamps[userId] = DateTime.now();
+        }
+        return profile;
+      },
+      operationName: 'Get user profile',
+    );
+    
+    return profile;
   }
 
   /// Get multiple profiles efficiently (batch)
@@ -488,7 +500,8 @@ class UserService extends ChangeNotifier {
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
+    await disposeStreamResources();
     clearCache();
     super.dispose();
   }

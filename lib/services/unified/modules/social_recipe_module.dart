@@ -6,8 +6,11 @@ import '../../../models/recipe_unified.dart';
 import '../../../models/permissions/resource_permission.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/cache/json_cache_helper.dart';
+import '../../../core/base/base_service.dart';
+import '../../../core/utils/validation_utils.dart';
+import '../../../core/utils/logging_utils.dart';
 import '../types/recipe_types.dart';
-import '../../notifications/notification_service.dart';
+import '../../notifications/notification_service.dart' as notif;
 import '../../notifications/notification_types.dart';
 
 /// Social recipe operations module
@@ -19,7 +22,9 @@ import '../../notifications/notification_types.dart';
 /// - Social recipe creation and management
 /// 
 /// ❌ DOES NOT CONTAIN: Personal recipe operations, realtime editing, UI concerns, cache management
-class SocialRecipeModule {
+class SocialRecipeModule extends BaseService with UserContextMixin {
+  @override
+  String get serviceName => 'SocialRecipeModule';
   final FirebaseFirestore _firestore;
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
@@ -30,7 +35,7 @@ class SocialRecipeModule {
   final void Function() _notifyListeners;
   
   /// Notification service for social notifications
-  late final NotificationService? _notificationService;
+  late final notif.NotificationService? _notificationService;
 
   SocialRecipeModule({
     required FirebaseFirestore firestore,
@@ -58,7 +63,7 @@ class SocialRecipeModule {
     try {
       final currentUserId = _getCurrentUserId();
       if (currentUserId != null) {
-        _notificationService = NotificationService(
+        _notificationService = notif.NotificationService(
           firestore: _firestore,
           userId: currentUserId,
         );
@@ -93,60 +98,54 @@ class SocialRecipeModule {
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    final currentUserId = _getCurrentUserId();
-    final currentUserDisplayName = _getCurrentUserDisplayName();
-    
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
+    // Validate inputs
+    final titleError = ValidationUtils.validateRecipeName(title);
+    if (titleError != null) {
+      _handleError(titleError);
       return null;
     }
 
-    if (title.trim().isEmpty) {
-      _setError('Receptnamn kan inte vara tomt');
-      return null;
-    }
+    return await executeAsUser<String>((userId) async {
+      return await LoggingUtils.loggedCreate(
+        'Collaborative Recipe',
+        () async {
+          // Create member permissions
+          final memberPermissions = <String, ResourcePermission>{};
+          for (final memberId in memberIds) {
+            memberPermissions[memberId] = ResourcePermission.editor;
+          }
 
-    try {
-      // Create member permissions
-      final memberPermissions = <String, ResourcePermission>{};
-      for (final memberId in memberIds) {
-        memberPermissions[memberId] = ResourcePermission.editor;
-      }
+          final newRecipe = Recipe.collaborative(
+            title: title.trim(),
+            description: description,
+            ingredients: ingredients,
+            instructions: instructions,
+            mealType: mealType,
+            ownerId: userId,
+            ownerDisplayName: _getCurrentUserDisplayName()!,
+            memberPermissions: memberPermissions,
+            allowGuestViewing: allowGuestViewing,
+            allowMemberInvites: allowMemberInvites,
+            descriptionCollaborative: descriptionCollaborative,
+            portions: portions,
+            timeMinutes: timeMinutes,
+            rating: rating,
+            tags: tags,
+            sourceUrl: sourceUrl,
+            imageUrls: imageUrls,
+          );
 
-      final newRecipe = Recipe.collaborative(
-        title: title.trim(),
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        mealType: mealType,
-        ownerId: currentUserId,
-        ownerDisplayName: currentUserDisplayName!,
-        memberPermissions: memberPermissions,
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        descriptionCollaborative: descriptionCollaborative,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
+          // Save to cache
+          await _saveToCache(newRecipe);
+
+          // Sync to Firebase (collaborative recipes use different collection)
+          await _syncCollaborativeRecipeToFirebase(newRecipe);
+
+          return newRecipe.id;
+        },
+        metadata: {'member_count': memberIds.length, 'meal_type': mealType},
       );
-
-      // Save to cache
-      await _saveToCache(newRecipe);
-
-      // Sync to Firebase (collaborative recipes use different collection)
-      await _syncCollaborativeRecipeToFirebase(newRecipe);
-
-      AppLogger.success(
-          '✅ Collaborative recipe "$title" created with ${memberIds.length} members');
-      return newRecipe.id;
-    } catch (e) {
-      AppLogger.error('❌ Could not create collaborative recipe: $e');
-      _setError('Kunde inte skapa kollaborativt recept: $e');
-      return null;
-    }
+    }, operationName: 'Create collaborative recipe');
   }
 
   // ===== MEMBER MANAGEMENT =====
@@ -154,153 +153,136 @@ class SocialRecipeModule {
   /// Add member to collaborative recipe
   Future<bool> addMemberToRecipe(
       String recipeId, String userId, ResourcePermission permission) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
+    // Validate inputs
+    final userIdError = ValidationUtils.validateUserId(userId);
+    if (userIdError != null) {
+      _handleError(userIdError);
       return false;
     }
 
-    try {
-      // 1. Load the recipe
-      final recipe = await _getRecipe(recipeId);
-      if (recipe == null) {
-        _setError('Receptet kunde inte hittas');
-        return false;
-      }
+    final result = await executeAsUser<bool>((currentUserId) async {
+      return await LoggingUtils.loggedUpdate(
+        'Recipe Member',
+        () async {
+          // 1. Load the recipe
+          final recipe = await _getRecipe(recipeId);
+          if (recipe == null) {
+            throw Exception('Recipe not found');
+          }
 
-      // 2. Check permissions - only admin can add members
-      if (!recipe.isCollaborative || recipe.socialData?.ownerId != currentUserId) {
-        final hasAdminPermission = recipe.socialData?.memberPermissions?[currentUserId] == ResourcePermission.admin;
-        if (!hasAdminPermission) {
-          _setError('Du har inte behörighet att lägga till medlemmar');
-          return false;
-        }
-      }
+          // 2. Check permissions - only admin can add members
+          if (!_hasAdminPermission(recipe, currentUserId)) {
+            throw Exception('No permission to add members');
+          }
 
-      // 3. Add the member
-      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-      updatedMemberPermissions[userId] = permission;
+          // 3. Add the member
+          final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+          updatedMemberPermissions[userId] = permission;
 
-      final updatedRecipe = recipe.copyWith(
-        socialData: recipe.socialData?.copyWith(
-          memberPermissions: updatedMemberPermissions,
-        ),
+          final updatedRecipe = recipe.copyWith(
+            socialData: recipe.socialData?.copyWith(
+              memberPermissions: updatedMemberPermissions,
+            ),
+          );
+
+          // 4. Save back to Firebase and cache
+          final success = await _saveRecipe(updatedRecipe);
+          if (success) {
+            _notifyListeners(); // Notify UI of changes
+          }
+          
+          return success;
+        },
+        itemId: recipeId,
+        metadata: {'new_member': userId, 'permission': permission.toString()},
       );
-
-      // 4. Save back to Firebase and cache
-      final success = await _saveRecipe(updatedRecipe);
-      if (success) {
-        AppLogger.success('Member $userId added to recipe $recipeId with permission $permission');
-        _notifyListeners(); // Notify UI of changes
-      }
-      
-      return success;
-    } catch (e) {
-      AppLogger.error('❌ Could not add member to recipe: $e');
-      _setError('Kunde inte lägga till medlem: $e');
-      return false;
-    }
+    }, operationName: 'Add recipe member');
+    return result ?? false;
   }
 
   /// Remove member from collaborative recipe
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final result = await executeAsUser<bool>((currentUserId) async {
+      return await LoggingUtils.loggedDelete(
+        'Recipe Member',
+        () async {
+          // 1. Load the recipe
+          final recipe = await _getRecipe(recipeId);
+          if (recipe == null) {
+            throw Exception('Recipe not found');
+          }
 
-    try {
-      // 1. Load the recipe
-      final recipe = await _getRecipe(recipeId);
-      if (recipe == null) {
-        _setError('Receptet kunde inte hittas');
-        return false;
-      }
+          // 2. Check admin permissions - only admin can remove members
+          if (!_hasAdminPermission(recipe, currentUserId)) {
+            throw Exception('No permission to remove members');
+          }
 
-      // 2. Check admin permissions - only admin can remove members
-      if (recipe.socialData?.ownerId != currentUserId) {
-        final hasAdminPermission = recipe.socialData?.memberPermissions?[currentUserId] == ResourcePermission.admin;
-        if (!hasAdminPermission) {
-          _setError('Du har inte behörighet att ta bort medlemmar');
-          return false;
-        }
-      }
+          // 3. Remove the member
+          final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+          updatedMemberPermissions.remove(userId);
 
-      // 3. Remove the member
-      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-      updatedMemberPermissions.remove(userId);
+          final updatedRecipe = recipe.copyWith(
+            socialData: recipe.socialData?.copyWith(
+              memberPermissions: updatedMemberPermissions,
+            ),
+          );
 
-      final updatedRecipe = recipe.copyWith(
-        socialData: recipe.socialData?.copyWith(
-          memberPermissions: updatedMemberPermissions,
-        ),
+          // 4. Save back to Firebase and cache
+          final success = await _saveRecipe(updatedRecipe);
+          if (success) {
+            _notifyListeners(); // Notify UI of changes
+          }
+          
+          return success;
+        },
+        itemId: recipeId,
+        metadata: {'removed_member': userId},
       );
-
-      // 4. Save back to Firebase and cache
-      final success = await _saveRecipe(updatedRecipe);
-      if (success) {
-        AppLogger.success('Member $userId removed from recipe $recipeId');
-        _notifyListeners(); // Notify UI of changes
-      }
-      
-      return success;
-    } catch (e) {
-      AppLogger.error('❌ Could not remove member from recipe: $e');
-      _setError('Kunde inte ta bort medlem: $e');
-      return false;
-    }
+    }, operationName: 'Remove recipe member');
+    return result ?? false;
   }
 
   /// Update member permission for collaborative recipe
   Future<bool> updateMemberPermission(
       String recipeId, String userId, ResourcePermission permission) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final result = await executeAsUser<bool>((currentUserId) async {
+      return await LoggingUtils.loggedUpdate(
+        'Recipe Member Permission',
+        () async {
+          // 1. Load the recipe
+          final recipe = await _getRecipe(recipeId);
+          if (recipe == null) {
+            throw Exception('Recipe not found');
+          }
 
-    try {
-      // 1. Load the recipe
-      final recipe = await _getRecipe(recipeId);
-      if (recipe == null) {
-        _setError('Receptet kunde inte hittas');
-        return false;
-      }
+          // 2. Check admin permissions - only admin can update permissions
+          if (!_hasAdminPermission(recipe, currentUserId)) {
+            throw Exception('No permission to update permissions');
+          }
 
-      // 2. Check admin permissions - only admin can update permissions
-      if (recipe.socialData?.ownerId != currentUserId) {
-        final hasAdminPermission = recipe.socialData?.memberPermissions?[currentUserId] == ResourcePermission.admin;
-        if (!hasAdminPermission) {
-          _setError('Du har inte behörighet att ändra behörigheter');
-          return false;
-        }
-      }
+          // 3. Update the permission
+          final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+          updatedMemberPermissions[userId] = permission;
 
-      // 3. Update the permission
-      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-      updatedMemberPermissions[userId] = permission;
+          final updatedRecipe = recipe.copyWith(
+            socialData: recipe.socialData?.copyWith(
+              memberPermissions: updatedMemberPermissions,
+            ),
+          );
 
-      final updatedRecipe = recipe.copyWith(
-        socialData: recipe.socialData?.copyWith(
-          memberPermissions: updatedMemberPermissions,
-        ),
+          // 4. Save back to Firebase and cache
+          final success = await _saveRecipe(updatedRecipe);
+          if (success) {
+            _notifyListeners(); // Notify UI of changes
+          }
+          
+          return success;
+        },
+        itemId: recipeId,
+        metadata: {'member': userId, 'new_permission': permission.toString()},
       );
-
-      // 4. Save back to Firebase and cache
-      final success = await _saveRecipe(updatedRecipe);
-      if (success) {
-        AppLogger.success('Member $userId permission updated to $permission in recipe $recipeId');
-        _notifyListeners(); // Notify UI of changes
-      }
-      
-      return success;
-    } catch (e) {
-      AppLogger.error('❌ Could not update member permission: $e');
-      _setError('Kunde inte uppdatera behörighet: $e');
-      return false;
-    }
+    }, operationName: 'Update member permission');
+    return result ?? false;
   }
 
   // ===== RECIPE SHARING =====
@@ -826,7 +808,21 @@ class SocialRecipeModule {
     }
   }
 
+  // ===== ERROR HANDLING =====
+
+  void _handleError(String message) {
+    _setError(message); // Connect to existing error system
+  }
+
   // ===== UTILITY METHODS =====
+
+  /// Check if user has admin permission for recipe
+  bool _hasAdminPermission(Recipe recipe, String userId) {
+    if (!recipe.isCollaborative) return false;
+    if (recipe.socialData?.ownerId == userId) return true;
+    return recipe.socialData?.memberPermissions?[userId] == ResourcePermission.admin;
+  }
+
 
   /// Create recipe operation result for success
   RecipeOperationResult createSuccessResult([String? message]) {
@@ -845,23 +841,25 @@ class SocialRecipeModule {
     required List<String> ingredients,
     required List<String> instructions,
   }) {
-    if (title.trim().isEmpty) {
-      _setError('Receptnamn kan inte vara tomt');
+    // Use ValidationUtils for consistent validation
+    final titleError = ValidationUtils.validateRecipeName(title);
+    if (titleError != null) {
+      _handleError(titleError);
       return false;
     }
 
-    if (memberIds.isEmpty) {
-      _setError('Kollaborativt recept måste ha minst en medlem');
+    if (!ValidationUtils.hasItems(memberIds)) {
+      _handleError('Kollaborativt recept måste ha minst en medlem');
       return false;
     }
 
-    if (ingredients.isEmpty) {
-      _setError('Recept måste ha minst en ingrediens');
+    if (!ValidationUtils.hasItems(ingredients)) {
+      _handleError('Recept måste ha minst en ingrediens');
       return false;
     }
 
-    if (instructions.isEmpty) {
-      _setError('Recept måste ha minst en instruktion');
+    if (!ValidationUtils.hasItems(instructions)) {
+      _handleError('Recept måste ha minst en instruktion');
       return false;
     }
 

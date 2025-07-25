@@ -18,12 +18,16 @@
 import 'dart:async';
 import 'dart:collection';
 import 'logger.dart';
+import '../mixins/singleton_service_mixin.dart';
 
 /// Service optimizer utility for performance and error handling improvements
-class ServiceOptimizer {
-  static final ServiceOptimizer _instance = ServiceOptimizer._internal();
-  factory ServiceOptimizer() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class ServiceOptimizer with SingletonServiceMixin<ServiceOptimizer> {
+  // Private constructor for singleton
   ServiceOptimizer._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory ServiceOptimizer() => SingletonServiceMixin.createSingleton(() => ServiceOptimizer._internal());
 
   // Performance tracking
   final Map<String, List<Duration>> _performanceMetrics = {};
