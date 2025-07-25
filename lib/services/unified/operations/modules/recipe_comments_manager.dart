@@ -29,8 +29,13 @@ class RecipeCommentsManager {
   
   // Stream controllers for managed streams
   final Map<String, StreamController<List<RecipeComment>>> _commentStreams = {};
+  
+  // Module instances (only the ones we use as instances)
+  late final CommentCrudOperations _crudOperations;
 
-  RecipeCommentsManager(this._parent, this._notificationService, this._firestore);
+  RecipeCommentsManager(this._parent, this._notificationService, this._firestore) {
+    _crudOperations = CommentCrudOperations();
+  }
 
   // ===== GETTERS FOR VALIDATION =====
 
@@ -51,8 +56,7 @@ class RecipeCommentsManager {
     String? parentCommentId,
     List<String>? mentions,
   }) async {
-    final commentId = await CommentCrudOperations.createComment(
-      firestore: _firestore,
+    final commentId = await _crudOperations.createComment(
       recipeId: recipeId,
       content: content,
       authorId: currentUserId!,
@@ -77,8 +81,7 @@ class RecipeCommentsManager {
       // Send notifications
       final recipe = _getRecipe(recipeId);
       if (recipe != null) {
-        final comment = await CommentCrudOperations.getCommentById(
-          firestore: _firestore,
+        final comment = await _crudOperations.getCommentById(
           commentId: commentId,
         );
         
@@ -106,8 +109,7 @@ class RecipeCommentsManager {
     DateTime? before,
     bool includeReplies = true,
   }) async {
-    return CommentCrudOperations.getComments(
-      firestore: _firestore,
+    return _crudOperations.getComments(
       recipeId: recipeId,
       limit: limit,
       before: before,
@@ -129,8 +131,7 @@ class RecipeCommentsManager {
     _commentStreams[recipeId] = streamController;
 
     // Set up stream from CommentCrudOperations
-    final commentStream = CommentCrudOperations.createCommentStream(
-      firestore: _firestore,
+    final commentStream = _crudOperations.createCommentStream(
       recipeId: recipeId,
     );
 
@@ -157,8 +158,7 @@ class RecipeCommentsManager {
     required String commentId,
     required String newContent,
   }) async {
-    final result = await CommentCrudOperations.editComment(
-      firestore: _firestore,
+    final result = await _crudOperations.editComment(
       commentId: commentId,
       newContent: newContent,
       currentUserId: currentUserId!,
@@ -166,8 +166,7 @@ class RecipeCommentsManager {
 
     if (result) {
       // Get comment to find recipe ID for stream update
-      final comment = await CommentCrudOperations.getCommentById(
-        firestore: _firestore,
+      final comment = await _crudOperations.getCommentById(
         commentId: commentId,
       );
       
@@ -182,15 +181,13 @@ class RecipeCommentsManager {
   /// Delete comment
   Future<bool> deleteComment(String commentId) async {
     // Get comment before deletion
-    final comment = await CommentCrudOperations.getCommentById(
-      firestore: _firestore,
+    final comment = await _crudOperations.getCommentById(
       commentId: commentId,
     );
 
     if (comment == null) return false;
 
-    final result = await CommentCrudOperations.deleteComment(
-      firestore: _firestore,
+    final result = await _crudOperations.deleteComment(
       commentId: commentId,
       currentUserId: currentUserId!,
       canDeleteValidator: (recipeId) {
@@ -236,8 +233,7 @@ class RecipeCommentsManager {
 
     if (result != null) {
       // Get comment to find recipe ID for stream update
-      final comment = await CommentCrudOperations.getCommentById(
-        firestore: _firestore,
+      final comment = await _crudOperations.getCommentById(
         commentId: commentId,
       );
       

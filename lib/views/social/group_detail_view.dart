@@ -16,6 +16,7 @@ import '../../core/events/group_events.dart';
 import 'add_members_to_group_view.dart';
 import '../../services/permission_service.dart';
 import '../../core/mixins/error_handling_mixin.dart';
+import '../../core/utils/common_dialog_actions.dart';
 
 // Import focused components
 import 'group_detail/group_detail_header.dart';
@@ -347,25 +348,9 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     final currentUserId = sl<PermissionService>().currentUserId;
     if (!sl<PermissionService>().isAuthenticated) return;
 
-    final shouldLeave = await showDialog<bool>(
+    final shouldLeave = await CommonDialogActions.showLeaveGroupConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lämna grupp?'),
-        content: Text('Vill du verkligen lämna gruppen "${group.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.warning,
-            ),
-            child: const Text('Lämna grupp'),
-          ),
-        ],
-      ),
+      groupName: group.name,
     );
 
     if (shouldLeave == true && mounted) {

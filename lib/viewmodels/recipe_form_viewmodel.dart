@@ -67,6 +67,15 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin {
   bool get hasError => _state.hasError;
   bool get isEditing => _state.isEditing;
   bool get isValid => _state.isValid;
+  
+  // Check if form has unsaved changes
+  bool get hasUnsavedChanges {
+    if (!isEditing || originalRecipe == null) return false;
+    // Simple check - if any basic field has changed
+    return title != (originalRecipe?.core.title ?? '') ||
+           description != (originalRecipe?.core.description ?? '') ||
+           mealType != (originalRecipe?.core.mealType ?? 'Middag');
+  }
 
   // Form data getters
   String get title => _state.title;

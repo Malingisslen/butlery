@@ -12,6 +12,7 @@ import '../../../core/utils/logging_utils.dart';
 import '../types/recipe_types.dart';
 import '../../notifications/notification_service.dart' as notif;
 import '../../notifications/notification_types.dart';
+import 'service_adapters/recipe_service_adapter.dart';
 
 /// Social recipe operations module
 /// 
@@ -33,6 +34,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   final Future<Recipe?> Function(String) _getRecipe;
   final Future<bool> Function(Recipe) _saveRecipe;
   final void Function() _notifyListeners;
+  final RecipeServiceAdapter _serviceAdapter;
   
   /// Notification service for social notifications
   late final notif.NotificationService? _notificationService;
@@ -46,6 +48,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
+    RecipeServiceAdapter? serviceAdapter,
   })  : _firestore = firestore,
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
@@ -53,7 +56,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
         _setError = setError,
         _getRecipe = getRecipe,
         _saveRecipe = saveRecipe,
-        _notifyListeners = notifyListeners {
+        _notifyListeners = notifyListeners,
+        _serviceAdapter = serviceAdapter ?? RecipeServiceAdapter() {
     // Initialize notification service
     _initializeNotificationService();
   }
@@ -560,31 +564,52 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
 
   // ===== COLLABORATIVE RECIPE QUERIES =====
 
-  /// Get Firebase query for collaborative recipes where user is a member
-  Query<Map<String, dynamic>>? getCollaborativeRecipesQuery() {
+  /// Get collaborative recipes where user is a member using repository pattern
+  Future<List<Recipe>> getCollaborativeRecipesForUser() async {
     final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) return null;
+    if (currentUserId == null) return [];
 
-    return _firestore
-        .collection('unified_collaborative_recipes')
-        .where('memberPermissions.$currentUserId', isNotEqualTo: null);
+    try {
+      final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
+      return allRecipes.where((recipe) => 
+        recipe.isCollaborative && 
+        recipe.socialData?.memberPermissions?.containsKey(currentUserId) == true
+      ).toList();
+    } catch (e) {
+      AppLogger.error('❌ Failed to get collaborative recipes', e);
+      return [];
+    }
   }
 
-  /// Get Firebase query for recipes shared by specific user
-  Query<Map<String, dynamic>>? getRecipesSharedByUser(String userId) {
-    return _firestore
-        .collection('unified_collaborative_recipes')
-        .where('ownerId', isEqualTo: userId);
+  /// Get recipes shared by specific user using repository pattern
+  Future<List<Recipe>> getRecipesSharedByUser(String userId) async {
+    try {
+      final allRecipes = await _serviceAdapter.getRecipesForUser(userId);
+      return allRecipes.where((recipe) => 
+        recipe.isCollaborative && 
+        recipe.socialData?.ownerId == userId
+      ).toList();
+    } catch (e) {
+      AppLogger.error('❌ Failed to get recipes shared by user', e);
+      return [];
+    }
   }
 
-  /// Get Firebase query for recipes with specific permission level
-  Query<Map<String, dynamic>>? getRecipesWithPermission(ResourcePermission permission) {
+  /// Get recipes with specific permission level using repository pattern
+  Future<List<Recipe>> getRecipesWithPermission(ResourcePermission permission) async {
     final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) return null;
+    if (currentUserId == null) return [];
 
-    return _firestore
-        .collection('unified_collaborative_recipes')
-        .where('memberPermissions.$currentUserId', isEqualTo: permission.toString());
+    try {
+      final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
+      return allRecipes.where((recipe) => 
+        recipe.isCollaborative && 
+        recipe.socialData?.memberPermissions?[currentUserId] == permission
+      ).toList();
+    } catch (e) {
+      AppLogger.error('❌ Failed to get recipes with permission', e);
+      return [];
+    }
   }
 
   // ===== COLLABORATION ANALYTICS =====

@@ -84,4 +84,10 @@ class MockUserRepository extends InMemoryRepository<UserProfile>
       fcmTokenUpdatedAt: null,
     );
   }
+
+  @override
+  Future<void> ensureBaseUserDocument(String userId) async {
+    // Mock implementation - no-op for testing
+    return;
+  }
 }

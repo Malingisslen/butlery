@@ -1,42 +1,38 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart
 
 import 'package:flutter/material.dart';
+import '../../../core/base/base_action_handler.dart';
 import '../../../viewmodels/collaborative_shopping_viewmodel.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../theme/app_dimensions.dart';
 
-/// Focused widget for collaborative shopping actions
+/// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// 
-/// This widget handles ONLY action-related responsibilities:
+/// This class handles ONLY action-related responsibilities:
 /// - Add item input section
 /// - App bar with menu actions
 /// - Action handlers and business logic coordination
 /// - User interaction management
 /// 
 /// ❌ DOES NOT CONTAIN: Items display, header display, state management
-class CollaborativeShoppingActions extends StatelessWidget {
+class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMixin {
   final CollaborativeShoppingViewModel viewModel;
   final TextEditingController newItemController;
   final VoidCallback onAddItem;
   final Function(String action) onMenuAction;
   final VoidCallback onShare;
 
-  const CollaborativeShoppingActions({
-    super.key,
+  @override
+  String get serviceName => 'CollaborativeShoppingActions';
+
+  CollaborativeShoppingActions({
     required this.viewModel,
     required this.newItemController,
     required this.onAddItem,
     required this.onMenuAction,
     required this.onShare,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    // This widget provides methods for building action components
-    // It's not directly rendered but provides building blocks
-    throw UnsupportedError('CollaborativeShoppingActions is a utility widget');
-  }
 
   // ===== APP BAR ACTIONS =====
 
@@ -201,91 +197,72 @@ class CollaborativeShoppingActions extends StatelessWidget {
 
   // ===== ACTION HANDLERS =====
 
-  /// Handle menu action selection
-  void handleMenuAction(BuildContext context, String action) {
+  /// Handle menu action selection using BaseActionHandler
+  Future<void> handleMenuAction(BuildContext context, String action) async {
+    if (!validateContext(context)) return;
+
     switch (action) {
       case 'settings':
-        _showSettings(context);
+        await _showSettings(context);
         break;
       case 'members':
-        _showMembers(context);
+        await _showMembers(context);
         break;
       case 'clear_completed':
-        _showClearCompletedDialog(context);
+        await _clearCompletedItems(context);
         break;
       default:
         onMenuAction(action);
     }
   }
 
-  void _showSettings(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Inställningar kommer snart'),
-        action: SnackBarAction(
-          label: 'OK',
-          onPressed: () {},
-        ),
-      ),
-    );
+  Future<void> _showSettings(BuildContext context) async {
+    showInfoMessage(context, 'Inställningar kommer snart');
   }
 
-  void _showMembers(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Medlemshantering kommer snart'),
-        action: SnackBarAction(
-          label: 'OK',
-          onPressed: () {},
-        ),
-      ),
-    );
+  Future<void> _showMembers(BuildContext context) async {
+    showInfoMessage(context, 'Medlemshantering kommer snart');
   }
 
-  void _showClearCompletedDialog(BuildContext context) {
-    showDialog(
+  /// Clear completed items using BaseActionHandler
+  Future<void> _clearCompletedItems(BuildContext context) async {
+    if (!validateContext(context)) return;
+
+    final completedItems = viewModel.completedItemsList;
+    
+    if (completedItems.isEmpty) {
+      showInfoMessage(context, 'Inga klarmarkerade artiklar att rensa');
+      return;
+    }
+
+    await executeWithConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Rensa klara artiklar'),
-        content: Text(
-          'Vill du ta bort alla markerade artiklar från listan? '
-          'Detta går inte att ångra.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _clearCompletedItems(context);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: Text('Rensa'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _clearCompletedItems(BuildContext context) {
-    // This would be implemented in the ViewModel
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Klara artiklar rensade'),
-        backgroundColor: AppColors.success,
-      ),
+      action: () async {
+        // In real implementation, this would call viewModel.clearCompletedItems()
+        await Future.delayed(const Duration(milliseconds: 500));
+        return true;
+      },
+      confirmationTitle: 'Rensa klara artiklar?',
+      confirmationMessage: 'Vill du ta bort alla ${completedItems.length} klarmarkerade artiklar?',
+      confirmActionText: 'Rensa alla',
+      confirmationIcon: Icons.clear_all,
+      isDangerous: true,
+      successMessage: '${completedItems.length} klarmarkerade artiklar borttagna',
+      errorMessage: 'Kunde inte rensa klarmarkerade artiklar',
+      metadata: {
+        'completed_count': completedItems.length,
+        'action': 'clear_completed_items',
+      },
     );
   }
 
   // ===== SHARE ACTIONS =====
 
-  /// Handle share action
-  void handleShare(BuildContext context) {
-    showModalBottomSheet(
+  /// Handle share action using BaseActionHandler
+  Future<void> handleShare(BuildContext context) async {
+    if (!validateContext(context)) return;
+
+    await showModalBottomSheet(
       context: context,
       builder: (context) => _buildShareSheet(context),
     );
@@ -343,25 +320,28 @@ class CollaborativeShoppingActions extends StatelessWidget {
     );
   }
 
-  void _copyShareLink(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Länk kopierad till urklipp'),
-        backgroundColor: AppColors.success,
-      ),
+  Future<void> _copyShareLink(BuildContext context) async {
+    await executeAction(
+      context: context,
+      action: () async {
+        // In real implementation, copy link to clipboard
+        await Future.delayed(const Duration(milliseconds: 200));
+        return true;
+      },
+      successMessage: 'Länk kopierad till urklipp',
+      metadata: {
+        'list_id': viewModel.listId,
+        'action': 'copy_share_link',
+      },
     );
   }
 
-  void _shareViaMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Meddelandedelning kommer snart')),
-    );
+  Future<void> _shareViaMessage(BuildContext context) async {
+    showInfoMessage(context, 'Meddelandedelning kommer snart');
   }
 
-  void _shareViaEmail(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('E-postdelning kommer snart')),
-    );
+  Future<void> _shareViaEmail(BuildContext context) async {
+    showInfoMessage(context, 'E-postdelning kommer snart');
   }
 
   // ===== UTILITY METHODS =====
@@ -396,7 +376,7 @@ class CollaborativeShoppingActions extends StatelessWidget {
   bool isMenuActionAvailable(String action) {
     switch (action) {
       case 'clear_completed':
-        return viewModel.canEdit && viewModel.completedItemsCount > 0;
+        return viewModel.canEdit && viewModel.completedItemsList.isNotEmpty;
       case 'settings':
       case 'members':
         return true;

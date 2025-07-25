@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../theme/app_text_styles.dart';
-import 'social_helpers.dart';
+import '../../common/social/social_helpers.dart';
 
 /// Social UI builder utilities
 ///

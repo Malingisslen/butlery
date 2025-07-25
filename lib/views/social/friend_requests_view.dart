@@ -10,7 +10,7 @@ import '../../core/injection.dart';
 import 'friend_requests/friend_requests_header.dart';
 import 'friend_requests/incoming_requests_tab.dart';
 import 'friend_requests/sent_requests_tab.dart';
-import 'friend_requests/friend_request_actions.dart';
+import 'friend_requests/friend_request_actions_refactored.dart';
 
 class FriendRequestsView extends StatelessWidget {
   const FriendRequestsView({super.key});
@@ -37,11 +37,13 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   late TabController _tabController;
   final Set<String> _selectedIncoming = {};
   final Set<String> _selectedSent = {};
+  late final FriendRequestActions _actions;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _actions = FriendRequestActions();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<FriendsViewModel>();
@@ -52,6 +54,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   @override
   void dispose() {
     _tabController.dispose();
+    _actions.dispose();
     super.dispose();
   }
 
@@ -126,7 +129,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
             ),
           ],
         ),
-        floatingActionButton: FriendRequestActions.buildFloatingActionButton(
+        floatingActionButton: _actions.buildFloatingActionButton(
           context,
           _tabController,
           _selectedIncoming,
@@ -139,45 +142,30 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   Future<void> _handleBatchAccept(FriendsViewModel viewModel) async {
     if (_selectedIncoming.isEmpty) return;
 
-    await FriendRequestActions.showBatchAcceptDialog(
+    await _actions.acceptMultipleRequests(
       context,
-      _selectedIncoming.length,
-      () => FriendRequestActions.performBatchAccept(
-        context,
-        viewModel,
-        _selectedIncoming,
-        _clearSelection,
-      ),
+      _selectedIncoming.toList(),
+      _clearSelection,
     );
   }
 
   Future<void> _handleBatchReject(FriendsViewModel viewModel) async {
     if (_selectedIncoming.isEmpty) return;
 
-    await FriendRequestActions.showBatchRejectDialog(
+    await _actions.rejectMultipleRequests(
       context,
-      _selectedIncoming.length,
-      () => FriendRequestActions.performBatchReject(
-        context,
-        viewModel,
-        _selectedIncoming,
-        _clearSelection,
-      ),
+      _selectedIncoming.toList(),
+      _clearSelection,
     );
   }
 
   Future<void> _handleCancelSelected(FriendsViewModel viewModel) async {
     if (_selectedSent.isEmpty) return;
 
-    await FriendRequestActions.showCancelSentDialog(
+    await _actions.cancelMultipleSentRequests(
       context,
-      _selectedSent.length,
-      () => FriendRequestActions.performBatchCancel(
-        context,
-        viewModel,
-        _selectedSent,
-        _clearSelection,
-      ),
+      _selectedSent.toList(),
+      _clearSelection,
     );
   }
 }

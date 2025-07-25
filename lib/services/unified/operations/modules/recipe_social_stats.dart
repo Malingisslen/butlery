@@ -24,8 +24,13 @@ class RecipeSocialStats {
   final dynamic _parent; // UnifiedRecipeService
   final FirebaseFirestore _firestore;
   final NotificationService? _notificationService;
+  
+  // Module instances (only the ones we use as instances)
+  late final RecipeRatingSystem _ratingSystem;
 
-  RecipeSocialStats(this._parent, this._firestore, this._notificationService);
+  RecipeSocialStats(this._parent, this._firestore, this._notificationService) {
+    _ratingSystem = RecipeRatingSystem();
+  }
 
   // ===== GETTERS FOR DELEGATION =====
 
@@ -50,8 +55,7 @@ class RecipeSocialStats {
       return false;
     }
 
-    final result = await RecipeRatingSystem.rateRecipe(
-      firestore: _firestore,
+    final result = await _ratingSystem.rateRecipe(
       recipeId: recipeId,
       rating: rating,
       currentUserId: currentUserId!,
@@ -98,11 +102,22 @@ class RecipeSocialStats {
   Future<Map<String, dynamic>?> getUserRating(String recipeId) async {
     if (currentUserId == null) return null;
 
-    return RecipeRatingSystem.getUserRating(
-      firestore: _firestore,
+    final rating = await _ratingSystem.getUserRating(
       recipeId: recipeId,
       userId: currentUserId!,
     );
+    
+    if (rating == null) return null;
+    
+    return {
+      'id': rating.id,
+      'recipeId': rating.recipeId,
+      'userId': rating.userId,
+      'rating': rating.rating,
+      'review': rating.review,
+      'createdAt': rating.createdAt,
+      'updatedAt': rating.updatedAt,
+    };
   }
 
   // ===== RECIPE STATISTICS (DELEGATE TO RATING_STATISTICS) =====
@@ -256,12 +271,19 @@ class RecipeSocialStats {
   /// Analyze rating distribution for recipe
   Future<Map<String, dynamic>> analyzeRatingDistribution(String recipeId) async {
     try {
-      final ratings = await RecipeRatingSystem.getRecipeRatings(
-        firestore: _firestore,
+      final ratings = await _ratingSystem.getRecipeRatings(
         recipeId: recipeId,
       );
 
-      final stats = RatingStatistics.calculateRatingStatistics(ratings);
+      // Convert RecipeRating objects to Map format
+      final ratingsData = ratings.map((rating) => {
+        'rating': rating.rating,
+        'review': rating.review,
+        'createdAt': rating.createdAt,
+        'userId': rating.userId,
+      }).toList();
+      
+      final stats = RatingStatistics.calculateRatingStatistics(ratingsData);
       final distribution = stats['distribution'] as Map<int, int>;
 
       return RatingStatistics.analyzeRatingDistribution(distribution);
@@ -274,12 +296,19 @@ class RecipeSocialStats {
   /// Get rating trends for recipe
   Future<Map<String, dynamic>> getRatingTrends(String recipeId) async {
     try {
-      final ratings = await RecipeRatingSystem.getRecipeRatings(
-        firestore: _firestore,
+      final ratings = await _ratingSystem.getRecipeRatings(
         recipeId: recipeId,
       );
 
-      return RatingStatistics.calculateRatingTrends(ratings);
+      // Convert RecipeRating objects to Map format
+      final ratingsData = ratings.map((rating) => {
+        'rating': rating.rating,
+        'review': rating.review,
+        'createdAt': rating.createdAt,
+        'userId': rating.userId,
+      }).toList();
+      
+      return RatingStatistics.calculateRatingTrends(ratingsData);
     } catch (e) {
       AppLogger.error('❌ Failed to get rating trends', e);
       return {'error': 'Failed to calculate trends'};

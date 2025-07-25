@@ -28,6 +28,12 @@ import '../repositories/firestore_repository.dart';
 import '../repositories/firebase/firebase_user_repository.dart';
 import '../repositories/firebase/firebase_friends_repository.dart';
 import '../repositories/firebase/firebase_social_recipe_repository.dart';
+import '../repositories/firebase/firebase_comments_repository.dart';
+import '../repositories/firebase/firebase_ratings_repository.dart';
+import '../repositories/firebase/firebase_notifications_repository.dart';
+import '../repositories/interfaces/comments_repository.dart';
+import '../repositories/interfaces/ratings_repository.dart';
+import '../repositories/interfaces/notifications_repository.dart';
 import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/friends_repository.dart';
 import '../repositories/interfaces/social_recipe_repository.dart';
@@ -45,11 +51,13 @@ import '../services/realtime/realtime_menu_service.dart';
 import '../services/unified/unified_shopping_service.dart';
 import '../services/unified/unified_recipe_service.dart';
 import '../services/unified/unified_friends_service.dart';
+import '../services/unified/operations/social_menu_operations.dart';
 import '../services/import/import_manager.dart';
 
 // ==================== SOCIAL SERVICES ====================
 import '../services/user_service.dart';
 import '../services/social_recipe_service.dart';
+import '../services/connectivity_monitoring_service.dart';
 
 // ==================== CORE VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';
@@ -115,6 +123,10 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<PersistenceService>(PersistenceService());
     debugPrint('✅ PersistenceService registrerad');
 
+    sl.registerSingleton<ConnectivityMonitoringService>(
+        ConnectivityMonitoringService());
+    debugPrint('✅ ConnectivityMonitoringService registrerad');
+
     // ==================== REPOSITORIES ====================
     sl.registerSingleton<FirestoreRepository>(FirestoreRepository());
     debugPrint('✅ FirestoreRepository registrerad');
@@ -151,7 +163,6 @@ Future<void> initializeDependencies() async {
       UserService(
         repository: sl<UserRepository>(),
         authRepository: sl<AuthRepository>(),
-        firestore: FirebaseFirestore.instance,
       ),
     );
 
@@ -160,6 +171,20 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: sl<AuthRepository>()));
     debugPrint('✅ FriendsRepository registrerad');
+
+    // ==================== ADDITIONAL REPOSITORIES (EARLY REGISTRATION) ====================
+    sl.registerSingleton<CommentsRepository>(
+        FirebaseCommentsRepository(authRepository: sl<AuthRepository>()));
+    
+    sl.registerSingleton<RatingsRepository>(
+        FirebaseRatingsRepository(authRepository: sl<AuthRepository>()));
+    
+    sl.registerSingleton<NotificationsRepository>(
+        FirebaseNotificationsRepository(authRepository: sl<AuthRepository>()));
+    
+    sl.registerSingleton<SocialRecipeRepository>(
+        FirebaseSocialRecipeRepository());
+    debugPrint('✅ Additional repositories registrerade');
 
     // ==================== INVITATION SERVICES (FAS 2) ====================
 
@@ -182,6 +207,14 @@ Future<void> initializeDependencies() async {
       authRepository: sl<AuthRepository>(),
     ));
     debugPrint('✅ UnifiedFriendsService registrerad');
+
+    sl.registerLazySingleton<SocialMenuOperations>(
+      () => SocialMenuOperations(
+        firestore: FirebaseFirestore.instance,
+        friendsService: sl<UnifiedFriendsService>(),
+      ),
+    );
+    debugPrint('✅ SocialMenuOperations registrerad');
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
@@ -220,8 +253,7 @@ Future<void> initializeDependencies() async {
     debugPrint('✅ Alla core services registrerade');
 
     // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
-    sl.registerSingleton<SocialRecipeRepository>(
-        FirebaseSocialRecipeRepository());
+    // Repositories already registered earlier
 
     sl.registerSingleton<SocialRecipeService>(SocialRecipeService(
       repository: sl<SocialRecipeRepository>(),

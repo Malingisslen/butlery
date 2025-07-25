@@ -17,6 +17,7 @@
 /// Used in phases: Code Consolidation Phase - Repository Pattern Unification
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../interfaces/repository.dart';
 import '../interfaces/auth_repository.dart';
@@ -58,6 +59,12 @@ abstract class BaseFirebaseRepository<T> implements Repository<T> {
     required AuthRepository authRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _authRepository = authRepository;
+
+  // ===== PROTECTED ACCESSORS =====
+
+  /// Protected access to FirebaseFirestore instance for subclasses
+  @protected
+  FirebaseFirestore get firestore => _firestore;
 
   // ===== ABSTRACT METHODS FOR SUBCLASSES =====
 

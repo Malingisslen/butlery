@@ -48,6 +48,277 @@ class FriendCategoryWidgets {
       ),
     );
   }
+
+  // ============================================================================
+  // === ADDITIONAL UTILITY METHODS (consolidated from social version) ===
+  // ============================================================================
+  
+  /// Build friend category selector
+  static Widget friendCategorySelector({
+    required List<FriendCategory> categories,
+    required Set<String> selectedCategoryIds,
+    required Function(String) onCategoryToggled,
+    bool allowMultipleSelection = true,
+    String? title,
+    EdgeInsets? padding,
+    bool showSelectAll = true,
+    bool showCreateNew = true,
+    VoidCallback? onCreateNew,
+  }) {
+    return Padding(
+      padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Text(
+              title,
+              style: AppTextStyles.sectionTitleStyle,
+            ),
+            SizedBox(height: AppDimensions.spacingMd),
+          ],
+          if (showSelectAll) ...[
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: () {
+                    if (allowMultipleSelection) {
+                      // Select all categories
+                      for (final category in categories) {
+                        if (!selectedCategoryIds.contains(category.id)) {
+                          onCategoryToggled(category.id);
+                        }
+                      }
+                    }
+                  },
+                  icon: Icon(Icons.select_all),
+                  label: Text('Välj alla'),
+                ),
+                SizedBox(width: AppDimensions.spacingMd),
+                TextButton.icon(
+                  onPressed: () {
+                    // Clear all selections
+                    for (final categoryId in selectedCategoryIds.toList()) {
+                      onCategoryToggled(categoryId);
+                    }
+                  },
+                  icon: Icon(Icons.clear_all),
+                  label: Text('Rensa alla'),
+                ),
+              ],
+            ),
+            SizedBox(height: AppDimensions.spacingMd),
+          ],
+          Wrap(
+            spacing: AppDimensions.spacingS,
+            runSpacing: AppDimensions.spacingS,
+            children: categories.map((category) => friendCategoryChip(
+              category: category,
+              isSelected: selectedCategoryIds.contains(category.id),
+              onTap: () => onCategoryToggled(category.id),
+            )).toList(),
+          ),
+          if (showCreateNew && onCreateNew != null) ...[
+            SizedBox(height: AppDimensions.spacingMd),
+            Center(
+              child: TextButton.icon(
+                onPressed: onCreateNew,
+                icon: Icon(Icons.add),
+                label: Text('Skapa ny kategori'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Build friend category chip
+  static Widget friendCategoryChip({
+    required FriendCategory category,
+    required bool isSelected,
+    required VoidCallback onTap,
+    bool showCount = true,
+    bool enabled = true,
+  }) {
+    return FilterChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            category.emoji != null ? Icons.emoji_emotions : Icons.group,
+            size: 16,
+            color: isSelected ? AppColors.textDark : AppColors.textMedium,
+          ),
+          SizedBox(width: AppDimensions.spacingXs),
+          Text(category.name),
+          if (showCount) ...[
+            SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              '(${category.friendUserIds.length})',
+              style: TextStyle(
+                fontSize: 12,
+                color: isSelected ? AppColors.textDark : AppColors.textMedium,
+              ),
+            ),
+          ],
+        ],
+      ),
+      selected: isSelected,
+      onSelected: enabled ? (_) => onTap() : null,
+      backgroundColor: AppColors.backgroundBeige,
+      selectedColor: AppColors.primaryBlue,
+      checkmarkColor: AppColors.textDark,
+      labelStyle: TextStyle(
+        color: isSelected ? AppColors.textDark : AppColors.textMedium,
+      ),
+    );
+  }
+
+  /// Build category list view
+  static Widget categoryList({
+    required List<FriendCategory> categories,
+    required Function(FriendCategory) onCategoryTap,
+    bool showMemberCount = true,
+    EdgeInsets? padding,
+  }) {
+    return ListView.builder(
+      padding: padding,
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        return ListTile(
+          leading: Icon(
+            category.emoji != null ? Icons.emoji_emotions : Icons.group,
+            color: AppColors.primaryBlue,
+          ),
+          title: Text(category.name),
+          subtitle: showMemberCount ? Text('${category.friendUserIds.length} medlemmar') : null,
+          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () => onCategoryTap(category),
+        );
+      },
+    );
+  }
+
+  /// Build category grid view
+  static Widget categoryGrid({
+    required List<FriendCategory> categories,
+    required Function(FriendCategory) onCategoryTap,
+    int crossAxisCount = 2,
+    EdgeInsets? padding,
+  }) {
+    return GridView.builder(
+      padding: padding ?? EdgeInsets.all(AppDimensions.spacingMd),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: 1.5,
+        crossAxisSpacing: AppDimensions.spacingMd,
+        mainAxisSpacing: AppDimensions.spacingMd,
+      ),
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        return Card(
+          child: InkWell(
+            onTap: () => onCategoryTap(category),
+            borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
+            child: Padding(
+              padding: EdgeInsets.all(AppDimensions.spacingMd),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    category.emoji != null ? Icons.emoji_emotions : Icons.group,
+                    size: AppDimensions.iconSizeXl,
+                    color: AppColors.primaryBlue,
+                  ),
+                  SizedBox(height: AppDimensions.spacingS),
+                  Text(
+                    category.name,
+                    style: AppTextStyles.cardTitleStyle,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '${category.friendUserIds.length} medlemmar',
+                    style: AppTextStyles.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Build category statistics widget
+  static Widget categoryStatistics({
+    required List<FriendCategory> categories,
+    EdgeInsets? padding,
+  }) {
+    final totalMembers = categories.fold<int>(0, (sum, cat) => sum + cat.memberIds.length);
+    final averageSize = categories.isNotEmpty ? (totalMembers / categories.length).round() : 0;
+    final largestCategory = categories.isNotEmpty 
+        ? categories.reduce((a, b) => a.memberIds.length > b.memberIds.length ? a : b)
+        : null;
+
+    return Card(
+      child: Padding(
+        padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Kategoristatistik',
+              style: AppTextStyles.sectionTitleStyle,
+            ),
+            SizedBox(height: AppDimensions.spacingMd),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.category,
+                    label: 'Kategorier',
+                    value: categories.length.toString(),
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.people,
+                    label: 'Totalt medlemmar',
+                    value: totalMembers.toString(),
+                    color: AppColors.success,
+                  ),
+                ),
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.analytics,
+                    label: 'Genomsnitt',
+                    value: averageSize.toString(),
+                    color: AppColors.warning,
+                  ),
+                ),
+              ],
+            ),
+            if (largestCategory != null) ...[
+              SizedBox(height: AppDimensions.spacingMd),
+              Text(
+                'Största kategori: ${largestCategory.name} (${largestCategory.memberIds.length} medlemmar)',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Internal implementation av FriendCategoryManager
@@ -507,5 +778,51 @@ class _FriendCategoryManagerWidgetState
     });
     widget.onSelectionChanged([]);
     AppLogger.info('🗑️ Alla val rensade');
+  }
+}
+
+/// Helper widget for displaying statistics
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: color,
+          size: 24,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.textMedium,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
   }
 }
