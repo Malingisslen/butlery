@@ -19,12 +19,16 @@ import 'dart:async';
 import 'dart:io';
 import 'service_optimizer.dart';
 import 'logger.dart';
+import '../mixins/singleton_service_mixin.dart';
 
 /// Enhanced error handler with user-friendly messages and recovery suggestions
-class ErrorHandler {
-  static final ErrorHandler _instance = ErrorHandler._internal();
-  factory ErrorHandler() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class ErrorHandler with SingletonServiceMixin<ErrorHandler> {
+  // Private constructor for singleton
   ErrorHandler._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory ErrorHandler() => SingletonServiceMixin.createSingleton(() => ErrorHandler._internal());
 
   final ServiceOptimizer _optimizer = ServiceOptimizer();
 

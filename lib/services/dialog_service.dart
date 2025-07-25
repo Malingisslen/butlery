@@ -3,51 +3,73 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import '../core/base/base_service.dart';
 
 /// Service for handling common dialogs
 /// Separates dialog business logic from UI layer
-class DialogService {
-  /// Show exit confirmation dialog
-  static Future<bool> showExitDialog(BuildContext context) async {
-    final shouldExit = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Avsluta Butlery?'),
-        content: const Text('Vill du verkligen avsluta appen?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('Avsluta'),
-          ),
-        ],
-      ),
-    );
+class DialogService extends BaseService {
+  
+  @override
+  String get serviceName => 'DialogService';
 
-    return shouldExit ?? false;
+  /// Show exit confirmation dialog
+  Future<bool> showExitDialog(BuildContext context) async {
+    return await executeServiceOperation(
+      () async {
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Avsluta Butlery?'),
+            content: const Text('Vill du verkligen avsluta appen?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Avbryt'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                ),
+                child: const Text('Avsluta'),
+              ),
+            ],
+          ),
+        );
+        return shouldExit ?? false;
+      },
+      operationName: 'Show exit dialog',
+      defaultValue: false,
+    ) ?? false;
   }
 
   /// Exit the application
-  static Future<void> exitApp() async {
-    await SystemNavigator.pop();
+  Future<void> exitApp() async {
+    await executeServiceOperation(
+      () async {
+        await SystemNavigator.pop();
+      },
+      operationName: 'Exit application',
+      requiresAuth: false,
+    );
   }
 
   /// Show exit dialog and exit if confirmed
-  static Future<void> showExitDialogAndExit(BuildContext context) async {
-    final shouldExit = await showExitDialog(context);
-    if (shouldExit && context.mounted) {
-      await exitApp();
-    }
+  Future<void> showExitDialogAndExit(BuildContext context) async {
+    await executeServiceOperation(
+      () async {
+        final shouldExit = await showExitDialog(context);
+        if (shouldExit && context.mounted) {
+          await exitApp();
+        }
+      },
+      operationName: 'Show exit dialog and exit',
+      requiresAuth: false,
+    );
   }
 
   /// Show confirmation dialog
-  static Future<bool> showConfirmDialog(
+  Future<bool> showConfirmDialog(
     BuildContext context, {
     required String title,
     required String message,
@@ -55,29 +77,35 @@ class DialogService {
     String cancelText = 'Avbryt',
     bool isDestructive = false,
   }) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(cancelText),
+    return await executeServiceOperation(
+      () async {
+        final result = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(cancelText),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: isDestructive
+                    ? FilledButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                      )
+                    : null,
+                child: Text(confirmText),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: isDestructive
-                ? FilledButton.styleFrom(
-                    backgroundColor: AppColors.error,
-                  )
-                : null,
-            child: Text(confirmText),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false;
+        );
+        return result ?? false;
+      },
+      operationName: 'Show confirmation dialog',
+      defaultValue: false,
+      requiresAuth: false,
+    ) ?? false;
   }
 }

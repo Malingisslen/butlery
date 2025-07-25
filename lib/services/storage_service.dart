@@ -7,12 +7,17 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 import '../core/utils/logger.dart';
+import '../core/base/base_service.dart';
+import '../core/mixins/firebase_service_mixin.dart';
 
 /// Service för att hantera bilduppladdning till Firebase Storage
 /// Med förbättrad komprimering och progress tracking
-class StorageService {
+class StorageService extends BaseService with FirebaseServiceMixin {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _uuid = const Uuid();
+  
+  @override
+  String get serviceName => 'StorageService';
 
   // Konstanter för bildkomprimering
   static const int _maxWidth = 1920;
@@ -27,14 +32,27 @@ class StorageService {
     String userId, {
     Function(double)? onProgress,
   }) async {
-    try {
+    return await executeServiceOperation(
+      () async {
+        return await _uploadImageFileInternal(imageFile, userId, onProgress);
+      },
+      operationName: 'Upload image file',
+      requiresAuth: true,
+      requiresNetwork: true,
+    );
+  }
+
+  Future<String> _uploadImageFileInternal(
+    File imageFile,
+    String userId,
+    Function(double)? onProgress,
+  ) async {
       AppLogger.info('Börjar uppladdning av bild: ${imageFile.path}');
 
       // Komprimera bilden först
       final compressedBytes = await _compressImage(imageFile);
       if (compressedBytes == null) {
-        AppLogger.error('Kunde inte komprimera bild');
-        return null;
+        throw Exception('Kunde inte komprimera bild');
       }
 
       // Generera unikt filnamn
@@ -75,10 +93,6 @@ class StorageService {
       _createAndUploadThumbnail(imageFile, userId, fileName);
 
       return downloadUrl;
-    } catch (e) {
-      AppLogger.error('Fel vid bilduppladdning: $e');
-      return null;
-    }
   }
 
   /// Ladda upp flera bilder samtidigt MED DETALJERAD PROGRESS
@@ -87,26 +101,15 @@ class StorageService {
     String userId, {
     void Function(int completed, int total)? onProgress,
   }) async {
-    final urls = <String>[];
-
-    for (int i = 0; i < imageFiles.length; i++) {
-      final url = await uploadImageFile(
-        imageFiles[i],
-        userId,
-        onProgress: (fileProgress) {
-          // Rapportera total progress
-          if (onProgress != null) {
-            onProgress(i + (fileProgress > 0.99 ? 1 : 0), imageFiles.length);
-          }
-        },
-      );
-
-      if (url != null) {
-        urls.add(url);
-      }
-    }
-
-    return urls;
+    return await super.executeBatchOperation(
+      imageFiles.map((file) => () async {
+        final url = await uploadImageFile(file, userId);
+        return url ?? '';
+      }).toList(),
+      'Upload multiple images',
+      requiresAuth: true,
+      requiresNetwork: true,
+    ).then((results) => results.where((url) => url.isNotEmpty).toList());
   }
 
   /// Ta bort en bild från Storage

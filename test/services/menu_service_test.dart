@@ -19,7 +19,7 @@ void main() {
       repository = MockRecipeRepository();
     });
 
-    test('generates menu using recipes from repository', () {
+    test('generates menu using recipes from repository', () async {
       final recipes = [
         Recipe(
           core: RecipeCore(
@@ -58,7 +58,7 @@ void main() {
 
       when(repository.getAllRecipes()).thenReturn(recipes);
 
-      final menu = service.generateMenuFromPrompt(
+      final menu = await service.generateMenuFromPrompt(
         '2 lunch och 1 middag',
         repository.getAllRecipes(),
       );

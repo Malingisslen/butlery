@@ -1,6 +1,7 @@
 // lib/services/social_media_extractor.dart
 
 import 'extraction/extraction_manager.dart';
+import '../core/mixins/singleton_service_mixin.dart';
 
 // Export extraction components for external usage
 export 'extraction/platform_detector.dart';
@@ -40,11 +41,12 @@ class ExtractionResult {
 /// final manager = ExtractionManager();
 /// final result = await manager.extractFromUrl(url);
 /// ```
-class SocialMediaExtractor {
-  // Singleton pattern
-  static final SocialMediaExtractor _instance = SocialMediaExtractor._internal();
-  factory SocialMediaExtractor() => _instance;
+class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor> {
+  // Private constructor for singleton
   SocialMediaExtractor._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory SocialMediaExtractor() => SingletonServiceMixin.createSingleton(() => SocialMediaExtractor._internal());
 
   final ExtractionManager _manager = ExtractionManager();
 

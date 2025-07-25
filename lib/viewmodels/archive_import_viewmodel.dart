@@ -24,11 +24,12 @@ import '../services/unified/unified_recipe_service.dart';
 import '../services/search_service.dart';
 import '../data/archived_recipes.dart' as archive;
 import '../core/injection.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 enum TimeFilter { all, under15, under30, under60 }
 
 /// ViewModel för import från arkiv
-class ArchiveImportViewModel extends ChangeNotifier {
+class ArchiveImportViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
 
@@ -158,7 +159,7 @@ class ArchiveImportViewModel extends ChangeNotifier {
         _setError(result.message ?? 'Import misslyckades');
       }
     } catch (e) {
-      _setError('Import misslyckades: ${e.toString()}');
+      _setError('Import misslyckades: $e');
     } finally {
       _setImporting(false);
     }
@@ -185,7 +186,7 @@ class ArchiveImportViewModel extends ChangeNotifier {
         _setError(result.message ?? 'Import misslyckades');
       }
     } catch (e) {
-      _setError('Import misslyckades: ${e.toString()}');
+      _setError('Import misslyckades: $e');
     } finally {
       _setImporting(false);
     }

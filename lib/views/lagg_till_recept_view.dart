@@ -20,9 +20,9 @@ class LaggTillReceptView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (!didPop) {
-          DialogService.showExitDialogAndExit(context);
+          await DialogService().showExitDialogAndExit(context);
         }
       },
       child: LayoutComponents.mainMenu(

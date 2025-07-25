@@ -54,7 +54,7 @@ class MenuGenerator {
       throw Exception('Inga recept tillgängliga. Lägg till recept först.');
     }
 
-    final generatedMenu = _menuService.generateMenuFromPrompt(
+    final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
       availableRecipes,
     );
@@ -77,7 +77,7 @@ class MenuGenerator {
 
     final currentCount = currentMenu[section]?.length ?? 1;
 
-    final newRecipes = _menuService.generateMenuFromPrompt(
+    final newRecipes = await _menuService.generateMenuFromPrompt(
       '$currentCount $section',
       availableRecipes,
     );

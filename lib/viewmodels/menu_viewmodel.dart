@@ -10,6 +10,7 @@ import '../services/unified/operations/social_menu_operations.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 // Focused modules
 import 'menu/menu_state_manager.dart';
@@ -26,7 +27,7 @@ import 'menu/menu_social_manager.dart';
 /// - MenuSocialManager: Social sharing and importing
 ///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct service implementations
-class MenuViewModel extends ChangeNotifier {
+class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
   
@@ -241,7 +242,7 @@ class MenuViewModel extends ChangeNotifier {
       return await _socialManager.getAvailableSharedMenus();
     } catch (e) {
       _stateManager.handleOperationError('Kunde inte hämta delade menyer', e);
-      return [];
+      return <Map<String, dynamic>>[];
     }
   }
 

@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../theme/app_text_styles.dart';
+import 'base_dialog.dart';
 
 /// Confirmation dialogs for user actions
+/// 
+/// Refactored to use BaseDialog classes, eliminating 50+ lines of duplicate dialog code.
 class ConfirmationDialogs {
   /// ✅ Standard bekräftelse dialog
   static Future<bool> showConfirmationDialog(
@@ -16,27 +19,13 @@ class ConfirmationDialogs {
     String cancelText = 'Avbryt',
     Color? confirmColor,
   }) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(title, style: AppTextStyles.headlineSmall),
-            content: Text(message, style: AppTextStyles.bodyLarge),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(cancelText, style: AppTextStyles.labelLarge),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: confirmColor != null
-                    ? TextButton.styleFrom(foregroundColor: confirmColor)
-                    : null,
-                child: Text(confirmText, style: AppTextStyles.labelLarge),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    return await ConfirmationDialog.show(
+      context,
+      title: title,
+      message: message,
+      primaryActionText: confirmText,
+      secondaryActionText: cancelText,
+    ) ?? false;
   }
 
   /// ⚠️ Destructive confirmation dialog (red confirm button)
@@ -47,14 +36,14 @@ class ConfirmationDialogs {
     String confirmText = 'Ta bort',
     String cancelText = 'Avbryt',
   }) async {
-    return await showConfirmationDialog(
+    return await DestructiveConfirmationDialog.show(
       context,
       title: title,
       message: message,
-      confirmText: confirmText,
-      cancelText: cancelText,
-      confirmColor: AppColors.error,
-    );
+      itemName: '', // Can be enhanced if needed
+      primaryActionText: confirmText,
+      secondaryActionText: cancelText,
+    ) ?? false;
   }
 
   /// 🔄 Loading confirmation dialog

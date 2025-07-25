@@ -9,11 +9,10 @@ import '../services/unified/unified_friends_service.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
 import '../core/utils/logger.dart'; // Fixad import
-import '../core/mixins/state_notifier_mixin.dart';
-import '../core/mixins/async_operation_mixin.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 
-class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
+class SocialRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final Recipe _recipe;
   final UnifiedRecipeService _recipeService;
   final UnifiedFriendsService _friendsService;
@@ -47,9 +46,13 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
 
   Recipe get recipe => _recipe;
   List<RecipeComment> get comments => List.unmodifiable(_comments);
-  bool get isLoadingComments => isLoading;
-  String? get commentsError => error;
+  bool get isLoadingComments => _isPostingComment;
+  String? get commentsError => _sharingError;
   bool get hasComments => _comments.isNotEmpty;
+  
+  // Combined state getters
+  bool get isLoading => _isSharing || _isPostingComment;
+  String? get error => _sharingError;
 
   bool get isSharing => _isSharing;
   String? get sharingError => _sharingError;
@@ -104,40 +107,43 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
       return false;
     }
 
+    _isSharing = true;
+    _sharingError = null;
+    notifyListeners();
+    
     try {
-      _isSharing = true;
-      _sharingError = null;
-      notifyListeners();
+      final result = await safeExecute(
+        () async {
+          // Convert friend IDs to member display names - simplified for now
+          final memberDisplayNames = <String, String>{};
+          for (final friendId in _selectedFriendIds) {
+            final friend = friends.where((f) => f.uid == friendId).firstOrNull;
+            memberDisplayNames[friendId] = friend?.displayName ?? 'Friend';
+          }
 
-      // Convert friend IDs to member display names - simplified for now
-      final memberDisplayNames = <String, String>{};
-      for (final friendId in _selectedFriendIds) {
-        final friend = friends.where((f) => f.uid == friendId).firstOrNull;
-        memberDisplayNames[friendId] = friend?.displayName ?? 'Friend';
-      }
+          final sharedRecipeId = await _recipeService.social.shareRecipe(
+            recipeId: _recipe.id,
+            memberIds: _selectedFriendIds.toList(),
+            memberDisplayNames: memberDisplayNames,
+            collaborativeDescription: message,
+          );
 
-      final sharedRecipeId = await _recipeService.social.shareRecipe(
-        recipeId: _recipe.id,
-        memberIds: _selectedFriendIds.toList(),
-        memberDisplayNames: memberDisplayNames,
-        collaborativeDescription: message,
+          final success = sharedRecipeId != null;
+          if (success) {
+            _selectedFriendIds.clear();
+            AppLogger.success(
+              '✅ Recept delat med ${_selectedFriendIds.length} vänner',
+            );
+            return true;
+          } else {
+            _sharingError = _recipeService.error ?? 'Kunde inte dela recept';
+            throw Exception(_sharingError!);
+          }
+        },
+        operationName: 'Share recipe',
       );
-
-      final success = sharedRecipeId != null;
-      if (success) {
-        _selectedFriendIds.clear();
-        AppLogger.success(
-          '✅ Recept delat med ${_selectedFriendIds.length} vänner',
-        );
-      } else {
-        _sharingError = _recipeService.error ?? 'Kunde inte dela recept';
-      }
-
-      return success;
-    } catch (e) {
-      _sharingError = 'Kunde inte dela recept: $e';
-      AppLogger.error('Share recipe failed', e);
-      return false;
+      
+      return result ?? false;
     } finally {
       _isSharing = false;
       notifyListeners();
@@ -170,31 +176,34 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
       return false;
     }
 
+    _isPostingComment = true;
+    notifyListeners();
+    
     try {
-      _isPostingComment = true;
-      notifyListeners();
+      final result = await safeExecute(
+        () async {
+          // Implement comment functionality through UnifiedRecipeService social operations
+          final commentId = await _recipeService.social.addComment(
+            recipeId: _recipe.id,
+            content: _newCommentText.trim(),
+            parentCommentId: _replyToCommentId,
+          );
 
-      // Implement comment functionality through UnifiedRecipeService social operations
-      final commentId = await _recipeService.social.addComment(
-        recipeId: _recipe.id,
-        content: _newCommentText.trim(),
-        parentCommentId: _replyToCommentId,
+          // Handle success case
+          if (commentId != null) {
+            _newCommentText = '';
+            _replyToCommentId = null;
+            await _loadComments(); // Refresh comments
+            AppLogger.success('✅ Kommentar postad');
+            return true;
+          } else {
+            throw Exception('Kunde inte posta kommentar');
+          }
+        },
+        operationName: 'Post comment',
       );
-
-      // Handle success case
-      if (commentId != null) {
-        _newCommentText = '';
-        _replyToCommentId = null;
-        await _loadComments(); // Refresh comments
-        AppLogger.success('✅ Kommentar postad');
-        return true;
-      } else {
-        AppLogger.error('❌ Kunde inte posta kommentar');
-        return false;
-      }
-    } catch (e) {
-      AppLogger.error('Post comment failed', e);
-      return false;
+      
+      return result ?? false;
     } finally {
       _isPostingComment = false;
       notifyListeners();
@@ -203,70 +212,50 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
 
   /// Edit existing comment
   Future<bool> editComment(String commentId, String newText) async {
-    try {
-      setLoading(true);
-      final success = await _recipeService.social.editComment(
-        commentId: commentId,
-        newContent: newText,
-      );
-      
-      if (success) {
-        await _loadComments(); // Refresh to show edit
-      }
-      
-      return success;
-    } catch (e) {
-      AppLogger.error('Error editing comment', e);
-      setError('Kunde inte redigera kommentar');
-      return false;
-    } finally {
-      setLoading(false);
-      notifyListeners();
-    }
+    return await safeExecute(
+      () async {
+        final success = await _recipeService.social.editComment(
+          commentId: commentId,
+          newContent: newText,
+        );
+        
+        if (success) {
+          await _loadComments(); // Refresh to show edit
+          return true;
+        } else {
+          throw Exception('Kunde inte redigera kommentar');
+        }
+      },
+      operationName: 'Edit comment',
+    ) ?? false;
   }
 
   /// Delete comment
   Future<bool> deleteComment(String commentId) async {
-    try {
-      setLoading(true);
-      final success = await _recipeService.social.deleteComment(commentId);
-      
-      if (success) {
-        await _loadComments(); // Refresh to show deletion
-      }
-      
-      return success;
-    } catch (e) {
-      AppLogger.error('Error deleting comment', e);
-      setError('Kunde inte ta bort kommentar');
-      return false;
-    } finally {
-      setLoading(false);
-      notifyListeners();
-    }
+    return await safeExecute(
+      () async {
+        final success = await _recipeService.social.deleteComment(commentId);
+        
+        if (success) {
+          await _loadComments(); // Refresh to show deletion
+          return true;
+        } else {
+          throw Exception('Kunde inte ta bort kommentar');
+        }
+      },
+      operationName: 'Delete comment',
+    ) ?? false;
   }
 
   /// Toggle like on comment
   Future<bool> toggleCommentLike(String commentId) async {
-    try {
-      final currentUserId = sl<PermissionService>().currentUserId;
-      if (currentUserId == null) return false;
+    final currentUserId = sl<PermissionService>().currentUserId;
+    if (currentUserId == null) return false;
 
-      // Optimistic update
-      final commentIndex = _comments.indexWhere((c) => c.id == commentId);
-      if (commentIndex >= 0) {
-        final comment = _comments[commentIndex];
-        final isLiked = comment.isLikedBy(currentUserId);
-        _comments[commentIndex] = isLiked
-            ? comment.removeLike(currentUserId)
-            : comment.addLike(currentUserId);
-        notifyListeners();
-      }
-
-      final success = await _recipeService.social.toggleCommentLike(commentId);
-      
-      if (!success) {
-        // Revert optimistic update on failure
+    return await safeExecute(
+      () async {
+        // Optimistic update
+        final commentIndex = _comments.indexWhere((c) => c.id == commentId);
         if (commentIndex >= 0) {
           final comment = _comments[commentIndex];
           final isLiked = comment.isLikedBy(currentUserId);
@@ -275,15 +264,26 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
               : comment.addLike(currentUserId);
           notifyListeners();
         }
-        setError('Kunde inte uppdatera gilla-status');
-      }
-      
-      return success;
-    } catch (e) {
-      AppLogger.error('Error toggling comment like', e);
-      setError('Kunde inte uppdatera gilla-status');
-      return false;
-    }
+
+        final success = await _recipeService.social.toggleCommentLike(commentId);
+        
+        if (!success) {
+          // Revert optimistic update on failure
+          if (commentIndex >= 0) {
+            final comment = _comments[commentIndex];
+            final isLiked = comment.isLikedBy(currentUserId);
+            _comments[commentIndex] = isLiked
+                ? comment.removeLike(currentUserId)
+                : comment.addLike(currentUserId);
+            notifyListeners();
+          }
+          throw Exception('Kunde inte uppdatera gilla-status');
+        }
+        
+        return success;
+      },
+      operationName: 'Toggle comment like',
+    ) ?? false;
   }
 
   /// Check if current user can edit comment
@@ -301,38 +301,31 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   // ===== PRIVATE METHODS =====
 
   Future<void> _loadComments() async {
-    try {
-      setLoading(true);
-      clearError();
-      notifyListeners();
+    await safeExecute(
+      () async {
+        final comments = await _recipeService.social.getComments(
+          recipeId: _recipe.id,
+        );
 
-      final comments = await _recipeService.social.getComments(
-        recipeId: _recipe.id,
-      );
+        // Sort comments: top-level first (newest first), then replies by date
+        _comments = List.from(comments);
+        _comments.sort((a, b) {
+          // Top-level comments first
+          if (a.isTopLevel && !b.isTopLevel) return -1;
+          if (!a.isTopLevel && b.isTopLevel) return 1;
 
-      // Sort comments: top-level first (newest first), then replies by date
-      _comments = List.from(comments);
-      _comments.sort((a, b) {
-        // Top-level comments first
-        if (a.isTopLevel && !b.isTopLevel) return -1;
-        if (!a.isTopLevel && b.isTopLevel) return 1;
+          // Within same level, sort by date (newest first for top-level, oldest first for replies)
+          if (a.isTopLevel && b.isTopLevel) {
+            return b.createdAt.compareTo(a.createdAt);
+          } else {
+            return a.createdAt.compareTo(b.createdAt);
+          }
+        });
 
-        // Within same level, sort by date (newest first for top-level, oldest first for replies)
-        if (a.isTopLevel && b.isTopLevel) {
-          return b.createdAt.compareTo(a.createdAt);
-        } else {
-          return a.createdAt.compareTo(b.createdAt);
-        }
-      });
-
-      AppLogger.info('💬 ${_comments.length} kommentarer laddade för recept');
-    } catch (e) {
-      setError('Kunde inte ladda kommentarer: $e');
-      AppLogger.error('Load comments failed', e);
-    } finally {
-      setLoading(false);
-      notifyListeners();
-    }
+        AppLogger.info('💬 ${_comments.length} kommentarer laddade för recept');
+      },
+      operationName: 'Load comments',
+    );
   }
 
   void _onSocialServiceChanged() {
@@ -345,7 +338,12 @@ class SocialRecipeViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
 
   /// Clear all errors
   void clearErrors() {
-    clearError();
+    _sharingError = null;
+    notifyListeners();
+  }
+  
+  /// Clear error implementation for compatibility
+  void clearError() {
     _sharingError = null;
     notifyListeners();
   }

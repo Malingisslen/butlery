@@ -9,11 +9,10 @@ import '../services/storage_service.dart';
 import '../services/image_picker_service.dart';
 import '../core/utils/logger.dart';
 import '../core/injection.dart';
-import '../core/mixins/state_notifier_mixin.dart';
-import '../core/mixins/async_operation_mixin.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
 
-class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
+class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UserService _userService;
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
@@ -25,7 +24,7 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
   bool _isSearchable = true;
   bool _allowEmailSearch = false;
 
-  // UI state
+  // UI state - removed _isLoading as it's not used
   bool _isUploadingAvatar = false;
   bool _hasUnsavedChanges = false;
 
@@ -50,13 +49,14 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
   bool get isSearchable => _isSearchable;
   bool get allowEmailSearch => _allowEmailSearch;
 
-  @override
-  bool get isLoading => super.isLoading || _isUploadingAvatar;
+  bool get isLoading => _isUploadingAvatar;
   bool get isUploadingAvatar => _isUploadingAvatar;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
 
   String? get displayNameError => _displayNameError;
   String? get bioError => _bioError;
+  String? get error => _displayNameError ?? _bioError; // Combined error getter
+  bool get hasError => _displayNameError != null || _bioError != null; // Combined error check
 
   UserProfile? get currentProfile => sl<PermissionService>().currentUser;
   bool get hasProfile => currentProfile != null;
@@ -98,48 +98,45 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
 
   /// Upload new avatar
   Future<bool> uploadAvatar() async {
+    _isUploadingAvatar = true;
+    notifyListeners();
+    
     try {
-      _isUploadingAvatar = true;
-      clearError();
-      notifyListeners();
+      final result = await safeExecute(
+        () async {
+          // Pick image från gallery
+          final imageFile =
+              await _imagePickerService.pickImage(ImageSource.gallery);
 
-      // Pick image från gallery
-      final imageFile =
-          await _imagePickerService.pickImage(ImageSource.gallery);
+          if (imageFile == null) {
+            return false;
+          }
 
-      if (imageFile == null) {
-        _isUploadingAvatar = false;
-        notifyListeners();
-        return false;
-      }
+          // Get current user ID
+          final userId = sl<PermissionService>().currentUserId;
+          if (userId == null) {
+            throw Exception('Ingen användare inloggad');
+          }
 
-      // Get current user ID
-      final userId = sl<PermissionService>().currentUserId;
-      if (userId == null) {
-        setError('Ingen användare inloggad');
-        return false;
-      }
+          // Upload med path som inkluderar userId för säkerhet
+          final uploadUrl = await _storageService.uploadImageFile(
+            imageFile,
+            userId,
+          );
 
-      // Upload med path som inkluderar userId för säkerhet
-      final uploadUrl = await _storageService.uploadImageFile(
-        imageFile,
-        userId,
+          if (uploadUrl != null) {
+            _avatarUrl = uploadUrl;
+            _checkForChanges();
+            AppLogger.success('✅ Avatar uploaded');
+            return true;
+          } else {
+            throw Exception('Kunde inte ladda upp avatar');
+          }
+        },
+        operationName: 'Upload avatar',
       );
-
-      if (uploadUrl != null) {
-        _avatarUrl = uploadUrl;
-        _checkForChanges();
-        AppLogger.success('✅ Avatar uploaded');
-        notifyListeners();
-        return true;
-      } else {
-        setError('Kunde inte ladda upp avatar');
-        return false;
-      }
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte ladda upp avatar: $e');
-      setError('Kunde inte ladda upp avatar: $e');
-      return false;
+      
+      return result ?? false;
     } finally {
       _isUploadingAvatar = false;
       notifyListeners();
@@ -156,7 +153,7 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
   /// Save profile changes
   Future<bool> saveProfile() async {
     if (!isFormValid) {
-      setError('Fyll i alla obligatoriska fält korrekt');
+      _handleUserError('Fyll i alla obligatoriska fält korrekt');
       return false;
     }
 
@@ -171,7 +168,7 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
       }
     }
 
-    return await saveData(() async {
+    return await safeExecute(() async {
       final updatedProfile = await _userService.createOrUpdateProfile(
         displayName: _displayName,
         bio: _bio.isEmpty ? null : _bio,
@@ -188,7 +185,7 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
       } else {
         throw Exception(_userService.error ?? 'Kunde inte spara profil');
       }
-    });
+    }, operationName: 'Save profile') ?? false;
   }
 
   /// Reset form to current profile values
@@ -204,30 +201,34 @@ class UserProfileViewModel extends ChangeNotifier with StateNotifierMixin, Async
   Future<bool> checkDisplayNameAvailability() async {
     if (_displayName.isEmpty) return false;
 
-    try {
-      final isAvailable =
-          await _userService.isDisplayNameAvailable(_displayName);
+    return await safeExecute(
+      () async {
+        final isAvailable =
+            await _userService.isDisplayNameAvailable(_displayName);
 
-      if (!isAvailable) {
-        _displayNameError = 'Detta namn är redan taget';
-      } else {
-        _displayNameError = null;
-      }
+        if (!isAvailable) {
+          _displayNameError = 'Detta namn är redan taget';
+        } else {
+          _displayNameError = null;
+        }
 
-      notifyListeners();
-      return isAvailable;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte kontrollera namn-tillgänglighet: $e');
-      return false;
-    }
+        notifyListeners();
+        return isAvailable;
+      },
+      operationName: 'Check display name availability',
+    ) ?? false;
   }
 
   /// Clear all errors
-  @override
   void clearError() {
-    setError('');
     _clearValidationErrors();
     notifyListeners();
+  }
+  
+  /// Handle user error messages
+  void _handleUserError(String message) {
+    // For now, just log - could be extended to show UI messages
+    AppLogger.error('User error: $message');
   }
 
   // ===== PRIVATE METHODS =====

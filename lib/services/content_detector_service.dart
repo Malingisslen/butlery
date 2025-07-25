@@ -1,6 +1,8 @@
 // lib/services/content_detector_service.dart
 
 import 'package:flutter/material.dart';
+import '../core/base/base_service.dart';
+import '../core/mixins/singleton_service_mixin.dart';
 
 /// Typ av innehåll som detekterats
 enum ContentType {
@@ -35,12 +37,16 @@ class ContentDetectionResult {
 ///
 /// Denna service är modulär och lätt att uppdatera när nya
 /// plattformar eller mönster behöver stödjas.
-class ContentDetectorService {
-  // Singleton pattern för enkel åtkomst
-  static final ContentDetectorService _instance =
-      ContentDetectorService._internal();
-  factory ContentDetectorService() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class ContentDetectorService extends BaseService with SingletonServiceMixin<ContentDetectorService> {
+  // Private constructor for singleton
   ContentDetectorService._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory ContentDetectorService() => SingletonServiceMixin.createSingleton(() => ContentDetectorService._internal());
+  
+  @override
+  String get serviceName => 'ContentDetectorService';
 
   /// Regex-mönster för olika plattformar (lätt att uppdatera)
   static final Map<SourcePlatform, List<RegExp>> _platformPatterns = {
@@ -82,7 +88,24 @@ class ContentDetectorService {
   ];
 
   /// Detekterar typ av innehåll från delad text
-  ContentDetectionResult detectContent(String content) {
+  Future<ContentDetectionResult> detectContent(String content) async {
+    return await executeServiceOperation(
+      () async {
+        return _detectContentInternal(content);
+      },
+      operationName: 'Detect content type',
+      defaultValue: ContentDetectionResult(
+        type: ContentType.unknown,
+        originalContent: content,
+      ),
+      requiresAuth: false,
+    ) ?? ContentDetectionResult(
+      type: ContentType.unknown,
+      originalContent: content,
+    );
+  }
+
+  ContentDetectionResult _detectContentInternal(String content) {
     debugPrint(
       '🔍 Analyserar innehåll: ${content.substring(0, content.length.clamp(0, 100))}...',
     );

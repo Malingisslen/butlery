@@ -1,18 +1,22 @@
 // lib/services/extraction/platform_detector.dart
 
 import '../content_detector_service.dart';
+import '../../core/mixins/singleton_service_mixin.dart';
 
 /// Platform detection for social media URLs
-class PlatformDetector {
-  static final PlatformDetector _instance = PlatformDetector._internal();
-  factory PlatformDetector() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class PlatformDetector with SingletonServiceMixin<PlatformDetector> {
+  // Private constructor for singleton
   PlatformDetector._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory PlatformDetector() => SingletonServiceMixin.createSingleton(() => PlatformDetector._internal());
 
   final ContentDetectorService _detector = ContentDetectorService();
 
   /// Detect platform from URL
-  ContentDetectionResult detectPlatform(String url) {
-    return _detector.detectContent(url);
+  Future<ContentDetectionResult> detectPlatform(String url) async {
+    return await _detector.detectContent(url);
   }
 
   /// Convert Instagram app links to web URLs

@@ -18,6 +18,9 @@
 import 'dart:async';
 import '../../../models/recipe_unified.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/base/base_service.dart';
+import '../../../core/utils/validation_utils.dart';
+import '../../../core/utils/logging_utils.dart';
 import 'realtime_recipe/realtime_watching_module.dart';
 import 'realtime_recipe/realtime_editing_module.dart';
 import 'realtime_recipe/collaboration_management_module.dart';
@@ -40,7 +43,9 @@ import 'realtime_recipe/realtime_notification_module.dart';
 export 'realtime_recipe/realtime_editing_module.dart' show ConflictInfo;
 export 'realtime_recipe/realtime_watching_module.dart' show ConnectionStatus;
 
-class RealtimeRecipeOperations {
+class RealtimeRecipeOperations extends BaseService {
+  @override
+  String get serviceName => 'RealtimeRecipeOperations';
   final dynamic _parent; // UnifiedRecipeService
   final dynamic _realtimeSyncService; // RealtimeSyncService?
 
@@ -66,6 +71,9 @@ class RealtimeRecipeOperations {
 
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
+    if (ValidationUtils.isNullOrEmpty(recipeId)) {
+      throw ArgumentError('Recipe ID cannot be null or empty');
+    }
     return _watchingModule.watchRecipe(recipeId);
   }
 
@@ -83,6 +91,9 @@ class RealtimeRecipeOperations {
 
   /// Watch multiple recipes for real-time updates
   Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) {
+    if (!ValidationUtils.hasItems(recipeIds)) {
+      throw ArgumentError('Recipe IDs list cannot be null or empty');
+    }
     return _watchingModule.watchMultipleRecipes(recipeIds);
   }
 
@@ -147,31 +158,51 @@ class RealtimeRecipeOperations {
 
   /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
-    final success = await _editingModule.startRealtimeEditing(recipeId);
-    
-    if (success) {
-      // Show presence and send notification
-      await _presenceModule.showPresence(recipeId);
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe != null) {
-        await _notificationModule.sendCollaborationJoinedNotification(recipe);
-      }
+    if (ValidationUtils.isNullOrEmpty(recipeId)) {
+      return false;
     }
     
-    return success;
+    return await LoggingUtils.loggedOperation(
+      'Start Realtime Editing',
+      () async {
+        final success = await _editingModule.startRealtimeEditing(recipeId);
+        
+        if (success) {
+          // Show presence and send notification
+          await _presenceModule.showPresence(recipeId);
+          final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+          if (recipe != null) {
+            await _notificationModule.sendCollaborationJoinedNotification(recipe);
+          }
+        }
+        
+        return success;
+      },
+      metadata: {'recipe_id': recipeId},
+    ) == true;
   }
 
   /// Stop real-time editing session for recipe
   Future<bool> stopRealtimeEditing(String recipeId) async {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    
-    // Hide presence and send notification before stopping
-    await _presenceModule.hidePresence(recipeId);
-    if (recipe != null) {
-      await _notificationModule.sendCollaborationLeftNotification(recipe);
+    if (ValidationUtils.isNullOrEmpty(recipeId)) {
+      return false;
     }
     
-    return await _editingModule.stopRealtimeEditing(recipeId);
+    return await LoggingUtils.loggedOperation(
+      'Stop Realtime Editing',
+      () async {
+        final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+        
+        // Hide presence and send notification before stopping
+        await _presenceModule.hidePresence(recipeId);
+        if (recipe != null) {
+          await _notificationModule.sendCollaborationLeftNotification(recipe);
+        }
+        
+        return await _editingModule.stopRealtimeEditing(recipeId);
+      },
+      metadata: {'recipe_id': recipeId},
+    ) == true;
   }
 
   /// Check if recipe is in realtime editing mode
@@ -569,12 +600,14 @@ class RealtimeRecipeOperations {
   }
 
   /// Dispose resources
-  void dispose() {
-    try {
-      _presenceModule.dispose();
-      AppLogger.info('RealtimeRecipeOperations disposed successfully');
-    } catch (e) {
-      AppLogger.error('Error disposing RealtimeRecipeOperations', e);
-    }
+  @override
+  Future<void> dispose() async {
+    safeExecuteSync(
+      () {
+        _presenceModule.dispose();
+        AppLogger.info('RealtimeRecipeOperations disposed successfully');
+      },
+      operationName: 'Dispose RealtimeRecipeOperations',
+    );
   }
 }

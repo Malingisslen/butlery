@@ -8,6 +8,8 @@ import '../../core/cache/json_cache_helper.dart';
 import '../../models/recipe_unified.dart';
 import '../../models/permissions/resource_permission.dart';
 import '../../core/utils/logger.dart';
+import '../../core/mixins/firebase_service_mixin.dart';
+import '../../core/mixins/error_handling_mixin.dart';
 
 // Focused modules
 import 'modules/personal_recipe_module.dart';
@@ -30,7 +32,7 @@ import 'types/recipe_types.dart';
 /// - RecipeCacheModule: Caching and sync management
 ///
 /// ❌ DOES NOT CONTAIN: Business logic implementation, Firebase operations, caching logic
-class UnifiedRecipeService extends ChangeNotifier {
+class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
 
@@ -133,6 +135,7 @@ class UnifiedRecipeService extends ChangeNotifier {
   bool get isSyncing => _cacheModule.isSyncing;
   
   /// Public getter for firestore instance (for legacy interfaces)
+  @override
   FirebaseFirestore get firestore => _firestore;
 
   // ===== INITIALIZATION =====

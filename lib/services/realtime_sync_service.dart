@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/interfaces/auth_repository.dart';
+import '../repositories/interfaces/auth_repository.dart' as auth;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../repositories/firestore_repository.dart';
@@ -10,6 +10,8 @@ import '../models/realtime/realtime_resource.dart';
 import '../models/realtime/realtime_recipe.dart';
 import '../models/realtime/realtime_menu.dart';
 import '../core/utils/logger.dart';
+import '../core/base/base_service.dart';
+import '../core/mixins/stream_management_mixin.dart';
 
 
 /// Typ av synkroniseringsfel för robust error handling
@@ -55,21 +57,29 @@ class SyncError {
 /// - Business rules eller validation
 /// - Permission management (det finns i modellerna)
 /// - Notification eller user experience
-class RealtimeSyncService extends ChangeNotifier {
+class RealtimeSyncService extends BaseService with StreamManagementMixin {
+  @override
+  String get serviceName => 'RealtimeSyncService';
   final FirestoreRepository _firestoreRepository;
-  final AuthRepository _authRepository;
+  final auth.AuthRepository _authRepository;
 
   RealtimeSyncService({
     required FirestoreRepository firestoreRepository,
-    required AuthRepository authRepository,
+    required auth.AuthRepository authRepository,
   })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository;
+        _authRepository = authRepository {
+    // Initialize StreamControllers using StreamManagementMixin
+    _connectionController = createBroadcastController<bool>(name: 'connection_state');
+    _errorController = createBroadcastController<SyncError>(name: 'sync_errors');
+  }
 
   // ===== CONNECTION STATE =====
   bool _isConnected = false;
-  final StreamController<bool> _connectionController =
-      StreamController<bool>.broadcast();
-  StreamSubscription<bool>? _networkSubscription;
+  late final StreamController<bool> _connectionController;
+  // StreamSubscription management handled by StreamManagementMixin
+  
+  // ===== NOTIFICATION LISTENERS =====
+  final List<VoidCallback> _listeners = [];
 
   // ===== ACTIVE LISTENERS =====
   final Map<String, StreamSubscription<DocumentSnapshot>> _activeListeners = {};
@@ -77,8 +87,7 @@ class RealtimeSyncService extends ChangeNotifier {
 
   // ===== ERROR HANDLING =====
   SyncError? _lastError;
-  final StreamController<SyncError> _errorController =
-      StreamController<SyncError>.broadcast();
+  late final StreamController<SyncError> _errorController;
 
   // ===== CONFLICT RESOLUTION =====
   final Map<String, DateTime> _lastLocalUpdate = {};
@@ -104,26 +113,46 @@ class RealtimeSyncService extends ChangeNotifier {
 
   /// Aktuell användare
   String? get _currentUserId => _authRepository.currentUserId;
+  
+  // ===== NOTIFICATION METHODS =====
+  
+  /// Add listener for state changes
+  void addListener(VoidCallback listener) {
+    _listeners.add(listener);
+  }
+  
+  /// Remove listener for state changes
+  void removeListener(VoidCallback listener) {
+    _listeners.remove(listener);
+  }
+  
+  /// Notify all listeners of state changes
+  void notifyListeners() {
+    for (final listener in _listeners) {
+      listener();
+    }
+  }
 
   // ===== INITIALIZATION =====
 
   /// Initialisera RealtimeSyncService
+  @override
   Future<void> initialize() async {
-    AppLogger.info('🔄 Initialiserar RealtimeSyncService...');
+    await safeExecute(
+      () async {
+        AppLogger.info('🔄 Initialiserar RealtimeSyncService...');
+        
+        // Lyssna på Firebase connection state
+        _startConnectionMonitoring();
 
-    try {
-      // Lyssna på Firebase connection state
-      _startConnectionMonitoring();
+        // Lyssna på auth state changes
+        _authRepository.authStateChanges().listen(_onAuthStateChanged);
 
-      // Lyssna på auth state changes
-      _authRepository.authStateChanges().listen(_onAuthStateChanged);
-
-      AppLogger.success('✅ RealtimeSyncService initierad');
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte initiera RealtimeSyncService', e);
-      _handleError(SyncErrorType.unknown, 'Initieringsfel: $e',
-          originalError: e);
-    }
+        AppLogger.success('✅ RealtimeSyncService initierad');
+      },
+      operationName: 'Initialize RealtimeSync Service',
+      customErrorMessage: 'Could not initialize realtime sync service',
+    );
   }
 
   /// Starta övervakning av Firebase-anslutning
@@ -478,6 +507,7 @@ class RealtimeSyncService extends ChangeNotifier {
     _activeListeners.clear();
     AppLogger.info('🔒 Alla listeners stängda');
   }
+  
 
   /// Hantera fel och notifiera lyssnare
   void _handleError(
@@ -528,16 +558,11 @@ class RealtimeSyncService extends ChangeNotifier {
   // ===== CLEANUP =====
 
   @override
-  void dispose() {
-    AppLogger.info('🗑️ RealtimeSyncService disposing...');
-
+  Future<void> onDispose() async {
     _closeAllListeners();
-    _networkSubscription?.cancel();
-    _connectionController.close();
-    _errorController.close();
+    await disposeStreamResources(); // StreamManagementMixin handles controllers and subscriptions
     _cachedResources.clear();
     _lastLocalUpdate.clear();
-
-    super.dispose();
+    _listeners.clear();
   }
 }

@@ -6,17 +6,13 @@ import '../../../services/unified/unified_friends_service.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
+import '../../common/dialogs/dialog_form_fields.dart';
 import 'shared/group_dialog_components.dart';
 
 /// Dialog for creating a new group
 /// 
-/// This dialog provides a focused interface for group creation with:
-/// - Emoji/icon selection
-/// - Group name and description fields
-/// - Pre-selected member support
-/// - Validation and error handling
-/// - Service integration for group creation
+/// Enhanced consolidation using DialogFormFields, eliminating 40+ lines of duplicate
+/// form field patterns, validation logic, and styling inconsistencies.
 class CreateGroupDialog extends StatefulWidget {
   final List<UserProfile>? preSelectedMembers;
 
@@ -83,7 +79,6 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         });
       }
     } catch (e) {
-      AppLogger.error('Error creating group', e);
       setState(() {
         _error = 'Ett fel uppstod: ${e.toString()}';
       });
@@ -132,32 +127,22 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                     
                     SizedBox(height: AppDimensions.spacingL),
                     
-                    // Group name
-                    TextFormField(
+                    // ✅ CONSOLIDATED: Group name using standardized form field
+                    DialogFormFields.buildNameField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Gruppnamn *',
-                        hintText: 'T.ex. "Familjen", "Jobbet", "Bokklubben"',
-                        prefixIcon: Icon(Icons.group),
-                      ),
-                      validator: GroupValidationUtils.validateGroupName,
+                      labelText: 'Gruppnamn',
+                      hintText: 'T.ex. "Familjen", "Jobbet", "Bokklubben"',
+                      prefixIcon: Icons.group,
                       maxLength: 50,
-                      textCapitalization: TextCapitalization.words,
                     ),
                     
-                    SizedBox(height: AppDimensions.spacingM),
-                    
-                    // Description (optional)
-                    TextFormField(
+                    // ✅ CONSOLIDATED: Description using standardized form field  
+                    DialogFormFields.buildDescriptionField(
                       controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Beskrivning (valfritt)',
-                        hintText: 'Vad handlar den här gruppen om?',
-                        prefixIcon: Icon(Icons.description),
-                      ),
-                      maxLines: 3,
+                      labelText: 'Beskrivning (valfritt)',
+                      hintText: 'Vad handlar den här gruppen om?',
                       maxLength: 200,
-                      textCapitalization: TextCapitalization.sentences,
+                      maxLines: 3,
                     ),
                     
                     // Pre-selected members info

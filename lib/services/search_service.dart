@@ -1,13 +1,20 @@
 // lib/services/search_service.dart
 
 import '../models/recipe_unified.dart';
+import '../core/base/base_service.dart';
+import '../core/mixins/singleton_service_mixin.dart';
 
 /// Centraliserad service för all sökfunktionalitet i appen
-class SearchService {
-  // Singleton pattern för global åtkomst
-  static final SearchService _instance = SearchService._internal();
-  factory SearchService() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class SearchService extends BaseService with SingletonServiceMixin<SearchService> {
+  // Private constructor for singleton
   SearchService._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory SearchService() => SingletonServiceMixin.createSingleton(() => SearchService._internal());
+  
+  @override
+  String get serviceName => 'SearchService';
 
   /// Huvudsökfunktion - söker i alla fält av ett recept
   List<Recipe> searchRecipes(List<Recipe> recipes, String query) {

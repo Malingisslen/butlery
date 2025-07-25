@@ -2,13 +2,16 @@
 
 import 'package:flutter/material.dart';
 import '../social_media_extractor.dart';
+import '../../core/mixins/singleton_service_mixin.dart';
 
 /// Main extraction coordinator that manages the extraction process
-class ExtractionManager {
-  // Singleton pattern
-  static final ExtractionManager _instance = ExtractionManager._internal();
-  factory ExtractionManager() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
+  // Private constructor for singleton
   ExtractionManager._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory ExtractionManager() => SingletonServiceMixin.createSingleton(() => ExtractionManager._internal());
 
   final PlatformDetector _platformDetector = PlatformDetector();
   final WebScraper _webScraper = WebScraper();
@@ -24,7 +27,7 @@ class ExtractionManager {
     }
 
     // Step 2: Detect platform
-    final detectionResult = _platformDetector.detectPlatform(webUrl);
+    final detectionResult = await _platformDetector.detectPlatform(webUrl);
     final platform = detectionResult.platform;
 
     if (!_platformDetector.isSupportedPlatform(platform)) {

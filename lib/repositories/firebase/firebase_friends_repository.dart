@@ -8,61 +8,55 @@ import '../../models/friend_request.dart';
 import '../../models/friend_category.dart';
 import '../../models/group_invitation.dart';
 import '../interfaces/friends_repository.dart';
+import 'base_firebase_repository.dart';
 
 /// Repository handling friend requests and friends collections in Firestore.
-class FirebaseFriendsRepository implements FriendsRepository {
+///
+/// Refactored to extend BaseFirebaseRepository for UserProfile CRUD operations,
+/// eliminating 25+ lines of duplicate code while maintaining specialized functionality.
+class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
+    implements FriendsRepository {
   FirebaseFriendsRepository({
-    FirebaseFirestore? firestore,
+    super.firestore,
     AuthRepository? authRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository ?? FirebaseAuthRepository();
-
-  final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
+  }) : super(
+          authRepository: authRepository ?? FirebaseAuthRepository(),
+        );
 
   CollectionReference<Map<String, dynamic>> get _friendRequestsRef =>
-      _firestore.collection('friend_requests');
+      FirebaseFirestore.instance.collection('friend_requests');
 
   CollectionReference<Map<String, dynamic>> _userFriendsRef(String userId) =>
-      _firestore.collection('users').doc(userId).collection('friends');
-
-  CollectionReference<Map<String, dynamic>> get _profilesRef =>
-      _firestore.collection('public_profiles');
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('friends');
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
-      _firestore.collection('users').doc(userId).collection('friendCategories');
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('friendCategories');
 
   CollectionReference<Map<String, dynamic>> get _invitationsRef =>
-      _firestore.collection('group_invitations');
+      FirebaseFirestore.instance.collection('group_invitations');
+
+  // ===== BASE CLASS IMPLEMENTATION =====
 
   @override
-  Future<UserProfile> create(UserProfile profile) async {
-    await _profilesRef.doc(profile.uid).set(profile.toFirestore());
-    return profile;
-  }
+  String get collectionName => 'public_profiles';
 
   @override
-  Future<UserProfile?> read(String id) async {
-    final doc = await _profilesRef.doc(id).get();
-    if (!doc.exists) return null;
-    return UserProfile.fromFirestore(doc);
-  }
+  UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      UserProfile.fromFirestore(doc);
 
   @override
-  Future<List<UserProfile>> readAll() async {
-    final snap = await _profilesRef.get();
-    return snap.docs.map(UserProfile.fromFirestore).toList();
-  }
+  Map<String, dynamic> toFirestore(UserProfile entity) => entity.toFirestore();
 
   @override
-  Future<void> update(UserProfile profile) async {
-    await _profilesRef.doc(profile.uid).update(profile.toFirestore());
-  }
+  String getId(UserProfile entity) => entity.uid;
 
-  @override
-  Future<void> delete(String id) async {
-    await _profilesRef.doc(id).delete();
-  }
+  // ===== SPECIALIZED COLLECTIONS ACCESS =====
 
   /// Send a new friend request.
   Future<void> sendRequest(FriendRequest request) async {
@@ -71,17 +65,20 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
-    final fromId = _authRepository.currentUserId;
-    if (fromId == null) return false;
-    final exists = await requestExists(fromId, toUserId);
-    if (exists) return false;
-    final request = FriendRequest.create(
-      fromUserId: fromId,
-      toUserId: toUserId,
-      message: message,
-    );
-    await sendRequest(request);
-    return true;
+    try {
+      final fromId = requireCurrentUserId();
+      final exists = await requestExists(fromId, toUserId);
+      if (exists) return false;
+      final request = FriendRequest.create(
+        fromUserId: fromId,
+        toUserId: toUserId,
+        message: message,
+      );
+      await sendRequest(request);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Update an existing friend request document.
@@ -143,7 +140,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   /// Add users to each other's friends collections and update counts.
   @override
   Future<void> addMutualFriends(String userId1, String userId2) async {
-    final batch = _firestore.batch();
+    final batch = FirebaseFirestore.instance.batch();
 
     final user1Ref = _userFriendsRef(userId1).doc(userId2);
     final user2Ref = _userFriendsRef(userId2).doc(userId1);
@@ -151,8 +148,8 @@ class FirebaseFriendsRepository implements FriendsRepository {
     batch.set(user1Ref, {'addedAt': FieldValue.serverTimestamp()});
     batch.set(user2Ref, {'addedAt': FieldValue.serverTimestamp()});
 
-    final user1Profile = _profilesRef.doc(userId1);
-    final user2Profile = _profilesRef.doc(userId2);
+    final user1Profile = collection.doc(userId1);
+    final user2Profile = collection.doc(userId2);
     batch.update(user1Profile, {'friendsCount': FieldValue.increment(1)});
     batch.update(user2Profile, {'friendsCount': FieldValue.increment(1)});
 
@@ -162,7 +159,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   /// Remove users from each other's friends collections and update counts.
   @override
   Future<void> removeMutualFriends(String userId1, String userId2) async {
-    final batch = _firestore.batch();
+    final batch = FirebaseFirestore.instance.batch();
 
     final user1Ref = _userFriendsRef(userId1).doc(userId2);
     final user2Ref = _userFriendsRef(userId2).doc(userId1);
@@ -170,8 +167,8 @@ class FirebaseFriendsRepository implements FriendsRepository {
     batch.delete(user1Ref);
     batch.delete(user2Ref);
 
-    final user1Profile = _profilesRef.doc(userId1);
-    final user2Profile = _profilesRef.doc(userId2);
+    final user1Profile = collection.doc(userId1);
+    final user2Profile = collection.doc(userId2);
     batch.update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
     batch.update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
 
@@ -180,10 +177,13 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<bool> removeFriend(String friendUserId) async {
-    final current = _authRepository.currentUserId;
-    if (current == null) return false;
-    await removeMutualFriends(current, friendUserId);
-    return true;
+    try {
+      final current = requireCurrentUserId();
+      await removeMutualFriends(current, friendUserId);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Retrieve friend ids for a user.
@@ -195,24 +195,30 @@ class FirebaseFriendsRepository implements FriendsRepository {
 
   @override
   Future<List<FriendRequest>> getIncomingRequests() async {
-    final uid = _authRepository.currentUserId;
-    if (uid == null) return [];
-    final snap = await _friendRequestsRef
-        .where('toUserId', isEqualTo: uid)
-        .where('status', isEqualTo: FriendRequestStatus.pending.name)
-        .get();
-    return snap.docs.map(FriendRequest.fromFirestore).toList();
+    try {
+      final uid = requireCurrentUserId();
+      final snap = await _friendRequestsRef
+          .where('toUserId', isEqualTo: uid)
+          .where('status', isEqualTo: FriendRequestStatus.pending.name)
+          .get();
+      return snap.docs.map(FriendRequest.fromFirestore).toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   @override
   Future<List<FriendRequest>> getSentRequests() async {
-    final uid = _authRepository.currentUserId;
-    if (uid == null) return [];
-    final snap = await _friendRequestsRef
-        .where('fromUserId', isEqualTo: uid)
-        .where('status', isEqualTo: FriendRequestStatus.pending.name)
-        .get();
-    return snap.docs.map(FriendRequest.fromFirestore).toList();
+    try {
+      final uid = requireCurrentUserId();
+      final snap = await _friendRequestsRef
+          .where('fromUserId', isEqualTo: uid)
+          .where('status', isEqualTo: FriendRequestStatus.pending.name)
+          .get();
+      return snap.docs.map(FriendRequest.fromFirestore).toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   /// Retrieve user profiles for a list of ids.
@@ -223,9 +229,8 @@ class FirebaseFriendsRepository implements FriendsRepository {
     final profiles = <UserProfile>[];
     for (var i = 0; i < userIds.length; i += batchSize) {
       final batch = userIds.skip(i).take(batchSize).toList();
-      final query = await _profilesRef
-          .where(FieldPath.documentId, whereIn: batch)
-          .get();
+      final query =
+          await collection.where(FieldPath.documentId, whereIn: batch).get();
       for (final doc in query.docs) {
         profiles.add(UserProfile.fromFirestore(doc));
       }
@@ -359,7 +364,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   @override
   Future<void> deleteDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs) async {
-    final batch = _firestore.batch();
+    final batch = FirebaseFirestore.instance.batch();
     for (final ref in refs) {
       batch.delete(ref);
     }
@@ -370,7 +375,7 @@ class FirebaseFriendsRepository implements FriendsRepository {
   Future<void> updateDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs,
       Map<String, dynamic> data) async {
-    final batch = _firestore.batch();
+    final batch = FirebaseFirestore.instance.batch();
     for (final ref in refs) {
       batch.update(ref, data);
     }
@@ -388,4 +393,3 @@ class FirebaseFriendsRepository implements FriendsRepository {
     return query.docs.isNotEmpty;
   }
 }
-

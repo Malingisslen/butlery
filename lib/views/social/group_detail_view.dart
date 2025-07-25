@@ -15,6 +15,7 @@ import '../../core/injection.dart';
 import '../../core/events/group_events.dart';
 import 'add_members_to_group_view.dart';
 import '../../services/permission_service.dart';
+import '../../core/mixins/error_handling_mixin.dart';
 
 // Import focused components
 import 'group_detail/group_detail_header.dart';
@@ -35,16 +36,13 @@ class GroupDetailView extends StatefulWidget {
   State<GroupDetailView> createState() => _GroupDetailViewState();
 }
 
-class _GroupDetailViewState extends State<GroupDetailView> {
+class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMixin {
   // State variables
   FriendCategory? _group;
   List<UserProfile> _members = [];
   List<GroupInvitation> _pendingInvitations = [];
   bool _isLoading = false;
   bool _isNavigating = false;
-
-  // Event subscription för att lyssna på gruppändringar
-  StreamSubscription<GroupEventType>? _eventSubscription;
 
   @override
   void initState() {
@@ -53,6 +51,9 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     _loadGroupData();
   }
 
+  // Event subscription for listening to group changes
+  StreamSubscription<GroupEventType>? _eventSubscription;
+
   @override
   void dispose() {
     _eventSubscription?.cancel();
@@ -60,6 +61,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
   }
 
   void _setupEventListening() {
+    // Manual stream subscription since this is a StatefulWidget
     _eventSubscription = GroupEventBus.stream.listen((eventType) {
       if (!mounted || _isNavigating) return;
 

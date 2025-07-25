@@ -2,16 +2,37 @@
 
 import 'dart:math';
 import '../models/recipe_unified.dart';
+import '../core/base/base_service.dart';
+import '../core/mixins/singleton_service_mixin.dart';
 
 /// Service för att generera veckomenyer - flyttar logik från VeckomenyView
-class MenuService {
-  // Singleton pattern för global åtkomst
-  static final MenuService _instance = MenuService._internal();
-  factory MenuService() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
+  // Private constructor for singleton
   MenuService._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory MenuService() => SingletonServiceMixin.createSingleton(() => MenuService._internal());
+  
+  @override
+  String get serviceName => 'MenuService';
 
   /// Genererar meny baserat på textprompt (samma logik som tidigare)
-  Map<String, List<Recipe>> generateMenuFromPrompt(
+  Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
+    String input,
+    List<Recipe> allRecipes,
+  ) async {
+    return await executeServiceOperation(
+      () async {
+        return _generateMenuFromPromptInternal(input, allRecipes);
+      },
+      operationName: 'Generate menu from prompt',
+      defaultValue: <String, List<Recipe>>{},
+      requiresAuth: false,
+    ) ?? <String, List<Recipe>>{};
+  }
+
+  Map<String, List<Recipe>> _generateMenuFromPromptInternal(
     String input,
     List<Recipe> allRecipes,
   ) {

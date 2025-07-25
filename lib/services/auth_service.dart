@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../repositories/interfaces/auth_repository.dart';
+import '../repositories/interfaces/auth_repository.dart' as auth_repo;
 import '../repositories/firebase/firebase_auth_repository.dart';
 import '../core/mixins/state_notifier_mixin.dart';
 import '../core/mixins/async_operation_mixin.dart';
@@ -14,7 +14,7 @@ import '../core/mixins/async_operation_mixin.dart';
 /// - Hanterar utloggning och lösenordsåterställning
 class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   // Repository som hanterar all Firebase Auth-kommunikation
-  final AuthRepository _authRepository;
+  final auth_repo.AuthRepository _authRepository;
 
   // Aktuell inloggad användare (null om utloggad)
   User? _currentUser;
@@ -27,7 +27,7 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   String? get currentUserId => _authRepository.currentUserId;
 
   /// Konstruktor - lyssnar på auth state changes
-  AuthService({AuthRepository? authRepository})
+  AuthService({auth_repo.AuthRepository? authRepository})
       : _authRepository = authRepository ?? FirebaseAuthRepository() {
     // Lyssna på förändringar i autentiseringsstatus
     _authRepository.authStateChanges().listen((User? user) {
@@ -174,4 +174,5 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   void clearError() {
     setError('');
   }
+  
 }

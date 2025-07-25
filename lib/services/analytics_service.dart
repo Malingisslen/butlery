@@ -3,16 +3,23 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import '../services/content_detector_service.dart';
+import '../core/base/base_service.dart';
+import '../core/mixins/singleton_service_mixin.dart';
 
 /// Service för att hantera analytics och error tracking
 ///
 /// Spårar viktiga händelser i appen, särskilt misslyckade operationer
 /// som kan hjälpa oss att förbättra användarupplevelsen
-class AnalyticsService {
-  // Singleton pattern
-  static final AnalyticsService _instance = AnalyticsService._internal();
-  factory AnalyticsService() => _instance;
+/// Now using SingletonServiceMixin for standardized singleton pattern
+class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsService> {
+  // Private constructor for singleton
   AnalyticsService._internal();
+  
+  // Factory constructor using SingletonServiceMixin
+  factory AnalyticsService() => SingletonServiceMixin.createSingleton(() => AnalyticsService._internal());
+  
+  @override
+  String get serviceName => 'AnalyticsService';
 
   // Firebase Analytics instance
   late final FirebaseAnalytics _analytics;
@@ -21,21 +28,27 @@ class AnalyticsService {
   FirebaseAnalyticsObserver? _observer;
 
   /// Initialisera analytics
+  @override
   Future<void> initialize() async {
-    try {
-      _analytics = FirebaseAnalytics.instance;
-      _observer = FirebaseAnalyticsObserver(analytics: _analytics);
+    await super.initialize(); // Call BaseService initialization
+    
+    await executeServiceOperation(
+      () async {
+        _analytics = FirebaseAnalytics.instance;
+        _observer = FirebaseAnalyticsObserver(analytics: _analytics);
 
-      // Sätt grundläggande properties
-      // Analytics är alltid aktiverat i release mode, inaktiverat i debug mode
-      await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
+        // Sätt grundläggande properties
+        // Analytics är alltid aktiverat i release mode, inaktiverat i debug mode
+        await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
 
-      debugPrint(
-        '📊 Analytics initialiserad (samling ${!kDebugMode ? "aktiverad" : "inaktiverad"})',
-      );
-    } catch (e) {
-      debugPrint('❌ Kunde inte initialisera analytics: $e');
-    }
+        debugPrint(
+          '📊 Analytics initialiserad (samling ${!kDebugMode ? "aktiverad" : "inaktiverad"})',
+        );
+      },
+      operationName: 'Initialize analytics',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
   }
 
   /// Hämta navigation observer för MaterialApp
@@ -51,18 +64,21 @@ class AnalyticsService {
     required String source,
     String? platform,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'import_started',
-        parameters: {
-          'source': source, // 'url', 'text', 'photo', 'archive', 'share'
-          if (platform != null) 'platform': platform,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await executeServiceOperation(
+      () async {
+        await _analytics.logEvent(
+          name: 'import_started',
+          parameters: {
+            'source': source, // 'url', 'text', 'photo', 'archive', 'share'
+            if (platform != null) 'platform': platform,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
+      },
+      operationName: 'Log import started',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
   }
 
   /// Logga lyckad import

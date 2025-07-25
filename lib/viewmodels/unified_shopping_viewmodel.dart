@@ -10,8 +10,9 @@ import '../services/unified/unified_shopping_service.dart';
 import '../services/permission_service.dart';
 import '../models/unified/unified_shopping_item.dart';
 import '../models/unified/unified_shopping_list.dart';
+import '../core/mixins/error_handling_mixin.dart';
 
-class UnifiedShoppingViewModel extends ChangeNotifier {
+class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedShoppingService _shoppingService =
       GetIt.instance<UnifiedShoppingService>();
 
@@ -65,16 +66,17 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
   // ===== INITIALIZATION =====
 
   Future<void> initialize() async {
-    try {
-      await _shoppingService.initialize();
+    await safeExecute(
+      () async {
+        await _shoppingService.initialize();
 
-      // Om inga listor finns, skapa en default lista
-      if (!hasLists && GetIt.instance<PermissionService>().currentUserId != null) {
-        await createPersonalList('Min Inköpslista');
-      }
-    } catch (e) {
-      debugPrint('Fel vid ViewModel initialisering: $e');
-    }
+        // Om inga listor finns, skapa en default lista
+        if (!hasLists && GetIt.instance<PermissionService>().currentUserId != null) {
+          await createPersonalList('Min Inköpslista');
+        }
+      },
+      operationName: 'Initialize shopping',
+    );
   }
 
   // ===== LIST MANAGEMENT - samma metoder som din befintliga ViewModel =====
@@ -279,20 +281,20 @@ class UnifiedShoppingViewModel extends ChangeNotifier {
   /// Bulk add items (för recept-import)
   Future<bool> addItemsFromRecipe(
       List<Map<String, dynamic>> ingredientData) async {
-    try {
-      for (final ingredient in ingredientData) {
-        await addItem(
-          name: ingredient['name'] as String,
-          amount: (ingredient['amount'] as num).toDouble(),
-          unit: ingredient['unit'] as String? ?? '',
-          category: ingredient['category'] as String? ?? 'Övrigt',
-        );
-      }
-      return true;
-    } catch (e) {
-      debugPrint('Fel vid bulk add: $e');
-      return false;
-    }
+    return await safeExecute(
+      () async {
+        for (final ingredient in ingredientData) {
+          await addItem(
+            name: ingredient['name'] as String,
+            amount: (ingredient['amount'] as num).toDouble(),
+            unit: ingredient['unit'] as String? ?? '',
+            category: ingredient['category'] as String? ?? 'Övrigt',
+          );
+        }
+        return true;
+      },
+      operationName: 'Add items from recipe',
+    ) ?? false;
   }
 
   /// Gruppera items efter kategori - för UI rendering
