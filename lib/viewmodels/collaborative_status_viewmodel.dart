@@ -55,6 +55,11 @@ class CollaborativeStatus {
 class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final SocialRecipeService _socialRecipeService;
 
+  // ===== LIFECYCLE MANAGEMENT =====
+  
+  /// Flag to track if ViewModel has been disposed
+  bool _isDisposed = false;
+
   // ===== GENERIC CACHING SYSTEM =====
 
   /// Universal cache för alla content types
@@ -75,6 +80,15 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
   // ===== PUBLIC GETTERS =====
 
   String? get currentUserId => sl<PermissionService>().currentUserId;
+
+  // ===== SAFE NOTIFICATION HELPER =====
+  
+  /// Safely notify listeners only if not disposed
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
 
   /// Hämta cached status för content
   CollaborativeStatus? getCachedStatus(
@@ -178,7 +192,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
     
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
 
     try {
@@ -233,7 +247,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
 
       // Defer notification to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        _safeNotifyListeners();
       });
 
       AppLogger.info(
@@ -246,7 +260,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
       
       // Defer notification to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        _safeNotifyListeners();
       });
     } finally {
       _checkingKeys.remove(key);
@@ -386,7 +400,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
     
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
     
     AppLogger.info('🗑️ Invalidated cache för ${type.name} $contentId');
@@ -406,7 +420,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
     
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
     
     AppLogger.info('🗑️ Cleared all collaborative status cache');
@@ -433,6 +447,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
 
   @override
   void dispose() {
+    _isDisposed = true;
     clearAllCache();
     super.dispose();
   }
