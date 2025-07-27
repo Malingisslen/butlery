@@ -98,38 +98,52 @@ final GetIt sl = GetIt.instance;
 
 /// Initialiserar alla dependencies
 Future<void> initializeDependencies() async {
-  debugPrint('🔄 Initialiserar dependency injection för Butlery...');
+  if (kDebugMode) {
+    debugPrint('🔄 Initialiserar dependency injection för Butlery...');
+  }
 
   try {
     // ==================== SHARED PREFERENCES (FÖRST AV ALLT!) ====================
     final sharedPreferences = await SharedPreferences.getInstance();
     sl.registerSingleton<SharedPreferences>(sharedPreferences);
-    debugPrint('✅ SharedPreferences registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ SharedPreferences registrerad');
+    }
 
     // ==================== REPOSITORIES ====================
     sl.registerSingleton<AuthRepository>(FirebaseAuthRepository());
     sl.registerSingleton<RecipeRepository>(
       FirebaseRecipeRepository(authRepository: sl<AuthRepository>()),
     );
-    debugPrint('✅ Repositories registrerade');
+    if (kDebugMode) {
+      debugPrint('✅ Repositories registrerade');
+    }
 
     // ==================== CORE SERVICES ====================
 
     sl.registerSingleton<AuthService>(
       AuthService(authRepository: sl<AuthRepository>()),
     );
-    debugPrint('✅ AuthService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ AuthService registrerad');
+    }
 
     sl.registerSingleton<PersistenceService>(PersistenceService());
-    debugPrint('✅ PersistenceService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ PersistenceService registrerad');
+    }
 
     sl.registerSingleton<ConnectivityMonitoringService>(
         ConnectivityMonitoringService());
-    debugPrint('✅ ConnectivityMonitoringService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ ConnectivityMonitoringService registrerad');
+    }
 
     // ==================== REPOSITORIES ====================
     sl.registerSingleton<FirestoreRepository>(FirestoreRepository());
-    debugPrint('✅ FirestoreRepository registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ FirestoreRepository registrerad');
+    }
 
     // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
     sl.registerSingleton<RealtimeSyncService>(
@@ -138,7 +152,9 @@ Future<void> initializeDependencies() async {
         authRepository: sl<AuthRepository>(),
       ),
     );
-    debugPrint('✅ RealtimeSyncService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ RealtimeSyncService registrerad');
+    }
 
     sl.registerLazySingleton<RealtimeMenuService>(
       () => RealtimeMenuService(
@@ -146,7 +162,9 @@ Future<void> initializeDependencies() async {
         authService: sl<AuthService>(),
       ),
     );
-    debugPrint('✅ RealtimeMenuService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ RealtimeMenuService registrerad');
+    }
 
     sl.registerLazySingleton<RealtimeRecipeService>(
       () => RealtimeRecipeService(
@@ -154,7 +172,9 @@ Future<void> initializeDependencies() async {
         permissionService: sl<PermissionService>(),
       ),
     );
-    debugPrint('✅ RealtimeRecipeService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ RealtimeRecipeService registrerad');
+    }
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
     sl.registerSingleton<UserRepository>(
@@ -166,11 +186,15 @@ Future<void> initializeDependencies() async {
       ),
     );
 
-    debugPrint('✅ UserService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ UserService registrerad');
+    }
 
     sl.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: sl<AuthRepository>()));
-    debugPrint('✅ FriendsRepository registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ FriendsRepository registrerad');
+    }
 
     // ==================== ADDITIONAL REPOSITORIES (EARLY REGISTRATION) ====================
     sl.registerSingleton<CommentsRepository>(
@@ -184,7 +208,9 @@ Future<void> initializeDependencies() async {
     
     sl.registerSingleton<SocialRecipeRepository>(
         FirebaseSocialRecipeRepository(authRepository: sl<AuthRepository>()));
-    debugPrint('✅ Additional repositories registrerade');
+    if (kDebugMode) {
+      debugPrint('✅ Additional repositories registrerade');
+    }
 
     // ==================== INVITATION SERVICES (FAS 2) ====================
 
@@ -194,19 +220,25 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
       authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
     ));
-    debugPrint('✅ UnifiedRecipeService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ UnifiedRecipeService registrerad');
+    }
 
     sl.registerLazySingleton<ImportManager>(
       () => ImportManager(sl<UnifiedRecipeService>().personal),
     );
-    debugPrint('✅ ImportManager registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ ImportManager registrerad');
+    }
 
     // ==================== UNIFIED FRIENDS SYSTEM (PHASE 5) ====================
     sl.registerSingleton<UnifiedFriendsService>(UnifiedFriendsService(
       firestoreRepository: sl<FirestoreRepository>(),
       authRepository: sl<AuthRepository>(),
     ));
-    debugPrint('✅ UnifiedFriendsService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ UnifiedFriendsService registrerad');
+    }
 
     sl.registerLazySingleton<SocialMenuOperations>(
       () => SocialMenuOperations(
@@ -214,7 +246,9 @@ Future<void> initializeDependencies() async {
         friendsService: sl<UnifiedFriendsService>(),
       ),
     );
-    debugPrint('✅ SocialMenuOperations registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ SocialMenuOperations registrerad');
+    }
 
     // ==================== UNIFIED SHOPPING SYSTEM ====================
     sl.registerLazySingleton<UnifiedShoppingService>(
@@ -223,7 +257,9 @@ Future<void> initializeDependencies() async {
         authRepository: sl<AuthRepository>(),
       ),
     );
-    debugPrint('✅ UnifiedShoppingService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ UnifiedShoppingService registrerad');
+    }
 
     // ==================== PERMISSION SERVICE ====================
     sl.registerSingleton<PermissionService>(PermissionService(
@@ -233,7 +269,9 @@ Future<void> initializeDependencies() async {
       sl<UnifiedShoppingService>(),
       sl<UnifiedFriendsService>(),
     ));
-    debugPrint('✅ PermissionService registrerad');
+    if (kDebugMode) {
+      debugPrint('✅ PermissionService registrerad');
+    }
 
     sl.registerSingleton<MenuService>(MenuService());
     sl.registerSingleton<SearchService>(SearchService());
@@ -250,7 +288,9 @@ Future<void> initializeDependencies() async {
       CollaborativeRecipeRepository(),
     );
     sl.registerSingleton<AnalyticsService>(AnalyticsService());
-    debugPrint('✅ Alla core services registrerade');
+    if (kDebugMode) {
+      debugPrint('✅ Alla core services registrerade');
+    }
 
     // ==================== SOCIAL SERVICES (EFTER ANDRA SERVICES) ====================
     // Repositories already registered earlier

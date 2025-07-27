@@ -2,6 +2,7 @@
 // ✅ REFAKTORISERAD: Använder AppInitializer för clean startup och AppRouter för routing
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'core/constants/routes.dart';
 import 'core/router/app_router.dart';
@@ -92,7 +93,9 @@ class _ButleryAppState extends State<ButleryApp> {
         );
         setState(() {}); // Trigger rebuild with analytics
       } catch (e) {
-        debugPrint('⚠️ Analytics observer setup failed: $e');
+        if (kDebugMode) {
+          debugPrint('⚠️ Analytics observer setup failed: $e');
+        }
       }
     }
   }
@@ -109,7 +112,9 @@ class _ButleryAppState extends State<ButleryApp> {
       final receivedIntent = await receive_intent.ReceiveIntent.getInitialIntent();
       
       if (receivedIntent != null && receivedIntent.data != null) {
-        debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
+        if (kDebugMode) {
+          debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
+        }
         await _processDeepLink(receivedIntent.data!);
       }
       
@@ -117,9 +122,13 @@ class _ButleryAppState extends State<ButleryApp> {
       // Deep links while app is running would typically be handled by
       // the operating system's intent system automatically
       
-      debugPrint('🔗 Deep link handling initialized');
+      if (kDebugMode) {
+        debugPrint('🔗 Deep link handling initialized');
+      }
     } catch (e) {
-      debugPrint('⚠️ Deep link initialization failed: $e');
+      if (kDebugMode) {
+        debugPrint('⚠️ Deep link initialization failed: $e');
+      }
     }
   }
 
@@ -127,11 +136,15 @@ class _ButleryAppState extends State<ButleryApp> {
   Future<void> _processDeepLink(String deepLinkUrl) async {
     try {
       final uri = Uri.parse(deepLinkUrl);
-      debugPrint('🔗 Processing deep link: ${uri.path}');
+      if (kDebugMode) {
+        debugPrint('🔗 Processing deep link: ${uri.path}');
+      }
 
       // Wait for app to be ready
       if (!AppInitializer.isBackgroundInitialized) {
-        debugPrint('🔗 Waiting for app initialization before processing deep link');
+        if (kDebugMode) {
+          debugPrint('🔗 Waiting for app initialization before processing deep link');
+        }
         while (!AppInitializer.isBackgroundInitialized) {
           await Future.delayed(const Duration(milliseconds: 100));
         }
@@ -151,10 +164,14 @@ class _ButleryAppState extends State<ButleryApp> {
       } else if (path.startsWith('/shopping')) {
         await _handleShoppingLink(params);
       } else {
-        debugPrint('⚠️ Unknown deep link path: $path');
+        if (kDebugMode) {
+          debugPrint('⚠️ Unknown deep link path: $path');
+        }
       }
     } catch (e) {
-      debugPrint('⚠️ Error processing deep link: $e');
+      if (kDebugMode) {
+        debugPrint('⚠️ Error processing deep link: $e');
+      }
     }
   }
 
@@ -165,7 +182,9 @@ class _ButleryAppState extends State<ButleryApp> {
     final type = params['type'];
 
     if (invitationId != null && fromUserId != null) {
-      debugPrint('🔗 Handling invitation: $type from $fromUserId');
+      if (kDebugMode) {
+        debugPrint('🔗 Handling invitation: $type from $fromUserId');
+      }
       
       // Navigate to appropriate view based on invitation type
       if (mounted && context.mounted) {
@@ -186,7 +205,9 @@ class _ButleryAppState extends State<ButleryApp> {
     final fromUserId = params['from'];
 
     if (recipeId != null) {
-      debugPrint('🔗 Handling recipe link: $recipeId from $fromUserId');
+      if (kDebugMode) {
+        debugPrint('🔗 Handling recipe link: $recipeId from $fromUserId');
+      }
       
       if (mounted && context.mounted) {
         // Navigate to recipe detail view with recipe ID as query parameter
@@ -201,7 +222,9 @@ class _ButleryAppState extends State<ButleryApp> {
     final fromUserId = params['from'];
 
     if (menuId != null) {
-      debugPrint('🔗 Handling menu link: $menuId from $fromUserId');
+      if (kDebugMode) {
+        debugPrint('🔗 Handling menu link: $menuId from $fromUserId');
+      }
       
       if (mounted && context.mounted) {
         // Navigate to shared with me view to see the menu
@@ -216,7 +239,9 @@ class _ButleryAppState extends State<ButleryApp> {
     final fromUserId = params['from'];
 
     if (listId != null) {
-      debugPrint('🔗 Handling shopping list link: $listId from $fromUserId');
+      if (kDebugMode) {
+        debugPrint('🔗 Handling shopping list link: $listId from $fromUserId');
+      }
       
       if (mounted && context.mounted) {
         // Navigate to collaborative shopping view
