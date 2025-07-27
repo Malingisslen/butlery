@@ -359,7 +359,7 @@ class _SkrivSjalvReceptViewContentState
 
           // Loading overlay med StateWidget
           if (viewModel.isSaving)
-            Container(
+            ColoredBox(
               color: AppColors.backgroundBeige.withValues(alpha: 0.8),
               child: Center(
                 child: StateWidget.loading(

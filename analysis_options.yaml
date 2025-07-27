@@ -21,6 +21,13 @@ analyzer:
     invalid_use_of_visible_for_testing_member: error
     missing_required_param: error
     missing_return: error
+    # Firebase architecture enforcement
+    depend_on_referenced_packages: error
+    
+  # Custom analysis for architecture enforcement
+  plugins:
+    # Enable strict mode for architecture compliance
+    - custom_lint
     
 include: package:flutter_lints/flutter.yaml
 
@@ -49,6 +56,14 @@ linter:
     prefer_final_locals: true
     use_key_in_widget_constructors: true
     
+    # Architecture and dependency rules
+    prefer_mixin: true
+    # sort_constructors_first: true # Disabled - too noisy for existing codebase
+    # sort_unnamed_constructors_first: true # Disabled - too noisy for existing codebase
+    
+    # File size and complexity rules (helps enforce SRP)
+    lines_longer_than_80_chars: false # Allow longer lines for readability
+    
     # Documentation rules
     public_member_api_docs: false # Too strict for existing code
     
@@ -56,6 +71,14 @@ linter:
     avoid_void_async: true
     cancel_subscriptions: true
     close_sinks: true
+    
+    # Security and best practices
+    avoid_web_libraries_in_flutter: true
+    no_logic_in_create_state: true
+    prefer_const_literals_to_create_immutables: true
+    sized_box_shrink_expand: true
+    use_colored_box: true
+    use_decorated_box: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

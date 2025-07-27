@@ -246,7 +246,7 @@ class _PhotoImportViewContent extends StatelessWidget {
               Positioned(
                 top: AppDimensions.spacingS,
                 right: AppDimensions.spacingS,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.backgroundBeige.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

@@ -1,5 +1,8 @@
 // lib/services/unified/operations/shopping_share/shopping_external_share_module.dart
 
+// TODO: Refactor to use repository pattern instead of direct Firebase access
+// This module needs refactoring to use SocialSharingRepository for public link operations
+
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';

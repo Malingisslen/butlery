@@ -130,7 +130,7 @@ class PortionScalerUI {
       builder: (context, child) {
         return Transform.scale(
           scale: scaleAnimation.value,
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

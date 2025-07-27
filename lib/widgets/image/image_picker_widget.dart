@@ -219,7 +219,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     return Stack(
       children: [
         // Image container
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
@@ -234,15 +234,15 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    placeholder: (context, url) => Container(
+                    placeholder: (context, url) => const ColoredBox(
                       color: AppColors.cardColor,
-                      child: const Center(
+                      child: Center(
                         child: CircularProgressIndicator(),
                       ),
                     ),
-                    errorWidget: (context, url, error) => Container(
+                    errorWidget: (context, url, error) => const ColoredBox(
                       color: AppColors.cardColor,
-                      child: const Icon(
+                      child: Icon(
                         Icons.error_outline,
                         color: AppColors.error,
                       ),
@@ -253,9 +253,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    errorBuilder: (context, error, stackTrace) => const ColoredBox(
                       color: AppColors.cardColor,
-                      child: const Icon(
+                      child: Icon(
                         Icons.error_outline,
                         color: AppColors.error,
                       ),

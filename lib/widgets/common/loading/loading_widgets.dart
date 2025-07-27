@@ -21,7 +21,7 @@ class LoadingWidgets {
       return child ?? const SizedBox.shrink();
     }
 
-    final overlay = Container(
+    final overlay = ColoredBox(
       color: overlayColor ?? AppColors.neutralDark.withValues(alpha: 0.3),
       child: Center(
         child: Container(

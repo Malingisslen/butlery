@@ -142,7 +142,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           maxWidth: AppDimensions.buttonWidthXLarge + 170,
           maxHeight: 650,
         ),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

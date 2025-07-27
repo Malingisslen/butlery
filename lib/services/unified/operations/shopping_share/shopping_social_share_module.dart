@@ -1,5 +1,9 @@
 // lib/services/unified/operations/shopping_share/shopping_social_share_module.dart
 
+// TODO: Complete refactoring to use SocialSharingRepository for all Firebase operations
+// Current state: Partially migrated - getShoppingListsSharedByMe() uses repository pattern
+// Remaining methods still use direct Firebase access and need to be updated
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -224,28 +228,26 @@ class ShoppingSocialShareModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('sharedShoppingLists')
-          .where('ownerId', isEqualTo: currentUserId)
-          .where('isActive', isEqualTo: true)
-          .orderBy('sharedAt', descending: true)
-          .get();
-
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        final listDataSnapshot = data['listData'] as Map<String, dynamic>? ?? {};
-        final statistics = listDataSnapshot['statistics'] as Map<String, dynamic>? ?? {};
+      // Use repository instead of direct Firebase access
+      final sharedContent = await _sharingRepository.getMySharedContent(currentUserId).first;
+      
+      return sharedContent
+          .where((content) => content.contentType == 'shopping_list')
+          .map((content) {
+        final metadata = content.metadata;
+        final listData = metadata['listData'] as Map<String, dynamic>? ?? {};
+        final statistics = listData['statistics'] as Map<String, dynamic>? ?? {};
         
         return {
-          'id': doc.id,
-          'listName': data['listName'] ?? 'Namnlös lista',
-          'sharedWithUserId': data['sharedWithUserId'],
-          'sharedAt': data['sharedAt'],
+          'id': content.id,
+          'listName': metadata['listName'] ?? 'Namnlös lista',
+          'sharedWithUserId': content.sharedWithUserIds.isNotEmpty ? content.sharedWithUserIds.first : null,
+          'sharedAt': content.sharedAt,
           'totalItems': statistics['totalItems'] ?? 0,
           'boughtItems': statistics['boughtItems'] ?? 0,
           'remainingItems': statistics['remainingItems'] ?? 0,
-          'shareType': data['shareType'] ?? 'direct_friend',
-          'message': data['message'],
+          'shareType': metadata['shareType'] ?? 'direct_friend',
+          'message': metadata['message'],
         };
       }).toList();
     } catch (e) {

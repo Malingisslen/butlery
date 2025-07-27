@@ -36,7 +36,8 @@
       "Bash(jq:*)",
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(git commit:*)",
-      "Bash(dart tools/fix_debug_prints.dart:*)"
+      "Bash(dart tools/fix_debug_prints.dart:*)",
+      "Bash(dart run:*)"
     ],
     "deny": []
   },
@@ -47,8 +48,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo '🔍 Running Flutter analysis...' && if cmd.exe /c 'flutter analyze' > /dev/null 2>&1; then echo '✅ Analysis passed - auto-committing changes' && git add . && git commit -m \"feat: auto-commit after successful code changes\n\n🤖 Generated with Claude Code (https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\" && echo '✅ Changes committed successfully'; else echo '❌ Flutter analysis failed - skipping auto-commit'; fi",
-            "timeout": 30
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo '🔍 Running Flutter analysis...' && if ! cmd.exe /c 'flutter analyze' > /dev/null 2>&1; then echo '❌ Analysis failed - running auto-fix...' && cmd.exe /c 'dart fix --apply' && echo '🔧 Auto-fix completed - re-running analysis...' && cmd.exe /c 'flutter analyze'; fi && echo '🏗️ Running architecture validation...' && dart run tools/validate_architecture.dart && echo '✅ All validations passed - committing changes' && git add . && git commit -m \"feat: auto-commit with validation and fixes\n\n🤖 Generated with Claude Code (https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\" && echo '✅ Changes committed successfully'",
+            "timeout": 90
           }
         ]
       }

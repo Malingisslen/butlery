@@ -109,7 +109,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
           // Loading overlay
           if (viewModel.isSaving)
-            Container(
+            ColoredBox(
               color: AppColors.backgroundBeige.withValues(alpha: 0.8),
               child: Center(
                 child: StateWidget.loading(

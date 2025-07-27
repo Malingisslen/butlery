@@ -241,7 +241,7 @@ class _ParticipantListWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

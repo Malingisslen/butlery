@@ -118,7 +118,7 @@ class InvitationTargetDisplays {
     VoidCallback? onRemove,
     bool showCount = true,
   }) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -233,7 +233,7 @@ class InvitationTargetDisplays {
       sortedTargets = InvitationTarget.sortForUI(targets);
     }
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
