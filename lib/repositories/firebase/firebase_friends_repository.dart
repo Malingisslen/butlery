@@ -9,6 +9,7 @@ import '../../models/friend_category.dart';
 import '../../models/group_invitation.dart';
 import '../interfaces/friends_repository.dart';
 import 'base_firebase_repository.dart';
+import '../../core/exceptions/permission_exceptions.dart';
 
 /// Repository handling friend requests and friends collections in Firestore.
 ///
@@ -60,15 +61,55 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   /// Send a new friend request.
   Future<void> sendRequest(FriendRequest request) async {
+    // Validate that the sender is creating their own request
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: request.fromUserId,
+      operation: 'send friend request',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: request.toFirestore(),
+      requiredFields: ['fromUserId', 'toUserId', 'status', 'sentAt'],
+      resourceType: 'friend request',
+    );
+    
+    // Ensure status is pending for new requests
+    if (request.status != FriendRequestStatus.pending) {
+      throw SecurityViolationException(
+        'New friend requests must have pending status',
+        details: 'Status was: ${request.status}',
+      );
+    }
+    
     await _friendRequestsRef.doc(request.id).set(request.toFirestore());
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_request',
+      operation: 'create',
+      granted: true,
+      details: 'To user: ${request.toUserId}',
+    );
   }
 
   @override
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
     try {
       final fromId = requireCurrentUserId();
+      
+      // Can't send request to yourself
+      if (fromId == toUserId) {
+        throw SecurityViolationException(
+          'Cannot send friend request to yourself',
+        );
+      }
+      
       final exists = await requestExists(fromId, toUserId);
       if (exists) return false;
+      
       final request = FriendRequest.create(
         fromUserId: fromId,
         toUserId: toUserId,
@@ -83,13 +124,62 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   /// Update an existing friend request document.
   Future<void> updateRequest(FriendRequest request) async {
+    final currentUser = requireCurrentUserId();
+    
+    // Only the recipient can update (accept/reject) a friend request
+    if (currentUser != request.toUserId) {
+      throw PermissionDeniedException(
+        'Only the recipient can update a friend request',
+        resource: 'friend_request',
+        operation: 'update',
+        userId: currentUser,
+      );
+    }
+    
+    // Validate status change is allowed
+    if (request.status != FriendRequestStatus.accepted && 
+        request.status != FriendRequestStatus.rejected) {
+      throw SecurityViolationException(
+        'Friend request can only be accepted or rejected',
+        details: 'Status was: ${request.status}',
+      );
+    }
+    
     await _friendRequestsRef.doc(request.id).update(request.toFirestore());
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_request',
+      operation: 'update',
+      granted: true,
+      details: 'Status: ${request.status}',
+    );
   }
 
   @override
   Future<bool> acceptFriendRequest(String requestId) async {
     final req = await fetchRequest(requestId);
-    if (req == null) return false;
+    if (req == null) {
+      throw ResourceNotFoundException(
+        'Friend request not found',
+        resourceType: 'friend_request',
+        resourceId: requestId,
+      );
+    }
+    
+    // Validate current user is the recipient
+    final currentUser = requireCurrentUserId();
+    if (currentUser != req.toUserId) {
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'friend_request',
+        operation: 'accept',
+        granted: false,
+        details: 'Not the recipient',
+      );
+      return false;
+    }
+    
     await updateRequest(req.accept());
     await addMutualFriends(req.fromUserId, req.toUserId);
     return true;
@@ -261,19 +351,73 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   // ===== Category methods =====
 
   @override
-  Future<void> saveCategory(String userId, FriendCategory category) {
-    return _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+  Future<void> saveCategory(String userId, FriendCategory category) async {
+    // Validate user is saving their own category
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'save friend category',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: category.toFirestore(),
+      requiredFields: ['name', 'friendUserIds'],
+      resourceType: 'friend category',
+    );
+    
+    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'create',
+      granted: true,
+    );
   }
 
   @override
   Future<void> updateCategory(
-      String userId, String categoryId, Map<String, dynamic> data) {
-    return _categoriesRef(userId).doc(categoryId).update(data);
+      String userId, String categoryId, Map<String, dynamic> data) async {
+    // Validate user owns the category they're updating
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update friend category',
+    );
+    
+    await _categoriesRef(userId).doc(categoryId).update(data);
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'update',
+      granted: true,
+      details: 'Category: $categoryId',
+    );
   }
 
   @override
-  Future<void> deleteCategory(String userId, String categoryId) {
-    return _categoriesRef(userId).doc(categoryId).delete();
+  Future<void> deleteCategory(String userId, String categoryId) async {
+    // Validate user owns the category they're deleting
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'delete friend category',
+    );
+    
+    await _categoriesRef(userId).doc(categoryId).delete();
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'delete',
+      granted: true,
+      details: 'Category: $categoryId',
+    );
   }
 
   @override
@@ -283,17 +427,55 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
-  Future<void> createCategoryForUser(String userId, FriendCategory category) {
-    return _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+  Future<void> createCategoryForUser(String userId, FriendCategory category) async {
+    // Validate user is creating their own category
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'create friend category',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: category.toFirestore(),
+      requiredFields: ['name', 'friendUserIds'],
+      resourceType: 'friend category',
+    );
+    
+    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'create',
+      granted: true,
+    );
   }
 
   @override
   Future<void> updateCategoryMembers(
-      String userId, String categoryId, List<String> memberIds) {
-    return _categoriesRef(userId).doc(categoryId).update({
+      String userId, String categoryId, List<String> memberIds) async {
+    // Validate user owns the category they're updating
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update friend category members',
+    );
+    
+    await _categoriesRef(userId).doc(categoryId).update({
       'friendUserIds': memberIds,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'update_members',
+      granted: true,
+      details: 'Category: $categoryId, Members: ${memberIds.length}',
+    );
   }
 
   @override
@@ -331,14 +513,75 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
-  Future<void> saveInvitation(GroupInvitation invitation) {
-    return _invitationsRef.doc(invitation.id).set(invitation.toFirestore());
+  Future<void> saveInvitation(GroupInvitation invitation) async {
+    // Validate user is the sender of the invitation
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: invitation.fromUserId,
+      operation: 'send group invitation',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: invitation.toFirestore(),
+      requiredFields: ['fromUserId', 'toUserId', 'groupId', 'status', 'sentAt'],
+      resourceType: 'group invitation',
+    );
+    
+    // Ensure status is pending for new invitations
+    if (invitation.status != GroupInvitationStatus.pending) {
+      throw SecurityViolationException(
+        'New invitations must have pending status',
+        details: 'Status was: ${invitation.status}',
+      );
+    }
+    
+    await _invitationsRef.doc(invitation.id).set(invitation.toFirestore());
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'group_invitation',
+      operation: 'create',
+      granted: true,
+      details: 'To user: ${invitation.toUserId}, Group: ${invitation.groupId}',
+    );
   }
 
   @override
   Future<void> updateInvitation(
-      String invitationId, Map<String, dynamic> data) {
-    return _invitationsRef.doc(invitationId).update(data);
+      String invitationId, Map<String, dynamic> data) async {
+    final currentUser = requireCurrentUserId();
+    
+    // Get the invitation to check permissions
+    final invitation = await getInvitation(invitationId);
+    if (invitation == null) {
+      throw ResourceNotFoundException(
+        'Invitation not found',
+        resourceType: 'group_invitation',
+        resourceId: invitationId,
+      );
+    }
+    
+    // Only the recipient can accept/reject an invitation
+    if (currentUser != invitation.toUserId) {
+      throw PermissionDeniedException(
+        'Only the recipient can update an invitation',
+        resource: 'group_invitation',
+        operation: 'update',
+        userId: currentUser,
+      );
+    }
+    
+    await _invitationsRef.doc(invitationId).update(data);
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'group_invitation',
+      operation: 'update',
+      granted: true,
+      details: 'Invitation: $invitationId',
+    );
   }
 
   @override
@@ -364,22 +607,82 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   @override
   Future<void> deleteDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs) async {
+    if (refs.isEmpty) return;
+    
+    final currentUser = requireCurrentUserId();
+    
+    // Validate ownership for each document before deletion
+    for (final ref in refs) {
+      final doc = await ref.get();
+      if (doc.exists) {
+        final data = doc.data();
+        // Check if it's a user-owned document (has userId or fromUserId)
+        final ownerId = data?['userId'] ?? data?['fromUserId'] ?? data?['toUserId'];
+        if (ownerId != null && ownerId != currentUser) {
+          throw PermissionDeniedException(
+            'Cannot delete document not owned by user',
+            resource: ref.path,
+            operation: 'delete',
+            userId: currentUser,
+          );
+        }
+      }
+    }
+    
     final batch = FirebaseFirestore.instance.batch();
     for (final ref in refs) {
       batch.delete(ref);
     }
     await batch.commit();
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'documents',
+      operation: 'batch_delete',
+      granted: true,
+      details: 'Count: ${refs.length}',
+    );
   }
 
   @override
   Future<void> updateDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs,
       Map<String, dynamic> data) async {
+    if (refs.isEmpty) return;
+    
+    final currentUser = requireCurrentUserId();
+    
+    // Validate ownership for each document before update
+    for (final ref in refs) {
+      final doc = await ref.get();
+      if (doc.exists) {
+        final docData = doc.data();
+        // Check if it's a user-owned document (has userId or fromUserId)
+        final ownerId = docData?['userId'] ?? docData?['fromUserId'] ?? docData?['toUserId'];
+        if (ownerId != null && ownerId != currentUser) {
+          throw PermissionDeniedException(
+            'Cannot update document not owned by user',
+            resource: ref.path,
+            operation: 'update',
+            userId: currentUser,
+          );
+        }
+      }
+    }
+    
     final batch = FirebaseFirestore.instance.batch();
     for (final ref in refs) {
       batch.update(ref, data);
     }
     await batch.commit();
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'documents',
+      operation: 'batch_update',
+      granted: true,
+      details: 'Count: ${refs.length}',
+    );
   }
 
   @override

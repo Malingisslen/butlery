@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'core/config/firebase_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -40,50 +41,50 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAZV38BdC1VBes0N-oiLdk1yi5xS_xKZ8g',
-    appId: '1:976357691692:web:3e70520a0ac19514e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    authDomain: 'butlery-app-1.firebaseapp.com',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
-    measurementId: 'G-8Z7NX2QXW5',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: FirebaseConfig.apiKeyWeb,
+    appId: FirebaseConfig.appIdWeb,
+    messagingSenderId: FirebaseConfig.messagingSenderId,
+    projectId: FirebaseConfig.projectId,
+    authDomain: FirebaseConfig.authDomain,
+    storageBucket: FirebaseConfig.storageBucket,
+    measurementId: FirebaseConfig.measurementIdWeb,
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBbmWnBxoQ4CYvvoMMFraZTRRD83qp8kew',
-    appId: '1:976357691692:android:4a2e41f5eb04e0c2e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: FirebaseConfig.apiKeyAndroid,
+    appId: FirebaseConfig.appIdAndroid,
+    messagingSenderId: FirebaseConfig.messagingSenderId,
+    projectId: FirebaseConfig.projectId,
+    storageBucket: FirebaseConfig.storageBucket,
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
-    appId: '1:976357691692:ios:714dacad784ca7b7e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
-    iosBundleId: 'com.example.butlery',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: FirebaseConfig.apiKeyIOS,
+    appId: FirebaseConfig.appIdIOS,
+    messagingSenderId: FirebaseConfig.messagingSenderId,
+    projectId: FirebaseConfig.projectId,
+    storageBucket: FirebaseConfig.storageBucket,
+    iosBundleId: FirebaseConfig.iosBundleId,
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
-    appId: '1:976357691692:ios:714dacad784ca7b7e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
-    iosBundleId: 'com.example.butlery',
+  static FirebaseOptions get macos => FirebaseOptions(
+    apiKey: FirebaseConfig.apiKeyMacOS,
+    appId: FirebaseConfig.appIdMacOS,
+    messagingSenderId: FirebaseConfig.messagingSenderId,
+    projectId: FirebaseConfig.projectId,
+    storageBucket: FirebaseConfig.storageBucket,
+    iosBundleId: FirebaseConfig.iosBundleId,
   );
 
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAZV38BdC1VBes0N-oiLdk1yi5xS_xKZ8g',
-    appId: '1:976357691692:web:2b6a8efd2740a521e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    authDomain: 'butlery-app-1.firebaseapp.com',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
-    measurementId: 'G-SK8VB3DFE0',
+  static FirebaseOptions get windows => FirebaseOptions(
+    apiKey: FirebaseConfig.apiKeyWindows,
+    appId: FirebaseConfig.appIdWindows,
+    messagingSenderId: FirebaseConfig.messagingSenderId,
+    projectId: FirebaseConfig.projectId,
+    authDomain: FirebaseConfig.authDomain,
+    storageBucket: FirebaseConfig.storageBucket,
+    measurementId: FirebaseConfig.measurementIdWindows,
   );
 
 }

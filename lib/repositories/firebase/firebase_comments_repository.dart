@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../interfaces/comments_repository.dart';
 import '../../models/recipe_comment.dart';
 import 'base_firebase_repository.dart';
+import '../../core/exceptions/permission_exceptions.dart';
 
 /// Firebase implementation of CommentsRepository
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
@@ -49,6 +50,21 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     required String content,
     String? parentCommentId,
   }) async {
+    // Validate user is creating their own comment
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'add comment',
+    );
+    
+    // Validate required fields
+    if (content.trim().isEmpty) {
+      throw SecurityViolationException(
+        'Comment content cannot be empty',
+      );
+    }
+    
     final commentData = {
       'recipeId': recipeId,
       'userId': userId,
@@ -62,21 +78,87 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
     final docRef = await collection.add(commentData);
     final doc = await docRef.get();
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_comment',
+      operation: 'create',
+      granted: true,
+      details: 'Recipe: $recipeId',
+    );
+    
     return fromFirestore(doc);
   }
 
   @override
   Future<void> updateComment(String commentId, String newContent) async {
+    // Validate user owns the comment
+    final currentUser = requireCurrentUserId();
+    
+    // First check if comment exists and user owns it
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: collection.doc(commentId),
+      currentUserId: currentUser,
+      resourceType: 'recipe_comment',
+    );
+    
+    final commentData = doc.data() as Map<String, dynamic>;
+    await validateOwnership(
+      currentUserId: currentUser,
+      resourceOwnerId: commentData['userId'] ?? '',
+      resourceType: 'recipe_comment',
+      resourceId: commentId,
+    );
+    
+    // Validate content
+    if (newContent.trim().isEmpty) {
+      throw SecurityViolationException(
+        'Comment content cannot be empty',
+      );
+    }
+    
     await collection.doc(commentId).update({
       'content': newContent,
       'updatedAt': FieldValue.serverTimestamp(),
       'isEdited': true,
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_comment',
+      operation: 'update',
+      granted: true,
+    );
   }
 
   @override
   Future<void> deleteComment(String commentId) async {
+    // Validate user owns the comment
+    final currentUser = requireCurrentUserId();
+    
+    // First check if comment exists and user owns it
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: collection.doc(commentId),
+      currentUserId: currentUser,
+      resourceType: 'recipe_comment',
+    );
+    
+    final commentData = doc.data() as Map<String, dynamic>;
+    await validateOwnership(
+      currentUserId: currentUser,
+      resourceOwnerId: commentData['userId'] ?? '',
+      resourceType: 'recipe_comment',
+      resourceId: commentId,
+    );
+    
     await collection.doc(commentId).delete();
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_comment',
+      operation: 'delete',
+      granted: true,
+    );
   }
 
   @override
@@ -93,6 +175,29 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Future<void> toggleCommentLike(String commentId, String userId) async {
+    // Validate user is toggling their own like
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'toggle comment like',
+    );
+    
+    // Verify comment exists
+    final commentDoc = await getDocumentWithPermissionCheck(
+      docRef: collection.doc(commentId),
+      currentUserId: currentUser,
+      resourceType: 'recipe_comment',
+    );
+    
+    if (!commentDoc.exists) {
+      throw ResourceNotFoundException(
+        'Comment not found',
+        resourceType: 'recipe_comment',
+        resourceId: commentId,
+      );
+    }
+    
     final likesCollection = collection.doc(commentId).collection('likes');
     final userLikeDoc = likesCollection.doc(userId);
     final likeSnapshot = await userLikeDoc.get();
@@ -117,6 +222,13 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     }
 
     await batch.commit();
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_comment',
+      operation: likeSnapshot.exists ? 'unlike' : 'like',
+      granted: true,
+    );
   }
 
   @override

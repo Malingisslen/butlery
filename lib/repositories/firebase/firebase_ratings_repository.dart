@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../interfaces/ratings_repository.dart';
 import 'base_firebase_repository.dart';
+import '../../core/exceptions/permission_exceptions.dart';
 
 /// Firebase implementation of RatingsRepository
 class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
@@ -35,6 +36,22 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     required double rating,
     String? review,
   }) async {
+    // Validate user is rating with their own account
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'rate recipe',
+    );
+    
+    // Validate rating range
+    if (rating < 1 || rating > 5) {
+      throw SecurityViolationException(
+        'Rating must be between 1 and 5',
+        details: 'Rating was: $rating',
+      );
+    }
+    
     final ratingId = '${recipeId}_$userId';
     await collection.doc(ratingId).set({
       'recipeId': recipeId,
@@ -47,6 +64,14 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
     // Update recipe statistics
     await _updateRecipeRatingStatistics(recipeId);
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_rating',
+      operation: 'create',
+      granted: true,
+      details: 'Recipe: $recipeId, Rating: $rating',
+    );
   }
 
   @override
@@ -56,7 +81,39 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     required double rating,
     String? review,
   }) async {
+    // Validate user is updating their own rating
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update rating',
+    );
+    
+    // Validate rating range
+    if (rating < 1 || rating > 5) {
+      throw SecurityViolationException(
+        'Rating must be between 1 and 5',
+        details: 'Rating was: $rating',
+      );
+    }
+    
     final ratingId = '${recipeId}_$userId';
+    
+    // Verify rating exists
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: collection.doc(ratingId),
+      currentUserId: currentUser,
+      resourceType: 'recipe_rating',
+    );
+    
+    if (!doc.exists) {
+      throw ResourceNotFoundException(
+        'Rating not found',
+        resourceType: 'recipe_rating',
+        resourceId: ratingId,
+      );
+    }
+    
     await collection.doc(ratingId).update({
       'rating': rating,
       'review': review,
@@ -65,15 +122,55 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
     // Update recipe statistics
     await _updateRecipeRatingStatistics(recipeId);
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_rating',
+      operation: 'update',
+      granted: true,
+      details: 'Recipe: $recipeId, Rating: $rating',
+    );
   }
 
   @override
   Future<void> removeRating(String recipeId, String userId) async {
+    // Validate user is removing their own rating
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'remove rating',
+    );
+    
     final ratingId = '${recipeId}_$userId';
+    
+    // Verify rating exists
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: collection.doc(ratingId),
+      currentUserId: currentUser,
+      resourceType: 'recipe_rating',
+    );
+    
+    if (!doc.exists) {
+      throw ResourceNotFoundException(
+        'Rating not found',
+        resourceType: 'recipe_rating',
+        resourceId: ratingId,
+      );
+    }
+    
     await collection.doc(ratingId).delete();
 
     // Update recipe statistics
     await _updateRecipeRatingStatistics(recipeId);
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'recipe_rating',
+      operation: 'delete',
+      granted: true,
+      details: 'Recipe: $recipeId',
+    );
   }
 
   @override

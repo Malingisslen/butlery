@@ -7,6 +7,7 @@ import '../../models/unified/unified_shopping_list.dart';
 import '../../models/unified/unified_shopping_item.dart';
 import '../interfaces/shopping_repository.dart';
 import 'base_firebase_repository.dart';
+import '../../core/exceptions/permission_exceptions.dart';
 
 /// Repository for handling shopping lists stored in Firestore.
 ///
@@ -77,21 +78,82 @@ class FirebaseShoppingRepository
   @override
   Future<void> addItem(String listId, UnifiedShoppingItem item) async {
     final uid = requireCurrentUserId();
+    
+    // Verify list exists and user has access
+    final list = await read(listId);
+    if (list == null) {
+      throw ResourceNotFoundException(
+        'Shopping list not found',
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+    }
+    
+    // For personal lists, verify ownership
+    await validateOwnership(
+      currentUserId: uid,
+      resourceOwnerId: list.ownerId,
+      resourceType: 'shopping_list',
+      resourceId: listId,
+    );
+    
+    // Validate item data
+    validateRequiredFields(
+      data: item.toFirestore(),
+      requiredFields: ['name', 'id'],
+      resourceType: 'shopping_item',
+    );
+    
     await getUserCollection(uid)
         .doc(listId)
         .collection('items')
         .doc(item.id)
         .set(item.toFirestore());
+        
+    logPermissionCheck(
+      userId: uid,
+      resource: 'shopping_item',
+      operation: 'add',
+      granted: true,
+      details: 'List: $listId',
+    );
   }
 
   @override
   Future<void> removeItem(String listId, String itemId) async {
     final uid = requireCurrentUserId();
+    
+    // Verify list exists and user has access
+    final list = await read(listId);
+    if (list == null) {
+      throw ResourceNotFoundException(
+        'Shopping list not found',
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+    }
+    
+    // For personal lists, verify ownership
+    await validateOwnership(
+      currentUserId: uid,
+      resourceOwnerId: list.ownerId,
+      resourceType: 'shopping_list',
+      resourceId: listId,
+    );
+    
     await getUserCollection(uid)
         .doc(listId)
         .collection('items')
         .doc(itemId)
         .delete();
+        
+    logPermissionCheck(
+      userId: uid,
+      resource: 'shopping_item',
+      operation: 'remove',
+      granted: true,
+      details: 'List: $listId, Item: $itemId',
+    );
   }
 
   /// Create or update a personal list for the current user.

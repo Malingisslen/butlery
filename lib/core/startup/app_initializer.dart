@@ -125,12 +125,25 @@ class AppInitializer {
   /// 2️⃣ Laddar environment variables för säker API-hantering
   static Future<void> _initializeEnvironmentVariables() async {
     try {
-      await dotenv.load(fileName: '.env');
-      debugPrint('✅ Environment variables laddade');
+      // Get environment from compile-time constant, default to 'development'
+      const env = String.fromEnvironment('ENV', defaultValue: 'development');
+      final fileName = '.env.$env';
+      
+      await dotenv.load(fileName: fileName);
+      debugPrint('✅ Environment variables laddade från $fileName');
+      debugPrint('ℹ️ Running in $env environment');
     } catch (e) {
-      debugPrint('❌ Kunde inte ladda .env fil: $e');
-      debugPrint('ℹ️ Fortsätter utan environment variables');
-      // Inte kritiskt - appen fungerar utan API-keys
+      debugPrint('❌ Kunde inte ladda environment file: $e');
+      
+      // Fallback to default .env file
+      try {
+        await dotenv.load(fileName: '.env.development');
+        debugPrint('✅ Fallback till .env.development');
+      } catch (e2) {
+        debugPrint('❌ Kunde inte ladda fallback .env.development: $e2');
+        debugPrint('ℹ️ Fortsätter utan environment variables');
+        // Inte kritiskt - appen fungerar utan API-keys
+      }
     }
   }
 
