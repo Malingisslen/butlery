@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import '../core/mixins/json_serializable_mixin.dart';
+import '../core/types/app_timestamp.dart';
 import 'permissions/resource_permission.dart';
 
 // Focused modules
@@ -212,10 +213,10 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     lastCookedAt: json['lastCookedAt'] != null ? DateTime.parse(json['lastCookedAt'] as String) : null,
   );
 
-  factory RecipeCore.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  /// Create from repository data map (removes Firebase dependency)
+  factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
     return RecipeCore(
-      id: doc.id,
+      id: id,
       title: data['title'] as String,
       description: data['description'] as String,
       portions: data['portions'] as int?,
@@ -227,12 +228,24 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
       mealType: data['mealType'] as String,
       sourceUrl: data['sourceUrl'] as String?,
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] is DateTime 
+          ? data['createdAt'] as DateTime
+          : AppTimestamp.fromFirestore(data['createdAt']).dateTime,
+      updatedAt: data['updatedAt'] is DateTime 
+          ? data['updatedAt'] as DateTime
+          : AppTimestamp.fromFirestore(data['updatedAt']).dateTime,
       createdBy: data['createdBy'] as String?,
       isPublic: data['isPublic'] as bool? ?? false,
-      lastCookedAt: data['lastCookedAt'] != null ? (data['lastCookedAt'] as Timestamp).toDate() : null,
+      lastCookedAt: data['lastCookedAt'] != null 
+          ? (data['lastCookedAt'] is DateTime 
+              ? data['lastCookedAt'] as DateTime
+              : AppTimestamp.fromFirestore(data['lastCookedAt']).dateTime)
+          : null,
     );
+  }
+
+  factory RecipeCore.fromFirestore(DocumentSnapshot doc) {
+    return RecipeCore.fromMap(doc.id, doc.data() as Map<String, dynamic>);
   }
 }
 
@@ -618,6 +631,7 @@ class Recipe {
   Map<String, dynamic> toFirestore() => RecipeSerialization.toFirestore(this);
   
   factory Recipe.fromJson(Map<String, dynamic> json) => RecipeSerialization.fromJson(json);
+  factory Recipe.fromMap(String id, Map<String, dynamic> data) => RecipeSerialization.fromMap(id, data);
   factory Recipe.fromFirestore(DocumentSnapshot doc) => RecipeSerialization.fromFirestore(doc);
 
   // ===== CORE COPY METHOD =====

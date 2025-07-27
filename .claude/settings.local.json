@@ -31,11 +31,47 @@
       "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/services/notifications/\")",
       "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/models/user_profile.dart lib/services/user_service.dart lib/repositories/\")",
       "Bash(cmd.exe:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(dart tools/validate_architecture.dart:*)",
+      "Bash(jq:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   },
-  "flutter_command_pattern": "cmd.exe /c \"flutter COMMAND\"",
-  "flutter_environment": "WSL with Windows Flutter integration",
-  "project_notes": "Use cmd.exe /c for all Flutter commands due to WSL line ending issues"
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo '🔍 Running Flutter analysis...' && if cmd.exe /c 'flutter analyze' > /dev/null 2>&1; then echo '✅ Analysis passed - auto-committing changes' && git add . && git commit -m \"feat: auto-commit after successful code changes\n\n🤖 Generated with Claude Code (https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\" && echo '✅ Changes committed successfully'; else echo '❌ Flutter analysis failed - skipping auto-commit'; fi",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -c \"(New-Object Media.SoundPlayer 'C:\\\\Windows\\\\Media\\\\tada.wav').PlaySync()\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -c \"(New-Object Media.SoundPlayer 'C:\\\\Windows\\\\Media\\\\tada.wav').PlaySync()\""
+          }
+        ]
+      }
+    ]
+  }
 }

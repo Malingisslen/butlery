@@ -39,7 +39,7 @@ class CommentLikesSystem {
           throw Exception('Comment not found');
         }
 
-        final comment = RecipeComment.fromFirestore(commentDoc);
+        final comment = RecipeComment.fromMap(commentDoc.id, commentDoc.data()!);
         final currentLikes = List<String>.from(comment.likedByUserIds);
 
         if (currentLikes.contains(currentUserId)) {
@@ -87,7 +87,7 @@ class CommentLikesSystem {
           throw Exception('Comment not found');
         }
 
-        final comment = RecipeComment.fromFirestore(commentDoc);
+        final comment = RecipeComment.fromMap(commentDoc.id, commentDoc.data()!);
         final currentLikes = List<String>.from(comment.likedByUserIds);
 
         if (!currentLikes.contains(userId)) {
@@ -134,7 +134,7 @@ class CommentLikesSystem {
           throw Exception('Comment not found');
         }
 
-        final comment = RecipeComment.fromFirestore(commentDoc);
+        final comment = RecipeComment.fromMap(commentDoc.id, commentDoc.data()!);
         final currentLikes = List<String>.from(comment.likedByUserIds);
 
         if (currentLikes.contains(userId)) {
@@ -179,7 +179,7 @@ class CommentLikesSystem {
         return false;
       }
 
-      final comment = RecipeComment.fromFirestore(commentDoc);
+      final comment = RecipeComment.fromMap(commentDoc.id, commentDoc.data()!);
       return comment.likedByUserIds.contains(userId);
     } catch (e) {
       AppLogger.error('❌ Failed to check if user liked comment', e);
@@ -202,7 +202,7 @@ class CommentLikesSystem {
         return 0;
       }
 
-      final comment = RecipeComment.fromFirestore(commentDoc);
+      final comment = RecipeComment.fromMap(commentDoc.id, commentDoc.data()!);
       return comment.likedByUserIds.length;
     } catch (e) {
       AppLogger.error('❌ Failed to get comment like count', e);
@@ -225,7 +225,7 @@ class CommentLikesSystem {
         return [];
       }
 
-      final comment = RecipeComment.fromFirestore(commentDoc);
+      final comment = RecipeComment.fromMap(commentDoc.id, commentDoc.data()!);
       return List<String>.from(comment.likedByUserIds);
     } catch (e) {
       AppLogger.error('❌ Failed to get comment likers', e);
@@ -319,7 +319,7 @@ class CommentLikesSystem {
           .get();
 
       final comments = snapshot.docs
-          .map((doc) => RecipeComment.fromFirestore(doc))
+          .map((doc) => RecipeComment.fromMap(doc.id, doc.data()))
           .toList();
 
       final totalLikes = comments.fold<int>(
@@ -359,7 +359,7 @@ class CommentLikesSystem {
           .get();
 
       final comments = snapshot.docs
-          .map((doc) => RecipeComment.fromFirestore(doc))
+          .map((doc) => RecipeComment.fromMap(doc.id, doc.data()))
           .toList();
 
       // Sort by like count descending

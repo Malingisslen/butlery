@@ -39,6 +39,24 @@ class AppDimensions {
   static const double spacingL = 12.0; // Large spacing (12px)
   static const double spacingXxxl = 24.0; // Triple extra large spacing (24px) - alias for spacingLg
 
+  // Additional spacing constants for common hardcoded values
+  static const double spacing2 = 2.0;
+  static const double spacing4 = 4.0;
+  static const double spacing6 = 6.0;
+  static const double spacing8 = 8.0;
+  static const double spacing10 = 10.0;
+  static const double spacing12 = 12.0;
+  static const double spacing14 = 14.0;
+  static const double spacing16 = 16.0;
+  static const double spacing18 = 18.0;
+  static const double spacing20 = 20.0;
+  static const double spacing24 = 24.0;
+  static const double spacing32 = 32.0;
+  static const double spacing48 = 48.0;
+  static const double spacing50 = 50.0;
+  static const double spacing60 = 60.0;
+  static const double spacing80 = 80.0;
+
   // ===== PADDING CONSTANTS =====
 
   /// Small padding (8px)
@@ -74,6 +92,19 @@ class AppDimensions {
 
   /// Round border radius (50px) for fully rounded elements
   static const double borderRadiusRound = 50.0;
+
+  // Additional border radius constants for common hardcoded values
+  static const double borderRadius0 = 0.0;
+  static const double borderRadius4 = 4.0;
+  static const double borderRadius6 = 6.0;
+  static const double borderRadius7 = 7.0;
+  static const double borderRadius8 = 8.0;
+  static const double borderRadius10 = 10.0;
+  static const double borderRadius12 = 12.0;
+  static const double borderRadius16 = 16.0;
+  static const double borderRadius20 = 20.0;
+  static const double borderRadius25 = 25.0;
+  static const double borderRadius100 = 100.0;
 
   // ===== ELEVATION CONSTANTS =====
 

@@ -28,6 +28,15 @@ class AppColors {
   static const Color success = Color(0xFF10B981); // Green for success
   static const Color warning = Color(0xFFF59E0B); // Yellow for warnings
   static const Color error = Color(0xFFEF4444); // Red for errors
+  static const Color errorContainer = Color(0xFFFEF2F2); // Light red container
+  static const Color onErrorContainer = Color(0xFF991B1B); // Dark red on error container
+  static const Color successContainer = Color(0xFFF0FDF4); // Light green container  
+  static const Color onSuccessContainer = Color(0xFF166534); // Dark green on success container
+  static const Color warningContainer = Color(0xFFFFFBEB); // Light yellow container
+  static const Color onWarningContainer = Color(0xFF92400E); // Dark yellow on warning container
+  static const Color infoContainer = Color(0xFFF0F9FF); // Light blue container
+  static const Color onInfoContainer = Color(0xFF1E40AF); // Dark blue on info container
+  static const Color info = Color(0xFF3B82F6); // Blue for info
   static const Color divider = Color(0xFFE5E7EB); // Dividers
   
   // ===== SPECIALIZED COLORS =====
@@ -149,6 +158,7 @@ class AppColors {
 
   /// Background dark color
   static const Color backgroundDark = neutralDark;
+  static const Color surfaceDark = Color(0xFF374151); // Dark surface color
 
 
 }

@@ -1,6 +1,6 @@
 // lib/models/shared_menu.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/types/app_timestamp.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
@@ -244,16 +244,14 @@ class SharedMenu {
         final recipeData = recipe.toFirestore();
 
         // Ersätt eventuella serverTimestamp med DateTime.now() för nested objects
-        if (recipeData['createdAt'] is FieldValue) {
-          recipeData['createdAt'] = Timestamp.fromDate(recipe.createdAt);
+        if (recipeData['createdAt'] is DateTime) {
+          recipeData['createdAt'] = AppTimestamp.fromDateTime(recipe.createdAt).toFirestore();
         }
-        if (recipeData['updatedAt'] is FieldValue) {
-          recipeData['updatedAt'] = Timestamp.fromDate(recipe.updatedAt);
+        if (recipeData['updatedAt'] is DateTime) {
+          recipeData['updatedAt'] = AppTimestamp.fromDateTime(recipe.updatedAt).toFirestore();
         }
-        if (recipeData['lastCookedAt'] is FieldValue) {
-          recipeData['lastCookedAt'] = recipe.lastCookedAt != null
-              ? Timestamp.fromDate(recipe.lastCookedAt!)
-              : null;
+        if (recipeData['lastCookedAt'] is DateTime && recipe.lastCookedAt != null) {
+          recipeData['lastCookedAt'] = AppTimestamp.fromDateTime(recipe.lastCookedAt!).toFirestore();
         }
 
         return recipeData;
@@ -264,7 +262,7 @@ class SharedMenu {
       'sharedByUserId': sharedByUserId,
       'sharedByDisplayName': sharedByDisplayName,
       'sharedToUserIds': sharedToUserIds,
-      'sharedAt': Timestamp.fromDate(sharedAt),
+      'sharedAt': AppTimestamp.fromDateTime(sharedAt).toFirestore(),
       'shareMessage': shareMessage,
       'menuTitle': menuTitle,
       'menuSnapshot': menuData,
@@ -279,12 +277,10 @@ class SharedMenu {
     };
   }
 
-  /// 🔧 FIXED: Create from Firestore document - No more type cast errors!
-  factory SharedMenu.fromFirestore(dynamic doc) {
+  /// 🔧 FIXED: Create from repository data - No more type cast errors!
+  factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
-      final data = doc.data() as Map<String, dynamic>;
-
-      debugPrint('🔍 Parsing SharedMenu från doc ID: ${doc.id}');
+      debugPrint('🔍 Parsing SharedMenu från doc ID: $id');
 
       // 🔧 FIXED: Reconstruct menu snapshot utan MockDocumentSnapshot type cast
       final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
@@ -331,7 +327,7 @@ class SharedMenu {
       }
 
       return SharedMenu._internal(
-        id: doc.id,
+        id: id,
         sharedByUserId: data['sharedByUserId'] as String? ?? '',
         sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
         sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
@@ -351,7 +347,7 @@ class SharedMenu {
             false, // 🆕 LÄGG TILL DENNA RAD
       );
     } catch (e, stackTrace) {
-      debugPrint('❌ Error parsing SharedMenu från doc ${doc.id}: $e');
+      debugPrint('❌ Error parsing SharedMenu från doc $id: $e');
       debugPrint('❌ Stack trace: $stackTrace');
       rethrow;
     }
@@ -362,25 +358,22 @@ class SharedMenu {
     if (timestamp == null) return null;
 
     try {
-      if (timestamp is Timestamp) {
-        return timestamp.toDate();
-      } else if (timestamp is DateTime) {
+      if (timestamp is DateTime) {
         return timestamp;
-      } else if (timestamp.toString().contains('Timestamp')) {
-        // Handle mock timestamps från debug output
-        final timestampObj = timestamp as dynamic;
-        final seconds = timestampObj.seconds as int;
-        final nanoseconds = timestampObj.nanoseconds as int? ?? 0;
-        return DateTime.fromMillisecondsSinceEpoch(
-            seconds * 1000 + nanoseconds ~/ 1000000);
       } else if (timestamp is Map) {
-        // Handle raw timestamp data
+        // Handle raw timestamp data from Firestore
         final seconds = timestamp['seconds'] as int?;
         final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
         if (seconds != null) {
           return DateTime.fromMillisecondsSinceEpoch(
               seconds * 1000 + nanoseconds ~/ 1000000);
         }
+      } else if (timestamp is int) {
+        // Handle milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(timestamp);
+      } else if (timestamp is String) {
+        // Handle ISO string format
+        return DateTime.parse(timestamp);
       }
 
       debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');

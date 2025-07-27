@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../models/friend_category.dart';
 import '../../../models/user_profile.dart';
 import '../social/social_facade.dart';
+import '../../../theme/app_dimensions.dart';
 
 /// Social group and friend category management components
 /// 
@@ -331,7 +332,7 @@ class SocialGroupComponents {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(AppDimensions.spacing16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -428,19 +429,19 @@ class SocialGroupComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          SizedBox(height: AppDimensions.spacing16),
           Text(
             title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppDimensions.spacing8),
           Text(
             subtitle,
             style: const TextStyle(color: Colors.grey),
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null && createButtonText != null) ...[
-            const SizedBox(height: 24),
+            SizedBox(height: AppDimensions.spacing24),
             ElevatedButton(
               onPressed: onCreateFirst,
               child: Text(createButtonText),
@@ -462,7 +463,7 @@ class SocialGroupComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(),
-          SizedBox(height: 16),
+          SizedBox(height: AppDimensions.spacing16),
           Text('Laddar kategorier...'),
         ],
       ),

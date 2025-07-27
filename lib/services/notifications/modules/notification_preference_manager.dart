@@ -198,7 +198,7 @@ class NotificationPreferenceManager {
       NotificationPreferences preferences;
       
       if (doc.exists && doc.data() != null) {
-        preferences = NotificationPreferences.fromFirestore(doc);
+        preferences = NotificationPreferences.fromMap(doc.id, doc.data()!);
         AppLogger.success('✅ Loaded preferences from Firestore');
       } else {
         // Create default preferences

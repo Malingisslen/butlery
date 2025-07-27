@@ -41,7 +41,7 @@ class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
           .where('sharedWithUserIds', arrayContains: userId)
           .get();
       
-      return snapshot.docs.map((doc) => SharedRecipe.fromFirestore(doc)).toList();
+      return snapshot.docs.map((doc) => SharedRecipe.fromMap(doc.id, doc.data())).toList();
     } catch (e) {
       throw Exception('Failed to get shared recipes: $e');
     }
@@ -54,7 +54,7 @@ class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
           .where('sharedWithUserIds', arrayContains: userId)
           .get();
       
-      return snapshot.docs.map((doc) => SharedMenu.fromFirestore(doc)).toList();
+      return snapshot.docs.map((doc) => SharedMenu.fromMap(doc.id, doc.data())).toList();
     } catch (e) {
       throw Exception('Failed to get shared menus: $e');
     }

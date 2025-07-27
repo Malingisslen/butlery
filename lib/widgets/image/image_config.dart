@@ -1,6 +1,7 @@
 // lib/widgets/image/image_config.dart
 
 import 'package:flutter/material.dart';
+import '../../theme/app_dimensions.dart';
 
 /// Typ av image-hantering
 enum ImageType {
@@ -102,7 +103,7 @@ class ImageConfig {
       showImageCounter: false,
       enableHapticFeedback: false,
       maxImages: 1,
-      borderRadius: BorderRadius.circular(100),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius100),
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: borderWidth,
@@ -123,7 +124,7 @@ class ImageConfig {
       size: size,
       customWidth: customWidth,
       customHeight: customHeight,
-      borderRadius: borderRadius ?? BorderRadius.circular(12),
+      borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius12),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: showMultipleIndicator,
@@ -146,7 +147,7 @@ class ImageConfig {
       type: ImageType.recipeDetail,
       mode: ImageDisplayMode.carousel,
       size: size,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -170,7 +171,7 @@ class ImageConfig {
       type: ImageType.recipeEdit,
       mode: ImageDisplayMode.editable,
       size: size,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -191,7 +192,7 @@ class ImageConfig {
       type: ImageType.gallery,
       mode: ImageDisplayMode.grid,
       size: size,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -212,7 +213,7 @@ class ImageConfig {
       type: ImageType.picker,
       mode: ImageDisplayMode.picker,
       size: size,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -259,7 +260,7 @@ class ImageConfig {
       type: ImageType.thumbnail,
       mode: ImageDisplayMode.readonly,
       size: size,
-      borderRadius: borderRadius ?? BorderRadius.circular(8),
+      borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -340,20 +341,20 @@ class ImageConfig {
     
     switch (type) {
       case ImageType.avatar:
-        return BorderRadius.circular(100);
+        return BorderRadius.circular(AppDimensions.borderRadius100);
       case ImageType.recipeCard:
-        return BorderRadius.circular(12);
+        return BorderRadius.circular(AppDimensions.borderRadius12);
       case ImageType.recipeDetail:
       case ImageType.recipeEdit:
-        return BorderRadius.circular(16);
+        return BorderRadius.circular(AppDimensions.borderRadius16);
       case ImageType.gallery:
       case ImageType.thumbnail:
-        return BorderRadius.circular(8);
+        return BorderRadius.circular(AppDimensions.borderRadius8);
       case ImageType.picker:
-        return BorderRadius.circular(12);
+        return BorderRadius.circular(AppDimensions.borderRadius12);
       case ImageType.hero:
       case ImageType.cached:
-        return BorderRadius.circular(0);
+        return BorderRadius.circular(AppDimensions.borderRadius0);
     }
   }
 }

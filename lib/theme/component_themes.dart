@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 import 'app_dimensions.dart';
+import 'theme_constants.dart';
 
 /// Component-specific theme configurations for the Butlery app
 /// Contains themes for buttons, cards, inputs, and other Material components
@@ -216,7 +217,7 @@ class ComponentThemes {
     return const BottomNavigationBarThemeData(
       backgroundColor: AppColors.primaryBlue, // Dark background as per design
       selectedItemColor: AppColors.cardWhite, // White when selected
-      unselectedItemColor: Color(0x66FFFFFF), // White with transparency when unselected (Colors.white60)
+      unselectedItemColor: ThemeConstants.whiteOverlay40, // White with transparency when unselected
       selectedLabelStyle: AppTextStyles.navigationText,
       unselectedLabelStyle: AppTextStyles.navigationText,
       type: BottomNavigationBarType.fixed,

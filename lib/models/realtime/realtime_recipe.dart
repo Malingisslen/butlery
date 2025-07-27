@@ -361,24 +361,53 @@ class RealtimeRecipe extends RealtimeResource {
     return RecipeSerialization.serializeRealtimeContent(recipe);
   }
 
-  /// Skapa från Firestore dokument
-  factory RealtimeRecipe.fromFirestore(DocumentSnapshot doc) {
-    final (recipe, metadataMap) = RecipeSerialization.deserializeRealtimeRecipe(doc);
+  /// Create from repository data map (removes Firebase dependency)
+  factory RealtimeRecipe.fromMap(String id, Map<String, dynamic> data) {
+    // Parse recipe data from the nested structure
+    final recipeData = data['recipe'] as Map<String, dynamic>? ?? data;
+    final recipe = RecipeSerialization.deserializeRecipe(recipeData, id);
+    
+    // Parse participants
+    final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
+    final participants = participantsData.map(
+      (userId, permissionString) => MapEntry(
+        userId,
+        ResourcePermissionHelper.stringToPermission(permissionString as String),
+      ),
+    );
 
     return RealtimeRecipe(
-      id: metadataMap['id'] as String,
-      ownerId: metadataMap['ownerId'] as String,
-      ownerDisplayName: metadataMap['ownerDisplayName'] as String,
-      participants: metadataMap['participants'] as Map<String, ResourcePermission>,
-      createdAt: metadataMap['createdAt'] as DateTime?,
-      lastEditedAt: metadataMap['lastEditedAt'] as DateTime?,
-      lastEditedBy: metadataMap['lastEditedBy'] as String,
-      lastEditedByDisplayName: metadataMap['lastEditedByDisplayName'] as String,
-      editCount: metadataMap['editCount'] as int? ?? 0,
-      isActive: metadataMap['isActive'] as bool? ?? true,
-      metadata: metadataMap['metadata'] as Map<String, dynamic>?,
+      id: id,
+      ownerId: data['ownerId'] as String,
+      ownerDisplayName: data['ownerDisplayName'] as String,
+      participants: participants,
+      createdAt: data['createdAt'] is DateTime 
+          ? data['createdAt'] as DateTime
+          : _parseTimestamp(data['createdAt']),
+      lastEditedAt: data['lastEditedAt'] is DateTime 
+          ? data['lastEditedAt'] as DateTime
+          : _parseTimestamp(data['lastEditedAt']),
+      lastEditedBy: data['lastEditedBy'] as String,
+      lastEditedByDisplayName: data['lastEditedByDisplayName'] as String,
+      editCount: data['editCount'] as int? ?? 0,
+      isActive: data['isActive'] as bool? ?? true,
+      metadata: data['metadata'] as Map<String, dynamic>?,
       recipe: recipe,
     );
+  }
+
+  /// Helper method to parse timestamps from different sources
+  static DateTime? _parseTimestamp(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    return null;
+  }
+
+  /// Skapa från Firestore dokument
+  factory RealtimeRecipe.fromFirestore(DocumentSnapshot doc) {
+    return RealtimeRecipe.fromMap(doc.id, doc.data() as Map<String, dynamic>);
   }
 
   // ===== COPY METHODS =====

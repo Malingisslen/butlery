@@ -97,6 +97,11 @@ class ResourcePermissionHelper {
     }
   }
 
+  /// Alias for fromString for consistency
+  static ResourcePermission stringToPermission(String value) {
+    return fromString(value);
+  }
+
   /// Få användarläsbar beskrivning
   static String getDescription(ResourcePermission permission) {
     switch (permission) {

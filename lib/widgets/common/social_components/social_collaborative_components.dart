@@ -1,6 +1,7 @@
 // lib/widgets/common/social_components/social_collaborative_components.dart
 
 import 'package:flutter/material.dart';
+import '../../../theme/app_dimensions.dart';
 import '../../../models/recipe_unified.dart';
 import '../../../viewmodels/recipe_form_viewmodel.dart';
 import '../social/social_facade.dart';
@@ -128,7 +129,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: (activeColor ?? Colors.green).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: activeColor ?? Colors.green),
       ),
       child: Row(
@@ -239,7 +240,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: color ?? Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? Colors.green),
       ),
       child: Row(
@@ -272,7 +273,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: color?.withValues(alpha: 0.1) ?? Colors.grey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? Colors.grey),
       ),
       child: Row(
@@ -309,7 +310,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,7 +416,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
       decoration: BoxDecoration(
         color: (color ?? config.color).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: color ?? config.color),
       ),
       child: Row(

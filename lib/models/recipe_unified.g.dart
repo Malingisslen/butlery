@@ -28,7 +28,7 @@ class RecipeCoreAdapter extends TypeAdapter<RecipeCore> {
       rating: fields[8] as double?,
       mealType: fields[9] as String,
       sourceUrl: fields[10] as String?,
-      imageUrls: (fields[11] as List).cast<String>(),
+      imageUrls: (fields[11] as List?)?.cast<String>(),
       createdAt: fields[12] as DateTime?,
       updatedAt: fields[13] as DateTime?,
       createdBy: fields[14] as String?,

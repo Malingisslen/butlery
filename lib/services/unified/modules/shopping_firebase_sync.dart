@@ -35,8 +35,8 @@ class ShoppingFirebaseSync {
           .collection('users')
           .doc(_getCurrentUserId()!)
           .collection('unified_shopping_lists'),
-      onAdded: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
-      onModified: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
+      onAdded: (doc) => _updateLocalList(UnifiedShoppingList.fromMap(doc.id, doc.data()! as Map<String, dynamic>)),
+      onModified: (doc) => _updateLocalList(UnifiedShoppingList.fromMap(doc.id, doc.data()! as Map<String, dynamic>)),
       onRemoved: (doc) => _removeLocalList(doc.id),
       onError: (error) => _setError('Personal lists sync error: $error'),
     ),
@@ -45,8 +45,8 @@ class ShoppingFirebaseSync {
       query: () => _firestore
           .collection('unified_shared_shopping_lists')
           .where('memberPermissions.${_getCurrentUserId()}', isNotEqualTo: null),
-      onAdded: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
-      onModified: (doc) => _updateLocalList(UnifiedShoppingList.fromFirestore(doc)),
+      onAdded: (doc) => _updateLocalList(UnifiedShoppingList.fromMap(doc.id, doc.data()! as Map<String, dynamic>)),
+      onModified: (doc) => _updateLocalList(UnifiedShoppingList.fromMap(doc.id, doc.data()! as Map<String, dynamic>)),
       onRemoved: (doc) => _removeLocalList(doc.id),
       onError: (error) => _setError('Collaborative lists sync error: $error'),
     ),

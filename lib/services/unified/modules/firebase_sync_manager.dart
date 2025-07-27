@@ -197,7 +197,7 @@ class FirebaseSyncManager {
       switch (change.type) {
         case DocumentChangeType.added:
         case DocumentChangeType.modified:
-          final recipe = Recipe.fromFirestore(doc);
+          final recipe = Recipe.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
           onRecipeUpdated(recipe, source);
           AppLogger.debug('Recipe ${change.type.name} from $source: ${recipe.title}');
           break;

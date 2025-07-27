@@ -1,7 +1,7 @@
 // lib/models/user_profile.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/mixins/json_serializable_mixin.dart';
+import '../core/types/app_timestamp.dart';
 
 
 class UserProfile with JsonSerializableMixin {
@@ -161,12 +161,12 @@ class UserProfile with JsonSerializableMixin {
       'allowEmailSearch': allowEmailSearch,
       'publicRecipeCount': publicRecipeCount,
       'friendsCount': friendsCount,
-      'joinedAt': Timestamp.fromDate(joinedAt),
-      'lastActiveAt': Timestamp.fromDate(lastActiveAt),
+      'joinedAt': AppTimestamp.fromDateTime(joinedAt).toFirestore(),
+      'lastActiveAt': AppTimestamp.fromDateTime(lastActiveAt).toFirestore(),
       'isOnline': isOnline,
       // Notification fields
       'fcmToken': fcmToken,
-      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? Timestamp.fromDate(fcmTokenUpdatedAt!) : null,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? AppTimestamp.fromDateTime(fcmTokenUpdatedAt!).toFirestore() : null,
       'notificationsEnabled': notificationsEnabled,
     };
   }
@@ -193,12 +193,10 @@ class UserProfile with JsonSerializableMixin {
     };
   }
 
-  /// Create from Firestore document
-  factory UserProfile.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Create from repository data (removes Firebase dependency from model)
+  factory UserProfile.fromMap(String uid, Map<String, dynamic> data) {
     return UserProfile(
-      uid: doc.id,
+      uid: uid,
       displayName: data['displayName'] as String? ?? '',
       email: data['email'] as String? ?? '',
       bio: data['bio'] as String?,
@@ -207,13 +205,20 @@ class UserProfile with JsonSerializableMixin {
       allowEmailSearch: data['allowEmailSearch'] as bool? ?? false,
       publicRecipeCount: data['publicRecipeCount'] as int? ?? 0,
       friendsCount: data['friendsCount'] as int? ?? 0,
-      joinedAt: (data['joinedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastActiveAt:
-          (data['lastActiveAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      joinedAt: data['joinedAt'] is DateTime 
+          ? data['joinedAt'] as DateTime
+          : DateTime.fromMillisecondsSinceEpoch(data['joinedAt'] as int),
+      lastActiveAt: data['lastActiveAt'] is DateTime 
+          ? data['lastActiveAt'] as DateTime
+          : DateTime.fromMillisecondsSinceEpoch(data['lastActiveAt'] as int),
       isOnline: data['isOnline'] as bool? ?? false,
       // Notification fields
       fcmToken: data['fcmToken'] as String?,
-      fcmTokenUpdatedAt: (data['fcmTokenUpdatedAt'] as Timestamp?)?.toDate(),
+      fcmTokenUpdatedAt: data['fcmTokenUpdatedAt'] != null
+          ? (data['fcmTokenUpdatedAt'] is DateTime 
+              ? data['fcmTokenUpdatedAt'] as DateTime
+              : DateTime.fromMillisecondsSinceEpoch(data['fcmTokenUpdatedAt'] as int))
+          : null,
       notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
     );
   }
@@ -242,7 +247,7 @@ class UserProfile with JsonSerializableMixin {
 
   static DateTime? _deserializeDateTime(dynamic value) {
     if (value is String) return DateTime.parse(value);
-    if (value is Timestamp) return value.toDate();
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
     return null;
   }
 

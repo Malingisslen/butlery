@@ -54,7 +54,7 @@ class RealtimeEventHandler {
       AppLogger.debug('Processing external edit for recipe $recipeId by $editedBy');
 
       // Update local cache
-      final recipe = Recipe.fromFirestore(snapshot);
+      final recipe = Recipe.fromMap(snapshot.id, snapshot.data()! as Map<String, dynamic>);
       saveToCache(recipe);
 
       // Notify listeners of the change
