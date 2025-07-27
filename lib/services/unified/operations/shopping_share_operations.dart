@@ -13,11 +13,11 @@
 /// 
 /// Shared utilities have been extracted to reduce code duplication.
 
-import 'shopping_share/shopping_export_module.dart';
-import 'shopping_share/shopping_external_share_module.dart';
-import 'shopping_share/shopping_template_module.dart';
-import 'shopping_share/shopping_import_module.dart';
-import 'shopping_share/shopping_social_share_module.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shopping_export_module.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shopping_external_share_module.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shopping_template_module.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shopping_import_module.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shopping_social_share_module.dart';
 
 /// Shopping share operations feature interface - Clean coordinator
 /// 

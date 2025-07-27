@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for real-time editing session management
 /// 
@@ -36,6 +36,7 @@ class RealtimeSessionManager {
       }
 
       // Start listening to real-time changes
+      // ignore: cancel_subscriptions - stored and cancelled by caller
       final subscription = firestore
           .collection('unified_collaborative_recipes')
           .doc(recipeId)
@@ -204,6 +205,7 @@ class RealtimeSessionManager {
 
     for (final entry in activeEditingSessions.entries) {
       final recipeId = entry.key;
+      // ignore: cancel_subscriptions - managed by activeEditingSessions
       final subscription = entry.value;
 
       // Check if subscription is still active
@@ -232,6 +234,7 @@ class RealtimeSessionManager {
 
     for (final entry in activeEditingSessions.entries) {
       final recipeId = entry.key;
+      // ignore: cancel_subscriptions - managed by activeEditingSessions
       final subscription = entry.value;
 
       try {

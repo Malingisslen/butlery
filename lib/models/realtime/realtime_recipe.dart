@@ -1,14 +1,14 @@
 // lib/models/realtime/realtime_recipe.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../recipe_unified.dart';
-import '../permissions/resource_permission.dart';
-import 'realtime_resource.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 
 // Focused modules
-import 'recipe_operations.dart';
-import 'recipe_serialization.dart';
-import 'realtime_participants.dart';
+import 'package:butlery/models/realtime/recipe_operations.dart';
+import 'package:butlery/models/realtime/recipe_serialization.dart';
+import 'package:butlery/models/realtime/realtime_participants.dart';
 
 /// Clean facade for realtime recipe using focused modules
 ///

@@ -1,10 +1,10 @@
 // lib/views/social/group_detail/group_invitation_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/group_invitation.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../core/injection.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// GroupInvitationCard - Invitation card component
 ///
@@ -92,7 +92,7 @@ class GroupInvitationCard {
                     Icons.cancel,
                     color: Theme.of(context).colorScheme.error,
                   ),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     'Avbryt inbjudan',
                     style: TextStyle(

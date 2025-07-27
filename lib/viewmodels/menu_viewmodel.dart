@@ -2,19 +2,19 @@
 // ✅ INTEGRERAD med social import support
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/menu_service.dart';
-import '../services/unified/operations/social_menu_operations.dart';
-import '../core/injection.dart';
-import '../core/utils/logger.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/unified/operations/social_menu_operations.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 // Focused modules
-import 'menu/menu_state_manager.dart';
-import 'menu/menu_generator.dart';
-import 'menu/menu_storage.dart';
-import 'menu/menu_social_manager.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
+import 'package:butlery/viewmodels/menu/menu_generator.dart';
+import 'package:butlery/viewmodels/menu/menu_storage.dart';
+import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 
 /// Clean facade for menu viewmodel using focused modules
 ///

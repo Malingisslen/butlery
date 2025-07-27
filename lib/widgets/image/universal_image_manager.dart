@@ -1,14 +1,14 @@
 // lib/widgets/image/universal_image_manager.dart
 
 import 'package:flutter/material.dart';
-import 'image_config.dart';
-import 'image_factory.dart';
-import 'avatar_image_widget.dart';
-import 'recipe_image_widget.dart';
-import 'editable_image_widget.dart';
-import 'image_picker_widget.dart';
-import 'image_gallery_widget.dart';
-import 'simple_image_widget.dart';
+import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_factory.dart';
+import 'package:butlery/widgets/image/avatar_image_widget.dart';
+import 'package:butlery/widgets/image/recipe_image_widget.dart';
+import 'package:butlery/widgets/image/editable_image_widget.dart';
+import 'package:butlery/widgets/image/image_picker_widget.dart';
+import 'package:butlery/widgets/image/image_gallery_widget.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Universal Image Manager - Refactored with focused widgets
 ///

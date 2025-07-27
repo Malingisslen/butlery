@@ -1,11 +1,11 @@
 // lib/views/social/shared_with_me/shared_content_lists.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
-import '../../../widgets/common/state_widget.dart';
-import 'shared_recipe_card.dart';
-import 'shared_menu_card.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
+import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
 
 /// SharedContentLists - List builders for shared content
 ///
@@ -35,7 +35,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: recipes.length,
         separatorBuilder: (context, index) =>
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
           final sharedRecipe = recipes[index];
           return SharedRecipeCard.build(
@@ -72,7 +72,7 @@ class SharedContentLists {
         padding: AppDimensions.screenPadding,
         itemCount: menus.length,
         separatorBuilder: (context, index) =>
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
           final sharedMenu = menus[index];
           return SharedMenuCard.build(

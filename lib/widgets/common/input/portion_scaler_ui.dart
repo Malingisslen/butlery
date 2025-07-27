@@ -1,8 +1,8 @@
 // lib/widgets/common/input/portion_scaler_ui.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// UI components for the portion scaler widget
 class PortionScalerUI {

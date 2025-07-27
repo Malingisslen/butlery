@@ -16,11 +16,11 @@
 /// Used in phases: Phase 7 - TODO Implementation
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import '../unified_friends_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Social menu operations feature interface
 /// 

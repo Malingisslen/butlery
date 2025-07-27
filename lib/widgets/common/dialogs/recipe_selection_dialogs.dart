@@ -1,12 +1,12 @@
 // lib/widgets/common/dialogs/recipe_selection_dialogs.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 // Focused Components
-import 'recipe_selection/friend_recipe_sharing_dialog.dart';
-import 'recipe_selection/menu_recipe_selection_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 
 /// Recipe Selection Dialogs API
 ///

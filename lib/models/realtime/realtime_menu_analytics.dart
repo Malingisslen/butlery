@@ -1,7 +1,7 @@
 // lib/models/realtime/realtime_menu_analytics.dart
 
-import '../recipe_unified.dart';
-import 'realtime_menu_data.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/realtime/realtime_menu_data.dart';
 
 /// Search, filtering, and advanced analytics for realtime menu data
 /// 

@@ -1,11 +1,11 @@
 // lib/repositories/firebase/firebase_user_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/auth_repository.dart';
-import 'firebase_auth_repository.dart';
-import '../../models/user_profile.dart';
-import '../interfaces/user_repository.dart';
-import 'base_firebase_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
 /// Repository for user profile data stored in the `public_profiles` collection.
 ///

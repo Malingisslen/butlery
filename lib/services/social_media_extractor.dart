@@ -1,7 +1,7 @@
 // lib/services/social_media_extractor.dart
 
-import 'extraction/extraction_manager.dart';
-import '../core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/services/extraction/extraction_manager.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 // Export extraction components for external usage
 export 'extraction/platform_detector.dart';

@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_colors.dart';
-import 'image_config.dart';
-import 'image_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_components.dart';
 
 /// Recipe image widget for cards and detail views
 class RecipeImageWidget extends StatefulWidget {

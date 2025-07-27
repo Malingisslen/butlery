@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/create_shared_list_viewmodel.dart';
-import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/unified/unified_friends_service.dart';
-import '../../widgets/common/utility_components.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
+import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -135,7 +135,7 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildHeaderInfo(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.backgroundTint,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -146,7 +146,7 @@ class _CreateSharedShoppingListViewState
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.group,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
@@ -161,7 +161,7 @@ class _CreateSharedShoppingListViewState
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
+          const Text(
             'Skapa en lista som du och dina vänner kan samarbeta kring i realtid.',
             style: AppTextStyles.titleMedium,
           ),
@@ -175,7 +175,7 @@ class _CreateSharedShoppingListViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Lista detaljer',
           style: AppTextStyles.headlineSmall,
         ),
@@ -216,7 +216,7 @@ class _CreateSharedShoppingListViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Välj vänner att dela med',
           style: AppTextStyles.headlineSmall,
         ),
@@ -241,7 +241,7 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildInfoSection(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -254,7 +254,7 @@ class _CreateSharedShoppingListViewState
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.info_outline,
                 color: AppColors.success,
                 size: AppDimensions.iconSizeM,
@@ -287,7 +287,7 @@ class _CreateSharedShoppingListViewState
   Widget _buildBottomBar(
       BuildContext context, CreateSharedListViewModel viewModel) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
@@ -331,7 +331,7 @@ class _CreateSharedShoppingListViewState
                     ? () => _createSharedList(context, viewModel)
                     : null,
                 icon: viewModel.isCreating
-                    ? SizedBox(
+                    ? const SizedBox(
                         width: AppDimensions.iconSizeS,
                         height: AppDimensions.iconSizeS,
                         child: CircularProgressIndicator(

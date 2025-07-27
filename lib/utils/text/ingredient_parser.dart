@@ -1,8 +1,8 @@
 // lib/utils/text/ingredient_parser.dart
 
-import 'text_formatting.dart';
-import 'unit_converter.dart';
-import 'swedish_pluralization.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
+import 'package:butlery/utils/text/unit_converter.dart';
+import 'package:butlery/utils/text/swedish_pluralization.dart';
 
 /// IngredientParser - Ingredient parsing utilities
 ///

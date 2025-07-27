@@ -17,8 +17,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import '../utils/logger.dart';
-import 'error_handling_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Comprehensive Firebase integration mixin that eliminates duplicate Firebase patterns
 /// found across 25+ services in the codebase.

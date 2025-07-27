@@ -1,9 +1,9 @@
 // lib/repositories/firebase/firebase_notifications_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/notifications_repository.dart';
-import '../../services/notifications/notification_types.dart';
-import 'base_firebase_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
 /// Firebase implementation of NotificationsRepository
 class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotification>

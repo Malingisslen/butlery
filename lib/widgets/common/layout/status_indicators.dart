@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../services/offline_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/services/offline_service.dart';
 
 /// Status indicators for app state display
 ///
@@ -53,7 +53,7 @@ class OfflineIndicator extends StatelessWidget {
         // Show offline banner
         return Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingL,
             vertical: AppDimensions.spacingS,
           ),
@@ -61,7 +61,7 @@ class OfflineIndicator extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.wifi_off,
                 color: AppColors.neutralLight,
                 size: AppDimensions.iconSizeM,
@@ -94,7 +94,7 @@ class OfflineStatusIcon extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        return Padding(
+        return const Padding(
           padding: EdgeInsets.only(right: AppDimensions.spacingS),
           child: Icon(
             Icons.cloud_off,

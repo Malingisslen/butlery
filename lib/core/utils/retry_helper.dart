@@ -1,7 +1,7 @@
 // lib/core/utils/retry_helper.dart
 
 import 'dart:math';
-import 'logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Utility class for handling retry logic with exponential backoff
 class RetryHelper {

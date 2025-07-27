@@ -1,16 +1,16 @@
 // lib/widgets/common/layout_components.dart
 
 import 'package:flutter/material.dart';
-import '../../viewmodels/menu_viewmodel.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 // Import all split modules
-import 'layout/layout_scaffolds.dart';
-import 'layout/status_indicators.dart';
-import 'profile/profile_menu.dart';
-import 'menu_persistence/menu_save_dialog.dart';
-import 'menu_persistence/menu_load_dialog.dart';
-import 'utility_components.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/status_indicators.dart';
+import 'package:butlery/widgets/common/profile/profile_menu.dart';
+import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
+import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Unified Layout Components
 ///

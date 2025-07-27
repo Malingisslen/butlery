@@ -16,7 +16,7 @@
 /// Used in phases: Service Layer Consolidation - Stream Pattern Unification
 
 import 'dart:async';
-import '../utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Comprehensive stream management mixin that eliminates duplicate stream patterns
 /// found across 40+ services in the codebase.
@@ -306,6 +306,7 @@ mixin StreamManagementMixin {
     Function? onError,
     void Function()? onDone,
   }) {
+    // ignore: close_sinks - controller is managed by createStreamController and disposed in disposeAll()
     final controller = createStreamController<T>(name: '${name}_merger');
     
     // Listen to all source streams

@@ -15,7 +15,7 @@
 /// Connected to: BaseService, all service implementations, dependency injection container
 /// Used in phases: Cross-Cutting Concerns Consolidation - Service Access Pattern Unification
 
-import '../injection.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Centralized service access helper that replaces static getters in BaseService
 /// 

@@ -1,17 +1,17 @@
 // lib/views/unified_shopping/widgets/shopping_dialogs.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/unified_shopping_viewmodel.dart';
-import '../../../viewmodels/universal_share_dialog_viewmodel.dart';
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../core/dialogs/dialog_factory.dart';
-import '../../../widgets/common/universal_share_dialog.dart';
-import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
-import '../../../services/unified/unified_friends_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Dialog-related functionality for shopping view
 class ShoppingDialogs {
@@ -138,7 +138,7 @@ class ShoppingDialogs {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.sync, color: AppColors.textMedium, size: AppDimensions.iconSizeM),
             SizedBox(width: AppDimensions.spacingS),
@@ -155,7 +155,7 @@ class ShoppingDialogs {
             _buildStatusRow(
               context,
               'Status',
-              viewModel.isOnline ? "Online" : "Offline",
+              viewModel.isOnline ? 'Online' : 'Offline',
               viewModel.isOnline ? AppColors.success : AppColors.error,
             ),
             const SizedBox(height: AppDimensions.spacingM),

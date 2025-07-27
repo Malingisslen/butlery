@@ -1,10 +1,10 @@
 // lib/widgets/common/share_dialog/share_target_selection.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../models/user_profile.dart';
-import '../../../widgets/user/user_display_widgets.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 class ShareTargetSelection {
   static Widget build(

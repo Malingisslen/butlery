@@ -16,7 +16,7 @@
 /// Used in phases: Phase 6 - Eliminate Code Duplication Patterns
 
 import 'package:flutter/material.dart';
-import 'state_widget.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
 /// 

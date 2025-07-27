@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../viewmodels/realtime_menu_viewmodel.dart';
-import '../../../core/utils/logger.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Handler for menu action events in realtime menu view
 class MenuActionHandler {
@@ -211,7 +211,7 @@ class MenuActionHandler {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: Icon(
+        icon: const Icon(
           Icons.warning_amber_rounded,
           color: AppColors.warning,
           size: 48,
@@ -231,15 +231,15 @@ class MenuActionHandler {
                   color: AppColors.warning.withValues(alpha: 0.3),
                 ),
               ),
-              child: Row(
+              child: const Row(
                 children: [
                   Icon(
                     Icons.info_outline,
                     color: AppColors.warning,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
-                  const Expanded(
+                  SizedBox(width: 8),
+                  Expanded(
                     child: Text(
                       'Detta kan inte ångras. Alla deltagare kommer att förlora åtkomst.',
                       style: TextStyle(fontSize: 12),

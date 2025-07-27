@@ -15,7 +15,7 @@
 /// Connected to: FormValidators, dialog validation, service validation, model validation
 /// Used in phases: Cross-Cutting Concerns Consolidation - Validation Pattern Unification
 
-import '../constants/app_strings.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// Comprehensive validation utilities that eliminate duplicate validation patterns
 /// found across 321+ files in the codebase.

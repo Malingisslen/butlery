@@ -16,9 +16,9 @@
 /// Used in phases: Phase 7 - Additional Code Duplication Elimination
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import 'logger.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Utility class that eliminates duplicated SnackBar creation patterns
 /// 
@@ -233,7 +233,7 @@ class SnackBarUtils {
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
@@ -245,7 +245,7 @@ class SnackBarUtils {
               Expanded(
                 child: Text(
                   message,
-                  style: TextStyle(color: AppColors.neutralLight),
+                  style: const TextStyle(color: AppColors.neutralLight),
                 ),
               ),
             ],
@@ -423,7 +423,7 @@ class SnackBarUtils {
         backgroundColor: backgroundColor,
         duration: duration ?? const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(AppDimensions.spacingXl),
+        margin: const EdgeInsets.all(AppDimensions.spacingXl),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),

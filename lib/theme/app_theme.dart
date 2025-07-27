@@ -1,9 +1,9 @@
 // lib/theme/app_theme.dart
 
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_text_styles.dart';
-import 'component_themes.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
 
 /// Main theme orchestrator for the Butlery app
 /// Combines colors, typography, dimensions, and component themes

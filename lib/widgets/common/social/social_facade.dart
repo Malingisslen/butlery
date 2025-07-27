@@ -1,18 +1,18 @@
 // lib/widgets/common/social/social_facade.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../viewmodels/recipe_form_viewmodel.dart';
-import '../../user/user_display_widgets.dart' show ImageSize;
-import 'social_avatar_api.dart';
-import 'social_collaborative_api.dart';
-import 'social_group_api.dart';
-import 'social_invitation_api.dart';
-import 'social_builders.dart';
-import 'social_helpers.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
+import 'package:butlery/widgets/common/social/social_avatar_api.dart';
+import 'package:butlery/widgets/common/social/social_collaborative_api.dart';
+import 'package:butlery/widgets/common/social/social_group_api.dart';
+import 'package:butlery/widgets/common/social/social_invitation_api.dart';
+import 'package:butlery/widgets/common/social/social_builders.dart';
+import 'package:butlery/widgets/common/social/social_helpers.dart';
 
 /// Main facade for all social components
 class SocialFacade {

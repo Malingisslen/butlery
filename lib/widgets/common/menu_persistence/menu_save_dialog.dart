@@ -1,11 +1,11 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../core/validators/form_validators.dart';
-import '../../../viewmodels/menu_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/viewmodels/menu_viewmodel.dart';
 
 /// Dialog for saving a menu with name, comment and social sharing
 ///
@@ -105,7 +105,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildMenuInfo() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

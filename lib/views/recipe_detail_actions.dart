@@ -3,17 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../viewmodels/recipe_detail_viewmodel.dart';
-import '../viewmodels/social_recipe_viewmodel.dart';
-import '../widgets/image/universal_image_manager.dart' as img;
-import '../widgets/common/universal_share_dialog.dart';
-import '../viewmodels/universal_share_dialog_viewmodel.dart';
-import '../theme/app_colors.dart';
-import '../core/injection.dart';
-import '../services/share_service.dart';
-import '../services/user_service.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
-import '../core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/share_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
 
 /// Refactored RecipeDetailActions using BaseActionHandler patterns
 /// 
@@ -117,7 +117,7 @@ class RecipeDetailActions extends BaseActionHandler with ActionStateMixin {
           builder: (context) => UniversalShareDialog.recipe(
             recipe: socialViewModel.recipe,
             viewModel: sl<UniversalShareDialogViewModel>(),
-            initialMessage: "Kolla detta recept!",
+            initialMessage: 'Kolla detta recept!',
             availableFriends: socialViewModel.friends,
           ),
         );

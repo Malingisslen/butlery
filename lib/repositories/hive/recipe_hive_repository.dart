@@ -15,8 +15,8 @@
 /// Connected to: base_hive_repository.dart
 /// Used in phases: offline storage prototype
 
-import '../../models/recipe_unified.dart';
-import 'base_hive_repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/hive/base_hive_repository.dart';
 
 /// Repository för att lagra Recipe-objekt i Hive.
 /// 

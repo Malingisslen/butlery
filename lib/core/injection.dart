@@ -7,98 +7,98 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/interfaces/auth_repository.dart';
-import '../repositories/interfaces/recipe_repository.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
-import '../repositories/firebase/firebase_recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 
 // ==================== CORE SERVICES ====================
-import '../services/menu_service.dart';
-import '../services/search_service.dart';
-import '../services/persistence_service.dart';
-import '../services/auth_service.dart';
-import '../services/share_service.dart';
-import '../services/storage_service.dart';
-import '../services/image_picker_service.dart';
-import '../services/offline_service.dart';
-import '../services/analytics_service.dart';
-import '../services/permission_service.dart';
+import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/search_service.dart';
+import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/share_service.dart';
+import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
-import '../repositories/firestore_repository.dart';
-import '../repositories/firebase/firebase_user_repository.dart';
-import '../repositories/firebase/firebase_friends_repository.dart';
-import '../repositories/firebase/firebase_social_recipe_repository.dart';
-import '../repositories/firebase/firebase_comments_repository.dart';
-import '../repositories/firebase/firebase_ratings_repository.dart';
-import '../repositories/firebase/firebase_notifications_repository.dart';
-import '../repositories/firebase/firebase_deeplink_repository.dart';
-import '../repositories/firebase/firebase_connectivity_repository.dart';
-import '../repositories/firebase/firebase_social_sharing_repository.dart';
-import '../repositories/interfaces/comments_repository.dart';
-import '../repositories/interfaces/ratings_repository.dart';
-import '../repositories/interfaces/notifications_repository.dart';
-import '../repositories/interfaces/user_repository.dart';
-import '../repositories/interfaces/friends_repository.dart';
-import '../repositories/interfaces/social_recipe_repository.dart';
-import '../repositories/interfaces/deeplink_repository.dart';
-import '../repositories/interfaces/connectivity_repository.dart';
-import '../repositories/interfaces/social_sharing_repository.dart';
-import '../repositories/collaborative_recipe_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_social_recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notifications_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_connectivity_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_social_sharing_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/repositories/interfaces/friends_repository.dart';
+import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
+import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
+import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
+import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
 // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
-import '../services/realtime_sync_service.dart';
-import '../services/realtime/realtime_recipe_service.dart';
-import '../services/realtime/realtime_menu_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/realtime/realtime_recipe_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 
 // ==================== INVITATION SERVICES (FAS 2) ====================
 // import '../services/invitations/group_invitation_expander.dart'; // Removed - no longer needed
 
 // ==================== UNIFIED SYSTEMS ====================
-import '../services/unified/unified_shopping_service.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../services/unified/operations/social_menu_operations.dart';
-import '../services/import/import_manager.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/operations/social_menu_operations.dart';
+import 'package:butlery/services/import/import_manager.dart';
 
 // ==================== SOCIAL SERVICES ====================
-import '../services/user_service.dart';
-import '../services/social_recipe_service.dart';
-import '../services/connectivity_monitoring_service.dart';
-import '../services/deep_link_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/services/deep_link_service.dart';
 
 // ==================== CORE VIEWMODELS ====================
-import '../viewmodels/recipe_list_viewmodel.dart';
-import '../viewmodels/menu_viewmodel.dart';
-import '../viewmodels/recipe_form_viewmodel.dart';
-import '../viewmodels/text_import_viewmodel.dart';
-import '../viewmodels/archive_import_viewmodel.dart';
-import '../viewmodels/photo_import_viewmodel.dart';
-import '../viewmodels/url_import_viewmodel.dart';
-import '../viewmodels/recipe_detail_viewmodel.dart';
-import '../viewmodels/auth_viewmodel.dart';
-import '../viewmodels/unified_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/viewmodels/text_import_viewmodel.dart';
+import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
+import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
 
 // ==================== UNIFIED SHOPPING VIEWMODELS ====================
-import '../viewmodels/unified_shopping_viewmodel.dart';
-import '../viewmodels/shopping_share_viewmodel.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 
 // ==================== SOCIAL VIEWMODELS ====================
-import '../viewmodels/user_profile_viewmodel.dart';
-import '../viewmodels/friends_viewmodel.dart';
-import '../viewmodels/social_recipe_viewmodel.dart';
-import '../viewmodels/shared_content_viewmodel.dart';
-import '../viewmodels/create_shared_list_viewmodel.dart';
-import '../viewmodels/add_members_to_group_viewmodel.dart';
-import '../viewmodels/group_invitations_viewmodel.dart';
-import '../viewmodels/create_group_viewmodel.dart';
-import '../viewmodels/recipe_selection_viewmodel.dart';
-import '../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../viewmodels/collaborative_status_viewmodel.dart';
-import '../viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
+import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
+import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
+import 'package:butlery/viewmodels/create_group_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_selection_viewmodel.dart';
+import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Models
-import '../models/recipe_unified.dart';
-import '../models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
 
 /// Service Locator instance
 final GetIt sl = GetIt.instance;

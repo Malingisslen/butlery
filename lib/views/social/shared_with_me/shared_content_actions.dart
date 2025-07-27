@@ -1,10 +1,10 @@
 // lib/views/social/shared_with_me/shared_content_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
-import '../../../models/shared_recipe.dart';
-import '../../../models/shared_menu.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
 
 /// SharedContentActions - Action methods for shared content
 ///

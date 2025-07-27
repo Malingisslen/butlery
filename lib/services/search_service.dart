@@ -1,8 +1,8 @@
 // lib/services/search_service.dart
 
-import '../models/recipe_unified.dart';
-import '../core/base/base_service.dart';
-import '../core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Centraliserad service för all sökfunktionalitet i appen
 /// Now using SingletonServiceMixin for standardized singleton pattern

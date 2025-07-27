@@ -1,11 +1,11 @@
 // lib/views/social/friends_list/friends_tab.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../models/user_profile.dart';
-import '../../../widgets/common/loading_state_builder.dart';
-import '../../../theme/app_dimensions.dart';
-import 'friend_card.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/friends_list/friend_card.dart';
 
 /// FriendsTab - Friends list tab component
 ///
@@ -28,10 +28,10 @@ class FriendsTab {
           await viewModel.refresh();
         },
         child: ListView.separated(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           itemCount: friends.length,
           separatorBuilder: (context, index) =>
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
           itemBuilder: (context, index) {
             final friend = friends[index];
             return FriendCard.build(context, friend);

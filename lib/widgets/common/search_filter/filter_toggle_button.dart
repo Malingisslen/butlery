@@ -1,7 +1,7 @@
 // lib/widgets/common/search_filter/filter_toggle_button.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Toggle button for showing/hiding filters
 class FilterToggleButton extends StatelessWidget {

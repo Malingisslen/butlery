@@ -1,8 +1,8 @@
 // lib/services/unified/operations/modules/comment_likes_system.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../models/recipe_comment.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for comment likes system
 /// 

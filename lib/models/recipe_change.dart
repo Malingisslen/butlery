@@ -1,4 +1,4 @@
-import 'recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 enum RecipeChangeType { added, modified, removed }
 

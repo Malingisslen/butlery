@@ -1,7 +1,7 @@
 // lib/core/permissions/modules/base_permission_manager.dart
 
-import '../../../services/permission_service.dart';
-import '../../injection.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Focused module for base permission management
 /// 

@@ -15,11 +15,11 @@
 /// Connected to: UnifiedFriendsService, Friends ViewModels
 /// Used in phases: Phase 5 - Service Consolidation
 
-import '../../../models/user_profile.dart';
-import '../../../models/friend_request.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/injection.dart';
-import '../../../services/permission_service.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Friends operations feature interface
 /// 

@@ -2,8 +2,8 @@
 
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../notification_types.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for notification content generation and management
 /// 

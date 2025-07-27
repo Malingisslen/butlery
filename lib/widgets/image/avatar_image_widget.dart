@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../services/image_picker_service.dart';
-import '../../core/injection.dart';
-import '../../core/utils/logger.dart';
-import 'image_config.dart';
-import 'image_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_components.dart';
 
 /// Avatar image widget with support for initials fallback
 class AvatarImageWidget extends StatelessWidget {
@@ -145,7 +145,7 @@ class AvatarImageWidget extends StatelessWidget {
                   width: 2,
                 ),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.edit,
                 size: 16,
                 color: Colors.white,
@@ -312,7 +312,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                 shape: BoxShape.circle,
                 color: AppColors.cardWhite.withValues(alpha: 0.8),
               ),
-              child: Center(
+              child: const Center(
                 child: SizedBox(
                   width: 24,
                   height: 24,
@@ -346,7 +346,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                     width: 2,
                   ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.close,
                   size: 16,
                   color: Colors.white,

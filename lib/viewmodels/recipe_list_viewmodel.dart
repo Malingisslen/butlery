@@ -1,10 +1,10 @@
 // lib/viewmodels/recipe_list_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/search_service.dart';
-import '../core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/search_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// ViewModel för MinaReceptView
 /// Hanterar all business logic för receptlistan

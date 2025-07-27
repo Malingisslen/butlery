@@ -1,10 +1,10 @@
 // lib/views/unified_shopping/widgets/shopping_item_tiles.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../models/unified/unified_shopping_item.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Individual shopping item tile components
 class ShoppingItemTiles {
@@ -17,7 +17,7 @@ class ShoppingItemTiles {
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
     return Container(
-      margin: EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
         color: AppColors.neutralLight,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -32,7 +32,7 @@ class ShoppingItemTiles {
           onTap: () => onItemTap(item),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           child: Padding(
-            padding: EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
             child: Row(
               children: [
                 // Checkbox
@@ -52,7 +52,7 @@ class ShoppingItemTiles {
                         : Colors.transparent,
                   ),
                   child: isCompleted
-                      ? Icon(
+                      ? const Icon(
                           Icons.check,
                           size: AppDimensions.iconSizeS,
                           color: AppColors.neutralLight,
@@ -60,7 +60,7 @@ class ShoppingItemTiles {
                       : null,
                 ),
 
-                SizedBox(width: AppDimensions.paddingM),
+                const SizedBox(width: AppDimensions.paddingM),
 
                 // Item details
                 Expanded(
@@ -120,15 +120,15 @@ class ShoppingItemTiles {
                   children: [
                     // Edit button
                     IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.edit,
                         size: AppDimensions.iconSizeS,
                         color: AppColors.neutralMedium,
                       ),
                       onPressed: () => onEditItem(item),
                       tooltip: 'Redigera',
-                      padding: EdgeInsets.all(AppDimensions.spacingM),
-                      constraints: BoxConstraints(minWidth: AppDimensions.minTouchTarget, minHeight: AppDimensions.minTouchTarget),
+                      padding: const EdgeInsets.all(AppDimensions.spacingM),
+                      constraints: const BoxConstraints(minWidth: AppDimensions.minTouchTarget, minHeight: AppDimensions.minTouchTarget),
                     ),
 
                     // Delete button
@@ -140,8 +140,8 @@ class ShoppingItemTiles {
                       ),
                       onPressed: () => onDeleteItem(item),
                       tooltip: 'Ta bort',
-                      padding: EdgeInsets.all(AppDimensions.spacingM),
-                      constraints: BoxConstraints(minWidth: AppDimensions.minTouchTarget, minHeight: AppDimensions.minTouchTarget),
+                      padding: const EdgeInsets.all(AppDimensions.spacingM),
+                      constraints: const BoxConstraints(minWidth: AppDimensions.minTouchTarget, minHeight: AppDimensions.minTouchTarget),
                     ),
                   ],
                 ),

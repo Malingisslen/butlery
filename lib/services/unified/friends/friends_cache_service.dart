@@ -1,11 +1,11 @@
 // lib/services/unified/friends/friends_cache_service.dart
 
-import '../../../core/cache/json_cache_helper.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/friend_request.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/group_invitation.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Friends cache service
 /// 

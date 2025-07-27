@@ -1,9 +1,9 @@
 // lib/viewmodels/menu/menu_generator.dart
 
-import '../../models/recipe_unified.dart';
-import '../../services/menu_service.dart';
-import '../../services/unified/unified_recipe_service.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for menu generation
 /// 

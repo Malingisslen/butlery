@@ -16,9 +16,9 @@
 /// Used in phases: Code Consolidation Phase - Dialog Pattern Unification
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Base class for all dialogs that eliminates duplicate dialog scaffolding patterns.
 /// 
@@ -105,15 +105,15 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 color: AppColors.textSecondary,
               ),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
           ],
           widget.buildContent(context),
           if (widget.buildAdditionalContent(context) != null) ...[
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             widget.buildAdditionalContent(context)!,
           ],
           if (_error != null) ...[
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             _buildErrorDisplay(),
           ],
         ],
@@ -142,7 +142,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           foregroundColor: Colors.white,
         ),
         icon: _isLoading
-            ? SizedBox(
+            ? const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
@@ -158,7 +158,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         onPressed: _isLoading ? null : _onPrimaryAction,
         style: FilledButton.styleFrom(backgroundColor: buttonColor),
         icon: _isLoading
-            ? SizedBox(
+            ? const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
@@ -201,7 +201,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   /// Build error display widget
   Widget _buildErrorDisplay() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
@@ -209,12 +209,12 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: AppColors.error),
-          SizedBox(width: AppDimensions.spacingS),
+          const Icon(Icons.error_outline, color: AppColors.error),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               _error!,
-              style: TextStyle(color: AppColors.error),
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -351,9 +351,9 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
               TextSpan(text: message),
               TextSpan(
                 text: ' "$itemName"',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              TextSpan(text: '?'),
+              const TextSpan(text: '?'),
             ],
           ),
         );
@@ -434,7 +434,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
         children: [
           widget.buildContent(context),
           if (error != null) ...[
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             _buildErrorDisplay(),
           ],
         ],
@@ -508,7 +508,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
 
   Widget _buildErrorDisplay() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
@@ -516,12 +516,12 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: AppColors.error),
-          SizedBox(width: AppDimensions.spacingS),
+          const Icon(Icons.error_outline, color: AppColors.error),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               error!,
-              style: TextStyle(color: AppColors.error),
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -550,8 +550,8 @@ class LoadingDialog extends StatelessWidget {
       child: AlertDialog(
         content: Row(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(width: AppDimensions.spacingM),
+            const CircularProgressIndicator(),
+            const SizedBox(width: AppDimensions.spacingM),
             Expanded(child: Text(message)),
           ],
         ),

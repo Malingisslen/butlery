@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/auth_repository.dart';
-import '../interfaces/recipe_repository.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/recipe_change.dart';
-import 'base_firebase_repository.dart';
-import '../../core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_change.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Firebase repository for user recipes stored in /users/{userId}/recipes collection.
 ///

@@ -3,9 +3,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../core/utils/logger.dart';
-import '../../core/injection.dart';
-import '../user_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/user_service.dart';
 
 /// Firebase Cloud Messaging service for handling push notifications in Butlery
 /// 

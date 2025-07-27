@@ -1,6 +1,6 @@
-import 'repository.dart';
-import '../../models/unified/unified_shopping_list.dart';
-import '../../models/unified/unified_shopping_item.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Set the currently active shopping list

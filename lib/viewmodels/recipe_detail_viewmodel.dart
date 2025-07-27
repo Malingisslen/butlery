@@ -1,11 +1,11 @@
 // lib/viewmodels/recipe_detail_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/analytics_service.dart';
-import '../core/injection.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// ViewModel för RecipeDetailView
 /// Hanterar visning och borttagning av recept

@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
-import '../content_detector_service.dart';
-import '../../theme/app_dimensions.dart';
-import '../social_media_extractor.dart';
+import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/services/social_media_extractor.dart';
 
 /// Web scraper for headless browser operations
 class WebScraper {

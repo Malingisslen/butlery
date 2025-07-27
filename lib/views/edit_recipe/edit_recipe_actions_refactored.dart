@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/base/base_action_handler.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
-import '../../viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 
 /// Refactored EditRecipeActions using BaseActionHandler
 /// 

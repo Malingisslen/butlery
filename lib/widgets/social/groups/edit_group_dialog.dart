@@ -1,12 +1,12 @@
 // lib/widgets/social/groups/edit_group_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
-import 'shared/group_dialog_components.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
 /// Dialog for editing an existing group
 /// 
@@ -114,7 +114,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
               
               // Content
               Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -128,7 +128,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                       },
                     ),
                     
-                    SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.spacingL),
                     
                     // Group name
                     TextFormField(
@@ -142,7 +142,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                       textCapitalization: TextCapitalization.words,
                     ),
                     
-                    SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.spacingM),
                     
                     // Description (optional)
                     TextFormField(
@@ -159,7 +159,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                     
                     // Error display
                     if (_error != null) ...[
-                      SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.spacingM),
                       ErrorDisplayWidget(errorMessage: _error!),
                     ],
                   ],

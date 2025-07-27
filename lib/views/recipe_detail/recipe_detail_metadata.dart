@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../viewmodels/recipe_detail_viewmodel.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/utils/snackbar_utils.dart';
+import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Recipe detail metadata widget
 ///
@@ -60,14 +60,14 @@ class RecipeDetailMetadata extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.info_outline,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Recept information',
                 style: AppTextStyles.titleMedium,
@@ -124,7 +124,7 @@ class RecipeDetailMetadata extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingM),
             Row(
               children: [
-                SizedBox(width: AppDimensions.iconSizeAction + AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.iconSizeAction + AppDimensions.spacingS),
                 _buildStarRating(recipe.rating ?? 0),
               ],
             ),
@@ -137,18 +137,18 @@ class RecipeDetailMetadata extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.tonalIcon(
               onPressed: () => _markAsCooked(context),
-              icon: Icon(
+              icon: const Icon(
                 Icons.check_circle_outline,
                 size: AppDimensions.iconSizeAction,
               ),
-              label: Text(
+              label: const Text(
                 'Lagat idag',
                 style: AppTextStyles.labelLarge,
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.success.withValues(alpha: 0.1),
                 foregroundColor: AppColors.success,
-                minimumSize: Size(double.infinity, AppDimensions.buttonHeight),
+                minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
                 padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -272,7 +272,7 @@ class RecipeDetailMetadata extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
-                  Icon(
+                  const Icon(
                     Icons.open_in_new,
                     color: AppColors.primaryBlue,
                     size: AppDimensions.iconSizeM,
@@ -287,7 +287,7 @@ class RecipeDetailMetadata extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingM),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.info_outline,
                   color: AppColors.warning,
                   size: AppDimensions.iconSizeM,
@@ -318,7 +318,7 @@ class RecipeDetailMetadata extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Full stars
-        ...List.generate(fullStars, (index) => Icon(
+        ...List.generate(fullStars, (index) => const Icon(
           Icons.star,
           color: AppColors.warning,
           size: AppDimensions.iconSizeM,
@@ -326,14 +326,14 @@ class RecipeDetailMetadata extends StatelessWidget {
         
         // Half star
         if (hasHalfStar)
-          Icon(
+          const Icon(
             Icons.star_half,
             color: AppColors.warning,
             size: AppDimensions.iconSizeM,
           ),
         
         // Empty stars
-        ...List.generate(emptyStars, (index) => Icon(
+        ...List.generate(emptyStars, (index) => const Icon(
           Icons.star_border,
           color: AppColors.textMedium,
           size: AppDimensions.iconSizeM,

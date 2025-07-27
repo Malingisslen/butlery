@@ -1,11 +1,11 @@
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
-import '../widgets/common/layout_components.dart';
-import '../widgets/common/utility_components.dart';
-import '../services/dialog_service.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/services/dialog_service.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// ✨ 100% THEME-CENTRALISERAD LÄGG TILL RECEPT VY - MIGRERAD TILL UtilityComponents
 class LaggTillReceptView extends StatelessWidget {
@@ -33,7 +33,7 @@ class LaggTillReceptView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
+                const Text(
                   'Hur vill du lägga till ditt recept?',
                   style: AppTextStyles.headlineSmall,
                 ),

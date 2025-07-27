@@ -15,19 +15,19 @@
 /// Connected to: All ViewModels, Views, and Models that need permission checks
 /// Used in phases: Phase 6 - Eliminate Code Duplication Patterns
 
-import '../models/permissions/resource_permission.dart';
-import '../models/permissions/edit_mode.dart';
-import '../models/recipe_unified.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../models/user_profile.dart' as model;
-import '../services/auth_service.dart';
-import '../services/user_service.dart' as user_svc;
-import '../services/unified/unified_recipe_service.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../core/utils/logger.dart';
-import '../core/base/base_service.dart';
-import '../core/utils/validation_utils.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/user_profile.dart' as model;
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/user_service.dart' as user_svc;
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Centralized permission service that eliminates duplicated permission logic
 /// 

@@ -1,8 +1,8 @@
 import 'dart:async';
-import '../interfaces/recipe_repository.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/recipe_change.dart';
-import 'in_memory_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_change.dart';
+import 'package:butlery/repositories/mock/in_memory_repository.dart';
 
 /// In-memory implementation of [RecipeRepository] for tests.
 class MockRecipeRepository extends InMemoryRepository<Recipe>

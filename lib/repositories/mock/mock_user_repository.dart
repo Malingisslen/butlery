@@ -1,6 +1,6 @@
-import '../interfaces/user_repository.dart';
-import '../../models/user_profile.dart';
-import 'in_memory_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/mock/in_memory_repository.dart';
 
 /// In-memory implementation of [UserRepository] for tests.
 class MockUserRepository extends InMemoryRepository<UserProfile>

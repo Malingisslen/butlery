@@ -2,16 +2,16 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../repositories/interfaces/auth_repository.dart' as auth;
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import '../repositories/firestore_repository.dart';
-import '../models/realtime/realtime_resource.dart';
-import '../models/realtime/realtime_recipe.dart';
-import '../models/realtime/realtime_menu.dart';
-import '../core/utils/logger.dart';
-import '../core/base/base_service.dart';
-import '../core/mixins/stream_management_mixin.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 
 /// Typ av synkroniseringsfel för robust error handling

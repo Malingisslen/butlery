@@ -1,10 +1,10 @@
 // lib/views/social/shared_with_me/shared_content_actions_refactored.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
-import '../../../models/shared_recipe.dart';
-import '../../../models/shared_menu.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
 
 /// Refactored SharedContentActions using BaseActionHandler
 /// 

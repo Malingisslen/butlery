@@ -2,8 +2,8 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../models/recipe_unified.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Manager för optimistiska uppdateringar med automatic rollback
 class OptimisticUpdateManager {

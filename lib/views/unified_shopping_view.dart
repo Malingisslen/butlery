@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // ViewModels
-import '../viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 
 // Theme
-import '../widgets/common/layout_components.dart';
-import '../core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Core
-import '../core/injection.dart';
-import '../services/share_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/share_service.dart';
 
 // Focused Components
-import 'unified_shopping/widgets/shopping_app_bar.dart';
-import 'unified_shopping/widgets/shopping_list_header.dart';
-import 'unified_shopping/widgets/shopping_list_content.dart';
-import 'unified_shopping/widgets/shopping_dialogs.dart';
+import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
+import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
+import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
+import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
 class UnifiedShoppingView extends StatefulWidget {
   const UnifiedShoppingView({super.key});
@@ -104,11 +104,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
 
   // ===== EVENT HANDLERS =====
 
-  void _onItemTap(item) async {
+  Future<void> _onItemTap(item) async {
     await _viewModel.toggleItemBought(item.id);
   }
 
-  void _onEditItem(item) async {
+  Future<void> _onEditItem(item) async {
     await ShoppingDialogs.showEditItemDialog(
       context,
       item,
@@ -118,7 +118,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  void _onDeleteItem(item) async {
+  Future<void> _onDeleteItem(item) async {
     final success = await _viewModel.removeItemFromActiveList(item.id);
     if (success) {
       _showSuccessSnackBar('${item.name} borttagen!');
@@ -127,7 +127,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     }
   }
 
-  void _showAddItemDialog() async {
+  Future<void> _showAddItemDialog() async {
     await ShoppingDialogs.showAddItemDialog(
       context,
       _viewModel,
@@ -136,7 +136,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  void _showShoppingShareDialog() async {
+  Future<void> _showShoppingShareDialog() async {
     await ShoppingDialogs.showShareDialog(context, _viewModel);
   }
 
@@ -147,11 +147,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     shareService.shareShoppingList(_viewModel.items);
   }
 
-  void _showSyncStatus(UnifiedShoppingViewModel viewModel) async {
+  Future<void> _showSyncStatus(UnifiedShoppingViewModel viewModel) async {
     await ShoppingDialogs.showSyncStatus(context, viewModel);
   }
 
-  void _showCreateListDialog() async {
+  Future<void> _showCreateListDialog() async {
     await ShoppingDialogs.showCreateListDialog(
       context,
       _viewModel,
@@ -159,7 +159,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  void _clearBoughtItemsWithConfirmation(UnifiedShoppingViewModel viewModel) async {
+  Future<void> _clearBoughtItemsWithConfirmation(UnifiedShoppingViewModel viewModel) async {
     await ShoppingDialogs.showClearCompletedConfirmation(
       context,
       viewModel,
@@ -167,7 +167,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  void _uncheckAllItems(UnifiedShoppingViewModel viewModel) async {
+  Future<void> _uncheckAllItems(UnifiedShoppingViewModel viewModel) async {
     await viewModel.uncheckAllItems();
     _showSuccessSnackBar('Alla artiklar avbockade!');
   }

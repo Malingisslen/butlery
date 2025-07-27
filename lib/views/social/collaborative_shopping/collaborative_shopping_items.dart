@@ -1,11 +1,11 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_items.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../widgets/common/state_widget.dart';
+import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Focused widget for collaborative shopping items list
 /// 
@@ -36,7 +36,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
     final completedItems = viewModel.completedItemsList;
 
     return ListView.builder(
-      padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
       itemCount: activeItems.length +
           (completedItems.isNotEmpty ? completedItems.length + 1 : 0),
       itemBuilder: (context, index) {
@@ -68,7 +68,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
 
   Widget _buildCompletedSeparator(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingS,
       ),
@@ -78,7 +78,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
             child: Divider(color: Theme.of(context).colorScheme.outline),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
             child: Text(
               'KLARA (${viewModel.completedItemsCount})',
               style: AppTextStyles.bodySmall.copyWith(
@@ -98,7 +98,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
 
   Widget _buildItemCard(BuildContext context, dynamic item, bool isCompleted) {
     return Card(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),

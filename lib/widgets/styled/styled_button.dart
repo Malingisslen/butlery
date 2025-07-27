@@ -1,9 +1,9 @@
 // lib/widgets/styled/styled_button.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Pre-styled button widgets to eliminate design-in-views violations
 /// Provides consistent button styling patterns used throughout the app
@@ -99,10 +99,10 @@ class StyledButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: null,
           style: _getButtonStyle(context),
-          child: SizedBox(
+          child: const SizedBox(
             width: AppDimensions.spacing20,
             height: AppDimensions.spacing20,
-            child: const CircularProgressIndicator(strokeWidth: 2),
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
       );
@@ -192,14 +192,14 @@ class StyledButton extends StatelessWidget {
   }
 
   ButtonStyle _getButtonStyle(BuildContext context) {
-    EdgeInsetsGeometry effectivePadding = padding ?? EdgeInsets.symmetric(
+    EdgeInsetsGeometry effectivePadding = padding ?? const EdgeInsets.symmetric(
       horizontal: AppDimensions.spacing16,
       vertical: AppDimensions.spacing12,
     );
     
     // Handle small button padding
     if (height != null && height! < AppDimensions.buttonHeight) {
-      effectivePadding = EdgeInsets.symmetric(
+      effectivePadding = const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacing12,
         vertical: AppDimensions.spacing8,
       );
@@ -219,7 +219,7 @@ class StyledButton extends StatelessWidget {
     return ElevatedButton.styleFrom(
       backgroundColor: AppColors.errorContainer,
       foregroundColor: AppColors.onErrorContainer,
-      padding: padding ?? EdgeInsets.symmetric(
+      padding: padding ?? const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacing16,
         vertical: AppDimensions.spacing12,
       ),

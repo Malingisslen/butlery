@@ -3,17 +3,17 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import '../../core/utils/logger.dart';
-import '../../core/base/base_service.dart';
-import 'notification_types.dart';
-import 'notification_repository.dart';
-import 'fcm_service.dart';
-import 'modules/notification_content_manager.dart';
-import 'modules/notification_preference_manager.dart';
-import 'modules/notification_offline_manager.dart';
-import 'modules/notification_batch_manager.dart';
-import 'modules/fcm_token_manager.dart';
-import 'modules/notification_analytics_manager.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/services/notifications/fcm_service.dart';
+import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
+import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
+import 'package:butlery/services/notifications/modules/notification_offline_manager.dart';
+import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
+import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
+import 'package:butlery/services/notifications/modules/notification_analytics_manager.dart';
 
 /// Clean coordinator for all notification functionality in Butlery
 /// 

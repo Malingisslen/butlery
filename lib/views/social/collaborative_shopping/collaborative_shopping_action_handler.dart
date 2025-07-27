@@ -1,9 +1,9 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_action_handler.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../../models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Collaborative Shopping Action Handler using BaseActionHandler
 /// 

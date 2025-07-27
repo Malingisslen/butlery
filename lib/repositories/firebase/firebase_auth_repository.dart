@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import '../interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
 /// Wrapper around [FirebaseAuth] to expose a minimal API used across services.
 class FirebaseAuthRepository implements AuthRepository {

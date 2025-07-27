@@ -1,15 +1,15 @@
 // lib/widgets/common/profile/profile_menu.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
-import '../../../services/auth_service.dart';
-import '../../../services/social_recipe_service.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../repositories/interfaces/auth_repository.dart';
-import 'profile_actions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/widgets/common/profile/profile_actions.dart';
 import 'package:intl/intl.dart';
 
 /// Profile menu display components
@@ -95,7 +95,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppDimensions.borderRadiusL),
           topRight: Radius.circular(AppDimensions.borderRadiusL),
         ),
@@ -107,7 +107,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
           Container(
             width: 48,
             height: AppDimensions.spacingXs,
-            margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+            margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
             decoration: BoxDecoration(
               color: Theme.of(context)
                   .colorScheme
@@ -124,18 +124,18 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 children: [
                   // Header with user info
                   _buildProfileHeader(context),
-                  SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
                   // Social functions
                   if (widget.showSocialOptions) ...[
                     _buildSocialSection(context),
-                    SizedBox(height: AppDimensions.spacingXl),
+                    const SizedBox(height: AppDimensions.spacingXl),
                   ],
 
                   // Data & Backup section
                   if (widget.showBackupOptions) ...[
                     ProfileActions.buildDataBackupSection(context),
-                    SizedBox(height: AppDimensions.spacingXl),
+                    const SizedBox(height: AppDimensions.spacingXl),
                   ],
 
                   // Logout section
@@ -156,7 +156,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
@@ -164,13 +164,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
             .withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
-      margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         children: [
           Row(
             children: [
               _buildSimpleAvatar(context),
-              SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +189,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: Icon(
+                icon: const Icon(
                   Icons.close,
                   size: AppDimensions.iconSizeAction,
                 ),
@@ -207,7 +207,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   Widget _buildSimpleAvatar(BuildContext context) {
     final hasImage =
         widget.userImageUrl != null && widget.userImageUrl!.isNotEmpty;
-    final avatarSize = AppDimensions.thumbnailLargeSize;
+    const avatarSize = AppDimensions.thumbnailLargeSize;
 
     return Container(
       width: avatarSize,
@@ -334,7 +334,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
           size: AppDimensions.iconSizeM,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.spacingXs),
         Expanded(
           child: Text(
             '$label: $value',
@@ -348,11 +348,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
   /// Social section
   Widget _buildSocialSection(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Sociala funktioner',
             style: AppTextStyles.headlineSmall,
           ),

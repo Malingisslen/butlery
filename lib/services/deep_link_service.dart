@@ -1,10 +1,10 @@
 // lib/services/deep_link_service.dart
 
 import 'dart:async';
-import '../core/utils/logger.dart';
-import '../services/permission_service.dart';
-import '../core/injection.dart';
-import '../repositories/interfaces/deeplink_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 
 /// Deep link service for handling invitation links and app navigation
 /// 

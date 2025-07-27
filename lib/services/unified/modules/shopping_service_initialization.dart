@@ -3,11 +3,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/cache/json_cache_helper.dart';
-import '../../../core/utils/logger.dart';
-import '../../../repositories/interfaces/auth_repository.dart';
-import '../../../repositories/firestore_repository.dart';
-import '../../../models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 /// Handles initialization logic for UnifiedShoppingService
 class ShoppingServiceInitialization {

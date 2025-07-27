@@ -1,11 +1,11 @@
 // lib/widgets/common/input/shopping_list_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../viewmodels/unified_shopping_viewmodel.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Shopping list actions handler
 ///
@@ -19,30 +19,30 @@ class ShoppingListActions {
     UnifiedShoppingViewModel viewModel,
   ) {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, size: AppDimensions.iconSizeAction),
+      icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeAction),
       onSelected: (action) => _handleListAction(context, action, list, viewModel),
       itemBuilder: (context) => [
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
               Icon(Icons.edit, size: AppDimensions.iconSizeAction),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text('Byt namn'),
             ],
           ),
         ),
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'export',
           child: Row(
             children: [
               Icon(Icons.share, size: AppDimensions.iconSizeAction),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text('Exportera'),
             ],
           ),
         ),
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'delete',
           child: Row(
             children: [
@@ -51,7 +51,7 @@ class ShoppingListActions {
                 size: AppDimensions.iconSizeAction,
                 color: AppColors.error,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Ta bort',
                 style: TextStyle(color: AppColors.error),
@@ -94,13 +94,13 @@ class ShoppingListActions {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Byt namn på lista'),
+        title: const Text('Byt namn på lista'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: controller,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nytt namn',
                 border: OutlineInputBorder(),
               ),
@@ -112,11 +112,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Avbryt'),
+            child: const Text('Avbryt'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text('Spara'),
+            child: const Text('Spara'),
           ),
         ],
       ),
@@ -165,7 +165,7 @@ class ShoppingListActions {
       AppLogger.error('Export list failed', e);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Kunde inte exportera lista'),
             backgroundColor: AppColors.error,
           ),
@@ -183,10 +183,10 @@ class ShoppingListActions {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.warning, color: AppColors.error),
-            const SizedBox(width: AppDimensions.spacingM),
+            SizedBox(width: AppDimensions.spacingM),
             Text('Ta bort lista'),
           ],
         ),
@@ -197,14 +197,14 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Avbryt'),
+            child: const Text('Avbryt'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: Text('Ta bort'),
+            child: const Text('Ta bort'),
           ),
         ],
       ),
@@ -235,13 +235,13 @@ class ShoppingListActions {
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Skapa ny handlista'),
+        title: const Text('Skapa ny handlista'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: controller,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Namn på lista',
                 border: OutlineInputBorder(),
                 hintText: 'T.ex. "Veckans handlista"',
@@ -254,11 +254,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Avbryt'),
+            child: const Text('Avbryt'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text('Skapa'),
+            child: const Text('Skapa'),
           ),
         ],
       ),
@@ -281,11 +281,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Avbryt'),
+            child: const Text('Avbryt'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Lägg till'),
+            child: const Text('Lägg till'),
           ),
         ],
       ),

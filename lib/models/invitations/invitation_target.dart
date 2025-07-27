@@ -1,7 +1,7 @@
 // lib/models/invitations/invitation_target.dart
 
-import '../user_profile.dart';
-import '../friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_category.dart';
 
 
 /// Typ av inbjudningsmål

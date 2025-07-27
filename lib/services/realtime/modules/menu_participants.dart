@@ -1,9 +1,9 @@
 // lib/services/realtime/modules/menu_participants.dart
 
-import '../../../models/realtime/realtime_menu.dart';
-import '../../../models/permissions/resource_permission.dart';
-import '../../../core/utils/logger.dart';
-import './menu_operations.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/realtime/modules/menu_operations.dart';
 
 /// Focused module for menu participant management
 /// 

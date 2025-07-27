@@ -1,8 +1,8 @@
 // lib/services/extraction/extraction_manager.dart
 
 import 'package:flutter/material.dart';
-import '../social_media_extractor.dart';
-import '../../core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Main extraction coordinator that manages the extraction process
 /// Now using SingletonServiceMixin for standardized singleton pattern

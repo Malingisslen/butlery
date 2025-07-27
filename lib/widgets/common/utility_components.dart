@@ -1,16 +1,16 @@
 /// lib/widgets/common/utility_components.dart
 
 import 'package:flutter/material.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/permissions/edit_mode.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
 
 // Import the focused components
-import 'buttons/action_buttons.dart';
-import 'service/service_widgets.dart';
-import 'loading/loading_widgets.dart';
-import 'friends/friend_category_widgets.dart';
-import 'permissions/permission_widgets.dart';
-import 'feedback/snackbar_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/service/service_widgets.dart';
+import 'package:butlery/widgets/common/loading/loading_widgets.dart';
+import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
+import 'package:butlery/widgets/common/permissions/permission_widgets.dart';
+import 'package:butlery/widgets/common/feedback/snackbar_widgets.dart';
 
 // Re-export ActionButtonStyle from the focused component
 export 'buttons/action_buttons.dart' show ActionButtonStyle;

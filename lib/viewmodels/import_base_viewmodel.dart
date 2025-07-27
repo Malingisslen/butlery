@@ -1,9 +1,9 @@
 // lib/viewmodels/import_base_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../services/import/import_manager.dart';
-import 'base_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 /// Base class for all import ViewModels that provides common import functionality
 /// Eliminates duplication across PhotoImportViewModel, TextImportViewModel, etc.

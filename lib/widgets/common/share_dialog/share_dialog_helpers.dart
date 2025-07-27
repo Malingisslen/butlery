@@ -1,6 +1,6 @@
 // lib/widgets/common/share_dialog/share_dialog_helpers.dart
 
-import '../universal_share_dialog.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHelpers {
   static String getContentTypeName(ShareContentType contentType) {

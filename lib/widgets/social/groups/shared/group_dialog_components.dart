@@ -1,9 +1,9 @@
 // lib/widgets/social/groups/shared/group_dialog_components.dart
 
 import 'package:flutter/material.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Shared components for group dialogs
 /// 
@@ -40,10 +40,10 @@ class EmojiSelector extends StatelessWidget {
           title,
           style: AppTextStyles.titleMedium,
         ),
-        SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.spacingS),
         Container(
           height: 60,
-          padding: EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
@@ -62,7 +62,7 @@ class EmojiSelector extends StatelessWidget {
                 child: Container(
                   width: 44,
                   height: 44,
-                  margin: EdgeInsets.only(
+                  margin: const EdgeInsets.only(
                     right: AppDimensions.spacingS,
                   ),
                   decoration: BoxDecoration(
@@ -105,7 +105,7 @@ class ErrorDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
@@ -113,12 +113,12 @@ class ErrorDisplayWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             color: AppColors.error,
             size: 20,
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               errorMessage,
@@ -145,7 +145,7 @@ class WarningDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
@@ -155,12 +155,12 @@ class WarningDisplayWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.info_outline,
             color: AppColors.warning,
             size: 20,
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               warningMessage,
@@ -191,7 +191,7 @@ class DialogHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: const BorderRadius.vertical(
@@ -204,7 +204,7 @@ class DialogHeader extends StatelessWidget {
             icon,
             color: Theme.of(context).colorScheme.primary,
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Text(
             title,
             style: AppTextStyles.headlineSmall.copyWith(
@@ -248,7 +248,7 @@ class DialogFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: const BorderRadius.vertical(
@@ -262,7 +262,7 @@ class DialogFooter extends StatelessWidget {
             onPressed: isLoading ? null : onSecondaryAction,
             child: Text(secondaryActionText),
           ),
-          SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.spacingM),
           FilledButton.icon(
             onPressed: onPrimaryAction,
             style: primaryActionColor != null

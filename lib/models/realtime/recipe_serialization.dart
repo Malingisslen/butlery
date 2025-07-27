@@ -1,9 +1,9 @@
 // lib/models/realtime/recipe_serialization.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../recipe_unified.dart';
-import '../permissions/resource_permission.dart';
-import 'realtime_resource.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 
 /// Focused module for recipe serialization/deserialization
 /// 

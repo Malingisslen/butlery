@@ -1,9 +1,9 @@
 // lib/services/realtime/modules/recipe_participants.dart
 
-import '../../../models/realtime/realtime_recipe.dart';
-import '../../../models/permissions/resource_permission.dart';
-import '../../../core/utils/logger.dart';
-import './recipe_content_operations.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
 
 /// Focused module for recipe participant management
 /// 

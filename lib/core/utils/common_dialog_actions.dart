@@ -16,8 +16,8 @@
 /// Used in phases: Phase 1B - Dialog Pattern Consolidation
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 /// CommonDialogActions - Factory for frequently used dialog patterns
 /// 

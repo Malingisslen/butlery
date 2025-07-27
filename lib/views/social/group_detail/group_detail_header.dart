@@ -1,9 +1,9 @@
 // lib/views/social/group_detail/group_detail_header.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../widgets/common/social_components.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// GroupDetailHeader - Group header component
 ///
@@ -11,7 +11,7 @@ import '../../../theme/app_dimensions.dart';
 class GroupDetailHeader {
   static Widget build(BuildContext context, FriendCategory group) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -22,7 +22,7 @@ class GroupDetailHeader {
                 size: ImageSize.large,
                 displayName: group.name,
               ),
-              SizedBox(width: AppDimensions.spacingL),
+              const SizedBox(width: AppDimensions.spacingL),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ class GroupDetailHeader {
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       group.emoji != null && group.emoji!.isNotEmpty
                           ? '${group.emoji} ${group.description ?? 'Ingen beskrivning'}'
@@ -48,11 +48,11 @@ class GroupDetailHeader {
             ],
           ),
 
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
 
           // Group details
           Container(
-            padding: EdgeInsets.all(AppDimensions.spacingS),
+            padding: const EdgeInsets.all(AppDimensions.spacingS),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -67,7 +67,7 @@ class GroupDetailHeader {
                       size: AppDimensions.iconSizeM,
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       'Gruppinformation',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -77,7 +77,7 @@ class GroupDetailHeader {
                     ),
                   ],
                 ),
-                SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.spacingXs),
                 _buildDetailRow(
                   context,
                   'Skapad',
@@ -119,7 +119,7 @@ class GroupDetailHeader {
     IconData icon,
   ) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
           Icon(
@@ -127,7 +127,7 @@ class GroupDetailHeader {
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             '$label: ',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(

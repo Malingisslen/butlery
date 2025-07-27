@@ -1,7 +1,7 @@
 // lib/viewmodels/menu/menu_state_manager.dart
 
 import 'package:flutter/foundation.dart';
-import '../../models/recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for menu state management
 /// 

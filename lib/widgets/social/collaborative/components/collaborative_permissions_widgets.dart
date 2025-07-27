@@ -1,11 +1,11 @@
 // lib/widgets/social/collaborative/components/collaborative_permissions_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../../models/permissions/edit_mode.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
-import '../../../../viewmodels/recipe_form_viewmodel.dart';
-import '../../../permissions/edit_mode_ui_helper.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/permissions/edit_mode_ui_helper.dart';
 
 /// Permission-related widgets for collaborative content
 class CollaborativePermissionsWidgets {
@@ -19,8 +19,8 @@ class CollaborativePermissionsWidgets {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingL),
-      margin: EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      margin: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
@@ -39,7 +39,7 @@ class CollaborativePermissionsWidgets {
               color: color,
               size: AppDimensions.iconSizeAction,
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             Expanded(
               child: Text(
                 editMode.description,

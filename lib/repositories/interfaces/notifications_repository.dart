@@ -1,6 +1,6 @@
-import 'repository.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Repository interface for notification operations
 abstract class NotificationsRepository extends Repository<UserNotification> {

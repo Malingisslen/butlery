@@ -1,12 +1,12 @@
 // lib/viewmodels/realtime_menu/realtime_participant_manager.dart
 
-import '../../models/permissions/resource_permission.dart';
-import '../../models/realtime/realtime_menu.dart';
-import '../../services/realtime/realtime_menu_service.dart';
-import '../../services/permission_service.dart';
-import '../../core/injection.dart';
-import '../../core/utils/logger.dart';
-import '../realtime/participant_tracker.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 
 /// Focused module for realtime menu participant management
 /// 

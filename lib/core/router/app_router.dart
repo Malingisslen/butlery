@@ -1,44 +1,44 @@
 // lib/core/router/app_router.dart
 
 import 'package:flutter/material.dart';
-import '../constants/routes.dart';
-import '../../repositories/firebase/firebase_auth_repository.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 // Auth view
-import '../../views/auth_view.dart';
+import 'package:butlery/views/auth_view.dart';
 
 // Recipe views
-import '../../views/mina_recept_view.dart';
-import '../../views/lagg_till_recept_view.dart';
-import '../../views/skriv_sjalv_recept_view.dart';
-import '../../views/fran_sociala_medier_view.dart';
-import '../../views/recipe_detail_view.dart';
-import '../../views/edit_recipe_view.dart';
-import '../../views/veckomeny_view.dart' as vecko;
-import '../../views/importera_fran_arkiv_view.dart';
-import '../../views/photo_import_view.dart';
-import '../../views/import_via_url_view.dart';
-import '../../views/receive_share_view.dart';
+import 'package:butlery/views/mina_recept_view.dart';
+import 'package:butlery/views/lagg_till_recept_view.dart';
+import 'package:butlery/views/skriv_sjalv_recept_view.dart';
+import 'package:butlery/views/fran_sociala_medier_view.dart';
+import 'package:butlery/views/recipe_detail_view.dart';
+import 'package:butlery/views/edit_recipe_view.dart';
+import 'package:butlery/views/veckomeny_view.dart' as vecko;
+import 'package:butlery/views/importera_fran_arkiv_view.dart';
+import 'package:butlery/views/photo_import_view.dart';
+import 'package:butlery/views/import_via_url_view.dart';
+import 'package:butlery/views/receive_share_view.dart';
 
 // Unified shopping system
-import '../../views/unified_shopping_view.dart';
+import 'package:butlery/views/unified_shopping_view.dart';
 
 // Social views
-import '../../views/social/user_profile_edit_view.dart';
-import '../../views/social/friends_list_view.dart';
-import '../../views/social/friend_requests_view.dart';
-import '../../views/social/shared_with_me_view.dart';
-import '../../views/social/collaborative_shopping_view.dart';
-import '../../views/social/menu_preview_view.dart';
-import '../../views/social/create_shared_shopping_list_view.dart';
-import '../../views/social/friend_profile_view.dart';
+import 'package:butlery/views/social/user_profile_edit_view.dart';
+import 'package:butlery/views/social/friends_list_view.dart';
+import 'package:butlery/views/social/friend_requests_view.dart';
+import 'package:butlery/views/social/shared_with_me_view.dart';
+import 'package:butlery/views/social/collaborative_shopping_view.dart';
+import 'package:butlery/views/social/menu_preview_view.dart';
+import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
+import 'package:butlery/views/social/friend_profile_view.dart';
 
 // Models
-import '../../models/recipe_unified.dart';
-import '../../models/shared_menu.dart';
-import '../../models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/user_profile.dart';
 
 /// Centralized app router that handles all route generation and navigation
 class AppRouter {
@@ -277,8 +277,8 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: AppDimensions.iconSizeXl, color: AppColors.error),
-              SizedBox(height: AppDimensions.spacingXl),
+              const Icon(Icons.error_outline, size: AppDimensions.iconSizeXl, color: AppColors.error),
+              const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 message ?? 'Sidan kunde inte hittas',
                 style: Theme.of(context).textTheme.headlineSmall,

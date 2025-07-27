@@ -1,8 +1,8 @@
 // lib/services/unified/operations/realtime_recipe/realtime_editing_module.dart
 
-import '../../../../models/recipe_unified.dart';
-import '../../../../core/utils/logger.dart';
-import 'shared/realtime_recipe_utils.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Realtime recipe editing module
 /// 

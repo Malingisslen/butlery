@@ -1,16 +1,16 @@
 // lib/views/social/friend_profile_view.dart
 
 import 'package:flutter/material.dart';
-import '../../models/user_profile.dart';
-import '../../widgets/user/user_display_widgets.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_text_styles.dart';
-import '../../widgets/common/navigation_components.dart';
-import '../../core/dialogs/dialog_factory.dart';
-import '../../core/utils/snackbar_utils.dart';
-import '../../viewmodels/friends_viewmodel.dart';
-import '../../core/injection.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/navigation_components.dart';
+import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Enkel vänprofilvy för att visa väninformation
 class FriendProfileView extends StatelessWidget {
@@ -42,7 +42,7 @@ class FriendProfileView extends StatelessWidget {
                     displayName: friend.displayName,
                     size: ImageSize.extraLarge,
                   ),
-                  SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.spacingL),
                   Text(
                     friend.displayName,
                     style: AppTextStyles.headlineMedium.copyWith(
@@ -50,7 +50,7 @@ class FriendProfileView extends StatelessWidget {
                         ),
                   ),
                   if (friend.bio?.isNotEmpty == true) ...[
-                    SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.spacingS),
                     Text(
                       friend.bio!,
                       style: AppTextStyles.bodyLarge.copyWith(
@@ -68,7 +68,7 @@ class FriendProfileView extends StatelessWidget {
             // Statistik kort
             Card(
               child: Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -78,7 +78,7 @@ class FriendProfileView extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.spacingL),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -101,12 +101,12 @@ class FriendProfileView extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
 
             // Aktivitet kort
             Card(
               child: Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -116,9 +116,9 @@ class FriendProfileView extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.spacingL),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.access_time,
                         color: AppColors.primaryBlue,
                       ),
@@ -126,7 +126,7 @@ class FriendProfileView extends StatelessWidget {
                       subtitle: Text(friend.lastActiveText),
                     ),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.calendar_today,
                         color: AppColors.primaryBlue,
                       ),
@@ -159,7 +159,7 @@ class FriendProfileView extends StatelessWidget {
                         label: const Text('Skicka meddelande'),
                       ),
                     ),
-                    SizedBox(width: AppDimensions.spacingL),
+                    const SizedBox(width: AppDimensions.spacingL),
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => _showRecipeSelection(context),
@@ -169,14 +169,14 @@ class FriendProfileView extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.spacingM),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () => _showRemoveFriendDialog(context),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.error,
-                      side: BorderSide(color: AppColors.error),
+                      side: const BorderSide(color: AppColors.error),
                     ),
                     icon: const Icon(Icons.person_remove),
                     label: const Text('Ta bort vän'),
@@ -231,7 +231,7 @@ class FriendProfileView extends StatelessWidget {
           color: AppColors.primaryBlue,
           size: AppDimensions.iconSizeXl,
         ),
-        SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
           style: AppTextStyles.headlineMedium.copyWith(

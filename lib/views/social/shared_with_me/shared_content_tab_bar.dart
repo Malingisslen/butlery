@@ -1,10 +1,10 @@
 // lib/views/social/shared_with_me/shared_content_tab_bar.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
 ///
@@ -34,10 +34,10 @@ class SharedContentTabBar {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.restaurant, size: 20),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text('Recept (${viewModel.totalSharedRecipes})'),
                   if (viewModel.unreadRecipesCount > 0) ...[
-                    SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
                       context,
                       viewModel.unreadRecipesCount,
@@ -51,10 +51,10 @@ class SharedContentTabBar {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.calendar_month, size: 20),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text('Menyer (${viewModel.totalSharedMenus})'),
                   if (viewModel.unreadMenusCount > 0) ...[
-                    SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
                       context,
                       viewModel.unreadMenusCount,

@@ -1,8 +1,8 @@
 // lib/services/offline/offline_user_storage.dart
 
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../models/recipe_unified.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Handles user-specific storage operations for offline service
 class OfflineUserStorage {

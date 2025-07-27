@@ -1,8 +1,8 @@
 // lib/views/edit_recipe/edit_recipe_dynamic_list.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Dynamic list builder for ingredients, instructions, and tags
 class EditRecipeDynamicList {
@@ -25,7 +25,7 @@ class EditRecipeDynamicList {
           final controller = entry.value;
 
           return Padding(
-            padding: EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
             child: Row(
               children: [
                 Expanded(

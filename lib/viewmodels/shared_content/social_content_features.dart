@@ -1,10 +1,10 @@
 // lib/viewmodels/shared_content/social_content_features.dart
 
-import '../../../models/user_profile.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../services/unified/unified_shopping_service.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for social content features
 /// 

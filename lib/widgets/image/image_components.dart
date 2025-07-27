@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/app_colors.dart';
-import 'image_config.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/image/image_config.dart';
 
 /// Shared image components and utilities
 class ImageComponents {
@@ -65,7 +65,7 @@ class ImageComponents {
             : null,
       ),
       child: child ??
-          Icon(
+          const Icon(
             Icons.restaurant_menu, // More contextual for recipe images
             size: 24, // Much smaller, more elegant
             color: AppColors.textTertiary, // Lighter icon color
@@ -105,7 +105,7 @@ class ImageComponents {
   }) {
     final dimensions = config.getDimensions();
     
-    Widget content = Column(
+    final Widget content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(

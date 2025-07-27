@@ -1,14 +1,14 @@
 // lib/widgets/social/groups/group_dialogs.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../invitations/invitation_target_inputs.dart';
-import 'create_group_dialog.dart';
-import 'edit_group_dialog.dart';
-import 'delete_group_dialog.dart';
-import 'remove_member_dialog.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_inputs.dart';
+import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
+import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
+import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
+import 'package:butlery/widgets/social/groups/remove_member_dialog.dart';
 
 /// Group dialog show methods
 ///

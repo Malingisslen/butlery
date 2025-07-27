@@ -3,24 +3,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/recipe_list_viewmodel.dart';
-import '../../viewmodels/friends_viewmodel.dart';
-import '../../viewmodels/shared_content_viewmodel.dart';
-import '../../widgets/common/layout_components.dart';
-import '../../widgets/common/content_card.dart';
-import '../../widgets/common/search_filter_widget.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../services/search_service.dart';
-import '../../services/offline_service.dart' as offline_service;
-import '../../widgets/common/social_components.dart';
-import '../../services/user_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_text_styles.dart';
-import '../../core/injection.dart';
-import '../../core/utils/logger.dart';
-import '../../core/constants/routes.dart';
-import '../../core/utils/snackbar_utils.dart';
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/services/search_service.dart';
+import 'package:butlery/services/offline_service.dart' as offline_service;
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
@@ -227,7 +227,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 top: 0,
                 right: 0,
                 child: Container(
-                  padding: EdgeInsets.all(AppDimensions.spacingXs),
+                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
                   decoration: BoxDecoration(
                     color: AppColors.error,
                     shape: BoxShape.circle,
@@ -279,7 +279,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
           // ✅ UPPDATERAD: USER AVATAR med notification badge
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
             child: _buildUserAvatarWithBadge(),
           ),
 
@@ -320,7 +320,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Error indicator
           if (viewModel.hasError)
             IconButton(
-              icon: Icon(Icons.error, color: AppColors.error),
+              icon: const Icon(Icons.error, color: AppColors.error),
               onPressed: () {
                 SnackBarUtils.showError(context, viewModel.error!);
               },
@@ -430,7 +430,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(AppDimensions.paddingM),
+                padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -533,7 +533,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Text(label),
           const Spacer(),
           if (isSelected)

@@ -1,6 +1,6 @@
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
-import '../types/recipe_types.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Personal recipe operations feature interface
 /// Handles create, read, update, delete operations for personal recipes

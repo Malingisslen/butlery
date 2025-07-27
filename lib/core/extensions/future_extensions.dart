@@ -1,7 +1,7 @@
 // lib/core/extensions/future_extensions.dart
 
 import 'dart:async';
-import '../error/failures.dart';
+import 'package:butlery/core/error/failures.dart';
 
 extension FutureTimeout<T> on Future<T> {
   /// Lägger till timeout med custom error handling

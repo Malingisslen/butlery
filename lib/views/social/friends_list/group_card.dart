@@ -1,9 +1,9 @@
 // lib/views/social/friends_list/group_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../theme/app_dimensions.dart';
-import '../group_detail_view.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/group_detail_view.dart';
 
 /// GroupCard - Group card component
 ///
@@ -37,7 +37,7 @@ class GroupCard {
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-            SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               group.summary,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(

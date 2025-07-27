@@ -1,11 +1,11 @@
 // lib/widgets/social/invitations/invitation_target_displays.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../user/user_display_widgets.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Invitation target display widgets
 ///
@@ -78,7 +78,7 @@ class InvitationTargetDisplays {
     }
 
     return Container(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
@@ -166,7 +166,7 @@ class InvitationTargetDisplays {
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: onRemove,
-                    child: Icon(
+                    child: const Icon(
                       Icons.close,
                       size: 16,
                       color: AppColors.textMedium,
@@ -244,7 +244,7 @@ class InvitationTargetDisplays {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: sortedTargets.length,
         separatorBuilder: (context, index) => showDividers
-            ? Divider(
+            ? const Divider(
                 height: 1,
                 thickness: 1,
                 color: AppColors.divider,
@@ -339,13 +339,13 @@ class InvitationTargetDisplays {
   static Widget _buildTargetTypeIcon(InvitationTargetType type) {
     switch (type) {
       case InvitationTargetType.individual:
-        return Icon(
+        return const Icon(
           Icons.person,
           size: AppDimensions.iconSizeM,
           color: AppColors.textMedium,
         );
       case InvitationTargetType.group:
-        return Icon(
+        return const Icon(
           Icons.group,
           size: AppDimensions.iconSizeM,
           color: AppColors.textMedium,
@@ -356,7 +356,7 @@ class InvitationTargetDisplays {
   /// Build empty state for target lists
   static Widget _buildEmptyTargetList() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -364,7 +364,7 @@ class InvitationTargetDisplays {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.people_outline,
             size: 64,
             color: AppColors.textLight,
@@ -377,7 +377,7 @@ class InvitationTargetDisplays {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
+          const Text(
             'Välj vänner eller grupper att dela med',
             style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,

@@ -1,11 +1,11 @@
 // lib/widgets/common/permissions/permission_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/permissions/edit_mode.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../buttons/action_buttons.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// PermissionWidgets - Permission-based action buttons
 ///
@@ -88,7 +88,7 @@ class PermissionWidgets {
       case EditMode.noAccess:
         // Ingen åtkomst: Ingen knapp
         return Container(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
             color: AppColors.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -96,7 +96,7 @@ class PermissionWidgets {
           ),
           child: Row(
             children: [
-              Icon(Icons.block, color: AppColors.error),
+              const Icon(Icons.block, color: AppColors.error),
               const SizedBox(width: AppDimensions.spacingM),
               Text('Ingen åtkomst', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
             ],
@@ -169,7 +169,7 @@ class PermissionWidgets {
         );
 
       case EditMode.noAccess:
-        return SizedBox.shrink(); // Ingen knapp för ingen åtkomst
+        return const SizedBox.shrink(); // Ingen knapp för ingen åtkomst
     }
   }
 

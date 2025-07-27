@@ -1,9 +1,9 @@
 // lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Connection status widgets for collaborative content
 class CollaborativeConnectionWidgets {
@@ -18,7 +18,7 @@ class CollaborativeConnectionWidgets {
     if (isOnline) {
       // Minimal indicator when everything works
       return Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingS,
           vertical: AppDimensions.spacingXs,
         ),
@@ -32,12 +32,12 @@ class CollaborativeConnectionWidgets {
             Container(
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.success,
                 shape: BoxShape.circle,
               ),
             ),
-            SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Online',
               style: AppTextStyles.bodySmall.copyWith(
@@ -53,7 +53,7 @@ class CollaborativeConnectionWidgets {
     // Offline banner
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
         border: Border.all(
@@ -64,7 +64,7 @@ class CollaborativeConnectionWidgets {
         children: [
           if (statusEmoji != null) ...[
             Text(statusEmoji, style: TextStyle(fontSize: AppDimensions.iconSizeM.toDouble())),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
           ],
           Expanded(
             child: Column(

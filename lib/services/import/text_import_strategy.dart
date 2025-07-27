@@ -16,8 +16,8 @@
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
 import 'package:uuid/uuid.dart';
-import '../../models/recipe_unified.dart';
-import 'import_strategy.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/import_strategy.dart';
 
 /// Strategy for importing recipes from text content
 /// 
@@ -225,8 +225,8 @@ Gör så här:
     // Extract recipe name (usually first meaningful line)
     String recipeName = 'Importerat recept';
     String description = '';
-    List<String> ingredients = [];
-    List<String> instructions = [];
+    final List<String> ingredients = [];
+    final List<String> instructions = [];
     
     bool inIngredients = false;
     bool inInstructions = false;

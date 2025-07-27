@@ -15,8 +15,8 @@
 /// Connected to: All business logic classes, BaseViewModel, service operations
 /// Used in phases: Cross-Cutting Concerns Consolidation - Error Handling Pattern Unification
 
-import '../utils/logger.dart';
-import '../constants/app_strings.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// Comprehensive error handling mixin that eliminates duplicate error handling patterns
 /// found across 184+ files in the codebase.

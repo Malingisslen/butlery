@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
-import '../../../../viewmodels/collaborative_status_viewmodel.dart';
-import 'collaborative_participants_widgets.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
 
 /// Status badges, banners, and app bars for collaborative content
 class CollaborativeStatusWidgets {
@@ -22,7 +22,7 @@ class CollaborativeStatusWidgets {
 
     return Container(
       padding: padding ??
-          EdgeInsets.symmetric(
+          const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingS,
             vertical: AppDimensions.spacingXs,
           ),
@@ -41,7 +41,7 @@ class CollaborativeStatusWidgets {
             size: AppDimensions.iconSizeM,
             color: effectiveColor,
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
             style: AppTextStyles.bodySmall.copyWith(
@@ -70,7 +70,7 @@ class CollaborativeStatusWidgets {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(
@@ -84,12 +84,12 @@ class CollaborativeStatusWidgets {
         borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
         child: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.people,
               color: AppColors.primaryBlue,
               size: AppDimensions.iconSizeAction,
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +124,7 @@ class CollaborativeStatusWidgets {
               trailing
             // LAST FALLBACK - show just an icon
             else
-              Icon(
+              const Icon(
                 Icons.people_outline,
                 size: 24,
                 color: AppColors.primaryBlue,
@@ -259,7 +259,7 @@ class _CollaborativeAppBar extends StatelessWidget implements PreferredSizeWidge
             // Show collaborative badge if content is collaborative
             if (isCollaborative) ...[
               Padding(
-                padding: EdgeInsets.only(right: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(right: AppDimensions.spacingS),
                 child: Center(
                   child: Tooltip(
                     message: participants.isNotEmpty

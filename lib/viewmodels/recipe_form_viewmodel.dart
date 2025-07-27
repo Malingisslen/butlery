@@ -5,21 +5,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
-import '../models/recipe_unified.dart';
-import '../models/user_profile.dart';
-import '../models/permissions/resource_permission.dart';
-import '../models/permissions/edit_mode.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/analytics_service.dart';
-import '../core/injection.dart';
-import '../core/utils/logger.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 // Import focused managers
-import 'recipe_form/recipe_form_state.dart';
-import 'recipe_form/recipe_collaborative_manager.dart';
-import 'recipe_form/recipe_image_manager.dart';
-import 'recipe_form/recipe_permission_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 
 /// Main coordinator for recipe form operations
 /// Delegates to focused managers for specific responsibilities

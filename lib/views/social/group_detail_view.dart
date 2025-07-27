@@ -2,27 +2,27 @@
 
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/unified/unified_friends_service.dart';
-import '../../models/friend_category.dart';
-import '../../models/user_profile.dart';
-import '../../models/group_invitation.dart';
-import '../../widgets/common/social_components.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
-import '../../core/events/group_events.dart';
-import 'add_members_to_group_view.dart';
-import '../../services/permission_service.dart';
-import '../../core/mixins/error_handling_mixin.dart';
-import '../../core/utils/common_dialog_actions.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/events/group_events.dart';
+import 'package:butlery/views/social/add_members_to_group_view.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 
 // Import focused components
-import 'group_detail/group_detail_header.dart';
-import 'group_detail/group_detail_stats.dart';
-import 'group_detail/group_detail_app_bar.dart';
-import 'group_detail/group_members_list.dart';
+import 'package:butlery/views/social/group_detail/group_detail_header.dart';
+import 'package:butlery/views/social/group_detail/group_detail_stats.dart';
+import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
+import 'package:butlery/views/social/group_detail/group_members_list.dart';
 
 
 class GroupDetailView extends StatefulWidget {
@@ -199,7 +199,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
 
 
   // ✅ UPPDATERAD: Använd SocialComponents.showEditGroupDialog
-  void _showEditGroupDialog(FriendCategory group) async {
+  Future<void> _showEditGroupDialog(FriendCategory group) async {
     final result = await SocialComponents.showEditGroupDialog(
       context: context,
       groupId: group.id,
@@ -209,7 +209,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
 
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Gruppen uppdaterades! ✅'),
           backgroundColor: AppColors.success,
         ),
@@ -218,7 +218,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     }
   }
 
-  void _showAddMembersDialog() async {
+  Future<void> _showAddMembersDialog() async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -238,7 +238,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
   }
 
   // ✅ UPPDATERAD: Använd SocialComponents.showDeleteGroupDialog
-  void _showDeleteGroupDialog(FriendCategory group) async {
+  Future<void> _showDeleteGroupDialog(FriendCategory group) async {
     if (_isNavigating) return;
 
     final shouldDelete = await SocialComponents.showDeleteGroupDialog(
@@ -315,7 +315,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
             icon: const Icon(Icons.edit),
             label: const Text('Redigera grupp'),
           ),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
         ],
 
         // Delete or Leave button
@@ -419,16 +419,16 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
         onRefresh: _refreshData,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildGroupHeader(_group!),
-              SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.spacingLg),
               _buildGroupStats(_group!, _members),
-              SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.spacingLg),
               _buildMembersSection(_members),
-              SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.spacingLg),
               _buildActionButtons(_group!),
             ],
           ),

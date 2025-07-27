@@ -1,10 +1,10 @@
 // lib/services/permission/modules/permission_utility_helpers.dart
 
-import '../../../models/permissions/resource_permission.dart';
-import '../../../models/permissions/edit_mode.dart';
-import '../../../models/user_profile.dart';
-import '../../../core/utils/logger.dart';
-import 'auth_permission_engine.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission/modules/auth_permission_engine.dart';
 
 /// Focused module for permission utility helpers
 /// 

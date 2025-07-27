@@ -1,8 +1,8 @@
 // lib/widgets/common/social/social_avatar_api.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../social/avatar/avatar_widgets.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 
 /// Avatar API delegation for SocialComponents
 class SocialAvatarApi {

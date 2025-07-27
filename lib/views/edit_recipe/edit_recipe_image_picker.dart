@@ -1,9 +1,9 @@
 // lib/views/edit_recipe/edit_recipe_image_picker.dart
 
 import 'package:flutter/material.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
-import '../../theme/app_dimensions.dart';
-import '../../widgets/common/utility_components.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Image picker functionality for edit recipe view
 class EditRecipeImagePicker {
@@ -20,7 +20,7 @@ class EditRecipeImagePicker {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
               child: Text(
                 'Lägg till bild',
                 style: Theme.of(context).textTheme.titleMedium,

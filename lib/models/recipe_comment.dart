@@ -1,7 +1,7 @@
 // lib/models/recipe_comment.dart
 
 import 'package:uuid/uuid.dart';
-import '../core/types/app_timestamp.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
 
 
 class RecipeComment {

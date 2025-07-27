@@ -16,7 +16,7 @@
 /// Used in phases: Phase 5 - Service Consolidation
 
 // Import ResourcePermission from unified recipe model
-import '../../../models/permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 /// Result class for recipe operations
 class RecipeOperationResult {

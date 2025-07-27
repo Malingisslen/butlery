@@ -1,10 +1,10 @@
 // lib/views/social/friend_requests/incoming_requests_tab.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../widgets/common/state_widget.dart';
-import '../../../theme/app_dimensions.dart';
-import 'friend_request_card.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
 
 class IncomingRequestsTab {
   static Widget build(
@@ -37,7 +37,7 @@ class IncomingRequestsTab {
           if (selectedIncoming.isNotEmpty)
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
               color: Theme.of(context)
                   .colorScheme
                   .primaryContainer
@@ -48,7 +48,7 @@ class IncomingRequestsTab {
                     Icons.checklist,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Text(
                     '${selectedIncoming.length} förfrågningar valda',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -67,9 +67,9 @@ class IncomingRequestsTab {
           // Requests list
           Expanded(
             child: ListView.separated(
-              padding: EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.incomingRequests.length,
-              separatorBuilder: (context, index) => SizedBox(height: AppDimensions.spacingS),
+              separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingS),
               itemBuilder: (context, index) {
                 final request = viewModel.incomingRequests[index];
                 final isSelected = selectedIncoming.contains(request.id);

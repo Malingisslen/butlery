@@ -1,6 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart
 
-import '../../../../../models/recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Shared utilities for realtime recipe operations
 /// 
@@ -100,7 +100,7 @@ class RealtimeRecipeUtils {
       if (!recipe.isCollaborative) return [];
 
       // Get members who are currently active (have edited in last 5 minutes)
-      final recentThreshold = DateTime.now().subtract(Duration(minutes: 5));
+      final recentThreshold = DateTime.now().subtract(const Duration(minutes: 5));
       final activeEditors = <String>[];
 
       if (recipe.realtimeData?.lastEditedAt?.isAfter(recentThreshold) == true) {
@@ -222,7 +222,7 @@ class RealtimeRecipeUtils {
     ));
 
     // Add last update event if different from creation
-    if (recipe.updatedAt.isAfter(recipe.createdAt.add(Duration(seconds: 1)))) {
+    if (recipe.updatedAt.isAfter(recipe.createdAt.add(const Duration(seconds: 1)))) {
       history.add(createEditHistoryEntry(
         timestamp: recipe.updatedAt,
         userId: recipe.realtimeData?.lastEditedByUserId ?? recipe.core.createdBy ?? '',
@@ -238,7 +238,7 @@ class RealtimeRecipeUtils {
         if (member.key != recipe.socialData!.ownerId) {
           // Simulate member addition event
           history.add(createEditHistoryEntry(
-            timestamp: recipe.createdAt.add(Duration(hours: 1)),
+            timestamp: recipe.createdAt.add(const Duration(hours: 1)),
             userId: recipe.socialData!.ownerId ?? '',
             userName: recipe.socialData!.ownerDisplayName ?? 'Unknown',
             action: 'Added collaborator',

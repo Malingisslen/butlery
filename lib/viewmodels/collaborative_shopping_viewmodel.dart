@@ -1,16 +1,16 @@
 // lib/viewmodels/collaborative_shopping_viewmodel.dart
 
 import 'package:flutter/material.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../services/user_service.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../models/unified/unified_shopping_item.dart';
-import '../core/injection.dart';
-import '../core/utils/logger.dart';
-import '../core/permissions/permission_mixins.dart';
-import '../theme/app_colors.dart';
-import '../core/mixins/state_notifier_mixin.dart';
-import '../core/mixins/async_operation_mixin.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/permissions/permission_mixins.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 
 class CollaborativeShoppingViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin, BasePermissionMixin, ShoppingListPermissionMixin {

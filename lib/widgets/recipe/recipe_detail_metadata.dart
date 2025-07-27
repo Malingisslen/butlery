@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../viewmodels/recipe_detail_viewmodel.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/utils/snackbar_utils.dart';
+import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class RecipeDetailMetadata extends StatefulWidget {
   final RecipeDetailViewModel viewModel;
@@ -42,13 +42,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       children: [
         // Metadata container
         _buildMetadata(context),
-        SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.spacingXl),
         
         // Source URL (if available)
         if (widget.viewModel.recipe.sourceUrl != null &&
             widget.viewModel.recipe.sourceUrl!.isNotEmpty) ...[
           _buildSourceUrl(context),
-          SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingXl),
         ],
       ],
     );
@@ -98,19 +98,19 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               children: List.generate(5, (i) {
                 final rating = widget.viewModel.recipe.rating!;
                 if (i + 1 <= rating) {
-                  return Icon(
+                  return const Icon(
                     Icons.star,
                     color: AppColors.starGold,
                     size: AppDimensions.iconSizeS,
                   );
                 } else if (i + 0.5 <= rating) {
-                  return Icon(
+                  return const Icon(
                     Icons.star_half,
                     color: AppColors.starGold,
                     size: AppDimensions.iconSizeS,
                   );
                 }
-                return Icon(
+                return const Icon(
                   Icons.star_border,
                   color: AppColors.starGold,
                   size: AppDimensions.iconSizeS,
@@ -225,7 +225,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               size: AppDimensions.iconSizeAction,
               color: Theme.of(context).colorScheme.primary,
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

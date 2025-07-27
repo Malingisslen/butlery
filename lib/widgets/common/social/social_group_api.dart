@@ -1,10 +1,10 @@
 // lib/widgets/common/social/social_group_api.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../../social/groups/group_dialogs.dart';
-import '../friends/friend_category_widgets.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/social/groups/group_dialogs.dart';
+import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 
 /// Group API delegation for SocialComponents
 class SocialGroupApi {

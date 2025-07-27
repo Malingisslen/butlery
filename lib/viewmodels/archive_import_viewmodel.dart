@@ -19,12 +19,12 @@
 // ✅ PHASE 5 VERSION: Updated to use personal recipe operations interface
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/search_service.dart';
-import '../data/archived_recipes.dart' as archive;
-import '../core/injection.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/search_service.dart';
+import 'package:butlery/data/archived_recipes.dart' as archive;
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 enum TimeFilter { all, under15, under30, under60 }
 

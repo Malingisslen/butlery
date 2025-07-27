@@ -16,8 +16,8 @@
 /// Used in phases: Phase 7 - Additional Code Duplication Elimination
 
 import 'dart:async';
-import 'state_notifier_mixin.dart';
-import '../utils/logger.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin that provides standardized async operation handling for ViewModels
 /// 

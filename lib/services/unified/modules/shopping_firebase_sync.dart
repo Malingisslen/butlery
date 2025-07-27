@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/mixins/firebase_sync_mixin.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
 
 /// Handles Firebase synchronization for shopping lists
 class ShoppingFirebaseSync {

@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_text_styles.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Progress data for upload operations
 class UploadProgress {
@@ -50,7 +50,7 @@ class ImagePickerDialogs {
               'Välj bildkälla',
               style: AppTextStyles.displaySmall.copyWith(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
             ListTile(
               leading: const Icon(Icons.camera_alt, size: 28),
               title: const Text('Ta foto'),
@@ -72,7 +72,7 @@ class ImagePickerDialogs {
                 Navigator.pop(context, ImageSource.gallery);
               },
             ),
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
           ],
         ),
       ),
@@ -170,12 +170,12 @@ class ImagePickerDialogs {
                       Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.spacingL),
                   Text(
                     progress.message,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.spacingS),
                   Text(
                     '$percentage% (${progress.completed}/${progress.total})',
                     style: Theme.of(context).textTheme.bodySmall,

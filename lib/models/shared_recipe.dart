@@ -1,12 +1,12 @@
 // lib/models/shared_recipe.dart
 
-import '../core/types/app_timestamp.dart';
-import '../repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
-import 'recipe_unified.dart'; // Import unified Recipe model
-import 'permissions/edit_mode.dart';
-import 'permissions/resource_permission.dart';
+import 'package:butlery/models/recipe_unified.dart'; // Import unified Recipe model
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 
 enum ShareScope {

@@ -1,10 +1,10 @@
 // lib/widgets/social/social_components.dart
 
 import 'package:flutter/material.dart';
-import '../../models/invitations/invitation_target.dart';
-import 'invitations/invitation_target_displays.dart';
-import 'invitations/invitation_target_inputs.dart';
-import 'invitations/invitation_target_states.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_displays.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_inputs.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_states.dart';
 
 /// Social components - delegates to focused widgets
 class SocialComponents {
@@ -178,11 +178,11 @@ class SocialComponents {
     Function(Set<InvitationTargetType>)? onTypesChanged,
   }) {
     return Container(
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           FilterChip(
-            label: Text('Individual'),
+            label: const Text('Individual'),
             selected: selectedTypes.contains(InvitationTargetType.individual),
             onSelected: (selected) {
               final newTypes = Set<InvitationTargetType>.from(selectedTypes);
@@ -194,9 +194,9 @@ class SocialComponents {
               onTypesChanged?.call(newTypes);
             },
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           FilterChip(
-            label: Text('Group'),
+            label: const Text('Group'),
             selected: selectedTypes.contains(InvitationTargetType.group),
             onSelected: (selected) {
               final newTypes = Set<InvitationTargetType>.from(selectedTypes);
@@ -222,12 +222,12 @@ class SocialComponents {
       children: [
         TextButton(
           onPressed: () => onQuickSelection?.call([]),
-          child: Text('Select None'),
+          child: const Text('Select None'),
         ),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         TextButton(
           onPressed: () => onQuickSelection?.call(targets),
-          child: Text('Select All'),
+          child: const Text('Select All'),
         ),
       ],
     );

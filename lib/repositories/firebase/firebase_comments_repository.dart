@@ -1,10 +1,10 @@
 // lib/repositories/firebase/firebase_comments_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/comments_repository.dart';
-import '../../models/recipe_comment.dart';
-import 'base_firebase_repository.dart';
-import '../../core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Firebase implementation of CommentsRepository
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>

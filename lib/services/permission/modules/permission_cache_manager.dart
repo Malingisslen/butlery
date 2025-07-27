@@ -1,6 +1,6 @@
 // lib/services/permission/modules/permission_cache_manager.dart
 
-import '../../../core/utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for permission cache management
 /// 

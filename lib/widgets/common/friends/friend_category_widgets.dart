@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/friend_category.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../core/utils/logger.dart';
-import '../state_widget.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// FriendCategoryWidgets - Friend category management widgets
 ///
@@ -66,7 +66,7 @@ class FriendCategoryWidgets {
     VoidCallback? onCreateNew,
   }) {
     return Padding(
-      padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -75,7 +75,7 @@ class FriendCategoryWidgets {
               title,
               style: AppTextStyles.sectionTitleStyle,
             ),
-            SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.spacingMd),
           ],
           if (showSelectAll) ...[
             Row(
@@ -91,10 +91,10 @@ class FriendCategoryWidgets {
                       }
                     }
                   },
-                  icon: Icon(Icons.select_all),
-                  label: Text('Välj alla'),
+                  icon: const Icon(Icons.select_all),
+                  label: const Text('Välj alla'),
                 ),
-                SizedBox(width: AppDimensions.spacingMd),
+                const SizedBox(width: AppDimensions.spacingMd),
                 TextButton.icon(
                   onPressed: () {
                     // Clear all selections
@@ -102,12 +102,12 @@ class FriendCategoryWidgets {
                       onCategoryToggled(categoryId);
                     }
                   },
-                  icon: Icon(Icons.clear_all),
-                  label: Text('Rensa alla'),
+                  icon: const Icon(Icons.clear_all),
+                  label: const Text('Rensa alla'),
                 ),
               ],
             ),
-            SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.spacingMd),
           ],
           Wrap(
             spacing: AppDimensions.spacingS,
@@ -119,12 +119,12 @@ class FriendCategoryWidgets {
             )).toList(),
           ),
           if (showCreateNew && onCreateNew != null) ...[
-            SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.spacingMd),
             Center(
               child: TextButton.icon(
                 onPressed: onCreateNew,
-                icon: Icon(Icons.add),
-                label: Text('Skapa ny kategori'),
+                icon: const Icon(Icons.add),
+                label: const Text('Skapa ny kategori'),
               ),
             ),
           ],
@@ -150,10 +150,10 @@ class FriendCategoryWidgets {
             size: 16,
             color: isSelected ? AppColors.textDark : AppColors.textMedium,
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(category.name),
           if (showCount) ...[
-            SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.spacingXs),
             Text(
               '(${category.friendUserIds.length})',
               style: TextStyle(
@@ -194,7 +194,7 @@ class FriendCategoryWidgets {
           ),
           title: Text(category.name),
           subtitle: showMemberCount ? Text('${category.friendUserIds.length} medlemmar') : null,
-          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           onTap: () => onCategoryTap(category),
         );
       },
@@ -209,7 +209,7 @@ class FriendCategoryWidgets {
     EdgeInsets? padding,
   }) {
     return GridView.builder(
-      padding: padding ?? EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: 1.5,
@@ -224,7 +224,7 @@ class FriendCategoryWidgets {
             onTap: () => onCategoryTap(category),
             borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
             child: Padding(
-              padding: EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -233,7 +233,7 @@ class FriendCategoryWidgets {
                     size: AppDimensions.iconSizeXl,
                     color: AppColors.primaryBlue,
                   ),
-                  SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.spacingS),
                   Text(
                     category.name,
                     style: AppTextStyles.cardTitleStyle,
@@ -268,7 +268,7 @@ class FriendCategoryWidgets {
 
     return Card(
       child: Padding(
-        padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -276,7 +276,7 @@ class FriendCategoryWidgets {
               'Kategoristatistik',
               style: AppTextStyles.sectionTitleStyle,
             ),
-            SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.spacingMd),
             Row(
               children: [
                 Expanded(
@@ -306,7 +306,7 @@ class FriendCategoryWidgets {
               ],
             ),
             if (largestCategory != null) ...[
-              SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 'Största kategori: ${largestCategory.name} (${largestCategory.memberIds.length} medlemmar)',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -371,7 +371,7 @@ class _FriendCategoryManagerWidgetState
     return Consumer2<UnifiedFriendsService, FriendsViewModel>(
       builder: (context, categoriesService, friendsVM, child) {
         if (categoriesService.isLoading || friendsVM.isLoading) {
-          return Center(
+          return const Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -383,7 +383,7 @@ class _FriendCategoryManagerWidgetState
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                SizedBox(height: AppDimensions.spacingXl),
                 Text(
                   'Laddar vänner och kategorier...',
                   style: AppTextStyles.titleMedium,
@@ -395,7 +395,7 @@ class _FriendCategoryManagerWidgetState
 
         if (categoriesService.hasError) {
           return Container(
-            padding: EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
               color: AppColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -410,7 +410,7 @@ class _FriendCategoryManagerWidgetState
 
         if (friendsVM.hasError) {
           return Container(
-            padding: EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
               color: AppColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -443,7 +443,7 @@ class _FriendCategoryManagerWidgetState
             const SizedBox(height: AppDimensions.spacingXl),
             if (categories.isNotEmpty) ...[
               _buildCategorySection(categories, categoriesService),
-              SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.spacingL),
             ],
             if (friends.isNotEmpty) ...[
               _buildIndividualFriendsSection(friends),
@@ -524,12 +524,12 @@ class _FriendCategoryManagerWidgetState
                 children: [
                   if (category.emoji != null && category.emoji!.isNotEmpty) ...[
                     Text(category.emoji!),
-                    SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.spacingXs),
                   ],
                   Text(category.name),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Container(
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
                       vertical: 1,
                     ),
@@ -614,7 +614,7 @@ class _FriendCategoryManagerWidgetState
                   icon: Icons.people_outline,
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(AppDimensions.spacingXs),
+                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
                   itemCount: friends.length,
                   itemBuilder: (context, index) {
                     final friend = friends[index];
@@ -623,7 +623,7 @@ class _FriendCategoryManagerWidgetState
                     return Card(
                       elevation: 0,
                       margin:
-                          EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
+                          const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
                       color: isSelected
                           ? Theme.of(context)
                               .colorScheme
@@ -651,7 +651,7 @@ class _FriendCategoryManagerWidgetState
                             : null,
                         dense: true,
                         controlAffinity: ListTileControlAffinity.trailing,
-                        contentPadding: EdgeInsets.symmetric(
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingS,
                           vertical: AppDimensions.spacingXs,
                         ),
@@ -668,7 +668,7 @@ class _FriendCategoryManagerWidgetState
 
   Widget _buildSelectionSummary() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -679,12 +679,12 @@ class _FriendCategoryManagerWidgetState
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(AppDimensions.spacingXs),
+            padding: const EdgeInsets.all(AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.group,
               color: AppColors.neutralLight,
               size: AppDimensions.iconSizeM,
@@ -719,7 +719,7 @@ class _FriendCategoryManagerWidgetState
               label: const Text('Rensa'),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingS,
                   vertical: AppDimensions.spacingXs,
                 ),

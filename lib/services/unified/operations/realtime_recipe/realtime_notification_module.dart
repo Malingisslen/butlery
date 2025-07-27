@@ -1,10 +1,10 @@
 // lib/services/unified/operations/realtime_recipe/realtime_notification_module.dart
 
-import '../../../../models/recipe_unified.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../notifications/notification_service.dart';
-import '../../../notifications/notification_types.dart';
-import 'shared/realtime_recipe_utils.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Realtime notification module
 /// 

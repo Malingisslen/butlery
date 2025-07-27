@@ -1,7 +1,7 @@
 // lib/models/recipe/recipe_serialization.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for recipe serialization
 /// 

@@ -1,7 +1,7 @@
 // lib/models/user_profile.dart
 
-import '../core/mixins/json_serializable_mixin.dart';
-import '../core/types/app_timestamp.dart';
+import 'package:butlery/core/mixins/json_serializable_mixin.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
 
 
 class UserProfile with JsonSerializableMixin {

@@ -18,7 +18,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import '../utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin that provides common Firebase sync functionality to services
 /// 
@@ -209,7 +209,7 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
   }
   
   /// Process all pending sync items
-  void _processPendingSyncItems() async {
+  Future<void> _processPendingSyncItems() async {
     if (_pendingSyncIds.isEmpty) return;
     
     _isSyncing = true;

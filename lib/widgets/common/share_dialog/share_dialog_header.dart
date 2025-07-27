@@ -1,11 +1,11 @@
 // lib/widgets/common/share_dialog/share_dialog_header.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../universal_share_dialog.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHeader {
   static Widget build(
@@ -19,7 +19,7 @@ class ShareDialogHeader {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppDimensions.radiusLarge),
           topRight: Radius.circular(AppDimensions.radiusLarge),
         ),

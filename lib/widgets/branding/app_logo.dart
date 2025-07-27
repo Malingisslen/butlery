@@ -1,8 +1,8 @@
 // lib/widgets/branding/app_logo.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// App logo widget with consistent branding
 /// Eliminates design-in-views violations for logo display
@@ -67,7 +67,7 @@ class AppLogo extends StatelessWidget {
                 BoxShadow(
                   color: bgColor.withValues(alpha: 0.3),
                   blurRadius: AppDimensions.elevationMedium * 2,
-                  offset: Offset(0, AppDimensions.elevationMedium),
+                  offset: const Offset(0, AppDimensions.elevationMedium),
                 ),
               ]
             : null,
@@ -125,7 +125,7 @@ class AppBranding extends StatelessWidget {
           size: logoSize,
           showShadow: logoSize == AppDimensions.imageSizeLarge,
         ),
-        SizedBox(height: AppDimensions.spacing16),
+        const SizedBox(height: AppDimensions.spacing16),
         Text(
           appName,
           style: nameStyle ?? Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -134,7 +134,7 @@ class AppBranding extends StatelessWidget {
           ),
         ),
         if (tagline != null) ...[
-          SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacing8),
           Text(
             tagline!,
             style: taglineStyle ?? Theme.of(context).textTheme.bodyMedium?.copyWith(

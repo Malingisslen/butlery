@@ -1,9 +1,9 @@
 // lib/services/unified/modules/shopping_cache_management.dart
 
 import 'dart:async';
-import '../../../core/cache/json_cache_helper.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Handles cache management for shopping lists
 class ShoppingCacheManagement {

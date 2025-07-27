@@ -1,10 +1,10 @@
 // lib/widgets/common/loading/loading_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_colors.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// LoadingWidgets - Loading and error utility components
 ///
@@ -33,7 +33,7 @@ class LoadingWidgets {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: AppDimensions.iconSizeM,
                 height: AppDimensions.iconSizeM,
                 child: CircularProgressIndicator(
@@ -77,9 +77,9 @@ class LoadingWidgets {
           return errorWidget ??
               Center(
                 child: Padding(
-                  padding: EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
                   child: Container(
-                    padding: EdgeInsets.all(AppDimensions.paddingM),
+                    padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -112,7 +112,7 @@ class LoadingWidgets {
         return Center(
           child: Container(
             constraints: BoxConstraints(maxWidth: effectiveMaxWidth),
-            padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
+            padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
             child: child,
           ),
         );

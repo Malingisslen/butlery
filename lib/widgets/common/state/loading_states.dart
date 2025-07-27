@@ -1,10 +1,10 @@
 // lib/widgets/common/state/loading_states.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import 'state_enums.dart';
-import 'skeleton_components.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/state/state_enums.dart';
+import 'package:butlery/widgets/common/state/skeleton_components.dart';
 
 /// LoadingStates - Loading state implementations
 ///
@@ -60,7 +60,7 @@ class LoadingStates {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
       itemCount: itemCount ?? 5,
       itemBuilder: (context, index) => _buildSkeletonRecipeCard(),
     );
@@ -68,7 +68,7 @@ class LoadingStates {
 
   static Widget _buildSkeletonRecipeCard() {
     return Container(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
@@ -76,7 +76,7 @@ class LoadingStates {
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
           child: Row(
             children: [
               // Bild skeleton
@@ -85,7 +85,7 @@ class LoadingStates {
                 height: 80,
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               ),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
               // Text content skeleton
               Expanded(
                 child: Column(
@@ -95,7 +95,7 @@ class LoadingStates {
                     SkeletonComponents.skeletonBox(
                       height: 20,
                       width: double.infinity,
-                      margin: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+                      margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
                     ),
                     // Beskrivning rad 1
                     SkeletonComponents.skeletonBox(
@@ -107,7 +107,7 @@ class LoadingStates {
                     SkeletonComponents.skeletonBox(
                       height: 14,
                       width: 150,
-                      margin: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+                      margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
                     ),
                     // Taggar
                     Row(
@@ -116,7 +116,7 @@ class LoadingStates {
                           height: 24,
                           width: 60,
                           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-                          margin: EdgeInsets.only(right: AppDimensions.spacingXs),
+                          margin: const EdgeInsets.only(right: AppDimensions.spacingXs),
                         ),
                         SkeletonComponents.skeletonBox(
                           height: 24,

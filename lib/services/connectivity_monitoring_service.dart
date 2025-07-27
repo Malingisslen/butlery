@@ -3,8 +3,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../core/utils/connectivity_check.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/core/utils/connectivity_check.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Service for monitoring Firebase and internet connectivity in realtime
 /// 
@@ -100,7 +100,7 @@ class ConnectivityMonitoringService extends ChangeNotifier {
     );
   }
 
-  void _checkInternetConnectivity() async {
+  Future<void> _checkInternetConnectivity() async {
     try {
       final wasConnected = _isConnectedToInternet;
       _isConnectedToInternet = await ConnectivityCheck.hasRobustInternetConnection();

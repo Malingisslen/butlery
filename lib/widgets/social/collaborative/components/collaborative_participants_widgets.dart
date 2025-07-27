@@ -1,12 +1,12 @@
 // lib/widgets/social/collaborative/components/collaborative_participants_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../../models/user_profile.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../core/injection.dart';
-import '../../../../services/social_recipe_service.dart';
-import '../../../user/user_display_widgets.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Widgets for displaying collaborative participants
 class CollaborativeParticipantsWidgets {

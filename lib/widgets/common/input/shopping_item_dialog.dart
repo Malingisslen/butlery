@@ -1,11 +1,11 @@
 // lib/widgets/common/input/shopping_item_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../core/validators/form_validators.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 
 /// Dialog for adding/editing unified shopping items
 ///
@@ -122,13 +122,13 @@ class _AddUnifiedShoppingItemDialogState
                   labelStyle: AppTextStyles.labelLarge,
                   hintText: 'T.ex. Mjölk',
                   hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
-                  prefixIcon: Icon(
+                  prefixIcon: const Icon(
                     Icons.shopping_basket,
                     color: AppColors.primaryBlue,
                     size: AppDimensions.iconSizeAction,
                   ),
                   border: const OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(AppDimensions.paddingM),
+                  contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 validator: FormValidators.shoppingItemName(),
@@ -149,13 +149,13 @@ class _AddUnifiedShoppingItemDialogState
                         labelStyle: AppTextStyles.labelLarge,
                         hintText: '1',
                         hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.numbers,
                           color: AppColors.primaryBlue,
                           size: AppDimensions.iconSizeAction,
                         ),
                         border: const OutlineInputBorder(),
-                        contentPadding: EdgeInsets.all(AppDimensions.paddingM),
+                        contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -171,7 +171,7 @@ class _AddUnifiedShoppingItemDialogState
                     child: DropdownButtonFormField<String>(
                       value: _selectedUnit,
                       style: AppTextStyles.bodyLarge,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Enhet',
                         labelStyle: AppTextStyles.labelLarge,
                         prefixIcon: Icon(
@@ -179,7 +179,7 @@ class _AddUnifiedShoppingItemDialogState
                           color: AppColors.primaryBlue,
                           size: AppDimensions.iconSizeAction,
                         ),
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.all(AppDimensions.paddingM),
                       ),
                       isDense: true,
@@ -211,7 +211,7 @@ class _AddUnifiedShoppingItemDialogState
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 style: AppTextStyles.bodyLarge,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Kategori',
                   labelStyle: AppTextStyles.labelLarge,
                   prefixIcon: Icon(
@@ -219,7 +219,7 @@ class _AddUnifiedShoppingItemDialogState
                     color: AppColors.primaryBlue,
                     size: AppDimensions.iconSizeAction,
                   ),
-                  border: const OutlineInputBorder(),
+                  border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.all(AppDimensions.paddingM),
                 ),
                 isExpanded: true,
@@ -248,14 +248,14 @@ class _AddUnifiedShoppingItemDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Avbryt', style: AppTextStyles.labelLarge),
+          child: const Text('Avbryt', style: AppTextStyles.labelLarge),
         ),
         FilledButton.icon(
           onPressed: _submitForm,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryBlue,
             foregroundColor: AppColors.neutralLight,
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.paddingL,
               vertical: AppDimensions.paddingM,
             ),

@@ -1,6 +1,6 @@
 // lib/utils/text/swedish_pluralization.dart
 
-import 'text_formatting.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
 
 /// SwedishPluralization - Swedish pluralization utilities
 ///

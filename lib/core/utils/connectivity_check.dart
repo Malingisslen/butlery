@@ -2,7 +2,7 @@
 
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 class ConnectivityCheck {
   static Future<bool> hasInternetConnection() async {

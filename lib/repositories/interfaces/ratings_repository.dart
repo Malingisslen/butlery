@@ -1,4 +1,4 @@
-import 'repository.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Repository interface for recipe rating operations

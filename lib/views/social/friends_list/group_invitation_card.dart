@@ -1,10 +1,10 @@
 // lib/views/social/friends_list/group_invitation_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/group_invitation.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../core/utils/snackbar_utils.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// GroupInvitationCard - Group invitation card component
 ///
@@ -76,7 +76,7 @@ class GroupInvitationCard {
             if (invitation.personalMessage?.isNotEmpty == true) ...[
               const SizedBox(height: 12),
               Container(
-                padding: EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

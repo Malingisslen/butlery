@@ -1,9 +1,9 @@
 // lib/services/offline/offline_legacy_storage.dart
 
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../models/recipe_unified.dart';
-import '../../core/utils/logger.dart';
-import 'offline_user_storage.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/offline/offline_user_storage.dart';
 
 /// Handles legacy storage operations for backward compatibility
 class OfflineLegacyStorage {

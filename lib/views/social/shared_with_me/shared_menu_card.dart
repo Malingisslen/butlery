@@ -3,12 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import '../../../viewmodels/shared_content_viewmodel.dart';
-import '../../../models/shared_menu.dart';
-import '../../../widgets/common/social_components.dart';
-import '../menu_preview_view.dart';
-import 'shared_content_actions.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/views/social/menu_preview_view.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// SharedMenuCard - Card for displaying shared menus
 ///
@@ -56,18 +56,18 @@ class SharedMenuCard {
             children: [
               // Header med delningsinfo
               _buildHeader(context, viewModel, sharedMenu, isRead),
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
 
               // Meny content
               _buildMenuContent(context, sharedMenu),
 
               // Message från delaren
               if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
-                SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.spacingS),
                 _buildShareMessage(context, sharedMenu.shareMessage!),
               ],
 
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
 
               // Action buttons
               _buildActionButtons(
@@ -96,7 +96,7 @@ class SharedMenuCard {
           size: ImageSize.small,
           displayName: sharedMenu.sharedByDisplayName,
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,8 +151,8 @@ class SharedMenuCard {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             tooltip: 'Dölj från min lista',
-            padding: EdgeInsets.all(AppDimensions.spacingXs),
-            constraints: BoxConstraints(
+            padding: const EdgeInsets.all(AppDimensions.spacingXs),
+            constraints: const BoxConstraints(
               minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
               minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
             ),
@@ -162,7 +162,7 @@ class SharedMenuCard {
           Container(
             width: 8,
             height: 8,
-            margin: EdgeInsets.only(left: AppDimensions.spacingXs),
+            margin: const EdgeInsets.only(left: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
@@ -188,7 +188,7 @@ class SharedMenuCard {
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,14 +197,14 @@ class SharedMenuCard {
                 sharedMenu.menuTitle,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 sharedMenu.menuSummary,
                 style: Theme.of(context).textTheme.bodySmall,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
                   Icon(
@@ -212,18 +212,18 @@ class SharedMenuCard {
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '${sharedMenu.totalRecipeCount} recept',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Icon(
                     Icons.category,
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '${sharedMenu.categories.length} kategorier',
                     style: Theme.of(context).textTheme.bodySmall,
@@ -240,7 +240,7 @@ class SharedMenuCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -283,7 +283,7 @@ class SharedMenuCard {
             label: const Text('Visa'),
           ),
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: FilledButton.icon(
             onPressed: isImported || viewModel.isImporting

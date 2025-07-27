@@ -5,8 +5,8 @@ import 'dart:io';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../core/utils/logger.dart';
-import 'storage_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/storage_service.dart';
 
 /// Service för att välja bilder från kamera eller galleri
 /// Med omfattande debug-logging och förbättrad permissions-hantering

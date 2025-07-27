@@ -2,16 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../repositories/firebase/firebase_auth_repository.dart';
-import '../../models/recipe_unified.dart';
-import '../../viewmodels/social_recipe_viewmodel.dart';
-import '../../widgets/common/social_components.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
-import '../../services/user_service.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/user_service.dart';
 
 /// Recipe detail comments widget
 ///
@@ -71,7 +71,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.comment_outlined,
                       color: AppColors.primaryBlue,
                       size: AppDimensions.iconSizeAction,
@@ -81,7 +81,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Kommentarer',
                             style: AppTextStyles.titleMedium,
                           ),
@@ -151,7 +151,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: socialViewModel.comments.length,
-              separatorBuilder: (context, index) => Divider(
+              separatorBuilder: (context, index) => const Divider(
                 height: AppDimensions.borderWidthThin,
                 color: AppColors.divider,
               ),
@@ -167,7 +167,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
           // Debug info (if enabled)
           if (true) ...[
-            Divider(color: AppColors.divider),
+            const Divider(color: AppColors.divider),
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Column(
@@ -209,7 +209,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           children: [
-            Text(
+            const Text(
               'Du måste vara inloggad för att kommentera',
               style: AppTextStyles.bodyLarge,
               textAlign: TextAlign.center,
@@ -220,7 +220,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 // Navigate to login
                 Navigator.pushNamed(context, '/login');
               },
-              child: Text('Logga in'),
+              child: const Text('Logga in'),
             ),
           ],
         ),
@@ -242,7 +242,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.reply,
                     color: AppColors.primaryBlue,
                     size: AppDimensions.iconSizeM,
@@ -262,7 +262,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                         _replyingToUserName = null;
                       });
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.close,
                       color: AppColors.primaryBlue,
                       size: AppDimensions.iconSizeM,
@@ -306,7 +306,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     ? null
                     : () => _postComment(socialViewModel),
                 icon: socialViewModel.isPostingComment
-                    ? SizedBox(
+                    ? const SizedBox(
                         width: AppDimensions.iconSizeAction,
                         height: AppDimensions.iconSizeAction,
                         child: CircularProgressIndicator(
@@ -314,7 +314,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           color: AppColors.primaryBlue,
                         ),
                       )
-                    : Icon(
+                    : const Icon(
                         Icons.send,
                         color: AppColors.primaryBlue,
                         size: AppDimensions.iconSizeAction,
@@ -371,7 +371,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       _replyingToUserName = comment.author?.displayName ?? 'Anonym';
                     });
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.reply,
                     color: AppColors.textMedium,
                     size: AppDimensions.iconSizeM,
@@ -413,14 +413,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           if (comment.replies != null && comment.replies.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingM),
             Container(
-              margin: EdgeInsets.only(left: AppDimensions.spacingL),
+              margin: const EdgeInsets.only(left: AppDimensions.spacingL),
               child: Column(
                 children: comment.replies.map<Widget>((reply) {
                   return Column(
                     children: [
                       _buildCommentItem(reply, socialViewModel, isReply: true),
                       if (reply != comment.replies.last)
-                        Divider(
+                        const Divider(
                           height: AppDimensions.borderWidthThin,
                           color: AppColors.divider,
                         ),

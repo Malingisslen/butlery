@@ -3,25 +3,25 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../repositories/firebase/firebase_auth_repository.dart';
-import '../../core/cache/json_cache_helper.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/permissions/resource_permission.dart';
-import '../../core/utils/logger.dart';
-import '../../core/mixins/firebase_service_mixin.dart';
-import '../../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/firebase_service_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 // Focused modules
-import 'modules/personal_recipe_module.dart';
-import 'modules/social_recipe_module.dart';
-import 'modules/realtime_recipe_module.dart';
-import 'modules/recipe_cache_module.dart';
+import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
+import 'package:butlery/services/unified/modules/social_recipe_module.dart';
+import 'package:butlery/services/unified/modules/realtime_recipe_module.dart';
+import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 
 // Legacy feature interfaces (for backward compatibility)
-import 'operations/personal_recipe_operations.dart';
-import 'operations/social_recipe_operations.dart';
-import 'operations/realtime_recipe_operations.dart';
-import 'types/recipe_types.dart';
+import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Unified Recipe Service - Clean coordinator with focused module delegation
 ///

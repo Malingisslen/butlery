@@ -1,8 +1,8 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
-import '../../../../core/utils/logger.dart';
-import '../../../notifications/notification_service.dart';
-import '../../../notifications/notification_types.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Focused module for recipe sharing and collaboration setup
 /// 

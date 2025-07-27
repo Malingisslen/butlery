@@ -1,9 +1,9 @@
 // lib/widgets/common/social/invitation_target_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_dimensions.dart';
-import 'social_helpers.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/social/social_helpers.dart';
 
 class InvitationTargetWidgets {
   /// Build invitation target display
@@ -195,7 +195,7 @@ class InvitationTargetWidgets {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
         ),
-        contentPadding: EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
           vertical: AppDimensions.spacingS,
         ),
@@ -211,7 +211,7 @@ class InvitationTargetWidgets {
     EdgeInsets? padding,
   }) {
     return Padding(
-      padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
       child: Wrap(
         spacing: AppDimensions.spacingS,
         children: availableTypes.map((type) => FilterChip(

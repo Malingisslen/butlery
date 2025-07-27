@@ -1,7 +1,7 @@
 // lib/models/realtime/realtime_resource.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 
 /// Typ av realtidsresurs för serialization och routing

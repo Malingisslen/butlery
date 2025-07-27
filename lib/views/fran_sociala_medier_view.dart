@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/text_import_viewmodel.dart';
-import '../views/skriv_sjalv_recept_view.dart';
-import '../widgets/common/utility_components.dart';
-import '../widgets/common/state_widget.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../core/injection.dart';
+import 'package:butlery/viewmodels/text_import_viewmodel.dart';
+import 'package:butlery/views/skriv_sjalv_recept_view.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
 
 /// ✨ MIGRERAD VY MED SOURCEURL-STÖD - Nu med UtilityComponents
 class FranSocialaMedierView extends StatelessWidget {
@@ -62,7 +62,7 @@ class FranSocialaMedierView extends StatelessWidget {
 class _FranSocialaMedierViewContent extends StatelessWidget {
   const _FranSocialaMedierViewContent();
 
-  void _parseAndNavigate(BuildContext context) async {
+  Future<void> _parseAndNavigate(BuildContext context) async {
     final viewModel = context.read<TextImportViewModel>();
     final success = await viewModel.parseText();
 
@@ -113,7 +113,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                       size: AppDimensions.iconSizeM,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
                         'Importerat från: ${viewModel.sourceUrl}',
@@ -212,7 +212,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
                 size: AppDimensions.iconSizeM,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Tips för bästa resultat',
                 style: AppTextStyles.labelLarge.copyWith(
@@ -222,7 +222,7 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
+          const Text(
             '• Klistra in hela receptet inklusive ingredienser\n'
             '• Se till att ingredienser kommer före instruktioner\n'
             '• Texten kan komma från Instagram, TikTok, Facebook etc.',

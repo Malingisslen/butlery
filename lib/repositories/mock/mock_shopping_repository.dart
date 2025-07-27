@@ -1,7 +1,7 @@
-import '../interfaces/shopping_repository.dart';
-import '../../models/unified/unified_shopping_list.dart';
-import '../../models/unified/unified_shopping_item.dart';
-import 'in_memory_repository.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/repositories/mock/in_memory_repository.dart';
 
 /// In-memory implementation of [ShoppingRepository] for tests.
 class MockShoppingRepository extends InMemoryRepository<UnifiedShoppingList>

@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../viewmodels/realtime_menu_viewmodel.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Refactored MenuActionHandler using BaseActionHandler
 /// 

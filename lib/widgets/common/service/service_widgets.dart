@@ -1,12 +1,12 @@
 // lib/widgets/common/service/service_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../services/unified/unified_recipe_service.dart';
-import '../../../core/injection.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// ServiceWidgets - Service integration widgets
 ///
@@ -57,7 +57,7 @@ class ServiceWidgets {
 
   // Private helper methods
   static Widget _buildDefaultServiceLoading() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -69,7 +69,7 @@ class ServiceWidgets {
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Laddar recept...',
             style: AppTextStyles.titleMedium,
@@ -82,9 +82,9 @@ class ServiceWidgets {
   static Widget _buildDefaultServiceError(BuildContext context, String error) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Container(
-          padding: EdgeInsets.all(AppDimensions.paddingM),
+          padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
             color: AppColors.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -109,7 +109,7 @@ class ServiceWidgets {
             color: AppColors.cardWhite,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           ),
-          child: SizedBox(
+          child: const SizedBox(
             width: AppDimensions.iconSizeM,
             height: AppDimensions.iconSizeM,
             child: CircularProgressIndicator(

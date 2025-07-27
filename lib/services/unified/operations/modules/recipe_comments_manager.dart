@@ -2,16 +2,16 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../models/recipe_comment.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../notifications/notification_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 
 // Focused modules
-import 'comment_crud_operations.dart';
-import 'comment_likes_system.dart';
-import 'comment_notifications.dart';
-import 'comment_utilities.dart';
+import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
+import 'package:butlery/services/unified/operations/modules/comment_likes_system.dart';
+import 'package:butlery/services/unified/operations/modules/comment_notifications.dart';
+import 'package:butlery/services/unified/operations/modules/comment_utilities.dart';
 
 /// Clean facade for recipe comment system using focused modules
 ///
@@ -127,6 +127,7 @@ class RecipeCommentsManager {
     }
 
     // Create new stream controller
+    // ignore: close_sinks - disposed in dispose() via CommentUtilities.cleanupCommentStreams
     final streamController = CommentUtilities.createCommentStreamController();
     _commentStreams[recipeId] = streamController;
 

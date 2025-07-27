@@ -1,9 +1,9 @@
 // lib/viewmodels/realtime_menu/realtime_stream_manager.dart
 
 import 'dart:async';
-import '../../models/realtime/realtime_menu.dart';
-import '../../services/realtime/realtime_menu_service.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for realtime menu streaming
 /// 

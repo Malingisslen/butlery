@@ -1,13 +1,13 @@
 // lib/core/permissions/validators/composite_validator.dart
 
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import 'base_validator.dart';
-import 'validation_result.dart';
-import 'recipe_validator.dart';
-import 'shopping_list_validator.dart';
-import 'group_validator.dart';
-import 'social_validator.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/permissions/validators/base_validator.dart';
+import 'package:butlery/core/permissions/validators/validation_result.dart';
+import 'package:butlery/core/permissions/validators/recipe_validator.dart';
+import 'package:butlery/core/permissions/validators/shopping_list_validator.dart';
+import 'package:butlery/core/permissions/validators/group_validator.dart';
+import 'package:butlery/core/permissions/validators/social_validator.dart';
 
 /// Composite permission validator for complex multi-resource operations
 class CompositePermissionValidator extends BasePermissionValidator {

@@ -2,15 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/friends_viewmodel.dart';
-import '../../widgets/common/layout_components.dart';
-import '../../core/injection.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/injection.dart';
 
 // Import focused components
-import 'friend_requests/friend_requests_header.dart';
-import 'friend_requests/incoming_requests_tab.dart';
-import 'friend_requests/sent_requests_tab.dart';
-import 'friend_requests/friend_request_actions_refactored.dart';
+import 'package:butlery/views/social/friend_requests/friend_requests_header.dart';
+import 'package:butlery/views/social/friend_requests/incoming_requests_tab.dart';
+import 'package:butlery/views/social/friend_requests/sent_requests_tab.dart';
+import 'package:butlery/views/social/friend_requests/friend_request_actions_refactored.dart';
 
 class FriendRequestsView extends StatelessWidget {
   const FriendRequestsView({super.key});

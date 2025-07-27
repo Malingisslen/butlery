@@ -1,10 +1,10 @@
 // lib/widgets/common/share_dialog/share_dialog_states.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../universal_share_dialog.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogStates {
   static Widget buildNoFriendsState(
@@ -23,7 +23,7 @@ class ShareDialogStates {
             size: 64,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.spacingLg),
           Text(
             'Inga vänner att dela med',
             style: AppTextStyles.titleMedium.copyWith(
@@ -39,7 +39,7 @@ class ShareDialogStates {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.spacingLg),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
@@ -50,7 +50,7 @@ class ShareDialogStates {
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingLg,
                 vertical: AppDimensions.spacingL,
               ),
@@ -96,12 +96,12 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             size: 64,
             color: AppColors.error,
           ),
-          SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.spacingLg),
           Text(
             'Ett fel uppstod',
             style: AppTextStyles.titleMedium.copyWith(
@@ -118,7 +118,7 @@ class ShareDialogStates {
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
@@ -126,7 +126,7 @@ class ShareDialogStates {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,
                 ),
@@ -148,12 +148,12 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle,
             size: 64,
             color: AppColors.success,
           ),
-          SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.spacingLg),
           Text(
             'Delning lyckades!',
             style: AppTextStyles.titleMedium.copyWith(
@@ -170,13 +170,13 @@ class ShareDialogStates {
             textAlign: TextAlign.center,
           ),
           if (onClose != null) ...[
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton(
               onPressed: onClose,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.success,
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,
                 ),

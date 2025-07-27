@@ -5,8 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
 
-import '../../models/recipe_unified.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Handles initialization and connectivity monitoring for offline service
 class OfflineInitialization {

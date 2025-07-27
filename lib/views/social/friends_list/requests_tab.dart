@@ -1,11 +1,11 @@
 // lib/views/social/friends_list/requests_tab.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../models/friend_request.dart';
-import '../../../widgets/common/loading_state_builder.dart';
-import '../../../theme/app_dimensions.dart';
-import 'friend_request_card.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/friends_list/friend_request_card.dart';
 
 /// RequestsTab - Friend requests tab component
 ///
@@ -28,10 +28,10 @@ class RequestsTab {
           await viewModel.refresh();
         },
         child: ListView.separated(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           itemCount: requests.length,
           separatorBuilder: (context, index) =>
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
           itemBuilder: (context, index) {
             final request = requests[index];
             return FriendRequestCard.build(context, request, viewModel);

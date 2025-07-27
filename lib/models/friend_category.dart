@@ -1,6 +1,6 @@
 // lib/models/friend_category.dart
 
-import '../core/types/app_timestamp.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 
 

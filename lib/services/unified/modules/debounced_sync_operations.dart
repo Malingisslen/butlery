@@ -3,8 +3,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for debounced Firebase sync operations
 /// 

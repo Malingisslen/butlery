@@ -1,10 +1,10 @@
 // lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart
 
 import 'dart:async';
-import '../../../../core/utils/logger.dart';
-import '../../../../services/permission_service.dart';
-import '../../../../core/injection.dart';
-import 'shared/realtime_recipe_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Presence tracking module
 /// 
@@ -185,7 +185,7 @@ class PresenceTrackingModule {
               'isEditing': true,
               'permission': member.toString().split('.').last,
               'lastSeen': DateTime.now(),
-              'joinedAt': DateTime.now().subtract(Duration(minutes: 1)),
+              'joinedAt': DateTime.now().subtract(const Duration(minutes: 1)),
             });
           }
         }
@@ -393,7 +393,7 @@ class PresenceTrackingModule {
   }
 
   /// Update presence stream with current data
-  void _updatePresenceStream() async {
+  Future<void> _updatePresenceStream() async {
     try {
       final presenceMap = <String, List<Map<String, dynamic>>>{};
       
@@ -409,7 +409,7 @@ class PresenceTrackingModule {
 
   /// Start periodic presence cleanup
   void _startPresenceCleanup() {
-    Timer.periodic(Duration(minutes: 1), (_) {
+    Timer.periodic(const Duration(minutes: 1), (_) {
       _cleanupStalePresence();
     });
   }
@@ -417,7 +417,7 @@ class PresenceTrackingModule {
   /// Clean up stale presence data
   void _cleanupStalePresence() {
     final now = DateTime.now();
-    final staleThreshold = Duration(minutes: 5);
+    const staleThreshold = Duration(minutes: 5);
     final keysToRemove = <String>[];
     
     for (final entry in _presenceTimestamps.entries) {

@@ -1,15 +1,15 @@
 // lib/views/receive_share_view.dart
 
 import 'package:flutter/material.dart';
-import '../services/content_detector_service.dart';
-import '../services/social_media_extractor.dart';
-import '../services/analytics_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../widgets/common/scaffolds/base_scaffold.dart';
-import '../core/dialogs/dialog_factory.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// View för att ta emot och hantera delningar från andra appar
 class ReceiveShareView extends StatefulWidget {
@@ -201,7 +201,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
   @override
   Widget build(BuildContext context) {
     if (_isProcessing) {
-      return LoadingScaffold(
+      return const LoadingScaffold(
         title: 'Importera recept',
         loadingMessage: 'Analyserar innehåll...',
       );
@@ -223,7 +223,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
 
   Widget _buildContentView() {
     return Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -232,7 +232,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
           _buildContentPreview(),
           const Spacer(),
           _buildActionButtons(),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
         ],
       ),
     );
@@ -268,14 +268,14 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: Icon(icon, color: color, size: AppDimensions.iconSizeAction),
         ),
-        SizedBox(width: AppDimensions.spacingL),
+        const SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +301,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
 
   Widget _buildContentPreview() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -327,7 +327,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
           children: [
             if (_extractionError != null) ...[
               Container(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -335,8 +335,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: AppColors.error),
-                    SizedBox(width: AppDimensions.spacingS),
+                    const Icon(Icons.error_outline, color: AppColors.error),
+                    const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
                         _extractionError!,
@@ -348,7 +348,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                   ],
                 ),
               ),
-              SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.spacingL),
             ],
             ElevatedButton.icon(
               onPressed: _extractFromSocialMedia,
@@ -370,9 +370,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 ),
               ),
             ),
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             Text('eller', style: Theme.of(context).textTheme.bodySmall),
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
@@ -387,7 +387,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
-                side: BorderSide(color: AppColors.primaryBlue),
+                side: const BorderSide(color: AppColors.primaryBlue),
               ),
             ),
           ],
@@ -402,7 +402,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               style: Theme.of(context).textTheme.titleSmall,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToUrlImport,
               icon: const Icon(Icons.download),
@@ -427,15 +427,15 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         return Column(
           children: [
             Container(
-              padding: EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle, color: AppColors.success),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const Icon(Icons.check_circle, color: AppColors.success),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
                       'Recepttext detekterad! Vi kan importera detta.',
@@ -447,7 +447,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 ],
               ),
             ),
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.arrow_forward),
@@ -476,7 +476,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             OutlinedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.edit),
@@ -491,7 +491,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
-                side: BorderSide(color: AppColors.primaryBlue),
+                side: const BorderSide(color: AppColors.primaryBlue),
               ),
             ),
           ],

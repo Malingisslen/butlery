@@ -1,15 +1,15 @@
 // lib/widgets/common/content_card.dart - Clean facade with delegation pattern
 
 import 'package:flutter/material.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/user_profile.dart';
-import '../../models/friend_request.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
 
 // Import focused card modules
-import 'content_cards/recipe_card.dart';
-import 'content_cards/friend_card.dart';
-import 'content_cards/menu_card.dart';
-import 'content_cards/shopping_list_card.dart';
+import 'package:butlery/widgets/common/content_cards/recipe_card.dart';
+import 'package:butlery/widgets/common/content_cards/friend_card.dart';
+import 'package:butlery/widgets/common/content_cards/menu_card.dart';
+import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 
 // Re-export for backward compatibility
 export 'content_cards/recipe_card.dart' show RecipeCardStyle;

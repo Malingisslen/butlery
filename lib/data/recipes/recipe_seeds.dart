@@ -1,6 +1,6 @@
 // lib/data/recipes/recipe_seeds.dart
 
-import '../../models/recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:uuid/uuid.dart';
 
 class RecipeSeeds {

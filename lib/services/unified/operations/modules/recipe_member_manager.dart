@@ -1,10 +1,10 @@
 // lib/services/unified/operations/modules/recipe_member_manager.dart
 
-import '../../../../models/recipe_unified.dart';
-import '../../../../models/permissions/resource_permission.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../notifications/notification_service.dart';
-import '../../../notifications/notification_types.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Focused module for collaborative recipe membership management
 /// 

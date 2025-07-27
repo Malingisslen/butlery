@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/recipe_unified.dart';
-import '../../viewmodels/collaborative_status_viewmodel.dart';
-import '../../widgets/common/social_components.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// AppBar component for edit recipe view with collaborative status
 class EditRecipeAppBar {
@@ -33,7 +33,7 @@ class EditRecipeAppBar {
             actions: [
               if (isCollaborative)
                 Padding(
-                  padding: EdgeInsets.only(right: AppDimensions.spacingL),
+                  padding: const EdgeInsets.only(right: AppDimensions.spacingL),
                   child: Center(
                     child: SocialComponents.collaborativeStatusBadge(
                       text: 'Delat',

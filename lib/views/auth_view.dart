@@ -2,15 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/auth_viewmodel.dart';
-import '../core/injection.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../widgets/common/state_widget.dart';
-import '../widgets/branding/app_logo.dart';
-import '../widgets/styled/styled_widgets.dart';
-import '../core/validators/form_validators.dart';
+import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/branding/app_logo.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 
 /// AuthView hanterar login och registrering
 ///
@@ -84,10 +84,10 @@ class _AuthViewState extends State<AuthView> {
 
   /// Bygger header med app-namn och välkomsttext
   Widget _buildHeader(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         // App branding with logo and name
-        const AppBranding.auth(
+        AppBranding.auth(
           tagline: 'Smart recepthantering för din vardag',
         ),
       ],
@@ -162,7 +162,7 @@ class _AuthViewState extends State<AuthView> {
       focusNode: _nameFocus,
       textInputAction: TextInputAction.next,
       enabled: !viewModel.isLoading,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Ditt namn',
         hintText: 'Ange ditt namn',
         prefixIcon: Icon(Icons.person_outline, size: AppDimensions.iconSizeAction),
@@ -245,10 +245,10 @@ class _AuthViewState extends State<AuthView> {
       onPressed: viewModel.isLoading ? null : () => _handleSubmit(viewModel),
       child:
           viewModel.isLoading
-              ? SizedBox(
+              ? const SizedBox(
                   width: AppDimensions.iconSizeS,
                   height: AppDimensions.iconSizeS,
-                  child: const CircularProgressIndicator(
+                  child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                   ),

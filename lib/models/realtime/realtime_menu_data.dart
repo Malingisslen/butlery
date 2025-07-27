@@ -1,7 +1,7 @@
 // lib/models/realtime/realtime_menu_data.dart
 
-import '../recipe_unified.dart';
-import '../../core/types/app_timestamp.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
 
 /// Pure data representation for realtime menu content
 /// 

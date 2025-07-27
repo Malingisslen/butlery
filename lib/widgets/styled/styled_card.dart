@@ -1,9 +1,9 @@
 // lib/widgets/styled/styled_card.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/theme_constants.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/theme_constants.dart';
 
 /// Pre-styled card widgets to eliminate design-in-views violations
 /// Provides consistent card styling patterns used throughout the app
@@ -134,23 +134,23 @@ class StyledCard extends StatelessWidget {
     // Apply default spacing for specific card types
     if (padding == null) {
       if (runtimeType.toString().contains('recipe')) {
-        effectivePadding = EdgeInsets.all(AppDimensions.spacing12);
-        effectiveMargin = EdgeInsets.all(AppDimensions.spacing8);
+        effectivePadding = const EdgeInsets.all(AppDimensions.spacing12);
+        effectiveMargin = const EdgeInsets.all(AppDimensions.spacing8);
       } else if (runtimeType.toString().contains('listItem')) {
         effectivePadding = AppDimensions.listItemPadding;
-        effectiveMargin = EdgeInsets.symmetric(
+        effectiveMargin = const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing8,
           vertical: AppDimensions.spacing4,
         );
       } else if (runtimeType.toString().contains('dialog')) {
-        effectivePadding = EdgeInsets.all(AppDimensions.spacing24);
+        effectivePadding = const EdgeInsets.all(AppDimensions.spacing24);
       } else if (runtimeType.toString().contains('selection')) {
-        effectivePadding = EdgeInsets.all(AppDimensions.spacing12);
-        effectiveMargin = EdgeInsets.all(AppDimensions.spacing4);
+        effectivePadding = const EdgeInsets.all(AppDimensions.spacing12);
+        effectiveMargin = const EdgeInsets.all(AppDimensions.spacing4);
       }
     }
     
-    Widget card = Card(
+    final Widget card = Card(
       color: backgroundColor ?? cardTheme.color,
       elevation: elevation ?? cardTheme.elevation,
       margin: effectiveMargin ?? EdgeInsets.zero,
@@ -196,7 +196,7 @@ class StyledCards {
     VoidCallback? onAction,
   }) {
     return StyledCard.outlined(
-      padding: EdgeInsets.all(AppDimensions.spacing24),
+      padding: const EdgeInsets.all(AppDimensions.spacing24),
       onTap: onAction,
       child: child,
     );
@@ -210,7 +210,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.errorContainer,
       borderColor: AppColors.error,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       onTap: onRetry,
       child: child,
     );
@@ -223,7 +223,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.infoContainer,
       borderColor: AppColors.info,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: child,
     );
   }
@@ -235,7 +235,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.successContainer,
       borderColor: AppColors.success,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: child,
     );
   }
@@ -247,7 +247,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.warningContainer,
       borderColor: AppColors.warning,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: child,
     );
   }

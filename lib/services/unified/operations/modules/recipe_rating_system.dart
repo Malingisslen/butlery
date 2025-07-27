@@ -1,9 +1,9 @@
 // lib/services/unified/operations/modules/recipe_rating_system.dart
 
-import '../../../../models/recipe_unified.dart';
-import '../../../../repositories/interfaces/ratings_repository.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../../core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Focused module for recipe rating system
 /// 

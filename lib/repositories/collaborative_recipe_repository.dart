@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/realtime/realtime_recipe.dart';
-import '../models/realtime/live_editor.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/realtime/live_editor.dart';
 
 class CollaborativeRecipeRepository {
   final FirebaseFirestore _firestore;

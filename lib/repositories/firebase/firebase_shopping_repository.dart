@@ -1,13 +1,13 @@
 // lib/repositories/firebase/firebase_shopping_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/auth_repository.dart';
-import 'firebase_auth_repository.dart';
-import '../../models/unified/unified_shopping_list.dart';
-import '../../models/unified/unified_shopping_item.dart';
-import '../interfaces/shopping_repository.dart';
-import 'base_firebase_repository.dart';
-import '../../core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Repository for handling shopping lists stored in Firestore.
 ///

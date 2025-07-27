@@ -1,8 +1,8 @@
 // lib/services/unified/operations/modules/recipe_permission_helper.dart
 
-import '../../../../models/recipe_unified.dart';
-import '../../../../models/permissions/resource_permission.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for recipe permission checking and legacy compatibility
 /// 

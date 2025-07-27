@@ -1,11 +1,11 @@
 // lib/widgets/social/invitations/invitation_target_inputs.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import 'invitation_target_displays.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_displays.dart';
 
 /// Invitation target input widgets
 ///
@@ -72,7 +72,7 @@ class InvitationTargetInputs {
         .toList();
 
     return Padding(
-      padding: padding ?? EdgeInsets.all(AppDimensions.spacingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -264,14 +264,14 @@ class InvitationTargetInputs {
         hintStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.textLight,
         ),
-        prefixIcon: Icon(
+        prefixIcon: const Icon(
           Icons.search,
           color: AppColors.textSecondary,
           size: AppDimensions.iconSizeAction,
         ),
         suffixIcon: onClear != null
             ? IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.clear,
                   color: AppColors.textSecondary,
                   size: AppDimensions.iconSizeAction,
@@ -353,7 +353,7 @@ class InvitationTargetInputs {
   /// Build section header
   static Widget _buildTargetSectionHeader(String title) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Text(
         title,
         style: AppTextStyles.titleLarge,
@@ -364,7 +364,7 @@ class InvitationTargetInputs {
   /// Build empty targets message
   static Widget _buildEmptyTargetsMessage([String? customMessage]) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -372,7 +372,7 @@ class InvitationTargetInputs {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.people_outline,
             size: AppDimensions.iconSizeEmptyState,
             color: AppColors.textMedium,
@@ -478,14 +478,14 @@ class _TargetSelectionDialogState extends State<_TargetSelectionDialog> {
             // Selected count
             if (selectedTargets.isNotEmpty) ...[
               Container(
-                padding: EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.check_circle,
                       size: AppDimensions.iconSizeM,
                       color: AppColors.primaryBlue,

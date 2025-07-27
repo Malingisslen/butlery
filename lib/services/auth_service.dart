@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../repositories/interfaces/auth_repository.dart' as auth_repo;
-import '../repositories/firebase/firebase_auth_repository.dart';
-import '../core/mixins/state_notifier_mixin.dart';
-import '../core/mixins/async_operation_mixin.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// AuthService hanterar all autentisering med Firebase
 ///

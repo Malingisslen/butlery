@@ -1,8 +1,8 @@
 // lib/utils/text/shopping_list_generator.dart
 
-import 'unit_converter.dart';
-import 'ingredient_parser.dart';
-import 'swedish_pluralization.dart';
+import 'package:butlery/utils/text/unit_converter.dart';
+import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/swedish_pluralization.dart';
 
 /// ShoppingListGenerator - Shopping list generation utilities
 ///

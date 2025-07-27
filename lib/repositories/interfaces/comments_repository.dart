@@ -1,5 +1,5 @@
-import 'repository.dart';
-import '../../models/recipe_comment.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/recipe_comment.dart';
 
 /// Repository interface for recipe comment operations
 abstract class CommentsRepository extends Repository<RecipeComment> {

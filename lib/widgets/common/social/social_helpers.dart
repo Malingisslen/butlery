@@ -1,9 +1,9 @@
 // lib/widgets/common/social/social_helpers.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../user/user_display_widgets.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Consolidated Social Helper Functions
 /// 

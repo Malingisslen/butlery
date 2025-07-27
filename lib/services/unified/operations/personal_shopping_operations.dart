@@ -15,9 +15,9 @@
 /// Connected to: UnifiedShoppingService, Shopping ViewModels
 /// Used in phases: Phase 5 - Service Consolidation
 
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Personal shopping operations feature interface
 /// 

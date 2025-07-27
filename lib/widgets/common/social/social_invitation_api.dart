@@ -1,12 +1,12 @@
 // lib/widgets/common/social/social_invitation_api.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../social/invitations/invitation_target_displays.dart';
-import '../../social/invitations/invitation_target_inputs.dart';
-import '../../user/user_display_widgets.dart' show ImageSize;
-import 'invitation_target_widgets.dart';
-import 'invitation_target_states.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_displays.dart';
+import 'package:butlery/widgets/social/invitations/invitation_target_inputs.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
+import 'package:butlery/widgets/common/social/invitation_target_widgets.dart';
+import 'package:butlery/widgets/common/social/invitation_target_states.dart';
 
 /// Invitation API delegation for SocialComponents
 class SocialInvitationApi {

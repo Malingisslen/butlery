@@ -16,11 +16,11 @@
 /// Used in phases: Phase 6 - Eliminate Code Duplication Patterns
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../utils/logger.dart';
-import '../mixins/error_handling_mixin.dart';
-import '../utils/validation_utils.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Factory class that eliminates duplicated dialog creation patterns
 /// 
@@ -167,8 +167,8 @@ class DialogFactory with ErrorHandlingMixin {
         builder: (context) => AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.error_outline, color: AppColors.error),
-              SizedBox(width: AppDimensions.spacingM),
+              const Icon(Icons.error_outline, color: AppColors.error),
+              const SizedBox(width: AppDimensions.spacingM),
               Text(title),
             ],
           ),
@@ -230,8 +230,8 @@ class DialogFactory with ErrorHandlingMixin {
         builder: (context) => AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.check_circle_outline, color: AppColors.success),
-              SizedBox(width: AppDimensions.spacingM),
+              const Icon(Icons.check_circle_outline, color: AppColors.success),
+              const SizedBox(width: AppDimensions.spacingM),
               Text(title),
             ],
           ),
@@ -294,19 +294,19 @@ class DialogFactory with ErrorHandlingMixin {
     required String description,
     List<String>? bulletPoints,
   }) async {
-    Widget content = Column(
+    final Widget content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(description),
         if (bulletPoints != null && bulletPoints.isNotEmpty) ...[
-          SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingXl),
           ...bulletPoints.map((point) => Padding(
-            padding: EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.only(bottom: 4),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
                 Expanded(child: Text(point)),
               ],
             ),
@@ -351,13 +351,13 @@ class DialogFactory with ErrorHandlingMixin {
             children: [
               if (message != null) ...[
                 Text(message),
-                SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.spacingXl),
               ],
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
                   hintText: hintText,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: keyboardType,
                 maxLength: maxLength,
@@ -415,13 +415,13 @@ class DialogFactory with ErrorHandlingMixin {
             children: [
               if (message != null) ...[
                 Text(message),
-                SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.spacingXl),
               ],
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
                   hintText: hintText,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: maxLines,
                 maxLength: maxLength,
@@ -474,7 +474,7 @@ class DialogFactory with ErrorHandlingMixin {
               children: [
                 if (message != null) ...[
                   Text(message),
-                  SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
                 ],
                 ...choices.map((choice) => RadioListTile<T>(
                   title: Text(choice.label),
@@ -527,7 +527,7 @@ class DialogFactory with ErrorHandlingMixin {
               children: [
                 if (message != null) ...[
                   Text(message),
-                  SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
                 ],
                 ...choices.map((choice) => CheckboxListTile(
                   title: Text(choice.label),
@@ -578,8 +578,8 @@ class DialogFactory with ErrorHandlingMixin {
           child: AlertDialog(
             content: Row(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 16),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 16),
                 Expanded(child: Text(message)),
               ],
             ),
@@ -640,19 +640,19 @@ class DialogChoice<T> {
 /// Pre-defined dialog choices for common scenarios
 class CommonDialogChoices {
   static List<DialogChoice<bool>> yesNo() => [
-    DialogChoice(label: 'Ja', value: true),
-    DialogChoice(label: 'Nej', value: false),
+    const DialogChoice(label: 'Ja', value: true),
+    const DialogChoice(label: 'Nej', value: false),
   ];
   
   static List<DialogChoice<String>> yesNoCancel() => [
-    DialogChoice(label: 'Ja', value: 'yes'),
-    DialogChoice(label: 'Nej', value: 'no'),
-    DialogChoice(label: 'Avbryt', value: 'cancel'),
+    const DialogChoice(label: 'Ja', value: 'yes'),
+    const DialogChoice(label: 'Nej', value: 'no'),
+    const DialogChoice(label: 'Avbryt', value: 'cancel'),
   ];
   
   static List<DialogChoice<String>> saveDiscardCancel() => [
-    DialogChoice(label: 'Spara', value: 'save'),
-    DialogChoice(label: 'Kasta bort', value: 'discard'),
-    DialogChoice(label: 'Avbryt', value: 'cancel'),
+    const DialogChoice(label: 'Spara', value: 'save'),
+    const DialogChoice(label: 'Kasta bort', value: 'discard'),
+    const DialogChoice(label: 'Avbryt', value: 'cancel'),
   ];
 }

@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../services/image_picker_service.dart';
-import '../../core/injection.dart';
-import '../../core/utils/logger.dart';
-import 'image_config.dart';
-import 'image_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_components.dart';
 
 /// Editable image widget for recipe editing
 class EditableImageWidget extends StatefulWidget {
@@ -123,7 +123,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_isAddingImage) ...[
-                    SizedBox(
+                    const SizedBox(
                       width: 32,
                       height: 32,
                       child: CircularProgressIndicator(
@@ -147,7 +147,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                         shape: BoxShape.circle,
                         color: AppColors.primaryBlue.withValues(alpha: 0.1),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.add_photo_alternate_outlined,
                         size: 28, // Reduced from 32
                         color: AppColors.primaryBlue,
@@ -279,7 +279,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.star,
                     size: 14,
                     color: Colors.white,

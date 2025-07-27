@@ -1,6 +1,6 @@
 // lib/repositories/interfaces/social_sharing_repository.dart
 
-import '../../models/shared_content.dart';
+import 'package:butlery/models/shared_content.dart';
 
 /// Repository interface for social sharing operations
 abstract class SocialSharingRepository {

@@ -1,10 +1,10 @@
 // lib/widgets/common/indicators/realtime_indicators.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/realtime/participant_tracker.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Realtime indicators for collaborative features
 class RealtimeIndicators {
@@ -292,7 +292,7 @@ class _ParticipantListWidget extends StatelessWidget {
     final onlineCount = activities.where((a) => a.isOnline).length;
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
@@ -329,7 +329,7 @@ class _ParticipantListWidget extends StatelessWidget {
     final isCurrentUser = activity.userId == currentUserId;
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingS,
       ),
@@ -521,7 +521,7 @@ class _RealtimeStatusBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'Offline',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,

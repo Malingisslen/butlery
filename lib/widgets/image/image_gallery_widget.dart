@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import 'image_config.dart';
-import 'image_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_components.dart';
 
 /// Image gallery widget for grid display
 class ImageGalleryWidget extends StatefulWidget {
@@ -163,13 +163,13 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle,
             color: AppColors.primaryBlue,
           ),
@@ -218,7 +218,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.add_photo_alternate_outlined,
                   size: 32,
                   color: AppColors.primaryBlue,

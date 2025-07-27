@@ -1,10 +1,10 @@
 // lib/widgets/social/invitations/invitation_target_states.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Invitation target state widgets
 ///
@@ -16,16 +16,16 @@ class InvitationTargetStates {
   /// Build loading state for target lists
   static Widget buildTargetListLoading() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: AppColors.divider),
       ),
-      child: Column(
+      child: const Column(
         children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: AppDimensions.spacingXl),
+          CircularProgressIndicator(),
+          SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Laddar mål...',
             style: AppTextStyles.titleMedium,
@@ -38,7 +38,7 @@ class InvitationTargetStates {
   /// Build loading state for target cards
   static Widget buildTargetCardLoading() {
     return Container(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
@@ -58,7 +58,7 @@ class InvitationTargetStates {
               color: AppColors.backgroundLight,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
-            child: Center(
+            child: const Center(
               child: SizedBox(
                 width: 16,
                 height: 16,
@@ -119,7 +119,7 @@ class InvitationTargetStates {
     VoidCallback? onRetry,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -127,7 +127,7 @@ class InvitationTargetStates {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             size: AppDimensions.iconSizeEmptyState,
             color: AppColors.error,
@@ -151,11 +151,11 @@ class InvitationTargetStates {
             const SizedBox(height: AppDimensions.spacingXl),
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: Icon(
+              icon: const Icon(
                 Icons.refresh,
                 size: AppDimensions.iconSizeAction,
               ),
-              label: Text(
+              label: const Text(
                 'Försök igen',
                 style: AppTextStyles.labelLarge,
               ),
@@ -178,7 +178,7 @@ class InvitationTargetStates {
   /// Build empty state for targets (no available targets)
   static Widget buildNoTargetsAvailable() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -186,7 +186,7 @@ class InvitationTargetStates {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.people_outline,
             size: AppDimensions.iconSizeEmptyState,
             color: AppColors.textMedium,
@@ -199,7 +199,7 @@ class InvitationTargetStates {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
+          const Text(
             'Lägg till vänner eller skapa grupper för att börja dela',
             style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
@@ -215,7 +215,7 @@ class InvitationTargetStates {
     VoidCallback? onClearSearch,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -223,7 +223,7 @@ class InvitationTargetStates {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.search_off,
             size: AppDimensions.iconSizeEmptyState,
             color: AppColors.textMedium,
@@ -256,11 +256,11 @@ class InvitationTargetStates {
             const SizedBox(height: AppDimensions.spacingXl),
             TextButton.icon(
               onPressed: onClearSearch,
-              icon: Icon(
+              icon: const Icon(
                 Icons.clear,
                 size: AppDimensions.iconSizeAction,
               ),
-              label: Text(
+              label: const Text(
                 'Rensa sökning',
                 style: AppTextStyles.labelLarge,
               ),
@@ -274,7 +274,7 @@ class InvitationTargetStates {
   /// Build empty state for selected targets
   static Widget buildNoTargetsSelected() {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
         color: AppColors.backgroundColor,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -285,7 +285,7 @@ class InvitationTargetStates {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.touch_app,
             size: AppDimensions.iconSizeDisplay,
             color: AppColors.textMedium,
@@ -298,7 +298,7 @@ class InvitationTargetStates {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'Tryck på mål nedan för att välja',
             style: AppTextStyles.bodySmall,
             textAlign: TextAlign.center,
@@ -317,8 +317,8 @@ class InvitationTargetStates {
     VoidCallback? onDismiss,
   }) {
     return Container(
-      margin: EdgeInsets.all(AppDimensions.spacingL),
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      margin: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -326,7 +326,7 @@ class InvitationTargetStates {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle,
             color: AppColors.success,
             size: AppDimensions.iconSizeAction,
@@ -357,7 +357,7 @@ class InvitationTargetStates {
           if (onDismiss != null)
             IconButton(
               onPressed: onDismiss,
-              icon: Icon(
+              icon: const Icon(
                 Icons.close,
                 color: AppColors.success,
                 size: AppDimensions.iconSizeM,
@@ -374,7 +374,7 @@ class InvitationTargetStates {
     VoidCallback? onContinue,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -382,7 +382,7 @@ class InvitationTargetStates {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle,
             size: AppDimensions.iconSizeDisplay,
             color: AppColors.success,
@@ -440,7 +440,7 @@ class InvitationTargetStates {
     final stateColor = color ?? AppColors.textSecondary;
 
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

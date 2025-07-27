@@ -313,7 +313,7 @@ class BatchingConfig {
 
   /// Default batching for recipe comments
   static final recipeComments = BatchingConfig(
-    window: Duration(minutes: 5),
+    window: const Duration(minutes: 5),
     maxSize: 5,
     contentBuilder: (notifications) {
       if (notifications.length == 1) {
@@ -325,7 +325,7 @@ class BatchingConfig {
 
   /// Default batching for recipe likes
   static final recipeLikes = BatchingConfig(
-    window: Duration(minutes: 10),
+    window: const Duration(minutes: 10),
     maxSize: 10,
     contentBuilder: (notifications) {
       if (notifications.length == 1) {

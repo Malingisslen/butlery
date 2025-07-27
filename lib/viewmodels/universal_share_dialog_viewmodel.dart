@@ -1,11 +1,11 @@
 // lib/viewmodels/universal_share_dialog_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../services/social_recipe_service.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// ViewModel for UniversalShareDialog
 /// Handles business logic for sharing content with friends

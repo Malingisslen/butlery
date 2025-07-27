@@ -17,9 +17,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../core/validators/form_validators.dart';
-import '../../../core/constants/app_strings.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// Common form field factory that eliminates duplicate form field patterns.
 /// 
@@ -48,14 +48,14 @@ class DialogFormFields {
     String? Function(String?)? customValidator,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppDimensions.spacingM),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: labelText,
           hintText: hintText,
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
           counterText: maxLength != null ? null : '',
         ),
         maxLength: maxLength,
@@ -146,7 +146,7 @@ class DialogFormFields {
       hintText: hintText,
       prefixIcon: prefixIcon,
       enabled: enabled,
-      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
       ],
@@ -330,7 +330,7 @@ class DialogFormFields {
     String? Function(T?)? validator,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppDimensions.spacingM),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: DropdownButtonFormField<T>(
         value: value,
         items: items,
@@ -339,7 +339,7 @@ class DialogFormFields {
           labelText: labelText,
           hintText: hintText,
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
         validator: validator ?? (required 
           ? (value) => value == null ? '$labelText krävs' : null
@@ -357,7 +357,7 @@ class DialogFormFields {
     bool enabled = true,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: CheckboxListTile(
         value: value,
         onChanged: enabled ? onChanged : null,
@@ -378,7 +378,7 @@ class DialogFormFields {
     bool enabled = true,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: SwitchListTile(
         value: value,
         onChanged: enabled ? onChanged : null,

@@ -2,10 +2,10 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../models/recipe_comment.dart';
-import '../../../../models/permissions/resource_permission.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for comment utilities and statistics
 /// 

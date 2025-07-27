@@ -1,15 +1,15 @@
 // lib/services/unified/operations/modules/recipe_social_stats.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../notifications/notification_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 
 // Focused modules
-import 'recipe_rating_system.dart';
-import 'social_engagement_metrics.dart';
-import 'rating_statistics.dart';
-import 'rating_notifications.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_rating_system.dart';
+import 'package:butlery/services/unified/operations/modules/social_engagement_metrics.dart';
+import 'package:butlery/services/unified/operations/modules/rating_statistics.dart';
+import 'package:butlery/services/unified/operations/modules/rating_notifications.dart';
 
 /// Clean facade for recipe social statistics using focused modules
 ///

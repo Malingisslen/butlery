@@ -2,8 +2,8 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for Firebase synchronization
 /// 
@@ -32,6 +32,7 @@ class FirebaseSyncManager {
       final subscriptions = <String, StreamSubscription<QuerySnapshot>>{};
 
       // Start personal recipes sync
+      // ignore: cancel_subscriptions - returned in Map for caller to manage
       final personalSub = await _startPersonalRecipesSync(
         firestore: firestore,
         currentUserId: currentUserId,
@@ -42,6 +43,7 @@ class FirebaseSyncManager {
       subscriptions['personal_recipes'] = personalSub;
 
       // Start collaborative recipes sync
+      // ignore: cancel_subscriptions - returned in Map for caller to manage
       final collaborativeSub = await _startCollaborativeRecipesSync(
         firestore: firestore,
         currentUserId: currentUserId,
@@ -329,6 +331,7 @@ class FirebaseSyncManager {
         
         for (final syncType in missingSyncs) {
           if (syncType == 'personal_recipes') {
+            // ignore: cancel_subscriptions - added to subscriptions Map for management
             final sub = await _startPersonalRecipesSync(
               firestore: firestore,
               currentUserId: currentUserId,
@@ -338,6 +341,7 @@ class FirebaseSyncManager {
             );
             subscriptions[syncType] = sub;
           } else if (syncType == 'collaborative_recipes') {
+            // ignore: cancel_subscriptions - added to subscriptions Map for management
             final sub = await _startCollaborativeRecipesSync(
               firestore: firestore,
               currentUserId: currentUserId,

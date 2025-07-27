@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/injection.dart';
-import '../../widgets/common/social_components.dart';
-import '../../models/user_profile.dart';
-import '../../viewmodels/add_members_to_group_viewmodel.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 class AddMembersToGroupView extends StatefulWidget {
   final String groupId;
@@ -90,7 +90,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Lägg till medlemmar',
             style: AppTextStyles.headlineSmall,
           ),
@@ -211,7 +211,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.info_outline,
             size: 16,
             color: AppColors.textMedium,
@@ -340,7 +340,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.backgroundBeige,
         border: Border(
           top: BorderSide(
@@ -362,7 +362,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.error_outline,
                       color: AppColors.error,
                       size: 20,
@@ -429,7 +429,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(

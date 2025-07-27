@@ -1,10 +1,10 @@
 // lib/widgets/common/social/social_collaborative_api.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../viewmodels/recipe_form_viewmodel.dart';
-import '../../social/collaborative/collaborative_indicators.dart';
-import '../../user/user_display_widgets.dart' show ImageSize;
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/social/collaborative/collaborative_indicators.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 
 /// Collaborative API delegation for SocialComponents
 class SocialCollaborativeApi {

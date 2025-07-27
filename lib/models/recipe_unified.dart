@@ -3,14 +3,14 @@
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
-import '../core/mixins/json_serializable_mixin.dart';
-import '../core/types/app_timestamp.dart';
-import 'permissions/resource_permission.dart';
+import 'package:butlery/core/mixins/json_serializable_mixin.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 // Focused modules
-import 'recipe/recipe_operations.dart';
-import 'recipe/recipe_factory.dart';
-import 'recipe/recipe_serialization.dart';
+import 'package:butlery/models/recipe/recipe_operations.dart';
+import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:butlery/models/recipe/recipe_serialization.dart';
 
 part 'recipe_unified.g.dart';
 

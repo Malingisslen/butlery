@@ -1,7 +1,7 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 ///

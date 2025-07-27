@@ -1,11 +1,11 @@
 // lib/viewmodels/shared_content/content_operations.dart
 
-import '../../../models/shared_recipe.dart';
-import '../../../models/shared_menu.dart';
-import '../../../services/social_recipe_service.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for content operations
 /// 
