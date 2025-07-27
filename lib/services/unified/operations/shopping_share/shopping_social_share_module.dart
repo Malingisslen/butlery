@@ -3,9 +3,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../models/unified/unified_shopping_item.dart';
 import '../../../../models/unified/unified_shopping_list.dart';
+import '../../../../models/shared_content.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../services/permission_service.dart';
 import '../../../../core/injection.dart';
+import '../../../../repositories/interfaces/social_sharing_repository.dart';
 import 'shared/shopping_share_utils.dart';
 
 /// Shopping list social sharing module
@@ -20,8 +22,11 @@ import 'shared/shopping_share_utils.dart';
 /// ❌ DOES NOT CONTAIN: Export, templates, external sharing, import from files
 class ShoppingSocialShareModule {
   final dynamic _parent; // UnifiedShoppingService
+  late final SocialSharingRepository _sharingRepository;
 
-  ShoppingSocialShareModule(this._parent);
+  ShoppingSocialShareModule(this._parent) {
+    _sharingRepository = sl<SocialSharingRepository>();
+  }
 
   // ===== FRIEND SHARING =====
 
@@ -52,47 +57,30 @@ class ShoppingSocialShareModule {
       final currentUser = sl<PermissionService>().currentUser;
       if (currentUser == null) return false;
       
-      // Create shared list entries in Firestore
-      final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
-      
-      for (final friendId in friendIds) {
-        final shareDoc = firestore.collection('sharedShoppingLists').doc();
-        batch.set(shareDoc, {
-          'listId': listId,
+      // Create shared content using repository
+      final sharedContent = SharedContent(
+        id: '${listId}_${DateTime.now().millisecondsSinceEpoch}',
+        contentType: 'shopping_list',
+        contentId: listId,
+        ownerId: currentUser.uid,
+        sharedAt: DateTime.now(),
+        sharedWithUserIds: friendIds,
+        sharedWithGroupIds: [],
+        permissions: SharingPermissions(
+          canView: true,
+          canEdit: false,
+        ),
+        metadata: {
           'listName': list!.name,
-          'ownerId': currentUser.uid,
-          'ownerDisplayName': currentUser.displayName,
-          'ownerAvatarUrl': currentUser.avatarUrl,
-          'sharedWithUserId': friendId,
-          'message': message,
-          'sharedAt': FieldValue.serverTimestamp(),
-          'isActive': true,
+          'ownerDisplayName': currentUser.displayName ?? '',
+          'ownerAvatarUrl': currentUser.avatarUrl ?? '',
+          'message': message ?? '',
           'shareType': 'direct_friend',
           'listData': _createShareListData(list),
-        });
-
-        // Create user-specific share record for the friend
-        final userShareDoc = firestore
-            .collection('userSharedShoppingLists')
-            .doc(friendId)
-            .collection('receivedLists')
-            .doc(shareDoc.id);
-            
-        batch.set(userShareDoc, {
-          'sharedListId': shareDoc.id,
-          'sharedByUserId': currentUser.uid,
-          'sharedByDisplayName': currentUser.displayName,
-          'sharedByAvatarUrl': currentUser.avatarUrl,
-          'listName': list.name,
-          'sharedAt': FieldValue.serverTimestamp(),
-          'isViewed': false,
-          'isImported': false,
-          'shareType': 'direct_friend',
-        });
-      }
+        },
+      );
       
-      await batch.commit();
+      await _sharingRepository.shareToUsers(friendIds, sharedContent);
       
       AppLogger.success('✅ List shared with ${friendIds.length} friends: ${list!.name}');
       return true;
@@ -152,19 +140,29 @@ class ShoppingSocialShareModule {
       final currentUser = sl<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
-      // Create collaboration invitation
-      final firestore = FirebaseFirestore.instance;
-      await firestore.collection('collaborationInvitations').add({
-        'listId': listId,
-        'listName': list.name,
-        'inviterId': currentUser.uid,
-        'inviterDisplayName': currentUser.displayName,
-        'recipientId': recipientId,
-        'message': message,
-        'invitedAt': FieldValue.serverTimestamp(),
-        'status': 'pending',
-        'type': 'shopping_list_collaboration',
-      });
+      // Create collaboration invitation using repository
+      final sharedContent = SharedContent(
+        id: '${listId}_collab_${DateTime.now().millisecondsSinceEpoch}',
+        contentType: 'shopping_list_collaboration',
+        contentId: listId,
+        ownerId: currentUser.uid,
+        sharedAt: DateTime.now(),
+        sharedWithUserIds: [recipientId],
+        sharedWithGroupIds: [],
+        permissions: SharingPermissions(
+          canView: true,
+          canEdit: true,
+        ),
+        metadata: {
+          'listName': list.name,
+          'ownerDisplayName': currentUser.displayName ?? '',
+          'message': message ?? '',
+          'status': 'pending',
+          'type': 'shopping_list_collaboration',
+        },
+      );
+      
+      await _sharingRepository.shareToUsers([recipientId], sharedContent);
       
       AppLogger.success('✅ Collaboration invite sent for list: ${list.name}');
       return true;
@@ -184,45 +182,31 @@ class ShoppingSocialShareModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('userSharedShoppingLists')
-          .doc(currentUserId)
-          .collection('receivedLists')
-          .orderBy('sharedAt', descending: true)
-          .get();
-
+      // Get shared content from repository  
+      final sharedContent = await _sharingRepository
+          .getSharedWithMe(currentUserId)
+          .first;
+      
       final sharedLists = <Map<String, dynamic>>[];
       
-      for (final doc in querySnapshot.docs) {
-        final data = doc.data();
-        final sharedListId = data['sharedListId'];
+      for (final content in sharedContent.where((c) => c.contentType == 'shopping_list')) {
+        final listData = content.metadata['listData'] as Map<String, dynamic>? ?? {};
+        final statistics = listData['statistics'] as Map<String, dynamic>? ?? {};
         
-        // Get full list data
-        final listDoc = await FirebaseFirestore.instance
-            .collection('sharedShoppingLists')
-            .doc(sharedListId)
-            .get();
-            
-        if (listDoc.exists && listDoc.data()!['isActive'] == true) {
-          final listData = listDoc.data()!;
-          final listDataSnapshot = listData['listData'] as Map<String, dynamic>? ?? {};
-          final statistics = listDataSnapshot['statistics'] as Map<String, dynamic>? ?? {};
-          
-          sharedLists.add({
-            'id': sharedListId,
-            'listName': listData['listName'] ?? 'Namnlös lista',
-            'ownerDisplayName': listData['ownerDisplayName'] ?? 'Okänd användare',
-            'ownerAvatarUrl': listData['ownerAvatarUrl'],
-            'sharedAt': data['sharedAt'],
-            'totalItems': statistics['totalItems'] ?? 0,
-            'boughtItems': statistics['boughtItems'] ?? 0,
-            'remainingItems': statistics['remainingItems'] ?? 0,
-            'isViewed': data['isViewed'] ?? false,
-            'isImported': data['isImported'] ?? false,
-            'shareType': data['shareType'] ?? 'direct_friend',
-            'message': listData['message'],
-          });
-        }
+        sharedLists.add({
+          'id': content.id,
+          'listName': content.metadata['listName'] ?? 'Namnlös lista',
+          'ownerDisplayName': content.metadata['ownerDisplayName'] ?? 'Okänd användare',
+          'ownerAvatarUrl': content.metadata['ownerAvatarUrl'],
+          'sharedAt': content.sharedAt,
+          'totalItems': statistics['totalItems'] ?? 0,
+          'boughtItems': statistics['boughtItems'] ?? 0,
+          'remainingItems': statistics['remainingItems'] ?? 0,
+          'isViewed': content.viewedBy.containsKey(currentUserId),
+          'isImported': content.acceptedBy.containsKey(currentUserId),
+          'shareType': content.metadata['shareType'] ?? 'direct_friend',
+          'message': content.metadata['message'],
+        });
       }
 
       return sharedLists;
