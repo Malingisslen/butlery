@@ -147,6 +147,9 @@ Future<void> initializeDependencies() async {
       debugPrint('✅ FirestoreRepository registrerad');
     }
 
+    // Register FirebaseFirestore instance for dependency injection
+    sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
+
     // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
     sl.registerSingleton<RealtimeSyncService>(
       RealtimeSyncService(
