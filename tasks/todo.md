@@ -271,6 +271,165 @@
 
 ---
 
+## =🔄 Priority 1 REVISION: Complete Architecture Compliance (Week 3-4)
+
+**DISCOVERED**: Architecture validation revealed Priority 1 is only 60% complete.
+**REQUIRED**: Must achieve 0 architecture test failures and >95% compliance before Priority 2.
+
+### Phase 1A: Fix Critical Architecture Test Failures (8-10 hours) 🚨 CRITICAL
+
+#### [ ] **Fix Direct Firebase Access in 42 Services** (6 hours)
+**Current Status**: 42 services still import Firebase directly, violating repository pattern.
+
+**Services to Fix**:
+1. **Notification Services** (7 files - 1.5 hours):
+   - `lib/services/notifications/modules/fcm_token_manager.dart`
+   - `lib/services/notifications/modules/notification_analytics_manager.dart`
+   - `lib/services/notifications/modules/notification_batch_manager.dart`
+   - `lib/services/notifications/modules/notification_content_manager.dart`
+   - `lib/services/notifications/modules/notification_preference_manager.dart`
+   - `lib/services/notifications/notification_repository.dart`
+   - `lib/services/notifications/notification_service.dart`
+
+2. **Unified Modules** (15 files - 2.5 hours):
+   - `lib/services/unified/modules/debounced_sync_operations.dart`
+   - `lib/services/unified/modules/firebase_sync_manager.dart`
+   - `lib/services/unified/modules/personal_recipe_module.dart`
+   - `lib/services/unified/modules/realtime_cache_manager.dart`
+   - `lib/services/unified/modules/realtime_conflict_resolver.dart`
+   - `lib/services/unified/modules/realtime_content_operations.dart`
+   - `lib/services/unified/modules/realtime_editor_tracker.dart`
+   - `lib/services/unified/modules/realtime_event_handler.dart`
+   - `lib/services/unified/modules/realtime_recipe_module.dart`
+   - `lib/services/unified/modules/realtime_session_manager.dart`
+   - `lib/services/unified/modules/recipe_cache_module.dart`
+   - `lib/services/unified/modules/shopping_firebase_sync.dart`
+   - `lib/services/unified/modules/shopping_service_initialization.dart`
+   - `lib/services/unified/modules/social_recipe_module.dart`
+
+3. **Operations Modules** (12 files - 1.5 hours):
+   - `lib/services/unified/operations/modules/comment_likes_system.dart`
+   - `lib/services/unified/operations/modules/comment_utilities.dart`
+   - `lib/services/unified/operations/modules/rating_statistics.dart`
+   - `lib/services/unified/operations/modules/recipe_comments_manager.dart`
+   - `lib/services/unified/operations/modules/recipe_social_stats.dart`
+   - `lib/services/unified/operations/modules/social_engagement_metrics.dart`
+   - `lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart`
+   - `lib/services/unified/operations/shopping_share/shopping_external_share_module.dart`
+   - `lib/services/unified/operations/shopping_share/shopping_social_share_module.dart`
+   - `lib/services/unified/operations/shopping_share/shopping_template_module.dart`
+   - `lib/services/unified/operations/social_menu_operations.dart`
+
+4. **Core Services** (8 files - 30 minutes):
+   - `lib/services/realtime_sync_service.dart`
+   - `lib/services/unified/friends/friends_presence_service.dart`
+   - `lib/services/unified/friends/friends_sync_service.dart`
+   - `lib/services/unified/unified_friends_service.dart`
+   - `lib/services/unified/unified_recipe_service.dart` (still has issues)
+   - `lib/services/unified/unified_shopping_service.dart`
+
+#### [ ] **Fix Repository Pattern Violations** (2 hours)
+1. **Update Repositories to Extend BaseFirebaseRepository**:
+   - `lib/repositories/firebase/firebase_auth_repository.dart`
+   - `lib/repositories/firebase/firebase_connectivity_repository.dart`
+   - `lib/repositories/firebase/firebase_social_recipe_repository.dart`
+
+2. **Fix ViewModel Firebase Import**:
+   - `lib/viewmodels/menu/menu_social_manager.dart`
+
+3. **Convert Static Methods to DI**:
+   - `lib/services/notifications/fcm_service.dart`
+
+### Phase 1B: Address Critical File Size Violations (12-15 hours) 📏 HIGH
+
+#### [ ] **Refactor Oversized Core Files** (8 hours)
+**Target**: Get all files under 500 lines using facade pattern.
+
+1. **dialog_factory.dart** (658 lines → ~300 lines):
+   - Extract specialized dialog classes
+   - Create DialogBuilder pattern
+   - Keep facade for backward compatibility
+
+2. **injection.dart** (607 lines → ~400 lines):
+   - Group registrations by domain
+   - Extract initialization modules
+   - Create domain-specific injection helpers
+
+3. **Large Mixins** (504-576 lines each):
+   - `async_operation_mixin.dart` (504 lines)
+   - `json_serializable_mixin.dart` (510 lines)
+   - `stream_management_mixin.dart` (576 lines)
+   - `permission_mixins.dart` (512 lines)
+
+#### [ ] **Refactor Large Service Files** (6 hours)
+1. **realtime_menu.dart** (690 lines):
+   - Apply facade pattern
+   - Extract specialized modules
+
+2. **Documentation file** (737 lines):
+   - Split into focused documentation files
+
+### Phase 1C: Repository Pattern Compliance (4-6 hours) 🏗️ MEDIUM
+
+#### [ ] **Clean Repository Responsibilities** (3 hours)
+**Issue**: Repositories contain business logic and authentication handling.
+
+1. **Remove Business Logic from Repositories**:
+   - Extract validation logic to dedicated services
+   - Move complex data transformations to services
+   - Keep repositories focused on CRUD operations only
+
+2. **Standardize Authentication Handling**:
+   - Move authentication logic to AuthService
+   - Repositories should receive authenticated context
+
+#### [ ] **Standardize Repository Base Classes** (2 hours)
+1. **Ensure All Firebase Repositories Extend BaseFirebaseRepository**
+2. **Standardize Interface Implementations**
+3. **Remove Authentication Methods from Repositories**
+
+### Phase 1D: Service Layer Architecture Cleanup (6-8 hours) 🔧 MEDIUM
+
+#### [ ] **Eliminate Remaining Direct Firebase Access** (5 hours)
+1. **Create Missing Repository Interfaces**:
+   - For notification operations
+   - For realtime sync operations
+   - For specialized Firebase operations
+
+2. **Update Services to Use Repositories**:
+   - Replace all `FirebaseFirestore.instance` calls
+   - Remove all `cloud_firestore` imports from services
+   - Use dependency injection for all Firebase operations
+
+#### [ ] **Dependency Injection Compliance** (2 hours)
+1. **Convert Static Service Methods**:
+   - Update FCM service static methods
+   - Ensure all services use instance methods
+   - Update DI registration
+
+2. **Service Registration Cleanup**:
+   - Register all new repositories
+   - Update service dependencies
+   - Validate DI chain
+
+---
+
+## =📊 Success Metrics for Priority 1 Revision
+
+### Must Achieve (Priority 1 Complete):
+- ✅ **Architecture Tests**: 0 failures (currently 7)
+- ✅ **Firebase Abstraction**: >95% compliant (currently 86%)
+- ✅ **File Size Limits**: >90% compliant (currently 88%)
+- ✅ **Total Violations**: <500 (currently 1,433)
+- ✅ **Direct Firebase Access**: 0 services (currently 42)
+
+### Target Timeline:
+- **Week 3**: Phase 1A & 1B (Critical fixes and oversized files)
+- **Week 4**: Phase 1C & 1D (Repository compliance and service cleanup)
+- **Validation**: Continuous architecture testing after each phase
+
+---
+
 ## =' Priority 2: Code Quality & Performance (Week 3)
 
 ### 2.1 Code Duplication Elimination (12-16 hours) =� HIGH
