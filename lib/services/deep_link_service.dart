@@ -1,22 +1,25 @@
 // lib/services/deep_link_service.dart
 
 import 'dart:async';
-import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/utils/logger.dart';
 import '../services/permission_service.dart';
 import '../core/injection.dart';
+import '../repositories/interfaces/deeplink_repository.dart';
 
 /// Deep link service for handling invitation links and app navigation
 /// 
 /// This service provides a framework for deep linking that can be extended
 /// with Firebase Dynamic Links or other deep linking solutions.
 class DeepLinkService {
+  final DeepLinkRepository _deepLinkRepository;
   static const String _baseUrl = 'https://butlery.app';
   static const String _invitePath = '/invite';
   static const String _recipePath = '/recipe';
   static const String _menuPath = '/menu';
   static const String _shoppingPath = '/shopping';
+
+  DeepLinkService({required DeepLinkRepository deepLinkRepository})
+      : _deepLinkRepository = deepLinkRepository;
 
   /// Generate a deep link for friend invitation
   static String generateFriendInvitationLink({
@@ -201,24 +204,16 @@ class DeepLinkService {
         return null;
       }
       
-      // Generate a unique short code
-      final shortCode = _generateShortCode();
-      
-      // Save to Firestore
-      await FirebaseFirestore.instance
-          .collection('shortUrls')
-          .doc(shortCode)
-          .set({
-        'longUrl': longUrl,
-        'shortCode': shortCode,
-        'createdAt': FieldValue.serverTimestamp(),
-        'createdBy': sl<PermissionService>().currentUserId,
-        'clicks': 0,
+      // Use the repository to create short URL
+      final metadata = {
         'isActive': true,
-        'expiresAt': Timestamp.fromDate(
-          DateTime.now().add(const Duration(days: 30)),
-        ),
-      });
+        'expiresAt': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+      };
+      
+      final shortCode = await sl<DeepLinkService>()._deepLinkRepository.createShortUrl(
+        longUrl,
+        metadata,
+      );
       
       return 'https://butlery.app/s/$shortCode';
     } catch (e) {
@@ -254,14 +249,6 @@ class DeepLinkService {
     }
   }
   
-  /// Generate a unique short code
-  static String _generateShortCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    final random = Random();
-    return String.fromCharCodes(Iterable.generate(
-      6, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
-    );
-  }
 
   /// Handle Firebase Dynamic Links initialization
   static Future<void> initializeDynamicLinks() async {
@@ -360,37 +347,17 @@ class DeepLinkService {
   /// Resolve short URL to original URL
   static Future<String?> resolveShortUrl(String shortCode) async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('shortUrls')
-          .doc(shortCode)
-          .get();
+      // Get the long URL from repository
+      final longUrl = await sl<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
       
-      if (!doc.exists) {
+      if (longUrl == null) {
         AppLogger.warning('Short URL not found: $shortCode');
         return null;
       }
       
-      final data = doc.data()!;
-      final isActive = data['isActive'] as bool? ?? false;
-      final expiresAt = data['expiresAt'] as Timestamp?;
+      // Track the click
+      await sl<DeepLinkService>()._deepLinkRepository.trackUrlClick(shortCode);
       
-      if (!isActive) {
-        AppLogger.warning('Short URL is inactive: $shortCode');
-        return null;
-      }
-      
-      if (expiresAt != null && expiresAt.toDate().isBefore(DateTime.now())) {
-        AppLogger.warning('Short URL expired: $shortCode');
-        return null;
-      }
-      
-      // Increment click counter
-      doc.reference.update({
-        'clicks': FieldValue.increment(1),
-        'lastClickedAt': FieldValue.serverTimestamp(),
-      });
-      
-      final longUrl = data['longUrl'] as String;
       AppLogger.debug('Resolved short URL $shortCode to $longUrl');
       return longUrl;
     } catch (e) {
@@ -402,24 +369,20 @@ class DeepLinkService {
   /// Get analytics for short URLs
   static Future<Map<String, dynamic>> getShortUrlAnalytics(String shortCode) async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('shortUrls')
-          .doc(shortCode)
-          .get();
+      // Get metadata from repository
+      final metadata = await sl<DeepLinkService>()._deepLinkRepository.getDeepLinkMetadata(shortCode);
       
-      if (!doc.exists) {
+      if (metadata == null) {
         return {'error': 'Short URL not found'};
       }
       
-      final data = doc.data()!;
+      // Get the long URL
+      final longUrl = await sl<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
+      
       return {
         'shortCode': shortCode,
-        'longUrl': data['longUrl'],
-        'clicks': data['clicks'] ?? 0,
-        'createdAt': data['createdAt'],
-        'lastClickedAt': data['lastClickedAt'],
-        'isActive': data['isActive'] ?? false,
-        'expiresAt': data['expiresAt'],
+        'longUrl': longUrl,
+        'metadata': metadata,
       };
     } catch (e) {
       AppLogger.error('Failed to get short URL analytics: $e');

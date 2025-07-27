@@ -64,6 +64,7 @@ import '../services/import/import_manager.dart';
 import '../services/user_service.dart';
 import '../services/social_recipe_service.dart';
 import '../services/connectivity_monitoring_service.dart';
+import '../services/deep_link_service.dart';
 
 // ==================== CORE VIEWMODELS ====================
 import '../viewmodels/recipe_list_viewmodel.dart';
@@ -317,6 +318,11 @@ Future<void> initializeDependencies() async {
       userService: sl<UserService>(),
       recipeService: sl<UnifiedRecipeService>(),
       permissionService: sl<PermissionService>(),
+    ));
+    
+    // DeepLinkService - uses repository instead of direct Firebase access
+    sl.registerSingleton<DeepLinkService>(DeepLinkService(
+      deepLinkRepository: sl<DeepLinkRepository>(),
     ));
 
     // ==================== CORE VIEWMODELS ====================
