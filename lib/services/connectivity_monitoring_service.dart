@@ -2,21 +2,28 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 
 /// Service for monitoring Firebase and internet connectivity in realtime
 /// 
 /// Provides both one-time checks and continuous monitoring streams
 /// for ViewModels that need to display connection status.
 class ConnectivityMonitoringService extends ChangeNotifier {
-  static final ConnectivityMonitoringService _instance = 
-      ConnectivityMonitoringService._internal();
+  final ConnectivityRepository _connectivityRepository;
   
-  factory ConnectivityMonitoringService() => _instance;
+  // For backwards compatibility, maintain singleton pattern
+  static ConnectivityMonitoringService? _instance;
   
-  ConnectivityMonitoringService._internal();
+  factory ConnectivityMonitoringService({ConnectivityRepository? connectivityRepository}) {
+    if (connectivityRepository != null) {
+      _instance = ConnectivityMonitoringService._internal(connectivityRepository);
+    }
+    return _instance!;
+  }
+  
+  ConnectivityMonitoringService._internal(this._connectivityRepository);
 
   // State
   bool _isConnectedToInternet = true;
@@ -24,7 +31,7 @@ class ConnectivityMonitoringService extends ChangeNotifier {
   String _connectionStatusText = 'Ansluten';
   
   // Subscriptions
-  StreamSubscription<DocumentSnapshot>? _firebaseConnectionSubscription;
+  StreamSubscription<bool>? _firebaseConnectionSubscription;
   Timer? _internetCheckTimer;
   
   // Getters
@@ -59,20 +66,23 @@ class ConnectivityMonitoringService extends ChangeNotifier {
 
   /// Test Firebase connectivity specifically
   Future<bool> testFirebaseConnectivity() async {
-    return await ConnectivityCheck.hasFirebaseConnectivity();
+    try {
+      return await _connectivityRepository.checkFirebaseConnection();
+    } catch (e) {
+      AppLogger.warning('🌐 Firebase connectivity test failed: $e');
+      return false;
+    }
   }
 
   // ===== PRIVATE METHODS =====
 
   void _startFirebaseConnectionMonitoring() {
-    _firebaseConnectionSubscription = FirebaseFirestore.instance
-        .collection('system')
-        .doc('connection')
-        .snapshots()
+    _firebaseConnectionSubscription = _connectivityRepository
+        .monitorFirebaseConnection()
         .listen(
-      (snapshot) {
+      (isConnected) {
         final wasConnected = _isConnectedToFirebase;
-        _isConnectedToFirebase = snapshot.exists;
+        _isConnectedToFirebase = isConnected;
         
         if (wasConnected != _isConnectedToFirebase) {
           AppLogger.info('🌐 Firebase connection changed: $_isConnectedToFirebase');
