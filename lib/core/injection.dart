@@ -31,12 +31,18 @@ import '../repositories/firebase/firebase_social_recipe_repository.dart';
 import '../repositories/firebase/firebase_comments_repository.dart';
 import '../repositories/firebase/firebase_ratings_repository.dart';
 import '../repositories/firebase/firebase_notifications_repository.dart';
+import '../repositories/firebase/firebase_deeplink_repository.dart';
+import '../repositories/firebase/firebase_connectivity_repository.dart';
+import '../repositories/firebase/firebase_social_sharing_repository.dart';
 import '../repositories/interfaces/comments_repository.dart';
 import '../repositories/interfaces/ratings_repository.dart';
 import '../repositories/interfaces/notifications_repository.dart';
 import '../repositories/interfaces/user_repository.dart';
 import '../repositories/interfaces/friends_repository.dart';
 import '../repositories/interfaces/social_recipe_repository.dart';
+import '../repositories/interfaces/deeplink_repository.dart';
+import '../repositories/interfaces/connectivity_repository.dart';
+import '../repositories/interfaces/social_sharing_repository.dart';
 import '../repositories/collaborative_recipe_repository.dart';
 
 // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
@@ -208,6 +214,17 @@ Future<void> initializeDependencies() async {
     
     sl.registerSingleton<SocialRecipeRepository>(
         FirebaseSocialRecipeRepository(authRepository: sl<AuthRepository>()));
+    
+    // New repositories for fixing direct Firebase access
+    sl.registerSingleton<DeepLinkRepository>(
+        FirebaseDeepLinkRepository(authRepository: sl<AuthRepository>()));
+    
+    sl.registerSingleton<ConnectivityRepository>(
+        FirebaseConnectivityRepository(authRepository: sl<AuthRepository>()));
+    
+    sl.registerSingleton<SocialSharingRepository>(
+        FirebaseSocialSharingRepository(authRepository: sl<AuthRepository>()));
+    
     if (kDebugMode) {
       debugPrint('✅ Additional repositories registrerade');
     }
