@@ -192,23 +192,28 @@
 **Specific Violations to Fix**:
 
 1. **DeepLinkService** (`/lib/services/deep_link_service.dart`):
-   - Lines 208, 363, 405: Direct `FirebaseFirestore.instance` usage
-   - ✅ Created `DeepLinkRepository` interface and `FirebaseDeepLinkRepository` implementation
+   - ✅ Repository created and service ALREADY UPDATED to use DeepLinkRepository
+   - ✅ No more direct Firebase access in this service
    
 2. **ConnectivityMonitoringService** (`/lib/services/connectivity_monitoring_service.dart`):
-   - Line 68: Direct Firebase connection monitoring
-   - ✅ Created `ConnectivityRepository` interface and `FirebaseConnectivityRepository` implementation
+   - Line 5, 68: Still imports and uses `FirebaseFirestore.instance` directly
+   - ✅ Created `ConnectivityRepository` but ❌ service NOT updated
    
 3. **UnifiedRecipeService** (`/lib/services/unified/unified_recipe_service.dart`):
    - Lines 59, 139, 154: Initializes with `FirebaseFirestore.instance`
-   - 🔄 Still needs to be updated to use injected repositories
+   - ❌ Still needs to be updated to use injected repositories
    
 4. **Shopping Share Modules**:
    - `/lib/services/unified/operations/shopping_share/shopping_social_share_module.dart` (lines 56, 133)
    - `/lib/services/unified/operations/shopping_share/shopping_template_module.dart` (lines 56, 101)
-   - ✅ Created `SocialSharingRepository` interface and `FirebaseSocialSharingRepository` implementation
+   - `/lib/services/unified/operations/shopping_share/shopping_external_share_module.dart` - Also has Firebase access
+   - ✅ Created `SocialSharingRepository` but ❌ modules NOT updated
    
-**Note**: The repositories are created and registered in DI, but services still need to be updated to use them.
+5. **NEW: PresenceTrackingModule** (`/lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart`):
+   - Contains `FirebaseFirestore.instance` usage
+   - ❌ Needs repository abstraction
+
+**Remaining Work**: Update services 2-5 to use the created repositories instead of direct Firebase access.
 
 #### [x] **Create Missing Repositories** (8 hours) ✅ COMPLETED January 27, 2025
 **New Repositories Implemented**:
