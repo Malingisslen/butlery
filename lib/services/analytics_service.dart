@@ -2,9 +2,9 @@
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
-import '../services/content_detector_service.dart';
-import '../core/base/base_service.dart';
-import '../core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Service för att hantera analytics och error tracking
 ///

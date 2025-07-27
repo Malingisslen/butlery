@@ -16,8 +16,8 @@
 /// Used in phases: Cross-Cutting Concerns Consolidation - Widget Template Unification
 
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Comprehensive scaffold templates that eliminate duplicate scaffold patterns
 /// found across 30+ view files in the codebase.
@@ -185,7 +185,7 @@ class ErrorScaffold extends StatelessWidget {
       actions: actions,
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacing16),
+          padding: const EdgeInsets.all(AppDimensions.spacing16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -245,7 +245,7 @@ class EmptyStateScaffold extends StatelessWidget {
       actions: actions,
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacing16),
+          padding: const EdgeInsets.all(AppDimensions.spacing16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -372,7 +372,7 @@ class FormScaffold extends StatelessWidget {
                 child: const Text(AppStrings.cancel),
               ),
             ),
-            if (showSaveButton) SizedBox(width: AppDimensions.spacing16),
+            if (showSaveButton) const SizedBox(width: AppDimensions.spacing16),
           ],
           if (showSaveButton) ...[
             Expanded(

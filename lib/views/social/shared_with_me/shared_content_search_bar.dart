@@ -1,8 +1,8 @@
 // lib/views/social/shared_with_me/shared_content_search_bar.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 
 /// SharedContentSearchBar - Search bar for shared content
 ///

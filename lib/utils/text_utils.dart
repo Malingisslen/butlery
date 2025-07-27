@@ -4,8 +4,8 @@
 import 'dart:core';
 
 // Import focused components
-import 'text/text_formatting.dart';
-import 'text/swedish_pluralization.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
+import 'package:butlery/utils/text/swedish_pluralization.dart';
 
 // Export all classes and functions for backward compatibility
 export 'text/text_formatting.dart';

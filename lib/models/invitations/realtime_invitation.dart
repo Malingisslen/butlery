@@ -3,8 +3,8 @@
 // TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import '../realtime/realtime_resource.dart';
-import 'invitation_target.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
 
 
 /// Status för inbjudningar

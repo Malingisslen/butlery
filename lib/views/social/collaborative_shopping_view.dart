@@ -2,16 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
-import '../../widgets/common/loading_state_builder.dart';
+import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/widgets/common/loading_state_builder.dart';
 
 // Focused components (Phase 9 refactoring)
-import 'collaborative_shopping/collaborative_shopping_header.dart';
-import 'collaborative_shopping/collaborative_shopping_items.dart';
-import 'collaborative_shopping/collaborative_shopping_actions.dart';
+import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_header.dart';
+import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
+import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_actions.dart';
 
 /// Collaborative Shopping View - Main facade (Phase 9 Refactored)
 /// 
@@ -122,8 +122,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             const SizedBox(height: AppDimensions.spacingXl),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.arrow_back),
-              label: Text('Tillbaka'),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Tillbaka'),
             ),
           ],
         ),

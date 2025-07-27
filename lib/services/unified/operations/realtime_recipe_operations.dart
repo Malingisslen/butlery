@@ -16,16 +16,16 @@
 /// Used in phases: Phase 5 - Service Consolidation, Phase 9.5 - Large File SRP Refactoring
 
 import 'dart:async';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/base/base_service.dart';
-import '../../../core/utils/validation_utils.dart';
-import '../../../core/utils/logging_utils.dart';
-import 'realtime_recipe/realtime_watching_module.dart';
-import 'realtime_recipe/realtime_editing_module.dart';
-import 'realtime_recipe/collaboration_management_module.dart';
-import 'realtime_recipe/presence_tracking_module.dart';
-import 'realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/utils/logging_utils.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_watching_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_editing_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/presence_tracking_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 
 /// Realtime recipe operations feature interface
 /// 

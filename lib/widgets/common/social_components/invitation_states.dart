@@ -1,7 +1,7 @@
 // lib/widgets/common/social_components/invitation_states.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target state widgets
 /// 
@@ -26,7 +26,7 @@ class InvitationStates {
         children: [
           const CircularProgressIndicator(),
           if (text != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             Text(text),
           ],
         ],
@@ -62,7 +62,7 @@ class InvitationStates {
           child: const CircularProgressIndicator(strokeWidth: 2),
         ),
         if (text != null) ...[
-          SizedBox(width: AppDimensions.spacing8),
+          const SizedBox(width: AppDimensions.spacing8),
           Text(text),
         ],
       ],
@@ -90,7 +90,7 @@ class InvitationStates {
           if (message != null)
             Text(message, textAlign: TextAlign.center),
           if (onRetry != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             ElevatedButton(
               onPressed: onRetry,
               child: Text(retryText ?? 'Försök igen'),
@@ -135,7 +135,7 @@ class InvitationStates {
           if (message != null)
             Text(message, textAlign: TextAlign.center),
           if (onRequestAccess != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             ElevatedButton(
               onPressed: onRequestAccess,
               child: Text(requestText ?? 'Begär åtkomst'),
@@ -168,7 +168,7 @@ class InvitationStates {
           if (message != null)
             Text(message, textAlign: TextAlign.center),
           if (showAddButton && onAddTargets != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             ElevatedButton(
               onPressed: onAddTargets,
               child: Text(addButtonText ?? 'Lägg till vänner'),
@@ -202,7 +202,7 @@ class InvitationStates {
           if (query != null)
             Text('Sökning: "$query"', style: const TextStyle(fontStyle: FontStyle.italic)),
           if (showClearButton && onClearSearch != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             TextButton(
               onPressed: onClearSearch,
               child: Text(clearButtonText ?? 'Rensa sökning'),
@@ -260,7 +260,7 @@ class InvitationStates {
               textAlign: TextAlign.center,
             ),
           if (onContinue != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             ElevatedButton(
               onPressed: onContinue,
               child: Text(continueButtonText ?? 'Fortsätt'),
@@ -295,7 +295,7 @@ class InvitationStates {
               textAlign: TextAlign.center,
             ),
           if (onDone != null) ...[
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
             ElevatedButton(
               onPressed: onDone,
               child: Text(doneButtonText ?? 'Klar'),
@@ -362,7 +362,7 @@ class InvitationStates {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           if (currentItem != null) ...[
-            SizedBox(height: AppDimensions.spacing8),
+            const SizedBox(height: AppDimensions.spacing8),
             Text(
               'Aktuell: $currentItem',
               style: const TextStyle(color: Colors.grey),

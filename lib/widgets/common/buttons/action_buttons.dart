@@ -1,7 +1,7 @@
 // lib/widgets/common/buttons/action_buttons.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// ActionButtons - Utility action buttons with loading support
 ///
@@ -21,26 +21,26 @@ class ActionButtons {
     final effectiveOnPressed = isLoading ? null : onPressed;
     final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
 
-    Widget buttonChild = Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+    final Widget buttonChild = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
       child: Row(
         mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (isLoading)
-            Padding(
+            const Padding(
               padding: EdgeInsets.only(right: AppDimensions.spacingS),
               child: SizedBox(
                 width: AppDimensions.iconSizeS,
                 height: AppDimensions.iconSizeS,
-                child: const CircularProgressIndicator(
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
                 ),
               ),
             )
           else if (icon != null)
             Padding(
-              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
               child: Icon(icon),
             ),
           Flexible(
@@ -122,10 +122,10 @@ class ActionButtons {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLoading)
-              SizedBox(
+              const SizedBox(
                 width: 24,
                 height: 24,
-                child: const CircularProgressIndicator(
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: Colors.white,
                 ),
@@ -156,7 +156,7 @@ class ActionButtons {
     double height = 100, // Slightly increased height
     EdgeInsets? margin,
   }) {
-    Widget button = SizedBox(
+    final Widget button = SizedBox(
       height: height,
       child: ElevatedButton.icon(
         onPressed: isLoading ? null : onPressed,

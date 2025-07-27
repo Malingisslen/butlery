@@ -1,9 +1,9 @@
 // lib/views/social/group_detail/group_detail_stats.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// GroupDetailStats - Group statistics component
 ///
@@ -15,7 +15,7 @@ class GroupDetailStats {
     List<UserProfile> members,
   ) {
     return Container(
-      margin: EdgeInsets.all(AppDimensions.spacingL),
+      margin: const EdgeInsets.all(AppDimensions.spacingL),
       child: Row(
         children: [
           Expanded(
@@ -27,7 +27,7 @@ class GroupDetailStats {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          SizedBox(width: AppDimensions.spacingL),
+          const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: _buildStatItem(
               context: context,
@@ -52,7 +52,7 @@ class GroupDetailStats {
     return Column(
       children: [
         Icon(icon, color: color, size: AppDimensions.iconSizeAction),
-        SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(

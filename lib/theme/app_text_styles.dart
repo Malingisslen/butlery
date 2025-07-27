@@ -1,7 +1,7 @@
 // lib/theme/app_text_styles.dart
 
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Typography definitions for the Butlery app
 /// Complete semantic text styles with Material 3 compliance

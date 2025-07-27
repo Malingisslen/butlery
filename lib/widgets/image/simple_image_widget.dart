@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/app_colors.dart';
-import 'image_config.dart';
-import 'image_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_components.dart';
 
 /// Simple image widget for basic image display
 class SimpleImageWidget extends StatelessWidget {
@@ -243,7 +243,7 @@ class NetworkImageWidget extends StatelessWidget {
                 width: width,
                 height: height,
                 color: AppColors.cardWhite,
-                child: Icon(
+                child: const Icon(
                   Icons.error_outline,
                   color: AppColors.error,
                 ),

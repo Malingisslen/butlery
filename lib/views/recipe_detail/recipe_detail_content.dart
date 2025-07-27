@@ -1,12 +1,12 @@
 // lib/views/recipe_detail/recipe_detail_content.dart
 
 import 'package:flutter/material.dart';
-import '../../viewmodels/recipe_detail_viewmodel.dart';
-import '../../widgets/image/universal_image_manager.dart' as img;
-import '../../widgets/common/input_components.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
+import 'package:butlery/widgets/common/input_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Recipe detail content widget
 ///
@@ -80,14 +80,14 @@ class RecipeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.description_outlined,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Beskrivning',
                 style: AppTextStyles.titleMedium,
@@ -116,14 +116,14 @@ class RecipeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.local_offer_outlined,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Taggar',
                 style: AppTextStyles.titleMedium,
@@ -135,7 +135,7 @@ class RecipeDetailContent extends StatelessWidget {
             spacing: AppDimensions.spacingS,
             runSpacing: AppDimensions.spacingS,
             children: (viewModel.recipe.tags ?? []).map((tag) => Container(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingS,
                 vertical: AppDimensions.spacingXs,
               ),
@@ -176,13 +176,13 @@ class RecipeDetailContent extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.photo_library_outlined,
                   color: AppColors.primaryBlue,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
-                Text(
+                const Text(
                   'Bilder',
                   style: AppTextStyles.titleMedium,
                 ),
@@ -199,7 +199,7 @@ class RecipeDetailContent extends StatelessWidget {
           GestureDetector(
             onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
             child: ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
                 bottomRight: Radius.circular(AppDimensions.borderRadiusM),
               ),
@@ -236,14 +236,14 @@ class RecipeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.format_list_numbered,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Instruktioner',
                 style: AppTextStyles.titleMedium,
@@ -270,8 +270,8 @@ class RecipeDetailContent extends StatelessWidget {
                     Container(
                       width: 28,
                       height: 28,
-                      margin: EdgeInsets.only(right: AppDimensions.spacingS),
-                      decoration: BoxDecoration(
+                      margin: const EdgeInsets.only(right: AppDimensions.spacingS),
+                      decoration: const BoxDecoration(
                         color: AppColors.primaryBlue,
                         shape: BoxShape.circle,
                       ),

@@ -1,18 +1,18 @@
 // lib/widgets/common/social_components.dart
 
 import 'package:flutter/material.dart';
-import '../../models/friend_category.dart';
-import '../../models/user_profile.dart';
-import '../../models/invitations/invitation_target.dart';
-import '../../models/recipe_unified.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 
 // Import focused modules
-import 'social_components/social_avatar_components.dart';
-import 'social_components/social_collaborative_components.dart';
-import 'social_components/social_group_components.dart';
-import 'social_components/social_invitation_components.dart';
-import 'social_components/social_builder_components.dart';
+import 'package:butlery/widgets/common/social_components/social_avatar_components.dart';
+import 'package:butlery/widgets/common/social_components/social_collaborative_components.dart';
+import 'package:butlery/widgets/common/social_components/social_group_components.dart';
+import 'package:butlery/widgets/common/social_components/social_invitation_components.dart';
+import 'package:butlery/widgets/common/social_components/social_builder_components.dart';
 
 // ✅ Re-export ImageSize for easier imports
 export '../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
@@ -23,7 +23,7 @@ export 'social_components/social_invitation_components.dart';
 export 'social_components/social_builder_components.dart';
 
 // Import ImageSize for local usage
-import '../user/user_display_widgets.dart' show ImageSize;
+import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 
 /// 🚀 SocialComponents - The ultimate social widget API
 ///

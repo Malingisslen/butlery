@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../interfaces/connectivity_repository.dart';
-import '../interfaces/auth_repository.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation of ConnectivityRepository
 /// 
@@ -134,7 +134,7 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
     _firebaseCheckTimer?.cancel();
   }
 
-  void _checkFirebaseConnection() async {
+  Future<void> _checkFirebaseConnection() async {
     final isConnected = await checkFirebaseConnection();
     _connectionController?.add(isConnected);
   }

@@ -1,7 +1,7 @@
 // lib/widgets/social/groups/friend_category_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../common/utility_components.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Friend category management widgets
 ///

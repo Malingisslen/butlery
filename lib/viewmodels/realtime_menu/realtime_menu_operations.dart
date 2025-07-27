@@ -1,9 +1,9 @@
 // lib/viewmodels/realtime_menu/realtime_menu_operations.dart
 
-import '../../models/recipe_unified.dart';
-import '../../services/realtime/realtime_menu_service.dart';
-import '../../core/utils/logger.dart';
-import '../realtime/optimistic_update_manager.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
 
 /// Focused module for realtime menu recipe operations
 /// 

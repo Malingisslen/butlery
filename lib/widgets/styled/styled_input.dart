@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app
@@ -268,7 +268,7 @@ class StyledInput extends StatelessWidget {
         errorText: errorText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
-        contentPadding: contentPadding ?? EdgeInsets.symmetric(
+        contentPadding: contentPadding ?? const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing16,
           vertical: AppDimensions.spacing12,
         ),
@@ -292,14 +292,14 @@ class StyledInput extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: AppColors.error,
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: AppColors.error,
             width: AppDimensions.borderWidthThick,
           ),
@@ -358,11 +358,11 @@ class StyledFormField extends StatelessWidget {
                 ),
             ],
           ),
-          SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacing8),
         ],
         child,
         if (errorText != null) ...[
-          SizedBox(height: AppDimensions.spacing4),
+          const SizedBox(height: AppDimensions.spacing4),
           Text(
             errorText!,
             style: AppTextStyles.captionText.copyWith(
@@ -371,13 +371,13 @@ class StyledFormField extends StatelessWidget {
           ),
         ],
         if (helperText != null && errorText == null) ...[
-          SizedBox(height: AppDimensions.spacing4),
+          const SizedBox(height: AppDimensions.spacing4),
           Text(
             helperText!,
             style: AppTextStyles.captionText,
           ),
         ],
-        SizedBox(height: AppDimensions.spacing16),
+        const SizedBox(height: AppDimensions.spacing16),
       ],
     );
   }

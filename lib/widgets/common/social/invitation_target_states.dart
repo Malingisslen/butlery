@@ -1,8 +1,8 @@
 // lib/widgets/common/social/invitation_target_states.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 class InvitationTargetStates {
   /// Build target list loading state
@@ -31,18 +31,18 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             size: 48,
             color: AppColors.error,
           ),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? 'Kunde inte ladda mål',
-            style: TextStyle(color: AppColors.error),
+            style: const TextStyle(color: AppColors.error),
           ),
           if (onRetry != null) ...[
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton(
               onPressed: onRetry,
               child: const Text('Försök igen'),
@@ -63,18 +63,18 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.people_outline,
             size: 48,
             color: AppColors.textMedium,
           ),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? 'Inga mål tillgängliga',
-            style: TextStyle(color: AppColors.textMedium),
+            style: const TextStyle(color: AppColors.textMedium),
           ),
           if (onAction != null && actionLabel != null) ...[
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton(
               onPressed: onAction,
               child: Text(actionLabel),
@@ -94,20 +94,20 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.search_off,
             size: 48,
             color: AppColors.textMedium,
           ),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(
             searchQuery != null
                 ? 'Inga resultat för "$searchQuery"'
                 : 'Inga sökresultat',
-            style: TextStyle(color: AppColors.textMedium),
+            style: const TextStyle(color: AppColors.textMedium),
           ),
           if (onClearSearch != null) ...[
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             TextButton(
               onPressed: onClearSearch,
               child: const Text('Rensa sökning'),
@@ -127,18 +127,18 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle,
             size: 48,
             color: AppColors.success,
           ),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(
             '$count mål valda',
-            style: TextStyle(color: AppColors.success),
+            style: const TextStyle(color: AppColors.success),
           ),
           if (onContinue != null) ...[
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton(
               onPressed: onContinue,
               child: const Text('Fortsätt'),
@@ -197,18 +197,18 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.checklist,
             size: 48,
             color: AppColors.textMedium,
           ),
-          SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? 'Inga val gjorda',
-            style: TextStyle(color: AppColors.textMedium),
+            style: const TextStyle(color: AppColors.textMedium),
           ),
           if (onAction != null && actionLabel != null) ...[
-            SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton(
               onPressed: onAction,
               child: Text(actionLabel),

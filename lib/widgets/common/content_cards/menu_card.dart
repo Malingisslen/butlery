@@ -1,12 +1,12 @@
 // lib/widgets/common/content_cards/menu_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../models/shared_menu.dart';
-import '../../../models/realtime/realtime_menu.dart';
-import '../../../models/recipe_unified.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for menu card components
 /// 
@@ -83,15 +83,15 @@ class MenuCard extends StatelessWidget {
       children: [
         _buildMenuHeader(context),
         if (showMetadata) ...[
-          SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingS),
           _buildMenuMetadata(context),
         ],
         if (showPreview) ...[
-          SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildMenuPreview(context),
         ],
         if (showSharingStatus) ...[
-          SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildSharingStatus(context),
         ],
       ],
@@ -107,7 +107,7 @@ class MenuCard extends StatelessWidget {
             children: [
               _buildMenuHeader(context),
               if (showMetadata) ...[
-                SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.spacingXs),
                 _buildMenuMetadata(context),  
               ],
             ],
@@ -124,11 +124,11 @@ class MenuCard extends StatelessWidget {
       children: [
         _buildMenuHeader(context),
         if (showMetadata) ...[
-          SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.spacingXs),
           _buildMenuMetadata(context),
         ],
         if (showSharingStatus) ...[
-          SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingS),
           _buildSharingIndicator(context),
         ],
       ],
@@ -139,12 +139,12 @@ class MenuCard extends StatelessWidget {
     final title = _getMenuTitle();
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.restaurant_menu,
           size: 20,
           color: AppColors.textMedium,
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Text(
             title,
@@ -186,19 +186,19 @@ class MenuCard extends StatelessWidget {
     
     if (recipes.isEmpty) {
       return Container(
-        padding: EdgeInsets.all(AppDimensions.spacingM),
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: AppColors.backgroundTint,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.info_outline,
               size: 16,
               color: AppColors.textMedium,
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Inga recept i menyn',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
@@ -215,20 +215,20 @@ class MenuCard extends StatelessWidget {
           'Recept i menyn:',
           style: AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
         ),
-        SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.spacingS),
         ...recipes.take(3).map((recipe) => Padding(
-          padding: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
               Container(
                 width: 4,
                 height: 4,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.textMedium,
                   shape: BoxShape.circle,
                 ),
               ),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: Text(
                   _getRecipeTitle(recipe),
@@ -242,7 +242,7 @@ class MenuCard extends StatelessWidget {
         )),
         if (recipes.length > 3)
           Padding(
-            padding: EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               '+ ${recipes.length - 3} fler recept',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
@@ -261,7 +261,7 @@ class MenuCard extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
         vertical: AppDimensions.spacingS,
       ),
@@ -280,7 +280,7 @@ class MenuCard extends StatelessWidget {
             size: 16,
             color: Colors.blue[700],
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Text(
             memberCount > 0 
                 ? 'Delad med $memberCount personer'
@@ -300,12 +300,12 @@ class MenuCard extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXs),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(AppDimensions.spacingXs),
+      decoration: const BoxDecoration(
         color: Colors.blue,
         shape: BoxShape.circle,
       ),
-      child: Icon(
+      child: const Icon(
         Icons.people,
         size: 16,
         color: Colors.white,
@@ -383,9 +383,9 @@ class MenuCard extends StatelessWidget {
   EdgeInsets _getDefaultMargin() {
     switch (style) {
       case MenuCardStyle.compact:
-        return EdgeInsets.only(bottom: AppDimensions.spacingXs);
+        return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case MenuCardStyle.grid:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
       case MenuCardStyle.detailed:
         return EdgeInsets.zero;
     }
@@ -394,14 +394,14 @@ class MenuCard extends StatelessWidget {
   EdgeInsets _getDefaultPadding() {
     switch (style) {
       case MenuCardStyle.compact:
-        return EdgeInsets.symmetric(
+        return const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingS,
           vertical: AppDimensions.spacingS,
         );
       case MenuCardStyle.grid:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
       case MenuCardStyle.detailed:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
     }
   }
 }

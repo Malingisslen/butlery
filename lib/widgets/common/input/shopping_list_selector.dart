@@ -1,16 +1,16 @@
 // lib/widgets/common/input/shopping_list_selector.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../viewmodels/unified_shopping_viewmodel.dart';
-import '../state_widget.dart';
-import 'shopping_list_card.dart';
-import 'shopping_list_actions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/input/shopping_list_card.dart';
+import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
 
 /// Shopping List Selector Widget
 /// 
@@ -87,13 +87,13 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.shopping_cart,
           size: AppDimensions.iconSizeAction,
           color: AppColors.primaryBlue,
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        Expanded(
+        const Expanded(
           child: Text(
             'Handlistor',
             style: AppTextStyles.headlineSmall,
@@ -101,8 +101,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         ),
         FilledButton.icon(
           onPressed: () => _createNewList(context),
-          icon: Icon(Icons.add, size: AppDimensions.iconSizeAction),
-          label: Text('Ny lista'),
+          icon: const Icon(Icons.add, size: AppDimensions.iconSizeAction),
+          label: const Text('Ny lista'),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.primaryBlue,
           ),
@@ -121,7 +121,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
     return ListView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: viewModel.lists.length,
       itemBuilder: (context, index) {
         final list = viewModel.lists[index];
@@ -158,7 +158,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.restaurant_menu,
                 size: AppDimensions.iconSizeAction,
                 color: AppColors.success,
@@ -185,10 +185,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _previewMenuItems(context, menuItems),
-                  icon: Icon(Icons.preview),
-                  label: Text('Förhandsgranska'),
+                  icon: const Icon(Icons.preview),
+                  label: const Text('Förhandsgranska'),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.success),
+                    side: const BorderSide(color: AppColors.success),
                     foregroundColor: AppColors.success,
                   ),
                 ),
@@ -198,7 +198,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                 child: FilledButton.icon(
                   onPressed: _isAddingToList ? null : () => _addMenuToList(context, viewModel, selectedList, menuItems),
                   icon: _isAddingToList 
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
@@ -206,7 +206,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                             valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
                           ),
                         )
-                      : Icon(Icons.add_shopping_cart),
+                      : const Icon(Icons.add_shopping_cart),
                   label: Text(_isAddingToList ? 'Lägger till...' : 'Lägg till'),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.success,
@@ -304,7 +304,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Förhandsgranska artiklar'),
+        title: const Text('Förhandsgranska artiklar'),
         content: SizedBox(
           width: double.maxFinite,
           height: 300,
@@ -314,7 +314,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               final item = items[index];
               return ListTile(
                 dense: true,
-                leading: Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
+                leading: const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
                 title: Text(item.name),
                 subtitle: item.quantity > 0 
                     ? Text('${item.quantity} ${item.unit}')
@@ -326,7 +326,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Stäng'),
+            child: const Text('Stäng'),
           ),
         ],
       ),

@@ -2,15 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../models/user_profile.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../viewmodels/recipe_selection_viewmodel.dart';
-import '../../search_filter_widget.dart';
-import '../../state_widget.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
-import '../../../../core/injection.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_selection_viewmodel.dart';
+import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Dialog for sharing recipes with friends
 class FriendRecipeSharingDialog extends StatelessWidget {
@@ -42,7 +42,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Avbryt', style: AppTextStyles.labelLarge),
+                child: const Text('Avbryt', style: AppTextStyles.labelLarge),
               ),
               if (viewModel.hasSelectedRecipes)
                 FilledButton.icon(
@@ -61,13 +61,13 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                     ),
                   ),
                   icon: viewModel.isSharing
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: AppDimensions.iconSizeAction,
                           height: AppDimensions.iconSizeAction,
                           child: SizedBox(
                             width: AppDimensions.iconSizeS,
                             height: AppDimensions.iconSizeS,
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                             ),
@@ -116,7 +116,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
           searchQuery: viewModel.searchQuery,
           onSearchChanged: viewModel.updateSearch,
           searchHint: 'Sök recept...',
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           showStats: true,
           resultCount: viewModel.hasSearchResults
               ? viewModel.filteredRecipes.length
@@ -127,7 +127,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
         if (viewModel.searchQuery.isNotEmpty || viewModel.hasSelectedRecipes)
           _buildInfo(context, viewModel),
 
-        Divider(height: AppDimensions.borderWidthThin, color: AppColors.divider),
+        const Divider(height: AppDimensions.borderWidthThin, color: AppColors.divider),
 
         // Recipe list
         Expanded(
@@ -154,7 +154,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
 
   Widget _buildInfo(BuildContext context, RecipeSelectionViewModel viewModel) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Row(
         children: [
           if (viewModel.searchQuery.isNotEmpty)
@@ -165,7 +165,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
           if (viewModel.hasSelectedRecipes) ...[
             if (viewModel.searchQuery.isNotEmpty) const Spacer(),
             Container(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingXs,
                 vertical: AppDimensions.spacingXs,
               ),
@@ -186,12 +186,12 @@ class FriendRecipeSharingDialog extends StatelessWidget {
           if (viewModel.hasSelectedRecipes)
             TextButton(
               onPressed: viewModel.clearSelections,
-              child: Text('Rensa val', style: AppTextStyles.labelLarge),
+              child: const Text('Rensa val', style: AppTextStyles.labelLarge),
             )
           else if (viewModel.searchQuery.isNotEmpty)
             TextButton(
               onPressed: viewModel.clearSearch,
-              child: Text('Rensa', style: AppTextStyles.labelLarge),
+              child: const Text('Rensa', style: AppTextStyles.labelLarge),
             ),
         ],
       ),
@@ -277,7 +277,7 @@ class FriendRecipeListItem extends StatelessWidget {
           ),
           if (isAlreadyShared)
             Container(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingXs,
                 vertical: AppDimensions.spacingXs,
               ),
@@ -354,7 +354,7 @@ class FriendRecipeListItem extends StatelessWidget {
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
                 const SizedBox(height: AppDimensions.spacingM),
-                Text('•', style: AppTextStyles.bodySmall),
+                const Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(height: AppDimensions.spacingM),
               ],
               Icon(

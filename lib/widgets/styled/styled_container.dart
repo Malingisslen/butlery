@@ -1,9 +1,9 @@
 // lib/widgets/styled/styled_container.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/theme_constants.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/theme_constants.dart';
 
 /// Pre-styled container widgets to eliminate design-in-views violations
 /// Provides consistent styling patterns used throughout the app
@@ -112,7 +112,7 @@ class StyledContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget container = Container(
+    final Widget container = Container(
       width: width,
       height: height,
       margin: margin,
@@ -154,7 +154,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.errorContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       onTap: onRetry,
       child: child,
     );
@@ -167,7 +167,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.successContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: child,
     );
   }
@@ -179,7 +179,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.warningContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: child,
     );
   }
@@ -191,7 +191,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.infoContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: child,
     );
   }

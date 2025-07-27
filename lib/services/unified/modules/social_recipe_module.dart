@@ -2,17 +2,17 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../models/permissions/resource_permission.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/cache/json_cache_helper.dart';
-import '../../../core/base/base_service.dart';
-import '../../../core/utils/validation_utils.dart';
-import '../../../core/utils/logging_utils.dart';
-import '../types/recipe_types.dart';
-import '../../notifications/notification_service.dart' as notif;
-import '../../notifications/notification_types.dart';
-import 'service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/utils/logging_utils.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart';
+import 'package:butlery/services/notifications/notification_service.dart' as notif;
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 
 /// Social recipe operations module
 /// 

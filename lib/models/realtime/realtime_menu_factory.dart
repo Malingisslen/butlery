@@ -2,10 +2,10 @@
 
 // TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../recipe_unified.dart';
-import '../permissions/resource_permission.dart';
-import 'realtime_resource.dart';
-import 'realtime_menu_data.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/realtime/realtime_menu_data.dart';
 
 /// Factory class for creating RealtimeMenu instances
 ///

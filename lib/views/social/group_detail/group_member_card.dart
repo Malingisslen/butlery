@@ -1,13 +1,13 @@
 // lib/views/social/group_detail/group_member_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/friend_category.dart';
-import '../../../widgets/common/social_components.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import '../../../theme/app_dimensions.dart';
-import 'group_detail_actions.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 
 /// GroupMemberCard - Member card component
 ///
@@ -23,7 +23,7 @@ class GroupMemberCard {
     final canRemoveMember = _canRemoveMember(member, group, permissionService);
 
     return Card(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
@@ -53,7 +53,7 @@ class GroupMemberCard {
               children: [
                 if (_isGroupOwner(member, group))
                   Container(
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
                       vertical: 2,
                     ),
@@ -74,7 +74,7 @@ class GroupMemberCard {
                     margin: EdgeInsets.only(
                       left: _isGroupOwner(member, group) ? AppDimensions.spacingXs : 0,
                     ),
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
                       vertical: 2,
                     ),
@@ -118,7 +118,7 @@ class GroupMemberCard {
                           size: AppDimensions.iconSizeM,
                           color: Theme.of(context).colorScheme.error,
                         ),
-                        SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           'Ta bort från grupp',
                           style: TextStyle(

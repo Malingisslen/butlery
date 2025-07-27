@@ -15,17 +15,17 @@
 /// Connected to: UnifiedFriendsService, Social ViewModels, User management
 /// Used in phases: Phase 5 - Service Consolidation
 
-import '../../../models/friend_request.dart';
-import '../../../models/user_profile.dart' as model;
-import '../../../core/utils/logger.dart';
-import '../../../core/base/base_service.dart';
-import '../../../core/utils/validation_utils.dart';
-import '../../../core/utils/logging_utils.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../services/user_service.dart' as user_svc;
-import '../../../core/injection.dart';
-import '../../notifications/notification_service.dart' as notif;
-import '../../notifications/notification_types.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/user_profile.dart' as model;
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/utils/logging_utils.dart';
+import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/services/user_service.dart' as user_svc;
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/notifications/notification_service.dart' as notif;
+import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Friends management operations feature interface
 /// 
@@ -432,7 +432,7 @@ class FriendsManagementOperations extends BaseService {
   /// Get friend statistics
   Map<String, dynamic> getFriendStats() {
     final totalFriends = _parent._friends.length;
-    final onlineFriends = 0; // model.UserProfile doesn't have isOnline property
+    const onlineFriends = 0; // model.UserProfile doesn't have isOnline property
     final categoryCounts = <String, int>{};
 
     return {

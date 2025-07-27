@@ -19,7 +19,7 @@ void main() {
 
     test('recipe type enum completeness', () {
       // Verify all expected recipe types are defined
-      final allTypes = RecipeType.values;
+      const allTypes = RecipeType.values;
       expect(allTypes.length, greaterThanOrEqualTo(4));
       expect(allTypes.contains(RecipeType.personal), isTrue);
       expect(allTypes.contains(RecipeType.shared), isTrue);
@@ -44,7 +44,7 @@ void main() {
 
     test('supports multiple recipe types', () {
       // Verify that the service supports the documented recipe types
-      final supportedTypes = RecipeType.values;
+      const supportedTypes = RecipeType.values;
       
       // Should support personal recipes (core functionality)
       expect(supportedTypes.contains(RecipeType.personal), isTrue);

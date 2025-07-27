@@ -1,5 +1,5 @@
-import 'repository.dart';
-import '../../models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/user_profile.dart';
 
 abstract class UserRepository extends Repository<UserProfile> {
   /// Persist the given profile (create or update).

@@ -3,7 +3,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import 'unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 enum SyncStatus {
   synced, // Synkad med Firebase

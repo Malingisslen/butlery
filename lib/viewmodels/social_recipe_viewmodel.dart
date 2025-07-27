@@ -1,15 +1,15 @@
 // lib/viewmodels/social_recipe_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../models/user_profile.dart';
-import '../models/recipe_comment.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../services/permission_service.dart';
-import '../core/injection.dart';
-import '../core/utils/logger.dart'; // Fixad import
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart'; // Fixad import
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 
 class SocialRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {

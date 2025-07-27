@@ -1,9 +1,9 @@
 // lib/widgets/common/social_components/social_avatar_components.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../user/user_display_widgets.dart' show ImageSize;
-import '../social/social_facade.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
+import 'package:butlery/widgets/common/social/social_facade.dart';
 
 /// Social avatar and user display components
 /// 

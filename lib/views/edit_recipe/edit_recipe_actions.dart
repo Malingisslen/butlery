@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
-import '../../viewmodels/collaborative_status_viewmodel.dart';
-import '../../widgets/common/utility_components.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Recipe save and fork actions for edit recipe view
 class EditRecipeActions {

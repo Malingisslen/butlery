@@ -2,10 +2,10 @@
 
 import 'dart:async';
 import 'package:collection/collection.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../core/utils/logger.dart';
-import '../operations/personal_shopping_operations.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 
 /// Handles shopping item management operations
 class ShoppingItemManagement {

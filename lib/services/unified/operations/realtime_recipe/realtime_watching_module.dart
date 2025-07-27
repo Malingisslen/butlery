@@ -1,9 +1,9 @@
 // lib/services/unified/operations/realtime_recipe/realtime_watching_module.dart
 
 import 'dart:async';
-import '../../../../models/recipe_unified.dart';
-import '../../../../core/utils/logger.dart';
-import 'shared/realtime_recipe_utils.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Realtime recipe watching module
 /// 
@@ -166,14 +166,14 @@ class RealtimeWatchingModule {
 
   /// Fallback watching with polling when RealtimeSyncService unavailable
   Stream<Recipe> _watchRecipeWithPolling(String recipeId) {
-    return Stream.periodic(Duration(seconds: 2), (_) {
+    return Stream.periodic(const Duration(seconds: 2), (_) {
       return _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
     }).where((recipe) => recipe != null).cast<Recipe>();
   }
 
   /// Fallback watching multiple recipes with polling
   Stream<List<Recipe>> _watchMultipleRecipesWithPolling(List<String> recipeIds) {
-    return Stream.periodic(Duration(seconds: 2), (_) {
+    return Stream.periodic(const Duration(seconds: 2), (_) {
       return recipeIds
           .map((id) => _parent.recipes.where((r) => r.id == id).firstOrNull)
           .where((r) => r != null)

@@ -1,8 +1,8 @@
 // lib/services/realtime/modules/menu_operations.dart
 
-import '../../../models/realtime/realtime_menu.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Menu operation types for analytics and logging
 enum MenuOperationType {

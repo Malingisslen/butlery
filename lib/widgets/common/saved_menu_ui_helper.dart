@@ -1,8 +1,8 @@
 // lib/widgets/common/saved_menu_ui_helper.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../viewmodels/menu/menu_state_manager.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 
 /// UI Helper for SavedMenuInfo
 /// Provides UI-specific methods for saved menu information

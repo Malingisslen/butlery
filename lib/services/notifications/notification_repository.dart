@@ -3,9 +3,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/utils/logger.dart';
-import '../../core/types/app_timestamp.dart';
-import 'notification_types.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Repository for managing notification preferences and history
 /// 
@@ -294,7 +294,7 @@ class NotificationRepository {
   /// Clear old notification history (for cleanup)
   Future<void> cleanupOldHistory({Duration? olderThan}) async {
     try {
-      final cutoffDate = DateTime.now().subtract(olderThan ?? Duration(days: 30));
+      final cutoffDate = DateTime.now().subtract(olderThan ?? const Duration(days: 30));
       final cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
       final query = await _firestore
@@ -371,8 +371,8 @@ class NotificationPreferences {
       },
       allowBatching: true,
       digestFrequency: 'never',
-      quietHoursStart: TimeOfDay(hour: 22, minute: 0), // 10 PM
-      quietHoursEnd: TimeOfDay(hour: 8, minute: 0),    // 8 AM
+      quietHoursStart: const TimeOfDay(hour: 22, minute: 0), // 10 PM
+      quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),    // 8 AM
       soundEnabled: true,
       vibrationEnabled: true,
       lastUpdated: DateTime.now(),

@@ -1,13 +1,13 @@
 // lib/widgets/common/search_filter_widget.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 // Focused Components
-import 'search_filter/search_input_widget.dart';
-import 'search_filter/filter_toggle_button.dart';
-import 'search_filter/filters_panel_widget.dart';
-import 'search_filter/search_stats_widget.dart';
+import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
+import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
+import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
+import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 
 // Export models for backward compatibility
 export 'search_filter/filter_models.dart';
@@ -231,7 +231,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   /// Search bar with integrated filter toggle
   Widget _buildSearchSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Row(
         children: [
           // Search field

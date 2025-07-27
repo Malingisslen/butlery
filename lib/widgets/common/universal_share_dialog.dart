@@ -2,21 +2,21 @@
 
 import 'package:flutter/material.dart';
 
-import '../../models/recipe_unified.dart';
-import '../../models/unified/unified_shopping_list.dart';
-import '../../models/user_profile.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
-import 'share_dialog/share_dialog_header.dart';
-import 'share_dialog/share_mode_selection.dart';
-import 'share_dialog/share_message_input.dart';
-import 'share_dialog/share_target_selection.dart';
-import 'share_dialog/share_dialog_states.dart';
-import 'share_dialog/share_dialog_actions.dart';
-import 'share_dialog/share_dialog_helpers.dart';
+import 'package:butlery/widgets/common/share_dialog/share_dialog_header.dart';
+import 'package:butlery/widgets/common/share_dialog/share_mode_selection.dart';
+import 'package:butlery/widgets/common/share_dialog/share_message_input.dart';
+import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
+import 'package:butlery/widgets/common/share_dialog/share_dialog_states.dart';
+import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
+import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
 
 /// Typ av innehåll som kan delas
 enum ShareContentType {
@@ -138,7 +138,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           maxWidth: AppDimensions.buttonWidthXLarge + 170,
           maxHeight: 650,
         ),
@@ -150,7 +150,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: AppDimensions.elevationHigh * 2.5,
-                offset: Offset(0, AppDimensions.elevationMedium + 6),
+                offset: const Offset(0, AppDimensions.elevationMedium + 6),
               ),
             ],
           ),

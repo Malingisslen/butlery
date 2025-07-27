@@ -1,11 +1,11 @@
 // lib/views/social/friend_requests/friend_request_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_request.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../widgets/common/social_components.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 class FriendRequestCard {
   static Widget buildIncomingCard(
@@ -32,7 +32,7 @@ class FriendRequestCard {
         onTap: () => onSelectionChanged(!isSelected),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Column(
             children: [
               Row(
@@ -42,7 +42,7 @@ class FriendRequestCard {
                     value: isSelected,
                     onChanged: (value) => onSelectionChanged(value ?? false),
                   ),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.spacingS),
 
                   // User avatar with online indicator
                   Stack(
@@ -71,7 +71,7 @@ class FriendRequestCard {
                         ),
                     ],
                   ),
-                  SizedBox(width: AppDimensions.spacingL),
+                  const SizedBox(width: AppDimensions.spacingL),
 
                   // Request info
                   Expanded(
@@ -91,9 +91,9 @@ class FriendRequestCard {
                               ),
                         ),
                         if (request.message?.isNotEmpty == true) ...[
-                          SizedBox(height: AppDimensions.spacingXs),
+                          const SizedBox(height: AppDimensions.spacingXs),
                           Container(
-                            padding: EdgeInsets.all(AppDimensions.spacingS),
+                            padding: const EdgeInsets.all(AppDimensions.spacingS),
                             decoration: BoxDecoration(
                               color: Theme.of(context)
                                   .colorScheme
@@ -111,7 +111,7 @@ class FriendRequestCard {
                             ),
                           ),
                         ],
-                        SizedBox(height: AppDimensions.spacingXs),
+                        const SizedBox(height: AppDimensions.spacingXs),
                         Text(
                           request.timeAgoText,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -126,7 +126,7 @@ class FriendRequestCard {
 
               // Actions (not shown during bulk selection)
               if (!isSelected) ...[
-                SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.spacingL),
                 Row(
                   children: [
                     Expanded(
@@ -138,11 +138,11 @@ class FriendRequestCard {
                         label: const Text('Avböj'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error,
-                          side: BorderSide(color: AppColors.error),
+                          side: const BorderSide(color: AppColors.error),
                         ),
                       ),
                     ),
-                    SizedBox(width: AppDimensions.spacingL),
+                    const SizedBox(width: AppDimensions.spacingL),
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: viewModel.isLoading
@@ -220,7 +220,7 @@ class FriendRequestCard {
         onTap: () => onSelectionChanged(!isSelected),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Row(
             children: [
               // Selection checkbox (only for pending requests)
@@ -232,7 +232,7 @@ class FriendRequestCard {
               else
                 const SizedBox(width: 48), // Placeholder for alignment
 
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
 
               // User avatar with online indicator
               Stack(
@@ -261,7 +261,7 @@ class FriendRequestCard {
                     ),
                 ],
               ),
-              SizedBox(width: AppDimensions.spacingL),
+              const SizedBox(width: AppDimensions.spacingL),
 
               // Request info
               Expanded(
@@ -283,11 +283,11 @@ class FriendRequestCard {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     Row(
                       children: [
                         Icon(statusIcon, size: 16, color: statusColor),
-                        SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           statusText,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -312,7 +312,7 @@ class FriendRequestCard {
               if (request.isPending && !isSelected)
                 IconButton(
                   onPressed: () => _cancelSentRequest(context, request, viewModel),
-                  icon: Icon(Icons.cancel, color: AppColors.error),
+                  icon: const Icon(Icons.cancel, color: AppColors.error),
                   tooltip: 'Avbryt förfrågan',
                 ),
             ],
@@ -332,8 +332,8 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Vänskapsförfrågan accepterad! 🎉'),
+        const SnackBar(
+          content: Text('Vänskapsförfrågan accepterad! 🎉'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -349,8 +349,8 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Vänskapsförfrågan avböjd'),
+        const SnackBar(
+          content: Text('Vänskapsförfrågan avböjd'),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -366,8 +366,8 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Förfrågan avbruten'),
+        const SnackBar(
+          content: Text('Förfrågan avbruten'),
           backgroundColor: AppColors.warning,
         ),
       );

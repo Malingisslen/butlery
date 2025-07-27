@@ -1,18 +1,18 @@
 // lib/viewmodels/shared_content_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../services/social_recipe_service.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../models/shared_recipe.dart';
-import '../models/shared_menu.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../models/user_profile.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Focused modules
-import 'shared_content/content_operations.dart';
-import 'shared_content/social_content_features.dart';
+import 'package:butlery/viewmodels/shared_content/content_operations.dart';
+import 'package:butlery/viewmodels/shared_content/social_content_features.dart';
 
 /// Clean facade for shared content management using focused modules
 ///

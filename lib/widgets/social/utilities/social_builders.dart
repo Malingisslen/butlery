@@ -1,10 +1,10 @@
 // lib/widgets/social/utilities/social_builders.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../common/social/social_helpers.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/social/social_helpers.dart';
 
 /// Social UI builder utilities
 ///
@@ -75,7 +75,7 @@ class SocialBuilders {
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
                   color: cardColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
@@ -86,7 +86,7 @@ class SocialBuilders {
                   size: AppDimensions.iconSizeAction,
                 ),
               ),
-              SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +104,7 @@ class SocialBuilders {
                 ),
               ),
               if (onTap != null)
-                Icon(
+                const Icon(
                   Icons.arrow_forward_ios,
                   size: AppDimensions.iconSizeM,
                   color: AppColors.textSecondary,

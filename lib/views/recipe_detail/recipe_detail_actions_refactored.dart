@@ -3,14 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/base/base_action_handler.dart';
-import '../../viewmodels/recipe_detail_viewmodel.dart';
-import '../../widgets/common/universal_share_dialog.dart';
-import '../../viewmodels/universal_share_dialog_viewmodel.dart';
-import '../../core/injection.dart';
-import '../../core/constants/routes.dart';
-import '../../services/share_service.dart';
-import 'fullscreen_image_viewer.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/services/share_service.dart';
+import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 
 /// Refactored RecipeDetailActions using BaseActionHandler
 /// 

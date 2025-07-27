@@ -1,10 +1,10 @@
 // lib/services/unified/friends/friends_internal_operations.dart
 
-import '../../../models/friend_category.dart';
-import '../../../models/group_invitation.dart';
-import '../../../models/user_profile.dart';
-import '../../../core/utils/logger.dart';
-import 'friends_state_manager.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/friends/friends_state_manager.dart';
 
 /// Focused module for friends internal operations
 /// 

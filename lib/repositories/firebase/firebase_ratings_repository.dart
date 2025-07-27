@@ -1,9 +1,9 @@
 // lib/repositories/firebase/firebase_ratings_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/ratings_repository.dart';
-import 'base_firebase_repository.dart';
-import '../../core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Firebase implementation of RatingsRepository
 class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>

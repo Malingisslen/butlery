@@ -1,11 +1,11 @@
 // lib/viewmodels/menu/menu_social_manager.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../models/recipe_unified.dart';
-import '../../services/unified/operations/social_menu_operations.dart';
-import '../../core/utils/logger.dart';
-import 'menu_state_manager.dart';
-import 'menu_storage.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/operations/social_menu_operations.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
+import 'package:butlery/viewmodels/menu/menu_storage.dart';
 
 /// Focused module for menu social features
 /// 

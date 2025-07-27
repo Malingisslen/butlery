@@ -1,9 +1,9 @@
 // lib/widgets/permissions/edit_mode_ui_helper.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../models/permissions/edit_mode.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
 
 /// UI helper class for EditMode enum
 /// Separates UI logic from the model layer to maintain clean architecture

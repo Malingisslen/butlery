@@ -1,6 +1,6 @@
 // lib/core/permissions/modules/group_permission_handler.dart
 
-import 'base_permission_manager.dart';
+import 'package:butlery/core/permissions/modules/base_permission_manager.dart';
 
 /// Focused module for group permission handling
 /// 

@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../../core/injection.dart';
-import '../../viewmodels/shared_content_viewmodel.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
-import '../../widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 // Import focused components
-import 'shared_with_me/shared_content_app_bar.dart';
-import 'shared_with_me/shared_content_search_bar.dart';
-import 'shared_with_me/shared_content_tab_bar.dart';
-import 'shared_with_me/shared_content_lists.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_app_bar.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_search_bar.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_tab_bar.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 
 class SharedWithMeView extends StatelessWidget {
   const SharedWithMeView({super.key});
@@ -90,7 +90,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
   Widget _buildContent(BuildContext context, SharedContentViewModel viewModel) {
     if (viewModel.isLoading) {
-      return SliverFillRemaining(
+      return const SliverFillRemaining(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -98,9 +98,9 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
               SizedBox(
                 width: AppDimensions.iconSizeL,
                 height: AppDimensions.iconSizeL,
-                child: const CircularProgressIndicator(),
+                child: CircularProgressIndicator(),
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              SizedBox(height: AppDimensions.spacingXl),
               Text(
                 'Laddar delat innehåll...',
                 style: AppTextStyles.titleMedium,

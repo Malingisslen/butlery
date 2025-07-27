@@ -1,12 +1,12 @@
 // lib/widgets/common/input/shopping_list_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../viewmodels/unified_shopping_viewmodel.dart';
-import 'shopping_list_actions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
 
 /// Shopping list card widget
 ///
@@ -31,7 +31,7 @@ class ShoppingListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
@@ -63,7 +63,7 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         // List icon
         Container(
-          padding: EdgeInsets.all(AppDimensions.spacingXs),
+          padding: const EdgeInsets.all(AppDimensions.spacingXs),
           decoration: BoxDecoration(
             color: _getListTypeColor().withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -163,7 +163,7 @@ class ShoppingListCard extends StatelessWidget {
     final previewItems = list.items.take(3).toList();
     
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -171,13 +171,13 @@ class ShoppingListCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Senaste artiklar:',
             style: AppTextStyles.bodySmall,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           ...previewItems.map((item) => Padding(
-            padding: EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
             child: Row(
               children: [
                 Icon(
@@ -221,7 +221,7 @@ class ShoppingListCard extends StatelessWidget {
     Color color,
   ) {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingXs,
         vertical: AppDimensions.spacingXxs,
       ),
@@ -298,11 +298,11 @@ class ShoppingListEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.shopping_cart_outlined,
             size: 64,
             color: AppColors.textLight,
@@ -315,7 +315,7 @@ class ShoppingListEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
+          const Text(
             'Skapa din första handlista för att komma igång',
             style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
@@ -324,8 +324,8 @@ class ShoppingListEmptyState extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXl),
             FilledButton.icon(
               onPressed: onCreateList,
-              icon: Icon(Icons.add),
-              label: Text('Skapa lista'),
+              icon: const Icon(Icons.add),
+              label: const Text('Skapa lista'),
             ),
           ],
         ],

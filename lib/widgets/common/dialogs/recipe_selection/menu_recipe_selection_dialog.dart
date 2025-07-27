@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../viewmodels/recipe_list_viewmodel.dart';
-import '../../search_filter_widget.dart';
-import '../../state_widget.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
-import '../../../../core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Dialog for selecting recipes for menu categories
 class MenuRecipeSelectionDialog extends StatefulWidget {
@@ -53,7 +53,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     foregroundColor: AppColors.neutralLight,
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
                     ),
@@ -117,7 +117,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           },
           searchHint: 'Sök recept att lägga till...',
           autofocus: true,
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           showStats: true,
           resultCount: filteredRecipes.length,
         ),
@@ -160,11 +160,11 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
 
   Widget _buildInfo() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
               vertical: 2,
             ),
@@ -274,12 +274,12 @@ class MenuRecipeListItem extends StatelessWidget {
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
-              Icon(
+              const Icon(
                 Icons.access_time,
                 size: AppDimensions.iconSizeM,
                 color: AppColors.textSecondary,
               ),
-              SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.spacingXxs),
               Text(
                 '${recipe.timeMinutes} min',
                 style: AppTextStyles.labelSmall,
@@ -287,16 +287,16 @@ class MenuRecipeListItem extends StatelessWidget {
             ],
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
-                SizedBox(width: AppDimensions.spacingS),
-                Text('•', style: AppTextStyles.bodySmall),
-                SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.spacingS),
+                const Text('•', style: AppTextStyles.bodySmall),
+                const SizedBox(width: AppDimensions.spacingS),
               ],
-              Icon(
+              const Icon(
                 Icons.people,
                 size: AppDimensions.iconSizeM,
                 color: AppColors.textSecondary,
               ),
-              SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.spacingXxs),
               Text(
                 '${recipe.portions} port',
                 style: AppTextStyles.labelSmall,
@@ -316,7 +316,7 @@ class MenuRecipeListItem extends StatelessWidget {
         color: AppColors.primaryBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
-      child: Icon(
+      child: const Icon(
         Icons.restaurant_menu,
         color: AppColors.primaryBlue,
         size: AppDimensions.iconSizeAction,

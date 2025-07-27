@@ -1,11 +1,11 @@
 // lib/views/realtime/handlers/recipe_interaction_handler_refactored.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../viewmodels/realtime_menu_viewmodel.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../widgets/common/navigation_components.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/common/navigation_components.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Refactored RecipeInteractionHandler using BaseActionHandler
 /// 
@@ -409,7 +409,7 @@ class RecipeInteractionHandler extends BaseActionHandler with ActionStateMixin {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.folder_outlined,
                       color: AppColors.accent,
                       size: 20,

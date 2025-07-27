@@ -1,8 +1,8 @@
 // lib/widgets/common/state/legacy_state_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../state_widget.dart';
-import 'skeleton_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/state/skeleton_components.dart';
 
 /// ===== LEGACY ALIASES FÖR BAKÅTKOMPATIBILITET =====
 

@@ -1,9 +1,9 @@
 // lib/widgets/common/search_filter/filter_chips_widget.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import 'filter_models.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Filter chips component for displaying filterable options
 class FilterChipsWidget extends StatelessWidget {
@@ -23,7 +23,7 @@ class FilterChipsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

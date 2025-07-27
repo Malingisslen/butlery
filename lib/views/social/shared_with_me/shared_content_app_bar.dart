@@ -1,10 +1,10 @@
 // lib/views/social/shared_with_me/shared_content_app_bar.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 
 /// SharedContentAppBar - App bar for shared content view
 ///
@@ -24,7 +24,7 @@ class SharedContentAppBar {
         // Notification badge med unread count
         if (viewModel.totalUnreadCount > 0)
           Container(
-            margin: EdgeInsets.only(right: AppDimensions.spacingS),
+            margin: const EdgeInsets.only(right: AppDimensions.spacingS),
             child: Stack(
               children: [
                 IconButton(
@@ -35,8 +35,8 @@ class SharedContentAppBar {
                   right: 6,
                   top: 6,
                   child: Container(
-                    padding: EdgeInsets.all(AppDimensions.spacingXs),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                    decoration: const BoxDecoration(
                       color: AppColors.error,
                       shape: BoxShape.circle,
                     ),

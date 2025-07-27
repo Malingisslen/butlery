@@ -1,6 +1,6 @@
 // lib/core/permissions/modules/shopping_permission_handler.dart
 
-import 'base_permission_manager.dart';
+import 'package:butlery/core/permissions/modules/base_permission_manager.dart';
 
 /// Focused module for shopping list permission handling
 /// 

@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../notification_types.dart';
-import '../notification_repository.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for notification batching and spam prevention
 /// 
@@ -135,7 +135,7 @@ class NotificationBatchManager {
   bool _isRateLimited(String userId, NotificationCategory category) {
     final key = '${userId}_${category.name}';
     final now = DateTime.now();
-    final window = const Duration(minutes: 15); // 15-minute window
+    const window = Duration(minutes: 15); // 15-minute window
     
     // Get recent notifications for this user/category
     final recentNotifications = _rateLimitingTracker[key] ?? [];
@@ -184,7 +184,7 @@ class NotificationBatchManager {
     _rateLimitingTracker.putIfAbsent(key, () => []).add(now);
     
     // Keep only recent entries to prevent memory bloat
-    final window = const Duration(minutes: 15);
+    const window = Duration(minutes: 15);
     _rateLimitingTracker[key]!.removeWhere((timestamp) => 
         now.difference(timestamp) > window);
   }
@@ -430,7 +430,7 @@ class NotificationBatchManager {
   void cleanupRateLimitData() {
     try {
       final now = DateTime.now();
-      final window = const Duration(minutes: 15);
+      const window = Duration(minutes: 15);
       int removedEntries = 0;
 
       _rateLimitingTracker.forEach((key, timestamps) {

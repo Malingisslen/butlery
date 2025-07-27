@@ -1,10 +1,10 @@
 // lib/theme/component_themes.dart
 
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_text_styles.dart';
-import 'app_dimensions.dart';
-import 'theme_constants.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/theme_constants.dart';
 
 /// Component-specific theme configurations for the Butlery app
 /// Contains themes for buttons, cards, inputs, and other Material components
@@ -143,14 +143,14 @@ class ComponentThemes {
       filled: false, // No fill as per design spec
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8), // 8px radius per spec
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: AppColors.textMedium, // Medium grey border matching text
           width: 1, // 1px border per spec
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8), // 8px radius per spec
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: AppColors.textMedium, // Medium grey border when enabled
           width: 1, // 1px border per spec
         ),
@@ -180,7 +180,7 @@ class ComponentThemes {
         horizontal: 16, // 16px horizontal padding per spec
         vertical: 14, // 14px vertical padding per spec
       ),
-      hintStyle: TextStyle(color: AppColors.textMedium), // Medium grey for hints consistency
+      hintStyle: const TextStyle(color: AppColors.textMedium), // Medium grey for hints consistency
       labelStyle: AppTextStyles.bodyMedium,
       errorStyle: AppTextStyles.errorText,
     );
@@ -229,12 +229,12 @@ class ComponentThemes {
 
   /// Tab bar theme
   static TabBarThemeData get tabBarTheme {
-    return TabBarThemeData(
+    return const TabBarThemeData(
       labelColor: AppColors.primaryBlue,
       unselectedLabelColor: AppColors.textMedium,
       labelStyle: AppTextStyles.tabText,
       unselectedLabelStyle: AppTextStyles.tabText,
-      indicator: const UnderlineTabIndicator(
+      indicator: UnderlineTabIndicator(
         borderSide: BorderSide(
           color: AppColors.primaryBlue,
           width: AppDimensions.borderWidthThick,
@@ -286,11 +286,11 @@ class ComponentThemes {
 
   /// Bottom sheet theme - 16px top radius and proper elevation per design spec
   static BottomSheetThemeData get bottomSheetTheme {
-    return BottomSheetThemeData(
+    return const BottomSheetThemeData(
       backgroundColor: AppColors.cardWhite,
       elevation: 16, // Strong elevation for modals per spec
       shadowColor: Colors.black26,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(16), // 16px top radius per spec
         ),

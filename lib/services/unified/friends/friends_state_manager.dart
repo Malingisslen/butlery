@@ -1,11 +1,11 @@
 // lib/services/unified/friends/friends_state_manager.dart
 
 import 'package:flutter/foundation.dart';
-import '../../../models/friend_request.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/group_invitation.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for friends state management
 /// 

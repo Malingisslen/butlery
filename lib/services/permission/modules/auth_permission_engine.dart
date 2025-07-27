@@ -1,8 +1,8 @@
 // lib/services/permission/modules/auth_permission_engine.dart
 
-import '../../auth_service.dart';
-import '../../user_service.dart';
-import '../../../models/user_profile.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/models/user_profile.dart';
 
 /// Focused module for authentication-based permissions
 /// 

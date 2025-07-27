@@ -1,14 +1,14 @@
 // lib/views/edit_recipe/edit_recipe_form_fields.dart
 
 import 'package:flutter/material.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/validators/form_validators.dart';
-import '../../widgets/image/universal_image_manager.dart';
-import '../../services/permission_service.dart';
-import '../../core/injection.dart';
-import 'edit_recipe_image_picker.dart';
-import 'edit_recipe_dynamic_list.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/widgets/image/universal_image_manager.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_image_picker.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_dynamic_list.dart';
 
 /// Form fields for edit recipe view
 class EditRecipeFormFields {
@@ -133,7 +133,7 @@ class EditRecipeFormFields {
       // Source URL field
       TextFormField(
         initialValue: viewModel.sourceUrl ?? '',
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Källa (URL)',
           hintText: 'https://exempel.com/recept',
           helperText: 'Länk till originalreceptet',

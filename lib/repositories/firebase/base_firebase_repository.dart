@@ -19,10 +19,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/repository.dart';
-import '../interfaces/auth_repository.dart';
-import '../../core/utils/logger.dart';
-import '../mixins/permission_validation_mixin.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 
 /// Base class for Firebase repositories that eliminates duplicate CRUD patterns.
 ///

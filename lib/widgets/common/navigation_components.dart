@@ -1,14 +1,14 @@
 // lib/widgets/common/navigation_components.dart
 
 import 'package:flutter/material.dart';
-import '../../models/user_profile.dart';
-import '../../models/recipe_unified.dart';
-import '../../viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 
 // Import focused modules
-import 'dialogs/recipe_selection_dialogs.dart';
-import 'dialogs/confirmation_dialogs.dart';
-import 'indicators/realtime_indicators.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
+import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/indicators/realtime_indicators.dart';
 
 /// 🎯 UNIFIED NavigationComponents - API Facade för alla navigation patterns
 /// 

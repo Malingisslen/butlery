@@ -1,8 +1,8 @@
 // lib/core/permissions/validators/base_validator.dart
 
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import 'validation_result.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/permissions/validators/validation_result.dart';
 
 /// Base permission validator with common functionality
 abstract class BasePermissionValidator {

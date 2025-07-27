@@ -2,15 +2,15 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/cache/json_cache_helper.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
 
 // Focused modules
-import 'cache_operations.dart';
-import 'firebase_sync_manager.dart';
-import 'debounced_sync_operations.dart';
-import 'cache_optimization.dart';
+import 'package:butlery/services/unified/modules/cache_operations.dart';
+import 'package:butlery/services/unified/modules/firebase_sync_manager.dart';
+import 'package:butlery/services/unified/modules/debounced_sync_operations.dart';
+import 'package:butlery/services/unified/modules/cache_optimization.dart';
 
 /// Clean facade for recipe cache management using focused modules
 ///

@@ -1,12 +1,12 @@
 // lib/core/permissions/modules/permission_debug_tools.dart
 
 import 'package:flutter/foundation.dart';
-import 'base_permission_manager.dart';
-import 'recipe_permission_handler.dart';
-import 'shopping_permission_handler.dart';
-import 'group_permission_handler.dart';
-import 'social_permission_handler.dart';
-import 'permission_action_builder.dart';
+import 'package:butlery/core/permissions/modules/base_permission_manager.dart';
+import 'package:butlery/core/permissions/modules/recipe_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/shopping_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/group_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/social_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/permission_action_builder.dart';
 
 /// Focused module for permission debugging tools
 /// 

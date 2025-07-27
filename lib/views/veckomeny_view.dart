@@ -5,36 +5,36 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // Models
-import '../models/recipe_unified.dart';
-import '../models/user_profile.dart';
-import '../models/shared_menu.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/shared_menu.dart';
 
 // ViewModels
-import '../viewmodels/menu_viewmodel.dart';
-import '../viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Widgets - MIGRATED: Using LayoutComponents
-import '../widgets/common/content_card.dart';
-import '../widgets/common/layout_components.dart'; // ✅ MIGRATED: New import
-import '../widgets/common/state_widget.dart';
-import '../widgets/common/universal_share_dialog.dart';
-import '../widgets/common/input_components.dart';
+import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/layout_components.dart'; // ✅ MIGRATED: New import
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/widgets/common/input_components.dart';
 
 // Theme
-import '../theme/app_colors.dart';
-import '../theme/app_dimensions.dart';
-import '../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // Utils
-import '../core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Core
-import '../core/injection.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Services
-import '../services/share_service.dart';
-import '../services/unified/unified_friends_service.dart';
+import 'package:butlery/services/share_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// ✨ MIGRATED VY MED LAYOUTCOMPONENTS
 class VeckomenyView extends StatelessWidget {
@@ -152,7 +152,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       builder: (context) => UniversalShareDialog.menu(
         menu: menuViewModel.menu,
         viewModel: sl<UniversalShareDialogViewModel>(),
-        initialMessage: "Kolla min veckomeny!",
+        initialMessage: 'Kolla min veckomeny!',
         availableFriends: availableFriends,
       ),
     );
@@ -266,7 +266,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // Error indicator
           if (viewModel.hasError)
             IconButton(
-              icon: Icon(Icons.error, color: AppColors.error),
+              icon: const Icon(Icons.error, color: AppColors.error),
               onPressed: () {
                 SnackBarUtils.showError(context, viewModel.error!);
               },
@@ -278,12 +278,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(AppDimensions.spacingS),
+                  padding: const EdgeInsets.all(AppDimensions.spacingS),
                   child: Column(
                     children: [
                       // Prompt-input
                       _buildPromptInput(viewModel),
-                      SizedBox(height: AppDimensions.spacingL),
+                      const SizedBox(height: AppDimensions.spacingL),
 
                       // Generera-knapp
                       _buildGenerateButton(viewModel),
@@ -294,7 +294,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 // Meny-innehåll
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingS,
                     ),
                     child: _buildMenuContent(viewModel),
@@ -314,11 +314,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                       color: AppColors.cardWhite,
                       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                     ),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        CircularProgressIndicator(),
+                        SizedBox(height: AppDimensions.spacingM),
                         Text(
                           'Genererar meny...',
                           style: AppTextStyles.titleMedium,
@@ -362,7 +362,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 size: AppDimensions.iconSizeAction,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Vad vill du ha för meny?',
                 style: AppTextStyles.labelMedium.copyWith(
@@ -404,7 +404,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               ? _generateMenu
               : null,
           icon: viewModel.isGenerating
-              ? SizedBox(
+              ? const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
@@ -421,7 +421,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryBlue,
             foregroundColor: AppColors.neutralLight,
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.paddingL,
               vertical: AppDimensions.paddingM,
             ),
@@ -454,7 +454,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ],
 
         // Extra padding för floating button
-        SizedBox(height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
       ],
     );
   }
@@ -462,7 +462,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Widget _buildMenuSummary(MenuViewModel viewModel) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
-      margin: EdgeInsets.only(bottom: AppDimensions.spacingL),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -474,7 +474,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             color: Theme.of(context).colorScheme.onPrimaryContainer,
             size: AppDimensions.iconSizeAction,
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +508,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
           child: Row(
             children: [
               Expanded(

@@ -4,29 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 // Services
-import '../../services/offline_service.dart';
-import '../../services/analytics_service.dart';
-import '../../services/deep_link_service.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/deep_link_service.dart';
 
 // Dependency Injection
-import '../injection.dart';
-import '../../services/unified/unified_recipe_service.dart';
-import '../../services/unified/unified_friends_service.dart';
-import '../../repositories/interfaces/auth_repository.dart';
-import '../../repositories/firestore_repository.dart';
-import '../../services/auth_service.dart';
-import '../../services/user_service.dart';
-import '../../services/persistence_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/persistence_service.dart';
 
 // Firebase config
-import '../../firebase_options.dart';
+import 'package:butlery/firebase_options.dart';
 
 /// 🚀 AppInitializer
 ///
@@ -140,7 +140,7 @@ class AppInitializer {
     try {
       // Get environment from compile-time constant, default to 'development'
       const env = String.fromEnvironment('ENV', defaultValue: 'development');
-      final fileName = '.env.$env';
+      const fileName = '.env.$env';
       
       await dotenv.load(fileName: fileName);
       debugPrint('✅ Environment variables laddade från $fileName');

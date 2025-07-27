@@ -2,12 +2,12 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../models/recipe_unified.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/retry_helper.dart';
-import '../../repositories/firestore_repository.dart';
-import '../../repositories/interfaces/auth_repository.dart';
-import 'sync_result.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/retry_helper.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/offline/sync_result.dart';
 
 /// Handles sync operations for offline service
 class OfflineSyncManager {
@@ -155,7 +155,7 @@ class OfflineSyncManager {
   Future<SyncResult> syncNow({required bool isOnline}) async {
     if (_isSyncing) {
       AppLogger.info('🔄 Synkronisering pågår redan...');
-      return SyncResult(
+      return const SyncResult(
         success: false,
         message: 'Synkronisering pågår redan',
         isRetry: false,
@@ -164,7 +164,7 @@ class OfflineSyncManager {
 
     if (!isOnline) {
       AppLogger.warning('⚠️ Kan inte synka offline');
-      return SyncResult(
+      return const SyncResult(
         success: false,
         message: 'Du måste vara online för att synkronisera',
         isRetry: false,
@@ -173,7 +173,7 @@ class OfflineSyncManager {
 
     if (_syncQueueBox.isEmpty) {
       AppLogger.info('✅ Inga ändringar att synkronisera');
-      return SyncResult(
+      return const SyncResult(
         success: true,
         message: 'Inga väntande ändringar',
         isRetry: false,
@@ -201,7 +201,7 @@ class OfflineSyncManager {
         isRetry: remainingItems > 0,
       );
     } else {
-      return SyncResult(
+      return const SyncResult(
         success: false,
         message: 'Synkronisering misslyckades, försöker igen senare',
         isRetry: true,

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
 /// Simple [User] implementation used by [MockAuthRepository].
 class FakeUser implements User {

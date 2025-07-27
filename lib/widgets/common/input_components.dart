@@ -1,15 +1,15 @@
 // lib/widgets/common/input_components.dart
 
 import 'package:flutter/material.dart';
-import '../../models/unified/unified_shopping_item.dart';
-import '../../models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 // Import all input modules
-import 'input/instruction_editor.dart';
-import 'input/portion_scaler.dart';
-import 'input/debounced_checkbox.dart';
-import 'input/shopping_item_dialog.dart';
-import 'input/shopping_list_selector.dart';
+import 'package:butlery/widgets/common/input/instruction_editor.dart';
+import 'package:butlery/widgets/common/input/portion_scaler.dart';
+import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
+import 'package:butlery/widgets/common/input/shopping_item_dialog.dart';
+import 'package:butlery/widgets/common/input/shopping_list_selector.dart';
 
 /// Unified Input Components API
 ///

@@ -2,9 +2,9 @@
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../models/recipe_unified.dart';
-import '../../core/utils/logger.dart';
-import 'menu_state_manager.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 
 /// Focused module for menu local storage
 /// 

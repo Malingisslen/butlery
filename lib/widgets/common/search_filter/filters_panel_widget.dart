@@ -1,11 +1,11 @@
 // lib/widgets/common/search_filter/filters_panel_widget.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import 'filter_models.dart';
-import 'filter_chips_widget.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/search_filter/filter_models.dart';
+import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 
 /// Animated filters panel with all filter groups
 class FiltersPanelWidget extends StatelessWidget {
@@ -82,11 +82,11 @@ class FiltersPanelWidget extends StatelessWidget {
                     Center(
                       child: TextButton.icon(
                         onPressed: onClearAllFilters,
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.clear_all,
                           size: AppDimensions.iconSizeAction,
                         ),
-                        label: Text(
+                        label: const Text(
                           'Rensa alla filter',
                           style: AppTextStyles.labelLarge,
                         ),

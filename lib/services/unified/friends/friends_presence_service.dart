@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/utils/logger.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Friends presence service
 /// 
@@ -39,6 +39,7 @@ class FriendsPresenceService {
     }
     
     try {
+      // ignore: cancel_subscriptions - cancelled in dispose()
       final subscription = _firestore
           .collection('users')
           .doc(friendId)

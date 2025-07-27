@@ -1,6 +1,6 @@
 // lib/utils/text/unit_converter.dart
 
-import 'text_formatting.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
 
 /// SmartUnitConverter - Smart unit conversion utilities
 ///

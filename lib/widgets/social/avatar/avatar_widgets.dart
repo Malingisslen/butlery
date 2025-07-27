@@ -1,8 +1,8 @@
 // lib/widgets/social/avatar/avatar_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../user/user_display_widgets.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 // Re-export ImageSize for easier imports
 export '../../user/user_display_widgets.dart' show ImageSize, UserDisplayData;

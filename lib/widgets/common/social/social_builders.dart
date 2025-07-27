@@ -1,7 +1,7 @@
 // lib/widgets/common/social/social_builders.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Builder functions for social components
 class SocialBuilders {

@@ -1,11 +1,11 @@
 /// Minimal PermissionService for debugging DI issues
 import 'package:flutter/foundation.dart';
-import '../models/user_profile.dart';
-import '../services/auth_service.dart';
-import '../services/user_service.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../services/unified/unified_friends_service.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Minimal version of PermissionService for debugging
 class PermissionServiceMinimal {

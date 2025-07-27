@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/group_invitations_viewmodel.dart';
-import '../../widgets/common/social_components.dart';
-import '../../models/friend_category.dart';
-import '../../widgets/common/state_widget.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
+import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
 
 
 class GroupInvitationsView extends StatelessWidget {
@@ -31,13 +31,13 @@ class GroupInvitationsView extends StatelessWidget {
               elevation: AppDimensions.elevationLow,
               actions: [
                 if (viewModel.isLoading)
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.all(AppDimensions.spacingL),
                     // ✅ KORRIGERAT: Använd smallLoadingIndicator som finns i AppTheme
                     child: SizedBox(
                       width: AppDimensions.iconSizeS,
                       height: AppDimensions.iconSizeS,
-                      child: const CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   )
                 else
@@ -58,13 +58,13 @@ class GroupInvitationsView extends StatelessWidget {
   Widget _buildBody(BuildContext context, GroupInvitationsViewModel viewModel) {
     // Loading state
     if (viewModel.isLoading && viewModel.availableGroups.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // ✅ KORRIGERAT: Använd mediumLoadingIndicator som finns
-            const CircularProgressIndicator(),
-            const SizedBox(height: AppDimensions.spacingXl),
+            CircularProgressIndicator(),
+            SizedBox(height: AppDimensions.spacingXl),
             Text(
               'Laddar grupper...',
               style: AppTextStyles.titleMedium,
@@ -82,9 +82,9 @@ class GroupInvitationsView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: AppColors.error),
+              const Icon(Icons.error_outline, size: 64, color: AppColors.error),
               const SizedBox(height: AppDimensions.spacingXl),
-              Text(
+              const Text(
                 'Ett fel uppstod',
                 style: AppTextStyles.titleLarge,
               ),
@@ -110,7 +110,7 @@ class GroupInvitationsView extends StatelessWidget {
                 // ✅ KORRIGERAT: Använd secondaryButtonStyle som finns
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primaryBlue,
-                  side: BorderSide(color: AppColors.primaryBlue),
+                  side: const BorderSide(color: AppColors.primaryBlue),
                   padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -190,7 +190,7 @@ class GroupInvitationsView extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.spacingM),
 
                 // Gruppinfo
                 Expanded(
@@ -228,7 +228,7 @@ class GroupInvitationsView extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.neutralLight),
                             ),
                             // ✅ KORRIGERAT: Använd tinyHorizontalGap som finns
-                            SizedBox(width: AppDimensions.spacingXs),
+                            const SizedBox(width: AppDimensions.spacingXs),
                             Text(
                               'Går med...',
                               style: AppTextStyles.labelLarge.copyWith(
@@ -282,7 +282,7 @@ class GroupInvitationsView extends StatelessWidget {
         children: [
           ...members.take(5).map((member) {
             return Padding(
-              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
               child: Column(
                 children: [
                   SocialComponents.avatar(

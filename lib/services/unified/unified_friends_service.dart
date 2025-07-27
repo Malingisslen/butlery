@@ -17,28 +17,28 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../repositories/interfaces/auth_repository.dart';
-import '../../repositories/firestore_repository.dart';
-import '../../models/friend_request.dart';
-import '../../models/user_profile.dart';
-import '../../models/friend_category.dart';
-import '../../models/group_invitation.dart';
-import '../../core/utils/logger.dart';
-import '../../services/permission_service.dart';
-import '../../core/injection.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
 
 // Feature interfaces
-import 'operations/friends_management_operations.dart';
-import 'operations/friends_categories_operations.dart';
-import 'operations/friends_invitations_operations.dart';
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
+import 'package:butlery/services/unified/operations/friends_categories_operations.dart';
+import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 
 // Focused modules (Phase 9 refactoring)
-import 'friends/friends_state_manager.dart';
-import 'friends/friends_service_coordinator.dart';
-import 'friends/friends_internal_operations.dart';
-import 'friends/friends_sync_service.dart';
-import 'friends/friends_presence_service.dart';
-import 'friends/friends_cache_service.dart';
+import 'package:butlery/services/unified/friends/friends_state_manager.dart';
+import 'package:butlery/services/unified/friends/friends_service_coordinator.dart';
+import 'package:butlery/services/unified/friends/friends_internal_operations.dart';
+import 'package:butlery/services/unified/friends/friends_sync_service.dart';
+import 'package:butlery/services/unified/friends/friends_presence_service.dart';
+import 'package:butlery/services/unified/friends/friends_cache_service.dart';
 
 /// Unified Friends Service - Main facade for friend management (Phase 9 Refactored)
 /// 

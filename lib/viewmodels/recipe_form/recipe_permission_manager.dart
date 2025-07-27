@@ -1,13 +1,13 @@
 // lib/viewmodels/recipe_form/recipe_permission_manager.dart
 
 import 'package:flutter/material.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/permissions/resource_permission.dart';
-import '../../models/permissions/edit_mode.dart';
-import '../../models/shared_recipe.dart';
-import '../../services/permission_service.dart';
-import '../../core/utils/logger.dart';
-import '../../core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Manages permissions for recipe forms
 class RecipePermissionManager extends ChangeNotifier {

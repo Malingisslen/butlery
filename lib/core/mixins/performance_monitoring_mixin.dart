@@ -16,8 +16,8 @@
 /// Used in phases: Phase 7 - Service Optimization
 
 import 'dart:async';
-import '../utils/service_optimizer.dart';
-import '../utils/logger.dart';
+import 'package:butlery/core/utils/service_optimizer.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin for adding performance monitoring to services
 /// 
@@ -181,7 +181,7 @@ mixin PerformanceMonitoringMixin {
       final result = await operation();
       final duration = DateTime.now().difference(startTime);
       
-      if (duration > Duration(seconds: 1)) {
+      if (duration > const Duration(seconds: 1)) {
         AppLogger.info('⏱️ Resource-intensive operation: $serviceName.$operationName took ${duration.inMilliseconds}ms');
       }
       

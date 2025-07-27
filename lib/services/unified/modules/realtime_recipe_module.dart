@@ -2,17 +2,17 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/cache/json_cache_helper.dart';
-import '../../../models/recipe_unified.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 // Import focused modules
-import 'realtime_session_manager.dart';
-import 'realtime_content_operations.dart';
-import 'realtime_conflict_resolver.dart';
-import 'realtime_editor_tracker.dart';
-import 'realtime_event_handler.dart';
-import 'realtime_cache_manager.dart';
-import '../operations/realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/services/unified/modules/realtime_session_manager.dart';
+import 'package:butlery/services/unified/modules/realtime_content_operations.dart';
+import 'package:butlery/services/unified/modules/realtime_conflict_resolver.dart';
+import 'package:butlery/services/unified/modules/realtime_editor_tracker.dart';
+import 'package:butlery/services/unified/modules/realtime_event_handler.dart';
+import 'package:butlery/services/unified/modules/realtime_cache_manager.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 
 /// Real-time recipe operations module (Refactored with Facade Pattern)
 /// 

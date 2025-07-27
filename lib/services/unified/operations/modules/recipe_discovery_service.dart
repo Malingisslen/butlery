@@ -1,7 +1,7 @@
 // lib/services/unified/operations/modules/recipe_discovery_service.dart
 
-import '../../../../models/recipe_unified.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for social recipe discovery and filtering
 /// 

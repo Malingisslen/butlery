@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../interfaces/social_recipe_repository.dart';
-import '../interfaces/auth_repository.dart';
-import '../../models/shared_recipe.dart';
-import '../../models/shared_menu.dart';
-import '../../core/exceptions/permission_exceptions.dart';
-import '../mixins/permission_validation_mixin.dart';
+import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 
 class FirebaseSocialRecipeRepository with PermissionValidationMixin implements SocialRecipeRepository {
   final FirebaseFirestore _firestore;

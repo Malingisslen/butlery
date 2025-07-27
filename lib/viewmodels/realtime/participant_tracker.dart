@@ -1,8 +1,8 @@
 // lib/viewmodels/realtime/participant_tracker.dart
 
 import 'package:flutter/foundation.dart';
-import '../../models/realtime/realtime_menu.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 
 /// Data för en deltagares aktivitet

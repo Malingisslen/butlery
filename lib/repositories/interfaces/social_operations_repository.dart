@@ -1,5 +1,5 @@
-import 'repository.dart';
-import '../../models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Repository interface for social operations like sharing and collaboration
 abstract class SocialOperationsRepository extends Repository<SocialOperation> {

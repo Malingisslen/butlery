@@ -5,13 +5,13 @@
 /// Usage: Mix into ViewModels to get permission methods through clean facades
 
 // Import focused modules
-import 'modules/base_permission_manager.dart';
-import 'modules/recipe_permission_handler.dart';
-import 'modules/shopping_permission_handler.dart';
-import 'modules/group_permission_handler.dart';
-import 'modules/social_permission_handler.dart';
-import 'modules/permission_action_builder.dart';
-import 'modules/permission_debug_tools.dart';
+import 'package:butlery/core/permissions/modules/base_permission_manager.dart';
+import 'package:butlery/core/permissions/modules/recipe_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/shopping_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/group_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/social_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/permission_action_builder.dart';
+import 'package:butlery/core/permissions/modules/permission_debug_tools.dart';
 
 /// Base permission mixin with common functionality (Refactored with Facade Pattern)
 /// 

@@ -1,13 +1,13 @@
 // lib/widgets/common/content_cards/friend_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/friend_request.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../image/simple_image_widget.dart';
-import '../../image/image_config.dart' as image_config;
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/image/image_config.dart' as image_config;
 
 /// Focused module for friend card components
 /// 
@@ -89,7 +89,7 @@ class FriendCard extends StatelessWidget {
           children: [
             if (showAvatar) ...[
               _buildUserAvatar(context, size: 50),
-              SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingM),
             ],
             Expanded(
               child: Column(
@@ -97,11 +97,11 @@ class FriendCard extends StatelessWidget {
                 children: [
                   _buildUserName(context),
                   if (subtitle != null) ...[
-                    SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     _buildSubtitle(context),
                   ],
                   if (showMetadata) ...[
-                    SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     _buildUserMetadata(context),
                   ],
                 ],
@@ -119,7 +119,7 @@ class FriendCard extends StatelessWidget {
       children: [
         if (showAvatar) ...[
           _buildUserAvatar(context, size: 40),
-          SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.spacingM),
         ],
         Expanded(
           child: _buildUserName(context),
@@ -153,7 +153,7 @@ class FriendCard extends StatelessWidget {
             placeholder: Container(
               width: size,
               height: size,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.backgroundTint,
                 shape: BoxShape.circle,
               ),
@@ -163,7 +163,7 @@ class FriendCard extends StatelessWidget {
                 color: AppColors.textMedium,
               ),
             ),
-            config: image_config.ImageConfig(
+            config: const image_config.ImageConfig(
               type: image_config.ImageType.avatar,
               size: image_config.ImageSize.medium,
             ),
@@ -251,7 +251,7 @@ class FriendCard extends StatelessWidget {
   EdgeInsets _getDefaultMargin() {
     switch (style) {
       case FriendCardStyle.compact:
-        return EdgeInsets.only(bottom: AppDimensions.spacingXs);
+        return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case FriendCardStyle.list:
         return EdgeInsets.zero;
       case FriendCardStyle.detailed:
@@ -262,14 +262,14 @@ class FriendCard extends StatelessWidget {
   EdgeInsets _getDefaultPadding() {
     switch (style) {
       case FriendCardStyle.compact:
-        return EdgeInsets.symmetric(
+        return const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingS,
           vertical: AppDimensions.spacingS,
         );
       case FriendCardStyle.list:
         return EdgeInsets.zero;
       case FriendCardStyle.detailed:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
     }
   }
 }
@@ -296,14 +296,14 @@ class FriendRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: margin ?? EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Container(
-            padding: padding ?? EdgeInsets.all(AppDimensions.spacingS),
+            padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
             decoration: BoxDecoration(
               color: AppColors.backgroundLight,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -322,24 +322,24 @@ class FriendRequestCard extends StatelessWidget {
         Row(
           children: [
             _buildSenderAvatar(context),
-            SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Friend Request', // FriendRequest doesn't store sender display name directly
                     style: AppTextStyles.titleMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     'Vill bli din vän',
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
                   ),
                   if (friendRequest.message?.isNotEmpty == true) ...[
-                    SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       friendRequest.message!,
                       style: AppTextStyles.bodySmall,
@@ -353,7 +353,7 @@ class FriendRequestCard extends StatelessWidget {
           ],
         ),
         if (onAccept != null || onDecline != null) ...[
-          SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildActionButtons(context),
         ],
       ],
@@ -369,17 +369,17 @@ class FriendRequestCard extends StatelessWidget {
         placeholder: Container(
           width: 50,
           height: 50,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.backgroundTint,
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: const Icon(
             Icons.person,
             size: 30,
             color: AppColors.textMedium,
           ),
         ),
-        config: image_config.ImageConfig(
+        config: const image_config.ImageConfig(
           type: image_config.ImageType.avatar,
           size: image_config.ImageSize.medium,
         ),
@@ -395,7 +395,7 @@ class FriendRequestCard extends StatelessWidget {
             child: OutlinedButton(
               onPressed: onDecline,
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.textMedium),
+                side: const BorderSide(color: AppColors.textMedium),
               ),
               child: Text(
                 'Avvisa',
@@ -403,7 +403,7 @@ class FriendRequestCard extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.spacingM),
         ],
         if (onAccept != null)
           Expanded(

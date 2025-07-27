@@ -1,14 +1,14 @@
 // lib/viewmodels/group_invitations_viewmodel.dart - UPPDATERAD med GroupInvitationService
 
 import 'package:flutter/foundation.dart';
-import '../models/friend_category.dart';
-import '../models/user_profile.dart';
-import '../models/group_invitation.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../services/permission_service.dart';
-import '../core/injection.dart';
-import '../core/utils/logger.dart';
-import '../core/utils/error_handler.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/error_handler.dart';
 
 
 class GroupInvitationsViewModel extends ChangeNotifier {

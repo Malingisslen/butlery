@@ -15,11 +15,11 @@
 /// Connected to: Import ViewModels, PersonalRecipeOperations, Import strategies
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
-import '../../models/recipe_unified.dart';
-import '../unified/operations/personal_recipe_operations.dart';
-import 'import_strategy.dart';
-import 'text_import_strategy.dart';
-import 'archive_import_strategy.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/archive_import_strategy.dart';
 
 /// Import manager that coordinates different import strategies
 /// 

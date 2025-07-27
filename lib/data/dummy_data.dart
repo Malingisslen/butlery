@@ -1,7 +1,7 @@
 // lib/data/dummy_data.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:uuid/uuid.dart';
 
 final ValueNotifier<List<Recipe>> dummyRecipesNotifier = ValueNotifier([

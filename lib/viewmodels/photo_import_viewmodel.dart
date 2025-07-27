@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'import_base_viewmodel.dart';
+import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 
 /// ViewModel för foto-OCR import
 /// Refactored to use ImportBaseViewModel for consistency and reduced duplication

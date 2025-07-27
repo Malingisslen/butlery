@@ -16,9 +16,9 @@
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
 import 'package:uuid/uuid.dart';
-import '../../models/recipe_unified.dart';
-import '../../data/archived_recipes.dart' as archive;
-import 'import_strategy.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/data/archived_recipes.dart' as archive;
+import 'package:butlery/services/import/import_strategy.dart';
 
 /// Strategy for importing recipes from the Butlery archive
 /// 

@@ -1,8 +1,8 @@
 // lib/viewmodels/realtime_menu/realtime_menu_state.dart
 
 import 'package:flutter/foundation.dart';
-import '../../models/realtime/realtime_menu.dart';
-import '../../models/recipe_unified.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Status för realtidsmeny-operationer
 enum RealtimeMenuStatus {

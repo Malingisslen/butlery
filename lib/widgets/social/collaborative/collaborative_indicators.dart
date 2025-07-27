@@ -1,17 +1,17 @@
 // lib/widgets/social/collaborative/collaborative_indicators.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../models/permissions/edit_mode.dart';
-import '../../../viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 
 // Focused Components
-import 'components/collaborative_status_widgets.dart';
-import 'components/collaborative_participants_widgets.dart';
-import 'components/collaborative_live_widgets.dart';
-import 'components/collaborative_permissions_widgets.dart';
-import 'components/collaborative_connection_widgets.dart';
+import 'package:butlery/widgets/social/collaborative/components/collaborative_status_widgets.dart';
+import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
+import 'package:butlery/widgets/social/collaborative/components/collaborative_live_widgets.dart';
+import 'package:butlery/widgets/social/collaborative/components/collaborative_permissions_widgets.dart';
+import 'package:butlery/widgets/social/collaborative/components/collaborative_connection_widgets.dart';
 
 /// Collaborative Indicators API
 ///

@@ -1,13 +1,13 @@
 // lib/views/social/group_detail/group_detail_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import '../../../theme/app_dimensions.dart';
-import '../add_members_to_group_view.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/add_members_to_group_view.dart';
 
 /// GroupDetailActions - Group action methods
 ///
@@ -113,7 +113,7 @@ class GroupDetailActions {
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.spacingL),
               TextField(
                 controller: descriptionController,
                 decoration: const InputDecoration(
@@ -122,7 +122,7 @@ class GroupDetailActions {
                 ),
                 maxLines: 3,
               ),
-              SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.spacingL),
               TextField(
                 controller: emojiController,
                 decoration: const InputDecoration(

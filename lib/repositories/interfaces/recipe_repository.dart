@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'repository.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/recipe_change.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_change.dart';
 
 abstract class RecipeRepository extends Repository<Recipe> {
   /// Stream of all recipes belonging to a specific user

@@ -1,10 +1,10 @@
 // lib/repositories/firebase/firebase_deeplink_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/deeplink_repository.dart';
+import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 // import '../interfaces/auth_repository.dart'; // Imported from base class
-import 'base_firebase_repository.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation of DeepLinkRepository
 /// 

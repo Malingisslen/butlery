@@ -2,16 +2,16 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../models/recipe_unified.dart';
-import '../core/utils/logger.dart';
-import '../repositories/firestore_repository.dart';
-import '../repositories/interfaces/auth_repository.dart' as auth_repo;
-import '../repositories/firebase/firebase_auth_repository.dart';
-import 'offline/offline_initialization.dart';
-import 'offline/offline_user_storage.dart';
-import 'offline/offline_legacy_storage.dart';
-import 'offline/offline_sync_manager.dart';
-import 'offline/sync_result.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/services/offline/offline_initialization.dart';
+import 'package:butlery/services/offline/offline_user_storage.dart';
+import 'package:butlery/services/offline/offline_legacy_storage.dart';
+import 'package:butlery/services/offline/offline_sync_manager.dart';
+import 'package:butlery/services/offline/sync_result.dart';
 
 // Export focused components for external usage
 export 'offline/sync_result.dart';

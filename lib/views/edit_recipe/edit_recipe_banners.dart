@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/recipe_unified.dart';
-import '../../viewmodels/collaborative_status_viewmodel.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
-import '../../widgets/common/social_components.dart';
-import '../../services/social_recipe_service.dart';
-import '../../core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Banner components for edit recipe view
 class EditRecipeBanners {

@@ -1,13 +1,13 @@
 // lib/widgets/social/groups/create_group_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../core/injection.dart';
-import '../../common/dialogs/dialog_form_fields.dart';
-import 'shared/group_dialog_components.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
+import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
 /// Dialog for creating a new group
 /// 
@@ -111,7 +111,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               
               // Content
               Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -125,7 +125,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                       },
                     ),
                     
-                    SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.spacingL),
                     
                     // ✅ CONSOLIDATED: Group name using standardized form field
                     DialogFormFields.buildNameField(
@@ -147,12 +147,12 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                     
                     // Pre-selected members info
                     if (_selectedFriendIds.isNotEmpty) ...[
-                      SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.spacingM),
                       Text(
                         'Förvalda medlemmar (${_selectedFriendIds.length})',
                         style: AppTextStyles.titleMedium,
                       ),
-                      SizedBox(height: AppDimensions.spacingS),
+                      const SizedBox(height: AppDimensions.spacingS),
                       Text(
                         'Dessa vänner kommer att få en inbjudan till gruppen.',
                         style: AppTextStyles.bodySmall.copyWith(
@@ -163,7 +163,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                     
                     // Error display
                     if (_error != null) ...[
-                      SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.spacingM),
                       ErrorDisplayWidget(errorMessage: _error!),
                     ],
                   ],

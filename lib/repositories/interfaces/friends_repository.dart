@@ -1,8 +1,8 @@
-import 'repository.dart';
-import '../../models/user_profile.dart';
-import '../../models/friend_request.dart';
-import '../../models/friend_category.dart';
-import '../../models/group_invitation.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class FriendsRepository extends Repository<UserProfile> {

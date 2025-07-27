@@ -1,10 +1,10 @@
 // lib/widgets/common/state/message_states.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../utility_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
 
 /// MessageStates - Error, Success, Info, and Warning state implementations
 ///
@@ -51,7 +51,7 @@ class MessageStates {
                 const SizedBox(height: AppDimensions.spacingM),
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+                  margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
                   decoration: BoxDecoration(
                     color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

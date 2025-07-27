@@ -1,9 +1,9 @@
 // lib/views/social/friend_requests/friend_request_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
   @override

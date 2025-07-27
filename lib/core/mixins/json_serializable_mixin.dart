@@ -17,7 +17,7 @@
 
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Base mixin for JSON serialization
 /// 

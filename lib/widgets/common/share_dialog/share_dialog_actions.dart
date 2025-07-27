@@ -1,10 +1,10 @@
 // lib/widgets/common/share_dialog/share_dialog_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../universal_share_dialog.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogActions {
   static Widget buildActionButtons(
@@ -27,7 +27,7 @@ class ShareDialogActions {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
           bottomRight: Radius.circular(AppDimensions.borderRadiusM),
         ),
@@ -50,7 +50,7 @@ class ShareDialogActions {
               ),
             ),
           ),
-          SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: ElevatedButton(
               onPressed: (!hasSelectedFriends || isLoading) ? null : onShare,
@@ -105,7 +105,7 @@ class ShareDialogActions {
   ) {
     if (selectedCount == 0) {
       return Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
           vertical: AppDimensions.spacingS,
         ),
@@ -118,7 +118,7 @@ class ShareDialogActions {
         ),
         child: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.info_outline,
               size: 16,
               color: AppColors.warning,
@@ -137,7 +137,7 @@ class ShareDialogActions {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingS,
       ),
@@ -150,7 +150,7 @@ class ShareDialogActions {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle_outline,
             size: 16,
             color: AppColors.success,

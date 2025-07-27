@@ -1,11 +1,11 @@
 // lib/widgets/common/content_cards/shopping_list_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../models/unified/unified_shopping_item.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Focused module for shopping list card components
 /// 
@@ -82,15 +82,15 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         _buildListHeader(context),
         if (showMetadata) ...[
-          SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingS),
           _buildListMetadata(context),
         ],
         if (showPreview) ...[
-          SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildListPreview(context),
         ],
         if (showSharingStatus) ...[
-          SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildSharingStatus(context),
         ],
       ],
@@ -106,7 +106,7 @@ class ShoppingListCard extends StatelessWidget {
             children: [
               _buildListHeader(context),
               if (showMetadata) ...[
-                SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.spacingXs),
                 _buildListMetadata(context),
               ],
             ],
@@ -124,15 +124,15 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         _buildListHeader(context),
         if (showMetadata) ...[
-          SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.spacingXs),
           _buildListMetadata(context),
         ],
-        SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.spacingS),
         Row(
           children: [
             if (showSharingStatus) ...[
               _buildSharingIndicator(context),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
             ],
             _buildCompletionIndicator(context),
           ],
@@ -145,12 +145,12 @@ class ShoppingListCard extends StatelessWidget {
     final title = _getListTitle();
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.shopping_cart,
           size: 20,
           color: AppColors.textMedium,
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Text(
             title,
@@ -196,19 +196,19 @@ class ShoppingListCard extends StatelessWidget {
     
     if (items.isEmpty) {
       return Container(
-        padding: EdgeInsets.all(AppDimensions.spacingM),
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: AppColors.backgroundTint,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.info_outline,
               size: 16,
               color: AppColors.textMedium,
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Inga föremål i listan',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
@@ -225,9 +225,9 @@ class ShoppingListCard extends StatelessWidget {
           'Föremål på listan:',
           style: AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
         ),
-        SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.spacingS),
         ...items.take(4).map((item) => Padding(
-          padding: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
               Icon(
@@ -235,7 +235,7 @@ class ShoppingListCard extends StatelessWidget {
                 size: 16,
                 color: _isItemCompleted(item) ? Colors.green : AppColors.textMedium,
               ),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: Text(
                   _getItemTitle(item),
@@ -252,7 +252,7 @@ class ShoppingListCard extends StatelessWidget {
         )),
         if (items.length > 4)
           Padding(
-            padding: EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               '+ ${items.length - 4} fler föremål',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
@@ -271,7 +271,7 @@ class ShoppingListCard extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
         vertical: AppDimensions.spacingS,
       ),
@@ -290,7 +290,7 @@ class ShoppingListCard extends StatelessWidget {
             size: 16,
             color: Colors.blue[700],
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Text(
             memberCount > 0 
                 ? 'Delad med $memberCount personer'
@@ -310,12 +310,12 @@ class ShoppingListCard extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingXs),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(AppDimensions.spacingXs),
+      decoration: const BoxDecoration(
         color: Colors.blue,
         shape: BoxShape.circle,
       ),
-      child: Icon(
+      child: const Icon(
         Icons.people,  
         size: 16,
         color: Colors.white,
@@ -335,7 +335,7 @@ class ShoppingListCard extends StatelessWidget {
     final isComplete = completionPercentage == 1.0;
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
@@ -351,7 +351,7 @@ class ShoppingListCard extends StatelessWidget {
             size: 14,
             color: isComplete ? Colors.green[700] : Colors.orange[700],
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             isComplete 
                 ? 'Klar' 
@@ -424,9 +424,9 @@ class ShoppingListCard extends StatelessWidget {
   EdgeInsets _getDefaultMargin() {
     switch (style) {
       case ShoppingListCardStyle.compact:
-        return EdgeInsets.only(bottom: AppDimensions.spacingXs);
+        return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case ShoppingListCardStyle.grid:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
       case ShoppingListCardStyle.detailed:
         return EdgeInsets.zero;
     }
@@ -435,14 +435,14 @@ class ShoppingListCard extends StatelessWidget {
   EdgeInsets _getDefaultPadding() {
     switch (style) {
       case ShoppingListCardStyle.compact:
-        return EdgeInsets.symmetric(
+        return const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingS,
           vertical: AppDimensions.spacingS,
         );
       case ShoppingListCardStyle.grid:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
       case ShoppingListCardStyle.detailed:
-        return EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.spacingS);
     }
   }
 }

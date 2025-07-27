@@ -2,14 +2,14 @@
 // Simple implementation to replace the stub for shared content functionality
 
 import 'package:flutter/foundation.dart';
-import '../models/shared_recipe.dart';
-import '../models/shared_menu.dart';
-import '../models/user_profile.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/user_service.dart';
-import '../services/permission_service.dart';
-import '../repositories/interfaces/social_recipe_repository.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 class SocialRecipeService extends ChangeNotifier {
   final SocialRecipeRepository _repository;

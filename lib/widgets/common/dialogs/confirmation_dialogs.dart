@@ -1,10 +1,10 @@
 // lib/widgets/common/dialogs/confirmation_dialogs.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import 'base_dialog.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 /// Confirmation dialogs for user actions
 /// 
@@ -66,13 +66,13 @@ class ConfirmationDialogs {
                 const SizedBox(height: AppDimensions.spacingXl),
                 Row(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       width: AppDimensions.iconSizeM,
                       height: AppDimensions.iconSizeM,
                       child: SizedBox(
                         width: AppDimensions.iconSizeS,
                         height: AppDimensions.iconSizeS,
-                        child: const CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingM),

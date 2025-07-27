@@ -4,11 +4,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../services/storage_service.dart';
+import 'package:butlery/services/storage_service.dart';
 // import '../../services/image_picker_service.dart'; // Currently unused
-import '../../widgets/image/image_picker_dialogs.dart';
-import '../../core/utils/logger.dart';
-import '../../core/injection.dart';
+import 'package:butlery/widgets/image/image_picker_dialogs.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Manages image operations for recipe forms
 class RecipeImageManager extends ChangeNotifier {

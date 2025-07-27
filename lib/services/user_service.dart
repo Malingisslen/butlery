@@ -1,16 +1,16 @@
 // lib/services/user_service.dart
 
-import '../repositories/interfaces/user_repository.dart';
-import '../repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:flutter/foundation.dart';
-import '../models/user_profile.dart';
-import '../core/utils/logger.dart'; // Importerar AppLogger
-import '../core/utils/error_handler.dart';
-import 'permission_service.dart';
-import '../core/injection.dart';
-import '../core/mixins/error_handling_mixin.dart';
-import '../core/mixins/firebase_service_mixin.dart';
-import '../core/mixins/stream_management_mixin.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/logger.dart'; // Importerar AppLogger
+import 'package:butlery/core/utils/error_handler.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/firebase_service_mixin.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
   final UserRepository _repository;

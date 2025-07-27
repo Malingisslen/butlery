@@ -15,7 +15,7 @@
 /// Connected to: All business logic, AppLogger, performance monitoring, error tracking
 /// Used in phases: Cross-Cutting Concerns Consolidation - Logging Pattern Unification
 
-import '../utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Comprehensive logging utilities that eliminate duplicate logging patterns
 /// found across 100+ files in the codebase.

@@ -15,10 +15,10 @@
 /// Connected to: All service implementations, dependency injection container, ErrorHandlingMixin
 /// Used in phases: Cross-Cutting Concerns Consolidation - Service Pattern Unification
 
-import '../helpers/service_locator_helper.dart';
-import '../utils/logger.dart';
-import '../mixins/error_handling_mixin.dart';
-import '../constants/app_strings.dart';
+import 'package:butlery/core/helpers/service_locator_helper.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// Base class for all services that consolidates common service patterns
 /// found across 94+ service files in the codebase.

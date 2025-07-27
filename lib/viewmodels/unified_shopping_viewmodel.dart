@@ -6,11 +6,11 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../services/permission_service.dart';
-import '../models/unified/unified_shopping_item.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedShoppingService _shoppingService =

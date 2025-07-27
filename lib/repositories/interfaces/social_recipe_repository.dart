@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../models/shared_recipe.dart';
-import '../../models/shared_menu.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
 
 abstract class SocialRecipeRepository {
   CollectionReference<Map<String, dynamic>> get sharedRecipesRef;

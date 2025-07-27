@@ -1,11 +1,11 @@
 // lib/services/unified/operations/modules/comment_crud_operations.dart
 
 import 'dart:async';
-import '../../../../models/recipe_unified.dart';
-import '../../../../models/recipe_comment.dart';
-import '../../../../repositories/interfaces/comments_repository.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../../core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Focused module for comment CRUD operations
 /// 

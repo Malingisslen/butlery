@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'portion_scaler_logic.dart';
-import 'portion_scaler_ui.dart';
+import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
+import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 
 /// Smart portion scaler with ingredient scaling and unit conversion
 ///

@@ -1,9 +1,9 @@
 // lib/widgets/common/feedback/snackbar_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// SnackbarWidgets - Snackbar utility widgets
 ///
@@ -15,7 +15,7 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle, color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
+            const Icon(Icons.check_circle, color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
@@ -38,7 +38,7 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error, color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
+            const Icon(Icons.error, color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
@@ -61,7 +61,7 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.warning_outlined,
               size: AppDimensions.iconSizeM,
               color: AppColors.warning,

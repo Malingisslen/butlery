@@ -1,8 +1,8 @@
 // lib/views/social/friend_requests/friend_request_actions_refactored.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../theme/app_colors.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Refactored FriendRequestActions using BaseActionHandler
 /// 

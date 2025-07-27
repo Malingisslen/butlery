@@ -1,13 +1,13 @@
 // lib/views/unified_shopping/widgets/shopping_list_content.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/unified_shopping_viewmodel.dart';
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../widgets/common/state_widget.dart';
-import 'shopping_item_tiles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 
 /// Main content area for shopping list
 class ShoppingListContent {
@@ -252,7 +252,7 @@ class ShoppingListContent {
   static Widget _buildCompletedItemsHeader(UnifiedShoppingViewModel viewModel) {
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.check_circle,
           size: 20,
           color: AppColors.success,

@@ -1,14 +1,14 @@
 // lib/widgets/common/social_components/social_invitation_components.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
 
 // Focused modules
-import 'invitation_displays.dart';
-import 'invitation_selectors.dart';
-import 'invitation_lists.dart';
-import 'invitation_states.dart';
-import 'invitation_actions.dart';
+import 'package:butlery/widgets/common/social_components/invitation_displays.dart';
+import 'package:butlery/widgets/common/social_components/invitation_selectors.dart';
+import 'package:butlery/widgets/common/social_components/invitation_lists.dart';
+import 'package:butlery/widgets/common/social_components/invitation_states.dart';
+import 'package:butlery/widgets/common/social_components/invitation_actions.dart';
 
 /// Clean facade for social invitation components using focused modules
 /// 

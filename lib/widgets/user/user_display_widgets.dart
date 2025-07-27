@@ -5,9 +5,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Image Size enum
 enum ImageSize {
@@ -219,7 +219,7 @@ class UserDisplayWidgets {
                     width: AppDimensions.borderWidthThin,
                   ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.edit,
                   size: AppDimensions.iconSizeM,
                   color: AppColors.cardWhite,
@@ -301,7 +301,7 @@ class UserDisplayWidgets {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Padding(
-        padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
             avatar(
@@ -311,7 +311,7 @@ class UserDisplayWidgets {
               showStatus: showStatus,
               isOnline: isOnline,
             ),
-            SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +374,7 @@ class UserDisplayWidgets {
                     showStatus: showStatus,
                     isOnline: isOnline,
                   ),
-                  SizedBox(width: AppDimensions.spacingM),
+                  const SizedBox(width: AppDimensions.spacingM),
                   Expanded(
                       child: userInfo(displayName: displayName, email: email)),
                 ],
@@ -414,7 +414,7 @@ class UserDisplayWidgets {
     return ListView.separated(
       shrinkWrap: shrinkWrap,
       physics: physics ?? const NeverScrollableScrollPhysics(),
-      padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: users.length,
       separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingM),
       itemBuilder: (context, index) {
@@ -448,7 +448,7 @@ class UserDisplayWidgets {
     return GridView.builder(
       shrinkWrap: shrinkWrap,
       physics: physics ?? const NeverScrollableScrollPhysics(),
-      padding: padding ?? EdgeInsets.all(AppDimensions.paddingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: AppDimensions.spacingS,
@@ -483,7 +483,7 @@ class UserDisplayWidgets {
   }) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -497,7 +497,7 @@ class UserDisplayWidgets {
             Text(subtitle,
                 style: AppTextStyles.titleMedium, textAlign: TextAlign.center),
             if (onAction != null && actionLabel != null) ...[
-              SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
@@ -540,7 +540,7 @@ class UserDisplayWidgets {
   }) {
     return Container(
       padding: padding ??
-          EdgeInsets.symmetric(
+          const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingXs,
             vertical: AppDimensions.spacingXs / 2,
           ),

@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/recipe_form_viewmodel.dart';
-import '../../widgets/common/utility_components.dart';
-import '../../models/permissions/edit_mode.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Bottom navigation bar for edit recipe view with permissions-based actions
 class EditRecipeBottomBar {

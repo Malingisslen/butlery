@@ -3,7 +3,7 @@
 // This file was generated for central documentation
 import 'dart:convert';
 
-const String _codeDocumentationJson = r"""
+const String _codeDocumentationJson = r'''
 {
   "core/constants/shopping_list_constants.dart": {
     "component": "Shopping List Constants",
@@ -731,7 +731,7 @@ const String _codeDocumentationJson = r"""
     "usedInPhases": "Fas 2 (Recipe + Gruppstöd) - Recipe-specific real-time operations"
   }
 }
-""";
+''';
 
 final Map<String, dynamic> codeDocumentation =
     json.decode(_codeDocumentationJson) as Map<String, dynamic>;

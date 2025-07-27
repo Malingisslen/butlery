@@ -1,9 +1,9 @@
 // lib/views/social/friend_requests/friend_requests_header.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 class FriendRequestsHeader {
   static PreferredSizeWidget buildAppBar(
@@ -47,7 +47,7 @@ class FriendRequestsHeader {
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
           PopupMenuButton<String>(
-            icon: Icon(
+            icon: const Icon(
               Icons.checklist,
               color: AppColors.primaryBlue,
             ),
@@ -63,7 +63,7 @@ class FriendRequestsHeader {
                 value: 'accept_all',
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle, color: AppColors.success),
+                    const Icon(Icons.check_circle, color: AppColors.success),
                     const SizedBox(width: 8),
                     Text('Acceptera valda (${selectedIncoming.length})'),
                   ],
@@ -73,7 +73,7 @@ class FriendRequestsHeader {
                 value: 'reject_all',
                 child: Row(
                   children: [
-                    Icon(Icons.cancel, color: AppColors.error),
+                    const Icon(Icons.cancel, color: AppColors.error),
                     const SizedBox(width: 8),
                     Text('Avböj valda (${selectedIncoming.length})'),
                   ],
@@ -83,7 +83,7 @@ class FriendRequestsHeader {
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.cancel,
               color: AppColors.error,
             ),
@@ -102,8 +102,8 @@ class FriendRequestsHeader {
     
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingL),
-      margin: EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -113,12 +113,12 @@ class FriendRequestsHeader {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: AppColors.error),
-          SizedBox(width: AppDimensions.spacingS),
+          const Icon(Icons.error_outline, color: AppColors.error),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               viewModel.error!,
-              style: TextStyle(color: AppColors.error),
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
           TextButton(

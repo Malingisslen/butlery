@@ -1,12 +1,12 @@
 // lib/widgets/common/profile/profile_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../core/injection.dart';
-import '../../../core/utils/logger.dart';
-import '../../../services/backup_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/backup_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Profile action handlers and UI components
@@ -30,8 +30,8 @@ class ProfileActions {
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(AppDimensions.spacingS),
-        margin: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+        padding: const EdgeInsets.all(AppDimensions.spacingS),
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
         child: Row(
           children: [
             Icon(
@@ -39,7 +39,7 @@ class ProfileActions {
               size: AppDimensions.iconSizeAction,
               color: Theme.of(context).colorScheme.primary,
             ),
-            SizedBox(width: AppDimensions.spacingL),
+            const SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,8 +84,8 @@ class ProfileActions {
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(AppDimensions.spacingS),
-        margin: EdgeInsets.only(bottom: AppDimensions.spacingXs),
+        padding: const EdgeInsets.all(AppDimensions.spacingS),
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
         child: Row(
           children: [
             Stack(
@@ -100,8 +100,8 @@ class ProfileActions {
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: EdgeInsets.all(AppDimensions.spacingXs),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                      decoration: const BoxDecoration(
                         color: AppColors.error,
                         shape: BoxShape.circle,
                       ),
@@ -121,7 +121,7 @@ class ProfileActions {
                   ),
               ],
             ),
-            SizedBox(width: AppDimensions.spacingL),
+            const SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,11 +152,11 @@ class ProfileActions {
   /// Build data backup section
   static Widget buildDataBackupSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Divider(
+          const Divider(
             color: AppColors.divider,
             height: AppDimensions.dividerHeight,
           ),
@@ -194,10 +194,10 @@ class ProfileActions {
   /// Build logout section
   static Widget buildLogoutSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         children: [
-          Divider(
+          const Divider(
             color: AppColors.divider,
             height: AppDimensions.dividerHeight,
           ),
@@ -209,8 +209,8 @@ class ProfileActions {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.error.withValues(alpha: 0.1),
                 foregroundColor: AppColors.error,
-                minimumSize: Size(double.infinity, AppDimensions.buttonHeight),
-                padding: EdgeInsets.symmetric(
+                minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingXl,
                   vertical: AppDimensions.paddingM,
                 ),
@@ -219,7 +219,7 @@ class ProfileActions {
                 ),
               ),
               icon: const Icon(Icons.logout),
-              label: Text('Logga ut', style: AppTextStyles.labelLarge),
+              label: const Text('Logga ut', style: AppTextStyles.labelLarge),
             ),
           ),
         ],
@@ -243,7 +243,7 @@ class ProfileActions {
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(AppDimensions.spacingS),
+        padding: const EdgeInsets.all(AppDimensions.spacingS),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -258,7 +258,7 @@ class ProfileActions {
               size: AppDimensions.iconSizeAction,
               color: color,
             ),
-            SizedBox(width: AppDimensions.spacingL),
+            const SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

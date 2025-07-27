@@ -2,14 +2,14 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import '../../../models/friend_request.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/group_invitation.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/mixins/firebase_sync_mixin.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Firebase sync service for friends data
 /// 

@@ -1,15 +1,15 @@
 // lib/views/social/group_detail/group_members_list.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/group_invitation.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../widgets/common/state_widget.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import 'group_member_card.dart';
-import 'group_invitation_card.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/views/social/group_detail/group_member_card.dart';
+import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 
 /// GroupMembersList - Members list component
 ///
@@ -47,7 +47,7 @@ class GroupMembersList {
               ),
           ],
         ),
-        SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.spacingL),
 
         // Members section
         if (members.isNotEmpty) ...[
@@ -58,13 +58,13 @@ class GroupMembersList {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingS),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: members.length,
             separatorBuilder: (context, index) =>
-                SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.spacingS),
             itemBuilder: (context, index) {
               final member = members[index];
               return GroupMemberCard.build(
@@ -79,7 +79,7 @@ class GroupMembersList {
 
         // Pending invitations section
         if (pendingInvitations.isNotEmpty) ...[
-          if (members.isNotEmpty) SizedBox(height: AppDimensions.spacingXl),
+          if (members.isNotEmpty) const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Väntande inbjudningar (${pendingInvitations.length})',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -87,13 +87,13 @@ class GroupMembersList {
               color: Theme.of(context).colorScheme.tertiary,
             ),
           ),
-          SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingS),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: pendingInvitations.length,
             separatorBuilder: (context, index) =>
-                SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.spacingS),
             itemBuilder: (context, index) {
               final invitation = pendingInvitations[index];
               return GroupInvitationCard.build(

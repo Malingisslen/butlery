@@ -2,11 +2,11 @@
 
 import 'dart:async';
 import 'package:collection/collection.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/injection.dart';
-import '../../../services/permission_service.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Handles shopping list management operations
 class ShoppingListManagement {

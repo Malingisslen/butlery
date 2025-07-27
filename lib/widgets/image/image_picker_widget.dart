@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../services/image_picker_service.dart';
-import '../../core/injection.dart';
-import '../../core/utils/logger.dart';
-import 'image_config.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/image/image_config.dart';
 
 /// Image picker widget for selecting images
 class ImagePickerWidget extends StatefulWidget {
@@ -78,7 +78,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Selected images preview
         if (hasImages && widget.showImagePreview) ...[
-          if (canAddMore) SizedBox(height: AppDimensions.spacing16),
+          if (canAddMore) const SizedBox(height: AppDimensions.spacing16),
           _buildSelectedImagesPreview(),
         ],
 
@@ -123,7 +123,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_isLoading) ...[
-                  SizedBox(
+                  const SizedBox(
                     width: 32,
                     height: 32,
                     child: CircularProgressIndicator(
@@ -133,7 +133,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacing12),
+                  const SizedBox(height: AppDimensions.spacing12),
                   Text(
                     'Selecting images...',
                     style: AppTextStyles.bodyMedium.copyWith(
@@ -142,18 +142,18 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   ),
                 ] else ...[
                   Container(
-                    padding: EdgeInsets.all(AppDimensions.spacing16),
+                    padding: const EdgeInsets.all(AppDimensions.spacing16),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.primaryBlue.withValues(alpha: 0.1),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.add_photo_alternate_outlined,
                       size: 32,
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacing12),
+                  const SizedBox(height: AppDimensions.spacing12),
                   Text(
                     widget.allowMultiple ? 'Select images' : 'Select image',
                     style: AppTextStyles.bodyLarge.copyWith(
@@ -161,7 +161,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacing4),
+                  const SizedBox(height: AppDimensions.spacing4),
                   Text(
                     widget.allowMultiple
                         ? 'Tap to select up to ${widget.config.maxImages} images'
@@ -193,7 +193,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        SizedBox(height: AppDimensions.spacing8),
+        const SizedBox(height: AppDimensions.spacing8),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -242,7 +242,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     ),
                     errorWidget: (context, url, error) => Container(
                       color: AppColors.cardColor,
-                      child: Icon(
+                      child: const Icon(
                         Icons.error_outline,
                         color: AppColors.error,
                       ),
@@ -255,7 +255,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     height: double.infinity,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: AppColors.cardColor,
-                      child: Icon(
+                      child: const Icon(
                         Icons.error_outline,
                         color: AppColors.error,
                       ),
@@ -271,7 +271,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           child: GestureDetector(
             onTap: () => _removeImage(imagePath, index),
             child: Container(
-              padding: EdgeInsets.all(AppDimensions.spacing4),
+              padding: const EdgeInsets.all(AppDimensions.spacing4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.error,
@@ -280,7 +280,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   width: 1,
                 ),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.close,
                 size: 16,
                 color: Colors.white,
@@ -407,11 +407,11 @@ class ImageSourcePickerWidget extends StatelessWidget {
       children: [
         if (showCamera)
           ListTile(
-            leading: Icon(
+            leading: const Icon(
               Icons.camera_alt_outlined,
               color: AppColors.primaryBlue,
             ),
-            title: Text(
+            title: const Text(
               'Camera',
               style: AppTextStyles.bodyLarge,
             ),
@@ -419,11 +419,11 @@ class ImageSourcePickerWidget extends StatelessWidget {
           ),
         if (showGallery)
           ListTile(
-            leading: Icon(
+            leading: const Icon(
               Icons.photo_library_outlined,
               color: AppColors.primaryBlue,
             ),
-            title: Text(
+            title: const Text(
               'Gallery',
               style: AppTextStyles.bodyLarge,
             ),
@@ -475,7 +475,7 @@ class ImagePickerBottomSheet extends StatelessWidget {
     // Remove unused theme variable
 
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,14 +487,14 @@ class ImagePickerBottomSheet extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacing16),
           ],
           ImageSourcePickerWidget(
             onSourceSelected: onSourceSelected,
             showCamera: showCamera,
             showGallery: showGallery,
           ),
-          SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacing8),
         ],
       ),
     );

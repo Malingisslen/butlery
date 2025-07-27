@@ -1,12 +1,12 @@
 // lib/viewmodels/shopping_share_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/unified/unified_shopping_list.dart';
-import '../models/user_profile.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../core/mixins/state_notifier_mixin.dart';
-import '../core/mixins/async_operation_mixin.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 
 class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {

@@ -1,11 +1,11 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// 
@@ -146,7 +146,7 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.visibility,
             color: AppColors.textMedium,
             size: AppDimensions.iconSizeM,
@@ -169,12 +169,12 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
       decoration: InputDecoration(
         hintText: 'Lägg till artikel...',
         suffixIcon: viewModel.isAddingItem
-            ? Padding(
+            ? const Padding(
                 padding: EdgeInsets.all(AppDimensions.spacingS),
                 child: SizedBox(
                   width: AppDimensions.iconSizeS,
                   height: AppDimensions.iconSizeS,
-                  child: const CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
             : null,
@@ -270,7 +270,7 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
 
   Widget _buildShareSheet(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,27 +281,27 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
           ),
           const SizedBox(height: AppDimensions.spacingL),
           ListTile(
-            leading: Icon(Icons.link),
-            title: Text('Kopiera länk'),
-            subtitle: Text('Dela med länk som fungerar i alla appar'),
+            leading: const Icon(Icons.link),
+            title: const Text('Kopiera länk'),
+            subtitle: const Text('Dela med länk som fungerar i alla appar'),
             onTap: () {
               Navigator.pop(context);
               _copyShareLink(context);
             },
           ),
           ListTile(
-            leading: Icon(Icons.message),
-            title: Text('Skicka meddelande'),
-            subtitle: Text('Dela via SMS eller meddelande-app'),
+            leading: const Icon(Icons.message),
+            title: const Text('Skicka meddelande'),
+            subtitle: const Text('Dela via SMS eller meddelande-app'),
             onTap: () {
               Navigator.pop(context);
               _shareViaMessage(context);
             },
           ),
           ListTile(
-            leading: Icon(Icons.email),
-            title: Text('Skicka e-post'),
-            subtitle: Text('Dela via e-post med detaljer'),
+            leading: const Icon(Icons.email),
+            title: const Text('Skicka e-post'),
+            subtitle: const Text('Dela via e-post med detaljer'),
             onTap: () {
               Navigator.pop(context);
               _shareViaEmail(context);
@@ -312,7 +312,7 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
             width: double.infinity,
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Avbryt'),
+              child: const Text('Avbryt'),
             ),
           ),
         ],

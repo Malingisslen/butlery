@@ -1,10 +1,10 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_header.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/collaborative_shopping_viewmodel.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused widget for collaborative shopping list header
 /// 
@@ -76,7 +76,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     final color = viewModel.getStatusColor();
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
@@ -174,12 +174,12 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
+        const Icon(
           Icons.group,
           color: AppColors.textMedium,
           size: AppDimensions.iconSizeM,
         ),
-        SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.spacingXs),
         Text(
           viewModel.memberCountText,
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
@@ -191,12 +191,12 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildActivitySummary(BuildContext context) {
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.access_time,
           color: AppColors.textMedium,
           size: AppDimensions.iconSizeM,
         ),
-        SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.spacingXs),
         Expanded(
           child: Text(
             viewModel.activitySummary,

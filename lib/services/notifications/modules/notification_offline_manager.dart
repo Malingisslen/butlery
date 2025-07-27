@@ -1,8 +1,8 @@
 // lib/services/notifications/modules/notification_offline_manager.dart
 
 import 'dart:async';
-import '../notification_types.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for offline notification queue management
 /// 

@@ -1,15 +1,15 @@
 // lib/widgets/recipe/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
-import '../../repositories/firebase/firebase_auth_repository.dart';
-import '../../viewmodels/social_recipe_viewmodel.dart';
-import '../../widgets/common/social_components.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
-import '../../services/user_service.dart';
-import '../../core/utils/snackbar_utils.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Standalone widget for displaying and managing recipe comments
 class RecipeDetailComments extends StatefulWidget {
@@ -73,7 +73,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     size: AppDimensions.iconSizeAction,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
                       widget.socialViewModel.hasComments
@@ -106,7 +106,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 children: [
                   // Comments list
                   if (widget.socialViewModel.isLoadingComments)
-                    Center(
+                    const Center(
                       child: Padding(
                         padding: EdgeInsets.all(AppDimensions.spacingL),
                         child: Column(
@@ -114,9 +114,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                             SizedBox(
                               width: AppDimensions.iconSizeS,
                               height: AppDimensions.iconSizeS,
-                              child: const CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                            const SizedBox(height: AppDimensions.spacingM),
+                            SizedBox(height: AppDimensions.spacingM),
                             Text(
                               'Laddar kommentarer...',
                               style: AppTextStyles.bodySmall,
@@ -127,19 +127,19 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     )
                   else if (widget.socialViewModel.commentsError != null)
                     Container(
-                      padding: EdgeInsets.all(AppDimensions.spacingL),
+                      padding: const EdgeInsets.all(AppDimensions.spacingL),
                       decoration: BoxDecoration(
                         color: AppColors.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.error_outline, color: AppColors.error),
-                          SizedBox(width: AppDimensions.spacingS),
+                          const Icon(Icons.error_outline, color: AppColors.error),
+                          const SizedBox(width: AppDimensions.spacingS),
                           Expanded(
                             child: Text(
                               widget.socialViewModel.commentsError!,
-                              style: TextStyle(color: AppColors.error),
+                              style: const TextStyle(color: AppColors.error),
                             ),
                           ),
                         ],
@@ -147,7 +147,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     )
                   else if (!widget.socialViewModel.hasComments)
                     Container(
-                      padding: EdgeInsets.all(AppDimensions.spacingL * 2),
+                      padding: const EdgeInsets.all(AppDimensions.spacingL * 2),
                       child: Column(
                         children: [
                           Icon(
@@ -163,7 +163,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
-                          Text(
+                          const Text(
                             'Bli först att kommentera detta recept!',
                             style: AppTextStyles.bodySmall,
                             textAlign: TextAlign.center,
@@ -184,12 +184,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       final authUser = FirebaseAuthRepository().currentUser;
 
                       return Container(
-                        padding: EdgeInsets.all(AppDimensions.spacingS),
+                        padding: const EdgeInsets.all(AppDimensions.spacingS),
                         color: AppColors.warning.withValues(alpha: 0.1),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('🔍 DEBUG INFO:',
+                            const Text('🔍 DEBUG INFO:',
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                             Text(
                                 'SocialViewModel.currentUser: ${widget.socialViewModel.currentUser?.displayName ?? "NULL"}'),
@@ -224,7 +224,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                                         'Profil skapad! Starta om appen.');
                                   }
                                 },
-                                child: Text('Skapa Profil'),
+                                child: const Text('Skapa Profil'),
                               ),
                           ],
                         ),
@@ -238,7 +238,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     _buildCommentForm(context, widget.socialViewModel)
                   else
                     Container(
-                      padding: EdgeInsets.all(AppDimensions.spacingL),
+                      padding: const EdgeInsets.all(AppDimensions.spacingL),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceContainer,
                         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -284,7 +284,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       children: [
         if (socialViewModel.isReplying) ...[
           Container(
-            padding: EdgeInsets.all(AppDimensions.spacingS),
+            padding: const EdgeInsets.all(AppDimensions.spacingS),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -296,7 +296,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   size: AppDimensions.iconSizeM,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
                     'Svarar på kommentar',
@@ -307,7 +307,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 ),
                 IconButton(
                   onPressed: socialViewModel.cancelReply,
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.close,
                     size: AppDimensions.iconSizeM,
                   ),
@@ -327,7 +327,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               displayName: 'Du', // fallback if user is null
               size: ImageSize.small,
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             Expanded(
               child: TextField(
                 onChanged: socialViewModel.updateNewCommentText,
@@ -338,13 +338,13 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
-                  contentPadding: EdgeInsets.all(AppDimensions.spacingS),
+                  contentPadding: const EdgeInsets.all(AppDimensions.spacingS),
                 ),
                 maxLines: 3,
                 minLines: 1,
               ),
             ),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
             IconButton(
               onPressed: socialViewModel.newCommentText.trim().isNotEmpty &&
                       !socialViewModel.isPostingComment
@@ -357,16 +357,16 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     }
                   : null,
               icon: socialViewModel.isPostingComment
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: SizedBox(
                         width: AppDimensions.iconSizeS,
                         height: AppDimensions.iconSizeS,
-                        child: const CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     )
-                  : Icon(Icons.send),
+                  : const Icon(Icons.send),
               style: IconButton.styleFrom(
                 backgroundColor:
                     socialViewModel.newCommentText.trim().isNotEmpty
@@ -391,7 +391,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     dynamic comment,
   ) {
     return Container(
-      margin: EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -403,7 +403,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 imageUrl: socialViewModel.getAuthorAvatarUrl(comment),
                 size: ImageSize.small,
               ),
-              SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,7 +417,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                                     fontWeight: FontWeight.w600,
                                   ),
                         ),
-                        SizedBox(width: AppDimensions.spacingS),
+                        const SizedBox(width: AppDimensions.spacingS),
                         Text(
                           _formatCommentTime(comment.createdAt),
                           style: AppTextStyles.bodySmall,
@@ -437,7 +437,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           onTap: () =>
                               socialViewModel.toggleCommentLike(comment.id),
                           child: Padding(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               vertical: AppDimensions.spacingXs,
                               horizontal: AppDimensions.spacingS,
                             ),
@@ -457,7 +457,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                                               .onSurfaceVariant,
                                 ),
                                 if (comment.likeCount > 0) ...[
-                                  SizedBox(width: AppDimensions.spacingXs),
+                                  const SizedBox(width: AppDimensions.spacingXs),
                                   Text(
                                     '${comment.likeCount}',
                                     style: AppTextStyles.bodySmall,
@@ -471,7 +471,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                         InkWell(
                           onTap: () => socialViewModel.setReplyTo(comment.id),
                           child: Padding(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               vertical: AppDimensions.spacingXs,
                               horizontal: AppDimensions.spacingS,
                             ),
@@ -493,7 +493,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
           // Replies to the comment
           ...socialViewModel.getReplies(comment.id).map((reply) => Padding(
-                padding: EdgeInsets.only(left: AppDimensions.spacingL),
+                padding: const EdgeInsets.only(left: AppDimensions.spacingL),
                 child: _buildCommentItem(context, socialViewModel, reply),
               )),
         ],

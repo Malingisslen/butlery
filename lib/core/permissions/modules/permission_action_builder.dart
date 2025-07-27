@@ -1,9 +1,9 @@
 // lib/core/permissions/modules/permission_action_builder.dart
 
-import 'recipe_permission_handler.dart';
-import 'shopping_permission_handler.dart';
-import 'group_permission_handler.dart';
-import 'social_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/recipe_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/shopping_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/group_permission_handler.dart';
+import 'package:butlery/core/permissions/modules/social_permission_handler.dart';
 
 /// Focused module for building permission actions and levels
 /// 

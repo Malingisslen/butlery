@@ -1,15 +1,15 @@
 // lib/repositories/firebase/firebase_friends_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/auth_repository.dart';
-import 'firebase_auth_repository.dart';
-import '../../models/user_profile.dart';
-import '../../models/friend_request.dart';
-import '../../models/friend_category.dart';
-import '../../models/group_invitation.dart';
-import '../interfaces/friends_repository.dart';
-import 'base_firebase_repository.dart';
-import '../../core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/repositories/interfaces/friends_repository.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Repository handling friend requests and friends collections in Firestore.
 ///

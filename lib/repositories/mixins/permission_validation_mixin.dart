@@ -1,8 +1,8 @@
 // lib/repositories/mixins/permission_validation_mixin.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../core/exceptions/permission_exceptions.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin to provide permission validation methods for Firebase repositories
 mixin PermissionValidationMixin {

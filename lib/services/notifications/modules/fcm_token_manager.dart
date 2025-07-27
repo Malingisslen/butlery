@@ -4,9 +4,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../notification_types.dart';
-import '../notification_repository.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for Firebase Cloud Messaging token management
 /// 

@@ -1,7 +1,7 @@
 // lib/services/extraction/platform_detector.dart
 
-import '../content_detector_service.dart';
-import '../../core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Platform detection for social media URLs
 /// Now using SingletonServiceMixin for standardized singleton pattern

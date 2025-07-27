@@ -2,19 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
-import '../models/recipe_unified.dart';
-import '../viewmodels/recipe_form_viewmodel.dart';
-import '../viewmodels/collaborative_status_viewmodel.dart';
-import '../widgets/common/state_widget.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_dimensions.dart';
-import '../core/injection.dart';
-import 'edit_recipe/edit_recipe_actions.dart';
-import 'edit_recipe/edit_recipe_app_bar.dart';
-import 'edit_recipe/edit_recipe_banners.dart';
-import 'edit_recipe/edit_recipe_bottom_bar.dart';
-import 'edit_recipe/edit_recipe_form_fields.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_actions.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_app_bar.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_banners.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_bottom_bar.dart';
+import 'package:butlery/views/edit_recipe/edit_recipe_form_fields.dart';
 
 /// Edit Recipe View - Facade using focused view components
 /// 

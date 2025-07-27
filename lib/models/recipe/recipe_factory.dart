@@ -1,7 +1,7 @@
 // lib/models/recipe/recipe_factory.dart
 
-import '../recipe_unified.dart';
-import '../permissions/resource_permission.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 /// Focused module for recipe factory methods
 /// 

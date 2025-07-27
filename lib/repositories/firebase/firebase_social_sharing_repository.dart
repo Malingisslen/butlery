@@ -1,12 +1,12 @@
 // lib/repositories/firebase/firebase_social_sharing_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../interfaces/social_sharing_repository.dart';
+import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 // import '../interfaces/auth_repository.dart'; // Imported from base class
-import '../../models/shared_content.dart';
-import 'base_firebase_repository.dart';
-import '../../core/utils/logger.dart';
-import '../../core/exceptions/permission_exceptions.dart';
+import 'package:butlery/models/shared_content.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Firebase implementation of SocialSharingRepository
 /// 
@@ -278,8 +278,8 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
           .get();
       
       // Calculate stats
-      int totalShared = sharedByMe.docs.length;
-      int totalReceived = sharedWithMe.docs.length;
+      final int totalShared = sharedByMe.docs.length;
+      final int totalReceived = sharedWithMe.docs.length;
       int acceptedCount = 0;
       int viewedCount = 0;
       

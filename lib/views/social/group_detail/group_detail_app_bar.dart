@@ -1,10 +1,10 @@
 // lib/views/social/group_detail/group_detail_app_bar.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// GroupDetailAppBar - App bar component
 ///
@@ -21,9 +21,9 @@ class GroupDetailAppBar {
       title: Text(group.name),
       actions: [
         if (isLoading)
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: const SizedBox(
+          const Padding(
+            padding: EdgeInsets.all(AppDimensions.paddingL),
+            child: SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),

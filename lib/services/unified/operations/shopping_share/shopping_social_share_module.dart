@@ -1,14 +1,14 @@
 // lib/services/unified/operations/shopping_share/shopping_social_share_module.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../models/unified/unified_shopping_item.dart';
-import '../../../../models/unified/unified_shopping_list.dart';
-import '../../../../models/shared_content.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../../services/permission_service.dart';
-import '../../../../core/injection.dart';
-import '../../../../repositories/interfaces/social_sharing_repository.dart';
-import 'shared/shopping_share_utils.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/shared_content.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shared/shopping_share_utils.dart';
 
 /// Shopping list social sharing module
 /// 
@@ -72,8 +72,8 @@ class ShoppingSocialShareModule {
         ),
         metadata: {
           'listName': list!.name,
-          'ownerDisplayName': currentUser.displayName ?? '',
-          'ownerAvatarUrl': currentUser.avatarUrl ?? '',
+          'ownerDisplayName': currentUser.displayName,
+          'ownerAvatarUrl': currentUser.avatarUrl,
           'message': message ?? '',
           'shareType': 'direct_friend',
           'listData': _createShareListData(list),
@@ -82,7 +82,7 @@ class ShoppingSocialShareModule {
       
       await _sharingRepository.shareToUsers(friendIds, sharedContent);
       
-      AppLogger.success('✅ List shared with ${friendIds.length} friends: ${list!.name}');
+      AppLogger.success('✅ List shared with ${friendIds.length} friends: ${list.name}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to share list with friends', e);
@@ -155,7 +155,7 @@ class ShoppingSocialShareModule {
         ),
         metadata: {
           'listName': list.name,
-          'ownerDisplayName': currentUser.displayName ?? '',
+          'ownerDisplayName': currentUser.displayName,
           'message': message ?? '',
           'status': 'pending',
           'type': 'shopping_list_collaboration',

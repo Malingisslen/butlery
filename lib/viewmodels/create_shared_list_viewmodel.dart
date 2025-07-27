@@ -1,12 +1,12 @@
 // lib/viewmodels/create_shared_list_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../services/unified/unified_shopping_service.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../services/permission_service.dart';
-import '../core/injection.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 
 class CreateSharedListViewModel extends ChangeNotifier {

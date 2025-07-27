@@ -1,11 +1,11 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../viewmodels/menu_viewmodel.dart';
-import '../state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Bottom sheet for loading a saved menu
 ///
@@ -74,7 +74,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           Container(
             width: AppDimensions.iconSizeDisplay,
             height: AppDimensions.spacingXs,
-            margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
+            margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
             decoration: BoxDecoration(
               color: Theme.of(context)
                   .colorScheme
@@ -86,7 +86,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
           // Title
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
             child: Row(
               children: [
                 Icon(
@@ -94,8 +94,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                   size: AppDimensions.iconSizeAction,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                SizedBox(width: AppDimensions.spacingS),
-                Text(
+                const SizedBox(width: AppDimensions.spacingS),
+                const Text(
                   'Sparade menyer',
                   style: AppTextStyles.headlineSmall,
                 ),
@@ -108,7 +108,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ),
           ),
 
-          Divider(height: AppDimensions.spacingL),
+          const Divider(height: AppDimensions.spacingL),
 
           // Content
           Flexible(
@@ -127,7 +127,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: StateWidget.empty(
         title: 'Inga sparade menyer',
         subtitle: 'Du har inga sparade menyer än. Generera och spara en meny först!',
@@ -151,7 +151,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
   Widget _buildMenuListItem(dynamic menu) {
     return Card(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
@@ -172,7 +172,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           'Meny ${menu.toString()}',
           style: AppTextStyles.titleMedium,
         ),
-        subtitle: Text(
+        subtitle: const Text(
           'Sparad tidigare',
           style: AppTextStyles.bodySmall,
         ),

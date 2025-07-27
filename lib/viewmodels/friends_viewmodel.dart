@@ -2,14 +2,14 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../models/user_profile.dart';
-import '../models/friend_request.dart';
-import '../models/friend_category.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../services/user_service.dart';
-import '../core/permissions/permission_mixins.dart';
-import '../core/utils/logger.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/permissions/permission_mixins.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Represents the friendship status between two users
 enum FriendshipStatus {

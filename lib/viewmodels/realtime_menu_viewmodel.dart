@@ -2,22 +2,22 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../models/realtime/realtime_menu.dart';
-import '../models/recipe_unified.dart';
-import '../models/permissions/resource_permission.dart';
-import '../services/realtime/realtime_menu_service.dart';
-import '../services/realtime_sync_service.dart';
-import '../services/auth_service.dart';
-import '../core/utils/logger.dart';
-import 'realtime/optimistic_update_manager.dart';
-import 'realtime/participant_tracker.dart';
-import 'realtime/connection_monitor.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
+import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 
 // Focused modules
-import 'realtime_menu/realtime_menu_state.dart';
-import 'realtime_menu/realtime_stream_manager.dart';
-import 'realtime_menu/realtime_menu_operations.dart';
-import 'realtime_menu/realtime_participant_manager.dart';
+import 'package:butlery/viewmodels/realtime_menu/realtime_menu_state.dart';
+import 'package:butlery/viewmodels/realtime_menu/realtime_stream_manager.dart';
+import 'package:butlery/viewmodels/realtime_menu/realtime_menu_operations.dart';
+import 'package:butlery/viewmodels/realtime_menu/realtime_participant_manager.dart';
 
 /// Clean facade for realtime menu viewmodel using focused modules
 ///

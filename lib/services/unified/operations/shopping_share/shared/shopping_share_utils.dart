@@ -1,7 +1,7 @@
 // lib/services/unified/operations/shopping_share/shared/shopping_share_utils.dart
 
-import '../../../../../models/unified/unified_shopping_item.dart';
-import '../../../../../models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 /// Shared utilities for shopping share operations
 /// 

@@ -1,10 +1,10 @@
 // lib/core/router/route_animations.dart
 
 import 'package:flutter/material.dart';
-import '../constants/routes.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Centralized route animation system for the Butlery application.
 ///
@@ -231,7 +231,7 @@ class _ErrorScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.error_outline,
                 size: AppDimensions.iconSizeXl,
                 color: AppColors.error,

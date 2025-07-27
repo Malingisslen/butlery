@@ -1,12 +1,12 @@
 // lib/widgets/common/content_cards/recipe_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../image/simple_image_widget.dart';
-import '../../image/image_config.dart' as image_config;
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/image/image_config.dart' as image_config;
 
 /// Focused module for recipe card components
 /// 
@@ -45,7 +45,7 @@ class RecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: margin ?? EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      margin: margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: Material(
         elevation: 1, // Very subtle shadow
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius10), // 8-12px subtle rounding
@@ -73,14 +73,14 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildDetailedContent(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Circular icon placeholder on left
           _buildCircularIcon(context),
           
-          SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.spacingM),
           
           // Content column on right
           Expanded(
@@ -88,18 +88,18 @@ class RecipeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildTitleWithCategory(context),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 _buildMetadataRow(context),
                 if (recipe.rating != null) ...[
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   _buildRatingStars(context),
                 ],
                 if (recipe.description.isNotEmpty) ...[
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   _buildRecipeDescription(context),
                 ],
                 if (showTags && recipe.tags?.isNotEmpty == true) ...[
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   _buildSimpleTags(context),
                 ],
               ],
@@ -115,7 +115,7 @@ class RecipeCard extends StatelessWidget {
       children: [
         if (showImage) ...[
           _buildRecipeImage(context, compact: true),
-          SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.spacingM),
         ],
         Expanded(
           child: Column(
@@ -123,7 +123,7 @@ class RecipeCard extends StatelessWidget {
             children: [
               _buildRecipeHeader(context),
               if (showMetadata) ...[
-                SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.spacingXs),
                 _buildRecipeMetadata(context),
               ],
             ],
@@ -139,11 +139,11 @@ class RecipeCard extends StatelessWidget {
       children: [
         if (showImage) ...[
           _buildRecipeImage(context, aspectRatio: 1.0),
-          SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingS),
         ],
         _buildRecipeHeader(context),
         if (showMetadata) ...[
-          SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.spacingXs),
           _buildRecipeMetadata(context),
         ],
       ],
@@ -213,16 +213,16 @@ class RecipeCard extends StatelessWidget {
           ),
         ),
         if (recipe.mealType.isNotEmpty) ...[
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue, // Solid blue background
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius20), // Fully rounded pill
             ),
             child: Text(
               recipe.mealType,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -267,7 +267,7 @@ class RecipeCard extends StatelessWidget {
             ),
           ),
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) ...[
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Icon(
             Icons.link,
             size: 18,
@@ -280,7 +280,7 @@ class RecipeCard extends StatelessWidget {
 
   /// Builds rating stars display
   Widget _buildRatingStars(BuildContext context) {
-    if (recipe.rating == null) return SizedBox.shrink();
+    if (recipe.rating == null) return const SizedBox.shrink();
     
     final rating = recipe.rating!;
     final fullStars = rating.floor();
@@ -289,13 +289,13 @@ class RecipeCard extends StatelessWidget {
     return Row(
       children: List.generate(5, (index) {
         if (index < fullStars) {
-          return Icon(
+          return const Icon(
             Icons.star,
             size: 16,
             color: Colors.amber,
           );
         } else if (index == fullStars && hasHalfStar) {
-          return Icon(
+          return const Icon(
             Icons.star_half,
             size: 16,
             color: Colors.amber,
@@ -314,7 +314,7 @@ class RecipeCard extends StatelessWidget {
   /// Builds pill-shaped tags with background color
   Widget _buildSimpleTags(BuildContext context) {
     if (recipe.tags == null || recipe.tags!.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Wrap(
@@ -323,7 +323,7 @@ class RecipeCard extends StatelessWidget {
       children: recipe.tags!
           .take(3)
           .map((tag) => Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.backgroundBeige, // Same as scaffold background
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadius12), // Pill shape
@@ -361,7 +361,7 @@ class RecipeCard extends StatelessWidget {
   Widget _buildRecipeDescription(BuildContext context) {
     return Text(
       recipe.description,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 14,
         color: Colors.black87,
         height: 1.4, // Good line height
@@ -387,7 +387,7 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildMealTypeIndicator(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.spacingXs,
       ),

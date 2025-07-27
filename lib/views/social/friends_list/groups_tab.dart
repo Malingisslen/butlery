@@ -1,13 +1,13 @@
 // lib/views/social/friends_list/groups_tab.dart
 
 import 'package:flutter/material.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../models/group_invitation.dart';
-import '../../../models/friend_category.dart';
-import '../../../widgets/common/state_widget.dart';
-import '../../../theme/app_dimensions.dart';
-import 'group_invitation_card.dart';
-import 'group_card.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/friends_list/group_invitation_card.dart';
+import 'package:butlery/views/social/friends_list/group_card.dart';
 
 /// GroupsTab - Groups tab component
 ///
@@ -46,7 +46,7 @@ class GroupsTab {
                     (context, index) {
                       final invitation = pendingInvitations[index];
                       return Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingL,
                           vertical: AppDimensions.spacingXs,
                         ),
@@ -77,7 +77,7 @@ class GroupsTab {
                     (context, index) {
                       final group = groups[index];
                       return Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingL,
                           vertical: AppDimensions.spacingXs,
                         ),

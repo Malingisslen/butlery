@@ -4,14 +4,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
-import 'core/constants/routes.dart';
-import 'core/router/app_router.dart';
-import 'theme/app_dimensions.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/router/app_router.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:receive_intent/receive_intent.dart' as receive_intent;
 
 // Firebase Analytics (för observer)
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 // Removed unused share handling import
@@ -20,27 +20,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 // ✅ NY IMPORT: AppInitializer (ersätter 100+ rader initialization-kod)
-import 'core/startup/app_initializer.dart';
+import 'package:butlery/core/startup/app_initializer.dart';
 
 // Dependency Injection
-import 'core/injection.dart';
+import 'package:butlery/core/injection.dart';
 
 // Services
-import 'services/offline_service.dart';
-import 'services/analytics_service.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:go_router/go_router.dart';
 
 // Removed unused model imports
 
 // Theme
-import 'theme/app_theme.dart';
-import 'theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 // Auth view
-import 'views/auth_view.dart';
+import 'package:butlery/views/auth_view.dart';
 
 // Befintliga views
-import 'views/mina_recept_view.dart';
+import 'package:butlery/views/mina_recept_view.dart';
 
 // ✅ DRAMATISKT FÖRENKLAD main() funktion - NER FRÅN 693 RADER!
 // 🚀 PERFORMANCE FIX: Split initialization to prevent frame skipping
@@ -79,7 +79,7 @@ class _ButleryAppState extends State<ButleryApp> {
   }
 
   /// Väntar på att background initialization ska slutföras för att sätta upp analytics
-  void _waitForBackgroundInitialization() async {
+  Future<void> _waitForBackgroundInitialization() async {
     // Warten bis background initialization fertig ist
     while (!AppInitializer.isBackgroundInitialized) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -101,7 +101,7 @@ class _ButleryAppState extends State<ButleryApp> {
   }
 
   /// Handle initial deep link when app starts
-  void _handleInitialDeepLink() async {
+  Future<void> _handleInitialDeepLink() async {
     // Wait for background initialization to complete
     while (!AppInitializer.isBackgroundInitialized) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -268,7 +268,7 @@ class _ButleryAppState extends State<ButleryApp> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const CircularProgressIndicator(),
-                SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.spacingXl),
                 Text('Initialiserar tjänster...', style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
@@ -311,7 +311,7 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
     _checkInitialization();
   }
 
-  void _checkInitialization() async {
+  Future<void> _checkInitialization() async {
     // Wait for background initialization to complete
     while (!AppInitializer.isBackgroundInitialized) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -342,17 +342,17 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
                   color: AppColors.primaryBlue,
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.restaurant_menu,
                   size: AppDimensions.iconSizeHero,
                   color: AppColors.neutralLight,
                 ),
               ),
-              SizedBox(height: AppDimensions.spacingXxxl),
+              const SizedBox(height: AppDimensions.spacingXxxl),
               
               // Loading indicator
               const CircularProgressIndicator(),
-              SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.spacingXl),
               
               // Loading text
               Text(
@@ -392,7 +392,7 @@ class AuthWrapper extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(),
-                  SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
                   Text(
                     'Kontrollerar inloggning...',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -413,16 +413,16 @@ class AuthWrapper extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, color: AppColors.error, size: AppDimensions.iconSizeXl),
-                  SizedBox(height: AppDimensions.spacingXl),
+                  const Icon(Icons.error, color: AppColors.error, size: AppDimensions.iconSizeXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
                   Text('Ett fel uppstod', style: Theme.of(context).textTheme.headlineSmall),
-                  SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.spacingM),
                   Text(
                     snapshot.error.toString(),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pushReplacementNamed(Routes.home),
                     child: const Text('Försök igen'),

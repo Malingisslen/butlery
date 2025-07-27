@@ -1,9 +1,9 @@
 // lib/services/unified/operations/realtime_recipe/collaboration_management_module.dart
 
-import '../../../../core/utils/logger.dart';
-import '../../../../services/permission_service.dart';
-import '../../../../core/injection.dart';
-import 'shared/realtime_recipe_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Collaboration management module
 /// 

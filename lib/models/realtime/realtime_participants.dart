@@ -1,6 +1,6 @@
 // lib/models/realtime/realtime_participants.dart
 
-import '../permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 /// Focused module for realtime participant management
 /// 

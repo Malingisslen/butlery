@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/url_import_viewmodel.dart';
-import '../widgets/common/state_widget.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../core/injection.dart';
+import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
 
 /// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
 class ImportViaUrlView extends StatelessWidget {
@@ -115,10 +115,10 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               ),
               child:
                   viewModel.isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: AppDimensions.iconSizeS,
                           height: AppDimensions.iconSizeS,
-                          child: const CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                           ),
@@ -137,13 +137,13 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
             // Extraherad text
             if (viewModel.hasExtractedText) ...[
               const SizedBox(height: AppDimensions.spacingXl),
-              Text('Extraherad text:', style: AppTextStyles.headlineSmall),
+              const Text('Extraherad text:', style: AppTextStyles.headlineSmall),
               Expanded(
                 child: SingleChildScrollView(
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+                    margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
                     decoration: BoxDecoration(
                       color: AppColors.backgroundTint,
                       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

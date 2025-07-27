@@ -16,7 +16,7 @@
 /// Used in phases: Phase 7 - Additional Code Duplication Elimination
 
 import 'package:flutter/foundation.dart';
-import '../utils/logger.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin that provides common state management functionality
 /// 

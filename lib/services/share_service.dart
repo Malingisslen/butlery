@@ -2,9 +2,9 @@
 
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import '../models/recipe_unified.dart';
-import '../models/unified/unified_shopping_item.dart';
-import '../core/base/base_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Format-alternativ för receptdelning
 enum RecipeShareFormat {

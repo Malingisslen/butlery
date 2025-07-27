@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_colors.dart';
-import '../core/base/base_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Service for handling common dialogs
 /// Separates dialog business logic from UI layer

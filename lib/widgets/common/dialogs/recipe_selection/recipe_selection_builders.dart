@@ -1,10 +1,10 @@
 // lib/widgets/common/dialogs/recipe_selection/recipe_selection_builders.dart
 
 import 'package:flutter/material.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Common builders for recipe selection components
 class RecipeSelectionBuilders {
@@ -78,7 +78,7 @@ class RecipeSelectionBuilders {
                 ? AppColors.sharedRecipeIcon
                 : AppColors.textSecondary,
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             '${recipe.timeMinutes} min',
             style: isShared
@@ -91,9 +91,9 @@ class RecipeSelectionBuilders {
         ],
         if (recipe.portions != null) ...[
           if (recipe.timeMinutes != null) ...[
-            SizedBox(width: AppDimensions.spacingS),
-            Text('•', style: AppTextStyles.bodySmall),
-            SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingS),
+            const Text('•', style: AppTextStyles.bodySmall),
+            const SizedBox(width: AppDimensions.spacingS),
           ],
           Icon(
             Icons.people,
@@ -102,7 +102,7 @@ class RecipeSelectionBuilders {
                 ? AppColors.sharedRecipeIcon
                 : AppColors.textSecondary,
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             '${recipe.portions} port',
             style: isShared
@@ -126,7 +126,7 @@ class RecipeSelectionBuilders {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingXs,
             vertical: AppDimensions.spacingXs,
           ),
@@ -192,7 +192,7 @@ class RecipeSelectionBuilders {
   /// Build shared recipe badge
   static Widget sharedRecipeBadge() {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingXs,
         vertical: AppDimensions.spacingXs,
       ),

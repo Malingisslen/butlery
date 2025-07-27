@@ -1,9 +1,9 @@
 //lib/viewmodels/create_group_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../core/injection.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../core/events/group_events.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/events/group_events.dart';
 
 
 class CreateGroupViewModel extends ChangeNotifier {

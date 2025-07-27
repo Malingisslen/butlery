@@ -17,8 +17,8 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'logger.dart';
-import '../mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Service optimizer utility for performance and error handling improvements
 /// Now using SingletonServiceMixin for standardized singleton pattern
@@ -69,7 +69,7 @@ class ServiceOptimizer with SingletonServiceMixin<ServiceOptimizer> {
       _recordPerformance(fullOperationName, stopwatch.elapsed);
 
       // Log slow operations
-      if (stopwatch.elapsed > Duration(seconds: 2)) {
+      if (stopwatch.elapsed > const Duration(seconds: 2)) {
         AppLogger.warning('⏱️ Slow operation detected: $fullOperationName took ${stopwatch.elapsed.inMilliseconds}ms');
       }
 
@@ -262,7 +262,7 @@ class ServiceOptimizer with SingletonServiceMixin<ServiceOptimizer> {
       'errorRate': totalOperations > 0 ? (totalErrors / totalOperations * 100).toStringAsFixed(2) : '0.00',
       'averageResponseTime': averageResponseTime,
       'activeOperations': _recentOperations.length,
-      'serviceUptime': DateTime.now().difference(DateTime.now().subtract(Duration(hours: 1))).inMinutes, // Placeholder
+      'serviceUptime': DateTime.now().difference(DateTime.now().subtract(const Duration(hours: 1))).inMinutes, // Placeholder
       'topErrorOperations': _getTopErrorOperations(),
       'slowestOperations': _getSlowestOperations(),
     };
@@ -270,7 +270,7 @@ class ServiceOptimizer with SingletonServiceMixin<ServiceOptimizer> {
 
   /// Clear old performance data to prevent memory leaks
   void cleanupOldData({Duration? olderThan}) {
-    final cutoff = DateTime.now().subtract(olderThan ?? Duration(hours: 24));
+    final cutoff = DateTime.now().subtract(olderThan ?? const Duration(hours: 24));
     
     // Clear old performance metrics
     _performanceMetrics.removeWhere((key, value) {

@@ -1,9 +1,9 @@
 // lib/core/permissions/validators/recipe_validator.dart
 
-import '../../../services/permission_service.dart';
-import '../../../core/injection.dart';
-import 'base_validator.dart';
-import 'validation_result.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/permissions/validators/base_validator.dart';
+import 'package:butlery/core/permissions/validators/validation_result.dart';
 
 /// Recipe permission validator
 class RecipePermissionValidator extends BasePermissionValidator {

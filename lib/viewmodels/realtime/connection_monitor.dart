@@ -1,9 +1,9 @@
 // lib/viewmodels/realtime/connection_monitor.dart
 
 import 'dart:async';
-import '../../services/realtime_sync_service.dart';
-import '../../core/utils/logger.dart';
-import '../../theme/app_dimensions.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 
 /// Status för connection monitoring

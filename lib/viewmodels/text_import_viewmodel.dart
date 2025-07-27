@@ -1,6 +1,6 @@
 // lib/viewmodels/text_import_viewmodel.dart
 
-import 'import_base_viewmodel.dart';
+import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 
 /// ViewModel för text-baserad receptimport (sociala medier, OCR, etc)
 /// Refactored to use ImportBaseViewModel with TextImportMixin for consistency

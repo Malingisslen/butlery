@@ -17,9 +17,9 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'service_optimizer.dart';
-import 'logger.dart';
-import '../mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/utils/service_optimizer.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Enhanced error handler with user-friendly messages and recovery suggestions
 /// Now using SingletonServiceMixin for standardized singleton pattern

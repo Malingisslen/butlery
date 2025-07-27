@@ -1,8 +1,8 @@
 // lib/viewmodels/auth_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../services/auth_service.dart';
-import '../core/injection.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// AuthViewModel hanterar state och logik för login/register UI
 ///

@@ -2,22 +2,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/friends_viewmodel.dart';
-import '../../services/unified/unified_friends_service.dart';
-import '../../widgets/common/social_components.dart';
-import '../../widgets/common/layout_components.dart';
-import '../../widgets/common/search_filter_widget.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../core/injection.dart';
-import '../../core/utils/snackbar_utils.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Import focused components
-import 'friends_list/friends_tab.dart';
-import 'friends_list/requests_tab.dart';
-import 'friends_list/search_tab.dart';
-import 'friends_list/groups_tab.dart';
-import 'friends_list/group_search_tab.dart';
+import 'package:butlery/views/social/friends_list/friends_tab.dart';
+import 'package:butlery/views/social/friends_list/requests_tab.dart';
+import 'package:butlery/views/social/friends_list/search_tab.dart';
+import 'package:butlery/views/social/friends_list/groups_tab.dart';
+import 'package:butlery/views/social/friends_list/group_search_tab.dart';
 
 class FriendsListView extends StatelessWidget {
   const FriendsListView({super.key});
@@ -111,12 +111,12 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   indicatorColor: AppColors.primaryBlue,
                   indicatorWeight: AppDimensions.borderWidthThick,
                   tabs: [
-                    Tab(
-                      icon: const Icon(Icons.people),
+                    const Tab(
+                      icon: Icon(Icons.people),
                       text: 'Vänner',
                     ),
-                    Tab(
-                      icon: const Icon(Icons.groups),
+                    const Tab(
+                      icon: Icon(Icons.groups),
                       text: 'Grupper',
                     ),
                     Tab(
@@ -134,8 +134,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               if (viewModel.hasError)
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(AppDimensions.spacingL),
-                    margin: EdgeInsets.all(AppDimensions.spacingL),
+                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    margin: const EdgeInsets.all(AppDimensions.spacingL),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -144,12 +144,12 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: AppColors.error),
-                        SizedBox(width: AppDimensions.spacingS),
+                        const Icon(Icons.error_outline, color: AppColors.error),
+                        const SizedBox(width: AppDimensions.spacingS),
                         Expanded(
                           child: Text(
                             viewModel.error!,
-                            style: TextStyle(color: AppColors.error),
+                            style: const TextStyle(color: AppColors.error),
                           ),
                         ),
                         TextButton(
@@ -167,7 +167,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   onSearchChanged: _onSearchChanged,
                   searchHint: 'Sök efter vänner...',
                   autofocus: false,
-                  padding: EdgeInsets.all(AppDimensions.spacingL),
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
                   showStats: true,
                   resultCount: viewModel.searchResults.length,
                 ),
@@ -177,7 +177,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   onSearchChanged: _onSearchChanged,
                   searchHint: 'Sök efter grupper...',
                   autofocus: false,
-                  padding: EdgeInsets.all(AppDimensions.spacingL),
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
                   showStats: true,
                   resultCount: viewModel.searchResults.length,
                 ),
@@ -200,7 +200,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   onPressed: () => _showCreateGroupDialog(viewModel),
                   child: Stack(
                     children: [
-                      Center(
+                      const Center(
                         child: Icon(
                           Icons.groups, 
                           size: AppDimensions.iconSizeL,
@@ -212,11 +212,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         child: Container(
                           width: AppDimensions.iconSizeS,
                           height: AppDimensions.iconSizeS,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.primaryBlue,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.add, 
                             size: AppDimensions.iconSizeS,
                             color: AppColors.cardWhite,

@@ -1,10 +1,10 @@
 // lib/widgets/common/social_components/social_group_components.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../social/social_facade.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social group and friend category management components
 /// 
@@ -190,7 +190,7 @@ class SocialGroupComponents {
         return ListTile(
           title: Text(category.name),
           subtitle: showMemberCount 
-              ? Text('${0} medlemmar') // FriendCategory doesn't have memberIds
+              ? const Text('${0} medlemmar') // FriendCategory doesn't have memberIds
               : null,
           leading: const Icon(Icons.group),
           trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
@@ -324,7 +324,7 @@ class SocialGroupComponents {
     bool showLargestCategory = true,
   }) {
     final totalCategories = categories.length;
-    final totalMembers = 0; // FriendCategory doesn't have memberIds
+    const totalMembers = 0; // FriendCategory doesn't have memberIds
     final averageSize = totalCategories > 0 ? totalMembers / totalCategories : 0.0;
     final largestCategory = categories.isNotEmpty
         ? categories.first
@@ -332,7 +332,7 @@ class SocialGroupComponents {
 
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(AppDimensions.spacing16),
+        padding: const EdgeInsets.all(AppDimensions.spacing16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -429,19 +429,19 @@ class SocialGroupComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: Colors.grey),
-          SizedBox(height: AppDimensions.spacing16),
+          const SizedBox(height: AppDimensions.spacing16),
           Text(
             title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacing8),
           Text(
             subtitle,
             style: const TextStyle(color: Colors.grey),
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null && createButtonText != null) ...[
-            SizedBox(height: AppDimensions.spacing24),
+            const SizedBox(height: AppDimensions.spacing24),
             ElevatedButton(
               onPressed: onCreateFirst,
               child: Text(createButtonText),

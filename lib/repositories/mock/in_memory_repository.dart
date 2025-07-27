@@ -1,4 +1,4 @@
-import '../interfaces/repository.dart';
+import 'package:butlery/repositories/interfaces/repository.dart';
 
 /// Simple in-memory implementation of [Repository] used for unit tests.
 class InMemoryRepository<T> implements Repository<T> {

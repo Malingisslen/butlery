@@ -15,11 +15,11 @@
 /// Connected to: UnifiedShoppingService, Collaborative ViewModels, Social features
 /// Used in phases: Phase 5 - Service Consolidation
 
-import '../../../models/unified/unified_shopping_item.dart';
-import '../../../models/unified/unified_shopping_list.dart';
-import '../../../core/utils/logger.dart';
-import '../../permission_service.dart';
-import '../../../core/injection.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
 
 /// Collaborative shopping operations feature interface
 /// 

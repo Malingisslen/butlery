@@ -2,18 +2,18 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../services/connectivity_monitoring_service.dart';
-import '../../core/injection.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/user_profile.dart';
-import '../../models/realtime/realtime_recipe.dart';
-import '../../models/realtime/live_editor.dart';
-import '../../models/permissions/resource_permission.dart';
-import '../../models/permissions/edit_mode.dart';
-import '../../models/shared_recipe.dart';
-import '../../services/permission_service.dart';
-import '../../repositories/collaborative_recipe_repository.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/realtime/live_editor.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/collaborative_recipe_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 /// Manages real-time collaborative editing for recipe forms
 class RecipeCollaborativeManager extends ChangeNotifier {
   final PermissionService _permissionService;

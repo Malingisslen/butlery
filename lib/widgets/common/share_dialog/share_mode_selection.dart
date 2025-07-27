@@ -1,10 +1,10 @@
 // lib/widgets/common/share_dialog/share_mode_selection.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_dimensions.dart';
-import '../universal_share_dialog.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareModeSelection {
   static Widget build(
@@ -32,7 +32,7 @@ class ShareModeSelection {
         
         // Static Copy Option
         Container(
-          margin: EdgeInsets.only(bottom: AppDimensions.spacingS),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
           child: InkWell(
             onTap: () => onModeChanged(ShareMode.staticCopy),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -122,7 +122,7 @@ class ShareModeSelection {
                             ),
                             const SizedBox(width: AppDimensions.spacingM),
                             Container(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppDimensions.spacingXs,
                                 vertical: 2,
                               ),

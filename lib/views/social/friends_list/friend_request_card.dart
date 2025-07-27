@@ -1,10 +1,10 @@
 // lib/views/social/friends_list/friend_request_card.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/friend_request.dart';
-import '../../../viewmodels/friends_viewmodel.dart';
-import '../../../widgets/common/content_card.dart';
-import '../../../core/utils/snackbar_utils.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// FriendRequestCard - Friend request card component
 ///

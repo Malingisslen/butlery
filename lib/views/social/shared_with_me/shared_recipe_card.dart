@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/shared_content_viewmodel.dart';
-import '../../../models/shared_recipe.dart';
-import '../../../widgets/common/social_components.dart';
-import 'shared_content_actions.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
 ///
@@ -51,18 +51,18 @@ class SharedRecipeCard {
             children: [
               // Header med delningsinfo
               _buildHeader(context, viewModel, sharedRecipe, isRead),
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
 
               // Recept content
               _buildRecipeContent(context, recipe),
 
               // Message från delaren
               if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
-                SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.spacingS),
                 _buildShareMessage(context, sharedRecipe.shareMessage!),
               ],
 
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
 
               // Action buttons
               _buildActionButtons(
@@ -92,7 +92,7 @@ class SharedRecipeCard {
           size: ImageSize.small,
           displayName: sharedRecipe.sharedByDisplayName,
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,8 +147,8 @@ class SharedRecipeCard {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             tooltip: 'Dölj från min lista',
-            padding: EdgeInsets.all(AppDimensions.spacingXs),
-            constraints: BoxConstraints(
+            padding: const EdgeInsets.all(AppDimensions.spacingXs),
+            constraints: const BoxConstraints(
               minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
               minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
             ),
@@ -158,7 +158,7 @@ class SharedRecipeCard {
           Container(
             width: 8,
             height: 8,
-            margin: EdgeInsets.only(left: AppDimensions.spacingXs),
+            margin: const EdgeInsets.only(left: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
@@ -201,7 +201,7 @@ class SharedRecipeCard {
                   : null,
             ),
           ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +211,7 @@ class SharedRecipeCard {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               if (recipe.description.isNotEmpty) ...[
-                SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   recipe.description,
                   style: Theme.of(context).textTheme.bodySmall,
@@ -219,7 +219,7 @@ class SharedRecipeCard {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
                   Icon(
@@ -227,18 +227,18 @@ class SharedRecipeCard {
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '${recipe.portions ?? '?'} portioner',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Icon(
                     Icons.access_time,
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     recipe.cookTimeText,
                     style: Theme.of(context).textTheme.bodySmall,
@@ -255,7 +255,7 @@ class SharedRecipeCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -295,7 +295,7 @@ class SharedRecipeCard {
             label: const Text('Visa'),
           ),
         ),
-        SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: FilledButton.icon(
             onPressed: isImported || viewModel.isImporting

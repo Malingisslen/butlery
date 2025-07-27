@@ -2,15 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/archive_import_viewmodel.dart';
-import '../widgets/common/content_card.dart';
-import '../widgets/common/search_filter_widget.dart';
-import '../widgets/common/utility_components.dart';
-import '../widgets/common/state_widget.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../core/injection.dart';
+import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
+import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
 
 /// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatelessWidget {
@@ -28,7 +28,7 @@ class ImporteraFranArkivView extends StatelessWidget {
 class _ImporteraFranArkivViewContent extends StatelessWidget {
   const _ImporteraFranArkivViewContent();
 
-  void _handleImport(
+  Future<void> _handleImport(
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) async {
@@ -62,7 +62,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         actions: [
           if (viewModel.hasError)
             IconButton(
-              icon: Icon(Icons.error, color: AppColors.error),
+              icon: const Icon(Icons.error, color: AppColors.error),
               onPressed: () {
                 // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
                 UtilityComponents.showErrorSnackbar(context, viewModel.error!);
@@ -82,7 +82,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   maxHeight: MediaQuery.of(context).size.height * 0.35,
                 ),
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
                   child: Column(
                     children: [
                       SearchFilterWidget.searchOnly(
@@ -95,7 +95,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                             : null,
                       ),
 
-                      SizedBox(height: AppDimensions.paddingL),
+                      const SizedBox(height: AppDimensions.paddingL),
 
                       // Tagg-filter
                       if (allTags.isNotEmpty) ...[
@@ -112,7 +112,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                             );
                           }).toList(),
                         ),
-                        SizedBox(height: AppDimensions.paddingL),
+                        const SizedBox(height: AppDimensions.paddingL),
                       ],
 
                       // Tids-filter
@@ -129,7 +129,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               if (viewModel.selectedTags.isNotEmpty ||
                   viewModel.timeFilter != TimeFilter.all)
                 Padding(
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingL,
                     vertical: AppDimensions.spacingS,
                   ),
@@ -143,7 +143,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
               // Import-knappar
               Container(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   border: Border(
@@ -239,7 +239,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
@@ -255,12 +255,12 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.filter_list,
             color: AppColors.textMedium,
             size: AppDimensions.iconSizeM,
           ),
-          SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.spacingXs),
           Expanded(
             child: Text(
               'Filter: ${filterParts.join(' • ')}',
@@ -315,7 +315,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         final recipe = recipes[index];
 
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
           child: ContentCard.recipe(
             recipe: recipe,
             onTap: () => Navigator.pushNamed(
@@ -347,7 +347,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   viewModel.isImporting ? null : viewModel.toggleSelectAll,
             ),
           ),
-          SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             flex: 2,
             // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton

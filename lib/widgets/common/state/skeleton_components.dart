@@ -1,8 +1,8 @@
 // lib/widgets/common/state/skeleton_components.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// SkeletonComponents - Skeleton loading components
 ///

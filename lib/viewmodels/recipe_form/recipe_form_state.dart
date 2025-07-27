@@ -1,8 +1,8 @@
 // lib/viewmodels/recipe_form/recipe_form_state.dart
 
 import 'package:flutter/material.dart';
-import '../../models/recipe_unified.dart';
-import '../../core/form/form_fields_manager.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/form/form_fields_manager.dart';
 
 /// Core state management for recipe form
 class RecipeFormState extends ChangeNotifier {

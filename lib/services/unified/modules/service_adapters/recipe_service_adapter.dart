@@ -1,14 +1,14 @@
 // lib/services/unified/modules/service_adapters/recipe_service_adapter.dart
 
-import '../../../../repositories/interfaces/recipe_repository.dart';
-import '../../../../repositories/interfaces/comments_repository.dart';
-import '../../../../repositories/interfaces/ratings_repository.dart';
-import '../../../../repositories/interfaces/notifications_repository.dart';
-import '../../../../core/injection.dart';
-import '../../../../models/recipe_unified.dart';
-import '../../../../models/recipe_comment.dart';
-import '../../../../services/notifications/notification_types.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Service adapter that provides repository pattern access for UnifiedRecipeService modules
 /// 

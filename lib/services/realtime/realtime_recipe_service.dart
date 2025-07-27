@@ -1,17 +1,17 @@
 // lib/services/realtime/realtime_recipe_service.dart
 
 import 'package:flutter/foundation.dart';
-import '../../models/realtime/realtime_recipe.dart';
-import '../../models/realtime/realtime_resource.dart';
-import '../../models/recipe_unified.dart';
-import '../../models/permissions/resource_permission.dart';
-import '../realtime_sync_service.dart';
-import '../permission_service.dart';
-import '../../core/utils/logger.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Focused modules
-import 'modules/recipe_content_operations.dart';
-import 'modules/recipe_participants.dart';
+import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
+import 'package:butlery/services/realtime/modules/recipe_participants.dart';
 
 /// Clean facade for realtime recipe management using focused modules
 ///

@@ -2,13 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/photo_import_viewmodel.dart';
-import '../widgets/common/utility_components.dart';
-import '../widgets/common/state_widget.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../core/injection.dart';
+import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/injection.dart';
 
 /// ✨ MIGRERAD FOTO-OCR VY - Nu med UtilityComponents
 class PhotoImportView extends StatelessWidget {
@@ -31,8 +31,8 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadiusL)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadiusL)),
       ),
       builder: (BuildContext context) {
         return SafeArea(
@@ -41,7 +41,7 @@ class _PhotoImportViewContent extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Välj bildkälla', style: AppTextStyles.headlineSmall),
+                const Text('Välj bildkälla', style: AppTextStyles.headlineSmall),
                 const SizedBox(height: AppDimensions.spacingXl),
 
                 // Kamera-alternativ
@@ -122,8 +122,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
+                  const SizedBox(width: AppDimensions.spacingS),
+                  const Expanded(
                     child: Text(
                       'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt',
                       style: AppTextStyles.bodySmall,
@@ -161,7 +161,7 @@ class _PhotoImportViewContent extends StatelessWidget {
 
             // OCR-resultat
             if (viewModel.hasOcrResult) ...[
-              Text('Tolkad text:', style: AppTextStyles.headlineSmall),
+              const Text('Tolkad text:', style: AppTextStyles.headlineSmall),
               const SizedBox(height: AppDimensions.spacingM),
               Expanded(
                 flex: 2,

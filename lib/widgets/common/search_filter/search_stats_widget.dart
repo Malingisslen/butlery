@@ -1,8 +1,8 @@
 // lib/widgets/common/search_filter/search_stats_widget.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Statistics widget showing search and filter information
 class SearchStatsWidget extends StatelessWidget {
@@ -27,11 +27,11 @@ class SearchStatsWidget extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
-      margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme

@@ -1,8 +1,8 @@
 // lib/widgets/common/social_components/invitation_selectors.dart
 
 import 'package:flutter/material.dart';
-import '../../../models/invitations/invitation_target.dart';
-import '../social/social_facade.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/social/social_facade.dart';
 
 /// Focused module for invitation target selection widgets
 /// 

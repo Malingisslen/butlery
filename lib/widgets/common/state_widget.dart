@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 
 // Import focused components
-import 'state/state_enums.dart';
-import 'state/loading_states.dart';
-import 'state/empty_states.dart';
-import 'state/message_states.dart';
+import 'package:butlery/widgets/common/state/state_enums.dart';
+import 'package:butlery/widgets/common/state/loading_states.dart';
+import 'package:butlery/widgets/common/state/empty_states.dart';
+import 'package:butlery/widgets/common/state/message_states.dart';
 
 // Export enums and legacy classes for backward compatibility
 export 'state/state_enums.dart';

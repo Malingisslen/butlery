@@ -25,16 +25,16 @@
 /// Realtime operations: service.realtime.*
 
 import 'package:flutter/foundation.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../services/permission_service.dart' as perm;
-import '../core/injection.dart';
-import '../core/permissions/permission_mixins.dart';
-import '../core/mixins/error_handling_mixin.dart';
-import '../core/utils/validation_utils.dart';
-import '../core/utils/logging_utils.dart';
-import '../services/unified/types/recipe_types.dart' show RecipeOperationResult;
-import '../models/permissions/resource_permission.dart';
-import '../models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/permission_service.dart' as perm;
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/permissions/permission_mixins.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/utils/logging_utils.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart' show RecipeOperationResult;
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, RecipePermissionMixin, ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();

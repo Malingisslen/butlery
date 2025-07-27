@@ -1,8 +1,8 @@
 // lib/models/friend_request.dart
 
-import '../core/types/app_timestamp.dart';
+import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
-import '../core/mixins/json_serializable_mixin.dart';
+import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 
 
 enum FriendRequestStatus { pending, accepted, rejected, cancelled, expired }

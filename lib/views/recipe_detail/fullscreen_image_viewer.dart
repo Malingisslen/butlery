@@ -1,8 +1,8 @@
 // lib/views/recipe_detail/fullscreen_image_viewer.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../widgets/image/universal_image_manager.dart' as img;
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 
 /// Fullscreen image viewer for recipe images
 ///

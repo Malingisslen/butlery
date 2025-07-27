@@ -1,11 +1,11 @@
 // lib/views/realtime/handlers/recipe_interaction_handler.dart
 
 import 'package:flutter/material.dart';
-import '../../../viewmodels/realtime_menu_viewmodel.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../widgets/common/navigation_components.dart';
-import '../../../theme/app_colors.dart';
-import '../../../core/utils/logger.dart';
+import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/common/navigation_components.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Handler för recipe interactions med kategori-struktur
 class RecipeInteractionHandler {

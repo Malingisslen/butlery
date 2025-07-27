@@ -1,10 +1,10 @@
 // lib/viewmodels/recipe_selection_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import '../models/recipe_unified.dart';
-import '../models/user_profile.dart';
-import '../services/unified/unified_recipe_service.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// ViewModel för receptval och delning med vänner
 class RecipeSelectionViewModel extends ChangeNotifier {

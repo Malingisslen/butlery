@@ -2,14 +2,14 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/user_profile.dart';
-import '../services/user_service.dart';
-import '../services/permission_service.dart';
-import '../services/storage_service.dart';
-import '../services/image_picker_service.dart';
-import '../core/utils/logger.dart';
-import '../core/injection.dart';
-import '../core/mixins/error_handling_mixin.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 
 class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {

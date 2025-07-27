@@ -2,11 +2,11 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/cache/json_cache_helper.dart';
-import '../types/recipe_types.dart';
-import 'service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart';
+import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 
 /// Personal recipe operations module
 /// 

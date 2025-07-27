@@ -1,9 +1,9 @@
 // lib/services/permission/modules/group_permission_engine.dart
 
-import '../../unified/unified_friends_service.dart';
-import '../../../models/permissions/resource_permission.dart';
-import '../../../core/utils/logger.dart';
-import 'auth_permission_engine.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission/modules/auth_permission_engine.dart';
 
 /// Focused module for group permission engine
 /// 

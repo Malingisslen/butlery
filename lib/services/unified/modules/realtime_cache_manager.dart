@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/cache/json_cache_helper.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
 
 /// Focused module for real-time cache management and cleanup
 /// 

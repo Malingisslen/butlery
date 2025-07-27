@@ -1,9 +1,9 @@
 // lib/widgets/social/collaborative/components/collaborative_live_widgets.dart
 
 import 'package:flutter/material.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Live editing indicators and animations for collaborative content
 class CollaborativeLiveWidgets {
@@ -26,7 +26,7 @@ class CollaborativeLiveWidgets {
         return Opacity(
           opacity: opacity,
           child: Container(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingS,
               vertical: AppDimensions.spacingXs,
             ),
@@ -41,7 +41,7 @@ class CollaborativeLiveWidgets {
               mainAxisSize: MainAxisSize.min,
               children: [
                 pulsingDot(indicatorColor),
-                SizedBox(width: AppDimensions.spacingXs),
+                const SizedBox(width: AppDimensions.spacingXs),
                 Text(
                   '$editorName redigerar $editingWhat',
                   style: AppTextStyles.bodySmall.copyWith(

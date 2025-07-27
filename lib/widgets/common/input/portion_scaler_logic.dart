@@ -1,6 +1,6 @@
 // lib/widgets/common/input/portion_scaler_logic.dart
 
-import '../../../utils/text_utils.dart';
+import 'package:butlery/utils/text_utils.dart';
 
 /// Contains the business logic for portion scaling and unit conversion
 class PortionScalerLogic {

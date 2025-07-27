@@ -2,17 +2,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_dimensions.dart';
-import '../models/recipe_unified.dart';
-import '../viewmodels/recipe_form_viewmodel.dart';
-import '../widgets/common/utility_components.dart';
-import '../widgets/common/state_widget.dart';
-import '../widgets/image/universal_image_manager.dart';
-import '../core/validators/form_validators.dart';
-import '../core/injection.dart';
-import '../services/permission_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/image/universal_image_manager.dart';
+import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/permission_service.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -78,7 +78,7 @@ class _SkrivSjalvReceptViewContentState
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
               child: Text(
                 'Lägg till bild',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -200,7 +200,7 @@ class _SkrivSjalvReceptViewContentState
             child: Form(
               key: _formKey,
               child: ListView(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                   bottom: AppDimensions.spacingXxl + AppDimensions.spacingL,
                 ),
                 children: [
@@ -230,7 +230,7 @@ class _SkrivSjalvReceptViewContentState
                         viewModel.setPrimaryImage(viewModel.imageUrls[index]);
                       }
                     },
-                    userId: sl<PermissionService>().currentUserId ?? "",
+                    userId: sl<PermissionService>().currentUserId ?? '',
                     onPickImage: () => _pickImage(viewModel),
                     maxImages: 5,
                   ),
@@ -342,7 +342,7 @@ class _SkrivSjalvReceptViewContentState
                       helperText: viewModel.sourceUrl == 'Delad från annan app'
                           ? 'Importerat från delning'
                           : 'Länk till originalreceptet',
-                      prefixIcon: Icon(
+                      prefixIcon: const Icon(
                         Icons.link,
                         size: AppDimensions.iconSizeAction,
                       ),
@@ -405,7 +405,7 @@ class _SkrivSjalvReceptViewContentState
           final controller = entry.value;
 
           return Padding(
-            padding: EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
             child: Row(
               children: [
                 Expanded(

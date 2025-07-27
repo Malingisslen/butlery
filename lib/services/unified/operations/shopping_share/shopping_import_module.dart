@@ -1,8 +1,8 @@
 // lib/services/unified/operations/shopping_share/shopping_import_module.dart
 
-import '../../../../models/unified/unified_shopping_item.dart';
-import '../../../../core/utils/logger.dart';
-import 'shared/shopping_share_utils.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shared/shopping_share_utils.dart';
 
 /// Shopping list import module
 /// 

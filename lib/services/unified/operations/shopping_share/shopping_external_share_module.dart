@@ -2,12 +2,12 @@
 
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../models/unified/unified_shopping_list.dart';
-import '../../../../core/utils/logger.dart';
-import '../../../../services/permission_service.dart';
-import '../../../../core/injection.dart';
-import 'shopping_export_module.dart';
-import 'shared/shopping_share_utils.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shopping_export_module.dart';
+import 'package:butlery/services/unified/operations/shopping_share/shared/shopping_share_utils.dart';
 
 /// Shopping list external sharing module
 /// 

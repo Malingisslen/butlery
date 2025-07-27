@@ -1,6 +1,6 @@
 // lib/models/recipe/recipe_operations.dart
 
-import '../recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for recipe content operations
 /// 

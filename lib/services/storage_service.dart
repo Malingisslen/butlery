@@ -6,9 +6,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
-import '../core/utils/logger.dart';
-import '../core/base/base_service.dart';
-import '../core/mixins/firebase_service_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 
 /// Service för att hantera bilduppladdning till Firebase Storage
 /// Med förbättrad komprimering och progress tracking
@@ -275,7 +275,7 @@ class StorageService extends BaseService with FirebaseServiceMixin {
     Function(double)? onProgress,
   }) async {
     // Use current user ID or fallback logic
-    final userId = 'current_user'; // This should be replaced with actual user ID logic
+    const userId = 'current_user'; // This should be replaced with actual user ID logic
     return await uploadImageFile(imageFile, userId, onProgress: onProgress);
   }
 

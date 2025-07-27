@@ -1,11 +1,11 @@
 // lib/viewmodels/add_members_to_group_viewmodel.dart - KOMPLETT med debug-prints
 
 import 'package:flutter/foundation.dart';
-import '../models/friend_category.dart';
-import '../models/user_profile.dart';
-import '../models/group_invitation.dart';
-import '../services/unified/unified_friends_service.dart';
-import '../core/utils/logger.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 
 class AddMembersToGroupViewModel extends ChangeNotifier {

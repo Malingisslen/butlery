@@ -1,10 +1,10 @@
 // lib/widgets/common/social_components/social_collaborative_components.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../models/recipe_unified.dart';
-import '../../../viewmodels/recipe_form_viewmodel.dart';
-import '../social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/social/social_facade.dart';
 
 /// Social collaborative indicators and status components
 /// 
@@ -168,9 +168,9 @@ class SocialCollaborativeComponents {
         children: [
           const Icon(Icons.people, size: 16),
           const SizedBox(width: 4),
-          Text(
+          const Text(
             'Deltagare',
-            style: const TextStyle(fontSize: 12),
+            style: TextStyle(fontSize: 12),
           ),
           if (onViewAll != null)
             TextButton(
@@ -443,31 +443,31 @@ class SocialCollaborativeComponents {
   static _PermissionConfig _getPermissionConfig(String permissionLevel) {
     switch (permissionLevel.toLowerCase()) {
       case 'owner':
-        return _PermissionConfig(
+        return const _PermissionConfig(
           icon: Icons.star,
           label: 'Ägare',
           color: Colors.amber,
         );
       case 'admin':
-        return _PermissionConfig(
+        return const _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: 'Admin',
           color: Colors.red,
         );
       case 'editor':
-        return _PermissionConfig(
+        return const _PermissionConfig(
           icon: Icons.edit,
           label: 'Redigera',
           color: Colors.blue,
         );
       case 'viewer':
-        return _PermissionConfig(
+        return const _PermissionConfig(
           icon: Icons.visibility,
           label: 'Läsa',
           color: Colors.grey,
         );
       default:
-        return _PermissionConfig(
+        return const _PermissionConfig(
           icon: Icons.help_outline,
           label: 'Okänd',
           color: Colors.grey,

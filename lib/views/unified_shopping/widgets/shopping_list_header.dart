@@ -1,10 +1,10 @@
 // lib/views/unified_shopping/widgets/shopping_list_header.dart
 
 import 'package:flutter/material.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 
 /// Header section with list selector and actions
 class ShoppingListHeader {
@@ -60,7 +60,7 @@ class ShoppingListHeader {
           value: viewModel.activeList?.id,
           hint: const Text('Välj lista'),
           isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down, color: AppColors.neutralMedium),
+          icon: const Icon(Icons.arrow_drop_down, color: AppColors.neutralMedium),
           onChanged: (listId) {
             if (listId != null) {
               viewModel.setActiveList(listId);
@@ -101,7 +101,7 @@ class ShoppingListHeader {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 side: BorderSide(color: AppColors.warning.withValues(alpha: 0.5)),
               ),
-              icon: Icon(Icons.clear, size: 16, color: AppColors.warning),
+              icon: const Icon(Icons.clear, size: 16, color: AppColors.warning),
               label: Text(
                 'Rensa (${viewModel.boughtItems})',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -124,7 +124,7 @@ class ShoppingListHeader {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 side: BorderSide(color: AppColors.primaryBlue.withValues(alpha: 0.5)),
               ),
-              icon: Icon(Icons.check_box_outline_blank, size: 16, color: AppColors.primaryBlue),
+              icon: const Icon(Icons.check_box_outline_blank, size: 16, color: AppColors.primaryBlue),
               label: Text(
                 'Avbocka alla',
                 style: AppTextStyles.bodySmall.copyWith(

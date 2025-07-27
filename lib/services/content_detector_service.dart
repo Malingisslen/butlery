@@ -1,8 +1,8 @@
 // lib/services/content_detector_service.dart
 
 import 'package:flutter/material.dart';
-import '../core/base/base_service.dart';
-import '../core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Typ av innehåll som detekterats
 enum ContentType {

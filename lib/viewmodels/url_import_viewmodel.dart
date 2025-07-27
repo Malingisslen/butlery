@@ -1,7 +1,7 @@
 // lib/viewmodels/url_import_viewmodel.dart
 
 import 'package:http/http.dart' as http;
-import 'import_base_viewmodel.dart';
+import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 
 /// ViewModel för URL-baserad receptimport
 /// Refactored to use ImportBaseViewModel with UrlImportMixin for consistency

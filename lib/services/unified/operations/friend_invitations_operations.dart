@@ -15,9 +15,9 @@
 /// Connected to: UnifiedFriendsService, Group invitation ViewModels
 /// Used in phases: Phase 5 - Service Consolidation
 
-import '../../../models/user_profile.dart';
-import '../../../core/utils/logger.dart';
-import 'friends_operations.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/operations/friends_operations.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Friend invitations operations feature interface
@@ -186,7 +186,7 @@ class FriendInvitationsOperations {
 
       // Small delay to avoid overwhelming the server
       if (i < userIds.length - 1) {
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 100));
       }
     }
 
@@ -232,7 +232,7 @@ class FriendInvitationsOperations {
 
       // Small delay between operations
       if (i < requestIds.length - 1) {
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 100));
       }
     }
 
@@ -290,7 +290,7 @@ class FriendInvitationsOperations {
       final userId = _parent.currentUserId;
       if (userId == null) return null;
 
-      final baseUrl = 'https://butlery.app/invite';
+      const baseUrl = 'https://butlery.app/invite';
       final params = <String, String>{
         'user': userId,
       };

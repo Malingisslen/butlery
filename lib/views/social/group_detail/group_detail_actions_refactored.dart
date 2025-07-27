@@ -1,14 +1,14 @@
 // lib/views/social/group_detail/group_detail_actions_refactored.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/base/base_action_handler.dart';
-import '../../../models/friend_category.dart';
-import '../../../models/user_profile.dart';
-import '../../../services/unified/unified_friends_service.dart';
-import '../../../services/user_service.dart';
-import '../../../core/injection.dart';
-import '../../../theme/app_dimensions.dart';
-import '../add_members_to_group_view.dart';
+import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/social/add_members_to_group_view.dart';
 
 /// Refactored GroupDetailActions using BaseActionHandler
 /// 
@@ -225,7 +225,7 @@ class GroupDetailActionsRefactored extends BaseActionHandler with ActionStateMix
     }
 
     // Privacy concept removed - FriendCategory doesn't have privacy settings
-    final newPrivacySetting = true; // Placeholder for privacy toggle
+    const newPrivacySetting = true; // Placeholder for privacy toggle
     
     return await executeWithConfirmation<bool>(
       context: context,

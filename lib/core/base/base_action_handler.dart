@@ -1,9 +1,9 @@
 // lib/core/base/base_action_handler.dart
 
 import 'package:flutter/material.dart';
-import '../utils/logger.dart';
-import '../utils/common_dialog_actions.dart';
-import '../../theme/app_colors.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// BaseActionHandler - Abstract base class for standardized action patterns
 /// 

@@ -15,7 +15,7 @@
 /// Connected to: Import ViewModels, PersonalRecipeOperations
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
-import '../../models/recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Base interface for recipe import strategies
 /// 
