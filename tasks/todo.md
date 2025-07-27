@@ -230,47 +230,25 @@
 
 4. ✅ Updated `/lib/core/injection.dart` to register all new repositories
 
-#### [ ] **Enforce Architecture with Tooling** (4 hours)
-**Implementation Steps**:
-1. Create custom lint rules in `/analysis_options.yaml`:
-   ```yaml
-   analyzer:
-     exclude:
-       - lib/repositories/**
-     errors:
-       invalid_use_of_visible_for_testing_member: error
-   
-   linter:
-     rules:
-       - always_use_package_imports
-       - avoid_relative_imports_for_files_in_lib
-   ```
+#### [~] **Enforce Architecture with Tooling** (4 hours) ⚠️ PARTIALLY COMPLETED
+**Status**: 60% Complete
+**Completed**:
+- ✅ Architecture test exists in `/test/architecture/architecture_test.dart`
+- ✅ Comprehensive validation tool in `/tools/validate_architecture.dart`
+- ✅ Basic lint rules in `/analysis_options.yaml`
 
-2. Create architecture test in `/test/architecture/architecture_test.dart`:
-   ```dart
-   void main() {
-     test('Services should not import Firebase directly', () {
-       final serviceFiles = Directory('lib/services')
-           .listSync(recursive: true)
-           .whereType<File>()
-           .where((f) => f.path.endsWith('.dart'));
-       
-       for (final file in serviceFiles) {
-         final content = file.readAsStringSync();
-         expect(content, isNot(contains('import \'package:cloud_firestore/cloud_firestore.dart\'')));
-       }
-     });
-   }
-   ```
-
-3. Add pre-commit hook in `.git/hooks/pre-commit`:
+**Remaining**:
+1. [ ] Add pre-commit hook in `.git/hooks/pre-commit`:
    ```bash
    #!/bin/bash
    flutter analyze
    flutter test test/architecture/architecture_test.dart
+   dart run tools/validate_architecture.dart
    ```
 
-4. Update CI/CD pipeline to run architecture tests
+2. [ ] Update CI/CD pipeline to run architecture tests
+3. [ ] Add more specific Firebase exclusion rules to analysis_options.yaml
+4. [ ] Configure architecture violations to fail builds
 
 ---
 
