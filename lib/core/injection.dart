@@ -242,6 +242,7 @@ Future<void> initializeDependencies() async {
 
     // ==================== UNIFIED RECIPE SYSTEM (PHASE 5) ====================
     sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
+      firestore: sl<FirebaseFirestore>(),
       authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
     ));
     if (kDebugMode) {
