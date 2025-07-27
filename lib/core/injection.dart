@@ -140,12 +140,6 @@ Future<void> initializeDependencies() async {
       debugPrint('✅ PersistenceService registrerad');
     }
 
-    sl.registerSingleton<ConnectivityMonitoringService>(
-        ConnectivityMonitoringService(
-            connectivityRepository: sl<ConnectivityRepository>()));
-    if (kDebugMode) {
-      debugPrint('✅ ConnectivityMonitoringService registrerad');
-    }
 
     // ==================== REPOSITORIES ====================
     sl.registerSingleton<FirestoreRepository>(FirestoreRepository());
@@ -229,6 +223,14 @@ Future<void> initializeDependencies() async {
     
     if (kDebugMode) {
       debugPrint('✅ Additional repositories registrerade');
+    }
+
+    // ==================== CONNECTIVITY SERVICE ====================
+    sl.registerSingleton<ConnectivityMonitoringService>(
+        ConnectivityMonitoringService(
+            connectivityRepository: sl<ConnectivityRepository>()));
+    if (kDebugMode) {
+      debugPrint('✅ ConnectivityMonitoringService registrerad');
     }
 
     // ==================== INVITATION SERVICES (FAS 2) ====================
