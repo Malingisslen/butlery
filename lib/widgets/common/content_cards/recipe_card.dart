@@ -48,12 +48,12 @@ class RecipeCard extends StatelessWidget {
       margin: margin ?? EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: Material(
         elevation: 1, // Very subtle shadow
-        borderRadius: BorderRadius.circular(10), // 8-12px subtle rounding
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius10), // 8-12px subtle rounding
         color: Colors.white, // Pure white background
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
           child: _buildContent(context),
         ),
       ),
@@ -218,7 +218,7 @@ class RecipeCard extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue, // Solid blue background
-              borderRadius: BorderRadius.circular(20), // Fully rounded pill
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20), // Fully rounded pill
             ),
             child: Text(
               recipe.mealType,
@@ -326,7 +326,7 @@ class RecipeCard extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.backgroundBeige, // Same as scaffold background
-                  borderRadius: BorderRadius.circular(12), // Pill shape
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadius12), // Pill shape
                 ),
                 child: Text(
                   tag,

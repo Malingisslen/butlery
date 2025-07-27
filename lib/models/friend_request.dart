@@ -1,6 +1,6 @@
 // lib/models/friend_request.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 import '../core/mixins/json_serializable_mixin.dart';
 
@@ -114,27 +114,25 @@ class FriendRequest with JsonSerializableMixin {
       'fromUserId': fromUserId,
       'toUserId': toUserId,
       'status': status.name,
-      'sentAt': Timestamp.fromDate(sentAt),
+      'sentAt': AppTimestamp.fromDateTime(sentAt).toFirestore(),
       'respondedAt':
-          respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
+          respondedAt != null ? AppTimestamp.fromDateTime(respondedAt!).toFirestore() : null,
       'message': message,
     };
   }
 
-  /// Create from Firestore document
-  factory FriendRequest.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Create from repository data
+  factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
     return FriendRequest(
-      id: doc.id,
+      id: id,
       fromUserId: data['fromUserId'] as String,
       toUserId: data['toUserId'] as String,
       status: FriendRequestStatus.values.firstWhere(
         (s) => s.name == data['status'],
         orElse: () => FriendRequestStatus.pending,
       ),
-      sentAt: (data['sentAt'] as Timestamp).toDate(),
-      respondedAt: (data['respondedAt'] as Timestamp?)?.toDate(),
+      sentAt: _parseTimestamp(data['sentAt']) ?? DateTime.now(),
+      respondedAt: _parseTimestamp(data['respondedAt']),
       message: data['message'] as String?,
     );
   }
@@ -171,8 +169,46 @@ class FriendRequest with JsonSerializableMixin {
   /// Helper method for deserializing DateTime from JSON
   static DateTime? _deserializeDateTime(dynamic value) {
     if (value is String) return DateTime.parse(value);
-    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is Map) {
+      // Handle raw timestamp data from Firestore
+      final seconds = value['seconds'] as int?;
+      final nanoseconds = value['nanoseconds'] as int? ?? 0;
+      if (seconds != null) {
+        return DateTime.fromMillisecondsSinceEpoch(
+            seconds * 1000 + nanoseconds ~/ 1000000);
+      }
+    }
     return null;
+  }
+
+  /// Helper method for parsing timestamps from repository data
+  static DateTime? _parseTimestamp(dynamic timestamp) {
+    if (timestamp == null) return null;
+
+    try {
+      if (timestamp is DateTime) {
+        return timestamp;
+      } else if (timestamp is Map) {
+        // Handle raw timestamp data from Firestore
+        final seconds = timestamp['seconds'] as int?;
+        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
+        if (seconds != null) {
+          return DateTime.fromMillisecondsSinceEpoch(
+              seconds * 1000 + nanoseconds ~/ 1000000);
+        }
+      } else if (timestamp is int) {
+        // Handle milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(timestamp);
+      } else if (timestamp is String) {
+        // Handle ISO string format
+        return DateTime.parse(timestamp);
+      }
+
+      return DateTime.now();
+    } catch (e) {
+      return DateTime.now();
+    }
   }
 
   @override

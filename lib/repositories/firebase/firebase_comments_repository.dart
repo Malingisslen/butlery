@@ -19,7 +19,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   RecipeComment fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-      RecipeComment.fromFirestore(doc);
+      RecipeComment.fromMap(doc.id, doc.data()!);
 
   @override
   Map<String, dynamic> toFirestore(RecipeComment entity) => entity.toFirestore();

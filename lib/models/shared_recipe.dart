@@ -1,6 +1,6 @@
 // lib/models/shared_recipe.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/types/app_timestamp.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart'; // För debugPrint
@@ -249,7 +249,7 @@ class SharedRecipe {
       'sharedByUserId': sharedByUserId,
       'sharedByDisplayName': sharedByDisplayName,
       'sharedToUserIds': sharedToUserIds,
-      'sharedAt': Timestamp.fromDate(sharedAt),
+      'sharedAt': AppTimestamp.fromDateTime(sharedAt).toFirestore(),
       'shareMessage': shareMessage,
       'scope': scope.name,
       'allowImport': allowImport,
@@ -263,12 +263,10 @@ class SharedRecipe {
     };
   }
 
-  /// 🔧 FIXED: Create from Firestore document - No more type cast errors!
-  factory SharedRecipe.fromFirestore(dynamic doc) {
+  /// 🔧 FIXED: Create from repository data - No more type cast errors!
+  factory SharedRecipe.fromMap(String id, Map<String, dynamic> data) {
     try {
-      final data = doc.data() as Map<String, dynamic>;
-
-      debugPrint('🔍 Parsing SharedRecipe från doc ID: ${doc.id}');
+      debugPrint('🔍 Parsing SharedRecipe från doc ID: $id');
 
       // 🔧 FIXED: Hantera recipe snapshot utan type cast
       final recipeData = data['recipeSnapshot'] as Map<String, dynamic>;
@@ -296,7 +294,7 @@ class SharedRecipe {
       );
 
       return SharedRecipe(
-        id: doc.id,
+        id: id,
         originalRecipeId: data['originalRecipeId'] as String? ?? '',
         sharedByUserId: data['sharedByUserId'] as String? ?? '',
         sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
@@ -318,7 +316,7 @@ class SharedRecipe {
         recipeSnapshot: recipe,
       );
     } catch (e, stackTrace) {
-      debugPrint('❌ Error parsing SharedRecipe från doc ${doc.id}: $e');
+      debugPrint('❌ Error parsing SharedRecipe från doc $id: $e');
       debugPrint('❌ Stack trace: $stackTrace');
       rethrow;
     }
@@ -329,25 +327,22 @@ class SharedRecipe {
     if (timestamp == null) return null;
 
     try {
-      if (timestamp is Timestamp) {
-        return timestamp.toDate();
-      } else if (timestamp is DateTime) {
+      if (timestamp is DateTime) {
         return timestamp;
-      } else if (timestamp.toString().contains('Timestamp')) {
-        // Handle mock timestamps från debug output
-        final timestampObj = timestamp as dynamic;
-        final seconds = timestampObj.seconds as int;
-        final nanoseconds = timestampObj.nanoseconds as int? ?? 0;
-        return DateTime.fromMillisecondsSinceEpoch(
-            seconds * 1000 + nanoseconds ~/ 1000000);
       } else if (timestamp is Map) {
-        // Handle raw timestamp data
+        // Handle raw timestamp data from Firestore
         final seconds = timestamp['seconds'] as int?;
         final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
         if (seconds != null) {
           return DateTime.fromMillisecondsSinceEpoch(
               seconds * 1000 + nanoseconds ~/ 1000000);
         }
+      } else if (timestamp is int) {
+        // Handle milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(timestamp);
+      } else if (timestamp is String) {
+        // Handle ISO string format
+        return DateTime.parse(timestamp);
       }
 
       debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');

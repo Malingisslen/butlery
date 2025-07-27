@@ -466,11 +466,10 @@ class UnifiedShoppingList {
     );
   }
 
-  factory UnifiedShoppingList.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Create from repository data map (removes Firebase dependency)
+  factory UnifiedShoppingList.fromMap(String id, Map<String, dynamic> data) {
     return UnifiedShoppingList(
-      id: doc.id,
+      id: id,
       name: data['name'] as String,
       ownerId: data['ownerId'] as String,
       ownerDisplayName: data['ownerDisplayName'] as String,
@@ -479,9 +478,15 @@ class UnifiedShoppingList {
                   UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [],
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastSyncedAt: (data['lastSyncedAt'] as Timestamp?)?.toDate(),
+      createdAt: data['createdAt'] is DateTime 
+          ? data['createdAt'] as DateTime
+          : (data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now()),
+      updatedAt: data['updatedAt'] is DateTime 
+          ? data['updatedAt'] as DateTime
+          : (data['updatedAt'] != null ? (data['updatedAt'] as Timestamp).toDate() : DateTime.now()),
+      lastSyncedAt: data['lastSyncedAt'] is DateTime 
+          ? data['lastSyncedAt'] as DateTime
+          : (data['lastSyncedAt'] != null ? (data['lastSyncedAt'] as Timestamp).toDate() : null),
       syncStatus: SyncStatus.synced, // From Firebase = synced
       type: ListType.values.firstWhere(
         (t) => t.name == data['type'],
@@ -495,7 +500,9 @@ class UnifiedShoppingList {
                     orElse: () => SharedListPermission.view,
                   ))) ??
           {},
-      lastActivityAt: (data['lastActivityAt'] as Timestamp?)?.toDate(),
+      lastActivityAt: data['lastActivityAt'] is DateTime 
+          ? data['lastActivityAt'] as DateTime
+          : (data['lastActivityAt'] != null ? (data['lastActivityAt'] as Timestamp).toDate() : null),
       lastActivityByUserId: data['lastActivityByUserId'] as String?,
       lastActivityByDisplayName: data['lastActivityByDisplayName'] as String?,
       description: data['description'] as String?,
@@ -504,6 +511,10 @@ class UnifiedShoppingList {
       allowGuestEditing: data['allowGuestEditing'] as bool? ?? true,
       autoRemoveCompleted: data['autoRemoveCompleted'] as bool? ?? false,
     );
+  }
+
+  factory UnifiedShoppingList.fromFirestore(DocumentSnapshot doc) {
+    return UnifiedShoppingList.fromMap(doc.id, doc.data() as Map<String, dynamic>);
   }
 
   @override

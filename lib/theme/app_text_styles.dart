@@ -126,6 +126,12 @@ class AppTextStyles {
 
   /// Button text style
   static const TextStyle buttonText = labelLarge;
+  
+  /// Label text style for form fields
+  static const TextStyle labelText = labelMedium;
+  
+  /// Caption text style for helper text
+  static const TextStyle captionText = labelSmall;
 
   /// Primary button text style
   static const TextStyle buttonPrimary = labelLarge;

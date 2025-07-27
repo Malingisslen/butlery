@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../theme/app_dimensions.dart';
 
 /// Comprehensive scaffold templates that eliminate duplicate scaffold patterns
 /// found across 30+ view files in the codebase.
@@ -184,7 +185,7 @@ class ErrorScaffold extends StatelessWidget {
       actions: actions,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(AppDimensions.spacing16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -244,7 +245,7 @@ class EmptyStateScaffold extends StatelessWidget {
       actions: actions,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(AppDimensions.spacing16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -371,7 +372,7 @@ class FormScaffold extends StatelessWidget {
                 child: const Text(AppStrings.cancel),
               ),
             ),
-            if (showSaveButton) const SizedBox(width: 16),
+            if (showSaveButton) SizedBox(width: AppDimensions.spacing16),
           ],
           if (showSaveButton) ...[
             Expanded(

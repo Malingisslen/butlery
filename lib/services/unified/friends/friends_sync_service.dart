@@ -238,12 +238,12 @@ class FriendsSyncService extends ChangeNotifier with FirebaseSyncMixin<UserProfi
   // ===== SYNC CALLBACKS =====
   
   void _onFriendAdded(DocumentSnapshot doc) {
-    final friend = UserProfile.fromFirestore(doc);
+    final friend = UserProfile.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
     onFriendAdded?.call(friend);
   }
   
   void _onFriendModified(DocumentSnapshot doc) {
-    final friend = UserProfile.fromFirestore(doc);
+    final friend = UserProfile.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
     onFriendModified?.call(friend);
   }
   
@@ -252,12 +252,12 @@ class FriendsSyncService extends ChangeNotifier with FirebaseSyncMixin<UserProfi
   }
   
   void _onFriendRequestAdded(DocumentSnapshot doc) {
-    final request = FriendRequest.fromFirestore(doc);
+    final request = FriendRequest.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
     onFriendRequestAdded?.call(request);
   }
   
   void _onFriendRequestModified(DocumentSnapshot doc) {
-    final request = FriendRequest.fromFirestore(doc);
+    final request = FriendRequest.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
     onFriendRequestModified?.call(request);
   }
   
@@ -266,12 +266,12 @@ class FriendsSyncService extends ChangeNotifier with FirebaseSyncMixin<UserProfi
   }
   
   void _onCategoryAdded(DocumentSnapshot doc) {
-    final category = FriendCategory.fromFirestore(doc);
+    final category = FriendCategory.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
     onCategoryAdded?.call(category);
   }
   
   void _onCategoryModified(DocumentSnapshot doc) {
-    final category = FriendCategory.fromFirestore(doc);
+    final category = FriendCategory.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
     onCategoryModified?.call(category);
   }
   

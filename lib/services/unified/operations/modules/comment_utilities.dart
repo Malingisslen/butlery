@@ -142,7 +142,7 @@ class CommentUtilities {
       
       if (!doc.exists) return 0;
       
-      final comment = RecipeComment.fromFirestore(doc);
+      final comment = RecipeComment.fromMap(doc.id, doc.data() as Map<String, dynamic>);
       return comment.replyCount;
     } catch (e) {
       AppLogger.error('❌ Failed to get reply count', e);
@@ -164,7 +164,7 @@ class CommentUtilities {
           .get();
 
       final comments = snapshot.docs
-          .map((doc) => RecipeComment.fromFirestore(doc))
+          .map((doc) => RecipeComment.fromMap(doc.id, doc.data()))
           .toList();
 
       final totalComments = comments.length;
@@ -211,7 +211,7 @@ class CommentUtilities {
       final activities = <Map<String, dynamic>>[];
 
       for (final doc in snapshot.docs) {
-        final comment = RecipeComment.fromFirestore(doc);
+        final comment = RecipeComment.fromMap(doc.id, doc.data());
         
         activities.add({
           'type': 'comment_created',
@@ -269,7 +269,7 @@ class CommentUtilities {
           .get();
 
       final comments = snapshot.docs
-          .map((doc) => RecipeComment.fromFirestore(doc))
+          .map((doc) => RecipeComment.fromMap(doc.id, doc.data()))
           .toList();
 
       // Count comments by author

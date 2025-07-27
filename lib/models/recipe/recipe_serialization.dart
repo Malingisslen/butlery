@@ -57,11 +57,10 @@ class RecipeSerialization {
     };
   }
 
-  /// Deserialize recipe from Firestore document
-  static Recipe fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  /// Deserialize recipe from repository data map (removes Firebase dependency)
+  static Recipe fromMap(String id, Map<String, dynamic> data) {
     return Recipe(
-      core: RecipeCore.fromFirestore(doc),
+      core: RecipeCore.fromMap(id, data),
       type: RecipeType.values[data['type'] as int? ?? 0],
       socialData: data['socialData'] != null 
           ? RecipeSocialData.fromJson(data['socialData'] as Map<String, dynamic>)
@@ -70,6 +69,11 @@ class RecipeSerialization {
           ? RecipeRealtimeData.fromJson(data['realtimeData'] as Map<String, dynamic>)
           : null,
     );
+  }
+
+  /// Deserialize recipe from Firestore document
+  static Recipe fromFirestore(DocumentSnapshot doc) {
+    return fromMap(doc.id, doc.data() as Map<String, dynamic>);
   }
 
   // ===== BATCH SERIALIZATION =====

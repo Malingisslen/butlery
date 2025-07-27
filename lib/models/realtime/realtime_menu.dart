@@ -1,5 +1,6 @@
 // lib/models/realtime/realtime_menu.dart
 
+// TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../recipe_unified.dart';
 import '../permissions/resource_permission.dart';
@@ -648,6 +649,30 @@ class RealtimeMenu extends RealtimeResource {
     final json = toJsonMetadata();
     json.addAll(_data.toJson());
     return json;
+  }
+
+  /// Create from repository data map (removes Firebase dependency)
+  static RealtimeMenu fromMap(String id, Map<String, dynamic> data) {
+    // Parse directly without mock DocumentSnapshot
+    final params = RealtimeMenuFactory.parseJsonData({
+      'id': id,
+      ...data,
+    });
+
+    return RealtimeMenu(
+      id: params['id'] as String,
+      ownerId: params['ownerId'] as String,
+      ownerDisplayName: params['ownerDisplayName'] as String,
+      participants: params['participants'] as Map<String, ResourcePermission>,
+      createdAt: params['createdAt'] as DateTime,
+      lastEditedAt: params['lastEditedAt'] as DateTime,
+      lastEditedBy: params['lastEditedBy'] as String,
+      lastEditedByDisplayName: params['lastEditedByDisplayName'] as String,
+      editCount: params['editCount'] as int,
+      isActive: params['isActive'] as bool,
+      metadata: params['metadata'] as Map<String, dynamic>,
+      data: params['data'] as RealtimeMenuData,
+    );
   }
 
   @override

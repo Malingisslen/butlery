@@ -8,6 +8,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
 import '../widgets/common/state_widget.dart';
+import '../widgets/branding/app_logo.dart';
+import '../widgets/styled/styled_widgets.dart';
 import '../core/validators/form_validators.dart';
 
 /// AuthView hanterar login och registrering
@@ -84,37 +86,9 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        // App-ikon (kan ersättas med logotyp senare)
-        Container(
-          width: AppDimensions.imageSizeLarge,
-          height: AppDimensions.imageSizeLarge,
-          decoration: BoxDecoration(
-            color: AppColors.primaryBlue,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          child: Icon(
-            Icons.restaurant_menu,
-            size: AppDimensions.iconSizeXl,
-            color: AppColors.neutralLight,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingXl),
-
-        // App-namn
-        Text(
-          'Butlery',
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-
-        // Välkomsttext
-        Text(
-          'Smart recepthantering för din vardag',
-          style: AppTextStyles.titleMedium,
-          textAlign: TextAlign.center,
+        // App branding with logo and name
+        const AppBranding.auth(
+          tagline: 'Smart recepthantering för din vardag',
         ),
       ],
     );
@@ -202,19 +176,13 @@ class _AuthViewState extends State<AuthView> {
 
   /// Email-fält
   Widget _buildEmailField(AuthViewModel viewModel) {
-    return TextFormField(
+    return StyledInput.email(
       controller: _emailController,
       focusNode: _emailFocus,
-      keyboardType: TextInputType.emailAddress,
-      textInputAction: TextInputAction.next,
-      enabled: !viewModel.isLoading,
-      decoration: InputDecoration(
-        labelText: 'Email',
-        hintText: 'din.email@exempel.se',
-        prefixIcon: Icon(Icons.email_outlined, size: AppDimensions.iconSizeAction),
-      ),
+      label: 'Email',
+      hint: 'din.email@exempel.se',
       validator: FormValidators.authEmail(),
-      onFieldSubmitted: (_) {
+      onChanged: (_) {
         FocusScope.of(context).requestFocus(_passwordFocus);
       },
     );
@@ -222,29 +190,24 @@ class _AuthViewState extends State<AuthView> {
 
   /// Lösenords-fält
   Widget _buildPasswordField(AuthViewModel viewModel) {
-    return TextFormField(
+    return StyledInput.password(
       controller: _passwordController,
       focusNode: _passwordFocus,
+      label: 'Lösenord',
+      hint: viewModel.isLoginMode ? 'Ange ditt lösenord' : 'Minst 6 tecken',
       obscureText: !viewModel.isPasswordVisible,
-      textInputAction: TextInputAction.done,
       enabled: !viewModel.isLoading,
-      decoration: InputDecoration(
-        labelText: 'Lösenord',
-        hintText:
-            viewModel.isLoginMode ? 'Ange ditt lösenord' : 'Minst 6 tecken',
-        prefixIcon: Icon(Icons.lock_outline, size: AppDimensions.iconSizeAction),
-        suffixIcon: IconButton(
-          icon: Icon(
-            viewModel.isPasswordVisible
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            size: AppDimensions.iconSizeAction,
-          ),
-          onPressed: viewModel.togglePasswordVisibility,
-        ),
-      ),
       validator: FormValidators.authPassword(isSignUp: !viewModel.isLoginMode),
-      onFieldSubmitted: (_) => _handleSubmit(viewModel),
+      suffixIcon: IconButton(
+        icon: Icon(
+          viewModel.isPasswordVisible
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          size: AppDimensions.iconSizeAction,
+        ),
+        onPressed: viewModel.togglePasswordVisibility,
+      ),
+      onChanged: (_) => _handleSubmit(viewModel),
     );
   }
 

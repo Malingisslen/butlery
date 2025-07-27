@@ -48,7 +48,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-      UserProfile.fromFirestore(doc);
+      UserProfile.fromMap(doc.id, doc.data() ?? {});
 
   @override
   Map<String, dynamic> toFirestore(UserProfile entity) => entity.toFirestore();
@@ -115,7 +115,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<FriendRequest?> fetchRequest(String requestId) async {
     final doc = await _friendRequestsRef.doc(requestId).get();
     if (!doc.exists) return null;
-    return FriendRequest.fromFirestore(doc);
+    return FriendRequest.fromMap(doc.id, doc.data() ?? {});
   }
 
   /// Check if a pending request already exists between two users.
@@ -201,7 +201,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
           .where('toUserId', isEqualTo: uid)
           .where('status', isEqualTo: FriendRequestStatus.pending.name)
           .get();
-      return snap.docs.map(FriendRequest.fromFirestore).toList();
+      return snap.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList();
     } catch (e) {
       return [];
     }
@@ -215,7 +215,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
           .where('fromUserId', isEqualTo: uid)
           .where('status', isEqualTo: FriendRequestStatus.pending.name)
           .get();
-      return snap.docs.map(FriendRequest.fromFirestore).toList();
+      return snap.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList();
     } catch (e) {
       return [];
     }
@@ -232,7 +232,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       final query =
           await collection.where(FieldPath.documentId, whereIn: batch).get();
       for (final doc in query.docs) {
-        profiles.add(UserProfile.fromFirestore(doc));
+        profiles.add(UserProfile.fromMap(doc.id, doc.data()));
       }
     }
     return profiles;
@@ -245,7 +245,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map(FriendRequest.fromFirestore).toList());
+            snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
   }
 
   /// Stream sent friend requests for the current user.
@@ -255,7 +255,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map(FriendRequest.fromFirestore).toList());
+            snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
   }
 
   // ===== Category methods =====
@@ -279,7 +279,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   @override
   Future<List<FriendCategory>> fetchCategories(String userId) async {
     final snap = await _categoriesRef(userId).get();
-    return snap.docs.map(FriendCategory.fromFirestore).toList();
+    return snap.docs.map((doc) => FriendCategory.fromMap(doc.id, doc.data())).toList();
   }
 
   @override
@@ -300,7 +300,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<FriendCategory?> getCategory(String userId, String categoryId) async {
     final doc = await _categoriesRef(userId).doc(categoryId).get();
     if (!doc.exists) return null;
-    return FriendCategory.fromFirestore(doc);
+    return FriendCategory.fromMap(doc.id, doc.data() ?? {});
   }
 
   // ===== Invitation methods =====
@@ -311,7 +311,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         .where('toUserId', isEqualTo: userId)
         .orderBy('sentAt', descending: true)
         .snapshots()
-        .map((s) => s.docs.map(GroupInvitation.fromFirestore).toList());
+        .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
   }
 
   @override
@@ -320,14 +320,14 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         .where('fromUserId', isEqualTo: userId)
         .orderBy('sentAt', descending: true)
         .snapshots()
-        .map((s) => s.docs.map(GroupInvitation.fromFirestore).toList());
+        .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
   }
 
   @override
   Future<GroupInvitation?> getInvitation(String invitationId) async {
     final doc = await _invitationsRef.doc(invitationId).get();
     if (!doc.exists) return null;
-    return GroupInvitation.fromFirestore(doc);
+    return GroupInvitation.fromMap(doc.id, doc.data() ?? {});
   }
 
   @override

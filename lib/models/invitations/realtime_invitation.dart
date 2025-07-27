@@ -1,5 +1,6 @@
 // lib/models/invitations/realtime_invitation.dart
 
+// TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import '../realtime/realtime_resource.dart';

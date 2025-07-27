@@ -27,7 +27,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-      UserProfile.fromFirestore(doc);
+      UserProfile.fromMap(doc.id, doc.data()!);
 
   @override
   Map<String, dynamic> toFirestore(UserProfile entity) => entity.toFirestore();

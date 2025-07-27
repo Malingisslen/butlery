@@ -434,9 +434,9 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     // Type-safe parsing baserat på resource type
     switch (type) {
       case RealtimeResourceType.recipe:
-        return RealtimeRecipe.fromFirestore(snapshot) as T;
+        return RealtimeRecipe.fromMap(snapshot.id, snapshot.data()! as Map<String, dynamic>) as T;
       case RealtimeResourceType.menu:
-        return RealtimeMenu.fromFirestore(snapshot) as T;
+        return RealtimeMenu.fromMap(snapshot.id, snapshot.data()! as Map<String, dynamic>) as T;
       case RealtimeResourceType.shoppingList:
         // return RealtimeShoppingList.fromFirestore(snapshot) as T;
         throw SyncError(

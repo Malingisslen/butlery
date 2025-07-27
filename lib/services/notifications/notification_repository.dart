@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/utils/logger.dart';
+import '../../core/types/app_timestamp.dart';
 import 'notification_types.dart';
 
 /// Repository for managing notification preferences and history
@@ -50,7 +51,7 @@ class NotificationRepository {
       NotificationPreferences preferences;
       
       if (doc.exists && doc.data() != null) {
-        preferences = NotificationPreferences.fromFirestore(doc);
+        preferences = NotificationPreferences.fromMap(doc.id, doc.data()!);
         AppLogger.info('✅ Loaded preferences from Firestore');
       } else {
         // Create default preferences
@@ -226,8 +227,8 @@ class NotificationRepository {
         
         if (doc.exists && doc.data() != null) {
           // Add to existing batch
-          final data = doc.data() as Map<String, dynamic>;
-          final notifications = List<Map<String, dynamic>>.from(data['notifications'] ?? []);
+          final data = doc.data();
+          final notifications = List<Map<String, dynamic>>.from(data?['notifications'] ?? []);
           notifications.add(notification.toMap());
           
           transaction.update(batchDoc, {
@@ -267,7 +268,7 @@ class NotificationRepository {
           .get();
 
       return query.docs
-          .map((doc) => NotificationBatch.fromFirestore(doc))
+          .map((doc) => NotificationBatch.fromMap(doc.id, doc.data()))
           .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get pending batches', e);
@@ -388,10 +389,8 @@ class NotificationPreferences {
     return categoryEnabled && typeEnabled;
   }
 
-  /// Create from Firestore document
-  factory NotificationPreferences.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    
+  /// Create from repository data (removes Firebase dependency)
+  factory NotificationPreferences.fromMap(String id, Map<String, dynamic> data) {
     return NotificationPreferences(
       enabled: data['enabled'] ?? true,
       categorySettings: _parseEnumMap(data['categorySettings'], NotificationCategory.values),
@@ -402,8 +401,17 @@ class NotificationPreferences {
       quietHoursEnd: _parseTimeOfDay(data['quietHoursEnd']),
       soundEnabled: data['soundEnabled'] ?? true,
       vibrationEnabled: data['vibrationEnabled'] ?? true,
-      lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastUpdated: data['lastUpdated'] is DateTime 
+          ? data['lastUpdated'] as DateTime
+          : (data['lastUpdated'] != null 
+              ? AppTimestamp.fromFirestore(data['lastUpdated']).dateTime 
+              : DateTime.now()),
     );
+  }
+
+  /// Create from Firestore document
+  factory NotificationPreferences.fromFirestore(DocumentSnapshot doc) {
+    return NotificationPreferences.fromMap(doc.id, (doc.data() ?? {}) as Map<String, dynamic>);
   }
 
   /// Convert to Firestore document
@@ -484,22 +492,29 @@ class NotificationBatch {
     required this.scheduledFor,
   });
 
-  /// Create from Firestore document
-  factory NotificationBatch.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    
+  /// Create from repository data map (removes Firebase dependency)
+  factory NotificationBatch.fromMap(String id, Map<String, dynamic> data) {
     final notificationsList = data['notifications'] as List<dynamic>? ?? [];
     final notifications = notificationsList
-        .map((item) => _mapToNotificationTemplate(item as Map<String, dynamic>))
+        .map((item) => _mapToNotificationTemplate(item))
         .toList();
 
     return NotificationBatch(
       batchKey: data['batchKey'] as String,
       userId: data['userId'] as String,
       notifications: notifications,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      scheduledFor: (data['scheduledFor'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] is DateTime 
+          ? data['createdAt'] as DateTime
+          : AppTimestamp.fromFirestore(data['createdAt']).dateTime,
+      scheduledFor: data['scheduledFor'] is DateTime 
+          ? data['scheduledFor'] as DateTime
+          : AppTimestamp.fromFirestore(data['scheduledFor']).dateTime,
     );
+  }
+
+  /// Create from Firestore document
+  factory NotificationBatch.fromFirestore(DocumentSnapshot doc) {
+    return NotificationBatch.fromMap(doc.id, (doc.data() ?? {}) as Map<String, dynamic>);
   }
 }
 
@@ -525,11 +540,11 @@ NotificationTemplate _mapToNotificationTemplate(Map<String, dynamic> map) {
   final actionsList = map['actions'] as List<dynamic>? ?? [];
   final actions = actionsList.isNotEmpty
       ? actionsList.map((item) {
-          final actionMap = item as Map<String, dynamic>;
+          final actionMap = item;
           return NotificationAction(
             id: actionMap['id'] as String,
             title: actionMap['title'] as String,
-            data: actionMap['data'] as Map<String, dynamic>?,
+            data: actionMap['data'],
           );
         }).toList()
       : null;

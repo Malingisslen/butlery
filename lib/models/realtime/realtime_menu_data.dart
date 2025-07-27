@@ -1,7 +1,7 @@
 // lib/models/realtime/realtime_menu_data.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../recipe_unified.dart';
+import '../../core/types/app_timestamp.dart';
 
 /// Pure data representation for realtime menu content
 /// 
@@ -151,7 +151,7 @@ class RealtimeMenuData {
 
     return {
       'menuTitle': menuTitle,
-      'createdForDate': Timestamp.fromDate(createdForDate),
+      'createdForDate': AppTimestamp.fromDateTime(createdForDate).toFirestore(),
       'menuSnapshot': menuData,
       'menuNotes': menuNotes,
       'favoriteRecipeIds': favoriteRecipeIds,
@@ -201,7 +201,7 @@ class RealtimeMenuData {
     return RealtimeMenuData(
       menuTitle: data['menuTitle'] as String? ?? '',
       createdForDate:
-          (data['createdForDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          AppTimestamp.fromFirestore(data['createdForDate']).dateTime,
       menuSnapshot: menuSnapshot,
       menuNotes: data['menuNotes'] as String?,
       favoriteRecipeIds: data['favoriteRecipeIds'] != null

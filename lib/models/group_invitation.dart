@@ -1,6 +1,6 @@
 // lib/models/group_invitation.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 import '../core/mixins/json_serializable_mixin.dart';
 
@@ -211,20 +211,18 @@ class GroupInvitation with JsonSerializableMixin {
       'fromUserName': fromUserName,
       'toUserId': toUserId,
       'status': status.name,
-      'sentAt': Timestamp.fromDate(sentAt),
+      'sentAt': AppTimestamp.fromDateTime(sentAt).toFirestore(),
       'respondedAt':
-          respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
+          respondedAt != null ? AppTimestamp.fromDateTime(respondedAt!).toFirestore() : null,
       'personalMessage': personalMessage,
-      'expiresAt': Timestamp.fromDate(expiresAt),
+      'expiresAt': AppTimestamp.fromDateTime(expiresAt).toFirestore(),
     };
   }
 
-  /// Skapa från Firestore-dokument
-  factory GroupInvitation.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Skapa från repository data
+  factory GroupInvitation.fromMap(String id, Map<String, dynamic> data) {
     return GroupInvitation(
-      id: doc.id,
+      id: id,
       groupId: data['groupId'] as String,
       groupName: data['groupName'] as String,
       groupEmoji: data['groupEmoji'] as String? ?? '👥',
@@ -235,10 +233,10 @@ class GroupInvitation with JsonSerializableMixin {
         (s) => s.name == data['status'],
         orElse: () => GroupInvitationStatus.pending,
       ),
-      sentAt: (data['sentAt'] as Timestamp).toDate(),
-      respondedAt: (data['respondedAt'] as Timestamp?)?.toDate(),
+      sentAt: _parseTimestamp(data['sentAt']) ?? DateTime.now(),
+      respondedAt: _parseTimestamp(data['respondedAt']),
       personalMessage: data['personalMessage'] as String?,
-      expiresAt: (data['expiresAt'] as Timestamp).toDate(),
+      expiresAt: _parseTimestamp(data['expiresAt']) ?? DateTime.now().add(const Duration(days: 7)),
     );
   }
 
@@ -284,8 +282,46 @@ class GroupInvitation with JsonSerializableMixin {
   /// Helper method for deserializing DateTime from JSON
   static DateTime? _deserializeDateTime(dynamic value) {
     if (value is String) return DateTime.parse(value);
-    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is Map) {
+      // Handle raw timestamp data from Firestore
+      final seconds = value['seconds'] as int?;
+      final nanoseconds = value['nanoseconds'] as int? ?? 0;
+      if (seconds != null) {
+        return DateTime.fromMillisecondsSinceEpoch(
+            seconds * 1000 + nanoseconds ~/ 1000000);
+      }
+    }
     return null;
+  }
+
+  /// Helper method for parsing timestamps from repository data
+  static DateTime? _parseTimestamp(dynamic timestamp) {
+    if (timestamp == null) return null;
+
+    try {
+      if (timestamp is DateTime) {
+        return timestamp;
+      } else if (timestamp is Map) {
+        // Handle raw timestamp data from Firestore
+        final seconds = timestamp['seconds'] as int?;
+        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
+        if (seconds != null) {
+          return DateTime.fromMillisecondsSinceEpoch(
+              seconds * 1000 + nanoseconds ~/ 1000000);
+        }
+      } else if (timestamp is int) {
+        // Handle milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(timestamp);
+      } else if (timestamp is String) {
+        // Handle ISO string format
+        return DateTime.parse(timestamp);
+      }
+
+      return DateTime.now();
+    } catch (e) {
+      return DateTime.now();
+    }
   }
 
   @override

@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../theme/app_dimensions.dart';
 import '../../services/image_picker_service.dart';
 import '../../core/injection.dart';
 import '../../core/utils/logger.dart';
@@ -77,7 +78,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Selected images preview
         if (hasImages && widget.showImagePreview) ...[
-          if (canAddMore) const SizedBox(height: 16),
+          if (canAddMore) SizedBox(height: AppDimensions.spacing16),
           _buildSelectedImagesPreview(),
         ],
 
@@ -132,7 +133,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacing12),
                   Text(
                     'Selecting images...',
                     style: AppTextStyles.bodyMedium.copyWith(
@@ -141,7 +142,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   ),
                 ] else ...[
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(AppDimensions.spacing16),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.primaryBlue.withValues(alpha: 0.1),
@@ -152,7 +153,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacing12),
                   Text(
                     widget.allowMultiple ? 'Select images' : 'Select image',
                     style: AppTextStyles.bodyLarge.copyWith(
@@ -160,7 +161,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppDimensions.spacing4),
                   Text(
                     widget.allowMultiple
                         ? 'Tap to select up to ${widget.config.maxImages} images'
@@ -192,7 +193,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: AppDimensions.spacing8),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -270,7 +271,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           child: GestureDetector(
             onTap: () => _removeImage(imagePath, index),
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(AppDimensions.spacing4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.error,
@@ -474,7 +475,7 @@ class ImagePickerBottomSheet extends StatelessWidget {
     // Remove unused theme variable
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppDimensions.spacing16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,14 +487,14 @@ class ImagePickerBottomSheet extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppDimensions.spacing16),
           ],
           ImageSourcePickerWidget(
             onSourceSelected: onSourceSelected,
             showCamera: showCamera,
             showGallery: showGallery,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppDimensions.spacing8),
         ],
       ),
     );

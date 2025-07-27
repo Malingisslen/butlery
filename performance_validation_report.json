@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-07-26T22:15:31.005025",
+  "metrics": {
+    "startup_time_ms": 1097,
+    "startup_time_target_met": true,
+    "estimated_memory_mb": 2,
+    "memory_target_met": true,
+    "total_dart_files": 510,
+    "codebase_size_mb": 4,
+    "file_write_time_ms": 7,
+    "file_read_time_ms": 1,
+    "file_io_target_met": true,
+    "large_file_count": 62,
+    "complex_widget_count": 2,
+    "heavy_import_count": 6,
+    "performance_issues": [
+      "Large file: lib\\core\\dialogs\\dialog_factory.dart (658 lines)",
+      "Large file: lib\\core\\injection.dart (538 lines)",
+      "Large file: lib\\core\\mixins\\async_operation_mixin.dart (504 lines)",
+      "Large file: lib\\core\\mixins\\json_serializable_mixin.dart (510 lines)",
+      "Large file: lib\\core\\mixins\\stream_management_mixin.dart (575 lines)"
+    ],
+    "sync_time_ms": 250,
+    "sync_performance_good": true
+  },
+  "benchmarks": {
+    "startup_time_target_ms": 2000,
+    "memory_usage_target_mb": 100,
+    "file_read_target_ms": 50,
+    "widget_build_target_ms": 16
+  },
+  "summary": {
+    "targets_met": 4,
+    "overall_score": "100%"
+  }
+}

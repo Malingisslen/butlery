@@ -1,7 +1,7 @@
 // lib/models/recipe_comment.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import '../core/types/app_timestamp.dart';
 
 
 class RecipeComment {
@@ -142,8 +142,8 @@ class RecipeComment {
       'authorDisplayName': authorDisplayName,
       'authorAvatarUrl': authorAvatarUrl,
       'text': text,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'editedAt': editedAt != null ? Timestamp.fromDate(editedAt!) : null,
+      'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
+      'editedAt': editedAt != null ? AppTimestamp.fromDateTime(editedAt!).toFirestore() : null,
       'likedByUserIds': likedByUserIds,
       'parentCommentId': parentCommentId,
       'replyCount': replyCount,
@@ -151,19 +151,23 @@ class RecipeComment {
     };
   }
 
-  /// Create from Firestore document
-  factory RecipeComment.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Create from repository data (removes Firebase dependency from model)
+  factory RecipeComment.fromMap(String id, Map<String, dynamic> data) {
     return RecipeComment(
-      id: doc.id,
+      id: id,
       recipeId: data['recipeId'] as String,
       authorId: data['authorId'] as String,
       authorDisplayName: data['authorDisplayName'] as String? ?? 'Användare',
       authorAvatarUrl: data['authorAvatarUrl'] as String?,
       text: data['text'] as String? ?? '',
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      editedAt: (data['editedAt'] as Timestamp?)?.toDate(),
+      createdAt: data['createdAt'] is DateTime 
+          ? data['createdAt'] as DateTime
+          : DateTime.fromMillisecondsSinceEpoch(data['createdAt'] as int),
+      editedAt: data['editedAt'] != null
+          ? (data['editedAt'] is DateTime 
+              ? data['editedAt'] as DateTime
+              : DateTime.fromMillisecondsSinceEpoch(data['editedAt'] as int))
+          : null,
       likedByUserIds: List<String>.from(data['likedByUserIds'] ?? []),
       parentCommentId: data['parentCommentId'] as String?,
       replyCount: data['replyCount'] as int? ?? 0,

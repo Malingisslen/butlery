@@ -1,5 +1,6 @@
 // lib/models/realtime/realtime_menu_factory.dart
 
+// TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../recipe_unified.dart';
 import '../permissions/resource_permission.dart';
@@ -123,6 +124,11 @@ class RealtimeMenuFactory {
       'metadata': Map<String, dynamic>.from(json['metadata'] ?? {}),
       'data': data,
     };
+  }
+
+  /// Create RealtimeMenu from Firestore document
+  static fromFirestore(DocumentSnapshot doc) {
+    return parseFirestoreData(doc);
   }
 
   /// Create construction parameters for copying with updated data

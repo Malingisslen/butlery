@@ -1,6 +1,6 @@
 // lib/models/friend_category.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -154,26 +154,24 @@ class FriendCategory {
       'description': description,
       'emoji': emoji,
       'friendUserIds': friendUserIds,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': Timestamp.fromDate(updatedAt),
+      'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
+      'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
     };
   }
 
-  /// Create from Firestore document
-  factory FriendCategory.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Create from repository data
+  factory FriendCategory.fromMap(String id, Map<String, dynamic> data) {
     return FriendCategory(
-      id: doc.id,
+      id: id,
       ownerId: data['ownerId'] as String,
       name: data['name'] as String,
       description: data['description'] as String?,
       emoji: data['emoji'] as String?,
       friendUserIds: List<String>.from(data['friendUserIds'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: _parseTimestamp(data['createdAt']) ?? DateTime.now(),
+      updatedAt: _parseTimestamp(data['updatedAt']) ?? DateTime.now(),
       sortOrder: data['sortOrder'] as int? ?? 0,
       isDefault: data['isDefault'] as bool? ?? false,
     );
@@ -223,6 +221,35 @@ class FriendCategory {
 
   @override
   int get hashCode => id.hashCode;
+
+  /// Helper method for parsing timestamps from repository data
+  static DateTime? _parseTimestamp(dynamic timestamp) {
+    if (timestamp == null) return null;
+
+    try {
+      if (timestamp is DateTime) {
+        return timestamp;
+      } else if (timestamp is Map) {
+        // Handle raw timestamp data from Firestore
+        final seconds = timestamp['seconds'] as int?;
+        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
+        if (seconds != null) {
+          return DateTime.fromMillisecondsSinceEpoch(
+              seconds * 1000 + nanoseconds ~/ 1000000);
+        }
+      } else if (timestamp is int) {
+        // Handle milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(timestamp);
+      } else if (timestamp is String) {
+        // Handle ISO string format
+        return DateTime.parse(timestamp);
+      }
+
+      return DateTime.now();
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
 }
 
 /// Predefined category data för snabb setup
