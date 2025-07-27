@@ -141,7 +141,8 @@ Future<void> initializeDependencies() async {
     }
 
     sl.registerSingleton<ConnectivityMonitoringService>(
-        ConnectivityMonitoringService());
+        ConnectivityMonitoringService(
+            connectivityRepository: sl<ConnectivityRepository>()));
     if (kDebugMode) {
       debugPrint('✅ ConnectivityMonitoringService registrerad');
     }
