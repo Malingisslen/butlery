@@ -18,7 +18,7 @@ class FilterToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(

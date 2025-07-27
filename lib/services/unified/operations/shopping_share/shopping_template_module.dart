@@ -1,5 +1,8 @@
 // lib/services/unified/operations/shopping_share/shopping_template_module.dart
 
+// TODO: Refactor to use repository pattern instead of direct Firebase access
+// This module needs a TemplateRepository to handle template CRUD operations
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';

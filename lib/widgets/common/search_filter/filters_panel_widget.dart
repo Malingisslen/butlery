@@ -38,7 +38,7 @@ class FiltersPanelWidget extends StatelessWidget {
       duration: AppDimensions.animationDurationMedium,
       curve: Curves.easeInOut,
       child: showFilters
-          ? Container(
+          ? DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 boxShadow: [

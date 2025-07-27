@@ -305,7 +305,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
             // Loading overlay
             if (viewModel.isGenerating)
-              Container(
+              ColoredBox(
                 color: AppColors.neutralDark.withValues(alpha: 0.4),
                 child: Center(
                   child: Container(

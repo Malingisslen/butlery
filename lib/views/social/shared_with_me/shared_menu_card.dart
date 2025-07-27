@@ -125,7 +125,7 @@ class SharedMenuCard {
           ),
         ),
         // Dismiss knapp
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context)
                 .colorScheme

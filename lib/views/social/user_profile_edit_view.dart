@@ -278,7 +278,7 @@ class _UserProfileEditViewContentState
               // Upload progress overlay
               if (viewModel.isUploadingAvatar)
                 Positioned.fill(
-                  child: Container(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.neutralDark.withValues(alpha: 0.7),
@@ -443,7 +443,7 @@ class _UserProfileEditViewContentState
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingL),
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

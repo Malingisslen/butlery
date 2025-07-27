@@ -1,0 +1,52 @@
+name: Build Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Analyze code (fail on violations)
+      run: |
+        echo "🔍 Running Flutter analyze with strict mode..."
+        flutter analyze --fatal-infos --fatal-warnings
+        
+    - name: Run architecture tests (fail on violations)
+      run: |
+        echo "🏗️ Running architecture tests - must pass to continue..."
+        flutter test test/architecture/architecture_test.dart --reporter=expanded
+        
+    - name: Build Android APK
+      run: |
+        echo "🏗️ Building Android APK..."
+        flutter build apk --debug
+        
+    - name: Build for web
+      run: |
+        echo "🌐 Building for web..."
+        flutter build web --debug
+        
+    - name: Success notification
+      if: success()
+      run: |
+        echo "✅ All validations passed!"
+        echo "✅ Architecture compliance verified"
+        echo "✅ Code analysis passed"
+        echo "✅ Build completed successfully"

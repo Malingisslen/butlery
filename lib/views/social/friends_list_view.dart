@@ -100,7 +100,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           body: Column(
             children: [
               // TabBar with proper styling
-              Container(
+              ColoredBox(
                 color: Theme.of(context).colorScheme.surface,
                 child: TabBar(
                   controller: _tabController,

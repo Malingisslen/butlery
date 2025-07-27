@@ -293,7 +293,7 @@ class StyledCards {
             imageWidget,
             if (overlay != null)
               Positioned.fill(
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: ThemeConstants.blackOverlay20,
                     borderRadius: BorderRadius.circular(

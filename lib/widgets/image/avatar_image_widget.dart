@@ -307,7 +307,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
         // Loading overlay
         if (_isLoading)
           Positioned.fill(
-            child: Container(
+            child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.cardWhite.withValues(alpha: 0.8),

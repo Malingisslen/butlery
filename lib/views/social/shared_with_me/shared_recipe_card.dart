@@ -121,7 +121,7 @@ class SharedRecipeCard {
           ),
         ),
         // Dismiss knapp
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context)
                 .colorScheme

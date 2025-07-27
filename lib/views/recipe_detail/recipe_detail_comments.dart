@@ -119,7 +119,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Widget _buildCommentsSection(SocialRecipeViewModel socialViewModel) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

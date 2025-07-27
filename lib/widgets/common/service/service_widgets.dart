@@ -100,7 +100,7 @@ class ServiceWidgets {
   }
 
   static Widget _buildLoadingOverlay() {
-    return Container(
+    return ColoredBox(
       color: AppColors.neutralDark.withValues(alpha: 0.3),
       child: Center(
         child: Container(

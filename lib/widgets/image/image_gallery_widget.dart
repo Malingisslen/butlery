@@ -200,7 +200,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
   Widget _buildAddImageButton() {
     // Remove unused theme variable
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
@@ -246,7 +246,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     return Stack(
       children: [
         // Image container
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(

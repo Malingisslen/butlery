@@ -103,7 +103,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
   Widget _buildEmptyEditState() {
     // Remove unused theme variable
     
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
@@ -220,7 +220,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         // Loading overlay
         if (widget.isLoading)
           Positioned.fill(
-            child: Container(
+            child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: widget.config.effectiveBorderRadius,
                 color: Colors.black.withValues(alpha: 0.5),
