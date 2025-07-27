@@ -187,8 +187,9 @@
 
 ### 1.2 Architecture Violations (18-24 hours) <� HIGH
 
-#### [x] **Fix Direct Firebase Access in Services** (8 hours) ✅ COMPLETED January 27, 2025
-**Specific Violations Fixed**:
+#### [~] **Fix Direct Firebase Access in Services** (8 hours) ⚠️ PARTIALLY COMPLETED January 27, 2025
+**Status**: 40% Complete - Repositories created but services NOT updated
+**Specific Violations to Fix**:
 
 1. **DeepLinkService** (`/lib/services/deep_link_service.dart`):
    - Lines 208, 363, 405: Direct `FirebaseFirestore.instance` usage
