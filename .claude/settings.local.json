@@ -34,7 +34,9 @@
       "Bash(cp:*)",
       "Bash(dart tools/validate_architecture.dart:*)",
       "Bash(jq:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git commit:*)",
+      "Bash(dart tools/fix_debug_prints.dart:*)"
     ],
     "deny": []
   },

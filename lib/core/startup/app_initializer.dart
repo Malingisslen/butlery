@@ -1,6 +1,7 @@
 // lib/core/startup/app_initializer.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../repositories/firebase/firebase_auth_repository.dart';
@@ -49,7 +50,9 @@ class AppInitializer {
   /// 2. Environment variables
   /// 3. Svenska lokaliseringar
   static Future<void> initializeCritical() async {
-    debugPrint('🚀 === BUTLERY APP INITIALIZATION START ===');
+    if (kDebugMode) {
+      debugPrint('🚀 === BUTLERY APP INITIALIZATION START ===');
+    }
 
     try {
       // 1️⃣ Säkerställ Flutter-bindningar (KRITISKT)
@@ -61,10 +64,14 @@ class AppInitializer {
       // 3️⃣ Initiera svenska lokaliseringar (KRITISKT för UI)
       await _initializeLocalization();
 
-      debugPrint('✅ Critical initialization complete - starting UI');
+      if (kDebugMode) {
+        debugPrint('✅ Critical initialization complete - starting UI');
+      }
     } catch (e, stackTrace) {
-      debugPrint('❌ KRITISKT FEL vid critical initialization: $e');
-      debugPrint('Stack trace: $stackTrace');
+      if (kDebugMode) {
+        debugPrint('❌ KRITISKT FEL vid critical initialization: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
       rethrow; // Critical errors should stop the app
     }
   }
@@ -94,13 +101,19 @@ class AppInitializer {
       await _initializeDeepLinkService();
 
       _isBackgroundInitialized = true;
-      debugPrint('✅ === BUTLERY APP INITIALIZATION COMPLETE ===');
+      if (kDebugMode) {
+        debugPrint('✅ === BUTLERY APP INITIALIZATION COMPLETE ===');
+      }
     } catch (e, stackTrace) {
-      debugPrint('❌ FEL vid background initialization: $e');
-      debugPrint('Stack trace: $stackTrace');
+      if (kDebugMode) {
+        debugPrint('❌ FEL vid background initialization: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
 
       // Background errors shouldn't crash the app, men logga allvarligt
-      debugPrint('⚠️ Appen fortsätter med begränsad funktionalitet');
+      if (kDebugMode) {
+        debugPrint('⚠️ Appen fortsätter med begränsad funktionalitet');
+      }
       _isBackgroundInitialized = true; // Mark as "done" even on error
     }
   }
