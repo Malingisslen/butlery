@@ -40,9 +40,31 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   /// Create or update the current user's profile.
   @override
   Future<void> saveProfile(UserProfile profile) async {
+    // Validate user is updating their own profile
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: profile.uid,
+      operation: 'update profile',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: profile.toFirestore(),
+      requiredFields: ['displayName', 'uid'],
+      resourceType: 'user_profile',
+    );
+    
     final data = profile.toFirestore();
     data['displayNameLower'] = profile.displayName.toLowerCase();
     await collection.doc(profile.uid).set(data);
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'update',
+      granted: true,
+    );
   }
 
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
@@ -79,6 +101,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     int? friendsCount,
     int? publicRecipeCount,
   }) async {
+    // Validate user is updating their own stats
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update profile stats',
+    );
+    
     final updates = <String, dynamic>{};
     if (friendsCount != null) updates['friendsCount'] = friendsCount;
     if (publicRecipeCount != null) {
@@ -87,16 +117,39 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
     if (updates.isNotEmpty) {
       await collection.doc(userId).update(updates);
+      
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'user_profile',
+        operation: 'update_stats',
+        granted: true,
+        details: 'Updated: ${updates.keys.join(', ')}',
+      );
     }
   }
 
   /// Update the online status for a user.
   @override
   Future<void> updateOnlineStatus(String userId, bool isOnline) async {
+    // Validate user is updating their own status
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update online status',
+    );
+    
     await collection.doc(userId).update({
       'isOnline': isOnline,
       'lastActiveAt': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'update_online_status',
+      granted: true,
+    );
   }
 
   /// Search for users by display name or email.
@@ -186,27 +239,72 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   /// Update FCM token for push notifications
   @override
   Future<void> updateFCMToken(String userId, String token) async {
+    // Validate user is updating their own FCM token
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update FCM token',
+    );
+    
     await collection.doc(userId).update({
       'fcmToken': token,
       'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'update_fcm_token',
+      granted: true,
+    );
   }
 
   /// Update notification settings
   @override
   Future<void> updateNotificationSettings(String userId, bool enabled) async {
+    // Validate user is updating their own settings
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update notification settings',
+    );
+    
     await collection.doc(userId).update({
       'notificationsEnabled': enabled,
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'update_notification_settings',
+      granted: true,
+    );
   }
 
   /// Clear FCM token (e.g., on logout)
   @override
   Future<void> clearFCMToken(String userId) async {
+    // Validate user is clearing their own FCM token
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'clear FCM token',
+    );
+    
     await collection.doc(userId).update({
       'fcmToken': null,
       'fcmTokenUpdatedAt': null,
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'clear_fcm_token',
+      granted: true,
+    );
   }
 
   /// Ensure base user document exists in 'users' collection for friends system

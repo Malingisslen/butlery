@@ -1,0 +1,294 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is the owner of the document
+    function isDocumentOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+    
+    // Check if user is creating their own document
+    function isCreatingOwnDocument() {
+      return isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Check if user is in a list of users
+    function isInList(field) {
+      return isAuthenticated() && request.auth.uid in resource.data[field];
+    }
+    
+    // Check if user is creating a document with themselves in a list
+    function isAddingSelfToList(field) {
+      return isAuthenticated() && request.auth.uid in request.resource.data[field];
+    }
+    
+    // Validate that required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    // Check if timestamp is server timestamp
+    function isServerTimestamp(field) {
+      return request.resource.data[field] == request.time;
+    }
+    
+    // ========================================
+    // USER DATA - Private to each user
+    // ========================================
+    
+    // User's private data (recipes, friends, etc.)
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // User's recipes
+      match /recipes/{recipeId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Recipe summaries (lightweight documents)
+      match /recipe_summaries/{recipeId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // User's friends list
+      match /friends/{friendId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Friend categories/groups
+      match /friend_categories/{categoryId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Connection tests (for app initialization)
+      match /connection_tests/{document} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // ========================================
+    // PUBLIC PROFILES - Readable by all authenticated users
+    // ========================================
+    
+    match /user_profiles/{userId} {
+      // Anyone authenticated can read profiles
+      allow read: if isAuthenticated();
+      
+      // Only profile owner can write
+      allow create: if isOwner(userId) 
+        && hasRequiredFields(['displayName', 'createdAt', 'updatedAt'])
+        && request.resource.data.isSearchable is bool;
+        
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+    
+    // ========================================
+    // FRIEND REQUESTS - Between users
+    // ========================================
+    
+    match /friend_requests/{requestId} {
+      // Can read if you're the sender or recipient
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.fromUserId ||
+        request.auth.uid == resource.data.toUserId
+      );
+      
+      // Can create if you're the sender
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.fromUserId
+        && request.resource.data.status == 'pending'
+        && hasRequiredFields(['fromUserId', 'toUserId', 'status', 'sentAt']);
+      
+      // Can update if you're the recipient (to accept/reject)
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.toUserId
+        && request.resource.data.status in ['accepted', 'rejected'];
+      
+      // Can delete if you're the sender or recipient
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.fromUserId ||
+        request.auth.uid == resource.data.toUserId
+      );
+    }
+    
+    // ========================================
+    // GROUP INVITATIONS - For friend categories
+    // ========================================
+    
+    match /group_invitations/{invitationId} {
+      // Can read if you're the sender or recipient
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.recipientId
+      );
+      
+      // Can create if you're the sender
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.senderId
+        && request.resource.data.status == 'pending'
+        && hasRequiredFields(['groupId', 'senderId', 'recipientId', 'status', 'sentAt']);
+      
+      // Can update if you're the recipient
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.recipientId
+        && request.resource.data.status in ['accepted', 'rejected'];
+      
+      // Can delete if you're the sender or recipient
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.recipientId
+      );
+    }
+    
+    // ========================================
+    // SHARED RECIPES - Shared between users
+    // ========================================
+    
+    match /shared_recipes/{shareId} {
+      // Can read if you're in the sharedWith list or the owner
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid in resource.data.sharedWith
+      );
+      
+      // Can create if you're the owner
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.ownerId
+        && request.resource.data.sharedWith is list
+        && hasRequiredFields(['ownerId', 'sharedWith', 'recipe', 'sharedAt']);
+      
+      // Can update if you're the owner
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.ownerId;
+      
+      // Can delete if you're the owner or in sharedWith (to remove from your list)
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid in resource.data.sharedWith
+      );
+    }
+    
+    // ========================================
+    // SHARED MENUS - Bulk recipe sharing
+    // ========================================
+    
+    match /shared_menus/{menuId} {
+      // Can read if you're in the sharedWith list or the owner
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid in resource.data.sharedWith
+      );
+      
+      // Can create if you're the owner
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.ownerId
+        && request.resource.data.sharedWith is list
+        && hasRequiredFields(['ownerId', 'sharedWith', 'menu', 'sharedAt']);
+      
+      // Can update if you're the owner
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.ownerId;
+      
+      // Can delete if you're the owner
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == resource.data.ownerId;
+    }
+    
+    // ========================================
+    // SHARED SHOPPING LISTS - Collaborative lists
+    // ========================================
+    
+    match /shared_shopping_lists/{listId} {
+      // Can read if you're a collaborator or the owner
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid in resource.data.collaborators
+      );
+      
+      // Can create if you're the owner and adding yourself as collaborator
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.ownerId
+        && request.auth.uid in request.resource.data.collaborators
+        && hasRequiredFields(['ownerId', 'collaborators', 'items', 'createdAt']);
+      
+      // Can update if you're a collaborator (for real-time collaboration)
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid in resource.data.collaborators
+      );
+      
+      // Can delete if you're the owner
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == resource.data.ownerId;
+    }
+    
+    // ========================================
+    // RECIPE COMMENTS - Threaded comments
+    // ========================================
+    
+    match /recipe_comments/{commentId} {
+      // Can read if you have access to the parent recipe
+      // (This requires checking the shared recipe permissions)
+      allow read: if isAuthenticated();
+      
+      // Can create if authenticated and providing required fields
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.userId
+        && hasRequiredFields(['userId', 'recipeId', 'content', 'createdAt'])
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 1000;
+      
+      // Can update only your own comments
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 1000;
+      
+      // Can delete only your own comments
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == resource.data.userId;
+    }
+    
+    // ========================================
+    // BUTLERY ARCHIVE - Read-only community recipes
+    // ========================================
+    
+    match /butlery_archive/recipes/{recipeId} {
+      // Anyone authenticated can read archive recipes
+      allow read: if isAuthenticated();
+      // No writing allowed - admin only via server
+      allow write: if false;
+    }
+    
+    match /butlery_archive/recipe_summaries/{recipeId} {
+      // Anyone authenticated can read archive summaries
+      allow read: if isAuthenticated();
+      // No writing allowed - admin only via server
+      allow write: if false;
+    }
+    
+    // ========================================
+    // DEFAULT DENY - Catch all other paths
+    // ========================================
+    
+    // Deny all other document access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

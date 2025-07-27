@@ -22,6 +22,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../interfaces/repository.dart';
 import '../interfaces/auth_repository.dart';
 import '../../core/utils/logger.dart';
+import '../mixins/permission_validation_mixin.dart';
 
 /// Base class for Firebase repositories that eliminates duplicate CRUD patterns.
 ///
@@ -50,7 +51,7 @@ import '../../core/utils/logger.dart';
 ///   String getId(MyModel entity) => entity.id;
 /// }
 /// ```
-abstract class BaseFirebaseRepository<T> implements Repository<T> {
+abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implements Repository<T> {
   final FirebaseFirestore _firestore;
   final AuthRepository _authRepository;
 

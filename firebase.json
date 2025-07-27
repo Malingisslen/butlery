@@ -1,1 +1,29 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"butlery-app-1","appId":"1:976357691692:android:4a2e41f5eb04e0c2e4dc89","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"butlery-app-1","configurations":{"android":"1:976357691692:android:4a2e41f5eb04e0c2e4dc89","ios":"1:976357691692:ios:714dacad784ca7b7e4dc89","macos":"1:976357691692:ios:714dacad784ca7b7e4dc89","web":"1:976357691692:web:3e70520a0ac19514e4dc89","windows":"1:976357691692:web:2b6a8efd2740a521e4dc89"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "butlery-app-1",
+          "appId": "1:976357691692:android:4a2e41f5eb04e0c2e4dc89",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "butlery-app-1",
+          "configurations": {
+            "android": "1:976357691692:android:4a2e41f5eb04e0c2e4dc89",
+            "ios": "1:976357691692:ios:714dacad784ca7b7e4dc89",
+            "macos": "1:976357691692:ios:714dacad784ca7b7e4dc89",
+            "web": "1:976357691692:web:3e70520a0ac19514e4dc89",
+            "windows": "1:976357691692:web:2b6a8efd2740a521e4dc89"
+          }
+        }
+      }
+    }
+  }
+}

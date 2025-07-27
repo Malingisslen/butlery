@@ -1,16 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../interfaces/social_recipe_repository.dart';
+import '../interfaces/auth_repository.dart';
 import '../../models/shared_recipe.dart';
 import '../../models/shared_menu.dart';
+import '../../core/exceptions/permission_exceptions.dart';
+import '../mixins/permission_validation_mixin.dart';
 
-class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
+class FirebaseSocialRecipeRepository with PermissionValidationMixin implements SocialRecipeRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
+  final AuthRepository _authRepository;
 
-  FirebaseSocialRecipeRepository({FirebaseFirestore? firestore, FirebaseAuth? auth})
-      : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  FirebaseSocialRecipeRepository({
+    FirebaseFirestore? firestore, 
+    FirebaseAuth? auth,
+    required AuthRepository authRepository,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _auth = auth ?? FirebaseAuth.instance,
+       _authRepository = authRepository;
 
   @override
   CollectionReference<Map<String, dynamic>> get sharedRecipesRef =>
@@ -62,66 +70,402 @@ class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
 
   @override
   Future<void> markSharedRecipeAsViewed(String recipeId, String userId) async {
+    // Validate user is marking their own view
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'mark recipe as viewed',
+    );
+    
+    // Check if recipe exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedRecipesRef.doc(recipeId),
+      currentUserId: currentUser,
+      resourceType: 'shared_recipe',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWith'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared recipe',
+        resource: 'shared_recipe',
+        operation: 'view',
+        userId: currentUser,
+      );
+    }
+    
     await sharedRecipesRef.doc(recipeId).update({
       'viewedByUserIds': FieldValue.arrayUnion([userId]),
       'viewedAt.$userId': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_recipe',
+      operation: 'mark_viewed',
+      granted: true,
+    );
   }
 
   @override
   Future<void> markSharedMenuAsViewed(String menuId, String userId) async {
+    // Validate user is marking their own view
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'mark menu as viewed',
+    );
+    
+    // Check if menu exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedMenusRef.doc(menuId),
+      currentUserId: currentUser,
+      resourceType: 'shared_menu',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWithUserIds'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared menu',
+        resource: 'shared_menu',
+        operation: 'view',
+        userId: currentUser,
+      );
+    }
+    
     await sharedMenusRef.doc(menuId).update({
       'viewedByUserIds': FieldValue.arrayUnion([userId]),
       'viewedAt.$userId': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_menu',
+      operation: 'mark_viewed',
+      granted: true,
+    );
   }
 
   @override
   Future<void> markSharedRecipeAsImported(String recipeId, String userId) async {
+    // Validate user is marking their own import
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'mark recipe as imported',
+    );
+    
+    // Check if recipe exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedRecipesRef.doc(recipeId),
+      currentUserId: currentUser,
+      resourceType: 'shared_recipe',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWith'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared recipe',
+        resource: 'shared_recipe',
+        operation: 'import',
+        userId: currentUser,
+      );
+    }
+    
     await sharedRecipesRef.doc(recipeId).update({
       'importedByUserIds': FieldValue.arrayUnion([userId]),
       'importedAt.$userId': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_recipe',
+      operation: 'mark_imported',
+      granted: true,
+    );
   }
 
   @override
   Future<void> markSharedMenuAsImported(String menuId, String userId) async {
+    // Validate user is marking their own import
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'mark menu as imported',
+    );
+    
+    // Check if menu exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedMenusRef.doc(menuId),
+      currentUserId: currentUser,
+      resourceType: 'shared_menu',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWithUserIds'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared menu',
+        resource: 'shared_menu',
+        operation: 'import',
+        userId: currentUser,
+      );
+    }
+    
     await sharedMenusRef.doc(menuId).update({
       'importedByUserIds': FieldValue.arrayUnion([userId]),
       'importedAt.$userId': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_menu',
+      operation: 'mark_imported',
+      granted: true,
+    );
   }
 
   @override
   Future<void> dismissSharedRecipe(String recipeId, String userId) async {
+    // Validate user is dismissing their own shared recipe
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'dismiss shared recipe',
+    );
+    
+    // Check if recipe exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedRecipesRef.doc(recipeId),
+      currentUserId: currentUser,
+      resourceType: 'shared_recipe',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWith'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared recipe',
+        resource: 'shared_recipe',
+        operation: 'dismiss',
+        userId: currentUser,
+      );
+    }
+    
     await sharedRecipesRef.doc(recipeId).update({
       'dismissedByUserIds': FieldValue.arrayUnion([userId]),
       'dismissedAt.$userId': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_recipe',
+      operation: 'dismiss',
+      granted: true,
+    );
   }
 
   @override
   Future<void> dismissSharedMenu(String menuId, String userId) async {
+    // Validate user is dismissing their own shared menu
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'dismiss shared menu',
+    );
+    
+    // Check if menu exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedMenusRef.doc(menuId),
+      currentUserId: currentUser,
+      resourceType: 'shared_menu',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWithUserIds'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared menu',
+        resource: 'shared_menu',
+        operation: 'dismiss',
+        userId: currentUser,
+      );
+    }
+    
     await sharedMenusRef.doc(menuId).update({
       'dismissedByUserIds': FieldValue.arrayUnion([userId]),
       'dismissedAt.$userId': FieldValue.serverTimestamp(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_menu',
+      operation: 'dismiss',
+      granted: true,
+    );
   }
 
   @override
   Future<void> undismissSharedRecipe(String recipeId, String userId) async {
+    // Validate user is undismissing their own shared recipe
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'undismiss shared recipe',
+    );
+    
+    // Check if recipe exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedRecipesRef.doc(recipeId),
+      currentUserId: currentUser,
+      resourceType: 'shared_recipe',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWith'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared recipe',
+        resource: 'shared_recipe',
+        operation: 'undismiss',
+        userId: currentUser,
+      );
+    }
+    
     await sharedRecipesRef.doc(recipeId).update({
       'dismissedByUserIds': FieldValue.arrayRemove([userId]),
       'dismissedAt.$userId': FieldValue.delete(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_recipe',
+      operation: 'undismiss',
+      granted: true,
+    );
   }
 
   @override
   Future<void> undismissSharedMenu(String menuId, String userId) async {
+    // Validate user is undismissing their own shared menu
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'undismiss shared menu',
+    );
+    
+    // Check if menu exists and user has access
+    final doc = await getDocumentWithPermissionCheck(
+      docRef: sharedMenusRef.doc(menuId),
+      currentUserId: currentUser,
+      resourceType: 'shared_menu',
+    );
+    
+    final data = doc.data() as Map<String, dynamic>;
+    final sharedWith = List<String>.from(data['sharedWithUserIds'] ?? []);
+    
+    if (!await hasReadAccess(
+      currentUserId: currentUser,
+      resourceOwnerId: data['ownerId'] ?? '',
+      sharedWithUserIds: sharedWith,
+    )) {
+      throw PermissionDeniedException(
+        'User does not have access to this shared menu',
+        resource: 'shared_menu',
+        operation: 'undismiss',
+        userId: currentUser,
+      );
+    }
+    
     await sharedMenusRef.doc(menuId).update({
       'dismissedByUserIds': FieldValue.arrayRemove([userId]),
       'dismissedAt.$userId': FieldValue.delete(),
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_menu',
+      operation: 'undismiss',
+      granted: true,
+    );
   }
 
   @override
@@ -131,6 +475,37 @@ class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
     required String contentType,
     required Map<String, dynamic> contentData,
   }) async {
+    // Validate user is sharing from their own account
+    final currentUser = _authRepository.currentUserId;
+    if (currentUser == null) {
+      throw PermissionDeniedException('User must be authenticated');
+    }
+    
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: fromUserId,
+      operation: 'share content',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: {
+        'fromUserId': fromUserId,
+        'toUserId': toUserId,
+        'contentType': contentType,
+        'contentData': contentData,
+      },
+      requiredFields: ['fromUserId', 'toUserId', 'contentType', 'contentData'],
+      resourceType: 'shared_content',
+    );
+    
+    // Can't share content with yourself
+    if (fromUserId == toUserId) {
+      throw SecurityViolationException(
+        'Cannot share content with yourself',
+      );
+    }
+    
     await sharedContentRef.add({
       'fromUserId': fromUserId,
       'toUserId': toUserId,
@@ -139,5 +514,13 @@ class FirebaseSocialRecipeRepository implements SocialRecipeRepository {
       'sharedAt': FieldValue.serverTimestamp(),
       'status': 'pending',
     });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'shared_content',
+      operation: 'create',
+      granted: true,
+      details: 'Type: $contentType, To: $toUserId',
+    );
   }
 }

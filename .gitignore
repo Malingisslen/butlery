@@ -46,3 +46,6 @@ app.*.map.json
 
 # Environment variables - DO NOT COMMIT API KEYS
 .env
+.env.*
+*.env
+*.env.*

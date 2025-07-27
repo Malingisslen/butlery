@@ -183,7 +183,7 @@ Future<void> initializeDependencies() async {
         FirebaseNotificationsRepository(authRepository: sl<AuthRepository>()));
     
     sl.registerSingleton<SocialRecipeRepository>(
-        FirebaseSocialRecipeRepository());
+        FirebaseSocialRecipeRepository(authRepository: sl<AuthRepository>()));
     debugPrint('✅ Additional repositories registrerade');
 
     // ==================== INVITATION SERVICES (FAS 2) ====================

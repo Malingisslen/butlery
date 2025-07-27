@@ -5,6 +5,7 @@ import '../interfaces/recipe_repository.dart';
 import '../../models/recipe_unified.dart';
 import '../../models/recipe_change.dart';
 import 'base_firebase_repository.dart';
+import '../../core/exceptions/permission_exceptions.dart';
 
 /// Firebase repository for user recipes stored in /users/{userId}/recipes collection.
 ///
@@ -37,7 +38,80 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   String getId(Recipe entity) => entity.id;
 
-  // ===== ENHANCED BASE CLASS METHODS =====
+  // ===== ENHANCED BASE CLASS METHODS WITH PERMISSION VALIDATION =====
+
+  @override
+  Future<Recipe> create(Recipe entity) async {
+    // Validate user owns the recipe they're creating
+    final currentUser = requireCurrentUserId();
+    
+    // For personal recipes, createdBy should match current user
+    final ownerId = entity.socialData?.ownerId ?? entity.createdBy ?? currentUser;
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: ownerId,
+      operation: 'create recipe',
+    );
+    
+    // Validate required fields
+    validateRequiredFields(
+      data: entity.toFirestore(),
+      requiredFields: ['title', 'userId', 'createdAt', 'updatedAt'],
+      resourceType: 'recipe',
+    );
+    
+    return await super.create(entity);
+  }
+
+  @override
+  Future<void> update(Recipe entity) async {
+    // Validate user owns the recipe they're updating
+    final currentUser = requireCurrentUserId();
+    
+    // First check if recipe exists and user owns it
+    final existing = await read(entity.id);
+    if (existing == null) {
+      throw ResourceNotFoundException(
+        'Recipe not found',
+        resourceType: 'recipe',
+        resourceId: entity.id,
+      );
+    }
+    
+    await validateOwnership(
+      currentUserId: currentUser,
+      resourceOwnerId: existing.socialData?.ownerId ?? existing.createdBy ?? '',
+      resourceType: 'recipe',
+      resourceId: entity.id,
+    );
+    
+    return await super.update(entity);
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    // Validate user owns the recipe they're deleting
+    final currentUser = requireCurrentUserId();
+    
+    // First check if recipe exists and user owns it
+    final existing = await read(id);
+    if (existing == null) {
+      throw ResourceNotFoundException(
+        'Recipe not found',
+        resourceType: 'recipe',
+        resourceId: id,
+      );
+    }
+    
+    await validateOwnership(
+      currentUserId: currentUser,
+      resourceOwnerId: existing.socialData?.ownerId ?? existing.createdBy ?? '',
+      resourceType: 'recipe',
+      resourceId: id,
+    );
+    
+    return await super.delete(id);
+  }
 
   @override
   Future<List<Recipe>> readAll() async {
