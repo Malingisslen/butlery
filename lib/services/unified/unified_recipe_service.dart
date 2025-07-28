@@ -80,7 +80,6 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     );
 
     _socialModule = SocialRecipeModule(
-      firestore: _firestore,
       cacheHelper: cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
