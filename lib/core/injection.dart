@@ -147,8 +147,8 @@ Future<void> initializeDependencies() async {
       debugPrint('✅ FirestoreRepository registrerad');
     }
 
-    // Register FirebaseFirestore instance for dependency injection
-    sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
+    // TODO: Remove direct FirebaseFirestore registration - services should use repositories
+    // sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
 
     // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
     sl.registerSingleton<RealtimeSyncService>(
@@ -242,7 +242,7 @@ Future<void> initializeDependencies() async {
 
     // ==================== UNIFIED RECIPE SYSTEM (PHASE 5) ====================
     sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
-      firestore: sl<FirebaseFirestore>(),
+      // TODO: Migrate to use RecipeRepository instead of direct Firestore
       authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
     ));
     if (kDebugMode) {
