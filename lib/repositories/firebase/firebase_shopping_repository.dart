@@ -356,12 +356,19 @@ class FirebaseShoppingRepository
     String? searchQuery,
     List<String>? tags,
   }) async {
+    // ✅ PERFORMANCE FIX: Improved query strategy to minimize client-side filtering
+    // Increase query limit to account for filtering, but cap at reasonable maximum
+    final queryLimit = searchQuery != null || (tags != null && tags.isNotEmpty) 
+        ? (limit * 3).clamp(20, 100) // Get more docs to filter from, but cap at 100
+        : limit;
+
     final query = _templatesRef
         .where('isPublic', isEqualTo: true)
         .orderBy('createdAt', descending: true)
-        .limit(limit);
+        .limit(queryLimit);
 
     // Note: Firestore doesn't support text search, so we'll filter client-side
+    // For production, consider implementing server-side search with Algolia or similar
     final snapshot = await query.get();
     
     var templates = snapshot.docs.map((doc) => {
@@ -387,7 +394,8 @@ class FirebaseShoppingRepository
       }).toList();
     }
 
-    return templates;
+    // Ensure we don't return more than requested limit
+    return templates.take(limit).toList();
   }
 
   @override

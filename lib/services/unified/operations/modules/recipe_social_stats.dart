@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/recipe_social_stats.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart' hide RatingStatistics;
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -22,13 +23,13 @@ import 'package:butlery/services/unified/operations/modules/rating_notifications
 /// ❌ DOES NOT CONTAIN: Complex implementation details, direct Firebase operations
 class RecipeSocialStats {
   final dynamic _parent; // UnifiedRecipeService
-  final FirebaseFirestore _firestore;
+  final FirestoreRepository _firestoreRepository;
   final NotificationService? _notificationService;
   
   // Module instances (only the ones we use as instances)
   late final RecipeRatingSystem _ratingSystem;
 
-  RecipeSocialStats(this._parent, this._firestore, this._notificationService) {
+  RecipeSocialStats(this._parent, RatingsRepository ratingsRepository, this._firestoreRepository, this._notificationService) {
     _ratingSystem = RecipeRatingSystem();
   }
 
@@ -68,7 +69,7 @@ class RecipeSocialStats {
     if (result) {
       // Update aggregated rating using RatingStatistics
       await RatingStatistics.updateRecipeRatingAggregate(
-        firestore: _firestore,
+        firestore: _firestoreRepository.firestore,
         recipeId: recipeId,
       );
 
@@ -133,7 +134,7 @@ class RecipeSocialStats {
     try {
       // Get comprehensive statistics using RatingStatistics
       final stats = await RatingStatistics.getRecipeStatistics(
-        firestore: _firestore,
+        firestore: _firestoreRepository.firestore,
         recipeId: recipeId,
         recipe: recipe,
       );
@@ -168,7 +169,7 @@ class RecipeSocialStats {
     }).toList();
 
     return RatingStatistics.getTopRatedRecipes(
-      firestore: _firestore,
+      firestore: _firestoreRepository.firestore,
       accessibleRecipes: accessibleRecipes,
       limit: limit,
       minRating: minRating,
@@ -192,7 +193,7 @@ class RecipeSocialStats {
     }).toList();
 
     return SocialEngagementMetrics.calculateUserSocialStats(
-      firestore: _firestore,
+      firestore: _firestoreRepository.firestore,
       userId: currentUserId!,
       userRecipes: userRecipes,
     );
@@ -242,7 +243,7 @@ class RecipeSocialStats {
   /// Update multiple rating aggregates
   Future<void> updateMultipleRatingAggregates(List<String> recipeIds) async {
     return RatingStatistics.updateMultipleRatingAggregates(
-      firestore: _firestore,
+      firestore: _firestoreRepository.firestore,
       recipeIds: recipeIds,
     );
   }
@@ -261,7 +262,7 @@ class RecipeSocialStats {
     }
 
     return RatingStatistics.getMultipleRecipeStatistics(
-      firestore: _firestore,
+      firestore: _firestoreRepository.firestore,
       recipeMap: recipeMap,
     );
   }

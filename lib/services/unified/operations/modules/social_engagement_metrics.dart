@@ -202,21 +202,30 @@ class SocialEngagementMetrics {
       var totalRatingsReceived = 0;
       var totalRatingSum = 0.0;
 
-      // Calculate ratings received on user's recipes
-      for (final recipe in userRecipes) {
-        final ratingsSnapshot = await firestore
-            .collection('recipe_ratings')
-            .where('recipeId', isEqualTo: recipe.id)
-            .get();
+      // ✅ PERFORMANCE FIX: Batch query instead of N+1 queries
+      // Extract all recipe IDs for batch querying
+      final recipeIds = userRecipes.map((r) => r.id).toList();
+      
+      if (recipeIds.isNotEmpty) {
+        // Batch query all ratings for user's recipes in chunks of 10 (Firestore limit)
+        const batchSize = 10;
+        for (int i = 0; i < recipeIds.length; i += batchSize) {
+          final batch = recipeIds.skip(i).take(batchSize).toList();
+          
+          final ratingsSnapshot = await firestore
+              .collection('recipe_ratings')
+              .where('recipeId', whereIn: batch)
+              .get();
 
-        for (final ratingDoc in ratingsSnapshot.docs) {
-          final rating = ratingDoc.data()['rating'] as double;
-          totalRatingsReceived++;
-          totalRatingSum += rating;
+          for (final ratingDoc in ratingsSnapshot.docs) {
+            final rating = ratingDoc.data()['rating'] as double;
+            totalRatingsReceived++;
+            totalRatingSum += rating;
+          }
         }
       }
 
-      // Calculate ratings given by user
+      // Calculate ratings given by user (single query)
       final givenRatingsSnapshot = await firestore
           .collection('recipe_ratings')
           .where('userId', isEqualTo: userId)

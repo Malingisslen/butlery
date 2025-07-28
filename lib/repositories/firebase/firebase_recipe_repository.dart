@@ -131,17 +131,34 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Stream<List<Recipe>> watchRecipes(String userId) {
     // Use the mixin method to get user-specific collection
+    // ✅ PERFORMANCE FIX: Added limit to prevent streaming large datasets
     return getCollectionForUser(userId)
         .orderBy('updatedAt', descending: true)
+        .limit(50) // Stream max 50 most recent recipes
         .snapshots()
         .map((snap) => snap.docs.map(fromFirestore).toList());
   }
 
   @override
   Future<List<Recipe>> searchRecipes(String query) async {
+    // ✅ PERFORMANCE FIX: Added limit and optimized search approach
+    // Instead of loading ALL recipes, we limit and use server-side orderBy for better performance
     final lower = query.toLowerCase();
-    final all = await readAll();
-    return all.where((r) => r.title.toLowerCase().contains(lower)).toList();
+    
+    // For small datasets, this is acceptable, but for optimization we could implement
+    // server-side text search with Algolia or similar in the future
+    final userId = currentUserId;
+    if (userId == null) return [];
+    
+    final snap = await getCollectionForUser(userId)
+        .orderBy('updatedAt', descending: true)
+        .limit(200) // Limit search scope to most recent 200 recipes
+        .get();
+    
+    return snap.docs
+        .map(fromFirestore)
+        .where((r) => r.title.toLowerCase().contains(lower))
+        .toList();
   }
 
   @override
@@ -177,8 +194,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<List<Recipe>> fetchArchiveRecipes() async {
     // Archive recipes are stored in a global collection, not user-scoped
-    final snap =
-        await FirebaseFirestore.instance.collection('butlery_archive').get();
+    // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
+    final snap = await FirebaseFirestore.instance
+        .collection('butlery_archive')
+        .orderBy('createdAt', descending: true)
+        .limit(100) // Load max 100 archive recipes
+        .get();
     return snap.docs.map(fromFirestore).toList();
   }
 

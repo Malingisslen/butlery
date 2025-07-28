@@ -218,18 +218,21 @@ class RatingStatistics {
 
       final recipeStats = <Map<String, dynamic>>[];
       
+      // ✅ PERFORMANCE FIX: Batch query cached stats instead of N+1 queries
+      // First, try to get cached stats for all recipes in batches
+      final cachedStatsMap = await _batchGetCachedRatingAggregates(
+        firestore: firestore,
+        recipeIds: accessibleRecipes.map((r) => r.id).toList(),
+      );
+      
       for (final recipe in accessibleRecipes) {
-        // Try to get cached aggregate first
-        final cachedStats = await getCachedRatingAggregate(
-          firestore: firestore,
-          recipeId: recipe.id,
-        );
-
         Map<String, dynamic> ratingStats;
+        final cachedStats = cachedStatsMap[recipe.id];
+        
         if (cachedStats != null) {
           ratingStats = cachedStats;
         } else {
-          // Calculate fresh stats
+          // Calculate fresh stats only for uncached recipes
           final fullStats = await getRecipeStatistics(
             firestore: firestore,
             recipeId: recipe.id,
@@ -448,6 +451,47 @@ class RatingStatistics {
   }
 
   // ===== BATCH OPERATIONS =====
+
+  /// Batch get cached rating aggregates for multiple recipes
+  /// ✅ PERFORMANCE FIX: Reduces N+1 queries to batch queries
+  static Future<Map<String, Map<String, dynamic>>> _batchGetCachedRatingAggregates({
+    required FirebaseFirestore firestore,
+    required List<String> recipeIds,
+  }) async {
+    final results = <String, Map<String, dynamic>>{};
+    
+    if (recipeIds.isEmpty) return results;
+    
+    // Firestore allows max 10 documents in whereIn query
+    const batchSize = 10;
+    
+    for (int i = 0; i < recipeIds.length; i += batchSize) {
+      final batch = recipeIds.skip(i).take(batchSize).toList();
+      
+      try {
+        final querySnapshot = await firestore
+            .collection(_socialStatsCollection)
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+            
+        for (final doc in querySnapshot.docs) {
+          if (doc.exists) {
+            final data = doc.data();
+            results[doc.id] = {
+              'count': data['ratingCount'] ?? 0,
+              'average': data['averageRating'] ?? 0.0,
+              'distribution': data['ratingDistribution'] ?? {},
+            };
+          }
+        }
+      } catch (e) {
+        AppLogger.error('Failed to batch get cached rating aggregates for batch: $batch', e);
+        // Continue with other batches
+      }
+    }
+    
+    return results;
+  }
 
   /// Update multiple recipe rating aggregates
   static Future<void> updateMultipleRatingAggregates({

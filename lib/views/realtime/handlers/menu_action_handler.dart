@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_colors.dart';
 
 /// Handler for menu action events in realtime menu view
@@ -208,63 +209,12 @@ class MenuActionHandler {
 
   /// Show delete confirmation dialog
   Future<bool> _showDeleteConfirmationDialog(menu) async {
-    final result = await showDialog<bool>(
+    final result = await CommonDialogActions.showDeleteConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        icon: const Icon(
-          Icons.warning_amber_rounded,
-          color: AppColors.warning,
-          size: 48,
-        ),
-        title: const Text('Ta bort meny'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Är du säker på att du vill ta bort menyn "${menu.menuTitle}"?'),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppColors.warning.withValues(alpha: 0.3),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppColors.warning,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Detta kan inte ångras. Alla deltagare kommer att förlora åtkomst.',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
+      itemName: menu.menuTitle,
+      itemType: 'meny',
+      warningMessage: 'Detta kan inte ångras. Alla deltagare kommer att förlora åtkomst.',
+      icon: Icons.restaurant_menu,
     );
 
     return result ?? false;

@@ -6,7 +6,9 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 
 /// GroupDetailActions - Group action methods
@@ -33,27 +35,13 @@ class GroupDetailActions {
     UserProfile member,
     FriendCategory group,
   ) async {
-    final shouldRemove = await showDialog<bool>(
+    final shouldRemove = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ta bort medlem'),
-        content: Text(
-          'Vill du ta bort ${member.displayName} från gruppen "${group.name}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
+      title: 'Ta bort medlem',
+      message: 'Vill du ta bort ${member.displayName} från gruppen "${group.name}"?',
+      confirmText: 'Ta bort',
+      icon: Icons.person_remove,
+      isDangerous: true,
     );
 
     if (shouldRemove == true) {
@@ -68,7 +56,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${member.displayName} har tagits bort från gruppen'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: AppColors.success,
             ),
           );
           // GroupEventBus.emit(GroupEventType.memberRemoved);
@@ -79,7 +67,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Kunde inte ta bort medlem: $e'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -157,9 +145,9 @@ class GroupDetailActions {
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Gruppen har uppdaterats'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
+            const SnackBar(
+              content: Text('Gruppen har uppdaterats'),
+              backgroundColor: AppColors.success,
             ),
           );
           // GroupEventBus.emit(GroupEventType.updated);
@@ -170,7 +158,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Kunde inte uppdatera grupp: $e'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -185,28 +173,12 @@ class GroupDetailActions {
     BuildContext context,
     FriendCategory group,
   ) async {
-    final shouldDelete = await showDialog<bool>(
+    final shouldDelete = await CommonDialogActions.showDeleteConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ta bort grupp'),
-        content: Text(
-          'Vill du ta bort gruppen "${group.name}"?\n\n'
-          'Denna åtgärd kan inte ångras.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
+      itemName: group.name,
+      itemType: 'grupp',
+      warningMessage: 'Denna åtgärd kan inte ångras.',
+      icon: Icons.group,
     );
 
     if (shouldDelete == true) {
@@ -216,9 +188,9 @@ class GroupDetailActions {
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Gruppen har tagits bort'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
+            const SnackBar(
+              content: Text('Gruppen har tagits bort'),
+              backgroundColor: AppColors.success,
             ),
           );
           // GroupEventBus.emit(GroupEventType.deleted);
@@ -230,7 +202,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Kunde inte ta bort grupp: $e'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -245,28 +217,13 @@ class GroupDetailActions {
     BuildContext context,
     FriendCategory group,
   ) async {
-    final shouldLeave = await showDialog<bool>(
+    final shouldLeave = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lämna grupp'),
-        content: Text(
-          'Vill du lämna gruppen "${group.name}"?\n\n'
-          'Du kan bli inbjuden igen av andra medlemmar.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Lämna'),
-          ),
-        ],
-      ),
+      title: 'Lämna grupp',
+      message: 'Vill du lämna gruppen "${group.name}"?\n\nDu kan bli inbjuden igen av andra medlemmar.',
+      confirmText: 'Lämna',
+      icon: Icons.exit_to_app,
+      isDangerous: true,
     );
 
     if (shouldLeave == true) {
@@ -283,9 +240,9 @@ class GroupDetailActions {
 
           if (success && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Du har lämnat gruppen'),
-                backgroundColor: Theme.of(context).colorScheme.primary,
+              const SnackBar(
+                content: Text('Du har lämnat gruppen'),
+                backgroundColor: AppColors.success,
               ),
             );
             // GroupEventBus.emit(GroupEventType.memberRemoved);
@@ -298,7 +255,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Kunde inte lämna grupp: $e'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: AppColors.error,
             ),
           );
         }

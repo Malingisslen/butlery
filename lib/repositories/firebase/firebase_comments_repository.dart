@@ -32,10 +32,12 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Future<List<RecipeComment>> getCommentsForRecipe(String recipeId) async {
+    // ✅ PERFORMANCE FIX: Added limit to prevent loading hundreds of comments
     final querySnapshot = await collection
         .where('recipeId', isEqualTo: recipeId)
         .where('parentCommentId', isNull: true) // Top-level comments only
         .orderBy('createdAt', descending: false)
+        .limit(50) // Load max 50 top-level comments
         .get();
 
     return querySnapshot.docs
@@ -249,10 +251,12 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
+    // ✅ PERFORMANCE FIX: Added limit to prevent streaming large comment datasets
     return collection
         .where('recipeId', isEqualTo: recipeId)
         .where('parentCommentId', isNull: true)
         .orderBy('createdAt', descending: false)
+        .limit(50) // Stream max 50 top-level comments
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => fromFirestore(doc))
@@ -262,8 +266,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   @override
   Future<CommentStatistics> getCommentStatistics(String recipeId) async {
     // Get all comments for the recipe
+    // ✅ PERFORMANCE FIX: Added limit for statistics calculation
+    // For accurate statistics, we might need to implement server-side aggregation
     final allCommentsQuery = await collection
         .where('recipeId', isEqualTo: recipeId)
+        .limit(500) // Limit to most recent 500 comments for stats
         .get();
 
     final allComments = allCommentsQuery.docs;

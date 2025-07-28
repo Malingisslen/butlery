@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 
 /// Shopping list actions handler
 ///
@@ -180,34 +181,12 @@ class ShoppingListActions {
     UnifiedShoppingList list,
     UnifiedShoppingViewModel viewModel,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await CommonDialogActions.showDeleteConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: AppColors.error),
-            SizedBox(width: AppDimensions.spacingM),
-            Text('Ta bort lista'),
-          ],
-        ),
-        content: Text(
-          'Är du säker på att du vill ta bort "${list.name}"?\n\n'
-          'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
+      itemName: list.name,
+      itemType: 'handlista',
+      warningMessage: 'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
+      icon: Icons.list,
     );
 
     if (confirmed == true) {
@@ -271,24 +250,12 @@ class ShoppingListActions {
     UnifiedShoppingList list,
     int itemCount,
   ) async {
-    final result = await showDialog<bool>(
+    final result = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Lägg till i "${list.name}"'),
-        content: Text(
-          'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Lägg till'),
-          ),
-        ],
-      ),
+      title: 'Lägg till i "${list.name}"',
+      message: 'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
+      confirmText: 'Lägg till',
+      icon: Icons.add_shopping_cart,
     );
 
     return result ?? false;

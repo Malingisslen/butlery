@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
@@ -72,25 +73,9 @@ class RecipeDetailActions {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
-    final confirmed = await showDialog<bool>(
+    final confirmed = await CommonDialogActions.showRecipeDeleteConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ta bort recept'),
-        content: const Text('Är du säker på att du vill ta bort detta recept?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
+      recipeName: viewModel.recipe.core.title,
     );
 
     if (confirmed == true) {
