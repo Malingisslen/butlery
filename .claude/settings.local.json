@@ -10,7 +10,7 @@
       "Bash(flutter build:*)",
       "Bash(/mnt/c/tools/flutter/bin/flutter analyze)",
       "Bash(/mnt/c/tools/flutter/bin/flutter analyze --no-pub)",
-      "Bash(cmd.exe /c \"flutter *\")",
+      "Bash(flutter *)",
       "Bash(~/flutter-smart.sh *)",
       "Bash(awk:*)",
       "Bash(git checkout:*)",
@@ -22,15 +22,15 @@
       "Bash(do echo \"=== $file ===\")",
       "Bash(done)",
       "Bash(git add:*)",
-      "Bash(cmd.exe /c \"flutter doctor --version\")",
-      "Bash(cmd.exe /c \"flutter analyze\")",
-      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/core/utils/error_handler.dart lib/core/utils/service_optimizer.dart lib/core/mixins/performance_monitoring_mixin.dart\")",
-      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos\")",
-      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/widgets/common/content_card.dart\")",
-      "Bash(cmd.exe /c \"flutter pub get\")",
-      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/services/notifications/\")",
-      "Bash(cmd.exe /c \"flutter analyze --no-fatal-infos lib/models/user_profile.dart lib/services/user_service.dart lib/repositories/\")",
-      "Bash(cmd.exe:*)",
+      "Bash(flutter doctor --version)",
+      "Bash(flutter analyze)",
+      "Bash(flutter analyze --no-fatal-infos lib/core/utils/error_handler.dart lib/core/utils/service_optimizer.dart lib/core/mixins/performance_monitoring_mixin.dart)",
+      "Bash(flutter analyze --no-fatal-infos)",
+      "Bash(flutter analyze --no-fatal-infos lib/widgets/common/content_card.dart)",
+      "Bash(flutter pub get)",
+      "Bash(flutter analyze --no-fatal-infos lib/services/notifications/)",
+      "Bash(flutter analyze --no-fatal-infos lib/models/user_profile.dart lib/services/user_service.dart lib/repositories/)",
+      "Bash(flutter:*)",
       "Bash(cp:*)",
       "Bash(dart tools/validate_architecture.dart:*)",
       "Bash(jq:*)",
@@ -72,7 +72,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo '🔍 Running Flutter analysis...' && if ! cmd.exe /c 'flutter analyze' > /dev/null 2>&1; then echo '❌ Analysis failed - running auto-fix...' && cmd.exe /c 'dart fix --apply' && echo '🔧 Auto-fix completed - re-running analysis...' && cmd.exe /c 'flutter analyze'; fi && echo '🏗️ Running architecture validation...' && dart run tools/validate_architecture.dart && echo '✅ All validations passed - committing changes' && git add . && git commit -m \"feat: auto-commit with validation and fixes\n\n🤖 Generated with Claude Code (https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\" && echo '✅ Changes committed successfully'",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo '🔍 Running Flutter analysis...' && if ! flutter analyze > /dev/null 2>&1; then echo '❌ Analysis failed - running auto-fix...' && dart fix --apply && echo '🔧 Auto-fix completed - re-running analysis...' && flutter analyze; fi && echo '🏗️ Running architecture validation...' && dart run tools/validate_architecture.dart && echo '✅ All validations passed - committing changes' && git add . && git commit -m \"feat: auto-commit with validation and fixes\n\n🤖 Generated with Claude Code (https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\" && echo '✅ Changes committed successfully'",
             "timeout": 90
           }
         ]
