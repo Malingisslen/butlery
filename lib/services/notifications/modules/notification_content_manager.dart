@@ -1,7 +1,6 @@
 // lib/services/notifications/modules/notification_content_manager.dart
 
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -19,7 +18,6 @@ class NotificationContentManager {
   final String _userId;
 
   NotificationContentManager({
-    required FirebaseFirestore firestore,
     required String userId,
   }) : _userId = userId;
 

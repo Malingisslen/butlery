@@ -1,12 +1,11 @@
 // lib/services/notifications/notification_service.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
 import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
@@ -14,6 +13,8 @@ import 'package:butlery/services/notifications/modules/notification_offline_mana
 import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_analytics_manager.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:get_it/get_it.dart';
 
 /// Clean coordinator for all notification functionality in Butlery
 /// 
@@ -38,7 +39,7 @@ class NotificationService extends BaseService {
   @override
   String get serviceName => 'NotificationService';
   final String _userId;
-  late final NotificationRepository _repository;
+  late final legacy.NotificationRepository _repository;
   
   // Focused notification modules (Single Responsibility)
   late final NotificationContentManager _contentManager;
@@ -51,22 +52,21 @@ class NotificationService extends BaseService {
   bool _isInitialized = false;
 
   NotificationService({
-    required FirebaseFirestore firestore,
     required String userId,
   }) : _userId = userId {
-    _repository = NotificationRepository(
-      firestore: firestore,
+    final notificationsRepository = GetIt.instance<NotificationsRepository>();
+    
+    _repository = legacy.NotificationRepository(
       userId: userId,
     );
     
     // Initialize all focused modules
     _contentManager = NotificationContentManager(
-      firestore: firestore,
       userId: userId,
     );
     
     _preferenceManager = NotificationPreferenceManager(
-      firestore: firestore,
+      notificationsRepository: notificationsRepository,
       userId: userId,
     );
     
@@ -76,19 +76,16 @@ class NotificationService extends BaseService {
     );
     
     _batchManager = NotificationBatchManager(
-      firestore: firestore,
       userId: userId,
       repository: _repository,
       sendBatchCallback: _sendBatchedNotification,
     );
     
     _tokenManager = FCMTokenManager(
-      firestore: firestore,
       userId: userId,
     );
     
     _analyticsManager = NotificationAnalyticsManager(
-      firestore: firestore,
       userId: userId,
     );
   }
@@ -477,7 +474,7 @@ class NotificationService extends BaseService {
   }
   
   /// Callback for sending batched notifications from batch manager
-  Future<void> _sendBatchedNotification(NotificationBatch batch) async {
+  Future<void> _sendBatchedNotification(legacy.NotificationBatch batch) async {
     if (batch.notifications.isNotEmpty) {
       final template = batch.notifications.first;
       final notificationId = _contentManager.generateNotificationId(
@@ -494,17 +491,15 @@ class NotificationService extends BaseService {
   }
 
   /// Get notification preferences for current user
-  Future<NotificationPreferences> getPreferences() async {
+  Future<legacy.NotificationPreferences> getPreferences() async {
     return await _preferenceManager.getPreferences();
   }
 
   /// Update notification preferences for current user
-  Future<void> updatePreferences(NotificationPreferences preferences) async {
+  Future<void> updatePreferences(legacy.NotificationPreferences preferences) async {
     await _preferenceManager.updatePreferences(preferences);
-    
-    // Update topic subscriptions based on new preferences
-    await _tokenManager.updateTopicSubscriptions(preferences);
   }
+
 
   // ===== PUBLIC UTILITY METHODS =====
   

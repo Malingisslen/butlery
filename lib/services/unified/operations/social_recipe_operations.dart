@@ -42,7 +42,6 @@ class SocialRecipeOperations {
       final currentUserId = _parent.currentUserId;
       if (currentUserId != null) {
         _notificationService = NotificationService(
-          firestore: _parent.firestore,
           userId: currentUserId,
         );
         _notificationService?.initialize();

@@ -72,7 +72,6 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     final cacheHelper = JsonCacheFactory.recipeCache();
     
     _personalModule = PersonalRecipeModule(
-      firestore: _firestore,
       cacheHelper: cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -102,7 +101,6 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     );
 
     _cacheModule = RecipeCacheModule(
-      firestore: _firestore,
       cacheHelper: cacheHelper,
       getCurrentUserId: () => currentUserId,
       setError: _setError,

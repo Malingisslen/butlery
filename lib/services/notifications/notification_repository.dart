@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:get_it/get_it.dart';
 
 /// Repository for managing notification preferences and history
 /// 
@@ -28,9 +29,8 @@ class NotificationRepository {
   static const String _batchingCollection = 'notification_batches';
 
   NotificationRepository({
-    required FirebaseFirestore firestore,
     required String userId,
-  }) : _firestore = firestore, _userId = userId;
+  }) : _firestore = GetIt.instance<FirebaseFirestore>(), _userId = userId;
 
   /// Get user's notification preferences with caching
   Future<NotificationPreferences> getPreferences() async {

@@ -68,7 +68,6 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
       final currentUserId = _getCurrentUserId();
       if (currentUserId != null) {
         _notificationService = notif.NotificationService(
-          firestore: _firestore,
           userId: currentUserId,
         );
         _notificationService?.initialize();

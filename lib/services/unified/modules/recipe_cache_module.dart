@@ -1,7 +1,7 @@
 // lib/services/unified/modules/recipe_cache_module.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Firebase imports removed - using repository pattern
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -22,14 +22,14 @@ import 'package:butlery/services/unified/modules/cache_optimization.dart';
 ///
 /// ❌ DOES NOT CONTAIN: Complex implementation details, direct Firebase/cache logic
 class RecipeCacheModule {
-  final FirebaseFirestore _firestore;
+  // Firebase instance removed - using repository pattern instead
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final void Function(String) _setError;
   final void Function() _notifyListeners;
 
   /// Sync subscriptions (delegated to FirebaseSyncManager)
-  final Map<String, StreamSubscription<QuerySnapshot>> _syncSubscriptions = {};
+  final Map<String, StreamSubscription> _syncSubscriptions = {};
   
   /// Pending sync items (delegated to DebouncedSyncOperations)
   final Set<String> _pendingSyncIds = {};
@@ -43,13 +43,11 @@ class RecipeCacheModule {
   static const Duration _cacheCleanupInterval = Duration(hours: 24);
 
   RecipeCacheModule({
-    required FirebaseFirestore firestore,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     required void Function() notifyListeners,
-  })  : _firestore = firestore,
-        _cacheHelper = cacheHelper,
+  })  : _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _setError = setError,
         _notifyListeners = notifyListeners {
@@ -126,7 +124,6 @@ class RecipeCacheModule {
 
       // Start sync using FirebaseSyncManager
       final subscriptions = await FirebaseSyncManager.startFirebaseSync(
-        firestore: _firestore,
         currentUserId: currentUserId,
         onRecipeUpdated: _updateCachedRecipe,
         onRecipeRemoved: _removeCachedRecipe,
@@ -211,7 +208,6 @@ class RecipeCacheModule {
     await DebouncedSyncOperations.syncPendingRecipes(
       pendingSyncIds: _pendingSyncIds,
       recipeLoader: loadRecipeFromCache,
-      firestore: _firestore,
       currentUserId: _getCurrentUserId(),
     );
   }
