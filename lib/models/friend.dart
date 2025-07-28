@@ -1,4 +1,4 @@
-﻿// lib/models/friend.dart
+// lib/models/friend.dart
 class Friend {
   final String id;
   final String name;
