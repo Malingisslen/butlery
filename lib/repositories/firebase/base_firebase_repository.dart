@@ -67,6 +67,10 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
   @protected
   FirebaseFirestore get firestore => _firestore;
 
+  /// Protected access to AuthRepository instance for subclasses
+  @protected
+  AuthRepository get authRepository => _authRepository;
+
   // ===== ABSTRACT METHODS FOR SUBCLASSES =====
 
   /// The name of the Firestore collection

@@ -8,6 +8,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+// Using existing permission exceptions
 
 /// Repository for handling shopping lists stored in Firestore.
 ///
@@ -210,5 +211,231 @@ class FirebaseShoppingRepository
     } catch (e) {
       return const Stream.empty();
     }
+  }
+
+  // ===== TEMPLATE OPERATIONS =====
+
+  CollectionReference<Map<String, dynamic>> get _templatesRef =>
+      FirebaseFirestore.instance.collection('shoppingListTemplates');
+
+  @override
+  Future<String> saveAsTemplate({
+    required String listId,
+    required String templateName,
+    String? description,
+    List<String>? tags,
+    bool isPublic = false,
+  }) async {
+    final uid = requireCurrentUserId();
+    
+    // Get the list to convert to template
+    final list = await read(listId);
+    if (list == null) {
+      throw ResourceNotFoundException(
+        'Shopping list not found',
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+    }
+
+    // Verify ownership
+    await validateOwnership(
+      currentUserId: uid,
+      resourceOwnerId: list.ownerId,
+      resourceType: 'shopping_list',
+      resourceId: listId,
+    );
+
+    // Create template data
+    final templateData = {
+      'name': templateName.trim(),
+      'description': description?.trim(),
+      'ownerId': uid,
+      'ownerDisplayName': authRepository.currentUser?.displayName,
+      'originalListId': listId,
+      'items': list.items.map((item) => item.toFirestore()).toList(),
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'isPublic': isPublic,
+      'tags': tags ?? <String>[],
+      'metadata': {
+        'itemCount': list.items.length,
+        'version': '1.0',
+      },
+    };
+
+    final docRef = await _templatesRef.add(templateData);
+    return docRef.id;
+  }
+
+  @override
+  Future<void> updateTemplate({
+    required String templateId,
+    String? name,
+    String? description,
+    List<String>? tags,
+    bool? isPublic,
+  }) async {
+    final uid = requireCurrentUserId();
+    
+    final templateRef = _templatesRef.doc(templateId);
+    final templateDoc = await templateRef.get();
+    
+    if (!templateDoc.exists) {
+      throw ResourceNotFoundException(
+        'Template not found',
+        resourceType: 'template',
+        resourceId: templateId,
+      );
+    }
+
+    final templateData = templateDoc.data()!;
+    await validateOwnership(
+      currentUserId: uid,
+      resourceOwnerId: templateData['ownerId'] as String,
+      resourceType: 'template',
+      resourceId: templateId,
+    );
+
+    final updateData = <String, dynamic>{
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (name != null) updateData['name'] = name.trim();
+    if (description != null) updateData['description'] = description.trim();
+    if (tags != null) updateData['tags'] = tags;
+    if (isPublic != null) updateData['isPublic'] = isPublic;
+
+    await templateRef.update(updateData);
+  }
+
+  @override
+  Future<void> deleteTemplate(String templateId) async {
+    final uid = requireCurrentUserId();
+    
+    final templateRef = _templatesRef.doc(templateId);
+    final templateDoc = await templateRef.get();
+    
+    if (!templateDoc.exists) {
+      throw ResourceNotFoundException(
+        'Template not found',
+        resourceType: 'template',
+        resourceId: templateId,
+      );
+    }
+
+    final templateData = templateDoc.data()!;
+    await validateOwnership(
+      currentUserId: uid,
+      resourceOwnerId: templateData['ownerId'] as String,
+      resourceType: 'template',
+      resourceId: templateId,
+    );
+
+    await templateRef.delete();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUserTemplates() async {
+    final uid = requireCurrentUserId();
+    
+    final snapshot = await _templatesRef
+        .where('ownerId', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => {
+      'id': doc.id,
+      ...doc.data(),
+    }).toList();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getPublicTemplates({
+    int limit = 20,
+    String? searchQuery,
+    List<String>? tags,
+  }) async {
+    final query = _templatesRef
+        .where('isPublic', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    // Note: Firestore doesn't support text search, so we'll filter client-side
+    final snapshot = await query.get();
+    
+    var templates = snapshot.docs.map((doc) => {
+      'id': doc.id,
+      ...doc.data(),
+    }).toList();
+
+    // Client-side filtering for search query
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      final lowerQuery = searchQuery.toLowerCase();
+      templates = templates.where((template) {
+        final name = (template['name'] as String? ?? '').toLowerCase();
+        final description = (template['description'] as String? ?? '').toLowerCase();
+        return name.contains(lowerQuery) || description.contains(lowerQuery);
+      }).toList();
+    }
+
+    // Client-side filtering for tags
+    if (tags != null && tags.isNotEmpty) {
+      templates = templates.where((template) {
+        final templateTags = List<String>.from(template['tags'] ?? []);
+        return tags.any((tag) => templateTags.contains(tag));
+      }).toList();
+    }
+
+    return templates;
+  }
+
+  @override
+  Future<String> createListFromTemplate({
+    required String templateId,
+    required String listName,
+    String? description,
+  }) async {
+    final uid = requireCurrentUserId();
+    
+    // Get template
+    final templateDoc = await _templatesRef.doc(templateId).get();
+    if (!templateDoc.exists) {
+      throw ResourceNotFoundException(
+        'Template not found',
+        resourceType: 'template',
+        resourceId: templateId,
+      );
+    }
+
+    final templateData = templateDoc.data()!;
+    
+    // Check if template is public or user owns it
+    final isPublic = templateData['isPublic'] as bool? ?? false;
+    final templateOwnerId = templateData['ownerId'] as String;
+    
+    if (!isPublic && templateOwnerId != uid) {
+      throw PermissionDeniedException(
+        'No access to private template',
+        resource: 'template:$templateId',
+        userId: uid,
+      );
+    }
+
+    // Create shopping list from template
+    final templateItems = List<Map<String, dynamic>>.from(templateData['items'] ?? []);
+    final items = templateItems.map((itemData) => 
+        UnifiedShoppingItem.fromFirestore(itemData)).toList();
+
+    final newList = UnifiedShoppingList(
+      name: listName.trim(),
+      description: description?.trim(),
+      ownerId: uid,
+      ownerDisplayName: authRepository.currentUser?.displayName ?? 'Unknown User',
+      items: items,
+    );
+
+    final createdList = await create(newList);
+    return createdList.id;
   }
 }

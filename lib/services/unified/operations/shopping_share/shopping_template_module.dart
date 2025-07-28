@@ -1,14 +1,15 @@
 // lib/services/unified/operations/shopping_share/shopping_template_module.dart
 
-// TODO: Refactor to use repository pattern instead of direct Firebase access
-// This module needs a TemplateRepository to handle template CRUD operations
+// Firebase access refactored to use repository pattern
+// Now uses ShoppingRepository for all template CRUD operations
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:butlery/models/unified/unified_shopping_list.dart';
+// UnifiedShoppingList import removed - operations now handled by repository
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/services/unified/operations/shopping_share/shared/shopping_share_utils.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
+import 'package:get_it/get_it.dart';
 
 /// Shopping list template module
 /// 
@@ -21,8 +22,9 @@ import 'package:butlery/services/unified/operations/shopping_share/shared/shoppi
 /// ❌ DOES NOT CONTAIN: Sharing, export, import, social features
 class ShoppingTemplateModule {
   final dynamic _parent; // UnifiedShoppingService
+  final ShoppingRepository _shoppingRepository;
 
-  ShoppingTemplateModule(this._parent);
+  ShoppingTemplateModule(this._parent) : _shoppingRepository = GetIt.instance<ShoppingRepository>();
 
   // ===== TEMPLATE CREATION =====
 
@@ -55,26 +57,14 @@ class ShoppingTemplateModule {
         return false;
       }
       
-      // Save template to Firestore
-      final firestore = FirebaseFirestore.instance;
-      await firestore.collection('shoppingListTemplates').add({
-        'name': templateName.trim(),
-        'description': description?.trim(),
-        'ownerId': currentUser.uid,
-        'ownerDisplayName': currentUser.displayName,
-        'originalListId': listId,
-        'items': _createTemplateItems(list!),
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        'isPublic': isPublic,
-        'tags': tags ?? <String>[],
-        'statistics': ShoppingShareUtils.getListStatistics(list),
-        'metadata': {
-          'itemCount': list.items.length,
-          'categoryCount': _getCategoryCount(list),
-          'version': '1.0',
-        },
-      });
+      // Save template using repository
+      await _shoppingRepository.saveAsTemplate(
+        listId: listId,
+        templateName: templateName.trim(),
+        description: description?.trim(),
+        tags: tags,
+        isPublic: isPublic,
+      );
       
       AppLogger.success('✅ Template saved: $templateName');
       return true;
@@ -101,35 +91,14 @@ class ShoppingTemplateModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
-      final firestore = FirebaseFirestore.instance;
-      final templateDoc = firestore.collection('shoppingListTemplates').doc(templateId);
-
-      // Verify ownership
-      final templateSnapshot = await templateDoc.get();
-      if (!templateSnapshot.exists || 
-          templateSnapshot.data()!['ownerId'] != currentUserId) {
-        AppLogger.error('Template not found or access denied');
-        return false;
-      }
-
-      final updateData = <String, dynamic>{
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      if (name != null && name.trim().isNotEmpty) {
-        updateData['name'] = name.trim();
-      }
-      if (description != null) {
-        updateData['description'] = description.trim().isEmpty ? null : description.trim();
-      }
-      if (tags != null) {
-        updateData['tags'] = tags;
-      }
-      if (isPublic != null) {
-        updateData['isPublic'] = isPublic;
-      }
-
-      await templateDoc.update(updateData);
+      // Update template using repository
+      await _shoppingRepository.updateTemplate(
+        templateId: templateId,
+        name: name?.trim().isEmpty == true ? null : name?.trim(),
+        description: description?.trim().isEmpty == true ? null : description?.trim(),
+        tags: tags,
+        isPublic: isPublic,
+      );
       
       AppLogger.success('✅ Template updated');
       return true;
@@ -152,33 +121,14 @@ class ShoppingTemplateModule {
         return null;
       }
 
-      // Load template data from Firebase
-      final templateDoc = await FirebaseFirestore.instance
-          .collection('shoppingListTemplates')
-          .doc(templateId)
-          .get();
-
-      if (!templateDoc.exists) {
-        AppLogger.error('Template not found');
-        return null;
-      }
-
-      final templateData = templateDoc.data()!;
-      final listName = customName ?? '${templateData['name']} (från mall)';
-      final itemsData = templateData['items'] as List<dynamic>? ?? [];
-
-      // Create items from template
-      final items = itemsData.map((itemData) => _createItemFromTemplate(itemData)).toList();
-
-      // Create new shopping list
-      final listId = await _parent.createPersonalList(listName, items: items);
-      if (listId != null) {
-        AppLogger.success('✅ Created list from template: $listName');
-
-        // Update template usage statistics
-        await _updateTemplateUsageStats(templateId);
-      }
+      // Create list from template using repository
+      final listName = customName ?? 'Lista från mall';
+      final listId = await _shoppingRepository.createListFromTemplate(
+        templateId: templateId,
+        listName: listName,
+      );
       
+      AppLogger.success('✅ Created list from template: $listName');
       return listId;
     } catch (e) {
       AppLogger.error('Failed to create list from template', e);
@@ -196,29 +146,8 @@ class ShoppingTemplateModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('shoppingListTemplates')
-          .where('ownerId', isEqualTo: currentUserId)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        final metadata = data['metadata'] as Map<String, dynamic>? ?? {};
-        
-        return {
-          'id': doc.id,
-          'name': data['name'] ?? 'Namnlös mall',
-          'description': data['description'],
-          'createdAt': data['createdAt'],
-          'updatedAt': data['updatedAt'],
-          'isPublic': data['isPublic'] ?? false,
-          'tags': data['tags'] ?? [],
-          'itemCount': metadata['itemCount'] ?? 0,
-          'categoryCount': metadata['categoryCount'] ?? 0,
-          'usageCount': data['usageCount'] ?? 0,
-        };
-      }).toList();
+      // Get user templates using repository
+      return await _shoppingRepository.getUserTemplates();
     } catch (e) {
       AppLogger.error('Failed to get templates', e);
       return [];
@@ -236,18 +165,8 @@ class ShoppingTemplateModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
-      final firestore = FirebaseFirestore.instance;
-      final templateDoc = firestore.collection('shoppingListTemplates').doc(templateId);
-
-      // Verify ownership
-      final templateSnapshot = await templateDoc.get();
-      if (!templateSnapshot.exists || 
-          templateSnapshot.data()!['ownerId'] != currentUserId) {
-        AppLogger.error('Template not found or access denied');
-        return false;
-      }
-
-      await templateDoc.delete();
+      // Delete template using repository
+      await _shoppingRepository.deleteTemplate(templateId);
       
       AppLogger.success('✅ Template deleted');
       return true;
@@ -264,53 +183,5 @@ class ShoppingTemplateModule {
     return _parent.lists.where((list) => list.id == listId).firstOrNull;
   }
 
-  /// Create template items from shopping list
-  List<Map<String, dynamic>> _createTemplateItems(UnifiedShoppingList list) {
-    return list.items.map((item) => {
-      'name': item.name,
-      'amount': item.amount,
-      'unit': item.unit,
-      'category': item.category,
-      'note': item.note,
-      'estimatedPrice': item.estimatedPrice,
-      'priority': item.priority,
-    }).toList();
-  }
-
-  /// Create shopping item from template data
-  dynamic _createItemFromTemplate(Map<String, dynamic> itemData) {
-    // This would use the UnifiedShoppingItem constructor
-    // The exact implementation depends on the item model
-    return {
-      'name': itemData['name'] ?? 'Okänd artikel',
-      'amount': (itemData['amount'] as num?)?.toDouble() ?? 1.0,
-      'unit': itemData['unit'] ?? '',
-      'category': itemData['category'] ?? 'Övrigt',
-      'note': itemData['note'],
-      'estimatedPrice': (itemData['estimatedPrice'] as num?)?.toDouble(),
-      'priority': itemData['priority'] ?? 3,
-    };
-  }
-
-  /// Get unique category count from list
-  int _getCategoryCount(UnifiedShoppingList list) {
-    final categories = list.items.map((item) => item.category).where((c) => c.isNotEmpty).toSet();
-    return categories.length;
-  }
-
-  /// Update template usage statistics
-  Future<void> _updateTemplateUsageStats(String templateId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('shoppingListTemplates')
-          .doc(templateId)
-          .update({
-        'usageCount': FieldValue.increment(1),
-        'lastUsedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      AppLogger.debug('Failed to update template usage stats: $e');
-      // Non-critical error, don't propagate
-    }
-  }
+  // Other helper methods removed - template operations now handled by repository layer
 }
