@@ -267,6 +267,7 @@ Future<void> initializeDependencies() async {
 
     sl.registerLazySingleton<SocialMenuOperations>(
       () => SocialMenuOperations(
+        // TODO: Migrate to use MenuRepository instead of direct Firestore
         firestore: FirebaseFirestore.instance,
         friendsService: sl<UnifiedFriendsService>(),
       ),
