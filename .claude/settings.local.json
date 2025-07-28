@@ -60,7 +60,8 @@
       "Bash(find /mnt/c/Butlery/butlery -name \".DS_Store\" -o -name \"Thumbs.db\" -o -name \"*.swp\" -o -name \"*.swo\" -o -name \"*~\" -type f)",
       "Bash(grep -n \"2.3 Large File Refactoring\" /mnt/c/Butlery/butlery/tasks/todo.md)",
       "Bash(grep -n \"2\\.3.*Large.*File\" /mnt/c/Butlery/butlery/tasks/todo.md)",
-      "Bash(grep -n \"Current Session:\" /mnt/c/Butlery/butlery/tasks/todo.md)"
+      "Bash(grep -n \"Current Session:\" /mnt/c/Butlery/butlery/tasks/todo.md)",
+      "Bash(tree:*)"
     ],
     "deny": []
   },

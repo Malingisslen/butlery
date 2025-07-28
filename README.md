@@ -107,14 +107,18 @@ flutter build apk --release --dart-define=ENV=production
 
 ### Essential Guides
 - **`CLAUDE.md`** - Development workflow and standards
-- **`ENV_SETUP.md`** - Environment configuration and security
-- **`FIREBASE_SECURITY_RULES.md`** - Security implementation details
-- **`NOTIFICATION_SYSTEM.md`** - Push notification architecture
+- **`docs/setup/ENV_SETUP.md`** - Environment configuration and security
+- **`docs/security/FIREBASE_SECURITY_RULES.md`** - Security implementation details
+- **`docs/architecture/NOTIFICATION_SYSTEM.md`** - Push notification architecture
 - **`tasks/todo.md`** - Current roadmap and implementation plan
 
 ### Architecture Documentation
 - **`docs/priority_2_completion_summary.md`** - Latest architectural improvements
+- **`docs/architecture/`** - System architecture and design
+- **`docs/security/`** - Security implementation and guidelines
+- **`docs/setup/`** - Development environment setup
 - **`docs/archived/`** - Historical reports and analysis
+- **`reports/`** - Generated validation reports and metrics
 
 ## 🔐 Security
 
