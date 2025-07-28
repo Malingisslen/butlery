@@ -227,7 +227,6 @@ class RecipeCommentsManager {
     }
 
     final result = await CommentLikesSystem.toggleCommentLike(
-      firestore: _firestore,
       commentId: commentId,
       currentUserId: currentUserId!,
     );
