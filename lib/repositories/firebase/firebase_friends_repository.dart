@@ -9,38 +9,57 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
-/// Repository handling friend requests and friends collections in Firestore.
-///
-/// Refactored to extend BaseFirebaseRepository for UserProfile CRUD operations,
-/// eliminating 25+ lines of duplicate code while maintaining specialized functionality.
+// Import focused repositories
+import 'package:butlery/repositories/firebase/friends/friend_request_repository.dart';
+import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
+import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:butlery/repositories/firebase/friends/group_invitation_repository.dart';
+
+/// Firebase Friends Repository (Facade)
+/// 
+/// Maintains backward compatibility while delegating to focused repositories.
+/// This facade provides the same interface as the original monolithic repository
+/// while internally using the 4 focused repositories for better separation of concerns.
+/// 
+/// Focused Repositories:
+/// - FriendRequestRepository: Friend request operations and management
+/// - FriendRelationshipRepository: Friend relationship management and user profile operations
+/// - FriendCategoryRepository: Friend category operations and management  
+/// - GroupInvitationRepository: Group invitation operations and cleanup tasks
 class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     implements FriendsRepository {
+  
+  // Focused repositories
+  late final FriendRequestRepository _friendRequestRepo;
+  late final FriendRelationshipRepository _friendRelationshipRepo;
+  late final FriendCategoryRepository _friendCategoryRepo;
+  late final GroupInvitationRepository _groupInvitationRepo;
+
   FirebaseFriendsRepository({
     super.firestore,
     AuthRepository? authRepository,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
-
-  CollectionReference<Map<String, dynamic>> get _friendRequestsRef =>
-      FirebaseFirestore.instance.collection('friend_requests');
-
-  CollectionReference<Map<String, dynamic>> _userFriendsRef(String userId) =>
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('friends');
-
-  CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('friendCategories');
-
-  CollectionReference<Map<String, dynamic>> get _invitationsRef =>
-      FirebaseFirestore.instance.collection('group_invitations');
+        ) {
+    // Initialize focused repositories
+    _friendRequestRepo = FriendRequestRepository(
+      firestore: firestore,
+      authRepository: this.authRepository,
+    );
+    _friendRelationshipRepo = FriendRelationshipRepository(
+      firestore: firestore,
+      authRepository: this.authRepository,
+    );
+    _friendCategoryRepo = FriendCategoryRepository(
+      firestore: firestore,
+      authRepository: this.authRepository,
+    );
+    _groupInvitationRepo = GroupInvitationRepository(
+      firestore: firestore,
+      authRepository: this.authRepository,
+    );
+  }
 
   // ===== BASE CLASS IMPLEMENTATION =====
 
@@ -57,642 +76,271 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   @override
   String getId(UserProfile entity) => entity.uid;
 
-  // ===== SPECIALIZED COLLECTIONS ACCESS =====
+  // ===== FRIEND REQUEST OPERATIONS (Delegate to FriendRequestRepository) =====
 
   /// Send a new friend request.
   Future<void> sendRequest(FriendRequest request) async {
-    // Validate that the sender is creating their own request
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: request.fromUserId,
-      operation: 'send friend request',
-    );
-    
-    // Validate required fields
-    validateRequiredFields(
-      data: request.toFirestore(),
-      requiredFields: ['fromUserId', 'toUserId', 'status', 'sentAt'],
-      resourceType: 'friend request',
-    );
-    
-    // Ensure status is pending for new requests
-    if (request.status != FriendRequestStatus.pending) {
-      throw SecurityViolationException(
-        'New friend requests must have pending status',
-        details: 'Status was: ${request.status}',
-      );
-    }
-    
-    await _friendRequestsRef.doc(request.id).set(request.toFirestore());
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_request',
-      operation: 'create',
-      granted: true,
-      details: 'To user: ${request.toUserId}',
-    );
+    return await _friendRequestRepo.sendRequest(request);
   }
 
   @override
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
-    try {
-      final fromId = requireCurrentUserId();
-      
-      // Can't send request to yourself
-      if (fromId == toUserId) {
-        throw SecurityViolationException(
-          'Cannot send friend request to yourself',
-        );
-      }
-      
-      final exists = await requestExists(fromId, toUserId);
-      if (exists) return false;
-      
-      final request = FriendRequest.create(
-        fromUserId: fromId,
-        toUserId: toUserId,
-        message: message,
-      );
-      await sendRequest(request);
-      return true;
-    } catch (e) {
-      return false;
-    }
+    return await _friendRequestRepo.sendFriendRequest(toUserId, message: message);
   }
 
   /// Update an existing friend request document.
   Future<void> updateRequest(FriendRequest request) async {
-    final currentUser = requireCurrentUserId();
-    
-    // Only the recipient can update (accept/reject) a friend request
-    if (currentUser != request.toUserId) {
-      throw PermissionDeniedException(
-        'Only the recipient can update a friend request',
-        resource: 'friend_request',
-        operation: 'update',
-        userId: currentUser,
-      );
-    }
-    
-    // Validate status change is allowed
-    if (request.status != FriendRequestStatus.accepted && 
-        request.status != FriendRequestStatus.rejected) {
-      throw SecurityViolationException(
-        'Friend request can only be accepted or rejected',
-        details: 'Status was: ${request.status}',
-      );
-    }
-    
-    await _friendRequestsRef.doc(request.id).update(request.toFirestore());
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_request',
-      operation: 'update',
-      granted: true,
-      details: 'Status: ${request.status}',
-    );
+    return await _friendRequestRepo.updateRequest(request);
   }
 
   @override
   Future<bool> acceptFriendRequest(String requestId) async {
-    final req = await fetchRequest(requestId);
-    if (req == null) {
-      throw ResourceNotFoundException(
-        'Friend request not found',
-        resourceType: 'friend_request',
-        resourceId: requestId,
-      );
+    final success = await _friendRequestRepo.acceptFriendRequest(requestId);
+    
+    // If request was accepted, also add mutual friends
+    if (success) {
+      final request = await _friendRequestRepo.fetchRequest(requestId);
+      if (request != null) {
+        await _friendRelationshipRepo.addMutualFriends(request.fromUserId, request.toUserId);
+      }
     }
     
-    // Validate current user is the recipient
-    final currentUser = requireCurrentUserId();
-    if (currentUser != req.toUserId) {
-      logPermissionCheck(
-        userId: currentUser,
-        resource: 'friend_request',
-        operation: 'accept',
-        granted: false,
-        details: 'Not the recipient',
-      );
-      return false;
-    }
-    
-    await updateRequest(req.accept());
-    await addMutualFriends(req.fromUserId, req.toUserId);
-    return true;
+    return success;
   }
 
   @override
   Future<bool> rejectFriendRequest(String requestId) async {
-    final req = await fetchRequest(requestId);
-    if (req == null) return false;
-    await updateRequest(req.reject());
-    return true;
+    return await _friendRequestRepo.rejectFriendRequest(requestId);
   }
 
   @override
   Future<bool> cancelFriendRequest(String requestId) async {
-    final req = await fetchRequest(requestId);
-    if (req == null) return false;
-    await updateRequest(req.cancel());
-    return true;
+    return await _friendRequestRepo.cancelFriendRequest(requestId);
   }
 
   /// Fetch a friend request by id.
   Future<FriendRequest?> fetchRequest(String requestId) async {
-    final doc = await _friendRequestsRef.doc(requestId).get();
-    if (!doc.exists) return null;
-    return FriendRequest.fromMap(doc.id, doc.data() ?? {});
+    return await _friendRequestRepo.fetchRequest(requestId);
   }
 
-  /// Check if a pending request already exists between two users.
   @override
   Future<bool> requestExists(String fromUserId, String toUserId) async {
-    final query = await _friendRequestsRef
-        .where('fromUserId', isEqualTo: fromUserId)
-        .where('toUserId', isEqualTo: toUserId)
-        .where('status', isEqualTo: FriendRequestStatus.pending.name)
-        .limit(1)
-        .get();
-    return query.docs.isNotEmpty;
-  }
-
-  /// Check if users are already friends.
-  @override
-  Future<bool> areFriends(String userId1, String userId2) async {
-    final doc = await _userFriendsRef(userId1).doc(userId2).get();
-    return doc.exists;
-  }
-
-  /// Add users to each other's friends collections and update counts.
-  @override
-  Future<void> addMutualFriends(String userId1, String userId2) async {
-    final batch = FirebaseFirestore.instance.batch();
-
-    final user1Ref = _userFriendsRef(userId1).doc(userId2);
-    final user2Ref = _userFriendsRef(userId2).doc(userId1);
-
-    batch.set(user1Ref, {'addedAt': FieldValue.serverTimestamp()});
-    batch.set(user2Ref, {'addedAt': FieldValue.serverTimestamp()});
-
-    final user1Profile = collection.doc(userId1);
-    final user2Profile = collection.doc(userId2);
-    batch.update(user1Profile, {'friendsCount': FieldValue.increment(1)});
-    batch.update(user2Profile, {'friendsCount': FieldValue.increment(1)});
-
-    await batch.commit();
-  }
-
-  /// Remove users from each other's friends collections and update counts.
-  @override
-  Future<void> removeMutualFriends(String userId1, String userId2) async {
-    final batch = FirebaseFirestore.instance.batch();
-
-    final user1Ref = _userFriendsRef(userId1).doc(userId2);
-    final user2Ref = _userFriendsRef(userId2).doc(userId1);
-
-    batch.delete(user1Ref);
-    batch.delete(user2Ref);
-
-    final user1Profile = collection.doc(userId1);
-    final user2Profile = collection.doc(userId2);
-    batch.update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
-    batch.update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
-
-    await batch.commit();
-  }
-
-  @override
-  Future<bool> removeFriend(String friendUserId) async {
-    try {
-      final current = requireCurrentUserId();
-      await removeMutualFriends(current, friendUserId);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Retrieve friend ids for a user.
-  @override
-  Future<List<String>> fetchFriendIds(String userId) async {
-    final snapshot = await _userFriendsRef(userId).get();
-    return snapshot.docs.map((d) => d.id).toList();
+    return await _friendRequestRepo.requestExists(fromUserId, toUserId);
   }
 
   @override
   Future<List<FriendRequest>> getIncomingRequests() async {
-    try {
-      final uid = requireCurrentUserId();
-      final snap = await _friendRequestsRef
-          .where('toUserId', isEqualTo: uid)
-          .where('status', isEqualTo: FriendRequestStatus.pending.name)
-          .get();
-      return snap.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList();
-    } catch (e) {
-      return [];
-    }
+    return await _friendRequestRepo.getIncomingRequests();
   }
 
   @override
   Future<List<FriendRequest>> getSentRequests() async {
-    try {
-      final uid = requireCurrentUserId();
-      final snap = await _friendRequestsRef
-          .where('fromUserId', isEqualTo: uid)
-          .where('status', isEqualTo: FriendRequestStatus.pending.name)
-          .get();
-      return snap.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /// Retrieve user profiles for a list of ids.
-  @override
-  Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
-    if (userIds.isEmpty) return [];
-    const batchSize = 10;
-    final profiles = <UserProfile>[];
-    for (var i = 0; i < userIds.length; i += batchSize) {
-      final batch = userIds.skip(i).take(batchSize).toList();
-      final query =
-          await collection.where(FieldPath.documentId, whereIn: batch).get();
-      for (final doc in query.docs) {
-        profiles.add(UserProfile.fromMap(doc.id, doc.data()));
-      }
-    }
-    return profiles;
+    return await _friendRequestRepo.getSentRequests();
   }
 
   /// Stream incoming friend requests for the current user.
   Stream<List<FriendRequest>> incomingRequestsStream(String userId) {
-    return _friendRequestsRef
-        .where('toUserId', isEqualTo: userId)
-        .where('status', isEqualTo: FriendRequestStatus.pending.name)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
+    return _friendRequestRepo.incomingRequestsStream(userId);
   }
 
   /// Stream sent friend requests for the current user.
   Stream<List<FriendRequest>> sentRequestsStream(String userId) {
-    return _friendRequestsRef
-        .where('fromUserId', isEqualTo: userId)
-        .where('status', isEqualTo: FriendRequestStatus.pending.name)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
+    return _friendRequestRepo.sentRequestsStream(userId);
   }
 
-  // ===== Category methods =====
+  // ===== FRIEND RELATIONSHIP OPERATIONS (Delegate to FriendRelationshipRepository) =====
+
+  @override
+  Future<bool> areFriends(String userId1, String userId2) async {
+    return await _friendRelationshipRepo.areFriends(userId1, userId2);
+  }
+
+  @override
+  Future<void> addMutualFriends(String userId1, String userId2) async {
+    return await _friendRelationshipRepo.addMutualFriends(userId1, userId2);
+  }
+
+  @override
+  Future<void> removeMutualFriends(String userId1, String userId2) async {
+    return await _friendRelationshipRepo.removeMutualFriends(userId1, userId2);
+  }
+
+  @override
+  Future<bool> removeFriend(String friendUserId) async {
+    return await _friendRelationshipRepo.removeFriend(friendUserId);
+  }
+
+  @override
+  Future<List<String>> fetchFriendIds(String userId) async {
+    return await _friendRelationshipRepo.fetchFriendIds(userId);
+  }
+
+  @override
+  Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
+    return await _friendRelationshipRepo.fetchFriendProfiles(userIds);
+  }
+
+  // ===== FRIEND CATEGORY OPERATIONS (Delegate to FriendCategoryRepository) =====
 
   @override
   Future<void> saveCategory(String userId, FriendCategory category) async {
-    // Validate user is saving their own category
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'save friend category',
-    );
-    
-    // Validate required fields
-    validateRequiredFields(
-      data: category.toFirestore(),
-      requiredFields: ['name', 'friendUserIds'],
-      resourceType: 'friend category',
-    );
-    
-    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'create',
-      granted: true,
-    );
+    return await _friendCategoryRepo.saveCategory(userId, category);
   }
 
   @override
   Future<void> updateCategory(
       String userId, String categoryId, Map<String, dynamic> data) async {
-    // Validate user owns the category they're updating
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'update friend category',
-    );
-    
-    await _categoriesRef(userId).doc(categoryId).update(data);
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'update',
-      granted: true,
-      details: 'Category: $categoryId',
-    );
+    return await _friendCategoryRepo.updateCategory(userId, categoryId, data);
   }
 
   @override
   Future<void> deleteCategory(String userId, String categoryId) async {
-    // Validate user owns the category they're deleting
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'delete friend category',
-    );
-    
-    await _categoriesRef(userId).doc(categoryId).delete();
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'delete',
-      granted: true,
-      details: 'Category: $categoryId',
-    );
+    return await _friendCategoryRepo.deleteCategory(userId, categoryId);
   }
 
   @override
   Future<List<FriendCategory>> fetchCategories(String userId) async {
-    final snap = await _categoriesRef(userId).get();
-    return snap.docs.map((doc) => FriendCategory.fromMap(doc.id, doc.data())).toList();
+    return await _friendCategoryRepo.fetchCategories(userId);
   }
 
   @override
   Future<void> createCategoryForUser(String userId, FriendCategory category) async {
-    // Validate user is creating their own category
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'create friend category',
-    );
-    
-    // Validate required fields
-    validateRequiredFields(
-      data: category.toFirestore(),
-      requiredFields: ['name', 'friendUserIds'],
-      resourceType: 'friend category',
-    );
-    
-    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'create',
-      granted: true,
-    );
+    return await _friendCategoryRepo.createCategoryForUser(userId, category);
   }
 
   @override
   Future<void> updateCategoryMembers(
       String userId, String categoryId, List<String> memberIds) async {
-    // Validate user owns the category they're updating
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'update friend category members',
-    );
-    
-    await _categoriesRef(userId).doc(categoryId).update({
-      'friendUserIds': memberIds,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'update_members',
-      granted: true,
-      details: 'Category: $categoryId, Members: ${memberIds.length}',
-    );
+    return await _friendCategoryRepo.updateCategoryMembers(userId, categoryId, memberIds);
   }
 
   @override
   Future<FriendCategory?> getCategory(String userId, String categoryId) async {
-    final doc = await _categoriesRef(userId).doc(categoryId).get();
-    if (!doc.exists) return null;
-    return FriendCategory.fromMap(doc.id, doc.data() ?? {});
+    return await _friendCategoryRepo.getCategory(userId, categoryId);
   }
 
-  // ===== Invitation methods =====
+  // ===== GROUP INVITATION OPERATIONS (Delegate to GroupInvitationRepository) =====
 
   @override
   Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) {
-    return _invitationsRef
-        .where('toUserId', isEqualTo: userId)
-        .orderBy('sentAt', descending: true)
-        .snapshots()
-        .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
+    return _groupInvitationRepo.receivedInvitationsStream(userId);
   }
 
   @override
   Stream<List<GroupInvitation>> sentInvitationsStream(String userId) {
-    return _invitationsRef
-        .where('fromUserId', isEqualTo: userId)
-        .orderBy('sentAt', descending: true)
-        .snapshots()
-        .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
+    return _groupInvitationRepo.sentInvitationsStream(userId);
   }
 
   @override
   Future<GroupInvitation?> getInvitation(String invitationId) async {
-    final doc = await _invitationsRef.doc(invitationId).get();
-    if (!doc.exists) return null;
-    return GroupInvitation.fromMap(doc.id, doc.data() ?? {});
+    return await _groupInvitationRepo.getInvitation(invitationId);
   }
 
   @override
   Future<void> saveInvitation(GroupInvitation invitation) async {
-    // Validate user is the sender of the invitation
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: invitation.fromUserId,
-      operation: 'send group invitation',
-    );
-    
-    // Validate required fields
-    validateRequiredFields(
-      data: invitation.toFirestore(),
-      requiredFields: ['fromUserId', 'toUserId', 'groupId', 'status', 'sentAt'],
-      resourceType: 'group invitation',
-    );
-    
-    // Ensure status is pending for new invitations
-    if (invitation.status != GroupInvitationStatus.pending) {
-      throw SecurityViolationException(
-        'New invitations must have pending status',
-        details: 'Status was: ${invitation.status}',
-      );
-    }
-    
-    await _invitationsRef.doc(invitation.id).set(invitation.toFirestore());
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'group_invitation',
-      operation: 'create',
-      granted: true,
-      details: 'To user: ${invitation.toUserId}, Group: ${invitation.groupId}',
-    );
+    return await _groupInvitationRepo.saveInvitation(invitation);
   }
 
   @override
   Future<void> updateInvitation(
       String invitationId, Map<String, dynamic> data) async {
-    final currentUser = requireCurrentUserId();
-    
-    // Get the invitation to check permissions
-    final invitation = await getInvitation(invitationId);
-    if (invitation == null) {
-      throw ResourceNotFoundException(
-        'Invitation not found',
-        resourceType: 'group_invitation',
-        resourceId: invitationId,
-      );
-    }
-    
-    // Only the recipient can accept/reject an invitation
-    if (currentUser != invitation.toUserId) {
-      throw PermissionDeniedException(
-        'Only the recipient can update an invitation',
-        resource: 'group_invitation',
-        operation: 'update',
-        userId: currentUser,
-      );
-    }
-    
-    await _invitationsRef.doc(invitationId).update(data);
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'group_invitation',
-      operation: 'update',
-      granted: true,
-      details: 'Invitation: $invitationId',
-    );
+    return await _groupInvitationRepo.updateInvitation(invitationId, data);
   }
 
   @override
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
       DateTime now) async {
-    final query = await _invitationsRef
-        .where('status', isEqualTo: GroupInvitationStatus.pending.name)
-        .where('expiresAt', isLessThanOrEqualTo: Timestamp.fromDate(now))
-        .get();
-    return query.docs.map((d) => d.reference).toList();
+    return await _groupInvitationRepo.expiredInvitations(now);
   }
 
   @override
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
       String userId, DateTime cutoffDate) async {
-    final query = await _invitationsRef
-        .where('toUserId', isEqualTo: userId)
-        .where('sentAt', isLessThan: Timestamp.fromDate(cutoffDate))
-        .get();
-    return query.docs;
+    return await _groupInvitationRepo.oldInvitations(userId, cutoffDate);
   }
 
   @override
   Future<void> deleteDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs) async {
-    if (refs.isEmpty) return;
-    
-    final currentUser = requireCurrentUserId();
-    
-    // Validate ownership for each document before deletion
-    for (final ref in refs) {
-      final doc = await ref.get();
-      if (doc.exists) {
-        final data = doc.data();
-        // Check if it's a user-owned document (has userId or fromUserId)
-        final ownerId = data?['userId'] ?? data?['fromUserId'] ?? data?['toUserId'];
-        if (ownerId != null && ownerId != currentUser) {
-          throw PermissionDeniedException(
-            'Cannot delete document not owned by user',
-            resource: ref.path,
-            operation: 'delete',
-            userId: currentUser,
-          );
-        }
-      }
-    }
-    
-    final batch = FirebaseFirestore.instance.batch();
-    for (final ref in refs) {
-      batch.delete(ref);
-    }
-    await batch.commit();
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'documents',
-      operation: 'batch_delete',
-      granted: true,
-      details: 'Count: ${refs.length}',
-    );
+    return await _groupInvitationRepo.deleteDocuments(refs);
   }
 
   @override
   Future<void> updateDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs,
       Map<String, dynamic> data) async {
-    if (refs.isEmpty) return;
-    
-    final currentUser = requireCurrentUserId();
-    
-    // Validate ownership for each document before update
-    for (final ref in refs) {
-      final doc = await ref.get();
-      if (doc.exists) {
-        final docData = doc.data();
-        // Check if it's a user-owned document (has userId or fromUserId)
-        final ownerId = docData?['userId'] ?? docData?['fromUserId'] ?? docData?['toUserId'];
-        if (ownerId != null && ownerId != currentUser) {
-          throw PermissionDeniedException(
-            'Cannot update document not owned by user',
-            resource: ref.path,
-            operation: 'update',
-            userId: currentUser,
-          );
-        }
-      }
-    }
-    
-    final batch = FirebaseFirestore.instance.batch();
-    for (final ref in refs) {
-      batch.update(ref, data);
-    }
-    await batch.commit();
-    
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'documents',
-      operation: 'batch_update',
-      granted: true,
-      details: 'Count: ${refs.length}',
-    );
+    return await _groupInvitationRepo.updateDocuments(refs, data);
   }
 
   @override
   Future<bool> hasPendingInvitation(String groupId, String toUserId) async {
-    final query = await _invitationsRef
-        .where('groupId', isEqualTo: groupId)
-        .where('toUserId', isEqualTo: toUserId)
-        .where('status', isEqualTo: GroupInvitationStatus.pending.name)
-        .limit(1)
-        .get();
-    return query.docs.isNotEmpty;
+    return await _groupInvitationRepo.hasPendingInvitation(groupId, toUserId);
+  }
+
+  // ===== ADDITIONAL UTILITY METHODS (Delegate to appropriate repositories) =====
+
+  /// Get comprehensive friend statistics.
+  Future<Map<String, dynamic>> getComprehensiveFriendStatistics(String userId) async {
+    final friendStats = await _friendRelationshipRepo.getFriendStatistics(userId);
+    final requestStats = await _friendRequestRepo.getRequestStatistics(userId);
+    final categoryStats = await _friendCategoryRepo.getCategoryStatistics(userId);
+    final invitationStats = await _groupInvitationRepo.getInvitationStatistics(userId);
+
+    return {
+      'friends': friendStats,
+      'requests': requestStats,
+      'categories': categoryStats,
+      'invitations': invitationStats,
+    };
+  }
+
+  /// Get friends with profiles for a user.
+  Future<List<UserProfile>> getFriendsWithProfiles(String userId) async {
+    return await _friendRelationshipRepo.getFriendsWithProfiles(userId);
+  }
+
+  /// Get mutual friends between two users.
+  Future<List<String>> getMutualFriends(String userId1, String userId2) async {
+    return await _friendRelationshipRepo.getMutualFriends(userId1, userId2);
+  }
+
+  /// Stream friend profiles for real-time updates.
+  Stream<List<UserProfile>> friendProfilesStream(String userId) {
+    return _friendRelationshipRepo.friendProfilesStream(userId);
+  }
+
+  /// Stream categories for real-time updates.
+  Stream<List<FriendCategory>> categoriesStream(String userId) {
+    return _friendCategoryRepo.categoriesStream(userId);
+  }
+
+  /// Add a friend to a category.
+  Future<void> addFriendToCategory(String userId, String categoryId, String friendId) async {
+    return await _friendCategoryRepo.addFriendToCategory(userId, categoryId, friendId);
+  }
+
+  /// Remove a friend from a category.
+  Future<void> removeFriendFromCategory(String userId, String categoryId, String friendId) async {
+    return await _friendCategoryRepo.removeFriendFromCategory(userId, categoryId, friendId);
+  }
+
+  /// Accept a group invitation.
+  Future<bool> acceptInvitation(String invitationId) async {
+    return await _groupInvitationRepo.acceptInvitation(invitationId);
+  }
+
+  /// Reject a group invitation.
+  Future<bool> rejectInvitation(String invitationId) async {
+    return await _groupInvitationRepo.rejectInvitation(invitationId);
+  }
+
+  /// Search friends by name.
+  Future<List<UserProfile>> searchFriends(String userId, String query) async {
+    return await _friendRelationshipRepo.searchFriends(userId, query);
+  }
+
+  /// Search categories by name.
+  Future<List<FriendCategory>> searchCategories(String userId, String query) async {
+    return await _friendCategoryRepo.searchCategories(userId, query);
   }
 }
