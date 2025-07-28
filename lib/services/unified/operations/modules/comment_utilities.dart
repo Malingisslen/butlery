@@ -1,11 +1,13 @@
 // lib/services/unified/operations/modules/comment_utilities.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Firebase imports removed - using repository pattern
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:get_it/get_it.dart';
 
 /// Focused module for comment utilities and statistics
 /// 
@@ -18,7 +20,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// 
 /// ❌ DOES NOT CONTAIN: Comment CRUD, likes, notifications, content operations
 class CommentUtilities {
-  static const String _commentsCollection = 'recipe_comments';
+  static final CommentsRepository _commentsRepository = GetIt.instance<CommentsRepository>();
 
   // ===== PERMISSION CHECKING =====
 
@@ -93,18 +95,18 @@ class CommentUtilities {
 
   /// Increment reply count for parent comment
   static Future<void> incrementReplyCount({
-    required FirebaseFirestore firestore,
     required String parentCommentId,
   }) async {
     try {
-      await firestore
-          .collection(_commentsCollection)
-          .doc(parentCommentId)
-          .update({
-        'replyCount': FieldValue.increment(1),
-      });
-      
-      AppLogger.debug('✅ Incremented reply count for comment $parentCommentId');
+      // Get current comment
+      final comment = await _commentsRepository.read(parentCommentId);
+      if (comment != null) {
+        // Update reply count - this is a simplified approach
+        // In a more robust system, reply count would be managed by the repository
+        final updatedComment = comment.copyWith(replyCount: comment.replyCount + 1);
+        await _commentsRepository.update(updatedComment);
+        AppLogger.debug('✅ Incremented reply count for comment $parentCommentId');
+      }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to increment reply count: $e');
     }
@@ -112,18 +114,18 @@ class CommentUtilities {
 
   /// Decrement reply count for parent comment
   static Future<void> decrementReplyCount({
-    required FirebaseFirestore firestore,
     required String parentCommentId,
   }) async {
     try {
-      await firestore
-          .collection(_commentsCollection)
-          .doc(parentCommentId)
-          .update({
-        'replyCount': FieldValue.increment(-1),
-      });
-      
-      AppLogger.debug('✅ Decremented reply count for comment $parentCommentId');
+      // Get current comment
+      final comment = await _commentsRepository.read(parentCommentId);
+      if (comment != null) {
+        // Update reply count - this is a simplified approach
+        final newCount = comment.replyCount > 0 ? comment.replyCount - 1 : 0;
+        final updatedComment = comment.copyWith(replyCount: newCount);
+        await _commentsRepository.update(updatedComment);
+        AppLogger.debug('✅ Decremented reply count for comment $parentCommentId');
+      }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to decrement reply count: $e');
     }
@@ -131,19 +133,11 @@ class CommentUtilities {
 
   /// Get reply count for comment
   static Future<int> getReplyCount({
-    required FirebaseFirestore firestore,
     required String commentId,
   }) async {
     try {
-      final doc = await firestore
-          .collection(_commentsCollection)
-          .doc(commentId)
-          .get();
-      
-      if (!doc.exists) return 0;
-      
-      final comment = RecipeComment.fromMap(doc.id, doc.data() as Map<String, dynamic>);
-      return comment.replyCount;
+      final comment = await _commentsRepository.read(commentId);
+      return comment?.replyCount ?? 0;
     } catch (e) {
       AppLogger.error('❌ Failed to get reply count', e);
       return 0;
@@ -154,18 +148,10 @@ class CommentUtilities {
 
   /// Get comprehensive comment statistics for a recipe
   static Future<Map<String, dynamic>> getCommentStatistics({
-    required FirebaseFirestore firestore,
     required String recipeId,
   }) async {
     try {
-      final snapshot = await firestore
-          .collection(_commentsCollection)
-          .where('recipeId', isEqualTo: recipeId)
-          .get();
-
-      final comments = snapshot.docs
-          .map((doc) => RecipeComment.fromMap(doc.id, doc.data()))
-          .toList();
+      final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       final totalComments = comments.length;
       final topLevelComments = comments.where((c) => c.parentCommentId == null).length;
@@ -196,22 +182,19 @@ class CommentUtilities {
 
   /// Get comment activity timeline for recipe
   static Future<List<Map<String, dynamic>>> getCommentActivityTimeline({
-    required FirebaseFirestore firestore,
     required String recipeId,
     int limit = 50,
   }) async {
     try {
-      final snapshot = await firestore
-          .collection(_commentsCollection)
-          .where('recipeId', isEqualTo: recipeId)
-          .orderBy('createdAt', descending: true)
-          .limit(limit)
-          .get();
+      final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
+      
+      // Sort by creation date descending and limit
+      comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final limitedComments = comments.take(limit).toList();
 
       final activities = <Map<String, dynamic>>[];
 
-      for (final doc in snapshot.docs) {
-        final comment = RecipeComment.fromMap(doc.id, doc.data());
+      for (final comment in limitedComments) {
         
         activities.add({
           'type': 'comment_created',
@@ -258,19 +241,11 @@ class CommentUtilities {
 
   /// Get most active commenters for recipe
   static Future<List<Map<String, dynamic>>> getMostActiveCommenters({
-    required FirebaseFirestore firestore,
     required String recipeId,
     int limit = 10,
   }) async {
     try {
-      final snapshot = await firestore
-          .collection(_commentsCollection)
-          .where('recipeId', isEqualTo: recipeId)
-          .get();
-
-      final comments = snapshot.docs
-          .map((doc) => RecipeComment.fromMap(doc.id, doc.data()))
-          .toList();
+      final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       // Count comments by author
       final authorCounts = <String, Map<String, dynamic>>{};

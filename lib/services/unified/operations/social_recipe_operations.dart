@@ -56,7 +56,7 @@ class SocialRecipeOperations {
     // Initialize focused modules
     _sharingManager = RecipeSharingManager(_parent, _notificationService);
     _memberManager = RecipeMemberManager(_parent, _notificationService);
-    _commentsManager = RecipeCommentsManager(_parent, _notificationService, _parent.firestore);
+    _commentsManager = RecipeCommentsManager(_parent, _notificationService);
     _discoveryService = RecipeDiscoveryService(_parent);
     _socialStats = RecipeSocialStats(_parent, _parent.firestore, _notificationService);
     _permissionHelper = RecipePermissionHelper(_parent);
