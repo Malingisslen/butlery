@@ -1,7 +1,7 @@
 // lib/services/unified/operations/modules/recipe_comments_manager.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Firebase imports removed - using repository pattern
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -25,7 +25,7 @@ import 'package:butlery/services/unified/operations/modules/comment_utilities.da
 class RecipeCommentsManager {
   final dynamic _parent; // UnifiedRecipeService
   final NotificationService? _notificationService;
-  final FirebaseFirestore _firestore;
+  // Firebase instance removed - using repository pattern
   
   // Stream controllers for managed streams
   final Map<String, StreamController<List<RecipeComment>>> _commentStreams = {};
@@ -33,7 +33,7 @@ class RecipeCommentsManager {
   // Module instances (only the ones we use as instances)
   late final CommentCrudOperations _crudOperations;
 
-  RecipeCommentsManager(this._parent, this._notificationService, this._firestore) {
+  RecipeCommentsManager(this._parent, this._notificationService) {
     _crudOperations = CommentCrudOperations();
   }
 
@@ -73,7 +73,6 @@ class RecipeCommentsManager {
       // Update reply count if this is a reply
       if (parentCommentId != null) {
         await CommentUtilities.incrementReplyCount(
-          firestore: _firestore,
           parentCommentId: parentCommentId,
         );
       }
@@ -205,7 +204,6 @@ class RecipeCommentsManager {
       // Update reply count if this was a reply
       if (comment.parentCommentId != null) {
         await CommentUtilities.decrementReplyCount(
-          firestore: _firestore,
           parentCommentId: comment.parentCommentId!,
         );
       }
@@ -252,7 +250,6 @@ class RecipeCommentsManager {
   /// Get comment statistics for a recipe
   Future<Map<String, dynamic>> getCommentStatistics(String recipeId) async {
     return CommentUtilities.getCommentStatistics(
-      firestore: _firestore,
       recipeId: recipeId,
     );
   }
@@ -263,7 +260,6 @@ class RecipeCommentsManager {
     int limit = 50,
   }) async {
     return CommentUtilities.getCommentActivityTimeline(
-      firestore: _firestore,
       recipeId: recipeId,
       limit: limit,
     );
@@ -275,7 +271,6 @@ class RecipeCommentsManager {
     int limit = 10,
   }) async {
     return CommentUtilities.getMostActiveCommenters(
-      firestore: _firestore,
       recipeId: recipeId,
       limit: limit,
     );
