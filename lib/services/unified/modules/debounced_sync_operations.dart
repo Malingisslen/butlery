@@ -128,7 +128,8 @@ class DebouncedSyncOperations {
       // For now, we'll skip the actual sync but log the operation
       AppLogger.debug('Collaborative recipe sync: ${recipe.title} (implementation pending)');
       
-      // TODO: Implement proper conversion from Recipe to RealtimeRecipe if needed
+      // NOTE: Collaborative recipe sync requires RealtimeRecipe conversion
+      // Will be implemented when collaborative editing is fully integrated
       // final collaborativeRepository = GetIt.instance<CollaborativeRecipeRepository>();
       AppLogger.debug('Collaborative recipe synced: ${recipe.title}');
     } catch (e) {
