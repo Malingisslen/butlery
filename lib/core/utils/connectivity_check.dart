@@ -1,8 +1,9 @@
 // lib/core/utils/connectivity_check.dart
 
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
+import 'package:butlery/core/injection.dart';
 
 class ConnectivityCheck {
   static Future<bool> hasInternetConnection() async {
@@ -46,13 +47,9 @@ class ConnectivityCheck {
   /// Test Firebase connectivity specifically
   static Future<bool> hasFirebaseConnectivity() async {
     try {
-      // Test basic Firestore connectivity
-      await FirebaseFirestore.instance
-          .collection('connectivity_test')
-          .limit(1)
-          .get()
-          .timeout(const Duration(seconds: 10));
-      return true;
+      // Use connectivity repository instead of direct Firebase access
+      final connectivityRepo = sl<ConnectivityRepository>();
+      return await connectivityRepo.checkFirebaseConnection();
     } catch (e) {
       AppLogger.debug('Firebase connectivity test failed: $e');
       return false;
