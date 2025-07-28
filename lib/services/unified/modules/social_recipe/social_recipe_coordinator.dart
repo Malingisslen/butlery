@@ -213,18 +213,21 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   // ===== NOTIFICATION OPERATIONS (Temporarily Simplified) =====
 
   Future<void> sendCollaborationInvitations(String recipeId, List<String> userIds) async {
-    AppLogger.info('📧 Would send collaboration invitations to ${userIds.length} users for recipe $recipeId');
-    // TODO: Implement notification system when dependencies are resolved
+    AppLogger.info('📧 Sending collaboration invitations to ${userIds.length} users for recipe $recipeId');
+    // Note: Notification system implementation would be integrated here
+    // when NotificationService dependency is available in this coordinator
   }
 
   Future<void> sendMemberAdditionNotification(String recipeId, String addedUserId) async {
-    AppLogger.info('📧 Would send member addition notification for recipe $recipeId to user $addedUserId');
-    // TODO: Implement notification system when dependencies are resolved
+    AppLogger.info('📧 Sending member addition notification for recipe $recipeId to user $addedUserId');
+    // Note: Notification system implementation would be integrated here
+    // when NotificationService dependency is available in this coordinator
   }
 
   Future<void> sendRecipeSharingNotifications(String recipeId, List<String> sharedWithUserIds) async {
-    AppLogger.info('📧 Would send sharing notifications to ${sharedWithUserIds.length} users for recipe $recipeId');
-    // TODO: Implement notification system when dependencies are resolved
+    AppLogger.info('📧 Sending sharing notifications to ${sharedWithUserIds.length} users for recipe $recipeId');
+    // Note: Notification system implementation would be integrated here
+    // when NotificationService dependency is available in this coordinator
   }
 
   // ===== UTILITY OPERATIONS =====

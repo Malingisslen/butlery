@@ -55,10 +55,27 @@ class FirebaseShoppingRepository
   Future<List<UnifiedShoppingList>> readAll() async {
     // Override to add ordering and combine personal + shared lists
     try {
+      final uid = requireCurrentUserId();
+      
+      // Get personal lists
       final personalLists = await readAllSafe();
-      // TODO: Add shared lists when implemented
-      return personalLists;
+      
+      // Get shared/collaborative lists where user is a member
+      final sharedSnapshot = await _sharedListsRef
+          .where('memberPermissions.$uid', isNotEqualTo: null)
+          .get();
+      
+      final sharedLists = sharedSnapshot.docs
+          .map(UnifiedShoppingList.fromFirestore)
+          .toList();
+      
+      // Combine and sort by updatedAt (most recent first)
+      final allLists = [...personalLists, ...sharedLists];
+      allLists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      
+      return allLists;
     } catch (e) {
+      // Fallback to personal lists only
       return await readAllSafe();
     }
   }
