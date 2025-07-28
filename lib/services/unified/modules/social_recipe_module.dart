@@ -1,7 +1,7 @@
 // lib/services/unified/modules/social_recipe_module.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Firebase imports removed - using repository pattern
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -26,7 +26,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 class SocialRecipeModule extends BaseService with UserContextMixin {
   @override
   String get serviceName => 'SocialRecipeModule';
-  final FirebaseFirestore _firestore;
+  // Firebase instance removed - using repository pattern instead
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
@@ -40,7 +40,6 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   late final notif.NotificationService? _notificationService;
 
   SocialRecipeModule({
-    required FirebaseFirestore firestore,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
@@ -49,8 +48,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
     RecipeServiceAdapter? serviceAdapter,
-  })  : _firestore = firestore,
-        _cacheHelper = cacheHelper,
+  })  : _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,
@@ -141,8 +139,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
           // Save to cache
           await _saveToCache(newRecipe);
 
-          // Sync to Firebase (collaborative recipes use different collection)
-          await _syncCollaborativeRecipeToFirebase(newRecipe);
+          // Save using repository pattern
+          await _saveRecipe(newRecipe);
 
           return newRecipe.id;
         },
@@ -692,38 +690,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     }
   }
 
-  // ===== FIREBASE OPERATIONS =====
-
-  /// Sync collaborative recipe to Firebase
-  Future<void> _syncCollaborativeRecipeToFirebase(Recipe recipe) async {
-    try {
-      await _firestore
-          .collection('unified_collaborative_recipes')
-          .doc(recipe.id)
-          .set(recipe.toFirestore(), SetOptions(merge: true));
-
-      AppLogger.debug('Collaborative recipe synced: ${recipe.title}');
-    } catch (e) {
-      AppLogger.error('Firebase sync error for collaborative recipe ${recipe.id}: $e');
-      rethrow;
-    }
-  }
-
-  // TODO: Implement when deletion functionality is needed
-  // /// Delete collaborative recipe from Firebase
-  // Future<void> _deleteCollaborativeRecipeFromFirebase(String recipeId) async {
-  //   try {
-  //     await _firestore
-  //         .collection('unified_collaborative_recipes')
-  //         .doc(recipeId)
-  //         .delete();
-  //
-  //     AppLogger.debug('Collaborative recipe deleted from Firebase: $recipeId');
-  //   } catch (e) {
-  //     AppLogger.error('Firebase deletion error: $e');
-  //     rethrow;
-  //   }
-  // }
+  // ===== FIREBASE OPERATIONS REMOVED =====
+  // Firebase operations now handled through repository pattern via _saveRecipe callback
 
   // ===== NOTIFICATION INTEGRATION =====
 
