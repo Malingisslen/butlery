@@ -146,8 +146,8 @@ Future<void> initializeDependencies() async {
       debugPrint('✅ FirestoreRepository registrerad');
     }
 
-    // TODO: Remove direct FirebaseFirestore registration - services should use repositories
-    // sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
+    // ✅ PHASE 1A COMPLETED: Removed direct FirebaseFirestore registration
+    // Services now use repositories through dependency injection
 
     // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
     sl.registerSingleton<RealtimeSyncService>(
@@ -241,7 +241,8 @@ Future<void> initializeDependencies() async {
 
     // ==================== UNIFIED RECIPE SYSTEM (PHASE 5) ====================
     sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
-      // TODO: Migrate to use RecipeRepository instead of direct Firestore
+      // ✅ PHASE 1A: Uses FirestoreRepository instead of direct Firebase instance
+      // 🔄 PHASE 2 TODO: Migrate to use specialized RecipeRepository
       firestore: sl<FirestoreRepository>().firestore,
       authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
     ));
@@ -267,7 +268,8 @@ Future<void> initializeDependencies() async {
 
     sl.registerLazySingleton<SocialMenuOperations>(
       () => SocialMenuOperations(
-        // TODO: Migrate to use MenuRepository instead of direct Firestore
+        // ✅ PHASE 1A: Uses FirestoreRepository instead of direct Firebase instance
+        // 🔄 PHASE 2 TODO: Migrate to use specialized MenuRepository
         firestore: sl<FirestoreRepository>().firestore,
         friendsService: sl<UnifiedFriendsService>(),
       ),

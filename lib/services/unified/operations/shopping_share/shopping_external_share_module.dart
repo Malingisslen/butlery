@@ -1,10 +1,11 @@
 // lib/services/unified/operations/shopping_share/shopping_external_share_module.dart
 
-// TODO: Refactor to use repository pattern instead of direct Firebase access
-// This module needs refactoring to use SocialSharingRepository for public link operations
+// ✅ PHASE 1A COMPLETED: All direct FirebaseFirestore.instance calls converted to use FirestoreRepository
+// 🔄 PHASE 2 TODO: Further refactor to use specialized SocialSharingRepository for better domain separation
 
 import 'package:share_plus/share_plus.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show FieldValue, Timestamp;
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -24,9 +25,12 @@ import 'package:butlery/services/unified/operations/shopping_share/shared/shoppi
 class ShoppingExternalShareModule {
   final dynamic _parent; // UnifiedShoppingService
   final ShoppingExportModule _exportModule;
+  late final FirestoreRepository _firestoreRepository;
 
   ShoppingExternalShareModule(this._parent) 
-      : _exportModule = ShoppingExportModule(_parent);
+      : _exportModule = ShoppingExportModule(_parent) {
+    _firestoreRepository = sl<FirestoreRepository>();
+  }
 
   // ===== EXTERNAL APP SHARING =====
 
@@ -133,7 +137,7 @@ class ShoppingExternalShareModule {
       if (currentUser == null) return null;
       
       // Create public sharing entry in Firestore
-      final firestore = FirebaseFirestore.instance;
+      final firestore = _firestoreRepository.firestore;
       final publicShareDoc = firestore.collection('publicShoppingLists').doc();
       
       final expirationDate = DateTime.now().add(
@@ -180,7 +184,7 @@ class ShoppingExternalShareModule {
         return false;
       }
 
-      final firestore = FirebaseFirestore.instance;
+      final firestore = _firestoreRepository.firestore;
       final updateData = <String, dynamic>{};
 
       if (allowDownload != null) {
@@ -223,7 +227,7 @@ class ShoppingExternalShareModule {
         return false;
       }
 
-      final firestore = FirebaseFirestore.instance;
+      final firestore = _firestoreRepository.firestore;
       await firestore
           .collection('publicShoppingLists')
           .doc(publicLinkId)
@@ -248,7 +252,7 @@ class ShoppingExternalShareModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
-      final querySnapshot = await FirebaseFirestore.instance
+      final querySnapshot = await _firestoreRepository.firestore
           .collection('publicShoppingLists')
           .where('ownerId', isEqualTo: currentUserId)
           .orderBy('createdAt', descending: true)

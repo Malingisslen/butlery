@@ -1,0 +1,407 @@
+// lib/viewmodels/recipe/recipe_query_viewmodel.dart
+
+import 'package:flutter/foundation.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+
+/// Recipe Query ViewModel
+/// 
+/// Handles ONLY recipe querying, filtering, searching, and analytics operations.
+/// This includes search functionality, filtering by various criteria, and providing insights.
+class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin {
+  final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();
+
+  String get serviceName => 'RecipeQueryViewModel';
+
+  // Current filter state
+  String _searchQuery = '';
+  String? _selectedMealType;
+  String? _selectedTag;
+  RecipeType? _selectedType;
+
+  // ===== GETTERS =====
+
+  List<Recipe> get allRecipes => _recipeService.recipes;
+  List<Recipe> get personalRecipes => _recipeService.personalRecipes;
+  List<Recipe> get collaborativeRecipes => _recipeService.collaborativeRecipes;
+
+  bool get hasRecipes => _recipeService.hasRecipes;
+  bool get hasPersonalRecipes => personalRecipes.isNotEmpty;
+  bool get hasCollaborativeRecipes => collaborativeRecipes.isNotEmpty;
+
+  String? get currentUserId => _recipeService.currentUserId;
+
+  // Filter state getters
+  String get searchQuery => _searchQuery;
+  String? get selectedMealType => _selectedMealType;
+  String? get selectedTag => _selectedTag;
+  RecipeType? get selectedType => _selectedType;
+
+  // ===== BASIC QUERIES =====
+
+  Recipe? getRecipeById(String id) {
+    if (ValidationUtils.isNullOrEmpty(id)) return null;
+    return allRecipes.where((r) => r.id == id).firstOrNull;
+  }
+
+  List<Recipe> getRecipesByMealType(String mealType) {
+    if (ValidationUtils.isNullOrEmpty(mealType)) return [];
+    return allRecipes.where((r) => r.mealType == mealType).toList();
+  }
+
+  List<Recipe> getRecipesByTag(String tag) {
+    if (ValidationUtils.isNullOrEmpty(tag)) return [];
+    return allRecipes.where((r) => r.tags?.contains(tag) ?? false).toList();
+  }
+
+  List<Recipe> getRecipesByType(RecipeType type) {
+    return allRecipes.where((r) => r.type == type).toList();
+  }
+
+  // ===== SEARCH FUNCTIONALITY =====
+
+  List<Recipe> searchRecipes(String query) {
+    if (query.trim().isEmpty) return allRecipes;
+
+    final lowercaseQuery = query.toLowerCase();
+    return allRecipes.where((recipe) {
+      return recipe.title.toLowerCase().contains(lowercaseQuery) ||
+          recipe.description.toLowerCase().contains(lowercaseQuery) ||
+          recipe.ingredients.any((ingredient) =>
+              ingredient.toLowerCase().contains(lowercaseQuery)) ||
+          recipe.instructions.any((instruction) =>
+              instruction.toLowerCase().contains(lowercaseQuery)) ||
+          (recipe.tags
+                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)) ??
+              false);
+    }).toList();
+  }
+
+  void updateSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  void clearSearch() {
+    _searchQuery = '';
+    notifyListeners();
+  }
+
+  // ===== FILTERING =====
+
+  List<Recipe> get filteredRecipes {
+    List<Recipe> recipes = allRecipes;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      recipes = searchRecipes(_searchQuery);
+    }
+
+    // Apply meal type filter
+    if (_selectedMealType != null) {
+      recipes = recipes.where((r) => r.mealType == _selectedMealType).toList();
+    }
+
+    // Apply tag filter
+    if (_selectedTag != null) {
+      recipes = recipes.where((r) => r.tags?.contains(_selectedTag) ?? false).toList();
+    }
+
+    // Apply type filter
+    if (_selectedType != null) {
+      recipes = recipes.where((r) => r.type == _selectedType).toList();
+    }
+
+    return recipes;
+  }
+
+  void setMealTypeFilter(String? mealType) {
+    _selectedMealType = mealType;
+    notifyListeners();
+  }
+
+  void setTagFilter(String? tag) {
+    _selectedTag = tag;
+    notifyListeners();
+  }
+
+  void setTypeFilter(RecipeType? type) {
+    _selectedType = type;
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    _selectedMealType = null;
+    _selectedTag = null;
+    _selectedType = null;
+    notifyListeners();
+  }
+
+  void clearAllFiltersAndSearch() {
+    _searchQuery = '';
+    clearFilters();
+  }
+
+  bool get hasActiveFilters => 
+      _searchQuery.isNotEmpty || 
+      _selectedMealType != null || 
+      _selectedTag != null || 
+      _selectedType != null;
+
+  // ===== SPECIALIZED QUERIES =====
+
+  List<Recipe> getEditableRecipes() {
+    if (currentUserId == null) return [];
+
+    return allRecipes.where((recipe) {
+      if (recipe.isPersonal) {
+        return recipe.createdBy == currentUserId;
+      } else {
+        // Check if user has edit permissions for collaborative recipe
+        final permissions = recipe.socialData?.memberPermissions;
+        if (permissions == null) return false;
+        
+        final userPermission = permissions[currentUserId];
+        return userPermission == ResourcePermission.admin || 
+               userPermission == ResourcePermission.editor;
+      }
+    }).toList();
+  }
+
+  List<Recipe> getRecentlyCookedRecipes({int daysBack = 7}) {
+    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
+    return allRecipes.where((recipe) => 
+      recipe.lastCookedAt != null &&
+      recipe.lastCookedAt!.isAfter(cutoffDate)
+    ).toList();
+  }
+
+  List<Recipe> getRecentlyCreatedRecipes({int daysBack = 7}) {
+    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
+    return allRecipes.where((recipe) => 
+      recipe.createdAt.isAfter(cutoffDate)
+    ).toList();
+  }
+
+  List<Recipe> getRecentlyEditedRecipes({int daysBack = 7}) {
+    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
+    return allRecipes.where((recipe) => 
+      recipe.updatedAt.isAfter(cutoffDate)
+    ).toList();
+  }
+
+  List<Recipe> getFavoriteRecipes() {
+    // TODO: Implement when favorite functionality is available
+    return [];
+  }
+
+  List<Recipe> getHighRatedRecipes({double minRating = 4.0}) {
+    return allRecipes.where((recipe) => 
+      recipe.rating != null && recipe.rating! >= minRating
+    ).toList();
+  }
+
+  List<Recipe> getRecipesWithImages() {
+    return allRecipes.where((recipe) => 
+      recipe.imageUrls.isNotEmpty
+    ).toList();
+  }
+
+  List<Recipe> getRecipesWithoutImages() {
+    return allRecipes.where((recipe) => 
+      recipe.imageUrls.isEmpty
+    ).toList();
+  }
+
+  // ===== SOCIAL QUERIES =====
+
+  List<Recipe> getSharedWithMe() {
+    if (currentUserId == null) return [];
+    
+    return collaborativeRecipes.where((recipe) => 
+      recipe.isShared && 
+      recipe.socialData?.ownerId != currentUserId
+    ).toList();
+  }
+
+  List<Recipe> getSharedByMe() {
+    if (currentUserId == null) return [];
+    
+    return collaborativeRecipes.where((recipe) => 
+      recipe.isShared && 
+      recipe.socialData?.ownerId == currentUserId
+    ).toList();
+  }
+
+  List<Recipe> getRecipesWithCollaborator(String userId) {
+    if (ValidationUtils.isNullOrEmpty(userId)) return [];
+    
+    return collaborativeRecipes.where((recipe) =>
+      recipe.socialData?.memberPermissions?.containsKey(userId) ?? false
+    ).toList();
+  }
+
+  // ===== GROUPING AND ORGANIZATION =====
+
+  Map<String, List<Recipe>> get recipesByMealType {
+    final Map<String, List<Recipe>> grouped = {};
+
+    for (final recipe in filteredRecipes) {
+      grouped.putIfAbsent(recipe.mealType, () => []).add(recipe);
+    }
+
+    // Sort meal types and recipes
+    final sortedGrouped = <String, List<Recipe>>{};
+    final sortedKeys = grouped.keys.toList()..sort();
+
+    for (final key in sortedKeys) {
+      final sortedRecipes = grouped[key]!;
+      sortedRecipes.sort((a, b) => a.title.compareTo(b.title));
+      sortedGrouped[key] = sortedRecipes;
+    }
+
+    return sortedGrouped;
+  }
+
+  Map<String, List<Recipe>> get recipesByTag {
+    final Map<String, List<Recipe>> grouped = {};
+
+    for (final recipe in filteredRecipes) {
+      if (recipe.tags != null) {
+        for (final tag in recipe.tags!) {
+          grouped.putIfAbsent(tag, () => []).add(recipe);
+        }
+      }
+    }
+
+    // Sort tags and recipes
+    final sortedGrouped = <String, List<Recipe>>{};
+    final sortedKeys = grouped.keys.toList()..sort();
+
+    for (final key in sortedKeys) {
+      final sortedRecipes = grouped[key]!;
+      sortedRecipes.sort((a, b) => a.title.compareTo(b.title));
+      sortedGrouped[key] = sortedRecipes;
+    }
+
+    return sortedGrouped;
+  }
+
+  Map<RecipeType, List<Recipe>> get recipesByType {
+    final Map<RecipeType, List<Recipe>> grouped = {};
+
+    for (final recipe in filteredRecipes) {
+      grouped.putIfAbsent(recipe.type, () => []).add(recipe);
+    }
+
+    return grouped;
+  }
+
+  // ===== METADATA AND OPTIONS =====
+
+  List<String> get usedMealTypes {
+    final mealTypes = allRecipes.map<String>((recipe) => recipe.mealType).toSet().toList();
+    mealTypes.sort();
+    return mealTypes;
+  }
+
+  List<String> get usedTags {
+    final allTags = <String>{};
+    for (final recipe in allRecipes) {
+      if (recipe.tags != null) {
+        allTags.addAll(recipe.tags!);
+      }
+    }
+    final tagsList = allTags.toList();
+    tagsList.sort();
+    return tagsList;
+  }
+
+  List<RecipeType> get usedTypes {
+    return allRecipes.map((recipe) => recipe.type).toSet().toList();
+  }
+
+  // ===== STATISTICS AND INSIGHTS =====
+
+  Map<String, dynamic> get recipeInsights {
+    return {
+      'totalRecipes': allRecipes.length,
+      'personalRecipes': personalRecipes.length,
+      'collaborativeRecipes': collaborativeRecipes.length,
+      'filteredRecipes': filteredRecipes.length,
+      'mealTypes': usedMealTypes.length,
+      'tags': usedTags.length,
+      'recentlyCookedCount': getRecentlyCookedRecipes().length,
+      'editableCount': getEditableRecipes().length,
+      'favoriteCount': getFavoriteRecipes().length,
+      'withImagesCount': getRecipesWithImages().length,
+      'highRatedCount': getHighRatedRecipes().length,
+      'hasCollaborativeFeatures': hasCollaborativeRecipes,
+      'hasActiveFilters': hasActiveFilters,
+    };
+  }
+
+  List<MapEntry<String, int>> getMostUsedMealTypes() {
+    final mealTypeCounts = <String, int>{};
+
+    for (final recipe in allRecipes) {
+      mealTypeCounts[recipe.mealType] =
+          (mealTypeCounts[recipe.mealType] ?? 0) + 1;
+    }
+
+    final sortedEntries = mealTypeCounts.entries.toList();
+    sortedEntries.sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedEntries;
+  }
+
+  List<MapEntry<String, int>> getMostUsedTags() {
+    final tagCounts = <String, int>{};
+
+    for (final recipe in allRecipes) {
+      if (recipe.tags != null) {
+        for (final tag in recipe.tags!) {
+          tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+        }
+      }
+    }
+
+    final sortedEntries = tagCounts.entries.toList();
+    sortedEntries.sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedEntries;
+  }
+
+  Map<String, double> getAverageRatingsByMealType() {
+    final mealTypeRatings = <String, List<double>>{};
+
+    for (final recipe in allRecipes) {
+      if (recipe.rating != null) {
+        mealTypeRatings.putIfAbsent(recipe.mealType, () => []).add(recipe.rating!);
+      }
+    }
+
+    final averages = <String, double>{};
+    mealTypeRatings.forEach((mealType, ratings) {
+      averages[mealType] = ratings.reduce((a, b) => a + b) / ratings.length;
+    });
+
+    return averages;
+  }
+
+  Map<String, int> getCookingFrequencyByMealType() {
+    final cookingCounts = <String, int>{};
+
+    for (final recipe in allRecipes) {
+      if (recipe.lastCookedAt != null) {
+        cookingCounts[recipe.mealType] = (cookingCounts[recipe.mealType] ?? 0) + 1;
+      }
+    }
+
+    return cookingCounts;
+  }
+}

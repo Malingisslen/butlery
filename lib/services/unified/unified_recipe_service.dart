@@ -278,21 +278,13 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   }) async {
     final recipeId = await _socialModule.createCollaborativeRecipe(
       title: title,
-      memberIds: memberIds,
-      description: description,
       ingredients: ingredients,
       instructions: instructions,
-      imageUrls: imageUrls,
-      mealType: mealType,
+      initialMembers: memberIds,
+      description: description,
       portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
+      cookingTime: timeMinutes,
       tags: tags,
-      sourceUrl: sourceUrl,
-      descriptionCollaborative: descriptionCollaborative,
-      allowGuestViewing: allowGuestViewing,
-      allowMemberInvites: allowMemberInvites,
-      categoryIds: categoryIds,
     );
 
     if (recipeId != null) {

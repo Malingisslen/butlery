@@ -1,28 +1,4 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Unified Recipe ViewModel - Updated for Phase 5 feature interfaces
-/// File: lib/viewmodels/unified_recipe_viewmodel.dart
-/// Quick Guide: Main recipe ViewModel using feature interfaces from UnifiedRecipeService
-/// Dependencies IN: UnifiedRecipeService with feature interfaces
-/// Dependencies OUT: Used by recipe list views and related UI components
-/// Data flow: UI -> ViewModel -> Feature Interfaces -> UnifiedRecipeService
-/// State management: ChangeNotifier with reactive getters from service
-/// Purpose: UI state management for all recipe operations with clean interface separation
-/// Common issues: Loading states, error handling, reactive updates
-/// Test coverage: ViewModel tests with mocked service interfaces
-/// Performance: Reactive getters, efficient state updates
-/// Analytics: Recipe view events, user interaction tracking
-/// Code smells: None - follows MVVM pattern with clean separation
-/// Connected to: Recipe views, UnifiedRecipeService feature interfaces
-/// Used in phases: Phase 5 - Service Consolidation (updated for feature interfaces)
-
 // lib/viewmodels/unified_recipe_viewmodel.dart
-// ✅ PHASE 5 VERSION: Updated to use feature interfaces
-
-/// 🧠 UNIFIED RECIPE VIEWMODEL
-/// Updated for Phase 5: Uses feature interfaces for clean separation
-/// Personal operations: service.personal.*
-/// Social operations: service.social.*
-/// Realtime operations: service.realtime.*
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -36,20 +12,62 @@ import 'package:butlery/services/unified/types/recipe_types.dart' show RecipeOpe
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
+// Import focused ViewModels
+import 'package:butlery/viewmodels/recipe/personal_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe/social_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe/realtime_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
+
+/// Unified Recipe ViewModel (Facade)
+/// 
+/// Maintains backward compatibility while delegating to focused ViewModels.
+/// This facade provides the same interface as the original monolithic ViewModel
+/// while internally using the 4 focused ViewModels for better separation of concerns.
+/// 
+/// Focused ViewModels:
+/// - PersonalRecipeViewModel: Personal recipe operations
+/// - SocialRecipeViewModel: Social recipe and collaboration features  
+/// - RealtimeRecipeViewModel: Real-time collaborative editing
+/// - RecipeQueryViewModel: Querying, filtering, and analytics
 class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, RecipePermissionMixin, ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();
 
-  // ===== GETTERS - samma API som din befintliga recipe_list_viewmodel =====
+  // Focused ViewModels
+  late final PersonalRecipeViewModel _personalViewModel;
+  late final SocialRecipeViewModel _socialViewModel;
+  late final RealtimeRecipeViewModel _realtimeViewModel;
+  late final RecipeQueryViewModel _queryViewModel;
 
-  // ✅ FIX: Lägg till allRecipes getter som injection.dart förväntar sig
+  UnifiedRecipeViewModel() {
+    // Initialize focused ViewModels
+    _personalViewModel = PersonalRecipeViewModel();
+    _socialViewModel = SocialRecipeViewModel();
+    _realtimeViewModel = RealtimeRecipeViewModel();
+    _queryViewModel = RecipeQueryViewModel();
+
+    // Listen to service changes - same pattern as before
+    _recipeService.addListener(_onServiceUpdate);
+    
+    // Listen to focused ViewModel changes
+    _personalViewModel.addListener(_onServiceUpdate);
+    _socialViewModel.addListener(_onServiceUpdate);
+    _realtimeViewModel.addListener(_onServiceUpdate);
+    _queryViewModel.addListener(_onServiceUpdate);
+  }
+
+  void _onServiceUpdate() {
+    notifyListeners();
+  }
+
+  // ===== GETTERS - same API as original =====
+
+  // ✅ FIX: Add allRecipes getter as injection.dart expects
   List<Recipe> get allRecipes => _recipeService.recipes;
 
-  // Recipes och state
+  // Recipes and state
   List<Recipe> get recipes => _recipeService.recipes;
   List<Recipe> get personalRecipes => _recipeService.personalRecipes;
-  List<Recipe> get collaborativeRecipes =>
-      _recipeService.collaborativeRecipes;
-
+  List<Recipe> get collaborativeRecipes => _recipeService.collaborativeRecipes;
 
   // Loading states
   bool get isLoading => _recipeService.isLoading;
@@ -79,15 +97,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   int get personalRecipeCount => personalRecipes.length;
   int get collaborativeRecipeCount => collaborativeRecipes.length;
 
-  UnifiedRecipeViewModel() {
-    // Lyssna på service changes - samma pattern som innan
-    _recipeService.addListener(_onServiceUpdate);
-  }
-
-  void _onServiceUpdate() {
-    notifyListeners();
-  }
-
   // ===== INITIALIZATION =====
 
   Future<void> initialize() async {
@@ -98,7 +107,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     );
   }
 
-  // ===== PERSONAL RECIPE OPERATIONS (Phase 5: Feature Interface) =====
+  // ===== PERSONAL RECIPE OPERATIONS (Delegate to PersonalRecipeViewModel) =====
 
   Future<bool> createPersonalRecipe({
     required String name,
@@ -113,38 +122,22 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     List<String>? tags,
     String? sourceUrl,
   }) async {
-    // Use ValidationUtils for consistent validation
-    final nameError = ValidationUtils.validateRecipeName(name);
-    if (nameError != null) return false;
-
-    return await safeExecute(
-      () => LoggingUtils.loggedCreate(
-        'Personal Recipe',
-        () async {
-          final recipeId = await _recipeService.personal.createRecipe(
-            title: name.trim(),
-            description: description,
-            ingredients: ingredients,
-            instructions: instructions,
-            imageUrls: imageUrls,
-            mealType: mealType,
-            portions: portions,
-            timeMinutes: timeMinutes,
-            rating: rating,
-            tags: tags,
-            sourceUrl: sourceUrl,
-          );
-
-          return recipeId != null;
-        },
-        metadata: {'meal_type': mealType, 'ingredient_count': ingredients.length},
-      ),
-      operationName: 'Create Personal Recipe',
-      defaultValue: false,
-    ) ?? false;
+    return await _personalViewModel.createPersonalRecipe(
+      name: name,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      imageUrls: imageUrls,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+    );
   }
 
-  // ===== SOCIAL RECIPE OPERATIONS (Phase 5: Feature Interface) =====
+  // ===== SOCIAL RECIPE OPERATIONS (Delegate to SocialRecipeViewModel) =====
 
   Future<bool> createCollaborativeRecipe({
     required String name,
@@ -165,45 +158,27 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    // Use ValidationUtils for consistent validation
-    final nameError = ValidationUtils.validateRecipeName(name);
-    if (nameError != null) return false;
-    
-    if (!ValidationUtils.hasItems(memberIds)) return false;
-
-    return await safeExecute(
-      () => LoggingUtils.loggedCreate(
-        'Collaborative Recipe',
-        () async {
-          final recipeId = await _recipeService.createCollaborativeRecipe(
-            title: name.trim(),
-            memberIds: memberIds,
-            description: description,
-            ingredients: ingredients,
-            instructions: instructions,
-            imageUrls: imageUrls,
-            mealType: mealType,
-            portions: portions,
-            timeMinutes: timeMinutes,
-            rating: rating,
-            tags: tags,
-            sourceUrl: sourceUrl,
-            descriptionCollaborative: descriptionCollaborative,
-            allowGuestViewing: allowGuestViewing,
-            allowMemberInvites: allowMemberInvites,
-            categoryIds: categoryIds,
-          );
-
-          return recipeId != null;
-        },
-        metadata: {'member_count': memberIds.length, 'meal_type': mealType},
-      ),
-      operationName: 'Create Collaborative Recipe',
-      defaultValue: false,
-    ) ?? false;
+    return await _socialViewModel.createCollaborativeRecipe(
+      name: name,
+      memberIds: memberIds,
+      memberDisplayNames: memberDisplayNames,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      imageUrls: imageUrls,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
+      descriptionCollaborative: descriptionCollaborative,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      categoryIds: categoryIds,
+    );
   }
 
-  /// Share a personal recipe with other users
   Future<String?> shareRecipe({
     required String recipeId,
     required List<String> memberIds,
@@ -213,105 +188,62 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    // Validate inputs using ValidationUtils
-    if (ValidationUtils.isNullOrEmpty(recipeId) || !ValidationUtils.hasItems(memberIds)) {
-      return null;
-    }
-
-    return await LoggingUtils.loggedOperation(
-      'Share Recipe',
-      () => _recipeService.social.shareRecipe(
-        recipeId: recipeId,
-        memberIds: memberIds,
-        memberDisplayNames: memberDisplayNames,
-        collaborativeDescription: collaborativeDescription,
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        categoryIds: categoryIds,
-      ),
-      metadata: {'recipe_id': recipeId, 'member_count': memberIds.length},
+    return await _socialViewModel.shareRecipe(
+      recipeId: recipeId,
+      memberIds: memberIds,
+      memberDisplayNames: memberDisplayNames,
+      collaborativeDescription: collaborativeDescription,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      categoryIds: categoryIds,
     );
   }
 
-  /// Convert collaborative recipe back to personal
   Future<String?> makeRecipePersonal(String collaborativeRecipeId) async {
-    if (ValidationUtils.isNullOrEmpty(collaborativeRecipeId)) return null;
-
-    return await LoggingUtils.loggedOperation(
-      'Convert Recipe to Personal',
-      () => _recipeService.social.makeRecipePersonal(
-        collaborativeRecipeId: collaborativeRecipeId,
-      ),
-      metadata: {'recipe_id': collaborativeRecipeId},
-    );
+    return await _socialViewModel.makeRecipePersonal(collaborativeRecipeId);
   }
+
+  // ===== UNIFIED RECIPE MANAGEMENT =====
 
   Future<bool> updateRecipe(Recipe recipe) async {
-    return await LoggingUtils.loggedUpdate(
-      'Recipe',
-      () async {
-        // Route to appropriate interface based on recipe type
-        if (recipe.isPersonal) {
-          return await _recipeService.personal.updateRecipe(recipe);
-        } else {
-          return await _recipeService.updateRecipe(recipe); // Collaborative recipes handled by main service
-        }
-      },
-      itemId: recipe.id,
-      metadata: {'type': recipe.isPersonal ? 'personal' : 'collaborative'},
-    );
+    if (recipe.isPersonal) {
+      return await _personalViewModel.updatePersonalRecipe(recipe);
+    } else {
+      return await _recipeService.updateRecipe(recipe);
+    }
   }
 
   Future<bool> deleteRecipe(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
-
+    
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
     
-    return await LoggingUtils.loggedDelete(
-      'Recipe',
-      () async {
-        // Route to appropriate interface based on recipe type
-        if (recipe.isPersonal) {
-          return await _recipeService.personal.deleteRecipe(recipeId);
-        } else {
-          return await _recipeService.deleteRecipe(recipeId); // Fallback to main service
-        }
-      },
-      itemId: recipeId,
-      metadata: {'type': recipe.isPersonal ? 'personal' : 'collaborative'},
-    );
+    if (recipe.isPersonal) {
+      return await _personalViewModel.deletePersonalRecipe(recipeId);
+    } else {
+      return await _recipeService.deleteRecipe(recipeId);
+    }
   }
 
   // ===== LEGACY COMPATIBILITY METHODS =====
 
-  /// Add unified recipe
   Future<RecipeOperationResult> addRecipe(Recipe recipe) async {
-    return await safeExecute(
-      () => LoggingUtils.loggedOperation(
-        'Add Legacy Recipe',
-        () => _recipeService.personal.addLegacyRecipe(recipe),
-        metadata: {'recipe_title': recipe.core.title},
-      ),
-      operationName: 'Add Legacy Recipe',
-      defaultValue: RecipeOperationResult.failure('Failed to add recipe'),
-    ) ?? RecipeOperationResult.failure('Failed to add recipe');
+    if (recipe.isPersonal) {
+      return await _personalViewModel.addLegacyRecipe(recipe);
+    } else {
+      return RecipeOperationResult.failure('Cannot add non-personal recipe through legacy method');
+    }
   }
 
-  /// Update unified recipe
   Future<RecipeOperationResult> updateLegacyRecipe(Recipe recipe) async {
-    return await safeExecute(
-      () => LoggingUtils.loggedOperation(
-        'Update Legacy Recipe',
-        () => _recipeService.personal.updateLegacyRecipe(recipe),
-        metadata: {'recipe_id': recipe.id, 'recipe_title': recipe.core.title},
-      ),
-      operationName: 'Update Legacy Recipe',
-      defaultValue: RecipeOperationResult.failure('Failed to update recipe'),
-    ) ?? RecipeOperationResult.failure('Failed to update recipe');
+    if (recipe.isPersonal) {
+      return await _personalViewModel.updateLegacyRecipe(recipe);
+    } else {
+      return RecipeOperationResult.failure('Cannot update non-personal recipe through legacy method');
+    }
   }
 
-  /// För befintlig kod
   Future<RecipeOperationResult> deleteRecipeById(String id) async {
     if (ValidationUtils.isNullOrEmpty(id)) {
       return RecipeOperationResult.failure('Invalid recipe ID');
@@ -328,12 +260,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     ) ?? RecipeOperationResult.failure('Failed to delete recipe');
   }
 
-  /// Get recipe by ID (unified)
-  Recipe? getRecipeById(String id) {
-    return _recipeService.getRecipeById(id);
-  }
-
-  /// Legacy method för befintlig kod
   Future<void> refresh() async {
     await LoggingUtils.loggedOperation(
       'Refresh Recipes',
@@ -342,7 +268,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     );
   }
 
-  // ===== CONTENT EDITING METHODS (Personal & Collaborative) =====
+  // ===== CONTENT EDITING METHODS =====
 
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -363,120 +289,79 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
 
-    // Validate name if provided
-    if (name != null) {
-      final nameError = ValidationUtils.validateRecipeName(name);
-      if (nameError != null) return false;
+    if (recipe.isPersonal) {
+      return await _personalViewModel.updateRecipeContent(
+        recipeId: recipeId,
+        name: name,
+        description: description,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+      );
+    } else {
+      return await _recipeService.updateRecipeContent(
+        recipeId: recipeId,
+        title: name,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        imageUrls: imageUrls,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+      );
     }
-    
-    return await LoggingUtils.loggedUpdate(
-      'Recipe Content',
-      () async {
-        // Route to appropriate interface based on recipe type
-        if (recipe.isPersonal) {
-          return await _recipeService.personal.updateRecipeContent(
-            recipeId: recipeId,
-            title: name,
-            description: description,
-            mealType: mealType,
-            portions: portions,
-            timeMinutes: timeMinutes,
-            rating: rating,
-            tags: tags,
-            sourceUrl: sourceUrl,
-          );
-        } else {
-          return await _recipeService.updateRecipeContent(
-            recipeId: recipeId,
-            title: name,
-            description: description,
-            ingredients: ingredients,
-            instructions: instructions,
-            imageUrls: imageUrls,
-            mealType: mealType,
-            portions: portions,
-            timeMinutes: timeMinutes,
-            rating: rating,
-            tags: tags,
-            sourceUrl: sourceUrl,
-          );
-        }
-      },
-      itemId: recipeId,
-      metadata: {'type': recipe.isPersonal ? 'personal' : 'collaborative'},
-    );
   }
 
-  Future<bool> addIngredient(String recipeId, String ingredient) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(ingredient)) {
-      return false;
-    }
+  // ===== INGREDIENT MANAGEMENT =====
 
+  Future<bool> addIngredient(String recipeId, String ingredient) async {
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
-
-    return await LoggingUtils.loggedUpdate(
-      'Recipe Ingredient',
-      () async {
-        if (recipe.isPersonal) {
-          return await _recipeService.personal.addIngredient(recipeId, ingredient);
-        } else {
-          return await _recipeService.addIngredient(recipeId, ingredient);
-        }
-      },
-      itemId: recipeId,
-      metadata: {'ingredient': ingredient, 'type': recipe.isPersonal ? 'personal' : 'collaborative'},
-    );
+    
+    if (recipe.isPersonal) {
+      return await _personalViewModel.addIngredient(recipeId, ingredient);
+    } else {
+      return await _recipeService.addIngredient(recipeId, ingredient);
+    }
   }
 
   Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(newIngredient)) {
-      return false;
-    }
-
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
     
-    return await LoggingUtils.loggedUpdate(
-      'Recipe Ingredient',
-      () async {
-        if (recipe.isPersonal) {
-          return await _recipeService.personal.updateIngredient(recipeId, index, newIngredient);
-        } else {
-          return await _recipeService.updateIngredient(recipeId, index, newIngredient);
-        }
-      },
-      itemId: recipeId,
-      metadata: {'index': index, 'ingredient': newIngredient, 'type': recipe.isPersonal ? 'personal' : 'collaborative'},
-    );
+    if (recipe.isPersonal) {
+      return await _personalViewModel.updateIngredient(recipeId, index, newIngredient);
+    } else {
+      return await _recipeService.updateIngredient(recipeId, index, newIngredient);
+    }
   }
 
   Future<bool> removeIngredient(String recipeId, int index) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
-
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
     
-    return await LoggingUtils.loggedDelete(
-      'Recipe Ingredient',
-      () async {
-        if (recipe.isPersonal) {
-          return await _recipeService.personal.removeIngredient(recipeId, index);
-        } else {
-          return await _recipeService.removeIngredient(recipeId, index);
-        }
-      },
-      itemId: recipeId,
-      metadata: {'index': index, 'type': recipe.isPersonal ? 'personal' : 'collaborative'},
-    );
+    if (recipe.isPersonal) {
+      return await _personalViewModel.removeIngredient(recipeId, index);
+    } else {
+      return await _recipeService.removeIngredient(recipeId, index);
+    }
   }
+
+  // ===== INSTRUCTION MANAGEMENT =====
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
     
     if (recipe.isPersonal) {
-      return await _recipeService.personal.addInstruction(recipeId, instruction);
+      return await _personalViewModel.addInstruction(recipeId, instruction);
     } else {
       return await _recipeService.addInstruction(recipeId, instruction);
     }
@@ -487,7 +372,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     if (recipe == null) return false;
     
     if (recipe.isPersonal) {
-      return await _recipeService.personal.updateInstruction(recipeId, index, newInstruction);
+      return await _personalViewModel.updateInstruction(recipeId, index, newInstruction);
     } else {
       return await _recipeService.updateInstruction(recipeId, index, newInstruction);
     }
@@ -498,7 +383,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     if (recipe == null) return false;
     
     if (recipe.isPersonal) {
-      return await _recipeService.personal.removeInstruction(recipeId, index);
+      return await _personalViewModel.removeInstruction(recipeId, index);
     } else {
       return await _recipeService.removeInstruction(recipeId, index);
     }
@@ -509,203 +394,129 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
     if (recipe == null) return false;
     
     if (recipe.isPersonal) {
-      return await _recipeService.personal.markAsCooked(recipeId);
+      return await _personalViewModel.markAsCooked(recipeId);
     } else {
       return await _recipeService.markRecipeAsCooked(recipeId);
     }
   }
 
-  // ===== SOCIAL MEMBER MANAGEMENT (Phase 5: Feature Interface) =====
+  // ===== SOCIAL MEMBER MANAGEMENT (Delegate to SocialRecipeViewModel) =====
 
   Future<bool> addMemberToRecipe(
       String recipeId, String userId, String userDisplayName, 
       {ResourcePermission permission = ResourcePermission.editor}) async {
-    return await _recipeService.addMemberToRecipe(recipeId, userId, permission);
+    return await _socialViewModel.addMemberToRecipe(recipeId, userId, userDisplayName, permission: permission);
   }
 
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
-    return await _recipeService.removeMemberFromRecipe(recipeId, userId);
+    return await _socialViewModel.removeMemberFromRecipe(recipeId, userId);
   }
 
   Future<bool> updateMemberPermission(
       String recipeId, String userId, ResourcePermission permission) async {
-    return await _recipeService.updateMemberPermission(recipeId, userId, permission);
+    return await _socialViewModel.updateMemberPermission(recipeId, userId, permission);
   }
 
-  /// Get all members of a collaborative recipe
   Map<String, ResourcePermission> getRecipeMembers(String recipeId) {
-    final recipe = _recipeService.recipes.where((r) => r.id == recipeId).firstOrNull;
-    return recipe?.socialData?.memberPermissions ?? {};
+    return _socialViewModel.getRecipeMembers(recipeId);
   }
 
-  /// Check if user can invite members to recipe
   bool canInviteMembers(String recipeId) {
-    return _recipeService.social.canInviteMembers(recipeId);
+    return _socialViewModel.canInviteMembers(recipeId);
   }
 
-  /// Get recipes shared with current user
   List<Recipe> getSharedWithMe() {
-    return recipes.where((recipe) => 
-      recipe.isShared && 
-      recipe.socialData?.ownerId != _recipeService.currentUserId
-    ).toList();
+    return _socialViewModel.getSharedWithMe();
   }
 
-  /// Get recipes owned by current user that are shared
   List<Recipe> getSharedByMe() {
-    return recipes.where((recipe) => 
-      recipe.isShared && 
-      recipe.socialData?.ownerId == _recipeService.currentUserId
-    ).toList();
+    return _socialViewModel.getSharedByMe();
   }
 
-  // ===== RECIPE QUERIES & FILTERING =====
+  // ===== RECIPE QUERIES & FILTERING (Delegate to RecipeQueryViewModel) =====
 
-  /// Hitta recept by ID (unified version)
+  Recipe? getRecipeById(String id) {
+    return _queryViewModel.getRecipeById(id);
+  }
+
   Recipe? getUnifiedRecipeById(String id) {
-    return recipes.where((r) => r.id == id).firstOrNull;
+    return _queryViewModel.getRecipeById(id);
   }
 
-  /// Filtrera recept baserat på mealType
   List<Recipe> getRecipesByMealType(String mealType) {
-    return recipes.where((r) => r.mealType == mealType).toList();
+    return _queryViewModel.getRecipesByMealType(mealType);
   }
 
-  /// Filtrera recept baserat på tags
   List<Recipe> getRecipesByTag(String tag) {
-    return recipes.where((r) => r.tags?.contains(tag) ?? false).toList();
+    return _queryViewModel.getRecipesByTag(tag);
   }
 
-  /// Sök i recept baserat på namn, ingredienser eller instruktioner
   List<Recipe> searchRecipes(String query) {
-    if (query.trim().isEmpty) return recipes;
-
-    final lowercaseQuery = query.toLowerCase();
-    return recipes.where((recipe) {
-      return recipe.title.toLowerCase().contains(lowercaseQuery) ||
-          recipe.description.toLowerCase().contains(lowercaseQuery) ||
-          recipe.ingredients.any((ingredient) =>
-              ingredient.toLowerCase().contains(lowercaseQuery)) ||
-          recipe.instructions.any((instruction) =>
-              instruction.toLowerCase().contains(lowercaseQuery)) ||
-          (recipe.tags
-                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)) ??
-              false);
-    }).toList();
+    return _queryViewModel.searchRecipes(query);
   }
 
-  /// Få recept som användaren kan redigera
   List<Recipe> getEditableRecipes() {
-    if (currentUserId == null) return [];
-
-    return recipes.where((recipe) {
-      if (recipe.isPersonal) return isRecipeOwner(recipe.id);
-      return canEditRecipe(recipe.id);
-    }).toList();
+    return _queryViewModel.getEditableRecipes();
   }
 
-  /// Få recept som nyligen tillagats
   List<Recipe> getRecentlyCookedRecipes() {
-    return recipes.where((recipe) => 
-      recipe.lastCookedAt != null &&
-      DateTime.now().difference(recipe.lastCookedAt!).inDays < 7
-    ).toList();
+    return _queryViewModel.getRecentlyCookedRecipes();
   }
 
-  /// Gruppera recept efter måltidstyp
   Map<String, List<Recipe>> get recipesByMealType {
-    final Map<String, List<Recipe>> grouped = {};
-
-    for (final recipe in recipes) {
-      grouped.putIfAbsent(recipe.mealType, () => []).add(recipe);
-    }
-
-    // Sortera måltidstyper och recept
-    final sortedGrouped = <String, List<Recipe>>{};
-    final sortedKeys = grouped.keys.toList()..sort();
-
-    for (final key in sortedKeys) {
-      final sortedRecipes = grouped[key]!;
-      sortedRecipes.sort((a, b) => a.title.compareTo(b.title));
-      sortedGrouped[key] = sortedRecipes;
-    }
-
-    return sortedGrouped;
+    return _queryViewModel.recipesByMealType;
   }
 
-  /// Få alla använda måltidstyper
   List<String> get usedMealTypes {
-    final mealTypes = recipes.map<String>((recipe) => recipe.mealType).toSet().toList();
-    mealTypes.sort();
-    return mealTypes;
+    return _queryViewModel.usedMealTypes;
   }
 
-  /// Få alla använda tags
   List<String> get usedTags {
-    final allTags = <String>{};
-    for (final recipe in recipes) {
-      if (recipe.tags != null) {
-        allTags.addAll(recipe.tags!);
-      }
-    }
-    final tagsList = allTags.toList();
-    tagsList.sort();
-    return tagsList;
+    return _queryViewModel.usedTags;
   }
 
   // ===== COLLABORATIVE FEATURES =====
 
-  /// Kontrollera om användaren kan hantera medlemmar i specifikt recept
   bool canManageRecipeMembers(String recipeId) {
     return sl<perm.PermissionService>().canInviteToRecipe(recipeId);
   }
 
-  /// Få aktiva editorer för specifikt recept
   List<String> getActiveEditors(String recipeId) {
-    return _recipeService.realtime.getActiveEditors(recipeId);
+    return _realtimeViewModel.getActiveEditors(recipeId);
   }
 
-  // ===== REALTIME OPERATIONS (Phase 5: Feature Interface) =====
+  // ===== REALTIME OPERATIONS (Delegate to RealtimeRecipeViewModel) =====
 
-  /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
-    // Use the proper real-time watching from RealtimeRecipeOperations
-    return _recipeService.realtime.watchRecipe(recipeId);
+    return _realtimeViewModel.watchRecipe(recipeId);
   }
 
-  /// Watch multiple recipes for real-time updates
   Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) {
-    return _recipeService.realtime.watchMultipleRecipes(recipeIds);
+    return _realtimeViewModel.watchMultipleRecipes(recipeIds);
   }
 
-  /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
-    return await _recipeService.realtime.startRealtimeEditing(recipeId);
+    return await _realtimeViewModel.startRealtimeEditing(recipeId);
   }
 
-  /// Stop real-time editing session for recipe
   Future<bool> stopRealtimeEditing(String recipeId) async {
-    return await _recipeService.realtime.stopRealtimeEditing(recipeId);
+    return await _realtimeViewModel.stopRealtimeEditing(recipeId);
   }
 
-  /// Make real-time edit to recipe
   Future<bool> makeRealtimeEdit({
     required String recipeId,
     required Map<String, dynamic> changes,
     String? editDescription,
   }) async {
-    return await _recipeService.realtime.makeRealtimeEdit(
+    return await _realtimeViewModel.makeRealtimeEdit(
       recipeId: recipeId,
       changes: changes,
       editDescription: editDescription,
     );
   }
 
-  /// Get real-time connection status
-  bool get isRealtimeConnected => _recipeService.realtime.isConnected;
-
-  /// Get real-time connection status stream
-  Stream<bool> get realtimeConnectionStream => _recipeService.realtime.connectionStream;
+  bool get isRealtimeConnected => _realtimeViewModel.isRealtimeConnected;
+  Stream<bool> get realtimeConnectionStream => _realtimeViewModel.realtimeConnectionStream;
 
   // ===== ERROR HANDLING =====
 
@@ -715,51 +526,16 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
 
   // ===== ANALYTICS & INSIGHTS =====
 
-  /// Få recipe insights för UI
   Map<String, dynamic> get recipeInsights {
-    return {
-      'totalRecipes': totalRecipes,
-      'personalRecipes': personalRecipeCount,
-      'collaborativeRecipes': collaborativeRecipeCount,
-      'mealTypes': usedMealTypes.length,
-      'tags': usedTags.length,
-      'recentlyCookedCount': getRecentlyCookedRecipes().length,
-      'editableCount': getEditableRecipes().length,
-      'hasCollaborativeFeatures': hasCollaborativeRecipes,
-    };
+    return _queryViewModel.recipeInsights;
   }
 
-  /// Få mest använda måltidstyper
   List<MapEntry<String, int>> getMostUsedMealTypes() {
-    final mealTypeCounts = <String, int>{};
-
-    for (final recipe in recipes) {
-      mealTypeCounts[recipe.mealType] =
-          (mealTypeCounts[recipe.mealType] ?? 0) + 1;
-    }
-
-    final sortedEntries = mealTypeCounts.entries.toList();
-    sortedEntries.sort((a, b) => b.value.compareTo(a.value));
-
-    return sortedEntries;
+    return _queryViewModel.getMostUsedMealTypes();
   }
 
-  /// Få mest använda tags
   List<MapEntry<String, int>> getMostUsedTags() {
-    final tagCounts = <String, int>{};
-
-    for (final recipe in recipes) {
-      if (recipe.tags != null) {
-        for (final tag in recipe.tags!) {
-          tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
-        }
-      }
-    }
-
-    final sortedEntries = tagCounts.entries.toList();
-    sortedEntries.sort((a, b) => b.value.compareTo(a.value));
-
-    return sortedEntries;
+    return _queryViewModel.getMostUsedTags();
   }
 
   // ===== STATE MANAGEMENT =====
@@ -767,12 +543,21 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   @override
   void dispose() {
     _recipeService.removeListener(_onServiceUpdate);
+    _personalViewModel.removeListener(_onServiceUpdate);
+    _socialViewModel.removeListener(_onServiceUpdate);
+    _realtimeViewModel.removeListener(_onServiceUpdate);
+    _queryViewModel.removeListener(_onServiceUpdate);
+    
+    _personalViewModel.dispose();
+    _socialViewModel.dispose();
+    _realtimeViewModel.dispose();
+    _queryViewModel.dispose();
+    
     super.dispose();
   }
 
   // ===== DEBUGGING & DEVELOPMENT =====
 
-  /// Debug info för utveckling
   Map<String, dynamic> get debugInfo {
     return {
       'recipesCount': recipes.length,
@@ -786,6 +571,12 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
       'serviceState': {
         'isOnline': isOnline,
         'isSyncing': isSyncing,
+      },
+      'focusedViewModels': {
+        'personal': _personalViewModel.serviceName,
+        'social': _socialViewModel.serviceName,
+        'realtime': _realtimeViewModel.serviceName,
+        'query': _queryViewModel.serviceName,
       },
     };
   }

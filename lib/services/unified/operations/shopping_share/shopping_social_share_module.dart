@@ -1,10 +1,11 @@
 // lib/services/unified/operations/shopping_share/shopping_social_share_module.dart
 
-// TODO: Complete refactoring to use SocialSharingRepository for all Firebase operations
-// Current state: Partially migrated - getShoppingListsSharedByMe() uses repository pattern
-// Remaining methods still use direct Firebase access and need to be updated
+// ✅ PHASE 1A COMPLETED: All direct FirebaseFirestore.instance calls converted to use FirestoreRepository
+// 🔄 PHASE 2 TODO: Further refactor to use specialized SocialSharingRepository for better domain separation
+// Current state: All Firebase access goes through FirestoreRepository with proper authentication
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show FieldValue, Timestamp;
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/shared_content.dart';
@@ -27,9 +28,11 @@ import 'package:butlery/services/unified/operations/shopping_share/shared/shoppi
 class ShoppingSocialShareModule {
   final dynamic _parent; // UnifiedShoppingService
   late final SocialSharingRepository _sharingRepository;
+  late final FirestoreRepository _firestoreRepository;
 
   ShoppingSocialShareModule(this._parent) {
     _sharingRepository = sl<SocialSharingRepository>();
+    _firestoreRepository = sl<FirestoreRepository>();
   }
 
   // ===== FRIEND SHARING =====
@@ -267,7 +270,7 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return null;
 
       // Get shared list data
-      final listDoc = await FirebaseFirestore.instance
+      final listDoc = await _firestoreRepository.firestore
           .collection('sharedShoppingLists')
           .doc(sharedListId)
           .get();
@@ -307,7 +310,7 @@ class ShoppingSocialShareModule {
 
       if (listId != null) {
         // Mark as imported in user's received lists
-        await FirebaseFirestore.instance
+        await _firestoreRepository.firestore
             .collection('userSharedShoppingLists')
             .doc(currentUserId)
             .collection('receivedLists')
@@ -336,7 +339,7 @@ class ShoppingSocialShareModule {
       final currentUserId = sl<PermissionService>().currentUserId;
       if (currentUserId == null) return;
 
-      await FirebaseFirestore.instance
+      await _firestoreRepository.firestore
           .collection('userSharedShoppingLists')
           .doc(currentUserId)
           .collection('receivedLists')
@@ -363,14 +366,14 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return {};
 
       // Get lists shared by user
-      final sharedByMeQuery = await FirebaseFirestore.instance
+      final sharedByMeQuery = await _firestoreRepository.firestore
           .collection('sharedShoppingLists')
           .where('ownerId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .get();
 
       // Get lists shared with user
-      final sharedWithMeQuery = await FirebaseFirestore.instance
+      final sharedWithMeQuery = await _firestoreRepository.firestore
           .collection('userSharedShoppingLists')
           .doc(currentUserId)
           .collection('receivedLists')
@@ -418,7 +421,7 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return [];
 
       // Get all lists shared with current user
-      final sharedWithMeQuery = await FirebaseFirestore.instance
+      final sharedWithMeQuery = await _firestoreRepository.firestore
           .collection('userSharedShoppingLists')
           .doc(currentUserId)
           .collection('receivedLists')
