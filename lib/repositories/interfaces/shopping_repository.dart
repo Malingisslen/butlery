@@ -14,4 +14,44 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
 
   /// Remove an item from a shopping list
   Future<void> removeItem(String listId, String itemId);
+
+  // ===== TEMPLATE OPERATIONS =====
+
+  /// Save shopping list as template
+  Future<String> saveAsTemplate({
+    required String listId,
+    required String templateName,
+    String? description,
+    List<String>? tags,
+    bool isPublic = false,
+  });
+
+  /// Update existing template
+  Future<void> updateTemplate({
+    required String templateId,
+    String? name,
+    String? description,
+    List<String>? tags,
+    bool? isPublic,
+  });
+
+  /// Delete template
+  Future<void> deleteTemplate(String templateId);
+
+  /// Get user's templates
+  Future<List<Map<String, dynamic>>> getUserTemplates();
+
+  /// Get public templates
+  Future<List<Map<String, dynamic>>> getPublicTemplates({
+    int limit = 20,
+    String? searchQuery,
+    List<String>? tags,
+  });
+
+  /// Create shopping list from template
+  Future<String> createListFromTemplate({
+    required String templateId,
+    required String listName,
+    String? description,
+  });
 }
