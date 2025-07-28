@@ -6,7 +6,6 @@ library;
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -243,6 +242,7 @@ Future<void> initializeDependencies() async {
     // ==================== UNIFIED RECIPE SYSTEM (PHASE 5) ====================
     sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
       // TODO: Migrate to use RecipeRepository instead of direct Firestore
+      firestore: sl<FirestoreRepository>().firestore,
       authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
     ));
     if (kDebugMode) {
@@ -268,7 +268,7 @@ Future<void> initializeDependencies() async {
     sl.registerLazySingleton<SocialMenuOperations>(
       () => SocialMenuOperations(
         // TODO: Migrate to use MenuRepository instead of direct Firestore
-        firestore: FirebaseFirestore.instance,
+        firestore: sl<FirestoreRepository>().firestore,
         friendsService: sl<UnifiedFriendsService>(),
       ),
     );
