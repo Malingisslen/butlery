@@ -1,3 +1,0 @@
-// This is a backup of the original unified_recipe_viewmodel.dart before refactoring
-// Created during Priority 2.3.2 refactoring process
-// The original 800-line file has been split into 4 focused ViewModels with facade pattern
