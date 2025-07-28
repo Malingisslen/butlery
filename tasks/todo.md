@@ -340,36 +340,7 @@
 3. **Convert Static Methods to DI**:
    - `lib/services/notifications/fcm_service.dart`
 
-### Phase 1B: Address Critical File Size Violations (12-15 hours) 📏 HIGH
-
-#### [ ] **Refactor Oversized Core Files** (8 hours)
-**Target**: Get all files under 500 lines using facade pattern.
-
-1. **dialog_factory.dart** (658 lines → ~300 lines):
-   - Extract specialized dialog classes
-   - Create DialogBuilder pattern
-   - Keep facade for backward compatibility
-
-2. **injection.dart** (607 lines → ~400 lines):
-   - Group registrations by domain
-   - Extract initialization modules
-   - Create domain-specific injection helpers
-
-3. **Large Mixins** (504-576 lines each):
-   - `async_operation_mixin.dart` (504 lines)
-   - `json_serializable_mixin.dart` (510 lines)
-   - `stream_management_mixin.dart` (576 lines)
-   - `permission_mixins.dart` (512 lines)
-
-#### [ ] **Refactor Large Service Files** (6 hours)
-1. **realtime_menu.dart** (690 lines):
-   - Apply facade pattern
-   - Extract specialized modules
-
-2. **Documentation file** (737 lines):
-   - Split into focused documentation files
-
-### Phase 1C: Repository Pattern Compliance (4-6 hours) 🏗️ MEDIUM
+### Phase 1B: Repository Pattern Compliance (4-6 hours) 🏗️ MEDIUM
 
 #### [ ] **Clean Repository Responsibilities** (3 hours)
 **Issue**: Repositories contain business logic and authentication handling.
@@ -388,7 +359,7 @@
 2. **Standardize Interface Implementations**
 3. **Remove Authentication Methods from Repositories**
 
-### Phase 1D: Service Layer Architecture Cleanup (6-8 hours) 🔧 MEDIUM
+### Phase 1C: Service Layer Architecture Cleanup (6-8 hours) 🔧 MEDIUM
 
 #### [ ] **Eliminate Remaining Direct Firebase Access** (5 hours)
 1. **Create Missing Repository Interfaces**:
@@ -422,11 +393,6 @@
 - ✅ **File Size Limits**: >90% compliant (currently 88%)
 - ✅ **Total Violations**: <500 (currently 1,433)
 - ✅ **Direct Firebase Access**: 0 services (currently 42)
-
-### Target Timeline:
-- **Week 3**: Phase 1A & 1B (Critical fixes and oversized files)
-- **Week 4**: Phase 1C & 1D (Repository compliance and service cleanup)
-- **Validation**: Continuous architecture testing after each phase
 
 ---
 
