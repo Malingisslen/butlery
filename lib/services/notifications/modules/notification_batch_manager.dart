@@ -1,7 +1,6 @@
 // lib/services/notifications/modules/notification_batch_manager.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -33,7 +32,6 @@ class NotificationBatchManager {
   Future<void> Function(NotificationBatch)? _sendBatchCallback;
 
   NotificationBatchManager({
-    required FirebaseFirestore firestore,
     required String userId,
     required NotificationRepository repository,
     Future<void> Function(NotificationBatch)? sendBatchCallback,

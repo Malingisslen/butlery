@@ -51,7 +51,6 @@ class FriendsManagementOperations extends BaseService {
         final currentUserId = _parent.currentUserId;
         if (currentUserId != null) {
           final service = notif.NotificationService(
-            firestore: _parent.firestore,
             userId: currentUserId,
           );
           service.initialize();

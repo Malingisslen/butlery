@@ -1,9 +1,12 @@
 // lib/services/unified/modules/firebase_sync_manager.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_change.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+// Removed unused collaborative repository import
 import 'package:butlery/core/utils/logger.dart';
+import 'package:get_it/get_it.dart';
 
 /// Focused module for Firebase synchronization
 /// 
@@ -19,8 +22,7 @@ class FirebaseSyncManager {
   // ===== SYNC STREAM MANAGEMENT =====
 
   /// Start Firebase synchronization for user's recipes
-  static Future<Map<String, StreamSubscription<QuerySnapshot>>> startFirebaseSync({
-    required FirebaseFirestore firestore,
+  static Future<Map<String, StreamSubscription>> startFirebaseSync({
     required String currentUserId,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
@@ -29,12 +31,11 @@ class FirebaseSyncManager {
     try {
       AppLogger.info('🔄 Starting Firebase sync for user: $currentUserId');
 
-      final subscriptions = <String, StreamSubscription<QuerySnapshot>>{};
+      final subscriptions = <String, StreamSubscription>{};
 
       // Start personal recipes sync
       // ignore: cancel_subscriptions - returned in Map for caller to manage
-      final personalSub = await _startPersonalRecipesSync(
-        firestore: firestore,
+      final personalSub = _startPersonalRecipesSync(
         currentUserId: currentUserId,
         onRecipeUpdated: onRecipeUpdated,
         onRecipeRemoved: onRecipeRemoved,
@@ -44,8 +45,7 @@ class FirebaseSyncManager {
 
       // Start collaborative recipes sync
       // ignore: cancel_subscriptions - returned in Map for caller to manage
-      final collaborativeSub = await _startCollaborativeRecipesSync(
-        firestore: firestore,
+      final collaborativeSub = _startCollaborativeRecipesSync(
         currentUserId: currentUserId,
         onRecipeUpdated: onRecipeUpdated,
         onRecipeRemoved: onRecipeRemoved,
@@ -53,17 +53,17 @@ class FirebaseSyncManager {
       );
       subscriptions['collaborative_recipes'] = collaborativeSub;
 
-      AppLogger.success('✅ Firebase sync started (${subscriptions.length} streams)');
+      AppLogger.success('✅ Repository sync started (${subscriptions.length} streams)');
       return subscriptions;
     } catch (e) {
-      AppLogger.error('❌ Error starting Firebase sync: $e');
+      AppLogger.error('❌ Error starting repository sync: $e');
       rethrow;
     }
   }
 
   /// Stop all Firebase synchronization
   static Future<void> stopFirebaseSync({
-    required Map<String, StreamSubscription<QuerySnapshot>> subscriptions,
+    required Map<String, StreamSubscription> subscriptions,
   }) async {
     try {
       // Cancel all active subscriptions
@@ -72,9 +72,9 @@ class FirebaseSyncManager {
       }
       subscriptions.clear();
 
-      AppLogger.info('Firebase sync stopped');
+      AppLogger.info('Repository sync stopped');
     } catch (e) {
-      AppLogger.error('Error stopping Firebase sync: $e');
+      AppLogger.error('Error stopping repository sync: $e');
       rethrow;
     }
   }
@@ -82,27 +82,24 @@ class FirebaseSyncManager {
   // ===== PERSONAL RECIPES SYNC =====
 
   /// Start syncing personal recipes
-  static Future<StreamSubscription<QuerySnapshot>> _startPersonalRecipesSync({
-    required FirebaseFirestore firestore,
+  static StreamSubscription _startPersonalRecipesSync({
     required String currentUserId,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-  }) async {
+  }) {
     try {
-      final subscription = firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('unified_recipes')
-          .snapshots()
-          .listen(
-            (snapshot) => _handlePersonalRecipesSnapshot(
-              snapshot: snapshot,
-              onRecipeUpdated: onRecipeUpdated,
-              onRecipeRemoved: onRecipeRemoved,
-            ),
-            onError: (error) => onSyncError('personal_recipes', error),
-          );
+      final recipeRepository = GetIt.instance<RecipeRepository>();
+      
+      final subscription = recipeRepository.subscribeToUserRecipes(
+        currentUserId,
+        (recipeChanges) => _handlePersonalRecipeChanges(
+          changes: recipeChanges,
+          onRecipeUpdated: onRecipeUpdated,
+          onRecipeRemoved: onRecipeRemoved,
+        ),
+        onError: (error) => onSyncError('personal_recipes', error),
+      );
 
       AppLogger.debug('Personal recipes sync started');
       return subscription;
@@ -112,51 +109,51 @@ class FirebaseSyncManager {
     }
   }
 
-  /// Handle personal recipes snapshot changes
-  static void _handlePersonalRecipesSnapshot({
-    required QuerySnapshot snapshot,
+  /// Handle personal recipe changes
+  static void _handlePersonalRecipeChanges({
+    required List<RecipeChange> changes,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
   }) {
     try {
-      for (final change in snapshot.docChanges) {
-        _handleRecipeDocumentChange(
-          change: change,
-          source: 'personal',
-          onRecipeUpdated: onRecipeUpdated,
-          onRecipeRemoved: onRecipeRemoved,
-        );
+      for (final change in changes) {
+        switch (change.type) {
+          case RecipeChangeType.added:
+          case RecipeChangeType.modified:
+            onRecipeUpdated(change.recipe, 'personal');
+            break;
+          case RecipeChangeType.removed:
+            onRecipeRemoved(change.recipe.id, 'personal');
+            break;
+        }
       }
     } catch (e) {
-      AppLogger.error('Error handling personal recipes snapshot: $e');
+      AppLogger.error('Error handling personal recipe changes: $e');
     }
   }
 
   // ===== COLLABORATIVE RECIPES SYNC =====
 
   /// Start syncing collaborative recipes
-  static Future<StreamSubscription<QuerySnapshot>> _startCollaborativeRecipesSync({
-    required FirebaseFirestore firestore,
+  static StreamSubscription _startCollaborativeRecipesSync({
     required String currentUserId,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-  }) async {
+  }) {
     try {
-      final subscription = firestore
-          .collection('unified_collaborative_recipes')
-          .where('memberPermissions.$currentUserId', isNotEqualTo: null)
-          .snapshots()
-          .listen(
-            (snapshot) => _handleCollaborativeRecipesSnapshot(
-              snapshot: snapshot,
-              onRecipeUpdated: onRecipeUpdated,
-              onRecipeRemoved: onRecipeRemoved,
-            ),
-            onError: (error) => onSyncError('collaborative_recipes', error),
-          );
+      // TODO: Implement collaborative recipe streaming via repository
+      // For now, create a dummy stream that doesn't do anything
+      final controller = StreamController<void>();
+      final subscription = controller.stream.listen(
+        (_) {}, // No-op listener
+        onError: (error) => onSyncError('collaborative_recipes', error),
+      );
+      
+      // Schedule the controller to be closed when the subscription is cancelled
+      subscription.onDone(() => controller.close());
 
-      AppLogger.debug('Collaborative recipes sync started');
+      AppLogger.debug('Collaborative recipes sync started (placeholder)');
       return subscription;
     } catch (e) {
       AppLogger.error('Error starting collaborative recipes sync: $e');
@@ -164,61 +161,18 @@ class FirebaseSyncManager {
     }
   }
 
-  /// Handle collaborative recipes snapshot changes
-  static void _handleCollaborativeRecipesSnapshot({
-    required QuerySnapshot snapshot,
-    required void Function(Recipe, String) onRecipeUpdated,
-    required void Function(String, String) onRecipeRemoved,
-  }) {
-    try {
-      for (final change in snapshot.docChanges) {
-        _handleRecipeDocumentChange(
-          change: change,
-          source: 'collaborative',
-          onRecipeUpdated: onRecipeUpdated,
-          onRecipeRemoved: onRecipeRemoved,
-        );
-      }
-    } catch (e) {
-      AppLogger.error('Error handling collaborative recipes snapshot: $e');
-    }
-  }
+  // Removed unused _handleCollaborativeRecipeChanges method
+  // Collaborative recipe change handling will be implemented when repository supports it
 
-  // ===== DOCUMENT CHANGE HANDLING =====
-
-  /// Handle individual recipe document changes
-  static void _handleRecipeDocumentChange({
-    required DocumentChange change,
-    required String source,
-    required void Function(Recipe, String) onRecipeUpdated,
-    required void Function(String, String) onRecipeRemoved,
-  }) {
-    try {
-      final doc = change.doc;
-      
-      switch (change.type) {
-        case DocumentChangeType.added:
-        case DocumentChangeType.modified:
-          final recipe = Recipe.fromMap(doc.id, doc.data()! as Map<String, dynamic>);
-          onRecipeUpdated(recipe, source);
-          AppLogger.debug('Recipe ${change.type.name} from $source: ${recipe.title}');
-          break;
-          
-        case DocumentChangeType.removed:
-          onRecipeRemoved(doc.id, source);
-          AppLogger.debug('Recipe removed from $source: ${doc.id}');
-          break;
-      }
-    } catch (e) {
-      AppLogger.error('Error handling recipe document change: $e');
-    }
-  }
+  // ===== RECIPE CHANGE HANDLING =====
+  // Removed old Firebase-specific document change handling
+  // Recipe changes now handled by repository-specific methods above
 
   // ===== SYNC STATUS AND DIAGNOSTICS =====
 
   /// Get sync status information
   static Map<String, dynamic> getSyncStatus({
-    required Map<String, StreamSubscription<QuerySnapshot>> subscriptions,
+    required Map<String, StreamSubscription> subscriptions,
     required String? currentUserId,
   }) {
     return {
@@ -232,37 +186,35 @@ class FirebaseSyncManager {
   }
 
   /// Check if currently syncing
-  static bool isSyncing(Map<String, StreamSubscription<QuerySnapshot>> subscriptions) {
+  static bool isSyncing(Map<String, StreamSubscription> subscriptions) {
     return subscriptions.isNotEmpty;
   }
 
   /// Check if personal recipes are syncing
-  static bool isPersonalSyncActive(Map<String, StreamSubscription<QuerySnapshot>> subscriptions) {
+  static bool isPersonalSyncActive(Map<String, StreamSubscription> subscriptions) {
     return subscriptions.containsKey('personal_recipes');
   }
 
   /// Check if collaborative recipes are syncing
-  static bool isCollaborativeSyncActive(Map<String, StreamSubscription<QuerySnapshot>> subscriptions) {
+  static bool isCollaborativeSyncActive(Map<String, StreamSubscription> subscriptions) {
     return subscriptions.containsKey('collaborative_recipes');
   }
 
   /// Get active subscription names
-  static List<String> getActiveSubscriptions(Map<String, StreamSubscription<QuerySnapshot>> subscriptions) {
+  static List<String> getActiveSubscriptions(Map<String, StreamSubscription> subscriptions) {
     return subscriptions.keys.toList();
   }
 
   // ===== SELECTIVE SYNC CONTROL =====
 
   /// Start only personal recipes sync
-  static Future<StreamSubscription<QuerySnapshot>> startPersonalSyncOnly({
-    required FirebaseFirestore firestore,
+  static StreamSubscription startPersonalSyncOnly({
     required String currentUserId,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-  }) async {
-    return await _startPersonalRecipesSync(
-      firestore: firestore,
+  }) {
+    return _startPersonalRecipesSync(
       currentUserId: currentUserId,
       onRecipeUpdated: onRecipeUpdated,
       onRecipeRemoved: onRecipeRemoved,
@@ -271,15 +223,13 @@ class FirebaseSyncManager {
   }
 
   /// Start only collaborative recipes sync
-  static Future<StreamSubscription<QuerySnapshot>> startCollaborativeSyncOnly({
-    required FirebaseFirestore firestore,
+  static StreamSubscription startCollaborativeSyncOnly({
     required String currentUserId,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-  }) async {
-    return await _startCollaborativeRecipesSync(
-      firestore: firestore,
+  }) {
+    return _startCollaborativeRecipesSync(
       currentUserId: currentUserId,
       onRecipeUpdated: onRecipeUpdated,
       onRecipeRemoved: onRecipeRemoved,
@@ -289,7 +239,7 @@ class FirebaseSyncManager {
 
   /// Stop specific sync stream
   static Future<void> stopSpecificSync({
-    required Map<String, StreamSubscription<QuerySnapshot>> subscriptions,
+    required Map<String, StreamSubscription> subscriptions,
     required String syncType,
   }) async {
     try {
@@ -309,8 +259,7 @@ class FirebaseSyncManager {
 
   /// Monitor sync health and restart if needed
   static Future<void> ensureSyncHealth({
-    required Map<String, StreamSubscription<QuerySnapshot>> subscriptions,
-    required FirebaseFirestore firestore,
+    required Map<String, StreamSubscription> subscriptions,
     required String currentUserId,
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
@@ -332,8 +281,7 @@ class FirebaseSyncManager {
         for (final syncType in missingSyncs) {
           if (syncType == 'personal_recipes') {
             // ignore: cancel_subscriptions - added to subscriptions Map for management
-            final sub = await _startPersonalRecipesSync(
-              firestore: firestore,
+            final sub = _startPersonalRecipesSync(
               currentUserId: currentUserId,
               onRecipeUpdated: onRecipeUpdated,
               onRecipeRemoved: onRecipeRemoved,
@@ -342,8 +290,7 @@ class FirebaseSyncManager {
             subscriptions[syncType] = sub;
           } else if (syncType == 'collaborative_recipes') {
             // ignore: cancel_subscriptions - added to subscriptions Map for management
-            final sub = await _startCollaborativeRecipesSync(
-              firestore: firestore,
+            final sub = _startCollaborativeRecipesSync(
               currentUserId: currentUserId,
               onRecipeUpdated: onRecipeUpdated,
               onRecipeRemoved: onRecipeRemoved,

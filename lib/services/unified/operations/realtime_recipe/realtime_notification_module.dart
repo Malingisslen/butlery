@@ -27,7 +27,6 @@ class RealtimeNotificationModule {
       final currentUserId = parent.currentUserId;
       if (currentUserId != null) {
         final service = NotificationService(
-          firestore: parent.firestore,
           userId: currentUserId,
         );
         service.initialize();

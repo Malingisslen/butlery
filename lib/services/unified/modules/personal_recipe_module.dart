@@ -1,12 +1,13 @@
 // lib/services/unified/modules/personal_recipe_module.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:get_it/get_it.dart';
 
 /// Personal recipe operations module
 /// 
@@ -18,7 +19,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 /// 
 /// ❌ DOES NOT CONTAIN: Social features, realtime editing, UI concerns, auth logic
 class PersonalRecipeModule {
-  final FirebaseFirestore _firestore;
+  final RecipeRepository _recipeRepository;
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
@@ -27,14 +28,13 @@ class PersonalRecipeModule {
   final RecipeServiceAdapter _serviceAdapter;
 
   PersonalRecipeModule({
-    required FirebaseFirestore firestore,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
     RecipeServiceAdapter? serviceAdapter,
-  })  : _firestore = firestore,
+  })  : _recipeRepository = GetIt.instance<RecipeRepository>(),
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
@@ -392,20 +392,27 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== FIREBASE OPERATIONS (DEPRECATED - Use Repository Pattern) =====
+  // ===== REPOSITORY OPERATIONS =====
   
-  // These methods are now handled by the RecipeServiceAdapter
-  // They are kept for potential backward compatibility but should not be used
-
-  /// Get Firebase query for personal recipes
-  Query<Map<String, dynamic>>? getPersonalRecipesQuery() {
+  /// Get personal recipes stream via repository
+  Stream<List<Recipe>>? getPersonalRecipesStream() {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return null;
 
-    return _firestore
-        .collection('users')
-        .doc(currentUserId)
-        .collection('unified_recipes');
+    return _recipeRepository.watchRecipes(currentUserId);
+  }
+  
+  /// Get personal recipes list via repository
+  Future<List<Recipe>?> getPersonalRecipesList() async {
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) return null;
+
+    try {
+      return await _recipeRepository.fetchUserRecipes(currentUserId);
+    } catch (e) {
+      AppLogger.error('Failed to fetch personal recipes: $e');
+      return null;
+    }
   }
 
   // ===== IMPORT/EXPORT FUNCTIONALITY =====

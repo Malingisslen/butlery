@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:get_it/get_it.dart';
 
 /// Focused module for notification delivery tracking and analytics
 /// 
@@ -28,9 +29,8 @@ class NotificationAnalyticsManager {
   static const int _batchSize = 10;
 
   NotificationAnalyticsManager({
-    required FirebaseFirestore firestore,
     required String userId,
-  }) : _firestore = firestore, _userId = userId;
+  }) : _firestore = GetIt.instance<FirebaseFirestore>(), _userId = userId;
 
   // ===== DELIVERY TRACKING =====
 

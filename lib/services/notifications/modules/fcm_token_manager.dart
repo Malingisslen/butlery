@@ -1,12 +1,16 @@
 // lib/services/notifications/modules/fcm_token_manager.dart
 
+// TODO: Complete repository migration - this service needs advanced token management methods
+// Current state: Basic FCM methods migrated, but batch operations and token cleanup need custom repository methods
+
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:get_it/get_it.dart';
 
 /// Focused module for Firebase Cloud Messaging token management
 /// 
@@ -36,9 +40,9 @@ class FCMTokenManager {
   static const String _tokenTimestampKey = 'fcm_token_timestamp';
 
   FCMTokenManager({
-    required FirebaseFirestore firestore,
     required String userId,
-  }) : _firestore = firestore, _userId = userId;
+  }) : _firestore = GetIt.instance<FirebaseFirestore>(),
+       _userId = userId;
 
   // ===== INITIALIZATION AND TOKEN REGISTRATION =====
 
@@ -195,7 +199,7 @@ class FCMTokenManager {
   /// Subscribe to notification topics based on user preferences
   /// 
   /// This should be called after preferences are updated
-  Future<void> updateTopicSubscriptions(NotificationPreferences preferences) async {
+  Future<void> updateTopicSubscriptions(legacy.NotificationPreferences preferences) async {
     try {
       AppLogger.info('🔔 Updating FCM topic subscriptions based on preferences');
 

@@ -246,7 +246,6 @@ class RealtimeRecipeModule {
   /// Register/unregister user as active editor
   Future<void> _registerActiveEditor(String recipeId, bool isActive) async {
     await RealtimeEditorTracker.registerActiveEditor(
-      firestore: _firestore,
       recipeId: recipeId,
       isActive: isActive,
       currentUserId: _getCurrentUserId() ?? '',
@@ -257,7 +256,6 @@ class RealtimeRecipeModule {
   /// Update last seen timestamp for active editor
   Future<void> updateActiveEditorPresence(String recipeId) async {
     await RealtimeEditorTracker.updateActiveEditorPresence(
-      firestore: _firestore,
       recipeId: recipeId,
       currentUserId: _getCurrentUserId() ?? '',
     );
@@ -266,7 +264,6 @@ class RealtimeRecipeModule {
   /// Get active editors for a recipe
   Future<List<Map<String, dynamic>>> getActiveEditors(String recipeId) async {
     return await RealtimeEditorTracker.getActiveEditors(
-      firestore: _firestore,
       recipeId: recipeId,
     );
   }
@@ -373,7 +370,6 @@ class RealtimeRecipeModule {
   /// Get editor statistics for recipe
   Future<Map<String, dynamic>> getEditorStatistics(String recipeId) async {
     return await RealtimeEditorTracker.getEditorStatistics(
-      firestore: _firestore,
       recipeId: recipeId,
     );
   }
@@ -381,15 +377,13 @@ class RealtimeRecipeModule {
   /// Check if recipe has collaborative editing activity
   Future<bool> hasCollaborativeActivity(String recipeId) async {
     return await RealtimeEditorTracker.hasCollaborativeActivity(
-      firestore: _firestore,
       recipeId: recipeId,
     );
   }
 
   /// Cleanup inactive editors
-  Future<int> cleanupInactiveEditors(String recipeId) async {
-    return await RealtimeEditorTracker.cleanupInactiveEditors(
-      firestore: _firestore,
+  Future<void> cleanupInactiveEditors(String recipeId) async {
+    await RealtimeEditorTracker.cleanupInactiveEditors(
       recipeId: recipeId,
     );
   }
