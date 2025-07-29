@@ -157,6 +157,27 @@ class AppDimensions {
   /// Info icon size (alias)
   static const double iconSizeInfo = iconSizeM;
 
+  /// Extra small icon size (12px)
+  static const double iconSizeXs = 12.0;
+
+  // ===== STROKE/BORDER WIDTH CONSTANTS =====
+
+  /// Thin stroke width (0.5px)
+  static const double strokeWidth05 = 0.5;
+
+  /// Standard stroke width (2px)
+  static const double strokeWidth2 = 2.0;
+
+  // ===== DOT AND INDICATOR CONSTANTS =====
+
+  /// Standard dot size (8px)
+  static const double dotSize = 8.0;
+
+  // ===== HEIGHT CONSTANTS =====
+
+  /// Large minimum height (200px)
+  static const double minHeightLarge = 200.0;
+
   /// Empty state icon size (alias)
   static const double iconSizeEmptyState = iconSizeXl;
 

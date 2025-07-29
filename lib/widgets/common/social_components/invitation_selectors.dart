@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target selection widgets
 /// 
@@ -200,7 +201,7 @@ class InvitationSelectors {
               },
             ),
           if (showSearch && (showTypeFilters || showSorting))
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
           if (showTypeFilters) ...[
             targetTypeFilters(
               availableTypes: allTargets.map((t) => t.type.name).toSet().toList(),
@@ -214,13 +215,13 @@ class InvitationSelectors {
                 }
               },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
           ],
           if (showSorting)
             Row(
               children: [
                 const Text('Sortera:', style: TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 DropdownButton<String>(
                   value: 'name',
                   items: const [
@@ -295,7 +296,7 @@ class InvitationSelectors {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           if (compact)
             Text(
               '${selectedTargets.length} målgrupper valda',

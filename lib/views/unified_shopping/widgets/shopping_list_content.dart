@@ -43,7 +43,8 @@ class ShoppingListContent {
       );
     }
 
-    return _buildShoppingList(context, viewModel, onItemTap, onEditItem, onDeleteItem);
+    return _buildShoppingList(
+        context, viewModel, onItemTap, onEditItem, onDeleteItem);
   }
 
   static Widget _buildShoppingList(
@@ -57,18 +58,20 @@ class ShoppingListContent {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       children: [
         // Pending items by category
-        ..._buildPendingItemsByCategory(context, viewModel, onItemTap, onEditItem, onDeleteItem),
+        ..._buildPendingItemsByCategory(
+            context, viewModel, onItemTap, onEditItem, onDeleteItem),
 
         // Completed items section
         if (viewModel.boughtItems > 0) ...[
-          const SizedBox(height: 24),
+          const SizedBox(height: AppDimensions.spacing24),
           _buildCompletedItemsHeader(viewModel),
-          const SizedBox(height: 8),
-          ..._buildCompletedItems(context, viewModel, onItemTap, onEditItem, onDeleteItem),
+          const SizedBox(height: AppDimensions.spacingSm),
+          ..._buildCompletedItems(
+              context, viewModel, onItemTap, onEditItem, onDeleteItem),
         ],
 
         // Bottom spacing
-        const SizedBox(height: 80),
+        const SizedBox(height: AppDimensions.spacing80),
       ],
     );
   }
@@ -80,7 +83,8 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
-    final pendingItems = viewModel.items.where((item) => !item.isCompleted).toList();
+    final pendingItems =
+        viewModel.items.where((item) => !item.isCompleted).toList();
     if (pendingItems.isEmpty) return [];
 
     final categorizedItems = <String, List<UnifiedShoppingItem>>{};
@@ -109,7 +113,8 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
-    final completedItems = viewModel.items.where((item) => item.isCompleted).toList();
+    final completedItems =
+        viewModel.items.where((item) => item.isCompleted).toList();
     if (completedItems.isEmpty) return [];
 
     final categorizedItems = <String, List<UnifiedShoppingItem>>{};
@@ -145,17 +150,18 @@ class ShoppingListContent {
       children: [
         // Category header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing12, vertical: AppDimensions.spacingSm),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
-            color: (isCompleted ? AppColors.neutralMedium : AppColors.primaryBlue)
-                .withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
+            color:
+                (isCompleted ? AppColors.neutralMedium : AppColors.primaryBlue)
+                    .withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
           child: Row(
             children: [
               _getCategoryIcon(category, isCompleted),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppDimensions.spacing12),
               Expanded(
                 child: Text(
                   category,
@@ -170,13 +176,18 @@ class ShoppingListContent {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppDimensions.spacingSm),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacing6,
+                    vertical: AppDimensions.spacing2),
                 decoration: BoxDecoration(
-                  color: (isCompleted ? AppColors.neutralMedium : AppColors.primaryBlue)
+                  color: (isCompleted
+                          ? AppColors.neutralMedium
+                          : AppColors.primaryBlue)
                       .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadius8),
                 ),
                 child: Text(
                   '${items.length}',
@@ -195,15 +206,15 @@ class ShoppingListContent {
 
         // Items in category
         ...items.map((item) => ShoppingItemTiles.buildItemTile(
-          context,
-          item,
-          isCompleted,
-          onItemTap,
-          onEditItem,
-          onDeleteItem,
-        )),
+              context,
+              item,
+              isCompleted,
+              onItemTap,
+              onEditItem,
+              onDeleteItem,
+            )),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppDimensions.spacingSm),
       ],
     );
   }
@@ -244,7 +255,7 @@ class ShoppingListContent {
 
     return Icon(
       iconData,
-      size: 18,
+      size: AppDimensions.iconSizeS,
       color: isCompleted ? AppColors.neutralMedium : AppColors.primaryBlue,
     );
   }
@@ -254,10 +265,10 @@ class ShoppingListContent {
       children: [
         const Icon(
           Icons.check_circle,
-          size: 20,
+          size: AppDimensions.iconSizeM,
           color: AppColors.success,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

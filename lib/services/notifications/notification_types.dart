@@ -43,6 +43,7 @@ enum NotificationCategory {
   recipes,           // Recipe sharing and collaboration
   collaboration,     // Real-time editing and presence
   shopping,          // Shopping list sharing and updates
+  messaging,         // Direct messages and conversations
   social,            // General social activity
   system,            // App updates and maintenance
 }

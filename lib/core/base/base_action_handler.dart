@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// BaseActionHandler - Abstract base class for standardized action patterns
 /// 
@@ -285,7 +286,7 @@ abstract class BaseActionHandler {
         content: Row(
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppDimensions.spacingMd),
             Expanded(child: Text(message)),
           ],
         ),
@@ -379,7 +380,7 @@ abstract class BaseActionHandler {
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppDimensions.spacing12),
             Text(message),
           ],
         ),

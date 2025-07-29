@@ -118,6 +118,92 @@ class ShoppingSocialShareModule {
     );
   }
 
+  // ===== GROUP SHARING =====
+
+  /// Share shopping list with specific groups
+  Future<bool> shareWithGroups({
+    required String listId,
+    required List<String> groupIds,
+    String? message,
+  }) async {
+    try {
+      final list = _getListById(listId);
+      final errorMessage = ShoppingShareUtils.validateListExists(list);
+      if (errorMessage != null) {
+        AppLogger.error('Cannot share with groups: $errorMessage');
+        return false;
+      }
+      
+      if (groupIds.isEmpty) {
+        AppLogger.error('No groups specified for sharing');
+        return false;
+      }
+
+      if (!sl<PermissionService>().isAuthenticated) {
+        AppLogger.warning('User must be logged in to share with groups');
+        return false;
+      }
+      
+      final currentUser = sl<PermissionService>().currentUser;
+      if (currentUser == null) return false;
+      
+      // Create shared content using repository
+      final sharedContent = SharedContent(
+        id: '${listId}_${DateTime.now().millisecondsSinceEpoch}',
+        contentType: 'shopping_list',
+        contentId: listId,
+        ownerId: currentUser.uid,
+        sharedAt: DateTime.now(),
+        sharedWithUserIds: [],
+        sharedWithGroupIds: groupIds,
+        permissions: SharingPermissions(
+          canView: true,
+          canEdit: false,
+        ),
+        metadata: {
+          'listName': list!.name,
+          'ownerDisplayName': currentUser.displayName,
+          'ownerAvatarUrl': currentUser.avatarUrl,
+          'message': message ?? '',
+          'shareType': 'group',
+          'listData': _createShareListData(list),
+        },
+      );
+      
+      // Share to each group using the repository
+      for (final groupId in groupIds) {
+        await _sharingRepository.shareToGroup(groupId, sharedContent);
+      }
+      
+      AppLogger.success('✅ List shared with ${groupIds.length} groups: ${list.name}');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to share list with groups', e);
+      return false;
+    }
+  }
+
+  /// Share shopping list with single group
+  Future<bool> shareListWithGroup(String listId, String groupId) async {
+    return await shareWithGroups(
+      listId: listId,
+      groupIds: [groupId],
+    );
+  }
+
+  /// Share shopping list with multiple groups (alias for shareWithGroups)
+  Future<bool> shareListWithMultipleGroups({
+    required String listId,
+    required List<String> groupIds,
+    String? message,
+  }) async {
+    return await shareWithGroups(
+      listId: listId,
+      groupIds: groupIds,
+      message: message,
+    );
+  }
+
   // ===== COLLABORATION MANAGEMENT =====
 
   /// Send shopping list collaboration invitation

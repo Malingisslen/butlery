@@ -13,7 +13,8 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_header.dart';
 import 'package:butlery/widgets/common/share_dialog/share_mode_selection.dart';
 import 'package:butlery/widgets/common/share_dialog/share_message_input.dart';
-import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
+import 'package:butlery/widgets/common/share_dialog/share_target_selection_enhanced.dart';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_states.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
@@ -38,6 +39,7 @@ class UniversalShareDialog extends StatefulWidget {
   final ShareContentType contentType;
   final String? initialMessage;
   final List<UserProfile>? availableFriends;
+  final List<FriendCategory>? availableGroups;
   final UniversalShareDialogViewModel viewModel;
 
   const UniversalShareDialog({
@@ -47,6 +49,7 @@ class UniversalShareDialog extends StatefulWidget {
     required this.viewModel,
     this.initialMessage,
     this.availableFriends,
+    this.availableGroups,
   });
 
   /// Factory constructors för type safety
@@ -55,6 +58,7 @@ class UniversalShareDialog extends StatefulWidget {
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
+    List<FriendCategory>? availableGroups,
   }) {
     return UniversalShareDialog(
       content: recipe,
@@ -62,6 +66,7 @@ class UniversalShareDialog extends StatefulWidget {
       viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
+      availableGroups: availableGroups,
     );
   }
 
@@ -70,6 +75,7 @@ class UniversalShareDialog extends StatefulWidget {
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
+    List<FriendCategory>? availableGroups,
   }) {
     return UniversalShareDialog(
       content: menu,
@@ -77,6 +83,7 @@ class UniversalShareDialog extends StatefulWidget {
       viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
+      availableGroups: availableGroups,
     );
   }
 
@@ -85,6 +92,7 @@ class UniversalShareDialog extends StatefulWidget {
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
+    List<FriendCategory>? availableGroups,
   }) {
     return UniversalShareDialog(
       content: shoppingList,
@@ -92,6 +100,7 @@ class UniversalShareDialog extends StatefulWidget {
       viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
+      availableGroups: availableGroups,
     );
   }
 
@@ -107,7 +116,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   
   // Delningsstate
   ShareMode _selectedMode = ShareMode.staticCopy;
+  ShareTargetType _selectedTab = ShareTargetType.friends;
   final Set<String> _selectedFriendIds = {};
+  final Set<String> _selectedGroupIds = {};
   String _searchQuery = '';
   bool allowCollaboration = false;
 
@@ -121,8 +132,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     // Bestäm om realtidsdelning stöds
     _supportsRealtimeSharing = ShareDialogHelpers.supportsRealtimeSharing(widget.contentType);
     
-    // Kontrollera om vi har vänner
-    _hasFriends = widget.availableFriends?.isNotEmpty ?? false;
+    // Kontrollera om vi har vänner eller grupper
+    _hasFriends = (widget.availableFriends?.isNotEmpty ?? false) || 
+                  (widget.availableGroups?.isNotEmpty ?? false);
   }
 
   @override
@@ -227,17 +239,31 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   }
 
   Widget _buildTargetSelection() {
-    return ShareTargetSelection.build(
+    return ShareTargetSelectionEnhanced.build(
       context,
+      _selectedTab,
       widget.availableFriends ?? [],
+      widget.availableGroups ?? [],
       _selectedFriendIds,
+      _selectedGroupIds,
       _searchQuery,
+      (tab) => setState(() {
+        _selectedTab = tab;
+        _searchQuery = ''; // Clear search when switching tabs
+      }),
       (query) => setState(() => _searchQuery = query),
       (friendId) => setState(() {
         if (_selectedFriendIds.contains(friendId)) {
           _selectedFriendIds.remove(friendId);
         } else {
           _selectedFriendIds.add(friendId);
+        }
+      }),
+      (groupId) => setState(() {
+        if (_selectedGroupIds.contains(groupId)) {
+          _selectedGroupIds.remove(groupId);
+        } else {
+          _selectedGroupIds.add(groupId);
         }
       }),
     );
@@ -248,7 +274,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       children: [
         ShareDialogActions.buildSelectionSummary(
           context,
-          _selectedFriendIds.length,
+          _selectedFriendIds.length + _selectedGroupIds.length,
           ShareDialogHelpers.getContentTypeName(widget.contentType),
         ),
         const SizedBox(height: AppDimensions.spacingXl),
@@ -257,7 +283,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           widget.contentType,
           _selectedMode,
           _supportsRealtimeSharing,
-          _selectedFriendIds.isNotEmpty,
+          _selectedFriendIds.isNotEmpty || _selectedGroupIds.isNotEmpty,
           widget.viewModel.isSharing,
           () => Navigator.pop(context),
           _handleShare,
@@ -268,12 +294,13 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   // Share action
   Future<void> _handleShare() async {
-    if (_selectedFriendIds.isEmpty) return;
+    if (_selectedFriendIds.isEmpty && _selectedGroupIds.isEmpty) return;
 
     try {
       bool shareResult = false;
       final message = _messageController.text.trim();
       final friendIds = _selectedFriendIds.toList();
+      final groupIds = _selectedGroupIds.toList();
       final allowCollaboration = _selectedMode == ShareMode.realtime;
 
       switch (widget.contentType) {
@@ -281,6 +308,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           shareResult = await widget.viewModel.shareRecipe(
             recipe: widget.content as Recipe,
             friendUserIds: friendIds,
+            groupIds: groupIds,
             message: message.isNotEmpty ? message : null,
             allowCollaboration: allowCollaboration,
           );
@@ -289,6 +317,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           shareResult = await widget.viewModel.shareMenu(
             menu: widget.content as Map<String, List<Recipe>>,
             friendUserIds: friendIds,
+            groupIds: groupIds,
             message: message.isNotEmpty ? message : null,
             allowCollaboration: allowCollaboration,
           );
@@ -297,6 +326,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           shareResult = await widget.viewModel.shareShoppingList(
             shoppingList: widget.content as UnifiedShoppingList,
             friendUserIds: friendIds,
+            groupIds: groupIds,
             message: message.isNotEmpty ? message : null,
           );
           break;
@@ -305,7 +335,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       if (shareResult && mounted) {
         final successMessage = ShareDialogHelpers.getSuccessMessage(
           widget.contentType,
-          _selectedFriendIds.length,
+          _selectedFriendIds.length + _selectedGroupIds.length,
           _selectedMode,
         );
 

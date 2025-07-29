@@ -22,12 +22,13 @@ class ComponentThemes {
         elevation: 2, // Subtle elevation per spec
         shadowColor: Colors.black26,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // 8px per spec
+          borderRadius: BorderRadius.circular(
+              AppDimensions.borderRadius8), // 8px per spec
         ),
         minimumSize: const Size(double.infinity, 48), // Fixed height per spec
         padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
+          horizontal: AppDimensions.spacing24,
+          vertical: AppDimensions.spacing12,
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -41,12 +42,13 @@ class ComponentThemes {
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: AppColors.cardWhite,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // 8px per spec
+          borderRadius: BorderRadius.circular(
+              AppDimensions.borderRadius8), // 8px per spec
         ),
         minimumSize: const Size(double.infinity, 48), // Fixed height per spec
         padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
+          horizontal: AppDimensions.spacing24,
+          vertical: AppDimensions.spacing12,
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -64,12 +66,13 @@ class ComponentThemes {
           width: 1, // 1px border per spec
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // 8px per spec
+          borderRadius: BorderRadius.circular(
+              AppDimensions.borderRadius8), // 8px per spec
         ),
         minimumSize: const Size(double.infinity, 48), // Fixed height per spec
         padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
+          horizontal: AppDimensions.spacing24,
+          vertical: AppDimensions.spacing12,
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -83,12 +86,13 @@ class ComponentThemes {
         foregroundColor: AppColors.primaryBlue,
         backgroundColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // 8px per spec
+          borderRadius: BorderRadius.circular(
+              AppDimensions.borderRadius8), // 8px per spec
         ),
         minimumSize: const Size(0, 48), // Fixed height per spec
         padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+          horizontal: AppDimensions.spacing16,
+          vertical: AppDimensions.spacing12,
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -119,7 +123,6 @@ class ComponentThemes {
     );
   }
 
-
   // ===== CARD THEMES =====
 
   /// Card theme - white cards with 8px radius and subtle elevation per design spec
@@ -129,9 +132,12 @@ class ComponentThemes {
       elevation: 1, // Subtle elevation per spec
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
       ),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent margins per spec
+      margin: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacing16,
+          vertical: AppDimensions.spacing8), // Consistent margins per spec
     );
   }
 
@@ -142,45 +148,51 @@ class ComponentThemes {
     return InputDecorationTheme(
       filled: false, // No fill as per design spec
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
         borderSide: const BorderSide(
           color: AppColors.textMedium, // Medium grey border matching text
           width: 1, // 1px border per spec
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
         borderSide: const BorderSide(
           color: AppColors.textMedium, // Medium grey border when enabled
           width: 1, // 1px border per spec
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
         borderSide: const BorderSide(
           color: AppColors.primaryBlue, // Primary blue when focused
           width: 1.5, // Slightly thicker when focused per spec
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
         borderSide: const BorderSide(
           color: AppColors.error,
           width: 1, // 1px border per spec
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
         borderSide: const BorderSide(
           color: AppColors.error,
           width: 1.5, // Slightly thicker when focused per spec
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16, // 16px horizontal padding per spec
-        vertical: 14, // 14px vertical padding per spec
+        horizontal: AppDimensions.spacing16, // 16px horizontal padding per spec
+        vertical: AppDimensions.spacing14, // 14px vertical padding per spec
       ),
-      hintStyle: const TextStyle(color: AppColors.textMedium), // Medium grey for hints consistency
+      hintStyle: const TextStyle(
+          color: AppColors.textMedium), // Medium grey for hints consistency
       labelStyle: AppTextStyles.bodyMedium,
       errorStyle: AppTextStyles.errorText,
     );
@@ -217,7 +229,8 @@ class ComponentThemes {
     return const BottomNavigationBarThemeData(
       backgroundColor: AppColors.primaryBlue, // Dark background as per design
       selectedItemColor: AppColors.cardWhite, // White when selected
-      unselectedItemColor: ThemeConstants.whiteOverlay40, // White with transparency when unselected
+      unselectedItemColor: ThemeConstants
+          .whiteOverlay40, // White with transparency when unselected
       selectedLabelStyle: AppTextStyles.navigationText,
       unselectedLabelStyle: AppTextStyles.navigationText,
       type: BottomNavigationBarType.fixed,
@@ -256,12 +269,14 @@ class ComponentThemes {
       titleTextStyle: AppTextStyles.listTileTitle,
       subtitleTextStyle: AppTextStyles.listTileSubtitle,
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16, // 16px horizontal padding per spec
-        vertical: 8, // 8px vertical padding per spec
+        horizontal: AppDimensions.spacing16, // 16px horizontal padding per spec
+        vertical: AppDimensions.spacing8, // 8px vertical padding per spec
       ),
-      minVerticalPadding: 8, // Consistent vertical padding per spec
+      minVerticalPadding:
+          AppDimensions.spacing8, // Consistent vertical padding per spec
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
       ),
     );
   }
@@ -275,7 +290,8 @@ class ComponentThemes {
       elevation: 8, // Standard dialog elevation per spec
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
       ),
       titleTextStyle: AppTextStyles.dialogTitle,
       contentTextStyle: AppTextStyles.dialogContent,
@@ -292,7 +308,8 @@ class ComponentThemes {
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16), // 16px top radius per spec
+          top: Radius.circular(
+              AppDimensions.borderRadius16), // 16px top radius per spec
         ),
       ),
       modalBackgroundColor: AppColors.cardWhite,
@@ -341,7 +358,8 @@ class ComponentThemes {
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue.withValues(alpha: 0.5); // Primary blue with 50% opacity per spec
+          return AppColors.primaryBlue
+              .withValues(alpha: 0.5); // Primary blue with 50% opacity per spec
         }
         return Colors.grey[300]; // Grey 300 when inactive per spec
       }),
@@ -359,13 +377,14 @@ class ComponentThemes {
         }
         return AppColors.cardWhite;
       }),
-      checkColor: WidgetStateProperty.all(AppColors.cardWhite), // White checkmark per spec
+      checkColor: WidgetStateProperty.all(
+          AppColors.cardWhite), // White checkmark per spec
       side: BorderSide(
         color: Colors.grey[400]!, // Grey 400 border per spec
         width: 1.5, // 1.5px border per spec
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4), // 4px radius per spec
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius4), // 4px radius per spec
       ),
     );
   }
@@ -402,7 +421,8 @@ class ComponentThemes {
         vertical: AppDimensions.paddingS,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // 8px radius per spec
+        borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadius8), // 8px radius per spec
       ),
     );
   }

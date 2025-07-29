@@ -35,6 +35,10 @@ import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
 import 'package:butlery/views/social/friend_profile_view.dart';
 
+// Messaging views
+import 'package:butlery/views/messaging/conversations_list_view.dart';
+import 'package:butlery/views/messaging/chat_view.dart';
+
 // Models
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -195,6 +199,17 @@ class AppRouter {
           }
           return _buildRoute(FriendProfileView(friend: userProfile), settings, Routes.getAnimationType(routeName));
 
+        // ===== MESSAGING ROUTES =====
+        case Routes.messages:
+          return _buildRoute(const ConversationsListView(), settings, Routes.getAnimationType(routeName));
+        
+        case Routes.chat:
+          final conversationId = settings.arguments as String?;
+          if (conversationId == null) {
+            return _errorRoute('Conversation ID argument missing for chat');
+          }
+          return _buildRoute(ChatView(conversationId: conversationId), settings, Routes.getAnimationType(routeName));
+
         default:
           return _errorRoute('Unknown route: ${settings.name}');
       }
@@ -284,7 +299,7 @@ class AppRouter {
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pushReplacementNamed(Routes.home),
                 child: const Text('Tillbaka till start'),

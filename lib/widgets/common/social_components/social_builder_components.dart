@@ -3,22 +3,22 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social widget builders and helper components
-/// 
+///
 /// This module handles ONLY social widget builders and utilities:
 /// - Social action buttons and interactive elements
 /// - Social statistics and metrics displays
 /// - Helper functions for formatting and utilities
 /// - Builder utilities for common social widget patterns
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Avatars, collaborative indicators, groups, invitations
 class SocialBuilderComponents {
-
   // ===== SOCIAL BUILDERS =====
 
   /// Build social action button
-  /// 
+  ///
   /// Standardized button for social actions
   static Widget socialActionButton({
     required String text,
@@ -43,7 +43,7 @@ class SocialBuilderComponents {
   }
 
   /// Build social stats widget
-  /// 
+  ///
   /// Display social statistics and metrics
   static Widget socialStats({
     required Map<String, dynamic> stats,
@@ -209,7 +209,7 @@ class SocialBuilderComponents {
           padding: padding,
         ),
         if (lastActivity != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Text(
             'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
             style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -285,8 +285,8 @@ class SocialBuilderComponents {
   /// Get invitation target type icon
   static IconData getInvitationTargetTypeIcon(String targetType) {
     // Convert string to enum and create dummy target
-    final typeEnum = targetType == 'group' 
-        ? InvitationTargetType.group 
+    final typeEnum = targetType == 'group'
+        ? InvitationTargetType.group
         : InvitationTargetType.individual;
     final dummyTarget = InvitationTarget(
       type: typeEnum,
@@ -299,7 +299,7 @@ class SocialBuilderComponents {
   // ===== BUILDER UTILITIES =====
 
   /// Build social section header
-  /// 
+  ///
   /// Standardized header for social sections
   static Widget sectionHeader({
     required String title,
@@ -311,12 +311,15 @@ class SocialBuilderComponents {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: padding ??
+          const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm),
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 20),
-            const SizedBox(width: 8),
+            Icon(icon, size: AppDimensions.iconSizeM),
+            const SizedBox(width: AppDimensions.spacingSm),
           ],
           Expanded(
             child: Column(
@@ -343,7 +346,7 @@ class SocialBuilderComponents {
           if (onAction != null && actionText != null)
             TextButton.icon(
               onPressed: onAction,
-              icon: Icon(actionIcon ?? Icons.arrow_forward, size: 16),
+              icon: Icon(actionIcon ?? Icons.arrow_forward, size: AppDimensions.iconSizeS),
               label: Text(actionText),
             ),
         ],
@@ -352,7 +355,7 @@ class SocialBuilderComponents {
   }
 
   /// Build social card wrapper
-  /// 
+  ///
   /// Consistent card styling for social content
   static Widget socialCard({
     required Widget child,
@@ -365,20 +368,26 @@ class SocialBuilderComponents {
     Border? border,
   }) {
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      margin: margin ??
+          const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm),
       child: Material(
         color: backgroundColor ?? Colors.white,
         elevation: elevation ?? 1.0,
-        borderRadius: borderRadius ?? BorderRadius.circular(8.0),
+        borderRadius:
+            borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),
         child: InkWell(
           onTap: onTap,
-          borderRadius: borderRadius ?? BorderRadius.circular(8.0),
+          borderRadius: borderRadius ??
+              BorderRadius.circular(AppDimensions.borderRadius8),
           child: Container(
-            padding: padding ?? const EdgeInsets.all(16.0),
+            padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: border != null
                 ? BoxDecoration(
                     border: border,
-                    borderRadius: borderRadius ?? BorderRadius.circular(8.0),
+                    borderRadius: borderRadius ??
+                        BorderRadius.circular(AppDimensions.borderRadius8),
                   )
                 : null,
             child: child,
@@ -389,7 +398,7 @@ class SocialBuilderComponents {
   }
 
   /// Build social divider
-  /// 
+  ///
   /// Consistent divider for social content sections
   static Widget socialDivider({
     double? height,
@@ -398,7 +407,7 @@ class SocialBuilderComponents {
     EdgeInsets? margin,
   }) {
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(vertical: 8.0),
+      margin: margin ?? const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
       child: Divider(
         height: height,
         thickness: thickness,
@@ -408,7 +417,7 @@ class SocialBuilderComponents {
   }
 
   /// Build empty state wrapper
-  /// 
+  ///
   /// Consistent empty state styling
   static Widget emptyStateWrapper({
     required Widget child,
@@ -416,16 +425,16 @@ class SocialBuilderComponents {
     double? minHeight,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(32.0),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXxl),
       constraints: BoxConstraints(
-        minHeight: minHeight ?? 200.0,
+        minHeight: minHeight ?? AppDimensions.minHeightLarge,
       ),
       child: Center(child: child),
     );
   }
 
   /// Build loading state wrapper
-  /// 
+  ///
   /// Consistent loading state styling
   static Widget loadingStateWrapper({
     String? text,
@@ -440,7 +449,7 @@ class SocialBuilderComponents {
         children: [
           const CircularProgressIndicator(),
           if (text != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               text,
               style: const TextStyle(color: Colors.grey),
@@ -497,7 +506,7 @@ class SocialBuilderComponents {
   }
 
   /// Build responsive social layout
-  /// 
+  ///
   /// Adapts layout based on screen size
   static Widget responsiveSocialLayout({
     required Widget mobile,

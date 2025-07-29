@@ -102,7 +102,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
   /// Build empty state with add image button
   Widget _buildEmptyEditState() {
     // Remove unused theme variable
-    
+
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
@@ -124,8 +124,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                 children: [
                   if (_isAddingImage) ...[
                     const SizedBox(
-                      width: 32,
-                      height: 32,
+                      width: AppDimensions.iconSizeXl,
+                      height: AppDimensions.iconSizeXl,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -133,7 +133,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8), // Reduced from 12
+                    const SizedBox(
+                        height: AppDimensions.spacingSm), // Reduced from 12
                     Text(
                       'Adding image...',
                       style: AppTextStyles.bodyMedium.copyWith(
@@ -142,29 +143,34 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     ),
                   ] else ...[
                     Container(
-                      padding: const EdgeInsets.all(12), // Reduced from 16
+                      padding: const EdgeInsets.all(
+                          AppDimensions.paddingM), // Reduced from 16
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primaryBlue.withValues(alpha: 0.1),
                       ),
                       child: const Icon(
                         Icons.add_photo_alternate_outlined,
-                        size: 28, // Reduced from 32
+                        size: AppDimensions.iconSizeXl, // Reduced from 32
                         color: AppColors.primaryBlue,
                       ),
                     ),
-                    const SizedBox(height: 8), // Reduced from 12
+                    const SizedBox(
+                        height: AppDimensions.spacingSm), // Reduced from 12
                     Text(
                       'Add images',
-                      style: AppTextStyles.bodyMedium.copyWith( // Changed from bodyLarge
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        // Changed from bodyLarge
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 2), // Reduced from 4
+                    const SizedBox(
+                        height: AppDimensions.spacingXxs), // Reduced from 4
                     Text(
                       'Tap to add up to ${widget.config.maxImages} images',
-                      style: AppTextStyles.bodySmall.copyWith( // Changed from bodyMedium
+                      style: AppTextStyles.bodySmall.copyWith(
+                        // Changed from bodyMedium
                         color: AppColors.textPrimary.withValues(alpha: 0.7),
                       ),
                       textAlign: TextAlign.center,
@@ -195,7 +201,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             },
           ),
         ),
-        
+
         // Navigation dots
         if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
           ImageComponents.buildNavigationDots(
@@ -204,7 +210,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             config: widget.config,
             onDotTap: _onDotTap,
           ),
-        
+
         // Image counter
         if (widget.config.showImageCounter && widget.imageUrls.length > 1)
           ImageComponents.buildImageCounter(
@@ -212,11 +218,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             totalImages: widget.imageUrls.length,
             config: widget.config,
           ),
-        
+
         // Edit actions
-        if (widget.config.showEditControls)
-          _buildEditActions(),
-        
+        if (widget.config.showEditControls) _buildEditActions(),
+
         // Loading overlay
         if (widget.isLoading)
           Positioned.fill(
@@ -264,27 +269,29 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             ),
           ),
         ),
-        
+
         // Primary image indicator
         if (isPrimary)
           Positioned(
-            top: 12,
-            left: 12,
+            top: AppDimensions.paddingM,
+            left: AppDimensions.paddingM,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingSm,
+                  vertical: AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppDimensions.paddingM),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
                     Icons.star,
-                    size: 14,
+                    size: AppDimensions.iconSizeS,
                     color: Colors.white,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     'Primary',
                     style: AppTextStyles.bodySmall.copyWith(
@@ -303,8 +310,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
   /// Build edit actions
   Widget _buildEditActions() {
     return Positioned(
-      bottom: 16,
-      right: 16,
+      bottom: AppDimensions.spacingMd,
+      right: AppDimensions.spacingMd,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -315,19 +322,20 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
               onTap: _addImage,
               tooltip: 'Add image',
             ),
-          
-          const SizedBox(height: 8),
-          
+
+          const SizedBox(height: AppDimensions.spacingSm),
+
           // Set as primary button
-          if (widget.imageUrls.length > 1 && _currentIndex != widget.primaryIndex)
+          if (widget.imageUrls.length > 1 &&
+              _currentIndex != widget.primaryIndex)
             _buildActionButton(
               icon: Icons.star_outline,
               onTap: _setPrimary,
               tooltip: 'Set as primary',
             ),
-          
-          const SizedBox(height: 8),
-          
+
+          const SizedBox(height: AppDimensions.spacingSm),
+
           // Remove image button
           _buildActionButton(
             icon: Icons.delete_outline,
@@ -348,7 +356,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     bool isDestructive = false,
   }) {
     // Remove unused theme variable
-    
+
     return Tooltip(
       message: tooltip,
       child: Material(
@@ -358,10 +366,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(AppDimensions.spacingSm),
             child: Icon(
               icon,
-              size: 20,
+              size: AppDimensions.iconSizeM,
               color: isDestructive ? Colors.white : AppColors.textPrimary,
             ),
           ),
@@ -382,7 +390,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     if (widget.config.enableHapticFeedback) {
       HapticFeedback.lightImpact();
     }
-    
+
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -392,7 +400,9 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
   /// Add image
   Future<void> _addImage() async {
-    if (_isAddingImage || widget.imageUrls.length >= widget.config.maxImages) return;
+    if (_isAddingImage || widget.imageUrls.length >= widget.config.maxImages) {
+      return;
+    }
 
     setState(() {
       _isAddingImage = true;
@@ -405,15 +415,16 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
       final imagePickerService = sl<ImagePickerService>();
       final result = await imagePickerService.pickMultipleImages();
-      
+
       if (result.isNotEmpty) {
         final newUrls = List<String>.from(widget.imageUrls);
         final availableSlots = widget.config.maxImages - newUrls.length;
-        final imagesToAdd = result.take(availableSlots).map((e) => e.path).toList();
-        
+        final imagesToAdd =
+            result.take(availableSlots).map((e) => e.path).toList();
+
         newUrls.addAll(imagesToAdd);
         widget.onImagesChanged?.call(newUrls);
-        
+
         AppLogger.debug('Added ${imagesToAdd.length} images');
       }
     } catch (e) {
@@ -437,9 +448,9 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
     final newUrls = List<String>.from(widget.imageUrls);
     newUrls.removeAt(_currentIndex);
-    
+
     widget.onImagesChanged?.call(newUrls);
-    
+
     // Adjust current index if needed
     if (_currentIndex >= newUrls.length && newUrls.isNotEmpty) {
       _currentIndex = newUrls.length - 1;
@@ -449,7 +460,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         curve: Curves.easeInOut,
       );
     }
-    
+
     AppLogger.debug('Removed image at index $_currentIndex');
   }
 
@@ -458,7 +469,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     if (widget.config.enableHapticFeedback) {
       HapticFeedback.lightImpact();
     }
-    
+
     widget.onPrimaryImageChanged?.call(_currentIndex);
     AppLogger.debug('Set primary image to index $_currentIndex');
   }
