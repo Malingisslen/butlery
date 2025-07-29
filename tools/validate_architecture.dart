@@ -115,6 +115,9 @@ class ArchitectureValidator {
   Future<void> _validateStylingCompliance(List<File> files) async {
     print('🎨 Validating theme system compliance...');
 
+    // Clear any existing violations
+    _violations['hardcoded_styling']!.clear();
+
     final hardcodedPatterns = [
       RegExp(r'Color\(0x[0-9A-Fa-f]{8}\)'), // Hardcoded colors
       RegExp(r'FontSize\s*:\s*\d+'), // Hardcoded font sizes
@@ -130,6 +133,8 @@ class ArchitectureValidator {
       'lib/theme/app_dimensions.dart',
       'lib/theme/app_text_styles.dart',
       'lib/theme/app_theme.dart',
+      'lib/theme/component_themes.dart',
+      'lib/theme/theme_constants.dart',
     };
 
     int compliantFiles = 0;
@@ -141,7 +146,11 @@ class ArchitectureValidator {
           .replaceAll('\\', '/');
 
       // Skip theme files - they're allowed to have hardcoded values
-      if (themeFiles.any((theme) => relativePath.endsWith(theme))) {
+      final isThemeFile = relativePath.contains('/theme/') || 
+          relativePath.contains('\\theme\\') ||
+          themeFiles.any((theme) => relativePath.endsWith(theme));
+      
+      if (isThemeFile) {
         compliantFiles++;
         continue;
       }

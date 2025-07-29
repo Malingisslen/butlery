@@ -260,7 +260,7 @@ class InteractiveDialogFactory {
             content: Row(
               children: [
                 const CircularProgressIndicator(),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppDimensions.spacingMd),
                 Expanded(child: Text(message)),
               ],
             ),

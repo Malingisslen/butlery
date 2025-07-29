@@ -31,6 +31,7 @@ import 'package:butlery/core/injection.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friends_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
+import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
 
 // Focused modules (Phase 9 refactoring)
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
@@ -63,6 +64,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   late final FriendsManagementOperations _managementOps;
   late final FriendsCategoriesOperations _categoriesOps;
   late final FriendsInvitationsOperations _invitationsOps;
+  late final SocialGroupSharingOperations _groupSharingOps;
 
   // Constructor
   UnifiedFriendsService({
@@ -103,6 +105,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   FriendsManagementOperations get management => _managementOps;
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
+  SocialGroupSharingOperations get groupSharing => _groupSharingOps;
 
   // ===== SERVICE GETTERS (Delegated to Service Coordinator) =====
 
@@ -155,6 +158,7 @@ class UnifiedFriendsService extends ChangeNotifier {
     _managementOps = FriendsManagementOperations(this);
     _categoriesOps = FriendsCategoriesOperations(this);
     _invitationsOps = FriendsInvitationsOperations(this);
+    _groupSharingOps = SocialGroupSharingOperations(this);
     
     AppLogger.debug('Feature interfaces initialized');
   }

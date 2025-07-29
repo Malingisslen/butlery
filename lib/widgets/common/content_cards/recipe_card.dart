@@ -95,11 +95,11 @@ class RecipeCard extends StatelessWidget {
                   _buildRatingStars(context),
                 ],
                 if (recipe.description.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   _buildRecipeDescription(context),
                 ],
                 if (showTags && recipe.tags?.isNotEmpty == true) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   _buildSimpleTags(context),
                 ],
               ],
@@ -213,7 +213,7 @@ class RecipeCard extends StatelessWidget {
           ),
         ),
         if (recipe.mealType.isNotEmpty) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -267,7 +267,7 @@ class RecipeCard extends StatelessWidget {
             ),
           ),
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Icon(
             Icons.link,
             size: 18,

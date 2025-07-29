@@ -234,14 +234,14 @@ class SnackBarUtils {
           content: Row(
             children: [
               const SizedBox(
-                width: 16,
-                height: 16,
+                width: AppDimensions.iconSizeS,
+                height: AppDimensions.iconSizeS,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(
                   message,
@@ -410,8 +410,8 @@ class SnackBarUtils {
     if (icon != null) {
       content = Row(
         children: [
-          Icon(icon, color: textColor, size: 20),
-          const SizedBox(width: 12),
+          Icon(icon, color: textColor, size: AppDimensions.iconSizeM),
+          const SizedBox(width: AppDimensions.spacing12),
           Expanded(child: content),
         ],
       );
@@ -474,6 +474,6 @@ class SnackBarConfig {
   static const Duration longDuration = Duration(seconds: 5);
   static const Duration persistentDuration = Duration(seconds: 10);
   
-  static const EdgeInsets defaultMargin = EdgeInsets.all(16);
-  static const double defaultBorderRadius = 8.0;
+  static const EdgeInsets defaultMargin = EdgeInsets.all(AppDimensions.spacingMd);
+  static const double defaultBorderRadius = AppDimensions.borderRadius8;
 }

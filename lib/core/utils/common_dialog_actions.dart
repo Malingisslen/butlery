@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 /// CommonDialogActions - Factory for frequently used dialog patterns
@@ -304,7 +305,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           ),
         ),
         if (warningMessage != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacing12),
           Text(
             warningMessage!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -312,7 +313,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
             ),
           ),
         ],
-        const SizedBox(height: 12),
+        const SizedBox(height: AppDimensions.spacing12),
         const Text(
           'Denna åtgärd kan inte ångras.',
           style: TextStyle(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/text_display_container.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -138,23 +139,9 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
             if (viewModel.hasExtractedText) ...[
               const SizedBox(height: AppDimensions.spacingXl),
               const Text('Extraherad text:', style: AppTextStyles.headlineSmall),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundTint,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Text(
-                      viewModel.extractedText,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ),
+              TextDisplayContainer(
+                text: viewModel.extractedText,
+                expanded: true,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(

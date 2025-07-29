@@ -61,3 +61,35 @@ class SecurityViolationException implements Exception {
     return 'SecurityViolationException: $message${details != null ? ' - $details' : ''}';
   }
 }
+
+/// Exception thrown when user authentication is required but not present
+class AuthenticationException implements Exception {
+  final String message;
+  final String? details;
+
+  AuthenticationException(this.message, {this.details});
+
+  @override
+  String toString() {
+    return 'AuthenticationException: $message${details != null ? ' - $details' : ''}';
+  }
+}
+
+/// Exception thrown when input validation fails
+class ValidationException implements Exception {
+  final String message;
+  final String? field;
+  final dynamic value;
+
+  ValidationException(this.message, {this.field, this.value});
+
+  @override
+  String toString() {
+    final parts = [
+      'ValidationException: $message',
+      if (field != null) 'Field: $field',
+      if (value != null) 'Value: $value',
+    ];
+    return parts.join(', ');
+  }
+}

@@ -31,6 +31,10 @@ class Routes {
   static const String friendProfile = '/friend-profile';
   static const String sharedShoppingLists = '/shared-shopping-lists';
 
+  // ===== MESSAGING ROUTES =====
+  static const String messages = '/messages';
+  static const String chat = '/chat';
+
   // ===== ROUTE ALIASES =====
   static const Map<String, String> aliases = {
     '/home': home, // Explicit hem-alias
@@ -60,6 +64,8 @@ class Routes {
     createSharedShopping,
     friendProfile,
     sharedShoppingLists,
+    messages,
+    chat,
   };
 
   /// Routes som använder slide-from-bottom animation
@@ -85,6 +91,8 @@ class Routes {
     createSharedShopping,
     friendProfile,
     sharedShoppingLists,
+    messages,
+    chat,
   };
 
   /// Routes som använder fade animation
@@ -158,6 +166,10 @@ class Routes {
     createSharedShopping,
     friendProfile,
     sharedShoppingLists,
+
+    // Messaging
+    messages,
+    chat,
   };
 
   /// Alla routes inklusive aliases (för debug-syfte)

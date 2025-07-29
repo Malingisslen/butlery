@@ -65,6 +65,11 @@ import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 
+// ==================== MESSAGING SERVICES ====================
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/repositories/interfaces/messaging_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart';
+
 // ==================== CORE VIEWMODELS ====================
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -94,6 +99,9 @@ import 'package:butlery/viewmodels/recipe_selection_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+
+// ==================== MESSAGING VIEWMODELS ====================
+import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 
 // Models
 import 'package:butlery/models/recipe_unified.dart';
@@ -223,6 +231,9 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<SocialSharingRepository>(
         FirebaseSocialSharingRepository(authRepository: sl<AuthRepository>()));
     
+    // Messaging repositories
+    sl.registerSingleton<MessagingRepository>(FirebaseMessagingRepository());
+    
     if (kDebugMode) {
       debugPrint('✅ Additional repositories registrerade');
     }
@@ -334,6 +345,15 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<DeepLinkService>(DeepLinkService(
       deepLinkRepository: sl<DeepLinkRepository>(),
     ));
+
+    // ==================== MESSAGING SERVICES ====================
+    sl.registerSingleton<MessagingService>(MessagingService(
+      messagingRepository: sl<MessagingRepository>(),
+      authRepository: sl<AuthRepository>(),
+    ));
+    if (kDebugMode) {
+      debugPrint('✅ MessagingService registrerad');
+    }
 
     // ==================== CORE VIEWMODELS ====================
 
@@ -490,6 +510,22 @@ Future<void> initializeDependencies() async {
     );
 
     debugPrint('✅ Alla social ViewModels registrerade');
+
+    // ==================== MESSAGING VIEWMODELS ====================
+    
+    sl.registerFactory<ConversationsViewModel>(
+      () => ConversationsViewModel(
+        messagingService: sl<MessagingService>(),
+        authRepository: sl<AuthRepository>(),
+      ),
+    );
+
+    // Note: ChatViewModel requires conversationId parameter, so it should be created manually in views
+    // Example: ChatViewModel(messagingService: sl<MessagingService>(), authRepository: sl<AuthRepository>(), conversationId: id)
+
+    if (kDebugMode) {
+      debugPrint('✅ Messaging ViewModels registrerade');
+    }
 
     // ==================== INITIALIZATION SEQUENCE ====================
 

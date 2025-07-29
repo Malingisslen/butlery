@@ -141,6 +141,32 @@ class ShoppingShareOperations {
     message: message,
   );
 
+  /// Share shopping list with specific groups
+  Future<bool> shareWithGroups({
+    required String listId,
+    required List<String> groupIds,
+    String? message,
+  }) => _socialShareModule.shareWithGroups(
+    listId: listId,
+    groupIds: groupIds,
+    message: message,
+  );
+
+  /// Share shopping list with single group
+  Future<bool> shareListWithGroup(String listId, String groupId) => 
+      _socialShareModule.shareListWithGroup(listId, groupId);
+
+  /// Share shopping list with multiple groups
+  Future<bool> shareListWithMultipleGroups({
+    required String listId,
+    required List<String> groupIds,
+    String? message,
+  }) => _socialShareModule.shareListWithMultipleGroups(
+    listId: listId,
+    groupIds: groupIds,
+    message: message,
+  );
+
   /// Send shopping list collaboration invitation
   Future<bool> sendCollaborationInvite({
     required String listId,

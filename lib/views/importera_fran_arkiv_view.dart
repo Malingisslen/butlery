@@ -7,6 +7,8 @@ import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/bottom_action_bar.dart';
+import 'package:butlery/widgets/common/filter_status_chip.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -142,17 +144,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               ),
 
               // Import-knappar
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                      width: 1,
-                    ),
-                  ),
-                ),
+              BottomActionBar(
                 child: _buildImportButtons(context, viewModel),
               ),
             ],
@@ -237,48 +229,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (filterParts.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .secondaryContainer
-            .withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.filter_list,
-            color: AppColors.textMedium,
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Expanded(
-            child: Text(
-              'Filter: ${filterParts.join(' • ')}',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Text(
-            '${viewModel.selectedCount} valda',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+    return FilterStatusChip(
+      filterParts: filterParts,
+      selectedCount: viewModel.selectedCount,
     );
   }
 

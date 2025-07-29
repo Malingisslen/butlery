@@ -157,6 +157,9 @@ class NotificationBatchManager {
       case NotificationCategory.shopping:
         maxNotifications = 5;  // Shopping updates
         break;
+      case NotificationCategory.messaging:
+        maxNotifications = 20; // Messages should have higher limit
+        break;
       case NotificationCategory.social:
         maxNotifications = 6;  // General social activity
         break;

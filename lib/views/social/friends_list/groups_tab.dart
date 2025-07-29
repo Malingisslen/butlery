@@ -122,7 +122,7 @@ class GroupsTab {
                 color: Theme.of(context).colorScheme.tertiary,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 'Gruppinbjudningar (${invitations.length})',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -132,7 +132,7 @@ class GroupsTab {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Text(
             'Du har fått inbjudningar att gå med i grupper',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -157,7 +157,7 @@ class GroupsTab {
             color: Theme.of(context).colorScheme.primary,
             size: 20,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Text(
             'Mina grupper (${groups.length})',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -174,9 +174,9 @@ class GroupsTab {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           Divider(color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
         ],
       ),
     );

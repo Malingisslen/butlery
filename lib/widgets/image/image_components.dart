@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
 /// Shared image components and utilities
@@ -17,13 +18,14 @@ class ImageComponents {
     Widget? errorWidget,
   }) {
     final dimensions = config.getDimensions();
-    
+
     Widget image = CachedNetworkImage(
       imageUrl: imageUrl,
       fit: fit,
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height,
-      memCacheWidth: dimensions.width == double.infinity ? 800 : dimensions.width.toInt(),
+      memCacheWidth:
+          dimensions.width == double.infinity ? 800 : dimensions.width.toInt(),
       memCacheHeight: dimensions.height.toInt(),
       placeholder: placeholder != null ? (_, __) => placeholder : null,
       errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : null,
@@ -50,12 +52,13 @@ class ImageComponents {
     Widget? child,
   }) {
     final dimensions = config.getDimensions();
-    
+
     return Container(
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.backgroundTint, // Lighter background
+        color:
+            backgroundColor ?? AppColors.backgroundTint, // Lighter background
         borderRadius: config.effectiveBorderRadius,
         border: config.borderColor != null
             ? Border.all(
@@ -67,7 +70,7 @@ class ImageComponents {
       child: child ??
           const Icon(
             Icons.restaurant_menu, // More contextual for recipe images
-            size: 24, // Much smaller, more elegant
+            size: AppDimensions.iconSizeM, // Much smaller, more elegant
             color: AppColors.textTertiary, // Lighter icon color
           ),
     );
@@ -83,10 +86,10 @@ class ImageComponents {
       backgroundColor: backgroundColor,
       child: const Center(
         child: SizedBox(
-          width: 24,
-          height: 24,
+          width: AppDimensions.iconSizeM,
+          height: AppDimensions.iconSizeM,
           child: CircularProgressIndicator(
-            strokeWidth: 2,
+            strokeWidth: AppDimensions.strokeWidth2,
             valueColor: AlwaysStoppedAnimation<Color>(
               AppColors.primaryBlue,
             ),
@@ -104,17 +107,18 @@ class ImageComponents {
     String? errorMessage,
   }) {
     final dimensions = config.getDimensions();
-    
+
     final Widget content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           Icons.error_outline,
-          size: dimensions.width == double.infinity ? 32 : dimensions.width * 0.3,
+          size:
+              dimensions.width == double.infinity ? 32 : dimensions.width * 0.3,
           color: AppColors.error,
         ),
         if (errorMessage != null) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             errorMessage,
             style: const TextStyle(
@@ -127,7 +131,7 @@ class ImageComponents {
           ),
         ],
         if (onRetry != null) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           TextButton(
             onPressed: onRetry,
             child: const Text(
@@ -155,15 +159,17 @@ class ImageComponents {
     required ImageConfig config,
   }) {
     if (imageCount <= 1) return const SizedBox.shrink();
-    
+
     return Positioned(
-      top: 8,
-      right: 8,
+      top: AppDimensions.spacingSm,
+      right: AppDimensions.spacingSm,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacing6,
+            vertical: AppDimensions.spacing2),
         decoration: BoxDecoration(
           color: AppColors.cardWhite.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
           border: Border.all(
             color: AppColors.divider,
           ),
@@ -173,10 +179,10 @@ class ImageComponents {
           children: [
             const Icon(
               Icons.collections_outlined,
-              size: 12,
+              size: AppDimensions.iconSizeXs,
               color: AppColors.textPrimary,
             ),
-            const SizedBox(width: 2),
+            const SizedBox(width: AppDimensions.spacing2),
             Text(
               '$imageCount',
               style: const TextStyle(
@@ -198,15 +204,17 @@ class ImageComponents {
     required ImageConfig config,
   }) {
     if (totalImages <= 1) return const SizedBox.shrink();
-    
+
     return Positioned(
-      top: 16,
-      right: 16,
+      top: AppDimensions.spacingMd,
+      right: AppDimensions.spacingMd,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingSm,
+            vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: AppColors.cardWhite.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
           border: Border.all(
             color: AppColors.divider,
           ),
@@ -231,9 +239,9 @@ class ImageComponents {
     Function(int)? onDotTap,
   }) {
     if (totalImages <= 1) return const SizedBox.shrink();
-    
+
     return Positioned(
-      bottom: 16,
+      bottom: AppDimensions.spacingMd,
       left: 0,
       right: 0,
       child: Row(
@@ -243,9 +251,9 @@ class ImageComponents {
           (index) => GestureDetector(
             onTap: onDotTap != null ? () => onDotTap(index) : null,
             child: Container(
-              width: 8,
-              height: 8,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: AppDimensions.dotSize,
+              height: AppDimensions.dotSize,
+              margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: index == currentIndex
@@ -253,7 +261,7 @@ class ImageComponents {
                     : AppColors.cardWhite.withValues(alpha: 0.6),
                 border: Border.all(
                   color: AppColors.divider,
-                  width: 0.5,
+                  width: AppDimensions.strokeWidth05,
                 ),
               ),
             ),
@@ -269,10 +277,10 @@ class ImageComponents {
     required ImageConfig config,
   }) {
     if (!config.showStatusIndicator) return const SizedBox.shrink();
-    
+
     final dimensions = config.getDimensions();
     final indicatorSize = dimensions.width * 0.25;
-    
+
     return Positioned(
       bottom: 0,
       right: 0,
@@ -284,7 +292,7 @@ class ImageComponents {
           color: isOnline ? AppColors.success : AppColors.textSecondary,
           border: Border.all(
             color: AppColors.cardWhite,
-            width: 2,
+            width: AppDimensions.strokeWidth2,
           ),
         ),
       ),

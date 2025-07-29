@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -137,7 +138,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               size: 48,
               color: AppColors.textPrimary.withValues(alpha: 0.4),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
             Text(
               'No images yet',
               style: AppTextStyles.bodyLarge.copyWith(
@@ -173,7 +174,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Icons.check_circle,
             color: AppColors.primaryBlue,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Text(
             '${_selectedImages.length} selected',
             style: AppTextStyles.bodyLarge.copyWith(
@@ -423,7 +424,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
                 size: 48,
                 color: AppColors.textPrimary.withValues(alpha: 0.4),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.spacing12),
               Text(
                 'No images to display',
                 style: AppTextStyles.bodyLarge.copyWith(

@@ -61,7 +61,21 @@
       "Bash(grep -n \"2.3 Large File Refactoring\" /mnt/c/Butlery/butlery/tasks/todo.md)",
       "Bash(grep -n \"2\\.3.*Large.*File\" /mnt/c/Butlery/butlery/tasks/todo.md)",
       "Bash(grep -n \"Current Session:\" /mnt/c/Butlery/butlery/tasks/todo.md)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(cmd.exe /c \"flutter analyze --no-pub\")",
+      "Bash(cmd.exe /c \"flutter analyze\")",
+      "Bash(cmd.exe /c \"timeout 60 flutter analyze\")",
+      "Bash(cmd.exe /c \"flutter analyze lib/core/injection.dart\")",
+      "Bash(cmd.exe /c \"flutter analyze lib/services/messaging_service.dart\")",
+      "Bash(cmd.exe /c \"flutter analyze lib/services/notifications/modules/notification_batch_manager.dart\")",
+      "Bash(cmd.exe /c \"flutter analyze 2>&1\")",
+      "Bash(cmd.exe:*)",
+      "Bash(dart tools/performance_validator.dart:*)",
+      "Bash(dart:*)",
+      "Bash(echo)",
+      "Bash(do echo \"$file:\")",
+      "Bash(node run-validation.js)"
     ],
     "deny": []
   },
