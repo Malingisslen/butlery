@@ -24,11 +24,13 @@ cmd.exe /c "flutter COMMAND"
   - Ownership validation and role-based access control
 - **Type Safety**: Map-based data access replaced with proper model usage
 
-### Validation Tool (`tools/validate_architecture.dart`)
-- **Intelligent Pattern Matching**: Distinguishes legitimate theme usage from violations
-- **Context Analysis**: Examines surrounding code to determine if styling is theme-based
-- **Zero False Positives**: No longer flags correct theme-based components as violations
-- **Run Command**: `cmd.exe /c "dart tools/validate_architecture.dart"`
+### Code Intelligence Platform (`tools/code_intelligence_platform.dart`)
+- **Multi-Dimensional Analysis**: Security (30%), Performance (25%), Architecture (20%), Quality (15%)
+- **Reality-Based Scoring**: Uses weakest link principle - no inflated metrics
+- **Predictive Intelligence**: Bug hotspots and maintenance burden forecasting
+- **Actionable Remediation**: Specific fix suggestions with effort estimates
+- **Flutter Intelligence**: State management, widget optimization, lifecycle analysis
+- **Run Command**: `cmd.exe /c "dart tools/code_intelligence_platform.dart"`
 
 ## Workflow Instructions
 **Before starting:**
