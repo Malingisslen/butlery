@@ -134,7 +134,6 @@ class SecurityAnalyzer {
   static Future<List<Violation>> _detectSecrets(String content, String filePath) async {
     final violations = <Violation>[];
     final lines = content.split('\n');
-    final lowerContent = content.toLowerCase();
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].toLowerCase();
@@ -279,8 +278,8 @@ class SecurityAnalyzer {
 
 class SecurityAnalysisResult extends AnalysisResult {
   SecurityAnalysisResult({
-    required String filePath,
-    required List<Violation> violations,
-    required Map<String, dynamic> metrics,
-  }) : super(filePath: filePath, violations: violations, metrics: metrics);
+    required super.filePath,
+    required super.violations,
+    required super.metrics,
+  });
 }

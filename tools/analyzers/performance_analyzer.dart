@@ -13,33 +13,12 @@ import '../code_intelligence_platform.dart';
 /// - Network efficiency problems
 /// - Layout performance issues
 class PerformanceAnalyzer {
-  static const List<String> _memoryLeakIndicators = [
-    'StreamSubscription',
-    'AnimationController',
-    'TabController',
-    'ScrollController',
-    'TextEditingController',
-    'Timer.periodic',
-    'Timer(',
-  ];
-
   static const List<String> _uiBlockingIndicators = [
     'readAsStringSync',
     'readAsBytesSync',
     'writeAsStringSync',
     'listSync',
     'existsSync',
-  ];
-
-  static const List<String> _performanceIssues = [
-    'ListView.builder',
-    'GridView.builder',
-    'setState',
-    'build(',
-    'jsonDecode',
-    'jsonEncode',
-    'http.get',
-    'http.post',
   ];
 
   /// Analyze files for performance issues
@@ -267,8 +246,8 @@ class PerformanceAnalyzer {
 
 class PerformanceAnalysisResult extends AnalysisResult {
   PerformanceAnalysisResult({
-    required String filePath,
-    required List<Violation> violations,
-    required Map<String, dynamic> metrics,
-  }) : super(filePath: filePath, violations: violations, metrics: metrics);
+    required super.filePath,
+    required super.violations,
+    required super.metrics,
+  });
 }

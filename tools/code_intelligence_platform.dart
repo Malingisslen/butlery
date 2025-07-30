@@ -48,7 +48,7 @@ class CodeIntelligencePlatform {
     'hotspots_predicted': 0,
   };
 
-  List<AnalysisResult> _allResults = [];
+  final List<AnalysisResult> _allResults = [];
   List<RemediationSuggestion> _remediationPlan = [];
 
   /// Main analysis entry point - Complete code intelligence assessment

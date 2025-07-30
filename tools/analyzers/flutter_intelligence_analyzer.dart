@@ -41,74 +41,6 @@ class FlutterIntelligenceAnalyzer {
     ],
   };
 
-  static const List<String> _widgetLifecyclePatterns = [
-    // Lifecycle methods
-    r'initState\(\)',
-    r'dispose\(\)',
-    r'didUpdateWidget\(',
-    r'didChangeDependencies\(\)',
-    
-    // State management
-    r'setState\(',
-    r'mounted',
-  ];
-
-  static const List<String> _buildOptimizationPatterns = [
-    // Expensive build operations
-    r'build\([^}]*\{[^}]*(?:DateTime\.now\(\)|Random\(\)|http\.)',
-    
-    // Missing const constructors
-    r'return\s+(?!const\s)[A-Z]\w*\(',
-    
-    // Widget rebuilding issues
-    r'setState\([^}]*\{[^}]*(?:for\s*\(|while\s*\(|map\()',
-    
-    // Anonymous functions in build
-    r'onPressed:\s*\(\)\s*\{',
-    r'onTap:\s*\(\)\s*\{',
-  ];
-
-  static const List<String> _hotReloadIssues = [
-    // Static variables that break hot reload
-    r'static\s+(?!const\s).*=',
-    
-    // Global variables
-    r'^(?:final|var)\s+\w+\s*=',
-    
-    // Functions outside classes
-    r'^[a-zA-Z_]\w*\s*\([^)]*\)\s*\{',
-  ];
-
-  static const List<String> _platformSpecificPatterns = [
-    // Platform checks
-    r'Platform\.isAndroid',
-    r'Platform\.isIOS',
-    r'kIsWeb',
-    r'defaultTargetPlatform',
-    
-    // Platform-specific imports
-    r'dart:io',
-    r'dart:html',
-    r'package:flutter/services\.dart',
-  ];
-
-  static const List<String> _flutterBestPracticeViolations = [
-    // Inappropriate widget usage
-    r'Container\(\)(?!.*child)',
-    r'Padding\(.*child:\s*Container\(',
-    r'Center\(.*child:\s*Container\(',
-    
-    // Inefficient layouts
-    r'Column\(.*mainAxisSize:\s*MainAxisSize\.max.*children:\s*\[\]',
-    r'Row\(.*mainAxisSize:\s*MainAxisSize\.max.*children:\s*\[\]',
-    
-    // Missing error handling
-    r'FutureBuilder(?!.*error)',
-    r'StreamBuilder(?!.*error)',
-    
-    // Inappropriate state management
-    r'InheritedWidget.*(?!.*updateShouldNotify)',
-  ];
 
   /// Analyze files for Flutter-specific patterns
   static Future<List<FlutterIntelligenceResult>> analyzeFiles(List<File> files) async {
@@ -221,14 +153,11 @@ class FlutterIntelligenceAnalyzer {
     final violations = <Violation>[];
     final lines = content.split('\n');
 
-    bool hasInitState = false;
     bool hasDispose = false;
     bool hasControllers = false;
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
-
-      if (line.contains('initState()')) hasInitState = true;
       if (line.contains('dispose()')) hasDispose = true;
       if (RegExp(r'(?:Animation|Text|Scroll|Tab)Controller').hasMatch(line)) {
         hasControllers = true;
@@ -564,7 +493,7 @@ class FlutterIntelligenceAnalyzer {
     int maxComplexity = 0;
     for (final match in matches) {
       final buildBody = match.group(1) ?? '';
-      int complexity = buildBody.split('\n').length;
+      final complexity = buildBody.split('\n').length;
       if (complexity > maxComplexity) maxComplexity = complexity;
     }
     
@@ -603,10 +532,10 @@ class FlutterIntelligenceAnalyzer {
 
 class FlutterIntelligenceResult extends AnalysisResult {
   FlutterIntelligenceResult({
-    required String filePath,
-    required List<Violation> violations,
-    required Map<String, dynamic> metrics,
-  }) : super(filePath: filePath, violations: violations, metrics: metrics);
+    required super.filePath,
+    required super.violations,
+    required super.metrics,
+  });
 }
 
 // Helper class

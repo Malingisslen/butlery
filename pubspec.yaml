@@ -85,7 +85,6 @@ dev_dependencies:
   
   # ==================== ANALYZER FIX ====================
   analyzer: ^6.4.1  # Kompatibel med Flutter 3.24
-  path: ^1.9.0      # For file path operations
   cli_util: ^0.4.0  # For CLI utilities
 
 flutter:

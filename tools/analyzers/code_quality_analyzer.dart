@@ -31,42 +31,6 @@ class CodeQualityAnalyzer {
     r'\|\|',
   ];
 
-  static const List<String> _maintainabilityIssues = [
-    // Long parameter lists
-    r'\([^)]*,.*,.*,.*,.*,.*\)',  // 5+ parameters
-    
-    // Deep nesting
-    r'\s{8,}if\s*\(',  // 4+ levels of indentation
-    
-    // Magic numbers
-    r'(?<!\w)[0-9]{2,}(?!\w)',
-    
-    // Long method names
-    r'[a-zA-Z_]\w{30,}\s*\(',
-    
-    // Complex expressions
-    r'[^=]*=[^=]*\?[^:]*:[^;]*\?[^:]*:',
-  ];
-
-  static const List<String> _technicalDebtIndicators = [
-    // TODO comments
-    r'//\s*TODO',
-    r'//\s*FIXME',
-    r'//\s*HACK',
-    r'//\s*XXX',
-    
-    // Commented out code
-    r'//\s*[a-zA-Z_]\w*\s*\(',
-    
-    // Dead code indicators
-    r'@deprecated',
-    r'throw\s+UnimplementedError',
-    r'assert\s*\(\s*false',
-    
-    // Code smells
-    r'\.toString\(\)\.contains\(',
-    r'catch\s*\([^)]*\)\s*\{\s*\}',  // Empty catch blocks
-  ];
 
   /// Analyze files for code quality issues
   static Future<List<CodeQualityAnalysisResult>> analyzeFiles(List<File> files) async {
@@ -662,10 +626,10 @@ class CodeQualityAnalyzer {
 
 class CodeQualityAnalysisResult extends AnalysisResult {
   CodeQualityAnalysisResult({
-    required String filePath,
-    required List<Violation> violations,
-    required Map<String, dynamic> metrics,
-  }) : super(filePath: filePath, violations: violations, metrics: metrics);
+    required super.filePath,
+    required super.violations,
+    required super.metrics,
+  });
 }
 
 class MethodInfo {
