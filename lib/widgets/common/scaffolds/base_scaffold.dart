@@ -147,7 +147,7 @@ class LoadingScaffold extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               loadingMessage,
               style: Theme.of(context).textTheme.bodyLarge,
@@ -194,14 +194,14 @@ class ErrorScaffold extends StatelessWidget {
                 size: 64,
                 color: Theme.of(context).colorScheme.error,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 errorMessage,
                 style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: AppDimensions.spacingLg),
                 ElevatedButton(
                   onPressed: onRetry,
                   child: const Text(AppStrings.retry),
@@ -255,7 +255,7 @@ class EmptyStateScaffold extends StatelessWidget {
                   size: 64,
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppDimensions.spacingMd),
               ],
               Text(
                 emptyMessage,
@@ -263,7 +263,7 @@ class EmptyStateScaffold extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               if (onAction != null && actionText != null) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: AppDimensions.spacingLg),
                 ElevatedButton(
                   onPressed: onAction,
                   child: Text(actionText!),
@@ -315,7 +315,7 @@ class FormScaffold extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: form,
             ),
           ),
@@ -353,7 +353,7 @@ class FormScaffold extends StatelessWidget {
 
   Widget _buildBottomButtons(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(

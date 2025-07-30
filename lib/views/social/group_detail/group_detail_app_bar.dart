@@ -60,7 +60,7 @@ class GroupDetailAppBar {
             child: Row(
               children: [
                 Icon(Icons.person_add),
-                SizedBox(width: 8),
+                SizedBox(width: AppDimensions.spacingSm),
                 Text('Lägg till medlemmar'),
               ],
             ),
@@ -72,7 +72,7 @@ class GroupDetailAppBar {
             child: Row(
               children: [
                 Icon(Icons.edit),
-                SizedBox(width: 8),
+                SizedBox(width: AppDimensions.spacingSm),
                 Text('Redigera grupp'),
               ],
             ),
@@ -87,7 +87,7 @@ class GroupDetailAppBar {
                   Icons.delete,
                   color: Theme.of(context).colorScheme.error,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Ta bort grupp',
                   style: TextStyle(
@@ -107,7 +107,7 @@ class GroupDetailAppBar {
                   Icons.exit_to_app,
                   color: Theme.of(context).colorScheme.tertiary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Lämna grupp',
                   style: TextStyle(

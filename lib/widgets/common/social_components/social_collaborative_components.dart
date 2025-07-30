@@ -164,7 +164,7 @@ class SocialCollaborativeComponents {
   }) {
     // Since we can't provide context here, return a simple placeholder
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(AppDimensions.spacingSm),
       child: Row(
         children: [
           const Icon(Icons.people, size: 16),
@@ -314,7 +314,7 @@ class SocialCollaborativeComponents {
     bool showLabels = true,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(AppDimensions.spacing12),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),

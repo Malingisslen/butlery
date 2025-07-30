@@ -77,8 +77,8 @@ class _SkrivSjalvReceptViewContentState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Text(
                 'Lägg till bild',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -400,43 +400,41 @@ class _SkrivSjalvReceptViewContentState
       children: [
         Text(label, style: AppTextStyles.labelLarge),
         const SizedBox(height: AppDimensions.spacingM),
-        ...controllers.asMap().entries.map((entry) {
-          final index = entry.key;
-          final controller = entry.value;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: '$label ${index + 1}',
+        for (int index = 0; index < controllers.length; index++)
+          Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: controllers[index],
+                      decoration: InputDecoration(
+                        hintText: '$label ${index + 1}',
+                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      onChanged: (value) {
+                        onUpdate(index, value);
+                        if (index == controllers.length - 1 && value.isNotEmpty) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            onAdd();
+                          });
+                        }
+                      },
                     ),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textInputAction: TextInputAction.next,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    onChanged: (value) {
-                      onUpdate(index, value);
-                      if (index == controllers.length - 1 && value.isNotEmpty) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          onAdd();
-                        });
-                      }
-                    },
                   ),
-                ),
-                if (controllers.length > 1)
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => onRemove(index),
-                  ),
-              ],
-            ),
-          );
-        }),
+                  if (controllers.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () => onRemove(index),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.spacingS),
+            ],
+          ),
         if (controllers.isEmpty)
           TextButton.icon(
             icon: const Icon(Icons.add),

@@ -30,7 +30,7 @@ class FriendRequestCard {
           : null,
       child: InkWell(
         onTap: () => onSelectionChanged(!isSelected),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Column(
@@ -99,7 +99,7 @@ class FriendRequestCard {
                                   .colorScheme
                                   .surfaceContainerHighest
                                   .withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
                             ),
                             child: Text(
                               '"${request.message!}"',
@@ -218,7 +218,7 @@ class FriendRequestCard {
           : null,
       child: InkWell(
         onTap: () => onSelectionChanged(!isSelected),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Row(
@@ -230,7 +230,7 @@ class FriendRequestCard {
                   onChanged: (value) => onSelectionChanged(value ?? false),
                 )
               else
-                const SizedBox(width: 48), // Placeholder for alignment
+                const SizedBox(width: AppDimensions.spacingXxxl), // Placeholder for alignment
 
               const SizedBox(width: AppDimensions.spacingS),
 

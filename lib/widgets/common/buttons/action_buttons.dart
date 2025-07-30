@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// ActionButtons - Utility action buttons with loading support
 ///
@@ -132,7 +133,7 @@ class ActionButtons {
               )
             else
               Icon(icon, size: 32),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               isLoading ? (loadingText ?? 'Laddar...') : label,
               textAlign: TextAlign.center,
@@ -228,6 +229,42 @@ class ActionButtons {
       loadingText: loadingText,
       style: ActionButtonStyle.outlined,
       isExpanded: isExpanded,
+    );
+  }
+}
+
+/// Floating Action Button Widget
+/// 
+/// Provides consistent FAB styling across the app following design separation principles.
+class FloatingActionButtonWidget extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final Widget child;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+
+  const FloatingActionButtonWidget({
+    super.key,
+    required this.onPressed,
+    required this.child,
+    this.backgroundColor,
+    this.foregroundColor,
+  });
+
+  /// Message FAB for conversations
+  const FloatingActionButtonWidget.message({
+    super.key,
+    required this.onPressed,
+  }) : child = const Icon(Icons.message),
+       backgroundColor = AppColors.primaryBlue,
+       foregroundColor = AppColors.cardWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: onPressed,
+      backgroundColor: backgroundColor ?? AppColors.primaryBlue,
+      foregroundColor: foregroundColor ?? AppColors.cardWhite,
+      child: child,
     );
   }
 }

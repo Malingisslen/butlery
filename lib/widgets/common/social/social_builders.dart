@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Builder functions for social components
 class SocialBuilders {
@@ -58,7 +59,7 @@ class SocialBuilders {
             ).copyWith(color: textColor ?? AppColors.primaryBlue),
           ),
           if (showLabels) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               entry.key,
               style: labelStyle ?? const TextStyle(
@@ -72,7 +73,7 @@ class SocialBuilders {
     }).toList();
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       child: horizontal
         ? Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

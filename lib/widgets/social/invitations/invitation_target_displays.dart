@@ -130,7 +130,7 @@ class InvitationTargetDisplays {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm, vertical: AppDimensions.spacingXs),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -139,7 +139,7 @@ class InvitationTargetDisplays {
                   target.displayEmoji,
                   style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppDimensions.spacingXs),
 
                 // Name
                 Flexible(
@@ -154,7 +154,7 @@ class InvitationTargetDisplays {
                 if (target.isGroup &&
                     target.memberCount != null &&
                     showCount) ...[
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '(${target.memberCount})',
                     style: AppTextStyles.bodySmall,
@@ -163,7 +163,7 @@ class InvitationTargetDisplays {
 
                 // Remove button
                 if (onRemove != null) ...[
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   GestureDetector(
                     onTap: onRemove,
                     child: const Icon(
@@ -323,7 +323,7 @@ class InvitationTargetDisplays {
           overflow: TextOverflow.ellipsis,
         ),
         if (target.subtitle.isNotEmpty) ...[
-          const SizedBox(height: 2),
+          const SizedBox(height: AppDimensions.spacing2),
           Text(
             target.subtitle,
             style: descriptionStyle,

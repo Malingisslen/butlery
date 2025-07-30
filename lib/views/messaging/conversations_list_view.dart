@@ -13,6 +13,7 @@ import 'package:butlery/widgets/messaging/error_list_tile.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -144,8 +145,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meddelanden'),
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: AppColors.cardWhite,
         actions: [
           IconButton(
             onPressed: _showNewConversationDialog,
@@ -165,11 +164,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButtonWidget.message(
         onPressed: _showNewConversationDialog,
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: AppColors.cardWhite,
-        child: const Icon(Icons.message),
       ),
     );
   }
@@ -224,10 +220,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
         itemCount: _filteredConversations.length,
-        separatorBuilder: (context, index) => const Divider(
+        separatorBuilder: (context, index) => Divider(
           height: 1,
-          color: AppColors.divider,
-          indent: 80, // Account for avatar width
+          color: Theme.of(context).dividerColor,
+          indent: AppDimensions.spacing80, // Account for avatar width
         ),
         itemBuilder: (context, index) {
           final conversation = _filteredConversations[index];

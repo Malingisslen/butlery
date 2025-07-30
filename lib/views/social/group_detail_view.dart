@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
@@ -324,20 +325,14 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
             onPressed: () => _showDeleteGroupDialog(group),
             icon: const Icon(Icons.delete),
             label: const Text('Ta bort grupp'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-              side: BorderSide(color: Theme.of(context).colorScheme.error),
-            ),
+            style: ComponentThemes.deleteButtonStyle,
           )
         else
           OutlinedButton.icon(
             onPressed: () => _leaveGroup(group),
             icon: const Icon(Icons.exit_to_app),
             label: const Text('Lämna grupp'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.tertiary,
-              side: BorderSide(color: Theme.of(context).colorScheme.tertiary),
-            ),
+            style: ComponentThemes.outlinedButtonStyle,
           ),
       ],
     );
@@ -385,7 +380,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(),
-              SizedBox(height: 16),
+              SizedBox(height: AppDimensions.spacingMd),
               Text('Laddar gruppinformation...'),
             ],
           ),

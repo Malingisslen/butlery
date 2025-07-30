@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social avatar and user display components
 /// 
@@ -197,7 +198,7 @@ class SocialAvatarComponents {
       showOnlineStatus: showOnlineStatus,
       isOnline: isOnline,
       showSubtitle: false,
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(AppDimensions.spacingSm),
     );
   }
 
@@ -217,7 +218,7 @@ class SocialAvatarComponents {
       isOnline: isOnline,
       showSubtitle: true,
       subtitle: customSubtitle,
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       showBorder: true,
     );
   }

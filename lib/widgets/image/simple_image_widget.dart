@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -422,7 +423,7 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.image_outlined, size: 32),
-                SizedBox(height: 8),
+                SizedBox(height: AppDimensions.spacingSm),
                 Text('Tap to load'),
               ],
             ),

@@ -83,7 +83,7 @@ class ShoppingItemTiles {
                       ),
                       
                       if (item.note?.isNotEmpty == true) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppDimensions.spacingXs),
                         Text(
                           item.note!,
                           style: AppTextStyles.bodySmall.copyWith(
@@ -178,7 +178,7 @@ class ShoppingItemTiles {
             size: 64,
             color: AppColors.neutralMedium,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title,
             style: AppTextStyles.titleMedium.copyWith(
@@ -186,7 +186,7 @@ class ShoppingItemTiles {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Text(
             message,
             style: AppTextStyles.bodySmall.copyWith(

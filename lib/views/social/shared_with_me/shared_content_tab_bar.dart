@@ -81,7 +81,7 @@ class SharedContentTabBar {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.error,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
       ),
       child: Text(
         '$count',

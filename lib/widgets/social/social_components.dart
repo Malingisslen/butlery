@@ -1,6 +1,7 @@
 // lib/widgets/social/social_components.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/social/invitations/invitation_target_displays.dart';
 import 'package:butlery/widgets/social/invitations/invitation_target_inputs.dart';
@@ -89,8 +90,8 @@ class SocialComponents {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: AppDimensions.spacingSm,
+        mainAxisSpacing: AppDimensions.spacingSm,
         childAspectRatio: 1.5,
       ),
       itemCount: targets.length,
@@ -178,7 +179,7 @@ class SocialComponents {
     Function(Set<InvitationTargetType>)? onTypesChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(AppDimensions.spacingSm),
       child: Row(
         children: [
           FilterChip(
@@ -194,7 +195,7 @@ class SocialComponents {
               onTypesChanged?.call(newTypes);
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           FilterChip(
             label: const Text('Group'),
             selected: selectedTypes.contains(InvitationTargetType.group),
@@ -224,7 +225,7 @@ class SocialComponents {
           onPressed: () => onQuickSelection?.call([]),
           child: const Text('Select None'),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppDimensions.spacingSm),
         TextButton(
           onPressed: () => onQuickSelection?.call(targets),
           child: const Text('Select All'),

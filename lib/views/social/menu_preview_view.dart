@@ -10,8 +10,11 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/widgets/common/indicators/status_badge.dart';
+import 'package:butlery/widgets/common/layout/category_header.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -62,26 +65,29 @@ class MenuPreviewView extends StatelessWidget {
 
   Widget _buildMenuHeader(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.all(AppDimensions.paddingL),
+      child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Delningsinformation
-            Row(
-              children: [
-                SocialComponents.avatar(
-                  displayName: sharedMenu.sharedByDisplayName,
-                  size: ImageSize.small,
-                ),
-                const SizedBox(width: AppDimensions.spacingS),
-                Expanded(
-                  child: Column(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Delningsinformation
+              Row(
+                children: [
+                  SocialComponents.avatar(
+                    displayName: sharedMenu.sharedByDisplayName,
+                    size: ImageSize.small,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -105,23 +111,7 @@ class MenuPreviewView extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingS,
-                    vertical: AppDimensions.spacingXs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-                  ),
-                  child: Text(
-                    'DELAD MENY',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
+                const StatusBadge.primary(text: 'DELAD MENY'),
               ],
             ),
 
@@ -174,10 +164,11 @@ class MenuPreviewView extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingL),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.divider),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,9 +189,10 @@ class MenuPreviewView extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ],
-        ),
+            ], // Close if statement spread array
+            ], // Close children array of main Column
+          ), // Close main Column
+        ), // Close Container
       ),
     );
   }
@@ -211,7 +203,7 @@ class MenuPreviewView extends StatelessWidget {
 
     if (menuContent.isEmpty) {
       return SliverToBoxAdapter(
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: StateWidget.empty(
             title: 'Inga recept i menyn',
@@ -228,8 +220,8 @@ class MenuPreviewView extends StatelessWidget {
           final category = categories[index];
           final recipes = menuContent[category] ?? [];
 
-          return Container(
-            margin: EdgeInsets.fromLTRB(
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
               AppDimensions.spacingS,
               AppDimensions.spacingS,
               AppDimensions.spacingS,
@@ -239,70 +231,23 @@ class MenuPreviewView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Kategori header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingS,
-                    vertical: AppDimensions.spacingXs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _getCategoryIcon(category),
-                        size: AppDimensions.iconSizeM,
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingS),
-                      Text(
-                        category,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSecondaryContainer,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingXs,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${recipes.length}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.copyWith(
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
+                CategoryHeader(
+                  title: category,
+                  icon: _getCategoryIcon(category),
+                  count: recipes.length,
                 ),
 
                 const SizedBox(height: AppDimensions.spacingS),
 
                 // Recept i kategorin
-                ...recipes.map((recipe) => Container(
-                      margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-                      child: ContentCard.compactRecipe(
-                        recipe: recipe,
-                        onTap: () => _navigateToRecipeDetail(context, recipe),
-                      ),
+                ...recipes.map((recipe) => Column(
+                      children: [
+                        ContentCard.compactRecipe(
+                          recipe: recipe,
+                          onTap: () => _navigateToRecipeDetail(context, recipe),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                      ],
                     )),
               ],
             ),
@@ -315,7 +260,7 @@ class MenuPreviewView extends StatelessWidget {
 
   Widget _buildActionButtons(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Container(
+      child: Padding(
         padding: AppDimensions.screenPadding,
         child: Consumer<SharedContentViewModel>(
           builder: (context, viewModel, _) {
@@ -359,10 +304,7 @@ class MenuPreviewView extends StatelessWidget {
                     onPressed: () => _dismissMenu(context, viewModel),
                     icon: const Icon(Icons.visibility_off),
                     label: const Text('Dölj från min lista'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: ComponentThemes.outlinedButtonStyle,
                   ),
                 ),
 

@@ -280,7 +280,7 @@ class ShareTargetSelectionEnhanced {
           leading: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
             ),
             child: SizedBox(
               width: 40,

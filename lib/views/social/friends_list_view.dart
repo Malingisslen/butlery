@@ -9,8 +9,10 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friends_list/friends_tab.dart';
@@ -131,16 +133,17 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 ),
               ),
               // Error display
-              if (viewModel.hasError)
-                  Container(
+              if (viewModel.hasError) ...[
+                const SizedBox(height: AppDimensions.spacingL),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+                  child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(AppDimensions.spacingL),
-                    margin: const EdgeInsets.all(AppDimensions.spacingL),
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-                      border: Border.all(
-                          color: AppColors.error.withValues(alpha: 0.3)),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -149,7 +152,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         Expanded(
                           child: Text(
                             viewModel.error!,
-                            style: const TextStyle(color: AppColors.error),
+                            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
                           ),
                         ),
                         TextButton(
@@ -158,7 +161,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         ),
                       ],
                     ),
+                  ),
                 ),
+                const SizedBox(height: AppDimensions.spacingL),
+              ],
 
               // Search functionality in both friends and groups tabs
               if (_currentTabIndex == 0)
@@ -198,9 +204,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           floatingActionButton: _currentTabIndex == 1
               ? FloatingActionButton(
                   onPressed: () => _showCreateGroupDialog(viewModel),
-                  child: Stack(
+                  child: const Stack(
                     children: [
-                      const Center(
+                      Center(
                         child: Icon(
                           Icons.groups, 
                           size: AppDimensions.iconSizeL,
@@ -209,19 +215,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       Positioned(
                         top: AppDimensions.spacingXs,
                         right: AppDimensions.spacingXs,
-                        child: Container(
-                          width: AppDimensions.iconSizeS,
-                          height: AppDimensions.iconSizeS,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryBlue,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add, 
-                            size: AppDimensions.iconSizeS,
-                            color: AppColors.cardWhite,
-                          ),
-                        ),
+                        child: CircularIconBadge.add(),
                       ),
                     ],
                   ),

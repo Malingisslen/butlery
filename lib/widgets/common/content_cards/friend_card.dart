@@ -362,7 +362,7 @@ class FriendRequestCard extends StatelessWidget {
 
   Widget _buildSenderAvatar(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(25),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius25),
       child: SimpleImageWidget(
         imageUrl: null, // FriendRequest doesn't store sender avatar directly
         fit: BoxFit.cover,

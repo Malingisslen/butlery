@@ -43,7 +43,7 @@ class ImagePickerDialogs {
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: AppColors.neutralMedium,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
               ),
             ),
             Text(

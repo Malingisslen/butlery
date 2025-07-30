@@ -186,7 +186,7 @@ class InvitationSelectors {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(16.0),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       child: Column(
         children: [
           if (showSearch)
@@ -273,10 +273,10 @@ class InvitationSelectors {
     }
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(16.0),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: Colors.blue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
       ),
       child: Column(

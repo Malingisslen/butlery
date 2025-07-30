@@ -6,7 +6,9 @@ import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/navigation_components.dart';
+import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -30,9 +32,10 @@ class FriendProfileView extends StatelessWidget {
         foregroundColor: AppColors.neutralLight,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          children: [
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Column(
+            children: [
             // Avatar och grundläggande info
             Center(
               child: Column(
@@ -66,75 +69,69 @@ class FriendProfileView extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingL),
 
             // Statistik kort
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Statistik',
-                      style: AppTextStyles.titleLarge.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatItem(
-                          context,
-                          'Vänner',
-                          '${friend.friendsCount}',
-                          Icons.people,
+            CardContent.standard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Statistik',
+                    style: AppTextStyles.titleLarge.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                        _buildStatItem(
-                          context,
-                          'Recept',
-                          '${friend.publicRecipeCount}',
-                          Icons.restaurant_menu,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStatItem(
+                        context,
+                        'Vänner',
+                        '${friend.friendsCount}',
+                        Icons.people,
+                      ),
+                      _buildStatItem(
+                        context,
+                        'Recept',
+                        '${friend.publicRecipeCount}',
+                        Icons.restaurant_menu,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
 
             const SizedBox(height: AppDimensions.spacingL),
 
             // Aktivitet kort
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Aktivitet',
-                      style: AppTextStyles.titleLarge.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+            CardContent.standard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Aktivitet',
+                    style: AppTextStyles.titleLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.access_time,
+                      color: AppColors.primaryBlue,
                     ),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.access_time,
-                        color: AppColors.primaryBlue,
-                      ),
-                      title: const Text('Senast aktiv'),
-                      subtitle: Text(friend.lastActiveText),
+                    title: const Text('Senast aktiv'),
+                    subtitle: Text(friend.lastActiveText),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.calendar_today,
+                      color: AppColors.primaryBlue,
                     ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.calendar_today,
-                        color: AppColors.primaryBlue,
-                      ),
-                      title: const Text('Medlem sedan'),
-                      subtitle: Text(friend.memberSinceText),
-                    ),
-                  ],
-                ),
+                    title: const Text('Medlem sedan'),
+                    subtitle: Text(friend.memberSinceText),
+                  ),
+                ],
               ),
             ),
 
@@ -174,10 +171,7 @@ class FriendProfileView extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () => _showRemoveFriendDialog(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      side: const BorderSide(color: AppColors.error),
-                    ),
+                    style: ComponentThemes.deleteButtonStyle,
                     icon: const Icon(Icons.person_remove),
                     label: const Text('Ta bort vän'),
                   ),
@@ -185,6 +179,7 @@ class FriendProfileView extends StatelessWidget {
               ],
             ),
           ],
+          ),
         ),
       ),
     );

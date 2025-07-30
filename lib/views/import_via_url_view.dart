@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/text_display_container.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/injection.dart';
 
 /// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
@@ -103,17 +104,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   viewModel.canFetch && !viewModel.isLoading
                       ? _fetchPage
                       : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.cardWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
+              style: ComponentThemes.primaryButtonStyle,
               child:
                   viewModel.isLoading
                       ? const SizedBox(
@@ -146,17 +137,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
                 onPressed: _navigateToTextImport,
-                style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.cardWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
+                style: ComponentThemes.primaryButtonStyle,
                 child: const Text('Gå vidare till klistra-in'),
               ),
             ],

@@ -340,7 +340,7 @@ class SocialGroupComponents {
               'Kategoristatistik',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
             Row(
               children: [
                 Expanded(
@@ -361,7 +361,7 @@ class SocialGroupComponents {
               ],
             ),
             if (showAverageSize || showLargestCategory) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.spacing12),
               Row(
                 children: [
                   if (showAverageSize)
@@ -398,7 +398,7 @@ class SocialGroupComponents {
     return Column(
       children: [
         Icon(icon, color: Colors.grey),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

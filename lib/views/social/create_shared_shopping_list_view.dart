@@ -6,6 +6,8 @@ import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/layout/bordered_container.dart';
+import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -93,9 +95,10 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildBody(BuildContext context, CreateSharedListViewModel viewModel) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header info
           _buildHeaderInfo(context),
@@ -116,7 +119,8 @@ class _CreateSharedShoppingListViewState
           if (viewModel.hasError) ...[
             const SizedBox(height: AppDimensions.spacingXl),
             Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingM),
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -129,13 +133,15 @@ class _CreateSharedShoppingListViewState
             ),
           ],
         ],
+        ),
       ),
     );
   }
 
   Widget _buildHeaderInfo(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.backgroundTint,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -221,13 +227,8 @@ class _CreateSharedShoppingListViewState
           style: AppTextStyles.headlineSmall,
         ),
         const SizedBox(height: AppDimensions.spacingXl),
-        Container(
+        BorderedContainer(
           height: 200,
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          // ✅ MIGRERAD: FriendCategoryManager → UtilityComponents.friendCategoryManager
           child: UtilityComponents.friendCategoryManager(
             selectedFriendIds: viewModel.selectedFriendIds,
             onSelectionChanged: viewModel.updateSelectedFriends,
@@ -241,13 +242,12 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildInfoSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,65 +286,53 @@ class _CreateSharedShoppingListViewState
 
   Widget _buildBottomBar(
       BuildContext context, CreateSharedListViewModel viewModel) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: AppDimensions.borderWidthThin,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            // Selection summary från ViewModel
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+    return BottomActionContainer(
+      child: Row(
+        children: [
+          // Selection summary från ViewModel
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  viewModel.selectedFriendsText,
+                  style: AppTextStyles.labelLarge,
+                ),
+                if (viewModel.isTitleValid) ...[
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
-                    viewModel.selectedFriendsText,
-                    style: AppTextStyles.labelLarge,
+                    'Lista: "${viewModel.trimmedTitle}"',
+                    style: AppTextStyles.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  if (viewModel.isTitleValid) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      'Lista: "${viewModel.trimmedTitle}"',
-                      style: AppTextStyles.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+          ),
+          const SizedBox(width: AppDimensions.spacingM),
 
-            SizedBox(
-              width: 120,
-              child: FilledButton.icon(
-                onPressed: viewModel.canCreate
-                    ? () => _createSharedList(context, viewModel)
-                    : null,
-                icon: viewModel.isCreating
-                    ? const SizedBox(
-                        width: AppDimensions.iconSizeS,
-                        height: AppDimensions.iconSizeS,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
-                        ),
-                      )
-                    : const Icon(Icons.group_add),
-                label: Text(viewModel.createButtonText),
-              ),
+          SizedBox(
+            width: 120,
+            child: FilledButton.icon(
+              onPressed: viewModel.canCreate
+                  ? () => _createSharedList(context, viewModel)
+                  : null,
+              icon: viewModel.isCreating
+                  ? const SizedBox(
+                      width: AppDimensions.iconSizeS,
+                      height: AppDimensions.iconSizeS,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
+                      ),
+                    )
+                  : const Icon(Icons.group_add),
+              label: Text(viewModel.createButtonText),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Handler for menu action events in realtime menu view
 class MenuActionHandler {
@@ -185,7 +186,7 @@ class MenuActionHandler {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Meny: ${menu.menuTitle}'),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             const Text('Deltagare:'),
             ...menu.participants.map(
               (participant) => ListTile(

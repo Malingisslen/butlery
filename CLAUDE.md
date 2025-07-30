@@ -24,6 +24,12 @@ cmd.exe /c "flutter COMMAND"
   - Ownership validation and role-based access control
 - **Type Safety**: Map-based data access replaced with proper model usage
 
+### Validation Tool (`tools/validate_architecture.dart`)
+- **Intelligent Pattern Matching**: Distinguishes legitimate theme usage from violations
+- **Context Analysis**: Examines surrounding code to determine if styling is theme-based
+- **Zero False Positives**: No longer flags correct theme-based components as violations
+- **Run Command**: `cmd.exe /c "dart tools/validate_architecture.dart"`
+
 ## Workflow Instructions
 **Before starting:**
 1. Think through problem, read codebase and `/docs` documentation

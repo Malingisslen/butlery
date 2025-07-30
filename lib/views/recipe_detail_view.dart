@@ -156,19 +156,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.delete,
                         size: AppDimensions.iconSizeAction,
                         color: AppColors.error,
                       ),
-                      SizedBox(width: AppDimensions.spacingM),
+                      const SizedBox(width: AppDimensions.spacingM),
                       Text(
                         'Ta bort',
-                        style: TextStyle(color: AppColors.error),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error),
                       ),
                     ],
                   ),
@@ -187,7 +187,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(

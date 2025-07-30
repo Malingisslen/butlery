@@ -52,7 +52,7 @@ class ShoppingListHeader {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.neutralLight,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: AppColors.neutralMedium.withValues(alpha: 0.3)),
       ),
       child: DropdownButtonHideUnderline(
@@ -113,7 +113,7 @@ class ShoppingListHeader {
           ),
 
         if (viewModel.boughtItems > 0 && viewModel.totalItems > viewModel.boughtItems)
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
 
         // Avbocka alla artiklar
         if (viewModel.boughtItems > 0)

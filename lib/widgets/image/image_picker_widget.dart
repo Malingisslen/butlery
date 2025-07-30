@@ -85,7 +85,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         // Image count info
         if (hasImages)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
             child: Text(
               '${widget.selectedImages.length}/${widget.config.maxImages} images selected',
               style: AppTextStyles.bodySmall.copyWith(
@@ -199,8 +199,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
+            crossAxisSpacing: AppDimensions.spacingSm,
+            mainAxisSpacing: AppDimensions.spacingSm,
             childAspectRatio: 1,
           ),
           itemCount: widget.selectedImages.length,
@@ -221,13 +221,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         // Image container
         DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             border: Border.all(
               color: AppColors.dividerColor.withValues(alpha: 0.2),
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             child: imagePath.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: imagePath,
@@ -266,8 +266,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Remove button
         Positioned(
-          top: 4,
-          right: 4,
+          top: AppDimensions.spacingXs,
+          right: AppDimensions.spacingXs,
           child: GestureDetector(
             onTap: () => _removeImage(imagePath, index),
             child: Container(
@@ -291,13 +291,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Index indicator
         Positioned(
-          bottom: 4,
-          left: 4,
+          bottom: AppDimensions.spacingXs,
+          left: AppDimensions.spacingXs,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing6, vertical: AppDimensions.spacing2),
             decoration: BoxDecoration(
               color: AppColors.cardColor.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
             ),
             child: Text(
               '${index + 1}',
@@ -459,7 +459,7 @@ class ImagePickerBottomSheet extends StatelessWidget {
     return await showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadius16)),
       ),
       builder: (context) => ImagePickerBottomSheet(
         onSourceSelected: (source) => Navigator.of(context).pop(source),

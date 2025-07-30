@@ -84,7 +84,7 @@ class InvitationTargetStates {
                     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Container(
                   height: 12,
                   width: 120,
@@ -297,7 +297,7 @@ class InvitationTargetStates {
               color: AppColors.textMedium,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           const Text(
             'Tryck på mål nedan för att välja',
             style: AppTextStyles.bodySmall,
@@ -343,7 +343,7 @@ class InvitationTargetStates {
                   ),
                 ),
                 if (successMessage != null) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppDimensions.spacing2),
                   Text(
                     successMessage,
                     style: AppTextStyles.bodySmall.copyWith(
@@ -394,7 +394,7 @@ class InvitationTargetStates {
               color: AppColors.success,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             'Du kan nu fortsätta med delningen',
             style: AppTextStyles.bodySmall.copyWith(

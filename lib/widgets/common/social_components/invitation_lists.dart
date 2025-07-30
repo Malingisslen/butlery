@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target list and grid layouts
 /// 
@@ -118,7 +119,7 @@ class InvitationLists {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Text(
                 type == InvitationTargetType.group ? 'Grupper' : 'Individer',
                 style: const TextStyle(
@@ -190,7 +191,7 @@ class InvitationLists {
               child: InkWell(
                 onTap: onTargetTap != null ? () => onTargetTap(target) : null,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(AppDimensions.spacingSm),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -199,7 +200,7 @@ class InvitationLists {
                             ? Icons.group 
                             : Icons.person,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         target.displayName,
                         maxLines: 2,
@@ -244,7 +245,7 @@ class InvitationLists {
           child: InkWell(
             onTap: onTargetTap != null ? () => onTargetTap(target) : null,
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(AppDimensions.spacing12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -254,7 +255,7 @@ class InvitationLists {
                         : Icons.person,
                     size: 32,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   Text(
                     target.displayName,
                     maxLines: 2,
@@ -262,7 +263,7 @@ class InvitationLists {
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     '${target.memberCount ?? 0} medlemmar',
                     style: const TextStyle(

@@ -219,7 +219,7 @@ class MessageBubble extends StatelessWidget {
                   : AppColors.primaryBlue,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: AppDimensions.spacing2),
           Text(
             replyToMessage!.displayContent,
             style: AppTextStyles.labelSmall.copyWith(
@@ -534,7 +534,7 @@ class MessageBubble extends StatelessWidget {
             size: 12,
             color: AppColors.cardWhite.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: AppDimensions.spacing2),
           Text(
             _getStatusText(),
             style: AppTextStyles.labelSmall.copyWith(

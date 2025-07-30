@@ -240,7 +240,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                               .colorScheme
                               .primary
                               .withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
                     ),
                     child: Text(
                       '${category.friendCount}',
@@ -382,7 +382,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             padding: const EdgeInsets.all(AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
             ),
             child: const Icon(
               Icons.group,

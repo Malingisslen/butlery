@@ -64,7 +64,7 @@ class FriendRequestsHeader {
                 child: Row(
                   children: [
                     const Icon(Icons.check_circle, color: AppColors.success),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.spacingSm),
                     Text('Acceptera valda (${selectedIncoming.length})'),
                   ],
                 ),
@@ -74,7 +74,7 @@ class FriendRequestsHeader {
                 child: Row(
                   children: [
                     const Icon(Icons.cancel, color: AppColors.error),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.spacingSm),
                     Text('Avböj valda (${selectedIncoming.length})'),
                   ],
                 ),

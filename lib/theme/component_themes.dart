@@ -453,4 +453,104 @@ class ComponentThemes {
       circularTrackColor: AppColors.divider,
     );
   }
+
+  // ===== BUTTON STYLE VARIANTS =====
+
+  /// Primary button style for main actions
+  static ButtonStyle get primaryButtonStyle {
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primaryBlue,
+      foregroundColor: AppColors.cardWhite,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+    );
+  }
+
+  /// Text button style for secondary actions like "Cancel"
+  static ButtonStyle get textButtonStyle {
+    return TextButton.styleFrom(
+      foregroundColor: AppColors.primaryBlue,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+    );
+  }
+
+  /// Secondary button style for secondary actions
+  static ButtonStyle get secondaryButtonStyle {
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppColors.cardWhite,
+      foregroundColor: AppColors.primaryBlue,
+      side: const BorderSide(color: AppColors.primaryBlue),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+    );
+  }
+
+  /// Danger button style for destructive actions
+  static ButtonStyle get dangerButtonStyle {
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppColors.error,
+      foregroundColor: AppColors.cardWhite,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+    );
+  }
+
+  /// Outlined button style for secondary actions
+  static ButtonStyle get outlinedButtonStyle {
+    return OutlinedButton.styleFrom(
+      foregroundColor: AppColors.primaryBlue,
+      backgroundColor: Colors.transparent,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+      side: const BorderSide(
+        color: AppColors.primaryBlue,
+        width: 1,
+      ),
+    );
+  }
+
+  /// Delete/danger button style for destructive actions
+  static ButtonStyle get deleteButtonStyle {
+    return OutlinedButton.styleFrom(
+      foregroundColor: AppColors.error,
+      backgroundColor: Colors.transparent,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      ),
+      side: const BorderSide(
+        color: AppColors.error,
+        width: 1,
+      ),
+    );
+  }
 }

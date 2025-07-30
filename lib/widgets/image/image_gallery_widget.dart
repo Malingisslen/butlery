@@ -145,7 +145,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 color: AppColors.textPrimary.withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               'Images will appear here',
               style: AppTextStyles.bodyMedium.copyWith(
@@ -163,10 +163,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     // Remove unused theme variable
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadius16)),
       ),
       child: Row(
         children: [
@@ -224,7 +224,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                   size: 32,
                   color: AppColors.primaryBlue,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   'Add',
                   style: AppTextStyles.bodySmall.copyWith(
@@ -292,10 +292,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         // Selection indicator
         if (_isSelectionMode)
           Positioned(
-            top: 8,
-            right: 8,
+            top: AppDimensions.spacingSm,
+            right: AppDimensions.spacingSm,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(AppDimensions.spacing2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected

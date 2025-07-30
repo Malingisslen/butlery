@@ -17,6 +17,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/notification_badge.dart';
+import 'package:butlery/widgets/common/indicators/filter_indicator_dot.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -226,29 +228,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               Positioned(
                 top: 0,
                 right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                  decoration: BoxDecoration(
-                    color: AppColors.error,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: AppDimensions.borderWidthThick,
-                    ),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 20,
-                    minHeight: 20,
-                  ),
-                  child: Text(
-                    totalNotifications > 99 ? '99+' : '$totalNotifications',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.neutralLight,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                child: NotificationBadge(count: totalNotifications),
               ),
           ],
         );
@@ -295,17 +275,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 ),
                 // Visa en prick om det finns aktiva filter
                 if (viewModel.hasActiveFilters)
-                  Positioned(
+                  const Positioned(
                     right: 0,
                     top: 0,
-                    child: Container(
-                      width: AppDimensions.spacingS,
-                      height: AppDimensions.spacingS,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    child: FilterIndicatorDot(),
                   ),
               ],
             ),
@@ -430,7 +403,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

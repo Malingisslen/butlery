@@ -9,9 +9,12 @@ import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
+import 'package:butlery/widgets/common/layout/bordered_container.dart';
 
 
 class UserProfileEditView extends StatelessWidget {
@@ -226,7 +229,7 @@ class _UserProfileEditViewContentState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(),
-            SizedBox(height: 16),
+            SizedBox(height: AppDimensions.spacingMd),
             Text('Laddar profil...'),
           ],
         ),
@@ -277,30 +280,7 @@ class _UserProfileEditViewContentState
               ),
               // Upload progress overlay
               if (viewModel.isUploadingAvatar)
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.neutralDark.withValues(alpha: 0.7),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CircularProgressIndicator(strokeWidth: 2, color: AppColors.neutralLight),
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          Text(
-                            'Laddar upp...',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.neutralLight,
-                                    ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                const ProgressOverlay.avatar(text: 'Laddar upp...'),
             ],
           ),
 
@@ -328,10 +308,7 @@ class _UserProfileEditViewContentState
                         },
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Ta bort'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
-                  ),
+                  style: ComponentThemes.deleteButtonStyle,
                 ),
               ],
             ],
@@ -380,16 +357,15 @@ class _UserProfileEditViewContentState
             }
           },
         ),
-        if (viewModel.displayNameError != null)
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-            child: Text(
-              viewModel.displayNameError!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.error,
-                  ),
-            ),
+        if (viewModel.displayNameError != null) ...[
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            viewModel.displayNameError!,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.error,
+                ),
           ),
+        ],
       ],
     );
   }
@@ -420,16 +396,15 @@ class _UserProfileEditViewContentState
           ),
           onChanged: viewModel.updateBio,
         ),
-        if (viewModel.bioError != null)
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-            child: Text(
-              viewModel.bioError!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.error,
-                  ),
-            ),
+        if (viewModel.bioError != null) ...[
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            viewModel.bioError!,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.error,
+                ),
           ),
+        ],
       ],
     );
   }
@@ -443,11 +418,7 @@ class _UserProfileEditViewContentState
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingL),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
+        BorderedContainer(
           child: Column(
             children: [
               SwitchListTile(
@@ -525,36 +496,34 @@ class _UserProfileEditViewContentState
         ),
 
         // Unsaved changes indicator
-        if (viewModel.hasUnsavedChanges)
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingL),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingS),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-                border: Border.all(
-                  color: AppColors.warning.withValues(alpha: 0.3),
+        if (viewModel.hasUnsavedChanges) ...[
+          const SizedBox(height: AppDimensions.spacingL),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.warning_amber,
+                  color: AppColors.warning,
+                  size: AppDimensions.iconSizeM,
                 ),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber,
-                    color: AppColors.warning,
-                    size: AppDimensions.iconSizeM,
+                SizedBox(width: AppDimensions.spacingXs),
+                Expanded(
+                  child: Text(
+                    'Du har osparade ändringar',
+                    style: AppTextStyles.bodySmall,
                   ),
-                  SizedBox(width: AppDimensions.spacingXs),
-                  Expanded(
-                    child: Text(
-                      'Du har osparade ändringar',
-                      style: AppTextStyles.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ],
       ],
     );
   }
