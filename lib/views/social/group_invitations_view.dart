@@ -9,7 +9,12 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/injection.dart';
+import 'package:butlery/widgets/common/layout/card_content.dart';
+import 'package:butlery/widgets/common/indicators/emoji_avatar.dart';
+import 'package:butlery/widgets/common/indicators/member_count_badge.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 
 class GroupInvitationsView extends StatelessWidget {
@@ -31,15 +36,7 @@ class GroupInvitationsView extends StatelessWidget {
               elevation: AppDimensions.elevationLow,
               actions: [
                 if (viewModel.isLoading)
-                  const Padding(
-                    padding: EdgeInsets.all(AppDimensions.spacingL),
-                    // ✅ KORRIGERAT: Använd smallLoadingIndicator som finns i AppTheme
-                    child: SizedBox(
-                      width: AppDimensions.iconSizeS,
-                      height: AppDimensions.iconSizeS,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
+                  const LoadingIndicator.small()
                 else
                   IconButton(
                     icon: const Icon(Icons.refresh),
@@ -89,9 +86,10 @@ class GroupInvitationsView extends StatelessWidget {
                 style: AppTextStyles.titleLarge,
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              // ✅ KORRIGERAT: Använd errorContainer som finns i AppTheme
+              // Error display
               Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -108,14 +106,7 @@ class GroupInvitationsView extends StatelessWidget {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Försök igen'),
                 // ✅ KORRIGERAT: Använd secondaryButtonStyle som finns
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryBlue,
-                  side: const BorderSide(color: AppColors.primaryBlue),
-                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                ),
+                style: ComponentThemes.outlinedButtonStyle,
               ),
             ],
           ),
@@ -136,17 +127,19 @@ class GroupInvitationsView extends StatelessWidget {
     }
 
     // Groups list
-    return RefreshIndicator(
-      onRefresh: viewModel.refresh,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: viewModel.availableGroups.length,
-        separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingXl),
-        itemBuilder: (context, index) {
-          final group = viewModel.availableGroups[index];
-          return _buildGroupCard(context, group, viewModel);
-        },
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      child: RefreshIndicator(
+        onRefresh: viewModel.refresh,
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: viewModel.availableGroups.length,
+          separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingXl),
+          itemBuilder: (context, index) {
+            final group = viewModel.availableGroups[index];
+            return _buildGroupCard(context, group, viewModel);
+          },
+        ),
       ),
     );
   }
@@ -159,36 +152,16 @@ class GroupInvitationsView extends StatelessWidget {
     final members = viewModel.getMembersForGroup(group.id);
     final isJoining = viewModel.isJoiningGroup(group.id);
 
-    return Card(
-      elevation: AppDimensions.elevationLow,
-      // ✅ KORRIGERAT: Använd largeRadius som finns definierat
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return CardContent(
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             // Grupphuvud
             Row(
               children: [
                 // Gruppikon
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                  child: Center(
-                    child: Text(
-                      group.emoji ?? '👥',
-                      // ✅ KORRIGERAT: Använd befintlig textStyle och lägg till emoji-specifika egenskaper
-                      style: AppTextStyles.titleMedium.copyWith(
-                        fontSize: 24,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
+                EmojiAvatar.group(emoji: group.emoji ?? '👥'),
 
                 const SizedBox(width: AppDimensions.spacingM),
 
@@ -271,7 +244,6 @@ class GroupInvitationsView extends StatelessWidget {
             ],
           ],
         ),
-      ),
     );
   }
 
@@ -281,52 +253,35 @@ class GroupInvitationsView extends StatelessWidget {
       child: Row(
         children: [
           ...members.take(5).map((member) {
-            return Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
-              child: Column(
-                children: [
-                  SocialComponents.avatar(
-                    displayName: member.displayName,
-                    imageUrl: member.avatarUrl,
-                    size: ImageSize.small,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  SizedBox(
-                    width: 60,
-                    child: Text(
-                      member.displayName.split(' ').first,
-                      style: AppTextStyles.bodySmall,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Column(
+                  children: [
+                    SocialComponents.avatar(
+                      displayName: member.displayName,
+                      imageUrl: member.avatarUrl,
+                      size: ImageSize.small,
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    SizedBox(
+                      width: 60,
+                      child: Text(
+                        member.displayName.split(' ').first,
+                        style: AppTextStyles.bodySmall,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+              ],
             );
           }),
           if (members.length > 5) ...[
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                // ✅ KORRIGERAT: Nu har vi context tillgängligt
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.divider,
-                  width: 1,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  '+${members.length - 5}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+            MemberCountBadge(additionalCount: members.length - 5),
           ],
         ],
       ),
@@ -358,7 +313,7 @@ class GroupInvitationsView extends StatelessWidget {
                   const TextSpan(text: 'Vill du gå med i gruppen '),
                   TextSpan(
                     text: '"${group.name}"',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const TextSpan(text: '?'),
                 ],
@@ -367,11 +322,12 @@ class GroupInvitationsView extends StatelessWidget {
             if (group.description?.isNotEmpty == true) ...[
               const SizedBox(height: AppDimensions.spacingM),
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  // ✅ KORRIGERAT: Använd Theme.of(context) istället för icke-existerande surfaceVariant
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.divider),
                 ),
                 child: Text(
                   group.description!,
@@ -387,13 +343,7 @@ class GroupInvitationsView extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             // ✅ KORRIGERAT: Använd secondaryButtonStyle istället för icke-existerande textButtonStyle
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primaryBlue,
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              ),
-            ),
+            style: ComponentThemes.textButtonStyle,
             child: const Text('Avbryt'),
           ),
           FilledButton(

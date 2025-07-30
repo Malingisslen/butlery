@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/widgets/common/layout/auth_form_card.dart';
 
 /// AuthView hanterar login och registrering
 ///
@@ -61,8 +62,9 @@ class _AuthViewState extends State<AuthView> {
             builder: (context, viewModel, _) {
               return Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Column(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Logo/Header område
@@ -72,6 +74,7 @@ class _AuthViewState extends State<AuthView> {
                       // Auth-kort
                       _buildAuthCard(context, viewModel),
                     ],
+                    ),
                   ),
                 ),
               );
@@ -96,16 +99,12 @@ class _AuthViewState extends State<AuthView> {
 
   /// Bygger auth-kortet med formulär
   Widget _buildAuthCard(BuildContext context, AuthViewModel viewModel) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 400),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+    return AuthFormCard(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             // Rubrik
             Text(
               viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
@@ -148,8 +147,6 @@ class _AuthViewState extends State<AuthView> {
                 // Toggle login/register
                 _buildToggleButton(viewModel),
               ],
-            ),
-          ),
         ),
       ),
     );

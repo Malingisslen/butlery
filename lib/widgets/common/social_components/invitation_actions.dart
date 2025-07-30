@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation action widgets
 /// 
@@ -54,7 +55,7 @@ class InvitationActions {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(16.0),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: Colors.blue.withValues(alpha: 0.1),
         border: Border(
@@ -178,7 +179,7 @@ class InvitationActions {
     }
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(16.0),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       child: Row(
         children: [
           Text(
@@ -231,12 +232,12 @@ class InvitationActions {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(message),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           const Text(
             'Berörda målgrupper:',
             style: TextStyle(fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Container(
             constraints: const BoxConstraints(maxHeight: 200),
             child: ListView.builder(

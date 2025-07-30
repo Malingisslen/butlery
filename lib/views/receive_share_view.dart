@@ -8,6 +8,9 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
+import 'package:butlery/widgets/common/indicators/status_indicator.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
@@ -223,7 +226,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
 
   Widget _buildContentView() {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -267,13 +270,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
 
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-          ),
-          child: Icon(icon, color: color, size: AppDimensions.iconSizeAction),
+        StatusIndicator(
+          icon: icon,
+          color: color,
         ),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
@@ -300,21 +299,15 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
   }
 
   Widget _buildContentPreview() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: Theme.of(context).dividerColor, width: 1),
-      ),
+    return ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.4,
       ),
-      child: SingleChildScrollView(
-        child: Text(
-          widget.content,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+      child: TextDisplayCard(
+        text: widget.content,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderColor: Theme.of(context).dividerColor,
+        textStyle: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }
@@ -327,7 +320,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
           children: [
             if (_extractionError != null) ...[
               Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -358,17 +352,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                     ? 'Försök igen'
                     : 'Hämta recept automatiskt',
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.cardWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
+              style: ComponentThemes.primaryButtonStyle,
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text('eller', style: Theme.of(context).textTheme.bodySmall),
@@ -377,18 +361,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
               label: const Text('Kopiera manuellt'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryBlue,
-                backgroundColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-                side: const BorderSide(color: AppColors.primaryBlue),
-              ),
+              style: ComponentThemes.outlinedButtonStyle,
             ),
           ],
         );
@@ -407,17 +380,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               onPressed: _navigateToUrlImport,
               icon: const Icon(Icons.download),
               label: const Text('Hämta recept från webbsida'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.cardWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
+              style: ComponentThemes.primaryButtonStyle,
             ),
           ],
         );
@@ -427,10 +390,12 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         return Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(color: AppColors.divider),
               ),
               child: Row(
                 children: [
@@ -452,17 +417,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.arrow_forward),
               label: const Text('Fortsätt med import'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.cardWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
+              style: ComponentThemes.primaryButtonStyle,
             ),
           ],
         );
@@ -481,18 +436,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.edit),
               label: const Text('Försök ändå'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryBlue,
-                backgroundColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-                side: const BorderSide(color: AppColors.primaryBlue),
-              ),
+              style: ComponentThemes.outlinedButtonStyle,
             ),
           ],
         );

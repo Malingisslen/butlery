@@ -183,7 +183,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget _buildAppBarActions() {
-    if (_conversation == null || _currentUserId == null) return Container();
+    if (_conversation == null || _currentUserId == null) return const SizedBox.shrink();
     
     return PopupMenuButton<String>(
       onSelected: _handleMenuAction,

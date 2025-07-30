@@ -48,7 +48,7 @@ class EmojiSelector extends StatelessWidget {
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
             ),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
@@ -69,7 +69,7 @@ class EmojiSelector extends StatelessWidget {
                     color: isSelected
                         ? Theme.of(context).colorScheme.primaryContainer
                         : null,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
                     border: isSelected
                         ? Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -108,7 +108,7 @@ class ErrorDisplayWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: AppColors.error),
       ),
       child: Row(
@@ -148,7 +148,7 @@ class WarningDisplayWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(
           color: AppColors.warning.withValues(alpha: 0.3),
         ),
@@ -195,7 +195,7 @@ class DialogHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(12),
+          top: Radius.circular(AppDimensions.borderRadius12),
         ),
       ),
       child: Row(
@@ -252,7 +252,7 @@ class DialogFooter extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(12),
+          bottom: Radius.circular(AppDimensions.borderRadius12),
         ),
       ),
       child: Row(

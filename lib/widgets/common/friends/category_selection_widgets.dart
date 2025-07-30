@@ -159,7 +159,7 @@ class CategorySelectionWidgets {
               color: isSelected
                   ? AppColors.neutralLight.withValues(alpha: 0.8)
                   : AppColors.primaryBlue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
             child: Text(
               '${category.friendCount}',
@@ -242,7 +242,7 @@ class CategorySelectionWidgets {
             padding: const EdgeInsets.all(AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
             ),
             child: const Icon(
               Icons.category,

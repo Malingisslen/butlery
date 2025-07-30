@@ -322,7 +322,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   flex: 3,
                   child: TextFormField(
@@ -460,7 +460,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   flex: 3,
                   child: TextFormField(

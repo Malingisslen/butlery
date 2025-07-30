@@ -169,7 +169,7 @@ class _EditIndicatorWidgetState extends State<_EditIndicatorWidget>
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(
                 color: color.withValues(alpha: 0.3),
                 width: 1,
@@ -188,13 +188,13 @@ class _EditIndicatorWidgetState extends State<_EditIndicatorWidget>
                         height: 8,
                         decoration: BoxDecoration(
                           color: color,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(AppDimensions.borderRadius4),
                         ),
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppDimensions.spacing6),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
                   style: TextStyle(
@@ -467,7 +467,7 @@ class _RealtimeStatusWidget extends StatelessWidget {
               ),
             ),
             if (showText) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: AppDimensions.spacingXs),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: Text(
@@ -510,12 +510,12 @@ class _RealtimeStatusBanner extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppDimensions.spacing12),
       color: AppColors.error.withValues(alpha: 0.1),
       child: Row(
         children: [
           Text(statusEmoji, style: TextStyle(fontSize: AppDimensions.iconSizeM.toDouble())),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.spacing12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

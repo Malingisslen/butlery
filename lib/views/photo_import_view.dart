@@ -5,9 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
+import 'package:butlery/widgets/common/content_cards/image_preview_card.dart';
+import 'package:butlery/widgets/common/buttons/overlay_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/injection.dart';
 
 /// ✨ MIGRERAD FOTO-OCR VY - Nu med UtilityComponents
@@ -109,6 +112,7 @@ class _PhotoImportViewContent extends StatelessWidget {
           children: [
             // Information om funktionen
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.backgroundTint,
@@ -165,19 +169,8 @@ class _PhotoImportViewContent extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingM),
               Expanded(
                 flex: 2,
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  decoration: BoxDecoration(
-                color: AppColors.backgroundTint,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(color: AppColors.divider),
-              ),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      viewModel.ocrText,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
+                child: TextDisplayCard(
+                  text: viewModel.ocrText,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingXl),
@@ -201,19 +194,7 @@ class _PhotoImportViewContent extends StatelessWidget {
     PhotoImportViewModel viewModel,
   ) {
     if (viewModel.isProcessing) {
-      return Container(
-        height: AppDimensions.imageHeightMedium,
-        decoration: BoxDecoration(
-          color: AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadowColor.withValues(alpha: 0.1),
-              blurRadius: AppDimensions.elevationLow,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+      return ImagePreviewCard.loading(
         child: StateWidget.loading(
           message: 'Bearbetar bild...',
         ),
@@ -221,18 +202,8 @@ class _PhotoImportViewContent extends StatelessWidget {
     }
 
     if (viewModel.hasImage) {
-      return Container(
+      return ImagePreviewCard.loading(
         height: 300,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadowColor.withValues(alpha: 0.1),
-              blurRadius: AppDimensions.elevationLow,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           child: Stack(
@@ -246,16 +217,9 @@ class _PhotoImportViewContent extends StatelessWidget {
               Positioned(
                 top: AppDimensions.spacingS,
                 right: AppDimensions.spacingS,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundBeige.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.clear, color: AppColors.neutralLight),
-                    onPressed: viewModel.clearAll,
-                    tooltip: 'Ta bort bild',
-                  ),
+                child: OverlayButton.remove(
+                  onPressed: viewModel.clearAll,
+                  tooltip: 'Ta bort bild',
                 ),
               ),
             ],
@@ -264,17 +228,8 @@ class _PhotoImportViewContent extends StatelessWidget {
       );
     }
 
-    return Container(
-      height: AppDimensions.imageHeightMedium,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-          width: 2,
-          style: BorderStyle.solid,
-        ),
-      ),
+    return ImagePreviewCard.empty(
+      context: context,
       child: StateWidget.empty(
         title: 'Ingen bild vald',
         subtitle: 'Tryck på knappen ovan för att välja',

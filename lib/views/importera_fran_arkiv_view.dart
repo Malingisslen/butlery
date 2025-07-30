@@ -84,8 +84,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   maxHeight: MediaQuery.of(context).size.height * 0.35,
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Column(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    child: Column(
                     children: [
                       SearchFilterWidget.searchOnly(
                         searchQuery: viewModel.searchQuery,
@@ -120,6 +121,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       // Tids-filter
                       _buildTimeFilters(context, viewModel),
                     ],
+                    ),
                   ),
                 ),
               ),

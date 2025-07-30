@@ -84,7 +84,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(errorIcon, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -129,7 +129,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.lock, size: 64, color: Colors.orange),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -162,7 +162,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -194,7 +194,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -224,7 +224,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -251,7 +251,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: successColor),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -286,7 +286,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 64, color: successColor),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (message != null)
@@ -327,7 +327,7 @@ class InvitationStates {
               strokeWidth: 8,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           if (showPercentage)
@@ -356,7 +356,7 @@ class InvitationStates {
             value: progress,
             minHeight: 8,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             '$operationName $completed av $total',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),

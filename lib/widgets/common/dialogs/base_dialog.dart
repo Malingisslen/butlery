@@ -204,7 +204,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: AppColors.error),
       ),
       child: Row(
@@ -511,7 +511,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: AppColors.error),
       ),
       child: Row(

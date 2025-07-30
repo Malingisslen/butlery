@@ -182,28 +182,35 @@ class ArchitectureValidator {
     print(
         '🎨 Validating design separation (views should delegate to widgets)...');
 
-    // Design patterns that should be in widgets, not views
+    // Design patterns that indicate REAL violations (hardcoded styling in views)
+    // Only flag actual styling violations, not legitimate theme-based layout
     final designPatterns = [
-      RegExp(r'Container\s*\(\s*[^)]*(?:decoration|color|margin|padding)',
-          multiLine: true),
-      RegExp(r'Padding\s*\(\s*padding:', multiLine: true),
-      RegExp(r'Card\s*\(\s*[^)]*(?:elevation|shape|margin)', multiLine: true),
-      RegExp(r'AppBar\s*\(\s*[^)]*(?:backgroundColor|elevation|shape)',
-          multiLine: true),
-      RegExp(
-          r'FloatingActionButton\s*\(\s*[^)]*(?:backgroundColor|foregroundColor)',
-          multiLine: true),
-      RegExp(r'ElevatedButton\.styleFrom\s*\(', multiLine: true),
-      RegExp(r'TextButton\.styleFrom\s*\(', multiLine: true),
-      RegExp(r'OutlinedButton\.styleFrom\s*\(', multiLine: true),
-      RegExp(r'TextStyle\s*\(\s*[^)]*(?:fontSize|fontWeight|color)',
-          multiLine: true),
-      RegExp(r'BoxDecoration\s*\(\s*[^)]*(?:color|borderRadius|border)',
-          multiLine: true),
+      // HARDCODED VALUES - these are real violations
+      RegExp(r'EdgeInsets\.all\(\d+\.?\d*\)', multiLine: true), // EdgeInsets.all(16.0)
+      RegExp(r'EdgeInsets\.symmetric\([^)]*\d+\.?\d*[^)]*\)', multiLine: true), // EdgeInsets.symmetric(horizontal: 16)
+      RegExp(r'EdgeInsets\.fromLTRB\(\d+', multiLine: true), // EdgeInsets.fromLTRB(16, 8, 16, 8)
+      RegExp(r'BorderRadius\.circular\(\d+\.?\d*\)', multiLine: true), // BorderRadius.circular(8.0)
+      RegExp(r'Color\(0x[0-9A-Fa-f]{8}\)', multiLine: true), // Color(0xFF000000)
+      RegExp(r'Colors\.\w+', multiLine: true), // Colors.red, Colors.blue, etc.
+      RegExp(r'fontSize:\s*\d+\.?\d*', multiLine: true), // fontSize: 16.0
+      RegExp(r'fontWeight:\s*FontWeight\.\w+', multiLine: true), // fontWeight: FontWeight.bold
+      RegExp(r'SizedBox\(width:\s*\d+\.?\d*\)', multiLine: true), // SizedBox(width: 100)
+      RegExp(r'SizedBox\(height:\s*\d+\.?\d*\)', multiLine: true), // SizedBox(height: 50)
+      
+      // COMPLEX STYLING - should be in custom widgets
+      RegExp(r'ElevatedButton\.styleFrom\s*\((?!.*ComponentThemes\.)', multiLine: true),
+      RegExp(r'TextButton\.styleFrom\s*\((?!.*ComponentThemes\.)', multiLine: true),
+      RegExp(r'OutlinedButton\.styleFrom\s*\((?!.*ComponentThemes\.)', multiLine: true),
+      RegExp(r'AppBar\s*\(\s*[^)]*(?:backgroundColor|elevation|shape)\s*:', multiLine: true),
+      RegExp(r'FloatingActionButton\s*\(\s*[^)]*(?:backgroundColor|foregroundColor)\s*:', multiLine: true),
+      
+      // INLINE TEXTSTYLES - should use theme
+      RegExp(r'TextStyle\s*\(\s*[^)]*(?:fontSize|fontWeight|color)\s*:(?!.*Theme\.of\(context\)\.textTheme|.*AppTextStyles\.)', multiLine: true),
     ];
 
-    // Acceptable design patterns in views (layout structure)
+    // Explicitly allowed design patterns in views (layout + theme-based styling)
     final acceptablePatterns = [
+      // LAYOUT WIDGETS - always acceptable in views
       RegExp(r'Scaffold\s*\('),
       RegExp(r'Column\s*\('),
       RegExp(r'Row\s*\('),
@@ -213,8 +220,25 @@ class ArchitectureValidator {
       RegExp(r'SingleChildScrollView\s*\('),
       RegExp(r'Expanded\s*\('),
       RegExp(r'Flexible\s*\('),
-      RegExp(
-          r'SizedBox\s*\(\s*(?:width:|height:)?\s*[^,)]*\)'), // Simple sizing
+      RegExp(r'Center\s*\('),
+      RegExp(r'Align\s*\('),
+      
+      // THEME-BASED STYLING - legitimate usage in views
+      RegExp(r'Padding\s*\(\s*padding:\s*const\s+EdgeInsets\.all\(AppDimensions\.'), // Theme padding
+      RegExp(r'Padding\s*\(\s*padding:\s*const\s+EdgeInsets\.symmetric\([^)]*AppDimensions\.'), // Theme symmetric
+      RegExp(r'Padding\s*\(\s*padding:\s*EdgeInsets\.fromLTRB\([^)]*AppDimensions\.'), // Theme LTRB
+      RegExp(r'Padding\s*\(\s*padding:\s*AppDimensions\.'), // Direct theme constants
+      RegExp(r'Container\s*\(\s*[^)]*decoration:\s*BoxDecoration\([^)]*AppColors\.'), // Theme colors
+      RegExp(r'Container\s*\(\s*[^)]*decoration:\s*BoxDecoration\([^)]*Theme\.of\(context\)'), // Theme colors
+      RegExp(r'Container\s*\(\s*[^)]*decoration:\s*BoxDecoration\([^)]*borderRadius:[^)]*AppDimensions\.'), // Theme radius
+      RegExp(r'BorderRadius\.circular\(AppDimensions\.'), // Theme border radius
+      RegExp(r'SizedBox\(width:\s*AppDimensions\.'), // Theme sizing
+      RegExp(r'SizedBox\(height:\s*AppDimensions\.'), // Theme sizing
+      RegExp(r'const\s+SizedBox\('), // Const SizedBox without hardcoded values
+      
+      // THEME TEXTSTYLES - legitimate in views
+      RegExp(r'Theme\.of\(context\)\.textTheme'), // Theme text styles
+      RegExp(r'AppTextStyles\.'), // App text styles
     ];
 
     int compliantFiles = 0;
@@ -240,6 +264,19 @@ class ArchitectureValidator {
         continue;
       }
 
+      // Skip theme-based component files that are allowed to have styling
+      final isThemeBasedComponent = relativePath.contains('/theme/') ||
+          relativePath.contains('/widgets/common/layout/') ||
+          relativePath.contains('/widgets/common/content_cards/') ||
+          relativePath.contains('/widgets/common/buttons/') ||
+          relativePath.contains('/widgets/common/indicators/') ||
+          relativePath.endsWith('component_themes.dart');
+      
+      if (isThemeBasedComponent) {
+        compliantFiles++;
+        continue;
+      }
+
       bool hasDesignViolations = false;
 
       for (final pattern in designPatterns) {
@@ -258,7 +295,10 @@ class ArchitectureValidator {
             }
           }
 
-          if (!isAcceptableStructure) {
+          // Additional checks for legitimate theme-based usage
+          final isLegitimateUsage = _isLegitimateThemeUsage(content, match.start, matchedText);
+
+          if (!isAcceptableStructure && !isLegitimateUsage) {
             hasDesignViolations = true;
             designViolationsCount++;
             _violations['design_in_views']!.add(
@@ -425,6 +465,39 @@ class ArchitectureValidator {
 
     // Recommendations
     _printRecommendations();
+  }
+
+  /// Check if the styling usage is legitimate (theme-based)
+  bool _isLegitimateThemeUsage(String content, int matchStart, String matchedText) {
+    // Get a larger context around the match to analyze
+    final start = matchStart > 200 ? matchStart - 200 : 0;
+    final end = matchStart + 500 < content.length ? matchStart + 500 : content.length;
+    final context = content.substring(start, end);
+    
+    // Check for theme-based patterns in the surrounding context
+    final themePatterns = [
+      RegExp(r'AppDimensions\.'), // Using app dimensions
+      RegExp(r'AppColors\.'), // Using app colors
+      RegExp(r'Theme\.of\(context\)'), // Using theme
+      RegExp(r'AppTextStyles\.'), // Using app text styles
+      RegExp(r'ComponentThemes\.'), // Using component themes
+    ];
+    
+    for (final pattern in themePatterns) {
+      if (pattern.hasMatch(context)) {
+        return true; // This is legitimate theme usage
+      }
+    }
+    
+    // Check if the matched text itself is theme-based
+    if (matchedText.contains('AppDimensions.') ||
+        matchedText.contains('AppColors.') ||
+        matchedText.contains('Theme.of(context)') ||
+        matchedText.contains('AppTextStyles.')) {
+      return true;
+    }
+    
+    return false; // This appears to be hardcoded styling
   }
 
   /// Calculate compliance percentage

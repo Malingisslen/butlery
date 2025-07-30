@@ -90,7 +90,7 @@ class ShoppingListCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               if (list.description?.isNotEmpty == true) ...[
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.spacing2),
                 Text(
                   list.description!,
                   style: AppTextStyles.bodySmall,

@@ -162,7 +162,7 @@ class InvitationTargetStates {
               height: 40,
               decoration: BoxDecoration(
                 color: AppColors.neutralLight,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
               ),
             ),
             title: Container(
@@ -170,7 +170,7 @@ class InvitationTargetStates {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: AppColors.neutralLight,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
               ),
             ),
             subtitle: Container(
@@ -178,7 +178,7 @@ class InvitationTargetStates {
               width: 100,
               decoration: BoxDecoration(
                 color: AppColors.neutralLight,
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadius7),
               ),
             ),
           ),

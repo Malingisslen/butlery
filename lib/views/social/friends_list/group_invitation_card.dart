@@ -45,7 +45,7 @@ class GroupInvitationCard {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.spacing12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +74,7 @@ class GroupInvitationCard {
               ],
             ),
             if (invitation.personalMessage?.isNotEmpty == true) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.spacing12),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
@@ -89,7 +89,7 @@ class GroupInvitationCard {
                 ),
               ),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
             Row(
               children: [
                 Expanded(
@@ -106,7 +106,7 @@ class GroupInvitationCard {
                     child: const Text('Avvisa'),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: FilledButton(
                     onPressed: service.invitations.isLoading

@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -136,7 +137,7 @@ class AvatarImageWidget extends StatelessWidget {
             bottom: -4,
             right: -4,
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryBlue,
@@ -337,7 +338,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
             child: GestureDetector(
               onTap: widget.onImageRemoved,
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(AppDimensions.spacingXs),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.error,

@@ -7,7 +7,10 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
+import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -179,7 +182,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   Widget _buildSearchBar(AddMembersToGroupViewModel viewModel) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: TextField(
         onChanged: (value) {
@@ -207,7 +210,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   Widget _buildSelectionControls(AddMembersToGroupViewModel viewModel) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
       child: Row(
         children: [
@@ -248,9 +251,12 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     final hasInvitation = viewModel.hasInvitationStatus(friend.uid);
     final invitationStatus = viewModel.getInvitationStatusForUser(friend.uid);
 
-    return Card(
-      elevation: AppDimensions.elevationLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+    return SelectionCard(
+      onTap: () {
+        debugPrint(
+            '🔍 DEBUG: Friend tile tapped - ${friend.displayName} (${friend.uid})');
+        viewModel.toggleFriendSelection(friend.uid);
+      },
       child: ListTile(
         leading: SocialComponents.avatar(
           user: friend,
@@ -270,11 +276,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             : null,
         trailing: _buildFriendTileTrailing(
             friend, viewModel, isSelected, hasInvitation, invitationStatus),
-        onTap: () {
-          debugPrint(
-              '🔍 DEBUG: Friend tile tapped - ${friend.displayName} (${friend.uid})');
-          viewModel.toggleFriendSelection(friend.uid);
-        },
       ),
     );
   }
@@ -338,27 +339,18 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundBeige,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.divider,
-            width: 1,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        child: Column(
+    return BottomActionContainer(
+      child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (viewModel.invitationError != null) ...[
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: AppColors.error),
                 ),
                 child: Row(
                   children: [
@@ -414,17 +406,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                         );
                       }
                     },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.cardWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-              ),
+              style: ComponentThemes.primaryButtonStyle,
               child: viewModel.isSendingInvitations
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
@@ -457,7 +439,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             ),
           ],
         ),
-      ),
     );
   }
 

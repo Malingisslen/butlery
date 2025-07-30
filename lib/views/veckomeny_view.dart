@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
 
 // Utils
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -278,7 +279,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingS),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingL,
+                    vertical: AppDimensions.spacingS,
+                  ),
                   child: Column(
                     children: [
                       // Prompt-input
@@ -294,9 +298,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 // Meny-innehåll
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingS,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
                     child: _buildMenuContent(viewModel),
                   ),
                 ),
@@ -309,10 +311,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 color: AppColors.neutralDark.withValues(alpha: 0.4),
                 child: Center(
                   child: Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
                     decoration: BoxDecoration(
                       color: AppColors.cardWhite,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                      border: Border.all(color: AppColors.divider),
                     ),
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
@@ -347,10 +351,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   Widget _buildPromptInput(MenuViewModel viewModel) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,17 +424,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 ? 'Genererar...'
                 : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
           ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-            foregroundColor: AppColors.neutralLight,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
-          ),
+          style: ComponentThemes.primaryButtonStyle,
       ),
     );
   }
@@ -460,42 +456,48 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Widget _buildMenuSummary(MenuViewModel viewModel) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.restaurant,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-            size: AppDimensions.iconSizeAction,
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            border: Border.all(color: AppColors.divider),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Din veckomeny',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-                Text(
-                  '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-              ],
+          child: Row(
+            children: [
+            Icon(
+              Icons.restaurant,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+              size: AppDimensions.iconSizeAction,
             ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Din veckomeny',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                  ),
+                  Text(
+                    '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: AppDimensions.spacingL),
+      ],
     );
   }
 
@@ -507,23 +509,22 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(category, style: AppTextStyles.titleLarge),
-              ),
-              IconButton(
-                icon: Icon(Icons.refresh, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-                onPressed: viewModel.isGenerating
-                    ? null
-                    : () => viewModel.regenerateSection(category),
-                tooltip: 'Uppdatera $category',
-              ),
-            ],
-          ),
+        const SizedBox(height: AppDimensions.spacingS),
+        Row(
+          children: [
+            Expanded(
+              child: Text(category, style: AppTextStyles.titleLarge),
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              onPressed: viewModel.isGenerating
+                  ? null
+                  : () => viewModel.regenerateSection(category),
+              tooltip: 'Uppdatera $category',
+            ),
+          ],
         ),
+        const SizedBox(height: AppDimensions.spacingS),
         for (final recipe in recipes)
           ContentCard.compactRecipe(
             recipe: recipe,

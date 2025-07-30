@@ -88,10 +88,10 @@ class RecipeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildTitleWithCategory(context),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppDimensions.spacing6),
                 _buildMetadataRow(context),
                 if (recipe.rating != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppDimensions.spacing6),
                   _buildRatingStars(context),
                 ],
                 if (recipe.description.isNotEmpty) ...[

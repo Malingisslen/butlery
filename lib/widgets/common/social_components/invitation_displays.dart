@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target display widgets
 /// 
@@ -182,7 +183,7 @@ class InvitationDisplays {
     // Simple implementation since SocialFacade doesn't have this method
     return Card(
       child: Container(
-        padding: padding ?? const EdgeInsets.all(16),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           children: [
             targetCard(target: target, onTap: onTap, selected: selected),

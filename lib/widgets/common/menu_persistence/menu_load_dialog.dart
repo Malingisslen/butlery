@@ -184,7 +184,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               child: Row(
                 children: [
                   Icon(Icons.download),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppDimensions.spacingSm),
                   Text('Ladda'),
                 ],
               ),
@@ -194,7 +194,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               child: Row(
                 children: [
                   Icon(Icons.delete, color: AppColors.error),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppDimensions.spacingSm),
                   Text('Ta bort', style: TextStyle(color: AppColors.error)),
                 ],
               ),
