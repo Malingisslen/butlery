@@ -75,23 +75,13 @@
       "Bash(dart:*)",
       "Bash(echo)",
       "Bash(do echo \"$file:\")",
-      "Bash(node run-validation.js)"
+      "Bash(node run-validation.js)",
+      "Bash(python3:*)",
+      "Bash(true)"
     ],
     "deny": []
   },
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo '🔍 Running Flutter analysis...' && if ! flutter analyze > /dev/null 2>&1; then echo '❌ Analysis failed - running auto-fix...' && dart fix --apply && echo '🔧 Auto-fix completed - re-running analysis...' && flutter analyze; fi && echo '🏗️ Running architecture validation...' && dart run tools/validate_architecture.dart && echo '✅ All validations passed - committing changes' && git add . && git commit -m \"feat: auto-commit with validation and fixes\n\n🤖 Generated with Claude Code (https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\" && echo '✅ Changes committed successfully'",
-            "timeout": 90
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "matcher": "",
