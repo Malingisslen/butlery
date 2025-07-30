@@ -222,8 +222,8 @@ class TestIntelligenceAnalyzer {
 
 class TestIntelligenceResult extends AnalysisResult {
   TestIntelligenceResult({
-    required String filePath,
-    required List<Violation> violations,
-    required Map<String, dynamic> metrics,
-  }) : super(filePath: filePath, violations: violations, metrics: metrics);
+    required super.filePath,
+    required super.violations,
+    required super.metrics,
+  });
 }
