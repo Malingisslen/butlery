@@ -46,9 +46,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 // Deep link handling
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 
-// Legacy fallback
-import 'package:butlery/core/startup/app_initializer.dart';
-import 'package:butlery/core/injection.dart' as legacy_injection;
+// Legacy imports removed - using modular system only
 
 // Services
 import 'package:butlery/services/offline_service.dart';
@@ -69,56 +67,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 
-/// Application entry point with modular architecture.
+/// Application entry point with clean modular architecture.
 ///
-/// Determines whether to use the new modular system or fall back to
-/// the legacy system based on feature flags. Provides a safe migration
-/// path with comprehensive error handling.
+/// Uses the new modular dependency injection system exclusively.
+/// Provides comprehensive error handling and graceful failure modes.
 Future<void> main() async {
   try {
-    // Check feature flags to determine initialization approach
-    final useModularDI = FeatureFlags.useModularDI;
-
     if (kDebugMode) {
-      debugPrint('🚀 Starting Butlery with ${useModularDI ? 'modular' : 'legacy'} system');
+      debugPrint('🚀 Starting Butlery with modular system');
     }
 
-    if (useModularDI) {
-      // Use new modular system
-      await _initializeModularSystem();
-    } else {
-      // Use legacy system
-      await _initializeLegacySystem();
-    }
+    // Initialize modular system
+    await _initializeModularSystem();
 
     // Start the application
-    runApp(ButleryApp(useModularSystem: useModularDI));
+    runApp(const ButleryApp());
   } catch (e) {
     if (kDebugMode) {
       debugPrint('❌ Application startup failed: $e');
     }
 
-    // Try fallback to legacy system if enabled
-    if (FeatureFlags.enableLegacyFallback && FeatureFlags.useModularDI) {
-      if (kDebugMode) {
-        debugPrint('🔄 Falling back to legacy system...');
-      }
-      
-      try {
-        await _initializeLegacySystem();
-        runApp(const ButleryApp(useModularSystem: false));
-      } catch (fallbackError) {
-        if (kDebugMode) {
-          debugPrint('❌ Legacy fallback also failed: $fallbackError');
-        }
-        
-        // Last resort - run minimal app
-        runApp(const _ErrorApp('Application failed to initialize'));
-      }
-    } else {
-      // No fallback - show error
-      runApp(const _ErrorApp('Application failed to initialize'));
-    }
+    // Show error app
+    runApp(_ErrorApp('Application failed to initialize: $e'));
   }
 }
 
@@ -160,20 +130,7 @@ Future<void> _initializeModularSystem() async {
   }
 }
 
-/// Initialize the legacy dependency injection system.
-Future<void> _initializeLegacySystem() async {
-  if (kDebugMode) {
-    debugPrint('🔧 Initializing legacy system...');
-  }
-
-  // Use existing initialization
-  await AppInitializer.initializeCritical();
-  AppInitializer.initializeBackground();
-
-  if (kDebugMode) {
-    debugPrint('✅ Legacy system initialized');
-  }
-}
+// Legacy initialization removed - modular system only
 
 /// Error app widget for when initialization fails completely.
 class _ErrorApp extends StatelessWidget {
@@ -227,17 +184,12 @@ class _ErrorApp extends StatelessWidget {
   }
 }
 
-/// Root application widget with modular architecture support.
+/// Root application widget with clean modular architecture.
 ///
-/// Handles both modular and legacy systems gracefully, providing
-/// appropriate providers and initialization logic for each approach.
+/// Uses the modular dependency injection system exclusively,
+/// providing clean separation of concerns and excellent testability.
 class ButleryApp extends StatefulWidget {
-  final bool useModularSystem;
-
-  const ButleryApp({
-    super.key,
-    required this.useModularSystem,
-  });
+  const ButleryApp({super.key});
 
   @override
   State<ButleryApp> createState() => _ButleryAppState();
@@ -260,11 +212,7 @@ class _ButleryAppState extends State<ButleryApp> {
       await DeepLinkHandler().initialize();
 
       // Setup analytics observer
-      if (widget.useModularSystem) {
-        await _setupModularAnalytics();
-      } else {
-        await _setupLegacyAnalytics();
-      }
+      await _setupModularAnalytics();
 
       if (mounted) {
         setState(() {}); // Trigger rebuild with analytics
@@ -311,36 +259,11 @@ class _ButleryAppState extends State<ButleryApp> {
     }
   }
 
-  /// Setup analytics for legacy system.  
-  Future<void> _setupLegacyAnalytics() async {
-    try {
-      // Wait for legacy background initialization
-      while (!AppInitializer.isBackgroundInitialized) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-
-      final analyticsService = legacy_injection.sl<AnalyticsService>();
-      _analyticsObserver = FirebaseAnalyticsObserver(
-        analytics: analyticsService.analytics,
-      );
-      
-      if (kDebugMode) {
-        debugPrint('✅ Legacy analytics observer setup');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Legacy analytics setup failed: $e');
-      }
-    }
-  }
+  // Legacy analytics removed - modular system only
 
   @override
   Widget build(BuildContext context) {
-    if (widget.useModularSystem) {
-      return _buildModularApp();
-    } else {
-      return _buildLegacyApp();
-    }
+    return _buildModularApp();
   }
 
   /// Build app with modular system.
@@ -361,17 +284,7 @@ class _ButleryAppState extends State<ButleryApp> {
     );
   }
 
-  /// Build app with legacy system.
-  Widget _buildLegacyApp() {
-    if (!AppInitializer.isBackgroundInitialized) {
-      return _buildLoadingApp('Initializing services...');
-    }
-
-    return ChangeNotifierProvider<OfflineService>.value(
-      value: legacy_injection.sl<OfflineService>(),
-      child: _buildMainApp(),
-    );
-  }
+  // Legacy app builder removed - modular system only
 
   /// Build the main application UI.
   Widget _buildMainApp() {

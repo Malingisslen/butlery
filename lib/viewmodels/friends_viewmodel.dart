@@ -7,7 +7,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/permissions/permission_mixins.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 

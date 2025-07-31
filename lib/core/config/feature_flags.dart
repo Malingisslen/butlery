@@ -21,9 +21,9 @@ class FeatureFlags {
   /// When `false`, uses the legacy injection.dart and main.dart initialization.
   ///
   /// Environment variable: USE_MODULAR_DI
-  /// Default: false (use legacy system)
+  /// Default: true (use modular system)
   static bool get useModularDI {
-    const value = String.fromEnvironment('USE_MODULAR_DI', defaultValue: 'false');
+    const value = String.fromEnvironment('USE_MODULAR_DI', defaultValue: 'true');
     final result = value.toLowerCase() == 'true';
     
     if (kDebugMode && result) {
