@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart' as perm;
 import 'package:butlery/core/injection.dart';
-import 'package:butlery/core/permissions/permission_mixins.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';

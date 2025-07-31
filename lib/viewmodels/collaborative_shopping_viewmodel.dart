@@ -7,7 +7,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/permissions/permission_mixins.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
