@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/widgets/social/invitations/invitation_target_inputs.dart';
+import 'package:butlery/widgets/common/social_components/invitation_selectors.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
