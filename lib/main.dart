@@ -1,29 +1,23 @@
-/// New modular main entry point for the Butlery application.
+/// Butlery application with clean modular architecture.
 ///
-/// This file demonstrates the new modular dependency injection and bootstrap
-/// system. It replaces the monolithic main.dart with a clean, maintainable
-/// architecture that separates concerns and improves testability.
-///
-/// Key improvements:
-/// - Modular dependency injection with domain-specific modules
-/// - Staged bootstrap process with proper error handling
-/// - Clean separation between initialization and UI concerns
-/// - Feature flag support for gradual rollout
-/// - Comprehensive health monitoring and validation
+/// This main entry point uses a modular dependency injection system that
+/// provides excellent separation of concerns, testability, and maintainability.
 ///
 /// Architecture:
+/// - 5 domain modules: Core, Content, Social, Messaging, Collaboration
+/// - Bootstrap stages for organized initialization
+/// - Health monitoring and comprehensive error handling
+/// - Clean provider-based service access
+///
+/// Bootstrap flow:
 /// ```
 /// main() -> ApplicationBootstrap.initialize() -> runApp()
-///   └─> DIContainer + Modules -> Bootstrap Stages -> ButleryApp
+///   └─> DIContainer + 5 Modules -> 5 Bootstrap Stages -> ButleryApp
 /// ```
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
-
-// Core configuration
-import 'package:butlery/core/config/feature_flags.dart';
 
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
@@ -46,10 +40,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 // Deep link handling
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 
-// Legacy imports removed - using modular system only
-
-// Services
-import 'package:butlery/services/offline_service.dart';
+// All services accessed through DI system - no direct imports needed
 
 // Theme and routing
 import 'package:butlery/theme/app_theme.dart';

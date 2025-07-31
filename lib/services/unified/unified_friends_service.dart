@@ -34,11 +34,8 @@ import 'package:butlery/services/unified/operations/friends_invitations_operatio
 import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
 
 // Focused modules (Phase 9 refactoring)
-import 'package:butlery/services/unified/friends/friends_state_manager.dart';
-import 'package:butlery/services/unified/friends/friends_service_coordinator.dart';
-import 'package:butlery/services/unified/friends/friends_internal_operations.dart';
-import 'package:butlery/services/unified/friends/friends_sync_service.dart';
-import 'package:butlery/services/unified/friends/friends_presence_service.dart';
+import 'package:butlery/services/unified/friends_service.dart';
+import 'package:butlery/services/unified/friends_cache.dart';
 import 'package:butlery/services/unified/friends/friends_cache_service.dart';
 
 /// Unified Friends Service - Main facade for friend management (Phase 9 Refactored)
