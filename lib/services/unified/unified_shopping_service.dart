@@ -14,12 +14,10 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
-import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
-import 'package:butlery/services/unified/modules/shopping_service_initialization.dart';
-import 'package:butlery/services/unified/modules/shopping_list_management.dart';
-import 'package:butlery/services/unified/modules/shopping_item_management.dart';
+import 'package:butlery/services/unified/operations/shopping_sharing_operations.dart';
+import 'package:butlery/services/unified/modules/shopping_operations.dart';
 import 'package:butlery/services/unified/modules/shopping_firebase_sync.dart';
-import 'package:butlery/services/unified/modules/shopping_cache_management.dart';
+import 'package:butlery/services/unified/modules/shopping_state_manager.dart';
 
 class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<UnifiedShoppingList> {
   // Dependencies
