@@ -34,7 +34,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_handler.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -109,7 +109,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => sl<PermissionService>().currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
 
 
   /// Initialize service och ladda current user profile

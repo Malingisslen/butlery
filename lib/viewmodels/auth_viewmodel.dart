@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Manages authentication state and business logic for login/register UI components.
 ///
@@ -30,7 +30,7 @@ import 'package:butlery/core/injection.dart';
 /// );
 /// ```
 class AuthViewModel extends ChangeNotifier {
-  final AuthService _authService = sl<AuthService>();
+  final AuthService _authService = ServiceLocator.get<AuthService>();
 
   // Form state
   bool _isLoginMode = true; // true = login mode, false = register mode

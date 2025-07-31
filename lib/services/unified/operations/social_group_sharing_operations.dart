@@ -21,7 +21,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Manages social group sharing operations with comprehensive content management.
 ///
@@ -80,7 +80,7 @@ class SocialGroupSharingOperations {
       }
 
       // Use the social sharing repository to share to group
-      final sharingRepository = sl<SocialSharingRepository>();
+      final sharingRepository = ServiceLocator.get<SocialSharingRepository>();
       await sharingRepository.shareToGroup(groupId, content);
 
       AppLogger.success('Content shared to group: ${group.name}');

@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart' as perm;
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';
@@ -29,7 +29,7 @@ import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 /// - RealtimeRecipeViewModel: Real-time collaborative editing
 /// - RecipeQueryViewModel: Querying, filtering, and analytics
 class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, RecipePermissionMixin, ErrorHandlingMixin {
-  final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();
+  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   // Focused ViewModels
   late final PersonalRecipeViewModel _personalViewModel;
@@ -477,7 +477,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with BasePermissionMixin, Re
   // ===== COLLABORATIVE FEATURES =====
 
   bool canManageRecipeMembers(String recipeId) {
-    return sl<perm.PermissionService>().canInviteToRecipe(recipeId);
+    return ServiceLocator.get<perm.PermissionService>().canInviteToRecipe(recipeId);
   }
 
   List<String> getActiveEditors(String recipeId) {

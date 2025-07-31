@@ -28,7 +28,7 @@ import 'package:butlery/models/user_profile.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final userRepo = sl<UserRepository>();
+/// final userRepo = ServiceLocator.get<UserRepository>();
 /// 
 /// // Create or update user profile
 /// final profile = UserProfile(

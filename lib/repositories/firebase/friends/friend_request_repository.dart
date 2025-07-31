@@ -52,7 +52,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final requestRepo = FriendRequestRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Send friend request

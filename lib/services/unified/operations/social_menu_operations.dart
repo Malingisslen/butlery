@@ -19,7 +19,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Social menu operations feature interface
@@ -60,12 +60,12 @@ class SocialMenuOperations {
         return false;
       }
 
-      if (!sl<PermissionService>().isAuthenticated) {
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
         AppLogger.error('User must be authenticated to share menu');
         return false;
       }
 
-      final currentUser = sl<PermissionService>().currentUser;
+      final currentUser = ServiceLocator.get<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
       // Validate that all friend IDs are actual friends
@@ -171,9 +171,9 @@ class SocialMenuOperations {
   /// Get menus shared by current user
   Future<List<Map<String, dynamic>>> getMenusSharedByMe() async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return [];
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
@@ -203,9 +203,9 @@ class SocialMenuOperations {
   /// Get menus shared with current user
   Future<List<Map<String, dynamic>>> getMenusSharedWithMe() async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return [];
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
@@ -253,9 +253,9 @@ class SocialMenuOperations {
   /// Import shared menu to local saved menus
   Future<bool> importSharedMenu(String sharedMenuId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
       // Get shared menu data
@@ -300,9 +300,9 @@ class SocialMenuOperations {
   /// Mark shared menu as viewed
   Future<void> markMenuAsViewed(String sharedMenuId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return;
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return;
 
       await _firestore
@@ -324,9 +324,9 @@ class SocialMenuOperations {
   /// Get shared menu data for display/import
   Future<Map<String, dynamic>?> getSharedMenuData(String sharedMenuId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return null;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return null;
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return null;
 
       // Get shared menu data
@@ -382,9 +382,9 @@ class SocialMenuOperations {
   /// Delete shared menu (only by owner)
   Future<bool> deleteSharedMenu(String sharedMenuId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
       // Get shared menu to verify ownership
@@ -424,9 +424,9 @@ class SocialMenuOperations {
   /// Get sharing statistics for analytics
   Future<Map<String, dynamic>> getSharingStats() async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return {};
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return {};
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return {};
 
       // Get menus shared by user

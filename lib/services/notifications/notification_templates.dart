@@ -1,9 +1,45 @@
-// lib/services/notifications/notification_templates.dart
-
-/// Localized notification message templates for Butlery
+/// Comprehensive localized notification template system providing Swedish and English messaging for all notification types.
+///
+/// This service implements sophisticated notification templating with comprehensive Swedish and English language support,
+/// dynamic variable substitution, and context-aware messaging for all notification scenarios in the Butlery cooking
+/// application. It provides culturally appropriate messaging that enhances user engagement through personalized,
+/// localized content that respects Swedish cooking culture and terminology.
+///
+/// **Template System Features:**
+/// - **Bilingual Support**: Complete Swedish (primary) and English (secondary) language templates for all notifications
+/// - **Variable Substitution**: Dynamic content insertion using templated variables for personalized messaging
+/// - **Context-Aware Messaging**: Contextually appropriate templates based on notification type and user relationships
+/// - **Cultural Localization**: Swedish cooking terminology and cultural references for authentic user experience
+/// - **Consistent Formatting**: Standardized template structure ensuring uniform notification appearance
+///
+/// **Notification Categories:**
+/// - **Friend System**: Friend requests, acceptances, and social relationship notifications
+/// - **Recipe Sharing**: Recipe sharing alerts with preview content and social context
+/// - **Cooking Reminders**: Timer notifications, meal planning alerts, and cooking schedule management
+/// - **Social Engagement**: Community interactions, cooking collaborations, and group activities
+/// - **System Messages**: App updates, feature announcements, and important system communications
+///
+/// **Template Variable Support:**
+/// Templates support dynamic variable substitution using {variableName} syntax:
+/// - User names and display names for personalization
+/// - Recipe titles and cooking content for context
+/// - Timestamps and timing information for relevance
+/// - Action-specific content for targeted messaging
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Get localized template
+/// final template = NotificationTemplates.getTemplate('recipe_shared', 'sv');
 /// 
-/// Provides Swedish and English templates for all notification types
-/// with variable substitution and context-aware messaging
+/// // Apply variables for personalized content
+/// final message = NotificationTemplates.formatTemplate(
+///   template['body_sv']!,
+///   {
+///     'senderName': 'Anna',
+///     'recipeTitle': 'Köttbullar med gräddsås',
+///   },
+/// );
+/// ```
 
 class NotificationTemplates {
   static const Map<String, Map<String, String>> _templates = {

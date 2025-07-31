@@ -6,7 +6,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
@@ -38,8 +38,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   MenuViewModel({
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
-  })  : _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
-        _menuService = menuService ?? sl<MenuService>() {
+  })  : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+        _menuService = menuService ?? ServiceLocator.get<MenuService>() {
     
     // Initialize focused modules
     _stateManager = MenuStateManager();
@@ -49,7 +49,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
     _storage = MenuStorage();
     _socialManager = MenuSocialManager(
-      socialMenuOps: sl<SocialMenuOperations>(),
+      socialMenuOps: ServiceLocator.get<SocialMenuOperations>(),
     );
 
     // Forward state manager notifications

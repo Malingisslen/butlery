@@ -1,4 +1,57 @@
-// lib/services/notifications/fcm_service.dart
+/// Advanced Firebase Cloud Messaging service providing comprehensive push notification functionality with deep linking.
+///
+/// This service implements sophisticated FCM integration for reliable push notification delivery across iOS and Android
+/// platforms. It provides comprehensive token management, message handling, permission management, and deep linking
+/// capabilities with intelligent background processing and seamless integration with the broader notification system
+/// for enhanced user engagement and cooking-focused notifications.
+///
+/// **Architecture Integration:**
+/// - Integrates with [FirebaseMessaging] for cloud push notification delivery and cross-platform compatibility
+/// - Uses [AppLogger] for comprehensive logging and debugging capabilities during development and production
+/// - Coordinates with [UserService] for user-specific token management and notification personalization
+/// - Implements static service pattern for app-wide FCM functionality and lifecycle management
+///
+/// **Core FCM Responsibilities:**
+/// - **Token Management**: Device token registration, renewal, and cross-device synchronization
+/// - **Message Handling**: Foreground and background message processing with intelligent routing
+/// - **Permission Management**: iOS and Android permission requests with graceful handling of user choices
+/// - **Deep Link Navigation**: Notification-triggered navigation with context preservation and state management
+/// - **Background Processing**: Reliable message handling when app is backgrounded or terminated
+///
+/// **Push Notification Features:**
+/// - **Recipe Sharing Notifications**: Rich recipe sharing alerts with preview content and social context
+/// - **Cooking Reminders**: Timer-based notifications and meal planning alerts with actionable content
+/// - **Social Engagement**: Friend interactions, cooking collaborations, and community notifications
+/// - **System Messages**: App updates, feature announcements, and important system communications
+/// - **Swedish Localized Content**: Complete Swedish language support for culturally appropriate messaging
+///
+/// **Platform Optimization:**
+/// - **iOS Integration**: APNs integration with proper badge management and notification categories
+/// - **Android Integration**: FCM optimization with notification channels and adaptive delivery
+/// - **Cross-Platform Consistency**: Unified notification experience across different device types
+/// - **Background Reliability**: Robust background message handling ensuring delivery in all app states
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Initialize FCM service during app startup
+/// await FCMService.initialize(
+///   onMessageReceived: (message) {
+///     showInAppNotification(message);
+///   },
+///   onMessageOpenedApp: (message) {
+///     navigateToNotificationContent(message);
+///   },
+/// );
+/// 
+/// // Get current FCM token for user registration
+/// final token = await FCMService.getToken();
+/// await registerTokenWithBackend(token);
+/// 
+/// // Handle token refresh for reliable delivery
+/// FCMService.onTokenRefresh.listen((newToken) {
+///   updateTokenOnBackend(newToken);
+/// });
+/// ```
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -7,14 +60,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/services/user_service.dart';
 
-/// Firebase Cloud Messaging service for handling push notifications in Butlery
-/// 
-/// Responsibilities:
-/// - FCM token management and registration
-/// - Foreground and background message handling
-/// - Permission requests and status management
-/// - Deep link navigation from notifications
-/// - Integration with NotificationService for unified delivery
+/// Advanced Firebase Cloud Messaging service providing comprehensive push notification functionality with deep linking.
+///
+/// This service implements sophisticated FCM integration for reliable push notification delivery with comprehensive
+/// token management, message handling, permission management, and deep linking capabilities. It provides seamless
+/// integration with the notification system for enhanced user engagement through cooking-focused notifications.
 class FCMService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static String? _currentToken;

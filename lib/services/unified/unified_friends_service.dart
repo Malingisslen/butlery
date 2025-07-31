@@ -25,7 +25,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 // Feature interfaces
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
@@ -94,7 +94,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   String? get error => _stateManager.error;
   bool get hasError => _stateManager.hasError;
   
-  String? get currentUserId => sl<PermissionService>().currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
 
   // ===== FEATURE INTERFACE GETTERS =====

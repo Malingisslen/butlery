@@ -7,7 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -61,7 +61,7 @@ class SocialRecipeOperations {
     _memberManager = RecipeMemberManager(_parent, _notificationService);
     _commentsManager = RecipeCommentsManager(_parent, _notificationService);
     _discoveryService = RecipeDiscoveryService(_parent);
-    _socialStats = RecipeSocialStats(_parent, sl<RatingsRepository>(), sl<FirestoreRepository>(), _notificationService);
+    _socialStats = RecipeSocialStats(_parent, ServiceLocator.get<RatingsRepository>(), ServiceLocator.get<FirestoreRepository>(), _notificationService);
     _permissionHelper = RecipePermissionHelper(_parent);
     
     AppLogger.info('✅ SocialRecipeOperations initialized with focused modules');

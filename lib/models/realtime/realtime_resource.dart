@@ -138,7 +138,10 @@ abstract class RealtimeResource {
         return true; // Alla deltagare kan se
       case ResourcePermission.editor:
       case ResourcePermission.write:
-        return ResourcePermissionHelper.canEditContent(userPermission);
+        return userPermission == ResourcePermission.editor || 
+               userPermission == ResourcePermission.write || 
+               userPermission == ResourcePermission.admin ||
+               userPermission == ResourcePermission.owner;
       case ResourcePermission.admin:
         return userPermission == ResourcePermission.owner || userPermission == ResourcePermission.admin;
       case ResourcePermission.owner:
@@ -165,14 +168,13 @@ abstract class RealtimeResource {
   bool canUserInvite(String userId) {
     final permission = participants[userId];
     return permission != null &&
-        ResourcePermissionHelper.canInviteParticipants(permission);
+        (permission == ResourcePermission.admin || permission == ResourcePermission.owner);
   }
 
   /// Kontrollera om användare kan lämna resursen
   bool canUserLeave(String userId) {
     final permission = participants[userId];
-    return permission != null &&
-        ResourcePermissionHelper.canLeaveResource(permission);
+    return permission != null && permission != ResourcePermission.owner; // Owner cannot leave their own resource
   }
 
   /// Kontrollera om användare är ägare

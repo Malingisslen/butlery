@@ -42,7 +42,7 @@
 /// }
 /// 
 /// // Usage in services or ViewModels
-/// final userRepo = sl<Repository<UserProfile>>();
+/// final userRepo = ServiceLocator.get<Repository<UserProfile>>();
 /// final user = await userRepo.read('user123');
 /// if (user != null) {
 ///   final updatedUser = user.copyWith(name: 'Updated Name');

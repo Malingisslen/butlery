@@ -12,16 +12,49 @@ import 'package:butlery/services/notifications/notification_repository.dart' as 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
-/// Focused module for Firebase Cloud Messaging token management
+/// Specialized Firebase Cloud Messaging token management module providing comprehensive device token lifecycle management.
+///
+/// This focused module implements sophisticated FCM token management following Single Responsibility Principle,
+/// handling all aspects of device token lifecycle including registration, refresh handling, multi-device support,
+/// and topic subscription management. It provides reliable token synchronization across user sessions while
+/// maintaining clean separation from other notification system concerns.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles FCM token management responsibilities:
+/// - **Token Registration**: Initial device token registration and backend synchronization
+/// - **Token Refresh**: Automatic token refresh handling and cross-device synchronization
+/// - **Multi-Device Support**: Comprehensive device management for users with multiple devices
+/// - **Topic Subscriptions**: Intelligent topic subscription management based on user preferences
+/// - **Token Cleanup**: Proper token cleanup and deregistration during user logout scenarios
+///
+/// **What This Module Does NOT Handle:**
+/// - Content generation and message templating (handled by NotificationContentManager)
+/// - User preferences and quiet hours (handled by NotificationPreferenceManager)
+/// - Notification batching and spam prevention (handled by NotificationBatchManager)
+/// - Delivery analytics and tracking (handled by NotificationAnalyticsManager)
+///
+/// **Token Lifecycle Management:**
+/// - Automatic token registration during app initialization with backend synchronization
+/// - Real-time token refresh monitoring with immediate backend updates
+/// - Multi-device token tracking enabling consistent notifications across user devices
+/// - Intelligent topic subscription updates based on user preference changes
+/// - Comprehensive cleanup ensuring proper token deregistration during logout
+///
+/// **Usage Examples:**
+/// ```dart
+/// final tokenManager = FCMTokenManager(firestore, userId);
 /// 
-/// This module handles ONLY FCM token responsibilities:
-/// - FCM token registration and updates
-/// - Token refresh handling and synchronization
-/// - User device management and multi-device support
-/// - Topic subscription management based on preferences
-/// - Token cleanup for signed-out users
+/// // Initialize token management
+/// await tokenManager.initialize();
 /// 
-/// ❌ DOES NOT CONTAIN: Content generation, preferences, batching, analytics
+/// // Handle token refresh
+/// tokenManager.onTokenRefresh.listen((newToken) {
+///   print('Token refreshed: $newToken');
+/// });
+/// 
+/// // Update topic subscriptions
+/// await tokenManager.updateTopicSubscriptions(preferences);
+/// ```
 class FCMTokenManager {
   final FirebaseFirestore _firestore;
   final String _userId;

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// ViewModel för RecipeDetailView
@@ -22,8 +22,8 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
     UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
   }) : _recipe = recipe,
-       _recipeService = recipeService ?? sl<UnifiedRecipeService>(),
-       _analyticsService = analyticsService ?? sl<AnalyticsService>() {
+       _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+       _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     // Lyssna på UnifiedRecipeService för uppdateringar
     _recipeService.addListener(_onRecipeServiceUpdate);
   }

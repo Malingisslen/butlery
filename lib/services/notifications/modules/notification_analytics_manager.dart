@@ -5,16 +5,47 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
-/// Focused module for notification delivery tracking and analytics
+/// Specialized notification analytics and tracking module providing comprehensive delivery metrics and engagement analysis.
+///
+/// This focused module implements sophisticated notification analytics following Single Responsibility Principle,
+/// handling all aspects of notification delivery tracking, user engagement metrics, and performance analysis.
+/// It provides comprehensive analytics for notification effectiveness optimization while maintaining clean separation
+/// from other notification system components for maintainable and scalable analytics infrastructure.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles analytics and tracking responsibilities:
+/// - **Delivery Tracking**: Comprehensive notification delivery confirmation and status monitoring
+/// - **Engagement Metrics**: Detailed user interaction tracking including opens, dismissals, and action clicks
+/// - **Performance Analytics**: Statistical analysis of notification effectiveness and conversion rates
+/// - **Aggregate Reporting**: Summary statistics and trend analysis for notification system optimization
+/// - **A/B Testing Support**: Experimental framework for testing notification strategies and content variations
+///
+/// **What This Module Does NOT Handle:**
+/// - FCM token management and device registration (handled by FCMTokenManager)
+/// - Content generation and message templating (handled by NotificationContentManager)
+/// - User preferences and quiet hours (handled by NotificationPreferenceManager)
+/// - Notification batching and delivery optimization (handled by NotificationBatchManager)
+///
+/// **Analytics Capabilities:**
+/// - Real-time delivery confirmation tracking with failure analysis and retry insights
+/// - Comprehensive user engagement metrics providing actionable insights for content optimization
+/// - Performance trend analysis enabling data-driven notification strategy improvements
+/// - A/B testing framework supporting experimental notification approaches and content variations
+/// - Batch processing for efficient analytics data collection reducing Firestore write operations
+///
+/// **Usage Examples:**
+/// ```dart
+/// final analyticsManager = NotificationAnalyticsManager(firestore, userId);
 /// 
-/// This module handles ONLY analytics and tracking responsibilities:
-/// - Notification delivery tracking and confirmation
-/// - User engagement metrics (opens, dismissals, actions)
-/// - Performance analytics for notification effectiveness
-/// - Aggregate statistics and reporting
-/// - A/B testing support for notification strategies
+/// // Track notification delivery
+/// await analyticsManager.trackDelivery(notificationId, 'delivered');
 /// 
-/// ❌ DOES NOT CONTAIN: FCM token management, content generation, preferences, batching
+/// // Record user engagement
+/// await analyticsManager.trackEngagement(notificationId, 'opened');
+/// 
+/// // Get performance metrics
+/// final metrics = await analyticsManager.getEngagementMetrics(dateRange);
+/// ```
 class NotificationAnalyticsManager {
   final FirebaseFirestore _firestore;
   final String _userId;

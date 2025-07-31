@@ -20,7 +20,7 @@ import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
@@ -65,8 +65,8 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
-    _messagingService = sl<MessagingService>();
-    _authRepository = sl<AuthRepository>();
+    _messagingService = ServiceLocator.get<MessagingService>();
+    _authRepository = ServiceLocator.get<AuthRepository>();
     _currentUserId = _authRepository.currentUserId;
     _conversation = widget.conversation;
     

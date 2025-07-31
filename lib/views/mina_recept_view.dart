@@ -19,7 +19,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/indicators/notification_badge.dart';
 import 'package:butlery/widgets/common/indicators/filter_indicator_dot.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -32,13 +32,13 @@ class MinaReceptView extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<RecipeListViewModel>(
-          create: (context) => sl<RecipeListViewModel>(),
+          create: (context) => ServiceLocator.get<RecipeListViewModel>(),
         ),
-        ChangeNotifierProvider.value(value: sl<UserService>()),
-        ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
-        ChangeNotifierProvider.value(value: sl<SharedContentViewModel>()),
+        ChangeNotifierProvider.value(value: ServiceLocator.get<UserService>()),
+        ChangeNotifierProvider.value(value: ServiceLocator.get<FriendsViewModel>()),
+        ChangeNotifierProvider.value(value: ServiceLocator.get<SharedContentViewModel>()),
         ChangeNotifierProvider.value(
-            value: sl<offline_service.OfflineService>()),
+            value: ServiceLocator.get<offline_service.OfflineService>()),
       ],
       child: const _MinaReceptViewContent(),
     );

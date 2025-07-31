@@ -372,7 +372,7 @@ class RealtimeRecipe extends RealtimeResource {
     final participants = participantsData.map(
       (userId, permissionString) => MapEntry(
         userId,
-        ResourcePermissionHelper.stringToPermission(permissionString as String),
+        ResourcePermissionHelper.fromString(permissionString as String),
       ),
     );
 
