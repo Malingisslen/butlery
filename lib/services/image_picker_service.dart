@@ -1,5 +1,30 @@
-// lib/services/image_picker_service.dart
-// UPPDATERAD VERSION: Med omfattande debug-logging
+/// Comprehensive image selection service providing cross-platform camera and gallery access with advanced permission management.
+///
+/// This service provides sophisticated image selection functionality supporting both single and multiple image
+/// selection workflows with comprehensive permission handling, platform-specific optimizations, and detailed
+/// validation processes. It implements advanced debugging capabilities, cross-platform compatibility, and
+/// robust error handling to ensure reliable image selection across different devices and operating systems.
+///
+/// **Architecture Integration:**
+/// - Integrates with [ImagePicker] for native platform image selection capabilities
+/// - Uses [PermissionHandler] for comprehensive permission management across platforms
+/// - Coordinates with [StorageService] for image validation and file system operations
+/// - Implements extensive logging through [AppLogger] for debugging and monitoring
+/// - Separates UI logic to maintain clean architecture with dedicated dialog components
+///
+/// **Image Selection Features:**
+/// - **Single Image Selection**: Camera and gallery access with quality optimization and size constraints
+/// - **Multiple Image Selection**: Batch image selection with configurable limits and validation
+/// - **Cross-Platform Permissions**: Smart permission handling for iOS, Android with version-specific strategies
+/// - **Image Optimization**: Configurable quality settings, dimension constraints, and file size management
+/// - **Validation Pipeline**: Comprehensive image validation including format, size, and accessibility checks
+/// - **Error Recovery**: Robust error handling with detailed logging and graceful fallback strategies
+///
+/// **Permission Management:**
+/// - **iOS Compatibility**: Photo library access with limited selection support
+/// - **Android Optimization**: Version-specific permission strategies (storage vs photos permissions)
+/// - **Smart Fallbacks**: Automatic fallback to alternative permission types when primary permissions fail
+/// - **Permission Debugging**: Comprehensive permission status monitoring and diagnostic capabilities
 
 import 'dart:io';
 import 'dart:async';
@@ -8,13 +33,67 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
 
-/// Service för att välja bilder från kamera eller galleri
-/// Med omfattande debug-logging och förbättrad permissions-hantering
-/// UI-logik har flyttats till ImagePickerDialogs för clean architecture
+/// Image selection service providing comprehensive camera and gallery access with advanced permission management.
+///
+/// This service manages complete image selection workflows including permission handling, image optimization,
+/// validation, and cross-platform compatibility. It provides extensive debugging capabilities and robust
+/// error handling to ensure reliable image selection functionality across different devices and platforms.
+///
+/// **Cross-Platform Architecture:**
+/// Implements platform-specific strategies for optimal image selection:
+/// - iOS: Photo library access with limited selection support and privacy compliance
+/// - Android: Version-aware permission handling (storage vs photos permissions)
+/// - Universal: Consistent API surface with platform-optimized implementations
+///
+/// **Image Processing Pipeline:**
+/// Provides comprehensive image processing including:
+/// - Quality optimization with configurable compression settings
+/// - Dimension constraints to prevent memory issues with large images
+/// - File validation with format checking and accessibility verification
+/// - Batch processing support for multiple image selection workflows
+///
+/// **Usage Examples:**
+/// ```dart
+/// final imageService = ImagePickerService();
+/// 
+/// // Single image selection from camera
+/// final cameraImage = await imageService.pickImage(ImageSource.camera);
+/// 
+/// // Multiple images from gallery
+/// final galleryImages = await imageService.pickMultipleImages(maxImages: 5);
+/// 
+/// // Debug permission status
+/// await imageService.debugPermissions();
+/// ```
 class ImagePickerService {
   final ImagePicker _picker = ImagePicker();
 
-  /// Välj en bild från kamera eller galleri MED OMFATTANDE DEBUG
+  /// Selects a single image from camera or gallery with comprehensive validation and optimization.
+  ///
+  /// This method provides complete single image selection functionality with advanced permission handling,
+  /// image optimization, and comprehensive validation pipeline. It implements detailed logging throughout
+  /// the selection process to enable debugging and monitoring of image selection workflows.
+  ///
+  /// [source] Image source (camera or gallery) for image selection
+  /// Returns selected and validated [File] or `null` if selection fails or is cancelled
+  ///
+  /// **Selection Process:**
+  /// 1. **Permission Validation**: Checks and requests appropriate permissions for the selected source
+  /// 2. **Image Selection**: Uses native image picker with optimized quality and dimension settings
+  /// 3. **File Validation**: Verifies file existence, accessibility, and format validity
+  /// 4. **Quality Optimization**: Applies configurable quality settings (90% quality, max 2400x2400)
+  /// 5. **Size Verification**: Validates file size and provides detailed logging information
+  ///
+  /// **Image Optimization Settings:**
+  /// - Maximum dimensions: 2400x2400 pixels to prevent memory issues
+  /// - Quality setting: 90% for optimal balance between quality and file size
+  /// - Format validation: Ensures selected images are in supported formats
+  ///
+  /// **Error Handling:**
+  /// - Comprehensive error logging with detailed stack traces
+  /// - Graceful handling of permission denials and user cancellations
+  /// - File system validation with detailed diagnostic information
+  /// - Integration with StorageService for advanced image validation
   Future<File?> pickImage(ImageSource source) async {
     try {
       AppLogger.info('🔍 Startar bildval från: ${source.name}');
@@ -76,7 +155,33 @@ class ImagePickerService {
     }
   }
 
-  /// Välj flera bilder från galleri MED DEBUG
+  /// Selects multiple images from gallery with batch validation and configurable limits.
+  ///
+  /// This method provides comprehensive multiple image selection functionality with intelligent batch
+  /// processing, configurable image limits, and comprehensive validation for each selected image.
+  /// It implements advanced error handling and detailed logging for complex multi-image workflows.
+  ///
+  /// [maxImages] Maximum number of images to select (defaults to 5 for performance)
+  /// Returns list of validated [File] objects, empty list if selection fails or is cancelled
+  ///
+  /// **Batch Selection Process:**
+  /// 1. **Gallery Permission**: Validates gallery access permissions with smart fallback strategies
+  /// 2. **Multi-Image Selection**: Uses native multi-image picker with optimization settings
+  /// 3. **Limit Enforcement**: Intelligently limits selection to specified maximum count
+  /// 4. **Batch Validation**: Validates each image individually with detailed progress logging
+  /// 5. **Quality Filtering**: Filters out invalid or corrupted images from the final result set
+  ///
+  /// **Performance Optimization:**
+  /// - Default limit of 5 images to prevent memory pressure and UI performance issues
+  /// - Individual file validation with early rejection of invalid images
+  /// - Efficient batch processing with detailed progress reporting
+  /// - Intelligent limit enforcement that preserves user selection order
+  ///
+  /// **Validation Pipeline:**
+  /// - File existence verification for each selected image
+  /// - Format validation using StorageService integration
+  /// - Size analysis and reporting for memory management
+  /// - Detailed logging for each step of the validation process
   Future<List<File>> pickMultipleImages({int maxImages = 5}) async {
     try {
       AppLogger.info('🔍 Startar val av flera bilder (max: $maxImages)');

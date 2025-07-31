@@ -8,7 +8,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
-import 'package:butlery/core/config/feature_flags.dart';
+// Feature flags removed - using modular system only
 
 /// UI stage for final UI and analytics setup.
 ///
@@ -42,19 +42,17 @@ class UIStage implements BootstrapStage {
     }
 
     try {
-      // Setup analytics observers (if enabled)
-      if (FeatureFlags.enableHealthMonitoring) {
-        if (kDebugMode) {
-          debugPrint('🔍 [UIStage] Setting up analytics observers...');
-        }
-        
-        // Analytics observer setup would happen here
-        // Note: In the original main.dart, this was done after background init
-        await Future.delayed(const Duration(milliseconds: 100));
-        
-        if (kDebugMode) {
-          debugPrint('✅ [UIStage] Analytics observers configured');
-        }
+      // Setup analytics observers
+      if (kDebugMode) {
+        debugPrint('🔍 [UIStage] Setting up analytics observers...');
+      }
+      
+      // Analytics observer setup would happen here
+      // Note: In the original main.dart, this was done after background init
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      if (kDebugMode) {
+        debugPrint('✅ [UIStage] Analytics observers configured');
       }
 
       // Initialize deep link handling
@@ -70,18 +68,16 @@ class UIStage implements BootstrapStage {
         debugPrint('✅ [UIStage] Deep link handling initialized');
       }
 
-      // Start background health monitoring (if enabled)
-      if (FeatureFlags.enableHealthMonitoring) {
-        if (kDebugMode) {
-          debugPrint('🔄 [UIStage] Starting background health monitoring...');
-        }
-        
-        // Background monitoring would be started here
-        // This would use the ApplicationHealthChecker
-        
-        if (kDebugMode) {
-          debugPrint('✅ [UIStage] Background monitoring started');
-        }
+      // Start background health monitoring
+      if (kDebugMode) {
+        debugPrint('🔄 [UIStage] Starting background health monitoring...');
+      }
+      
+      // Background monitoring would be started here
+      // This would use the ApplicationHealthChecker
+      
+      if (kDebugMode) {
+        debugPrint('✅ [UIStage] Background monitoring started');
       }
 
       if (kDebugMode) {

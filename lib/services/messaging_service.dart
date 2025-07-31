@@ -1,4 +1,31 @@
-// lib/services/messaging_service.dart
+/// Comprehensive messaging service providing real-time communication with advanced conversation management and notification integration.
+///
+/// This service implements sophisticated messaging functionality including direct and group conversations,
+/// real-time message delivery, typing indicators, read status tracking, and comprehensive notification
+/// integration. It provides a complete messaging system with advanced features like message editing,
+/// deletion, search functionality, and seamless integration with the application's social features.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseService] for consistent service patterns and error handling
+/// - Uses [MessagingRepository] interface for flexible messaging backend implementations
+/// - Integrates with [AuthRepository] for user authentication and permission validation
+/// - Coordinates with [NotificationService] for comprehensive push notification delivery
+/// - Implements dependency injection through service locator for decoupled architecture
+///
+/// **Messaging Features:**
+/// - **Real-time Conversations**: Live conversation streams with instant message delivery
+/// - **Direct and Group Messaging**: Support for both one-on-one and multi-participant conversations
+/// - **Message Types**: Text messages, recipe sharing, and extensible message type system
+/// - **Typing Indicators**: Real-time typing status with intelligent timeout management
+/// - **Read Status Tracking**: Comprehensive read receipt system with conversation-level tracking
+/// - **Message Management**: Edit, delete, and search functionality with permission validation
+///
+/// **Advanced Communication Features:**
+/// - **Smart Notifications**: Context-aware notifications with sender attribution and conversation grouping
+/// - **Permission System**: Comprehensive message ownership validation and editing controls
+/// - **Group Management**: Dynamic participant management with role-based access control
+/// - **Message Search**: Full-text search across conversation history with performance optimization
+/// - **Unread Tracking**: Sophisticated unread message and conversation counting
 
 import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
@@ -12,14 +39,50 @@ import 'package:butlery/services/notifications/notification_service.dart' as not
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/injection.dart';
 
-/// Service for managing messaging functionality
+/// Messaging service providing comprehensive real-time communication with advanced conversation management.
+///
+/// This service manages complete messaging workflows including conversation creation, message delivery,
+/// typing indicators, read status tracking, and notification integration. It implements sophisticated
+/// permission validation, message editing capabilities, and comprehensive search functionality while
+/// maintaining real-time synchronization across all connected clients.
+///
+/// **Service Architecture:**
+/// Built on BaseService foundation providing:
+/// - Consistent error handling and logging patterns
+/// - Service operation management with timeout handling
+/// - Comprehensive authentication and permission validation
+/// - Integration with repository abstraction for flexible data persistence
+///
+/// **Real-time Communication:**
+/// Implements advanced real-time features including:
+/// - Live conversation streams with automatic updates
+/// - Typing indicator management with intelligent timeout handling
+/// - Real-time message delivery with comprehensive error recovery
+/// - Dynamic participant management for group conversations
+///
+/// **Usage Examples:**
+/// ```dart
+/// final messagingService = MessagingService(
+///   messagingRepository: sl<MessagingRepository>(),
+///   authRepository: sl<AuthRepository>(),
+/// );
 /// 
-/// Provides business logic layer for messaging operations including:
-/// - Conversation management
-/// - Message sending and receiving
-/// - Read status tracking
-/// - User presence and typing indicators
-/// - Message search and filtering
+/// // Start direct conversation
+/// final conversationId = await messagingService.startDirectConversation(
+///   otherUserId: 'user123',
+///   otherUserDisplayName: 'John Doe',
+/// );
+/// 
+/// // Send text message
+/// await messagingService.sendTextMessage(
+///   conversationId: conversationId,
+///   content: 'Hello! Check out this recipe I found.',
+/// );
+/// 
+/// // Listen to messages
+/// messagingService.getConversationMessages(conversationId: conversationId)
+///   .listen((messages) => updateUI(messages));
+/// ```
 class MessagingService extends BaseService {
   final MessagingRepository _messagingRepository;
   final auth_repo.AuthRepository _authRepository;

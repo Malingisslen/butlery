@@ -1,11 +1,62 @@
-// lib/services/search_service.dart
+/// Comprehensive search and filtering service providing advanced recipe discovery and organization capabilities.
+///
+/// This service implements sophisticated search functionality for recipe management with multi-criteria filtering,
+/// intelligent sorting, search suggestions, and popularity analytics. It provides a complete search experience
+/// including text-based queries, metadata filtering, and user-friendly search assistance features optimized
+/// for Swedish language content and cooking terminology.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseService] for consistent service patterns and error handling
+/// - Uses [SingletonServiceMixin] for standardized singleton pattern with proper lifecycle management
+/// - Integrates with [Recipe] unified model for comprehensive recipe data access
+/// - Implements performance-optimized search algorithms with minimal memory footprint
+///
+/// **Search and Filtering Capabilities:**
+/// - **Text Search**: Full-text search across titles, descriptions, ingredients, instructions, and tags
+/// - **Metadata Filtering**: Advanced filtering by meal type, cooking time, rating, and serving portions
+/// - **Tag Filtering**: Boolean logic filtering with AND semantics for precise tag-based discovery
+/// - **Multi-Criteria Search**: Combined search with simultaneous application of multiple filter criteria
+/// - **Intelligent Sorting**: Flexible sorting by title, time, rating, portions, and meal type with direction control
+///
+/// **User Experience Features:**
+/// - **Search Suggestions**: Real-time search suggestions based on partial input and existing recipe data
+/// - **Popular Terms**: Analytics-driven popular search terms based on recipe content frequency
+/// - **Swedish Language**: Optimized for Swedish cooking terminology and ingredient recognition
+/// - **Performance Optimization**: Efficient algorithms ensuring responsive search even with large recipe collections
+///
+/// **Usage Examples:**
+/// ```dart
+/// final searchService = SearchService();
+/// 
+/// // Basic text search
+/// final results = searchService.searchRecipes(allRecipes, 'kyckling');
+/// 
+/// // Advanced multi-criteria search
+/// final filteredRecipes = searchService.advancedSearch(
+///   allRecipes,
+///   searchQuery: 'pasta',
+///   mealType: 'middag',
+///   maxTime: 30,
+///   minRating: 4.0,
+/// );
+/// 
+/// // Get search suggestions
+/// final suggestions = searchService.getSearchSuggestions(allRecipes, 'kyck');
+/// 
+/// // Sort results
+/// final sorted = searchService.sortRecipes(results, SortCriteria.rating, ascending: false);
+/// ```
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
-/// Centraliserad service för all sökfunktionalitet i appen
-/// Now using SingletonServiceMixin for standardized singleton pattern
+/// Centralized search service providing comprehensive recipe discovery and filtering functionality.
+///
+/// This service implements advanced search capabilities for recipe management with performance-optimized
+/// algorithms, multi-criteria filtering, and user-friendly search assistance features. It serves as the
+/// primary search interface for the application with comprehensive Swedish language support and
+/// intelligent search suggestion capabilities.
 class SearchService extends BaseService with SingletonServiceMixin<SearchService> {
   // Private constructor for singleton
   SearchService._internal();
@@ -16,7 +67,36 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
   @override
   String get serviceName => 'SearchService';
 
-  /// Huvudsökfunktion - söker i alla fält av ett recept
+  /// Performs comprehensive full-text search across all recipe fields with intelligent query matching.
+  ///
+  /// This method implements sophisticated text-based search functionality that examines all textual
+  /// fields of recipes including titles, descriptions, ingredients, instructions, tags, and meal types.
+  /// It provides case-insensitive matching with Swedish language optimization and supports partial
+  /// word matching for flexible recipe discovery.
+  ///
+  /// [recipes] Complete list of recipes to search through
+  /// [query] Search query string for text-based matching across recipe fields
+  /// Returns filtered list of recipes matching the search query
+  ///
+  /// **Search Algorithm:**
+  /// - **Case-Insensitive**: All matching is performed in lowercase for consistent results
+  /// - **Partial Matching**: Supports substring matching within words and phrases
+  /// - **Multi-Field**: Searches across title, description, ingredients, instructions, tags, and meal type
+  /// - **Numeric Support**: Handles numeric queries for portions, cooking time, and rating values
+  /// - **Swedish Optimization**: Optimized for Swedish cooking terminology and ingredient names
+  ///
+  /// **Search Fields:**
+  /// - Recipe title and description for primary content matching
+  /// - Ingredient list for recipe component discovery
+  /// - Cooking instructions for technique and method matching
+  /// - Tags for categorical and descriptive term matching
+  /// - Meal type for category-based discovery
+  /// - Numeric fields (portions, time, rating) for value-based matching
+  ///
+  /// **Performance Characteristics:**
+  /// - Linear time complexity O(n) where n is the number of recipes
+  /// - Memory-efficient with minimal temporary object creation
+  /// - Optimized string operations for responsive search experience
   List<Recipe> searchRecipes(List<Recipe> recipes, String query) {
     if (query.trim().isEmpty) return recipes;
 
@@ -85,7 +165,56 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     return filtered;
   }
 
-  /// Avancerad kombinerad sökning med alla filter
+  /// Performs advanced multi-criteria search with comprehensive filtering and intelligent result optimization.
+  ///
+  /// This method combines all available search and filtering capabilities into a single, powerful search
+  /// interface that applies multiple criteria simultaneously. It implements sequential filtering with
+  /// performance optimization and provides comprehensive recipe discovery based on complex user requirements.
+  ///
+  /// [recipes] Complete recipe collection to search and filter
+  /// [searchQuery] Optional text-based search query for content matching
+  /// [mealType] Optional meal type filter for category-based filtering
+  /// [tags] Optional tag list for precise tag-based filtering (AND logic)
+  /// [maxTime] Optional maximum cooking time filter in minutes
+  /// [minRating] Optional minimum rating filter for quality-based discovery
+  /// [minPortions] Optional minimum serving size filter
+  /// [maxPortions] Optional maximum serving size filter
+  /// Returns comprehensively filtered recipe list meeting all specified criteria
+  ///
+  /// **Multi-Criteria Filtering Process:**
+  /// 1. **Text Search**: Applies full-text search if query is provided
+  /// 2. **Meal Type**: Filters by specific meal category if specified
+  /// 3. **Tag Filtering**: Applies AND-logic tag filtering for precise categorization
+  /// 4. **Time Constraints**: Filters by maximum cooking time requirements
+  /// 5. **Quality Filter**: Applies minimum rating threshold for quality assurance
+  /// 6. **Portion Sizing**: Filters by serving size range for meal planning
+  ///
+  /// **Performance Optimization:**
+  /// - Sequential filtering reduces dataset size progressively for efficiency
+  /// - Early termination strategies minimize unnecessary processing
+  /// - Memory-efficient operations prevent excessive temporary object creation
+  /// - Optimized for large recipe collections with responsive performance
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Comprehensive dinner recipe search
+  /// final dinnerRecipes = searchService.advancedSearch(
+  ///   allRecipes,
+  ///   searchQuery: 'kyckling',
+  ///   mealType: 'middag',
+  ///   tags: ['glutenfri', 'snabb'],
+  ///   maxTime: 45,
+  ///   minRating: 4.0,
+  ///   minPortions: 4,
+  /// );
+  /// 
+  /// // Quick meal discovery
+  /// final quickMeals = searchService.advancedSearch(
+  ///   allRecipes,
+  ///   maxTime: 20,
+  ///   minRating: 3.5,
+  /// );
+  /// ```
   List<Recipe> advancedSearch(
     List<Recipe> recipes, {
     String? searchQuery,
@@ -185,7 +314,39 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     return sorted;
   }
 
-  /// Hämtar sökförslag baserat på tidigare sökningar
+  /// Generates intelligent search suggestions based on partial input and existing recipe content.
+  ///
+  /// This method analyzes the recipe collection to provide relevant search suggestions as users type,
+  /// improving search discoverability and user experience. It examines titles, ingredients, and tags
+  /// to generate contextually relevant suggestions with duplicate removal and intelligent ranking.
+  ///
+  /// [recipes] Recipe collection to analyze for suggestion generation
+  /// [partial] Partial search input from user for suggestion matching
+  /// Returns up to 10 relevant search suggestions sorted alphabetically
+  ///
+  /// **Suggestion Algorithm:**
+  /// - **Minimum Length**: Requires at least 2 characters for meaningful suggestions
+  /// - **Multi-Source**: Analyzes titles, ingredients, and tags for comprehensive coverage
+  /// - **Case-Insensitive**: Performs lowercase matching for consistent results
+  /// - **Duplicate Removal**: Uses Set data structure to eliminate duplicate suggestions
+  /// - **Result Limiting**: Returns top 10 suggestions to prevent UI overcrowding
+  /// - **Alphabetical Sorting**: Provides predictable, user-friendly suggestion ordering
+  ///
+  /// **Suggestion Sources:**
+  /// - Recipe titles for primary content matching
+  /// - Individual ingredients for specific component suggestions
+  /// - Recipe tags for categorical and descriptive suggestions
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Real-time search suggestions
+  /// final suggestions = searchService.getSearchSuggestions(recipes, 'kyck');
+  /// // Returns: ['kyckling', 'kycklingbröst', 'kycklinglår', ...]
+  /// 
+  /// // Ingredient-based suggestions
+  /// final ingredientSuggestions = searchService.getSearchSuggestions(recipes, 'tom');
+  /// // Returns: ['tomat', 'tomatpuré', 'tomatkonserv', ...]
+  /// ```
   List<String> getSearchSuggestions(List<Recipe> recipes, String partial) {
     if (partial.length < 2) return [];
 
@@ -300,10 +461,92 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
   }
 }
 
-/// Enum för olika sorteringsalternativ
-enum SortCriteria { title, time, rating, portions, mealType }
+/// Enumeration defining available sorting criteria for recipe organization and discovery optimization.
+///
+/// This enum provides comprehensive sorting options for recipe collections enabling users to organize
+/// and discover recipes based on different attributes. Each criteria supports both ascending and descending
+/// sort orders for flexible recipe organization that meets various user preferences and discovery patterns.
+///
+/// **Sorting Criteria:**
+/// - [title] Alphabetical sorting by recipe name for browsing and organization
+/// - [time] Cooking time sorting for meal planning and time-constrained cooking
+/// - [rating] Quality-based sorting for discovering highly-rated recipes
+/// - [portions] Serving size sorting for meal planning and group cooking
+/// - [mealType] Category-based sorting for meal organization and discovery
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Sort by rating (highest first)
+/// final topRated = searchService.sortRecipes(recipes, SortCriteria.rating, ascending: false);
+/// 
+/// // Sort by cooking time (quickest first)
+/// final quickMeals = searchService.sortRecipes(recipes, SortCriteria.time, ascending: true);
+/// 
+/// // Alphabetical organization
+/// final alphabetical = searchService.sortRecipes(recipes, SortCriteria.title);
+/// ```
+enum SortCriteria { 
+  /// Alphabetical sorting by recipe name for browsing and organization.
+  title, 
+  
+  /// Cooking time sorting for meal planning and time-constrained cooking.
+  time, 
+  
+  /// Quality-based sorting for discovering highly-rated recipes.
+  rating, 
+  
+  /// Serving size sorting for meal planning and group cooking.
+  portions, 
+  
+  /// Category-based sorting for meal organization and discovery.
+  mealType 
+}
 
-/// Hjälpklass för att hålla sökparametrar
+/// Comprehensive search parameters container for complex search operations and state management.
+///
+/// This class encapsulates all possible search and filtering parameters into a single, immutable
+/// data structure that simplifies search state management and enables complex search operations.
+/// It provides comprehensive parameter management with sensible defaults and supports immutable
+/// updates through the copyWith pattern for predictable state management.
+///
+/// **Parameter Categories:**
+/// - **Text Search**: Query string for full-text search across recipe content
+/// - **Category Filter**: Meal type filtering for category-based discovery
+/// - **Tag Filtering**: List-based tag filtering with AND-logic semantics
+/// - **Time Constraints**: Maximum cooking time filter for time-sensitive meal planning
+/// - **Quality Filter**: Minimum rating threshold for quality-based recipe discovery
+/// - **Portion Filters**: Minimum and maximum serving size constraints for meal planning
+/// - **Sorting Options**: Sort criteria and direction for result organization
+///
+/// **Immutable Design:**
+/// - Immutable data structure prevents accidental state mutations
+/// - copyWith method enables controlled parameter updates
+/// - Default values provide sensible starting points for search operations
+/// - Comprehensive parameter validation through type safety
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Create basic search parameters
+/// final params = SearchParameters(
+///   query: 'kyckling',
+///   mealType: 'middag',
+///   maxTime: 45,
+/// );
+/// 
+/// // Update parameters immutably
+/// final updatedParams = params.copyWith(
+///   minRating: 4.0,
+///   tags: ['glutenfri'],
+/// );
+/// 
+/// // Use with advanced search
+/// final results = searchService.advancedSearch(
+///   recipes,
+///   searchQuery: params.query,
+///   mealType: params.mealType,
+///   maxTime: params.maxTime,
+/// );
+/// ```
 class SearchParameters {
   final String? query;
   final String? mealType;
@@ -315,6 +558,21 @@ class SearchParameters {
   final SortCriteria sortBy;
   final bool sortAscending;
 
+  /// Creates SearchParameters with comprehensive search and filtering configuration.
+  ///
+  /// All parameters are optional with sensible defaults to provide flexible search configuration.
+  /// The constructor creates an immutable instance that can be updated through copyWith method
+  /// for predictable search state management throughout the application.
+  ///
+  /// [query] Optional text search query for full-text recipe matching
+  /// [mealType] Optional meal category filter for category-based discovery
+  /// [tags] List of tags for AND-logic filtering (defaults to empty list)
+  /// [maxTime] Optional maximum cooking time filter in minutes
+  /// [minRating] Optional minimum rating threshold for quality filtering
+  /// [minPortions] Optional minimum serving size filter
+  /// [maxPortions] Optional maximum serving size filter
+  /// [sortBy] Sort criteria for result organization (defaults to title)
+  /// [sortAscending] Sort direction flag (defaults to ascending)
   const SearchParameters({
     this.query,
     this.mealType,

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';

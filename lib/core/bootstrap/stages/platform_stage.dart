@@ -8,7 +8,7 @@ library;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
-import 'package:butlery/core/config/feature_flags.dart';
+// Feature flags removed - using modular system only
 
 /// Platform stage for basic Flutter and environment setup.
 ///
@@ -48,27 +48,10 @@ class PlatformStage implements BootstrapStage {
         debugPrint('✅ [PlatformStage] Flutter bindings initialized');
       }
 
-      // Load and validate feature flags configuration
-      FeatureFlags.debugPrintFlags();
-      
-      // Validate feature flag configuration for conflicts
-      final configIssues = FeatureFlags.validateConfiguration();
-      if (configIssues.isNotEmpty) {
-        for (final issue in configIssues) {
-          if (kDebugMode) {
-            debugPrint('⚠️ [PlatformStage] Feature flag issue: $issue');
-          }
-        }
-      }
-
-      if (kDebugMode) {
-        debugPrint('✅ [PlatformStage] Feature flags configured');
-      }
-
       // Basic environment validation
       if (kDebugMode) {
         debugPrint('🔍 [PlatformStage] Environment: ${kDebugMode ? 'DEBUG' : 'RELEASE'}');
-        debugPrint('🔍 [PlatformStage] Using modular DI: ${FeatureFlags.useModularDI}');
+        debugPrint('🔍 [PlatformStage] Using modular DI: true (legacy system removed)');
       }
 
       if (kDebugMode) {
@@ -93,16 +76,8 @@ class PlatformStage implements BootstrapStage {
       // Note: instance is never null in modern Flutter, but we validate it exists
       binding.toString(); // Basic validation that it's accessible
 
-      // Validate feature flags are accessible
-      try {
-        FeatureFlags.useModularDI; // Test access
-        FeatureFlags.enableHealthMonitoring; // Test access
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('❌ [PlatformStage] Feature flags not accessible: $e');
-        }
-        return false;
-      }
+      // Basic validation - modular system is always enabled now
+      // No feature flag validation needed since legacy system is removed
 
       if (kDebugMode) {
         debugPrint('✅ [PlatformStage] Validation passed');
