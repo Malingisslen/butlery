@@ -1,4 +1,29 @@
-// lib/repositories/firebase/friends/group_invitation_repository.dart
+/// Firebase Firestore implementation for comprehensive group invitation management and lifecycle control.
+///
+/// This repository provides sophisticated group invitation functionality using Firebase Firestore as
+/// the backend, managing the complete lifecycle of group invitations from creation through resolution.
+/// It implements advanced features like invitation validation, expiration handling, cleanup operations,
+/// and comprehensive security controls for safe group collaboration experiences.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
+/// - Uses global `group_invitations` collection for centralized invitation management
+/// - Integrates with permission validation system for comprehensive security controls
+/// - Coordinates with group management system for seamless member onboarding
+/// - Implements real-time streams for immediate invitation notifications and updates
+///
+/// **Group Invitation Lifecycle:**
+/// - **Invitation Creation**: Secure group invitation initiation with validation and duplicate prevention
+/// - **Status Management**: Complete status tracking (pending, accepted, rejected, expired)
+/// - **Expiration Handling**: Automatic invitation expiration and cleanup for security
+/// - **Batch Operations**: Efficient bulk invitation management and cleanup operations
+/// - **Real-time Updates**: Live streams for immediate invitation notifications and status changes
+///
+/// **Security and Cleanup:**
+/// - **Self-operation Validation**: Ensures users can only send invitations from their own accounts
+/// - **Duplicate Prevention**: Automatic detection and prevention of duplicate group invitations
+/// - **Expiration Management**: Systematic cleanup of expired and old invitations
+/// - **Bulk Cleanup Operations**: Efficient batch operations for invitation maintenance
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -6,12 +31,54 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-
-/// Group Invitation Repository
+/// Firebase implementation for group invitation management with comprehensive lifecycle and cleanup controls.
+///
+/// This repository provides complete group invitation functionality using Firebase Firestore with
+/// sophisticated invitation lifecycle management, security validation, expiration handling, and
+/// automated cleanup operations. It handles the complete group collaboration workflow from invitation
+/// through member onboarding with comprehensive security and maintenance features.
+///
+/// **Invitation Management System:**
+/// Uses a centralized collection approach for efficient invitation management and maintenance:
+/// - `group_invitations`: Global collection storing all group invitations with status tracking
+/// - Comprehensive indexing for efficient querying by sender, recipient, group, and status
+/// - Real-time streams for immediate invitation notifications and status updates
+/// - Automated expiration and cleanup processes for invitation maintenance
+///
+/// **Advanced Features:**
+/// - **Lifecycle Management**: Complete invitation workflow from creation to resolution
+/// - **Expiration Control**: Automatic invitation expiration and cleanup for security
+/// - **Bulk Operations**: Efficient batch operations for invitation management and cleanup
+/// - **Security Validation**: Multi-layer validation and comprehensive audit logging
+///
+/// **Usage Examples:**
+/// ```dart
+/// final invitationRepo = GroupInvitationRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
 /// 
-/// Handles ONLY group invitation operations and cleanup tasks.
-/// This includes sending, accepting, managing group invitations and cleanup operations.
+/// // Send group invitation
+/// final invitation = GroupInvitation.create(
+///   fromUserId: currentUserId,
+///   toUserId: targetUserId,
+///   groupId: groupId,
+/// );
+/// await invitationRepo.saveInvitation(invitation);
+/// 
+/// // Stream received invitations
+/// invitationRepo.receivedInvitationsStream(userId).listen((invitations) {
+///   updateInvitationsUI(invitations);
+/// });
+/// 
+/// // Cleanup expired invitations
+/// final expiredRefs = await invitationRepo.expiredInvitations(DateTime.now());
+/// await invitationRepo.deleteDocuments(expiredRefs);
+/// ```
 class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> {
+  /// Creates a group invitation repository with dependency injection support.
+  ///
+  /// [firestore] Optional Firestore instance for testing, defaults to production instance
+  /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
   GroupInvitationRepository({
     super.firestore,
     AuthRepository? authRepository,

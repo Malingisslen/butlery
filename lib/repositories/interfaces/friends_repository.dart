@@ -5,6 +5,58 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Repository interface for social friendship and group management operations.
+///
+/// This interface provides comprehensive friend relationship management including
+/// friend requests, mutual connections, friend categorization, and group invitations.
+/// It serves as the foundation for social features in the Butlery platform,
+/// managing complex social relationships and interaction workflows.
+///
+/// **Core Social Features:**
+/// - **Friend Requests**: Send, accept, reject, and cancel friend requests
+/// - **Mutual Friendships**: Establish and manage bidirectional friend relationships
+/// - **Friend Categories**: Organize friends into custom categories and groups
+/// - **Group Invitations**: Manage invitations to social groups and friend circles
+/// - **Profile Integration**: Link social relationships with user profiles
+/// - **Real-time Updates**: Stream-based social activity notifications
+///
+/// **Relationship Management:**
+/// Handles the full lifecycle of social relationships from initial connection
+/// requests through ongoing friendship maintenance. Supports complex social
+/// structures including friend categories, group memberships, and invitation systems.
+///
+/// **Data Consistency:**
+/// Ensures mutual friendship relationships remain synchronized, handles concurrent
+/// social operations gracefully, and maintains data integrity across complex
+/// social interaction patterns.
+///
+/// **Privacy and Security:**
+/// Implements proper authorization checks for social operations, respects user
+/// privacy settings, and prevents unauthorized access to social relationship data.
+///
+/// **Usage Examples:**
+/// ```dart
+/// final friendsRepo = sl<FriendsRepository>();
+/// 
+/// // Send friend request
+/// final success = await friendsRepo.sendFriendRequest(
+///   targetUserId, 
+///   message: 'Hi! Let\\'s connect on Butlery!'
+/// );
+/// 
+/// // Accept incoming request
+/// final requests = await friendsRepo.getIncomingRequests();
+/// for (final request in requests) {
+///   await friendsRepo.acceptFriendRequest(request.id);
+/// }
+/// 
+/// // Organize friends into categories
+/// final familyCategory = FriendCategory(
+///   name: 'Family',
+///   memberIds: familyFriendIds,
+/// );
+/// await friendsRepo.saveCategory(userId, familyCategory);
+/// ```
 abstract class FriendsRepository extends Repository<UserProfile> {
   /// Send a friend request to another user
   Future<bool> sendFriendRequest(String toUserId, {String? message});

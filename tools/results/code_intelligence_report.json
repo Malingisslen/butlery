@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-30T21:50:34.428159",
+  "timestamp": "2025-07-30T23:11:26.262813",
   "platform": "code-intelligence-platform-v1",
   "analysis_type": "multi-dimensional-assessment",
   "overall_health_score": 0.65,
@@ -11,20 +11,20 @@
     "test_quality": 0.0
   },
   "statistics": {
-    "total_files": 601,
+    "total_files": 625,
     "total_lines": 0,
-    "security_risks": 510,
-    "performance_issues": 564,
-    "architecture_violations": 575,
-    "quality_issues": 12720,
+    "security_risks": 497,
+    "performance_issues": 590,
+    "architecture_violations": 616,
+    "quality_issues": 13555,
     "test_gaps": 0,
-    "hotspots_predicted": 200
+    "hotspots_predicted": 209
   },
   "violations_by_severity": {
-    "critical": 78,
-    "high": 6031,
-    "medium": 5010,
-    "low": 3250
+    "critical": 80,
+    "high": 6368,
+    "medium": 5208,
+    "low": 3602
   },
   "remediation_plan": [
     {
@@ -68,7 +68,7 @@
     },
     {
       "priority": "urgent",
-      "description": "Fix 37 memory leak patterns",
+      "description": "Fix 41 memory leak patterns",
       "impact": "Prevents app crashes and improves stability",
       "effort": "Low - mostly adding dispose() calls",
       "steps": [
@@ -81,7 +81,7 @@
     },
     {
       "priority": "urgent",
-      "description": "Fix 37 performance issues affecting user experience",
+      "description": "Fix 41 performance issues affecting user experience",
       "impact": "Improves app responsiveness and reduces memory usage",
       "effort": "Medium - requires performance optimization techniques",
       "steps": [
@@ -94,7 +94,7 @@
     },
     {
       "priority": "important",
-      "description": "Improve architectural compliance (128 violations)",
+      "description": "Improve architectural compliance (136 violations)",
       "impact": "Better maintainability and testability",
       "effort": "High - requires architectural refactoring",
       "steps": [
@@ -107,7 +107,7 @@
     },
     {
       "priority": "important",
-      "description": "Break down 61 large files (>500 lines)",
+      "description": "Break down 69 large files (>500 lines)",
       "impact": "Improved code readability and maintainability",
       "effort": "Medium - requires careful code splitting",
       "steps": [
@@ -120,7 +120,7 @@
     },
     {
       "priority": "planned",
-      "description": "Improve code quality (116 issues)",
+      "description": "Improve code quality (148 issues)",
       "impact": "Better developer productivity and code maintainability",
       "effort": "Medium - incremental improvements over time",
       "steps": [

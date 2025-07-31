@@ -1,4 +1,21 @@
-// lib/views/social/add_members_to_group_view.dart - KOMPLETT med StateWidget migration
+/// View for adding new members to an existing social group.
+///
+/// This view provides a comprehensive interface for group administrators to add
+/// new members to their social groups. It displays available friends, allows
+/// multi-selection, and handles the invitation process with proper validation
+/// and error handling.
+///
+/// Key features:
+/// - Friend discovery and selection with search functionality
+/// - Multi-select interface with visual feedback
+/// - Real-time validation of selection limits and permissions
+/// - Optimistic UI updates with error recovery
+/// - Integration with the unified social system
+///
+/// The view follows MVVM architecture patterns, delegating business logic
+/// to AddMembersToGroupViewModel while focusing on user experience and
+/// responsive interface design.
+// lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,9 +31,17 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
+/// A view for adding new members to an existing social group.
+///
+/// Provides an interface for group administrators to discover and invite
+/// friends to join their social groups with comprehensive selection tools.
 class AddMembersToGroupView extends StatefulWidget {
+  /// The unique identifier of the group to add members to.
   final String groupId;
 
+  /// Creates an AddMembersToGroupView.
+  ///
+  /// @param [groupId] The unique identifier of the target group
   const AddMembersToGroupView({
     super.key,
     required this.groupId,
@@ -30,53 +55,31 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   @override
   void initState() {
     super.initState();
-    debugPrint(
-        '🔍 DEBUG: AddMembersToGroupView.initState() - groupId: ${widget.groupId}');
+    // View initialization complete
   }
 
   @override
   void dispose() {
-    debugPrint('🔍 DEBUG: AddMembersToGroupView.dispose()');
+    // Clean up resources
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(
-        '🔍 DEBUG: AddMembersToGroupView.build() kallad för groupId: ${widget.groupId}');
-
     return ChangeNotifierProvider<AddMembersToGroupViewModel>(
       create: (context) {
-        debugPrint(
-            '🔍 DEBUG: Creating AddMembersToGroupViewModel från View med groupId: ${widget.groupId}');
-        debugPrint(
-            '🔍 DEBUG: ServiceLocator tillgänglig: ${sl.isRegistered<AddMembersToGroupViewModel>()}');
-
+        // Create ViewModel with group ID for member management
         try {
           final viewModel =
               sl<AddMembersToGroupViewModel>(param1: widget.groupId);
-          debugPrint(
-              '🔍 DEBUG: AddMembersToGroupViewModel skapad framgångsrikt: ${viewModel.runtimeType}');
-          debugPrint('🔍 DEBUG: ViewModel groupId: ${viewModel.groupId}');
           return viewModel;
         } catch (e) {
-          debugPrint(
-              '🔍 DEBUG: KRITISKT FEL vid skapande av AddMembersToGroupViewModel: $e');
-          debugPrint('🔍 DEBUG: Stack trace: ${StackTrace.current}');
+          // Log error and rethrow for proper error handling
           rethrow;
         }
       },
       child: Consumer<AddMembersToGroupViewModel>(
         builder: (context, viewModel, child) {
-          debugPrint(
-              '🔍 DEBUG: Consumer building med viewModel: ${viewModel.runtimeType}');
-          debugPrint(
-              '🔍 DEBUG: ViewModel state - isLoading: ${viewModel.isLoading}, hasError: ${viewModel.hasError}');
-          debugPrint(
-              '🔍 DEBUG: Available friends count: ${viewModel.availableFriendsCount}');
-          debugPrint(
-              '🔍 DEBUG: Selected friends count: ${viewModel.selectedCount}');
-
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
             body: _buildBody(context, viewModel),

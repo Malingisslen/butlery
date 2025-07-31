@@ -2,10 +2,54 @@
 
 import 'package:flutter/foundation.dart';
 
-/// Debug configuration for production safety
+/// Centralized debug and development configuration for the Butlery application.
+///
+/// This class provides safe access to debug-related settings and ensures that
+/// all debug features are properly controlled based on the build mode. It prevents
+/// debug information and development tools from being exposed in production builds
+/// while providing comprehensive debugging capabilities during development.
+///
+/// **Build Mode Detection:**
+/// - **Debug Mode**: Development builds with full debugging capabilities
+/// - **Profile Mode**: Performance testing builds with minimal debugging
+/// - **Release Mode**: Production builds with all debugging disabled
+///
+/// **Security Features:**
+/// - Automatic debug feature disabling in production builds
+/// - Environment-aware configuration management
+/// - Safe default values that prioritize production security
+/// - Compile-time optimization through const values
+///
+/// **Debug Capabilities Controlled:**
+/// - Console logging and debug output
+/// - Performance monitoring and overlays
+/// - Memory leak detection and analysis
+/// - Development tools and debug panels
+/// - Assertion checking and validation
+/// - Debug information display in UI
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Check build environment
+/// if (DebugConfig.isDebugMode) {
+///   print('Development mode active');
+/// }
 /// 
-/// This configuration ensures that all debug features are
-/// properly disabled in production builds.
+/// // Conditional debug features
+/// if (DebugConfig.enableConsoleLogging) {
+///   debugPrint('Debug message');
+/// }
+/// 
+/// // Environment-specific behavior
+/// final apiUrl = DebugConfig.environment == 'production' 
+///   ? 'https://api.butlery.com'
+///   : 'https://dev-api.butlery.com';
+/// ```
+///
+/// **Production Safety:**
+/// All debug features are automatically disabled in release builds,
+/// ensuring no sensitive information or development tools are exposed
+/// to end users while maintaining full debugging capabilities during development.
 class DebugConfig {
   DebugConfig._();
   

@@ -1,6 +1,52 @@
 // lib/core/permissions/validators/validation_result.dart
 
-/// Result of a permission validation
+/// Standardized result container for permission validation operations.
+///
+/// This class provides a consistent way to communicate the outcomes of permission
+/// validation operations throughout the Butlery application. It encapsulates both
+/// successful and failed validation results with detailed context information for
+/// proper error handling and user feedback.
+///
+/// **Key Features:**
+/// - **Type Safety**: Strongly typed success/failure states prevent ambiguity
+/// - **Rich Context**: Additional metadata for debugging and detailed error handling
+/// - **User-Friendly Messages**: Localized error messages ready for UI display
+/// - **Error Categorization**: Structured error codes for programmatic handling
+/// - **Extensible Design**: Context map allows for domain-specific additional data
+///
+/// **Common Usage Patterns:**
+/// ```dart
+/// // Basic validation result checking
+/// final result = await validator.canEditRecipe(recipeId);
+/// if (result.isValid) {
+///   // Proceed with operation
+/// } else {
+///   showError(result.errorMessage);
+/// }
+/// 
+/// // Detailed error handling with codes
+/// switch (result.errorCode) {
+///   case 'NOT_AUTHENTICATED':
+///     navigateToLogin();
+///     break;
+///   case 'INSUFFICIENT_PERMISSIONS':
+///     showPermissionDeniedDialog();
+///     break;
+///   case 'RESOURCE_NOT_FOUND':
+///     showResourceNotFoundMessage();
+///     break;
+/// }
+/// 
+/// // Using context for additional information
+/// if (result.context?['resource'] == 'recipe') {
+///   // Handle recipe-specific error
+/// }
+/// ```
+///
+/// **Factory Methods:**
+/// Provides convenient factory constructors for common validation scenarios,
+/// ensuring consistent error messages and codes across the application while
+/// supporting localization and proper error categorization.
 class PermissionValidationResult {
   final bool isValid;
   final String? errorMessage;

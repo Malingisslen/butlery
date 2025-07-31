@@ -5,7 +5,73 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
-/// Firebase implementation of NotificationsRepository
+/// Firebase Firestore implementation for push notification and user notification management.
+///
+/// This repository implements the [NotificationsRepository] interface using Firebase Firestore
+/// for persistent notification storage and Firebase Cloud Messaging (FCM) for push notification
+/// delivery. It provides comprehensive notification operations with security validation,
+/// batch processing, and real-time streaming capabilities.
+///
+/// **Architecture Design:**
+/// Extends [BaseFirebaseRepository] to leverage shared CRUD functionality while providing
+/// specialized notification operations. Uses multiple Firestore collections:
+/// - `user_notifications`: Persistent notification storage
+/// - `user_fcm_tokens`: FCM token management for push delivery
+/// - `user_notification_preferences`: User-controlled notification settings
+///
+/// **Security Implementation:**
+/// - **Ownership Validation**: Users can only access and modify their own notifications
+/// - **Permission Logging**: Comprehensive audit trail for notification operations
+/// - **FCM Security**: Secure token management with timestamp tracking
+/// - **Preference Control**: User-controlled granular notification settings
+/// - **Batch Validation**: Security checks for bulk notification operations
+///
+/// **Notification Features:**
+/// - **Individual Notifications**: Single-user targeted notification delivery
+/// - **Bulk Notifications**: Efficient mass notification distribution
+/// - **Read Status Management**: Mark individual, multiple, or all notifications as read
+/// - **Real-time Streams**: Live notification updates for reactive UI
+/// - **Notification History**: Persistent storage with pagination support
+/// - **Unread Counting**: Efficient unread notification badge counts
+///
+/// **FCM Integration:**
+/// - **Token Management**: Secure FCM token storage and updates
+/// - **Token Cleanup**: Proper token removal for security and privacy
+/// - **Push Delivery**: Integration with FCM for real-time push notifications
+/// - **Preference Filtering**: Respects user notification preferences for delivery
+///
+/// **Performance Optimizations:**
+/// - **Stream Limits**: Caps notification streams at 50 notifications for performance
+/// - **Batch Operations**: Efficient bulk read/write operations using Firestore batches
+/// - **Pagination Support**: Load notifications incrementally with since timestamps
+/// - **Efficient Queries**: Optimized Firestore queries with proper indexing
+///
+/// **Usage Examples:**
+/// ```dart
+/// final notificationRepo = FirebaseNotificationsRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
+/// 
+/// // Send notification
+/// await notificationRepo.sendNotification(
+///   userId: targetUserId,
+///   type: NotificationType.friendRequest,
+///   title: 'New Friend Request',
+///   body: 'John wants to be your friend!',
+/// );
+/// 
+/// // Real-time notifications
+/// notificationRepo.getNotificationsStream(userId).listen((notifications) {
+///   updateNotificationUI(notifications);
+///   updateBadgeCount(notifications.where((n) => !n.isRead).length);
+/// });
+/// 
+/// // Manage preferences
+/// await notificationRepo.updateNotificationPreferences(
+///   userId,
+///   NotificationPreferences(enableFriendRequests: false),
+/// );
+/// ```
 class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotification>
     implements NotificationsRepository {
   

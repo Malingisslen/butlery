@@ -1,6 +1,6 @@
 ---
 name: performance-architecture-optimizer
-description: Performance and architecture optimization specialist for refactoring large files using facade patterns, optimizing app performance, managing technical debt, and ensuring production-ready architecture compliance. Use PROACTIVELY for files over 500 lines, performance issues, memory optimization, or architectural improvements.
+description: MUST BE USED when dealing with managing the architechture of the project. Performance and architecture optimization specialist for refactoring large files using facade patterns, optimizing app performance, managing technical debt, and ensuring production-ready architecture compliance. Use PROACTIVELY for files over 500 lines, performance issues, memory optimization, or architectural improvements.
 tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash
 ---
 

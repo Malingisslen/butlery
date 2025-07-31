@@ -1,44 +1,35 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: AsyncOperationMixin - Eliminates async operation duplication in ViewModels
-/// File: lib/core/mixins/async_operation_mixin.dart
-/// Quick Guide: Provides standardized async operation handling for ViewModels
-/// Dependencies IN: StateNotifierMixin, Logger utilities, Dart async
-/// Dependencies OUT: Used by all ViewModels with async operations
-/// Data flow: ViewModel -> AsyncOperationMixin -> Operation execution -> State updates
-/// State management: Built on StateNotifierMixin for consistent state handling
-/// Purpose: Eliminate duplicated async operation patterns across ViewModels
-/// Common issues: Error handling, loading states, retry logic, concurrent operations
-/// Test coverage: Unit tests for all async patterns and error scenarios
-/// Performance: Efficient operation queuing and debouncing for performance
-/// Analytics: Operation timing, success/failure rates, retry patterns
-/// Code smells: None - clean abstraction for async operation patterns
-/// Connected to: All ViewModels performing async operations
-/// Used in phases: Phase 7 - Additional Code Duplication Elimination
-
-import 'dart:async';
-import 'package:butlery/core/mixins/state_notifier_mixin.dart';
-import 'package:butlery/core/utils/logger.dart';
-
-/// Mixin that provides standardized async operation handling for ViewModels
-/// 
-/// This mixin eliminates the duplicated async operation patterns found in ViewModels:
-/// - Try-catch blocks with loading states
-/// - Error handling and retry logic
-/// - Concurrent operation management
-/// - Debounced operations
-/// - Background operations
-/// 
-/// Pattern eliminated:
+/// Mixin providing standardized async operation handling for ViewModels.
+///
+/// This mixin eliminates duplicated async operation patterns found across ViewModels
+/// by providing a comprehensive set of async operation utilities with built-in
+/// loading state management, error handling, concurrency control, and performance
+/// optimizations.
+///
+/// Key capabilities:
+/// - Automatic loading state management during async operations
+/// - Concurrent operation tracking and prevention of duplicate operations
+/// - Debounced operations to prevent excessive API calls
+/// - Background operations that don't affect loading states
+/// - Operation caching to avoid redundant network requests
+/// - Retry mechanisms with exponential backoff
+/// - Operation cancellation and cleanup
+///
+/// Architecture benefits:
+/// - Eliminates try-catch boilerplate in ViewModels
+/// - Provides consistent loading and error states across the app
+/// - Prevents race conditions and duplicate operations
+/// - Improves performance through debouncing and caching
+/// - Simplifies ViewModel testing with predictable state management
+///
+/// Usage pattern transformation:
 /// ```dart
-/// // Before (duplicated in ViewModels):
+/// // Before (duplicated across ViewModels):
 /// Future<void> loadData() async {
 ///   try {
 ///     _setLoading(true);
 ///     _clearError();
-///     
 ///     final data = await _service.fetchData();
 ///     _data = data;
-///     
 ///     _setLoading(false);
 ///     notifyListeners();
 ///   } catch (e) {
@@ -46,8 +37,8 @@ import 'package:butlery/core/utils/logger.dart';
 ///     _setLoading(false);
 ///   }
 /// }
-/// 
-/// // After (centralized):
+///
+/// // After (using AsyncOperationMixin):
 /// Future<void> loadData() async {
 ///   await executeAsync(() async {
 ///     final data = await _service.fetchData();
@@ -55,32 +46,75 @@ import 'package:butlery/core/utils/logger.dart';
 ///   });
 /// }
 /// ```
+
+import 'dart:async';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
+
+/// Mixin for standardizing async operations in ViewModels.
+///
+/// Built on top of [StateNotifierMixin] to provide comprehensive async operation
+/// management including loading states, error handling, concurrency control,
+/// and performance optimizations. This mixin should be used by all ViewModels
+/// that perform async operations.
+///
+/// Provides these operation types:
+/// - [executeAsync] - Standard async operations with loading states
+/// - [executeNamedOperation] - Named operations that prevent duplicates
+/// - [executeDebouncedOperation] - Debounced operations for user input
+/// - [executeBackgroundOperation] - Background operations without loading states
+/// - [executeBatchOperations] - Batch processing with progress tracking
+/// - [executeWithRetry] - Operations with automatic retry logic
 mixin AsyncOperationMixin on StateNotifierMixin {
   // ===== OPERATION TRACKING =====
   
-  /// Active operations for concurrent operation management
+  /// Set of currently active operation names to prevent duplicates.
   final Set<String> _activeOperations = {};
   
-  /// Pending operations that are debounced
+  /// Map of debounced operations with their timers.
   final Map<String, Timer> _pendingOperations = {};
   
-  /// Operation results cache for preventing duplicate operations
+  /// Cache of operation results to avoid redundant network requests.
   final Map<String, dynamic> _operationCache = {};
   
   // ===== PUBLIC GETTERS =====
   
-  /// Whether any operations are currently active
+  /// Whether any operations are currently executing.
+  ///
+  /// Useful for UI components that need to show global loading states
+  /// or disable certain actions while operations are in progress.
   bool get hasActiveOperations => _activeOperations.isNotEmpty;
   
-  /// Number of active operations
+  /// The number of operations currently executing.
+  ///
+  /// Can be used to show progress indicators or operation counts in the UI.
   int get activeOperationCount => _activeOperations.length;
   
-  /// List of active operation names
+  /// List of names of currently executing operations.
+  ///
+  /// Useful for debugging and showing detailed operation status in the UI.
   List<String> get activeOperationNames => _activeOperations.toList();
   
   // ===== BASIC ASYNC OPERATIONS =====
   
-  /// Execute async operation with automatic state management
+  /// Executes an async operation with automatic loading state and error management.
+  ///
+  /// This is the primary method for executing async operations in ViewModels.
+  /// It automatically manages loading states, clears previous errors, and
+  /// handles exceptions with proper error messaging and logging.
+  ///
+  /// [operation] The async operation to execute
+  /// [errorPrefix] Prefix for error messages (optional)
+  /// [clearErrorOnStart] Whether to clear existing errors before starting (default: true)
+  ///
+  /// Returns the result of the operation.
+  ///
+  /// Example:
+  /// ```dart
+  /// final recipes = await executeAsync(() async {
+  ///   return await recipeService.fetchRecipes();
+  /// });
+  /// ```
   @override
   Future<T> executeAsync<T>(
     Future<T> Function() operation, {
@@ -94,7 +128,24 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     );
   }
   
-  /// Execute named operation (prevents duplicates)
+  /// Executes a named async operation, preventing duplicate executions.
+  ///
+  /// Named operations are tracked to prevent the same operation from running
+  /// concurrently. If an operation with the same name is already running,
+  /// subsequent calls will wait for the first operation to complete.
+  ///
+  /// [operationName] Unique name for the operation
+  /// [operation] The async operation to execute
+  ///
+  /// Returns the result of the operation.
+  ///
+  /// Example:
+  /// ```dart
+  /// final user = await executeNamedOperation(
+  ///   'fetchUserProfile',
+  ///   () => userService.fetchProfile(userId),
+  /// );
+  /// ```
   Future<T> executeNamedOperation<T>(
     String operationName,
     Future<T> Function() operation, {

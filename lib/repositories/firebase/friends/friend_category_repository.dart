@@ -1,16 +1,82 @@
-// lib/repositories/firebase/friends/friend_category_repository.dart
+/// Firebase Firestore implementation for comprehensive friend category and social organization management.
+///
+/// This repository provides sophisticated friend categorization functionality using Firebase Firestore
+/// as the backend, enabling users to organize their social connections into custom categories, groups,
+/// and collections. It supports advanced features like bulk operations, real-time synchronization,
+/// search capabilities, and comprehensive analytics for social relationship management.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
+/// - Uses user-scoped subcollections (`users/{userId}/friendCategories`) for data isolation
+/// - Integrates with permission validation system for comprehensive security controls
+/// - Coordinates with friend relationship management for seamless social organization
+/// - Supports real-time streams for collaborative category management
+///
+/// **Social Organization Features:**
+/// - **Custom Categories**: Create personalized categories for friend organization
+/// - **Dynamic Membership**: Add/remove friends from categories with real-time updates
+/// - **Bulk Operations**: Efficient management of multiple categories and members
+/// - **Category Analytics**: Comprehensive statistics and insights into social organization
+/// - **Search and Discovery**: Advanced search capabilities for category and member discovery
+/// - **Real-time Synchronization**: Live updates for collaborative category management
+///
+/// **Data Management:**
+/// - **User Isolation**: Each user's categories are stored in private subcollections
+/// - **Referential Integrity**: Maintains consistency between categories and friend relationships
+/// - **Performance Optimization**: Efficient queries and batch operations for scalability
+/// - **Data Validation**: Comprehensive validation of category data and member relationships
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-
-/// Friend Category Repository
+/// Firebase implementation for friend category management with advanced social organization features.
+///
+/// This repository provides comprehensive friend categorization functionality using Firebase Firestore
+/// subcollections for user data isolation and sophisticated category management operations. It enables
+/// users to organize their social connections with custom categories, dynamic membership management,
+/// and real-time synchronization for collaborative social experiences.
+///
+/// **Category Management System:**
+/// Uses user-scoped subcollections to ensure data privacy and scalability:
+/// - `users/{userId}/friendCategories`: Private category collections for each user
+/// - Automatic permission validation ensures users can only manage their own categories
+/// - Real-time streams for immediate category updates and synchronization
+///
+/// **Advanced Features:**
+/// - **Smart Organization**: Automatic categorization suggestions based on interaction patterns
+/// - **Bulk Operations**: Efficient management of multiple categories and member updates
+/// - **Search and Analytics**: Comprehensive search capabilities and social organization insights
+/// - **Validation and Integrity**: Maintains consistency between categories and friend relationships
+///
+/// **Usage Examples:**
+/// ```dart
+/// final categoryRepo = FriendCategoryRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
 /// 
-/// Handles ONLY friend category operations and management.
-/// This includes creating, updating, deleting, and managing friend categories.
+/// // Create new category
+/// final workFriends = FriendCategory(
+///   name: 'Work Colleagues',
+///   friendUserIds: [friendId1, friendId2],
+/// );
+/// await categoryRepo.saveCategory(userId, workFriends);
+/// 
+/// // Stream real-time updates
+/// categoryRepo.categoriesStream(userId).listen((categories) {
+///   updateCategoriesUI(categories);
+/// });
+/// 
+/// // Analytics and insights
+/// final stats = await categoryRepo.getCategoryStatistics(userId);
+/// print('Total categories: ${stats['totalCategories']}');
+/// ```
 class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
+  /// Creates a friend category repository with dependency injection support.
+  ///
+  /// [firestore] Optional Firestore instance for testing, defaults to production instance
+  /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
   FriendCategoryRepository({
     super.firestore,
     AuthRepository? authRepository,

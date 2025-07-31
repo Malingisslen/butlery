@@ -1,5 +1,29 @@
-// lib/main.dart
-// ✅ REFAKTORISERAD: Använder AppInitializer för clean startup och AppRouter för routing
+/// Main entry point for the Butlery application.
+///
+/// This file serves as the application's bootstrap, coordinating the startup
+/// sequence, dependency injection, and initial widget hierarchy. The architecture
+/// follows a two-phase initialization pattern to optimize startup performance
+/// and prevent UI blocking.
+///
+/// Key responsibilities:
+/// - Critical initialization (Flutter bindings, environment variables)
+/// - Background initialization (Firebase, services, dependency injection)
+/// - Deep link handling for incoming shared content
+/// - Authentication state management and routing
+/// - Global navigation and analytics tracking
+///
+/// Architecture Pattern:
+/// ```
+/// main() -> AppInitializer.initializeCritical() -> runApp()
+///   └─> AppInitializer.initializeBackground() (parallel)
+///   └─> ButleryApp -> InitializationWrapper -> AuthWrapper
+/// ```
+///
+/// Performance optimizations:
+/// - Non-blocking critical initialization before runApp()
+/// - Heavy services initialized in background after UI starts
+/// - Analytics observer setup deferred until services are ready
+/// - Cached deep link processing with proper wait states
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -42,19 +66,38 @@ import 'package:butlery/views/auth_view.dart';
 // Befintliga views
 import 'package:butlery/views/mina_recept_view.dart';
 
-// ✅ DRAMATISKT FÖRENKLAD main() funktion - NER FRÅN 693 RADER!
-// 🚀 PERFORMANCE FIX: Split initialization to prevent frame skipping
+/// Application entry point.
+///
+/// Implements a two-phase initialization strategy for optimal startup performance:
+/// 1. Critical initialization (blocking) - Only essential components
+/// 2. Background initialization (async) - Heavy services and integrations
+///
+/// This prevents UI blocking during startup while ensuring core functionality
+/// is available immediately. The pattern reduces time-to-first-frame significantly.
 Future<void> main() async {
-  // Only critical initialization before runApp to prevent UI blocking
+  // Phase 1: Critical initialization - must complete before UI starts
+  // Includes Flutter bindings, environment variables, and localizations
   await AppInitializer.initializeCritical();
 
-  // Start app immediately for faster UI
+  // Start UI immediately for best user experience
   runApp(const ButleryApp());
 
-  // Complete remaining initialization in background
+  // Phase 2: Background initialization - runs parallel to UI startup
+  // Includes Firebase, analytics, dependency injection, and offline services
   AppInitializer.initializeBackground();
 }
 
+/// Root application widget for Butlery.
+///
+/// Manages the top-level application state including:
+/// - Analytics observer setup after background initialization
+/// - Deep link handling for shared content (recipes, menus, shopping lists)
+/// - Global navigation configuration
+/// - Offline service provider setup
+/// - Theme configuration and route management
+///
+/// The widget waits for background initialization to complete before
+/// setting up analytics and other non-critical services.
 class ButleryApp extends StatefulWidget {
   const ButleryApp({super.key});
 
@@ -78,7 +121,11 @@ class _ButleryAppState extends State<ButleryApp> {
     _handleInitialDeepLink();
   }
 
-  /// Väntar på att background initialization ska slutföras för att sätta upp analytics
+  /// Waits for background initialization to complete before setting up analytics.
+  ///
+  /// This ensures that all services are properly initialized before attempting
+  /// to create the Firebase Analytics observer. Uses polling with a small delay
+  /// to avoid blocking the UI thread.
   Future<void> _waitForBackgroundInitialization() async {
     // Warten bis background initialization fertig ist
     while (!AppInitializer.isBackgroundInitialized) {
@@ -100,7 +147,16 @@ class _ButleryAppState extends State<ButleryApp> {
     }
   }
 
-  /// Handle initial deep link when app starts
+  /// Handles deep links received when the app starts.
+  ///
+  /// Processes incoming shared content URLs for:
+  /// - Friend invitations (/invite)
+  /// - Recipe sharing (/recipe)
+  /// - Menu sharing (/menu)
+  /// - Shopping list sharing (/shopping)
+  ///
+  /// Waits for background initialization to ensure all services are available
+  /// before processing the deep link and navigating to appropriate views.
   Future<void> _handleInitialDeepLink() async {
     // Wait for background initialization to complete
     while (!AppInitializer.isBackgroundInitialized) {
@@ -132,7 +188,18 @@ class _ButleryAppState extends State<ButleryApp> {
     }
   }
 
-  /// Process incoming deep link and navigate accordingly
+  /// Processes a deep link URL and navigates to the appropriate view.
+  ///
+  /// Parses the incoming URL to extract the path and query parameters,
+  /// then routes to the correct handler based on the content type.
+  ///
+  /// [deepLinkUrl] The complete deep link URL to process
+  ///
+  /// Supports the following URL patterns:
+  /// - `/invite?id=xxx&from=yyy&type=friend` - Friend invitations
+  /// - `/recipe?id=xxx&from=yyy` - Shared recipes
+  /// - `/menu?id=xxx&from=yyy` - Shared menus
+  /// - `/shopping?id=xxx&from=yyy` - Shared shopping lists
   Future<void> _processDeepLink(String deepLinkUrl) async {
     try {
       final uri = Uri.parse(deepLinkUrl);
@@ -294,7 +361,17 @@ class _ButleryAppState extends State<ButleryApp> {
   }
 }
 
-/// Detta widget visas medan appen initialiseras i bakgrunden
+/// Loading screen widget displayed during background initialization.
+///
+/// Shows a branded loading interface while heavy services (Firebase, analytics,
+/// dependency injection) are being initialized in the background. Automatically
+/// transitions to the authentication wrapper once initialization completes.
+///
+/// The loading screen includes:
+/// - App branding and logo
+/// - Loading indicator
+/// - Localized status text
+/// - Branded color scheme
 class InitializationWrapper extends StatefulWidget {
   const InitializationWrapper({super.key});
 
@@ -372,9 +449,16 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
   }
 }
 
-/// Detta är den centrala punkten för autentiseringsflödet:
-/// - Om användare är inloggad → MinaReceptView  
-/// - Om användare är utloggad → AuthView
+/// Authentication state wrapper that manages the main app flow.
+///
+/// Acts as the central routing point based on user authentication status:
+/// - Authenticated users are directed to the main recipe view (MinaReceptView)
+/// - Unauthenticated users are directed to the authentication view (AuthView)
+/// - Handles loading states and error scenarios gracefully
+///
+/// Uses Firebase Auth's stream-based authentication state monitoring to
+/// automatically react to login/logout events and update the UI accordingly.
+/// Provides appropriate loading and error states with branded styling.
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 

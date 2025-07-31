@@ -10,10 +10,69 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 // Using existing permission exceptions
 
-/// Repository for handling shopping lists stored in Firestore.
+/// Firebase Firestore implementation for shopping list operations and template management.
 ///
-/// Refactored to extend BaseFirebaseRepository with UserScopedFirebaseRepository mixin,
-/// eliminating 50+ lines of duplicate CRUD code and authentication checks.
+/// This repository implements the [ShoppingRepository] interface using Firebase Firestore,
+/// managing both personal and collaborative shopping lists with comprehensive template
+/// functionality. It combines user-scoped personal lists with shared collaborative lists
+/// and a community template system.
+///
+/// **Architecture Design:**
+/// Extends [BaseFirebaseRepository] with [UserScopedFirebaseRepository] mixin to eliminate
+/// 50+ lines of duplicate CRUD code while providing specialized shopping list operations.
+/// Uses multiple Firestore collections for different data types:
+/// - Personal lists: `/users/{userId}/unified_shopping_lists`
+/// - Collaborative lists: `/unified_shared_shopping_lists`
+/// - Templates: `/shoppingListTemplates`
+///
+/// **Multi-Collection Management:**
+/// - **Personal Lists**: User-owned lists stored in user-scoped collections
+/// - **Collaborative Lists**: Shared lists with member permissions and real-time sync
+/// - **Template System**: Reusable shopping list patterns with public/private visibility
+/// - **Active List Tracking**: Single active list management for streamlined UX
+///
+/// **Security and Permissions:**
+/// - **Ownership Validation**: Verifies user ownership for all personal list operations
+/// - **Access Control**: Validates member permissions for collaborative lists
+/// - **Template Privacy**: Supports public and private template visibility
+/// - **Permission Logging**: Audit trail for all permission-sensitive operations
+/// - **Field Validation**: Ensures data integrity for lists, items, and templates
+///
+/// **Performance Features:**
+/// - **Smart Querying**: Optimized template search with client-side filtering fallback
+/// - **Batch Operations**: Efficient bulk operations for items and templates
+/// - **Stream Management**: Real-time updates for both personal and collaborative lists
+/// - **Query Limits**: Performance-conscious limits on template and archive queries
+///
+/// **Template System:**
+/// Creates reusable shopping list templates that users can save, share publicly,
+/// and use to quickly generate new shopping lists. Supports search, categorization,
+/// and metadata tracking for enhanced discoverability.
+///
+/// **Usage Examples:**
+/// ```dart
+/// final shoppingRepo = FirebaseShoppingRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
+/// 
+/// // Create and set active list
+/// final list = UnifiedShoppingList(name: 'Weekly Groceries');
+/// final created = await shoppingRepo.create(list);
+/// await shoppingRepo.setActiveList(created.id);
+/// 
+/// // Save as template
+/// final templateId = await shoppingRepo.saveAsTemplate(
+///   listId: created.id,
+///   templateName: 'Weekly Template',
+///   isPublic: true,
+/// );
+/// 
+/// // Create from template
+/// final newListId = await shoppingRepo.createListFromTemplate(
+///   templateId: templateId,
+///   listName: 'This Week\'s List',
+/// );
+/// ```
 class FirebaseShoppingRepository
     extends BaseFirebaseRepository<UnifiedShoppingList>
     with UserScopedFirebaseRepository<UnifiedShoppingList>

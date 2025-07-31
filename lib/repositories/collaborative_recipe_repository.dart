@@ -1,7 +1,67 @@
+/// Firebase Firestore repository for comprehensive real-time collaborative recipe editing and management.
+///
+/// This repository provides sophisticated real-time collaboration functionality using Firebase Firestore
+/// for synchronous recipe editing, presence awareness, and live collaboration features. It enables
+/// multiple users to simultaneously edit recipes with real-time synchronization, conflict resolution,
+/// and comprehensive collaboration analytics for seamless cooking community experiences.
+///
+/// **Architecture Integration:**
+/// - Uses Firebase Firestore for real-time data synchronization and presence management
+/// - Integrates with RealtimeRecipe and LiveEditor models for collaborative editing
+/// - Provides presence awareness through dedicated subcollections for active user tracking
+/// - Coordinates with user management system for collaborative permissions and identity
+/// - Supports real-time streams for immediate collaboration updates and conflict resolution
+///
+/// **Real-time Collaboration Features:**
+/// - **Synchronous Editing**: Multiple users can edit recipes simultaneously with live updates
+/// - **Presence Awareness**: Real-time tracking of active collaborators and their editing status
+/// - **Conflict Resolution**: Sophisticated conflict detection and resolution for concurrent edits
+/// - **Live Cursors**: Real-time cursor and selection tracking for enhanced collaboration UX
+/// - **Edit History**: Comprehensive change tracking and version management for collaborative sessions
+/// - **Permission Management**: Fine-grained access control for collaborative editing sessions
+///
+/// **Performance and Scalability:**
+/// - **Optimistic Updates**: Client-side optimistic updates with server-side conflict resolution
+/// - **Efficient Presence**: Lightweight presence tracking minimizing Firestore read/write costs
+/// - **Real-time Streams**: Optimized Firestore snapshots for minimal latency collaboration
+/// - **Batch Operations**: Efficient bulk operations for collaborative data synchronization
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
 
+/// Firebase implementation for real-time collaborative recipe editing with comprehensive presence management.
+///
+/// This repository provides complete real-time collaboration functionality using Firebase Firestore
+/// collections and subcollections to manage collaborative editing sessions, user presence, and
+/// synchronized recipe modifications. It enables seamless multi-user recipe editing experiences
+/// with sophisticated conflict resolution and real-time collaboration features.
+///
+/// **Collaboration Architecture:**
+/// Uses multi-collection approach for comprehensive collaboration management:
+/// - `realtime_recipes`: Primary collection storing collaborative recipe sessions
+/// - `realtime_recipes/{id}/presence`: Subcollection tracking active user presence and editing status
+/// - Real-time streams for immediate collaboration updates and presence awareness
+///
+/// **Usage Examples:**
+/// ```dart
+/// final collaborativeRepo = CollaborativeRecipeRepository();
+/// 
+/// // Create collaborative editing session
+/// final realtimeRecipe = RealtimeRecipe.create(originalRecipe, ownerId);
+/// await collaborativeRepo.createRealtimeRecipe(realtimeRecipe);
+/// 
+/// // Watch real-time recipe changes
+/// collaborativeRepo.watchRealtimeRecipe(recipeId).listen((snapshot) {
+///   final updatedRecipe = RealtimeRecipe.fromFirestore(snapshot);
+///   updateEditorUI(updatedRecipe);
+/// });
+/// 
+/// // Track collaborator presence
+/// collaborativeRepo.watchActivePresence(recipeId).listen((presence) {
+///   updatePresenceIndicators(presence.docs);
+/// });
+/// ```
 class CollaborativeRecipeRepository {
   final FirebaseFirestore _firestore;
 

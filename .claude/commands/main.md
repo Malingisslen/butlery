@@ -21,9 +21,17 @@ Follow these steps in order:
 - Confirm merge was successful before deleting the branch
 - Handle any merge conflicts if they occur
 
+**Worktree Handling**:
+- Check if working in a worktree directory (path contains `../project-`)
+- If in worktree, after successful merge, offer to:
+  - Remove the worktree: `git worktree remove ../project-[branch-name]`
+  - Return user to main repository directory
+  - Clean up any worktree references
+
 **Error Handling**:
 - If merge conflicts occur, inform user and provide guidance
 - If branch deletion fails (e.g., unmerged commits), explain the issue
 - If already on main, skip merge step but still commit changes
+- If worktree removal fails, provide manual cleanup instructions
 
-This command provides a complete feature branch workflow for finishing work and returning to main.
+This command provides a complete feature branch workflow for finishing work and returning to main, with full worktree support.

@@ -4,7 +4,67 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message_type.dart';
 
-/// Repository interface for messaging operations
+/// Repository interface for real-time messaging and conversation management.
+///
+/// This interface provides comprehensive messaging functionality including direct
+/// messaging, group conversations, real-time message streaming, and conversation
+/// management. It enables users to communicate privately and collaborate effectively
+/// within the Butlery social platform.
+///
+/// **Core Messaging Features:**
+/// - **Direct Conversations**: One-on-one private messaging between users
+/// - **Group Conversations**: Multi-participant group messaging and collaboration
+/// - **Real-time Messaging**: Live message streaming and instant delivery
+/// - **Message Management**: Send, edit, delete, and status tracking for messages
+/// - **Conversation Management**: Create, update, and manage conversation metadata
+/// - **Participant Management**: Add/remove participants in group conversations
+///
+/// **Real-time Capabilities:**
+/// - Instant message delivery and receipt confirmation
+/// - Live typing indicators and presence information
+/// - Real-time conversation and message streams
+/// - Message status tracking (sent, delivered, read)
+/// - Automatic message synchronization across devices
+///
+/// **Conversation Types:**
+/// - **Direct**: Private conversations between two users
+/// - **Group**: Multi-participant conversations with shared context
+/// - **Recipe Collaboration**: Messaging integrated with recipe sharing
+/// - **Shopping Coordination**: Messaging for collaborative shopping lists
+///
+/// **Privacy and Security:**
+/// - Participant-only access to conversation content
+/// - Secure message transmission and storage
+/// - Conversation metadata protection
+/// - User blocking and privacy controls integration
+///
+/// **Usage Examples:**
+/// ```dart
+/// final messagingRepo = sl<MessagingRepository>();
+/// 
+/// // Create direct conversation
+/// final conversationId = await messagingRepo.createDirectConversation(
+///   user1Id: currentUserId,
+///   user1DisplayName: currentUser.displayName,
+///   user2Id: friendId,
+///   user2DisplayName: friend.displayName,
+/// );
+/// 
+/// // Send message
+/// final message = Message(
+///   conversationId: conversationId,
+///   senderId: currentUserId,
+///   content: 'Hey! Want to try this recipe together?',
+///   type: MessageType.text,
+/// );
+/// await messagingRepo.sendMessage(message);
+/// 
+/// // Listen to messages
+/// messagingRepo.getConversationMessages(conversationId: conversationId)
+///   .listen((messages) {
+///     updateMessageList(messages);
+///   });
+/// ```
 abstract class MessagingRepository {
   // ===== CONVERSATION OPERATIONS =====
   

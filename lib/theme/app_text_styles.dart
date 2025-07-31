@@ -57,6 +57,9 @@ class AppTextStyles {
     height: 1.3,
   );
 
+  /// Title Small - For smaller titles (alias for headlineSmall)
+  static const TextStyle titleSmall = headlineSmall;
+
 
   // ===== BODY STYLES =====
 

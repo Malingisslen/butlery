@@ -78,6 +78,9 @@ class PermissionService extends BaseService {
   /// Get current user ID
   String? get currentUserId => _authService.currentUserId;
 
+  /// Get current user display name
+  String? get currentUserDisplayName => currentUser?.displayName;
+
   /// Get current user profile
   model.UserProfile? get currentUser => _userService.currentUserProfile;
 

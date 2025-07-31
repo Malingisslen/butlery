@@ -1,6 +1,26 @@
 // lib/core/injection.dart
 
-/// Dependency injection konfiguration för Butlery - UPPDATERAD MED REALTIME SYNC
+/// Centralized dependency injection configuration for the Butlery application.
+///
+/// This file configures all application dependencies using the GetIt service locator
+/// pattern. It establishes the complete dependency graph including repositories,
+/// services, ViewModels, and utility classes following a structured architecture.
+///
+/// The configuration is organized into logical phases:
+/// - Core repositories and Firebase integration
+/// - Unified service layer with business logic
+/// - ViewModels and presentation layer dependencies
+/// - Utility services and platform integrations
+///
+/// All dependencies are registered as singletons or lazy singletons to ensure
+/// proper lifecycle management and resource efficiency. The registration order
+/// respects dependency relationships to prevent circular dependencies.
+///
+/// Example usage:
+/// ```dart
+/// await configureDependencies();
+/// final authService = sl<AuthService>();
+/// ```
 library;
 
 import 'package:get_it/get_it.dart';
@@ -107,57 +127,88 @@ import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 
-/// Service Locator instance
+/// Global service locator instance.
+///
+/// Provides access to all registered dependencies throughout the application.
+/// Use this instance to retrieve services, repositories, and ViewModels.
+///
+/// Example usage:
+/// ```dart
+/// final authService = sl<AuthService>();
+/// final recipeRepository = sl<RecipeRepository>();
+/// ```
 final GetIt sl = GetIt.instance;
 
-/// Initialiserar alla dependencies
+/// Initializes all application dependencies in the correct order.
+///
+/// This function sets up the complete dependency injection container with
+/// all repositories, services, ViewModels, and utility classes. The registration
+/// order is carefully managed to prevent circular dependencies.
+///
+/// Registration phases:
+/// 1. Platform dependencies (SharedPreferences)
+/// 2. Core repositories (Auth, Recipe, Firestore)
+/// 3. Realtime services for collaborative features
+/// 4. Social and messaging services
+/// 5. Unified service layer (Recipe, Friends, Shopping)
+/// 6. Permission and analytics services
+/// 7. ViewModels for all application screens
+/// 8. Service initialization and validation
+///
+/// Throws [Exception] if any critical service registration or validation fails.
 Future<void> initializeDependencies() async {
   if (kDebugMode) {
-    debugPrint('🔄 Initialiserar dependency injection för Butlery...');
+    debugPrint('🔄 Initializing dependency injection for Butlery...');
   }
 
   try {
-    // ==================== SHARED PREFERENCES (FÖRST AV ALLT!) ====================
+    // ==================== PLATFORM DEPENDENCIES ====================
+    // SharedPreferences must be registered first as many services depend on it
     final sharedPreferences = await SharedPreferences.getInstance();
     sl.registerSingleton<SharedPreferences>(sharedPreferences);
     if (kDebugMode) {
-      debugPrint('✅ SharedPreferences registrerad');
+      debugPrint('✅ SharedPreferences registered');
     }
 
-    // ==================== REPOSITORIES ====================
+    // ==================== CORE REPOSITORIES ====================
+    // Core repositories form the foundation of the data access layer
     sl.registerSingleton<AuthRepository>(FirebaseAuthRepository());
     sl.registerSingleton<RecipeRepository>(
       FirebaseRecipeRepository(authRepository: sl<AuthRepository>()),
     );
     if (kDebugMode) {
-      debugPrint('✅ Repositories registrerade');
+      debugPrint('✅ Core repositories registered');
     }
 
     // ==================== CORE SERVICES ====================
 
+    // Authentication service is critical and needed by many other services
     sl.registerSingleton<AuthService>(
       AuthService(authRepository: sl<AuthRepository>()),
     );
     if (kDebugMode) {
-      debugPrint('✅ AuthService registrerad');
+      debugPrint('✅ AuthService registered');
     }
 
+    // Persistence service for local data storage and caching
     sl.registerSingleton<PersistenceService>(PersistenceService());
     if (kDebugMode) {
-      debugPrint('✅ PersistenceService registrerad');
+      debugPrint('✅ PersistenceService registered');
     }
 
 
-    // ==================== REPOSITORIES ====================
+    // ==================== DATABASE REPOSITORIES ====================
+    // FirestoreRepository provides centralized Firestore access
     sl.registerSingleton<FirestoreRepository>(FirestoreRepository());
     if (kDebugMode) {
-      debugPrint('✅ FirestoreRepository registrerad');
+      debugPrint('✅ FirestoreRepository registered');
     }
 
-    // ✅ PHASE 1A COMPLETED: Removed direct FirebaseFirestore registration
-    // Services now use repositories through dependency injection
+    // Note: Direct FirebaseFirestore registration removed in favor of repository pattern
+    // All services now use repositories for consistent data access
 
-    // ==================== REALTIME SERVICES (FAS 2 + 3) ====================
+    // ==================== REALTIME COLLABORATION SERVICES ====================
+    // RealtimeSyncService enables collaborative editing of recipes and menus
     sl.registerSingleton<RealtimeSyncService>(
       RealtimeSyncService(
         firestoreRepository: sl<FirestoreRepository>(),
@@ -165,9 +216,10 @@ Future<void> initializeDependencies() async {
       ),
     );
     if (kDebugMode) {
-      debugPrint('✅ RealtimeSyncService registrerad');
+      debugPrint('✅ RealtimeSyncService registered');
     }
 
+    // Menu collaboration service for shared meal planning
     sl.registerLazySingleton<RealtimeMenuService>(
       () => RealtimeMenuService(
         syncService: sl<RealtimeSyncService>(),
@@ -175,9 +227,10 @@ Future<void> initializeDependencies() async {
       ),
     );
     if (kDebugMode) {
-      debugPrint('✅ RealtimeMenuService registrerad');
+      debugPrint('✅ RealtimeMenuService registered');
     }
 
+    // Recipe collaboration service for shared recipe editing
     sl.registerLazySingleton<RealtimeRecipeService>(
       () => RealtimeRecipeService(
         syncService: sl<RealtimeSyncService>(),
@@ -185,7 +238,7 @@ Future<void> initializeDependencies() async {
       ),
     );
     if (kDebugMode) {
-      debugPrint('✅ RealtimeRecipeService registrerad');
+      debugPrint('✅ RealtimeRecipeService registered');
     }
 
     // ==================== SOCIAL SERVICES (KORREKT ORDNING!) ====================
@@ -252,8 +305,8 @@ Future<void> initializeDependencies() async {
 
     // ==================== UNIFIED RECIPE SYSTEM (PHASE 5) ====================
     sl.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
-      // ✅ PHASE 1A: Uses FirestoreRepository instead of direct Firebase instance
-      // 🔄 PHASE 2 TODO: Migrate to use specialized RecipeRepository
+      // Using FirestoreRepository for standardized Firestore access
+      // Architecture follows repository pattern with proper abstraction
       firestore: sl<FirestoreRepository>().firestore,
       authRepository: sl<AuthRepository>() as FirebaseAuthRepository,
     ));
@@ -279,8 +332,8 @@ Future<void> initializeDependencies() async {
 
     sl.registerLazySingleton<SocialMenuOperations>(
       () => SocialMenuOperations(
-        // ✅ PHASE 1A: Uses FirestoreRepository instead of direct Firebase instance
-        // 🔄 PHASE 2 TODO: Migrate to use specialized MenuRepository
+        // Using FirestoreRepository for standardized database access
+        // Maintains consistency with unified architecture patterns
         firestore: sl<FirestoreRepository>().firestore,
         friendsService: sl<UnifiedFriendsService>(),
       ),

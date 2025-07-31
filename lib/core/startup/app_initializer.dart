@@ -28,18 +28,54 @@ import 'package:butlery/services/persistence_service.dart';
 // Firebase config
 import 'package:butlery/firebase_options.dart';
 
-/// 🚀 AppInitializer
+/// Centralized application initialization manager for the Butlery application.
 ///
-/// Centraliserad klass för all app-initialization.
-/// Ersätter den komplexa main()-funktionen med strukturerad initialization.
+/// This class implements a two-phase initialization strategy to optimize startup
+/// performance and prevent UI blocking during heavy initialization operations.
+/// It replaces the complex main() function with a structured initialization pattern
+/// that separates critical startup tasks from background services.
 ///
-/// Användning:
+/// **Two-Phase Initialization Strategy:**
+/// 
+/// **Phase 1 - Critical (Blocking):**
+/// - Flutter bindings initialization
+/// - Environment variables loading
+/// - Swedish localization setup
+/// - Must complete before UI starts
+/// 
+/// **Phase 2 - Background (Non-blocking):**
+/// - Firebase initialization and configuration
+/// - Analytics service setup
+/// - Dependency injection container setup
+/// - Offline service initialization (Hive)
+/// - Deep link service configuration
+/// 
+/// **Architecture Benefits:**
+/// - Reduces time-to-first-frame significantly
+/// - Provides graceful fallback for initialization failures
+/// - Enables proper error handling and recovery
+/// - Supports emergency initialization for critical failures
+/// - Maintains user experience during heavy operations
+///
+/// **Usage Example:**
 /// ```dart
 /// Future<void> main() async {
-///   await AppInitializer.initialize();
+///   // Phase 1: Critical initialization (blocking)
+///   await AppInitializer.initializeCritical();
+///   
+///   // Start UI immediately
 ///   runApp(const ButleryApp());
+///   
+///   // Phase 2: Background initialization (non-blocking)
+///   AppInitializer.initializeBackground();
 /// }
 /// ```
+///
+/// **Error Handling:**
+/// - Critical phase errors stop application startup
+/// - Background phase errors are logged but don't crash the app
+/// - Emergency initialization provides minimal fallback functionality
+/// - Comprehensive status checking for troubleshooting
 class AppInitializer {
   static bool _isBackgroundInitialized = false;
   static bool get isBackgroundInitialized => _isBackgroundInitialized;
@@ -419,9 +455,20 @@ class AppInitializer {
     return status;
   }
 
-  /// 🚨 Emergency initialization för när normal init misslyckas
+  /// Emergency initialization fallback for critical startup failures.
   ///
-  /// Kör bara det absolut nödvändiga för att appen ska starta
+  /// Performs only the absolute minimum initialization required for the app
+  /// to start and display an error state. Used when normal initialization
+  /// fails to provide a graceful fallback experience.
+  ///
+  /// Emergency initialization includes:
+  /// - Flutter bindings setup
+  /// - Minimal dependency injection (core services only)
+  ///
+  /// This allows the app to show an error screen rather than crashing
+  /// completely, improving the user experience during critical failures.
+  ///
+  /// Throws [Exception] if even emergency initialization fails.
   static Future<void> emergencyInitialize() async {
     debugPrint('🚨 === EMERGENCY INITIALIZATION ===');
 

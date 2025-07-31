@@ -1,20 +1,44 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Base Firebase Repository - Unified CRUD operations for all Firebase repositories
-/// File: lib/repositories/firebase/base_firebase_repository.dart
-/// Quick Guide: Generic Firebase repository eliminating 95% of duplicate CRUD patterns
-/// Dependencies IN: FirebaseFirestore, AuthRepository
-/// Dependencies OUT: All Firebase repositories extend this class
-/// Data flow: Authentication check -> Collection reference -> CRUD operation -> Error handling
-/// State management: Stateless with dependency injection
-/// Purpose: Eliminate 850+ lines of duplicate Firebase repository code
-/// Common issues: Authentication state, collection path configuration, error consistency
-/// Test coverage: Unit tests for all generic operations with mocked dependencies
-/// Performance: Unified error handling, consistent authentication checks
-/// Analytics: Centralized operation logging for debugging
-/// Code smells: None - clean generic base class with template method pattern
-// ignore: unintended_html_in_doc_comment
-/// Connected to: All Firebase repositories, Repository<T> interface, AuthRepository
-/// Used in phases: Code Consolidation Phase - Repository Pattern Unification
+/// Base Firebase repository providing unified CRUD operations for all Firebase collections.
+///
+/// This abstract base class consolidates duplicate code patterns found across multiple
+/// Firebase repositories, providing a consistent interface for data access operations.
+/// It implements the Repository pattern with Firebase Firestore as the underlying
+/// data store, including authentication checks, error handling, and logging.
+///
+/// Architecture Integration:
+/// - Extends Repository interface for consistent data access patterns
+/// - Uses PermissionValidationMixin for security enforcement
+/// - Integrates with AuthRepository for user authentication
+/// - Provides template methods for customization by concrete repositories
+///
+/// Key Features:
+/// - Generic CRUD operations with consistent error handling
+/// - Authentication validation for all write operations
+/// - Batch operations for bulk data manipulation
+/// - Real-time data streaming with Firestore snapshots
+/// - User-scoped and global collection support
+/// - Comprehensive logging for debugging and monitoring
+///
+/// **Usage Example:**
+/// ```dart
+/// class RecipeRepository extends BaseFirebaseRepository<Recipe>
+///     with UserScopedFirebaseRepository<Recipe> {
+///   RecipeRepository({required super.authRepository});
+///
+///   @override
+///   String get collectionName => 'recipes';
+///
+///   @override
+///   Recipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+///     Recipe.fromFirestore(doc);
+///
+///   @override
+///   Map<String, dynamic> toFirestore(Recipe recipe) => recipe.toFirestore();
+///
+///   @override
+///   String getId(Recipe recipe) => recipe.id;
+/// }
+/// ```
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';

@@ -3,18 +3,55 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 
-/// Configuration class for Firebase API keys and settings
-/// 
-/// This class reads Firebase configuration from environment variables
-/// to avoid hardcoding sensitive API keys in the codebase.
-/// 
-/// Usage:
+/// Centralized Firebase configuration management for the Butlery application.
+///
+/// This class provides secure access to Firebase API keys and configuration values
+/// by reading them from environment variables rather than hardcoding sensitive
+/// information in the source code. It supports multiple platforms and environments
+/// with appropriate fallback mechanisms and error handling.
+///
+/// **Security Features:**
+/// - No hardcoded API keys or sensitive configuration
+/// - Environment-specific configuration loading (.env files)
+/// - Graceful handling of missing configuration in production
+/// - Debug-time validation to catch configuration issues early
+/// - Secure configuration validation without exposing sensitive data
+///
+/// **Multi-Platform Support:**
+/// - Web (Firebase Web SDK)
+/// - Android (Firebase Android SDK)
+/// - iOS (Firebase iOS SDK)
+/// - macOS (Firebase macOS SDK)
+/// - Windows (Firebase Windows SDK)
+///
+/// **Environment Management:**
+/// - Development environment (.env.development)
+/// - Staging environment (.env.staging)
+/// - Production environment (.env.production)
+/// - Automatic environment detection and fallback
+///
+/// **Usage Example:**
 /// ```dart
+/// // In firebase_options.dart
 /// FirebaseOptions(
-///   apiKey: FirebaseConfig.apiKey,
-///   appId: FirebaseConfig.appId,
-///   // ... other options
+///   apiKey: FirebaseConfig.apiKeyWeb,
+///   appId: FirebaseConfig.appIdWeb,
+///   messagingSenderId: FirebaseConfig.messagingSenderId,
+///   projectId: FirebaseConfig.projectId,
+///   authDomain: FirebaseConfig.authDomain,
+///   storageBucket: FirebaseConfig.storageBucket,
 /// )
+/// ```
+///
+/// **Configuration Validation:**
+/// ```dart
+/// // Check if configuration is properly loaded
+/// if (!FirebaseConfig.isConfigured) {
+///   throw Exception('Firebase configuration missing');
+/// }
+/// 
+/// // Debug configuration status
+/// FirebaseConfig.printConfiguration();
 /// ```
 class FirebaseConfig {
   // Private constructor to prevent instantiation

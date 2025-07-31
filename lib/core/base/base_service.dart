@@ -1,34 +1,58 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Base Service - Service injection and common patterns consolidation
-/// File: lib/core/base/base_service.dart
-/// Quick Guide: Eliminates 500-800 lines of duplicate service patterns across 94+ files
-/// Dependencies IN: get_it service locator, AppLogger, ErrorHandlingMixin
-/// Dependencies OUT: All service classes extend or use these base patterns
-/// Data flow: Service initialization -> Dependency injection -> Operation execution -> Error handling
-/// State management: Service lifecycle and dependency management
-/// Purpose: Standardize service injection, logging, error handling, and common operations
-/// Common issues: Duplicate service locator calls, inconsistent error handling, scattered logging
-/// Test coverage: Service base class testing with mocked dependencies
-/// Performance: Efficient service initialization and dependency caching
-/// Analytics: Centralized service operation logging and monitoring
-/// Code smells: None - clean base class pattern with proper separation of concerns
-/// Connected to: All service implementations, dependency injection container, ErrorHandlingMixin
-/// Used in phases: Cross-Cutting Concerns Consolidation - Service Pattern Unification
+/// Base service class for standardizing service patterns across the application.
+///
+/// This class consolidates common service patterns found across 94+ service files
+/// in the Butlery codebase, eliminating 500-800 lines of duplicate code and
+/// providing a consistent foundation for all business logic services.
+///
+/// Key features provided:
+/// - Standardized dependency injection patterns
+/// - Comprehensive error handling with user-friendly messages
+/// - Service lifecycle management (initialization/disposal)
+/// - Centralized logging and operation monitoring
+/// - Caching mechanisms for frequently accessed data
+/// - Permission checking and validation patterns
+/// - Batch operation support with error handling
+/// - Network and authentication state validation
+///
+/// Architecture benefits:
+/// - Eliminates duplicate service locator calls
+/// - Provides consistent error handling across all services
+/// - Centralizes logging and monitoring
+/// - Enables easy testing with mocked dependencies
+/// - Maintains separation of concerns
+///
+/// Usage example:
+/// ```dart
+/// class RecipeService extends BaseService with UserContextMixin {
+///   @override
+///   String get serviceName => 'RecipeService';
+///   
+///   Future<Recipe?> getRecipe(String id) async {
+///     return await executeServiceOperation(
+///       () => _fetchRecipeFromFirestore(id),
+///       operationName: 'Get recipe',
+///       requiresAuth: true,
+///     );
+///   }
+/// }
+/// ```
 
 import 'package:butlery/core/helpers/service_locator_helper.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
-/// Base class for all services that consolidates common service patterns
-/// found across 94+ service files in the codebase.
-/// 
-/// This class provides:
-/// - Standardized service injection patterns
-/// - Common error handling and logging
-/// - Service lifecycle management
-/// - Dependency resolution
-/// - Operation monitoring
+/// Abstract base class for all services in the Butlery application.
+///
+/// Provides a standardized foundation for service implementations by consolidating
+/// common patterns found across the codebase. All business logic services should
+/// extend this class to benefit from consistent error handling, logging, caching,
+/// and operational patterns.
+///
+/// Subclasses must implement:
+/// - [serviceName] getter for identification in logs and debugging
+/// - [onInitialize] method for custom initialization logic (optional)
+/// - [onDispose] method for custom cleanup logic (optional)
 abstract class BaseService with ErrorHandlingMixin {
   
   // ===== COMMON SERVICE DEPENDENCIES =====
@@ -36,37 +60,106 @@ abstract class BaseService with ErrorHandlingMixin {
 
   // ===== SERVICE INITIALIZATION =====
   
-  /// Service name for logging and debugging
+  /// Unique name identifier for this service.
+  ///
+  /// Used in logging, debugging, and error reporting to identify which service
+  /// generated a particular log entry or error. Should be a descriptive name
+  /// that clearly identifies the service's purpose.
+  ///
+  /// Example: 'RecipeService', 'AuthService', 'NotificationService'
   String get serviceName;
   
-  /// Initialize service - called once during service creation
+  /// Initializes the service with standardized logging.
+  ///
+  /// This method should be called once during service creation, typically
+  /// during dependency injection setup. It provides consistent initialization
+  /// logging and delegates actual initialization work to [onInitialize].
+  ///
+  /// The method ensures that initialization is properly logged for debugging
+  /// and monitoring purposes.
   Future<void> initialize() async {
     AppLogger.info('🔧 Initializing $serviceName');
     await onInitialize();
     AppLogger.info('✅ $serviceName initialized successfully');
   }
   
-  /// Override this method for custom initialization logic
+  /// Hook method for custom service initialization logic.
+  ///
+  /// Subclasses should override this method to perform service-specific
+  /// initialization tasks such as:
+  /// - Setting up stream subscriptions
+  /// - Loading cached data
+  /// - Validating service dependencies
+  /// - Performing initial data synchronization
+  ///
+  /// The default implementation is empty - it's safe to not override this
+  /// method if no custom initialization is needed.
   Future<void> onInitialize() async {
     // Default implementation - override in subclasses
   }
   
-  /// Dispose service resources
+  /// Disposes service resources with standardized logging.
+  ///
+  /// This method should be called when the service is no longer needed,
+  /// typically during application shutdown or when removing the service
+  /// from the dependency injection container.
+  ///
+  /// Provides consistent disposal logging and delegates cleanup work to
+  /// [onDispose]. Ensures proper resource management and prevents memory leaks.
   Future<void> dispose() async {
     AppLogger.info('🗑️ Disposing $serviceName');
     await onDispose();
     AppLogger.info('✅ $serviceName disposed successfully');
   }
   
-  /// Override this method for custom disposal logic
+  /// Hook method for custom service cleanup logic.
+  ///
+  /// Subclasses should override this method to perform service-specific
+  /// cleanup tasks such as:
+  /// - Canceling stream subscriptions
+  /// - Closing database connections
+  /// - Clearing caches and temporary data
+  /// - Saving pending data
+  /// - Releasing platform resources
+  ///
+  /// The default implementation is empty - it's safe to not override this
+  /// method if no custom cleanup is needed.
   Future<void> onDispose() async {
     // Default implementation - override in subclasses
   }
 
   // ===== COMMON SERVICE OPERATIONS =====
   
-  /// Safe service operation with standardized error handling
-  /// Replaces try-catch patterns found across service files
+  /// Executes a service operation with comprehensive error handling and validation.
+  ///
+  /// This method provides a standardized wrapper for all service operations,
+  /// replacing scattered try-catch patterns found across service files. It
+  /// performs pre-flight checks and handles errors consistently.
+  ///
+  /// Pre-flight checks performed:
+  /// - Authentication status (if [requiresAuth] is true)
+  /// - Network connectivity (if [requiresNetwork] is true)
+  /// - User permissions (if [requiresPermission] is true)
+  ///
+  /// [operation] The async operation to execute
+  /// [operationName] Human-readable name for logging (optional)
+  /// [defaultValue] Value to return if operation fails (optional)
+  /// [requiresAuth] Whether operation requires authenticated user (default: true)
+  /// [requiresNetwork] Whether operation requires network connectivity (default: false)
+  /// [requiresPermission] Whether operation requires specific permission (default: false)
+  /// [requiredPermission] The permission to check if [requiresPermission] is true
+  ///
+  /// Returns the operation result or [defaultValue] if operation fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final recipe = await executeServiceOperation(
+  ///   () => _fetchRecipe(id),
+  ///   operationName: 'Fetch recipe',
+  ///   requiresAuth: true,
+  ///   requiresNetwork: true,
+  /// );
+  /// ```
   Future<T?> executeServiceOperation<T>(
     Future<T> Function() operation, {
     String? operationName,

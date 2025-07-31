@@ -1,6 +1,6 @@
 ---
 name: widget-ui-specialist
-description: Flutter widget architecture and UI component specialist for building consistent, performant widgets following AppTheme patterns, implementing complex social UI components, and maintaining the facade pattern structure. Use PROACTIVELY for any UI development, widget creation, theming issues, or complex interactive components.
+description: MUST BE USED when dealing with UI, design, theme, widgets and other issues relating to the part of the project that users see and interact with. Flutter widget architecture and UI component specialist for building consistent, performant widgets following AppTheme patterns, implementing complex social UI components, and maintaining the facade pattern structure. Use PROACTIVELY for any UI development, widget creation, theming issues, or complex interactive components.
 tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash
 ---
 

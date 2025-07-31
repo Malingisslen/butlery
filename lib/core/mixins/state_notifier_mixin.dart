@@ -1,19 +1,43 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: StateNotifier Mixin - Eliminates state management duplication in 37+ files
-/// File: lib/core/mixins/state_notifier_mixin.dart
-/// Quick Guide: Provides common loading/error state management for services and ViewModels
-/// Dependencies IN: Flutter ChangeNotifier, Logger utilities
-/// Dependencies OUT: Used by all services and ViewModels needing state management
-/// Data flow: State changes -> StateNotifier -> UI updates via notifyListeners
-/// State management: Centralized loading/error state with consistent patterns
-/// Purpose: Eliminate duplicated _isLoading, _error, _setLoading, _setError patterns
-/// Common issues: State consistency, error clearing, loading state conflicts
-/// Test coverage: Unit tests for all state transitions and edge cases
-/// Performance: Minimal overhead, efficient state change notifications
-/// Analytics: State change tracking, error occurrence monitoring
-/// Code smells: None - clean abstraction for common state patterns
-/// Connected to: All services, ViewModels, and components with async operations
-/// Used in phases: Phase 7 - Additional Code Duplication Elimination
+/// Mixin providing common loading and error state management for ChangeNotifiers.
+///
+/// This mixin eliminates the duplicated state management patterns found in 37+ files
+/// across services and ViewModels by providing a centralized, consistent approach to
+/// loading states, error handling, and UI notifications.
+///
+/// Key capabilities:
+/// - Standardized loading state management with automatic UI updates
+/// - Error state management with user-friendly error messages
+/// - Async operation execution with automatic state transitions
+/// - State consistency enforcement to prevent conflicting states
+/// - Batch state updates for performance optimization
+/// - Debug logging for state transitions in development mode
+///
+/// Architecture benefits:
+/// - Eliminates duplicate _isLoading, _error, _setLoading, _setError patterns
+/// - Provides consistent state management across all ViewModels and services
+/// - Ensures proper state transitions and prevents state conflicts
+/// - Simplifies testing with predictable state behavior
+/// - Reduces boilerplate code in business logic classes
+///
+/// Usage pattern transformation:
+/// ```dart
+/// // Before (duplicated in 37+ files):
+/// class MyService extends ChangeNotifier {
+///   bool _isLoading = false;
+///   String? _error;
+///   
+///   bool get isLoading => _isLoading;
+///   void _setLoading(bool loading) {
+///     _isLoading = loading;
+///     notifyListeners();
+///   }
+/// }
+///
+/// // After (using StateNotifierMixin):
+/// class MyService extends ChangeNotifier with StateNotifierMixin {
+///   // Loading and error state management is automatically available
+/// }
+/// ```
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';

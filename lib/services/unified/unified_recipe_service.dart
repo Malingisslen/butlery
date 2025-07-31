@@ -21,6 +21,7 @@ import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Unified Recipe Service - Clean coordinator with focused module delegation
@@ -46,6 +47,9 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   late final PersonalRecipeOperations personal;
   late final SocialRecipeOperations social;
   late final RealtimeRecipeOperations realtime;
+
+  // Discovery service accessor
+  RecipeDiscoveryService get discovery => social.discoveryService;
 
   // State
   final List<Recipe> _recipes = [];

@@ -1,6 +1,6 @@
 ---
 name: analytics-monitoring-specialist
-description: Analytics and monitoring specialist for implementing comprehensive user behavior tracking, performance monitoring, crash reporting, and data-driven insights. Use PROACTIVELY for analytics implementation, monitoring setup, performance tracking, or data analysis needs.
+description: MUST BE USED when dealing with analytics. Analytics and monitoring specialist for implementing comprehensive user behavior tracking, performance monitoring, crash reporting, and data-driven insights. Use PROACTIVELY for analytics implementation, monitoring setup, performance tracking, or data analysis needs.
 tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash
 ---
 
