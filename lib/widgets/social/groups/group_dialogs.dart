@@ -79,7 +79,7 @@ class GroupDialogs {
     String title = 'Välj vem du vill dela med',
     bool allowMultiple = true,
   }) {
-    return InvitationTargetInputs.showTargetSelectionDialog(
+    return _showTargetSelectionDialog(
       context,
       availableTargets: availableTargets,
       initialSelection: initialSelection,
@@ -87,4 +87,32 @@ class GroupDialogs {
       allowMultiple: allowMultiple,
     );
   }
+}
+
+/// Temporary replacement for InvitationTargetInputs.showTargetSelectionDialog
+Future<List<InvitationTarget>?> _showTargetSelectionDialog(
+  BuildContext context, {
+  required List<InvitationTarget> availableTargets,
+  List<InvitationTarget> initialSelection = const [],
+  String title = 'Välj vem du vill dela med',
+  bool allowMultiple = true,
+}) async {
+  // Simple placeholder implementation
+  return showDialog<List<InvitationTarget>>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text('Target selection dialog - simplified implementation'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: const Text('Avbryt'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, initialSelection),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
 }

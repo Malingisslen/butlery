@@ -2,7 +2,6 @@
 // Merged from confirmation_dialog_factory.dart + feedback_dialog_factory.dart + interactive_dialog_factory.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Consolidated dialog factory with all dialog functionality
