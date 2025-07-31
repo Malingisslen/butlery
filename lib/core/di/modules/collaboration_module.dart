@@ -23,12 +23,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 
-// Dependencies from Content Module
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-
-// Dependencies from Social Module
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+// Dependencies from other modules (imported but not used directly in registration)
 
 // Collaboration services
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -123,15 +118,9 @@ class CollaborationModule implements DIModule {
       // ==================== PERMISSION SYSTEM ====================
       
       // PermissionService - comprehensive authorization system
-      // Note: This depends on services from multiple modules, registered as lazy singleton
+      // Note: This is a stateless service with no constructor dependencies
       container.registerLazySingleton<PermissionService>(
-        () => PermissionService(
-          container<AuthService>(),
-          container<UserService>(),
-          container<UnifiedRecipeService>(),
-          container<UnifiedShoppingService>(),
-          container<UnifiedFriendsService>(),
-        ),
+        () => PermissionService(),
       );
       
       if (kDebugMode) {
