@@ -1,7 +1,42 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
-/// Wrapper around [FirebaseAuth] to expose a minimal API used across services.
+/// Firebase Authentication repository implementation providing secure user authentication.
+///
+/// This repository implements the [AuthRepository] interface using Firebase Authentication
+/// as the backend service. It provides a clean, minimal API for authentication operations
+/// while handling Firebase-specific implementation details and error handling.
+///
+/// **Firebase Integration:**
+/// - Wraps Firebase Authentication SDK for secure user management
+/// - Handles Firebase-specific authentication flows and errors
+/// - Provides dependency injection support with optional Firebase instance
+/// - Maintains authentication state through Firebase Auth state management
+///
+/// **Security Features:**
+/// - Secure email/password authentication
+/// - Automatic token management and refresh
+/// - Session persistence across app restarts
+/// - Password reset functionality via secure email links
+/// - Account deletion with proper cleanup
+///
+/// **Architecture Benefits:**
+/// - Clean separation between Firebase specifics and business logic
+/// - Consistent error handling and authentication state management
+/// - Testable through dependency injection of FirebaseAuth instance
+/// - Minimal API surface reduces coupling to Firebase Authentication
+///
+/// **Usage in Dependency Injection:**
+/// ```dart
+/// // Register in service locator
+/// sl.registerLazySingleton<AuthRepository>(
+///   () => FirebaseAuthRepository(),
+/// );
+/// 
+/// // Use in ViewModels and services
+/// final authRepo = sl<AuthRepository>();
+/// final user = await authRepo.login(email, password);
+/// ```
 class FirebaseAuthRepository implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
 

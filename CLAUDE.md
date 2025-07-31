@@ -15,7 +15,7 @@ cmd.exe /c "flutter COMMAND"
 - **File Size Limit**: 500 lines max (use facade pattern for larger files)
 - **Services**: Services with unified patterns and dependency injection
 - **Notifications**: Complete FCM system with development logging approach
-- **Social Features**: 85% complete (missing direct messaging, group content sharing)
+- **Social Features**: 90% infrastructure implemented (social views and services exist, need verification)
 - **Code Quality**: Single Responsibility Principle enforced
 - **Security**: Comprehensive permission validation system implemented:
   - PermissionValidationMixin for all Firebase repositories
@@ -23,6 +23,7 @@ cmd.exe /c "flutter COMMAND"
   - Audit logging for security events
   - Ownership validation and role-based access control
 - **Type Safety**: Map-based data access replaced with proper model usage
+- **Flutter Color Syntax**: Use `withValues(alpha: 0.8)` instead of deprecated `withOpacity(0.8)`
 
 ### Code Intelligence Platform (`tools/code_intelligence_platform.dart`)
 - **Multi-Dimensional Analysis**: Security (30%), Performance (25%), Architecture (20%), Quality (15%)
@@ -48,6 +49,8 @@ cmd.exe /c "flutter COMMAND"
 **When finished:**
 1. Add review section to `todo.md` with summary of changes
 2. Update relevant documentation in `/docs` and `CLAUDE.md`
+3. Run `cmd.exe /c "flutter analyze"` to check for issues
+4. Verify implementations match documentation claims
 
 ## Critical Rules
 - **NEVER BE LAZY** - you are a senior developer

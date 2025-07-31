@@ -1,16 +1,36 @@
-// lib/services/analytics_service.dart
+/// Comprehensive Firebase Analytics service providing sophisticated event tracking and user behavior analysis.
+///
+/// This singleton service provides advanced analytics functionality using Firebase Analytics as the backend,
+/// tracking user interactions, application performance, error events, and business metrics throughout the
+/// application. It implements intelligent event categorization, user journey tracking, and comprehensive
+/// error monitoring to enable data-driven decision making and continuous application improvement.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseService] for consistent service patterns and error handling
+/// - Uses [SingletonServiceMixin] for standardized singleton implementation and lifecycle management
+/// - Integrates with Firebase Analytics for comprehensive event tracking and user analytics
+/// - Coordinates with ContentDetectorService for content-specific analytics and insights
+/// - Provides navigation tracking through FirebaseAnalyticsObserver for user journey analysis
+///
+/// **Analytics Features:**
+/// - **Event Tracking**: Comprehensive tracking of user interactions and application events
+/// - **Error Monitoring**: Sophisticated error tracking with detailed context and categorization
+/// - **User Journey**: Complete user navigation and behavior flow analysis
+/// - **Performance Metrics**: Application performance tracking and optimization insights
+/// - **Custom Events**: Flexible custom event tracking for business-specific metrics
+/// - **Debug Control**: Intelligent analytics collection control based on build configuration
+///
+/// **Privacy and Compliance:**
+/// - **Debug Mode Control**: Automatic analytics disabling in debug mode for development privacy
+/// - **User Consent**: Analytics collection respects user privacy preferences and consent
+/// - **Data Minimization**: Efficient event tracking minimizing unnecessary data collection
+/// - **Secure Transmission**: All analytics data transmitted securely through Firebase infrastructure
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
-
-/// Service för att hantera analytics och error tracking
-///
-/// Spårar viktiga händelser i appen, särskilt misslyckade operationer
-/// som kan hjälpa oss att förbättra användarupplevelsen
-/// Now using SingletonServiceMixin for standardized singleton pattern
 class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsService> {
   // Private constructor for singleton
   AnalyticsService._internal();

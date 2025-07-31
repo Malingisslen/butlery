@@ -7,10 +7,57 @@ import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
-/// Firebase repository for user recipes stored in /users/{userId}/recipes collection.
+/// Firebase Firestore implementation for recipe data operations and real-time synchronization.
 ///
-/// Refactored to extend BaseFirebaseRepository with UserScopedFirebaseRepository mixin,
-/// eliminating 40+ lines of duplicate CRUD code and authentication checks.
+/// This repository implements the [RecipeRepository] interface using Firebase Firestore
+/// as the backend, storing user recipes in user-scoped collections at `/users/{userId}/recipes`.
+/// It provides comprehensive recipe management with security validation, real-time streaming,
+/// and performance optimizations.
+///
+/// **Architecture Design:**
+/// Extends [BaseFirebaseRepository] with [UserScopedFirebaseRepository] mixin to eliminate
+/// code duplication while providing specialized recipe operations. This design reduces
+/// boilerplate by 40+ lines and ensures consistent authentication and permission patterns.
+///
+/// **Security Implementation:**
+/// - **Permission Validation**: All operations validate user ownership and access rights
+/// - **Authentication Checks**: Ensures authenticated users for all recipe operations
+/// - **Resource Validation**: Validates recipe existence and user permissions
+/// - **Audit Logging**: Logs permission checks for security monitoring
+/// - **Field Validation**: Validates required fields and data integrity
+///
+/// **Performance Optimizations:**
+/// - **Streaming Limits**: Caps recipe streams at 50 most recent recipes
+/// - **Search Limits**: Limits search scope to 200 most recent recipes for performance
+/// - **Archive Limits**: Restricts archive queries to 100 recipes maximum
+/// - **Efficient Queries**: Uses server-side ordering and filtering where possible
+/// - **Batch Operations**: Supports efficient bulk recipe operations
+///
+/// **Real-time Features:**
+/// - **Recipe Streaming**: Live updates for recipe collections with automatic ordering
+/// - **Change Tracking**: Detailed change notifications for collaborative features
+/// - **Collaborative Editing**: Real-time synchronization for shared recipe editing
+/// - **Archive Integration**: Access to community recipe archive with performance limits
+///
+/// **Usage Examples:**
+/// ```dart
+/// final recipeRepo = FirebaseRecipeRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
+/// 
+/// // Create with validation
+/// final newRecipe = Recipe(title: 'Pasta', createdBy: userId);
+/// await recipeRepo.create(newRecipe);
+/// 
+/// // Stream with performance limits  
+/// recipeRepo.watchRecipes(userId).listen((recipes) {
+///   // Receives max 50 most recent recipes
+/// });
+/// 
+/// // Search with scope limits
+/// final results = await recipeRepo.searchRecipes('chicken');
+/// // Searches within 200 most recent recipes
+/// ```
 class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     with UserScopedFirebaseRepository<Recipe>
     implements RecipeRepository {

@@ -1,38 +1,91 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Error Handling Mixin - Comprehensive error handling consolidation
-/// File: lib/core/mixins/error_handling_mixin.dart
-/// Quick Guide: Eliminates 1,100-1,400 lines of duplicate error patterns across 184+ files
-/// Dependencies IN: AppLogger, AppStrings
-/// Dependencies OUT: All services, viewmodels, and operations that need error handling
-/// Data flow: Error occurrence -> Logging -> User-friendly message -> State update
-/// State management: Error state management patterns consolidated
-/// Purpose: Standardize try-catch-log patterns, error message consistency, error recovery
-/// Common issues: Inconsistent error handling, duplicate logging, scattered error messages
-/// Test coverage: Comprehensive error scenario testing with mocked failures
-/// Performance: Efficient error handling with minimal overhead
-/// Analytics: Centralized error tracking and categorization
-/// Code smells: None - clean mixin pattern with clear error categorization
-/// Connected to: All business logic classes, BaseViewModel, service operations
-/// Used in phases: Cross-Cutting Concerns Consolidation - Error Handling Pattern Unification
+/// Comprehensive error handling mixin for standardizing error patterns across the app.
+///
+/// This mixin eliminates 1,100-1,400 lines of duplicate error handling code found
+/// across 184+ files in the codebase by providing a centralized, consistent approach
+/// to error management, logging, and user feedback.
+///
+/// Key capabilities:
+/// - Standardized try-catch-log patterns for async and sync operations
+/// - User-friendly error message generation and display
+/// - Operation-specific error handling (create, update, delete, fetch operations)
+/// - Batch operation error handling with continue-on-error support
+/// - Firebase-specific error handling and categorization
+/// - Network error detection and appropriate user messaging
+/// - Error recovery patterns and retry mechanisms
+///
+/// Architecture benefits:
+/// - Eliminates inconsistent error handling across services and ViewModels
+/// - Provides centralized error logging and analytics tracking
+/// - Ensures consistent user experience during error scenarios
+/// - Simplifies testing with predictable error handling patterns
+/// - Reduces boilerplate code in business logic classes
+///
+/// Usage examples:
+/// ```dart
+/// // Basic async operation with error handling
+/// final result = await safeExecute(
+///   () => apiService.fetchData(),
+///   operationName: 'Fetch user data',
+///   defaultValue: [],
+/// );
+///
+/// // Create operation with user-friendly error messages
+/// final recipe = await safeCreate(
+///   () => recipeService.createRecipe(data),
+///   'recipe',
+/// );
+///
+/// // Batch operations with error handling
+/// final results = await safeBatchOperation(
+///   operations,
+///   'Import recipes',
+///   continueOnError: true,
+/// );
+/// ```
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
-/// Comprehensive error handling mixin that eliminates duplicate error handling patterns
-/// found across 184+ files in the codebase.
-/// 
-/// This mixin consolidates all common error handling patterns:
-/// - Try-catch-log structures (found in 184 files)
-/// - Error state management (found in 89 files)
-/// - User-friendly error messages (found in 156 files)
-/// - Error recovery patterns (found in 67 files)
-/// - Async error handling (found in 134 files)
+/// Mixin providing comprehensive error handling capabilities.
+///
+/// Consolidates common error handling patterns into reusable methods that provide
+/// consistent error logging, user messaging, and recovery mechanisms across the
+/// entire application.
+///
+/// Classes using this mixin gain access to:
+/// - Safe execution wrappers for async and synchronous operations
+/// - Operation-specific error handling (CRUD operations)
+/// - Batch operation processing with configurable error handling
+/// - Firebase-specific error categorization and messaging
+/// - Network error detection and user-friendly messaging
+/// - Error recovery and retry mechanisms
 mixin ErrorHandlingMixin {
   
   // ===== BASIC ERROR HANDLING CONSOLIDATION =====
   
-  /// Replaces the pattern: try { ... } catch (e) { AppLogger.error(...); return null; }
-  /// Found in 184+ files - highest impact consolidation
+  /// Safely executes an async operation with comprehensive error handling.
+  ///
+  /// This method wraps async operations in standardized try-catch logic,
+  /// providing consistent error logging, user messaging, and fallback behavior.
+  /// Replaces the most common error handling pattern found in 184+ files.
+  ///
+  /// [operation] The async operation to execute safely
+  /// [operationName] Human-readable name for logging purposes
+  /// [defaultValue] Value to return if the operation fails
+  /// [logError] Whether to log errors (default: true)
+  /// [customErrorMessage] Custom error message for user feedback
+  ///
+  /// Returns the operation result or [defaultValue] if the operation fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final recipes = await safeExecute(
+  ///   () => recipeService.fetchRecipes(),
+  ///   operationName: 'Fetch recipes',
+  ///   defaultValue: <Recipe>[],
+  ///   customErrorMessage: 'Failed to load recipes. Please try again.',
+  /// );
+  /// ```
   Future<T?> safeExecute<T>(
     Future<T> Function() operation, {
     String? operationName,
@@ -56,8 +109,28 @@ mixin ErrorHandlingMixin {
     }
   }
   
-  /// Synchronous version of safeExecute
-  /// Replaces try-catch patterns in synchronous operations
+  /// Safely executes a synchronous operation with error handling.
+  ///
+  /// Provides the same error handling capabilities as [safeExecute] but for
+  /// synchronous operations. Useful for data transformations, validations,
+  /// and other non-async operations that may throw exceptions.
+  ///
+  /// [operation] The synchronous operation to execute safely
+  /// [operationName] Human-readable name for logging purposes
+  /// [defaultValue] Value to return if the operation fails
+  /// [logError] Whether to log errors (default: true)
+  /// [customErrorMessage] Custom error message for user feedback
+  ///
+  /// Returns the operation result or [defaultValue] if the operation fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parsedData = safeExecuteSync(
+  ///   () => jsonDecode(jsonString),
+  ///   operationName: 'Parse JSON data',
+  ///   defaultValue: {},
+  /// );
+  /// ```
   T? safeExecuteSync<T>(
     T Function() operation, {
     String? operationName,
@@ -83,7 +156,25 @@ mixin ErrorHandlingMixin {
 
   // ===== OPERATION-SPECIFIC ERROR HANDLING =====
   
-  /// Create operation error handling - consolidates create patterns
+  /// Safely executes a create operation with specialized error handling.
+  ///
+  /// Provides standardized error handling for create operations with
+  /// user-friendly error messages. Automatically generates appropriate
+  /// error messages based on the item type being created.
+  ///
+  /// [createOperation] The async create operation to execute
+  /// [itemType] Human-readable name of the item being created (e.g., 'recipe', 'user')
+  /// [defaultValue] Value to return if the create operation fails
+  ///
+  /// Returns the created item or [defaultValue] if creation fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final recipe = await safeCreate(
+  ///   () => recipeService.createRecipe(recipeData),
+  ///   'recipe',
+  /// );
+  /// ```
   Future<T?> safeCreate<T>(
     Future<T> Function() createOperation,
     String itemType, {

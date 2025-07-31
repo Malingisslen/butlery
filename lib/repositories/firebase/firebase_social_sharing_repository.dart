@@ -1,4 +1,31 @@
-// lib/repositories/firebase/firebase_social_sharing_repository.dart
+/// Firebase Firestore implementation for comprehensive social content sharing and permission management.
+///
+/// This repository provides a complete social sharing platform using Firebase Firestore, enabling
+/// users to share recipes, menus, and other content with friends and groups while maintaining
+/// sophisticated permission controls, engagement analytics, and sharing lifecycle management.
+/// It implements advanced social features for collaborative cooking and community building.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
+/// - Implements [SocialSharingRepository] interface for standardized sharing operations
+/// - Integrates with [PermissionValidationMixin] for comprehensive security validation
+/// - Uses [AppLogger] for detailed sharing activity monitoring and debugging
+/// - Coordinates with notification system for social engagement alerts
+///
+/// **Social Sharing Features:**
+/// - **Multi-target Sharing**: Share content with individual users or entire groups
+/// - **Permission Management**: Granular control over who can access shared content
+/// - **Engagement Tracking**: Monitor acceptance, viewing, and interaction patterns
+/// - **Sharing Lifecycle**: Complete management from sharing to revocation
+/// - **Real-time Streams**: Live updates for shared content discovery
+/// - **Statistics Analytics**: Comprehensive sharing and engagement metrics
+///
+/// **Security and Privacy:**
+/// - **Ownership Validation**: Ensures only content owners can manage sharing permissions
+/// - **Self-operation Checks**: Prevents users from accepting/declining on behalf of others
+/// - **Access Control**: Validates user permissions before any sharing operations
+/// - **Audit Logging**: Complete audit trail for all sharing activities
+/// - **Data Protection**: Secure handling of sensitive sharing information
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
@@ -7,13 +34,45 @@ import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-
-/// Firebase implementation of SocialSharingRepository
+/// Firebase implementation for social content sharing with comprehensive community engagement features.
+///
+/// This repository provides complete social sharing functionality using Firebase Firestore as the
+/// backend, enabling users to share cooking content with friends and groups while maintaining
+/// sophisticated permission controls and engagement analytics.
+///
+/// **Sharing System Architecture:**
+/// - **User-to-User Sharing**: Direct sharing with individual friends and community members
+/// - **Group Sharing**: Efficient distribution to cooking groups and communities
+/// - **Permission Management**: Granular control over content access and modification rights
+/// - **Engagement Analytics**: Comprehensive tracking of sharing success and user interaction
+/// - **Real-time Updates**: Live streams for immediate sharing notifications and updates
+///
+/// **Usage Examples:**
+/// ```dart
+/// final sharingRepo = FirebaseSocialSharingRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
 /// 
-/// Handles all social sharing operations including group and user sharing
+/// // Share content with specific users
+/// await sharingRepo.shareToUsers([friendId1, friendId2], sharedContent);
+/// 
+/// // Share with a cooking group
+/// await sharingRepo.shareToGroup(groupId, sharedContent);
+/// 
+/// // Accept shared content
+/// await sharingRepo.acceptSharedContent(contentId, userId);
+/// 
+/// // Get sharing analytics
+/// final stats = await sharingRepo.getSharingStats(userId);
+/// print('Acceptance rate: ${stats['acceptanceRate']}');
+/// ```
 class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedContent>
     implements SocialSharingRepository {
   
+  /// Creates a Firebase social sharing repository with dependency injection support.
+  ///
+  /// [firestore] Optional Firestore instance for testing, defaults to production instance
+  /// [authRepository] Required authentication repository for user validation and security
   FirebaseSocialSharingRepository({
     super.firestore,
     required super.authRepository,

@@ -67,6 +67,11 @@ class SocialRecipeOperations {
     AppLogger.info('✅ SocialRecipeOperations initialized with focused modules');
   }
 
+  // ===== GETTERS =====
+
+  /// Access to the discovery service for direct usage
+  RecipeDiscoveryService get discoveryService => _discoveryService;
+
   // ===== RECIPE SHARING (Delegates to RecipeSharingManager) =====
 
   /// Share a personal recipe with other users

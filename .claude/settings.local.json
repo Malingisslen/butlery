@@ -77,7 +77,8 @@
       "Bash(do echo \"$file:\")",
       "Bash(node run-validation.js)",
       "Bash(python3:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(git push:*)"
     ],
     "deny": []
   },

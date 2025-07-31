@@ -1,4 +1,30 @@
-// lib/services/deep_link_service.dart
+/// Comprehensive deep link service providing URL generation, parsing, and navigation management with analytics.
+///
+/// This service implements sophisticated deep linking functionality supporting invitation sharing, content
+/// distribution, and app navigation through URL-based routing. It provides URL shortening capabilities,
+/// comprehensive analytics tracking, and flexible navigation patterns that integrate seamlessly with
+/// social sharing workflows and content distribution strategies throughout the application.
+///
+/// **Architecture Integration:**
+/// - Uses [DeepLinkRepository] interface for flexible backend storage and URL management
+/// - Integrates with [PermissionService] for secure authenticated operations and access control
+/// - Coordinates with navigation systems for seamless app routing and user experience
+/// - Implements comprehensive analytics tracking for URL performance and usage insights
+///
+/// **Deep Link Capabilities:**
+/// - **URL Generation**: Comprehensive URL generation for friend invitations, recipe sharing, menu distribution
+/// - **URL Shortening**: Internal and external URL shortening with comprehensive analytics and tracking
+/// - **Link Parsing**: Sophisticated URL parsing and validation with content type identification
+/// - **Navigation Handling**: Automatic navigation routing based on deep link content and user context
+/// - **Analytics Integration**: Comprehensive click tracking, usage analytics, and performance monitoring
+/// - **Expiration Management**: Time-based link expiration with configurable validity periods
+///
+/// **Social Sharing and Distribution:**
+/// - **Friend Invitations**: Secure invitation link generation with user attribution and custom messaging
+/// - **Content Sharing**: Recipe, menu, and shopping list sharing with comprehensive metadata preservation
+/// - **Short URL Management**: Internal URL shortening service with analytics and performance tracking
+/// - **External Integration**: Extensible framework supporting external URL shortening services
+/// - **Security Features**: Timestamp validation, expiration checking, and secure parameter encoding
 
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
@@ -6,10 +32,42 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/injection.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 
-/// Deep link service for handling invitation links and app navigation
-/// 
-/// This service provides a framework for deep linking that can be extended
-/// with Firebase Dynamic Links or other deep linking solutions.
+/// Deep link service providing comprehensive URL management, navigation routing, and analytics tracking.
+///
+/// This service manages complete deep linking workflows including URL generation for social sharing,
+/// comprehensive URL parsing and validation, intelligent navigation routing, and detailed analytics
+/// tracking. It implements both internal URL shortening capabilities and external service integration
+/// to provide optimal sharing experiences with comprehensive performance monitoring.
+///
+/// **URL Management Architecture:**
+/// Implements multi-layered URL management including:
+/// - Static URL generation methods for consistent link formatting
+/// - Dynamic parameter encoding with secure message handling
+/// - Comprehensive URL parsing with validation and error handling
+/// - Intelligent navigation routing based on content type and user context
+///
+/// **Analytics and Performance Tracking:**
+/// Provides detailed tracking and monitoring including:
+/// - Click tracking and usage analytics for all generated URLs
+/// - Performance monitoring for URL resolution and navigation timing
+/// - Comprehensive metadata collection for usage pattern analysis
+/// - Integration with external analytics services for advanced insights
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Generate friend invitation link
+/// final inviteUrl = DeepLinkService.generateFriendInvitationLink(
+///   invitationId: 'inv123',
+///   fromUserId: 'user456',
+///   customMessage: 'Join me on Butlery!',
+/// );
+///
+/// // Create short URL for sharing
+/// final shortUrl = await DeepLinkService.generateShortUrl(inviteUrl);
+///
+/// // Handle incoming deep link
+/// await DeepLinkService.handleDeepLink(shortUrl, (route) => navigateTo(route));
+/// ```
 class DeepLinkService {
   final DeepLinkRepository _deepLinkRepository;
   static const String _baseUrl = 'https://butlery.app';
@@ -21,7 +79,26 @@ class DeepLinkService {
   DeepLinkService({required DeepLinkRepository deepLinkRepository})
       : _deepLinkRepository = deepLinkRepository;
 
-  /// Generate a deep link for friend invitation
+  /// Generates a secure deep link for friend invitation sharing with comprehensive metadata and tracking.
+  ///
+  /// This method creates a properly formatted invitation URL with secure parameter encoding and comprehensive
+  /// metadata including user attribution, timestamps, and optional custom messaging. The generated link
+  /// integrates with the application's invitation system and provides tracking capabilities for analytics.
+  ///
+  /// [invitationId] Unique identifier for the friend invitation record
+  /// [fromUserId] User ID of the person sending the invitation for attribution and security
+  /// [customMessage] Optional personalized message to include with the invitation
+  /// Returns formatted deep link URL ready for sharing through various channels
+  ///
+  /// **Security Features:**
+  /// - Secure parameter encoding for user messages and sensitive data
+  /// - Timestamp inclusion for expiration validation and analytics
+  /// - User attribution for security validation and social context
+  ///
+  /// **Generated URL Structure:**
+  /// - Base URL: https://butlery.app/invite
+  /// - Required parameters: id (invitation), from (user), timestamp
+  /// - Optional parameters: message (URL-encoded custom message)
   static String generateFriendInvitationLink({
     required String invitationId,
     required String fromUserId,

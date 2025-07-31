@@ -160,5 +160,51 @@ class AppColors {
   static const Color backgroundDark = neutralDark;
   static const Color surfaceDark = Color(0xFF374151); // Dark surface color
 
+  // ===== NEW COMPONENT COMPATIBILITY =====
+  // Properties expected by new social platform components
 
+  /// Primary color (alias for primaryBlue)
+  static const Color primary = primaryBlue;
+  
+  /// Secondary color (alias for accent)
+  static const Color secondary = accent;
+  
+  /// Surface color (alias for backgroundBeige)
+  static const Color surface = backgroundBeige;
+  
+  /// Surface variant (alias for cardWhite)
+  static const Color surfaceVariant = cardWhite;
+  
+  /// On surface color (alias for textDark)
+  static const Color onSurface = textDark;
+  
+  /// Primary container (existing in ColorScheme but need static access)
+  static const Color primaryContainer = Color(0xFFE3F2FD);
+  
+  /// Secondary container (existing in ColorScheme but need static access) 
+  static const Color secondaryContainer = Color(0xFFE1F5FE);
+  
+  /// On primary container (alias for darkNavy)
+  static const Color onPrimaryContainer = darkNavy;
+  
+  /// On primary color (alias for cardWhite)
+  static const Color onPrimary = cardWhite;
+  
+  /// Outline color (alias for divider)
+  static const Color outline = divider;
+  
+  /// Shadow color (alias for shadowColor)
+  static const Color shadow = shadowColor;
+  
+  /// On success color (cardWhite for contrast)
+  static const Color onSuccess = cardWhite;
+  
+  /// On error color (cardWhite for contrast)
+  static const Color onError = cardWhite;
+  
+  /// On warning color (darkNavy for contrast)
+  static const Color onWarning = darkNavy;
+  
+  /// On info color (cardWhite for contrast)
+  static const Color onInfo = cardWhite;
 }

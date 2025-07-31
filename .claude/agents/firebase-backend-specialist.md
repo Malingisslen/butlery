@@ -1,6 +1,6 @@
 ---
 name: firebase-backend-specialist
-description: Firebase and backend operations specialist for implementing repository patterns, optimizing Firestore queries, managing real-time synchronization, and handling complex social platform data relationships. Use PROACTIVELY for any Firebase operations, database queries, repository implementations, or backend service development.
+description: MUST BE USED when dealing with firebase operations. Firebase and backend operations specialist for implementing repository patterns, optimizing Firestore queries, managing real-time synchronization, and handling complex social platform data relationships. Use PROACTIVELY for any Firebase operations, database queries, repository implementations, or backend service development.
 tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash
 ---
 

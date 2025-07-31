@@ -1,8 +1,36 @@
-/// 🔐 PERMISSION MIXINS - Eliminates 20+ permission check duplications (Refactored with Facade Pattern)
-/// File: lib/core/permissions/permission_mixins.dart
-/// Purpose: Provide reusable permission checking methods for ViewModels
-/// Dependencies: Focused permission modules
-/// Usage: Mix into ViewModels to get permission methods through clean facades
+/// Permission mixins providing reusable authorization patterns for ViewModels and services.
+///
+/// This file contains a comprehensive set of permission mixins that eliminate duplicate
+/// permission checking code across 20+ ViewModels and services by providing clean,
+/// focused permission checking methods through a facade pattern.
+///
+/// Architecture overview:
+/// The permission system is organized into focused modules, each handling specific
+/// permission domains:
+/// - [BasePermissionMixin] - Core authentication and user context
+/// - [RecipePermissionMixin] - Recipe-specific authorization rules
+/// - [ShoppingPermissionMixin] - Shopping list permission management
+/// - [GroupPermissionMixin] - Group membership and role-based permissions
+/// - [SocialPermissionMixin] - Social features and profile permissions
+///
+/// Each mixin acts as a clean facade that delegates to specialized permission
+/// handlers, maintaining single responsibility while providing convenient access
+/// to permission checking functionality.
+///
+/// Usage pattern:
+/// ```dart
+/// class RecipeViewModel extends ChangeNotifier
+///     with BasePermissionMixin, RecipePermissionMixin {
+///   
+///   Future<void> deleteRecipe(String recipeId) async {
+///     if (!canDeleteRecipe(recipeId)) {
+///       showError('You don\'t have permission to delete this recipe');
+///       return;
+///     }
+///     // Proceed with deletion
+///   }
+/// }
+/// ```
 
 // Import focused modules
 import 'package:butlery/core/permissions/modules/base_permission_manager.dart';
@@ -13,46 +41,100 @@ import 'package:butlery/core/permissions/modules/social_permission_handler.dart'
 import 'package:butlery/core/permissions/modules/permission_action_builder.dart';
 import 'package:butlery/core/permissions/modules/permission_debug_tools.dart';
 
-/// Base permission mixin with common functionality (Refactored with Facade Pattern)
-/// 
-/// This is a clean facade that delegates to focused modules:
-/// - BasePermissionManager: Authentication and user context
-/// - RecipePermissionHandler: Recipe-specific permissions
-/// - ShoppingPermissionHandler: Shopping list permissions
-/// - GroupPermissionHandler: Group permissions
-/// - SocialPermissionHandler: Social/profile permissions
-/// - PermissionActionBuilder: Action lists and permission levels
-/// - PermissionDebugTools: Development utilities
-/// 
-/// ✅ SINGLE RESPONSIBILITY: Orchestrates permission checking through focused modules
+/// Base mixin providing core authentication and user context functionality.
+///
+/// This mixin serves as the foundation for all permission checking by providing
+/// access to the current user's authentication state and basic user information.
+/// All other permission mixins should extend this mixin to ensure consistent
+/// access to user context.
+///
+/// Delegates to [BasePermissionManager] for actual implementation, maintaining
+/// clean separation of concerns and enabling easy testing through dependency
+/// injection.
+///
+/// Key capabilities:
+/// - Current user ID access
+/// - Authentication state checking
+/// - User display name retrieval
+/// - Session validation
 mixin BasePermissionMixin {
   
   // ===== BASE PERMISSION DELEGATION =====
 
-  /// Current authenticated user ID
+  /// The unique identifier of the currently authenticated user.
+  ///
+  /// Returns null if no user is currently authenticated. This is the primary
+  /// identifier used throughout the app for permission checking and data access.
   String? get currentUserId => BasePermissionManager.currentUserId;
   
-  /// Check if user is authenticated
+  /// Whether a user is currently authenticated with valid credentials.
+  ///
+  /// Returns true if the user has successfully logged in and their session
+  /// is still valid. Use this for determining whether to show authenticated
+  /// or guest content.
   bool get isAuthenticated => BasePermissionManager.isAuthenticated;
   
-  /// Check if user is logged in
+  /// Whether a user is currently logged in (alias for isAuthenticated).
+  ///
+  /// Provided for semantic clarity in contexts where "logged in" is more
+  /// natural than "authenticated".
   bool get isLoggedIn => BasePermissionManager.isLoggedIn;
   
-  /// Get current user display name
+  /// The display name of the currently authenticated user.
+  ///
+  /// Returns null if no user is authenticated or if the user hasn't set
+  /// a display name. Used for showing user-friendly names in the UI.
   String? get currentUserDisplayName => BasePermissionManager.currentUserDisplayName;
 }
 
-/// Recipe permission mixin - eliminates recipe permission duplications
+/// Mixin providing recipe-specific permission checking functionality.
+///
+/// This mixin contains all recipe-related authorization rules, including
+/// view, edit, delete, and sharing permissions. It delegates to the
+/// [RecipePermissionHandler] for actual permission validation while
+/// providing a clean interface for ViewModels and services.
+///
+/// Permission levels supported:
+/// - View: Can see recipe details and content
+/// - Edit: Can modify recipe information
+/// - Delete: Can permanently remove recipes
+/// - Share: Can share recipes with other users
+/// - Collaborate: Can participate in collaborative editing
+///
+/// Usage in ViewModels:
+/// ```dart
+/// class RecipeDetailViewModel with BasePermissionMixin, RecipePermissionMixin {
+///   void onEditPressed() {
+///     if (!canEditRecipe(recipe.id)) {
+///       showPermissionError('You cannot edit this recipe');
+///       return;
+///     }
+///     navigateToEditScreen();
+///   }
+/// }
+/// ```
 mixin RecipePermissionMixin on BasePermissionMixin {
   
   // ===== CORE RECIPE PERMISSIONS =====
   
-  /// Check if user can view a recipe
+  /// Checks if the current user can view the specified recipe.
+  ///
+  /// [recipeId] The unique identifier of the recipe to check
+  ///
+  /// Returns true if the user has permission to view this recipe.
+  /// This includes recipes they own, recipes shared with them,
+  /// and public recipes.
   bool canViewRecipe(String recipeId) {
     return RecipePermissionHandler.canViewRecipe(recipeId);
   }
   
-  /// Check if user can edit a recipe
+  /// Checks if the current user can edit the specified recipe.
+  ///
+  /// [recipeId] The unique identifier of the recipe to check
+  ///
+  /// Returns true if the user has permission to modify this recipe.
+  /// This typically includes recipes they own and recipes where they
+  /// have been granted edit permissions by the owner.
   bool canEditRecipe(String recipeId) {
     return RecipePermissionHandler.canEditRecipe(recipeId);
   }

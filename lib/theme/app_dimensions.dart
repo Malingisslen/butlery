@@ -323,6 +323,17 @@ class AppDimensions {
   /// Extra small border radius (2px)
   static const double borderRadiusXs = 2.0;
 
+  // ===== NEW COMPONENT COMPATIBILITY =====
+  // Properties expected by new social platform components
+
+  /// Small radius (alias for borderRadiusS)
+  static const double radiusS = borderRadiusS;
+  
+  /// Medium radius (alias for borderRadiusM)
+  static const double radiusM = borderRadiusM;
+  
+  /// Large radius (alias for borderRadiusL)
+  static const double radiusL = borderRadiusL;
 
   /// Extra large buttons width
   static const double buttonWidthXLarge = 280.0; // Extra large buttons

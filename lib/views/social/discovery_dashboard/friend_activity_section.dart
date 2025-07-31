@@ -1,0 +1,313 @@
+// lib/views/social/discovery_dashboard/friend_activity_section.dart
+
+import 'package:flutter/material.dart';
+import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+
+/// Friend Activity Section - Shows friend activity timeline
+class FriendActivitySection {
+  static Widget build(
+    BuildContext context,
+    DiscoveryDashboardViewModel viewModel,
+  ) {
+    final friendActivity = viewModel.friendActivity;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.people,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Text(
+              'Vänners aktivitet',
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            TextButton(
+              onPressed: () => _showAllActivity(context, viewModel),
+              child: const Text('Se allt'),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        
+        if (friendActivity.isEmpty)
+          _buildEmptyState()
+        else
+          Column(
+            children: friendActivity
+                .take(5) // Show max 5 activities
+                .map((activity) => _buildActivityCard(context, activity))
+                .toList(),
+          ),
+      ],
+    );
+  }
+
+  static Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(
+          color: AppColors.outline.withValues(alpha: 0.2),
+        ),
+      ),
+      child: const Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.people_outline,
+              color: AppColors.outline,
+              size: 48,
+            ),
+            SizedBox(height: AppDimensions.spacingM),
+            Text(
+              'Ingen vänaktivitet än',
+              style: AppTextStyles.titleSmall,
+            ),
+            SizedBox(height: AppDimensions.spacingS),
+            Text(
+              'När dina vänner delar recept, menyer eller inköpslistor visas de här.',
+              style: AppTextStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildActivityCard(BuildContext context, Map<String, dynamic> activity) {
+    final String type = activity['type'] ?? '';
+    final String title = activity['title'] ?? '';
+    final String ownerName = activity['ownerName'] ?? 'Okänd användare';
+    final String? imageUrl = activity['imageUrl'];
+    final DateTime? sharedAt = activity['sharedAt'];
+    final Map<String, dynamic> engagement = activity['engagement'] ?? {};
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () => _openActivityContent(context, activity),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingM),
+          child: Row(
+            children: [
+              // Content image or icon
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                ),
+                child: imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                        child: Image.network(
+                          imageUrl,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildContentPlaceholder(type),
+                        ),
+                      )
+                    : _buildContentPlaceholder(type),
+              ),
+              const SizedBox(width: AppDimensions.spacingM),
+              
+              // Activity details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Row(
+                      children: [
+                        Icon(
+                          _getActivityIcon(type),
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'Delad av $ownerName',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.onSurface.withValues(alpha: 0.7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Row(
+                      children: [
+                        if (sharedAt != null) ...[
+                          Text(
+                            _formatTimeAgo(sharedAt),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.onSurface.withValues(alpha: 0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: AppDimensions.spacingM),
+                        ],
+                        if (engagement['shares'] > 0) ...[
+                          const Icon(
+                            Icons.people,
+                            size: 14,  
+                            color: AppColors.success,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${engagement['shares']}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.success,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Action indicator
+              Icon(
+                Icons.chevron_right,
+                color: AppColors.onSurface.withValues(alpha: 0.4),
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildContentPlaceholder(String type) {
+    IconData icon;
+    switch (type) {
+      case 'recipe_shared':
+        icon = Icons.restaurant;
+        break;
+      case 'menu_shared':
+        icon = Icons.calendar_month;
+        break;
+      case 'shopping_list_shared':
+        icon = Icons.shopping_cart;
+        break;
+      default:
+        icon = Icons.share;
+    }
+
+    return Icon(
+      icon,
+      color: AppColors.primary.withValues(alpha: 0.6),
+      size: 32,
+    );
+  }
+
+  static IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'recipe_shared':
+        return Icons.restaurant;
+      case 'menu_shared':
+        return Icons.calendar_month;
+      case 'shopping_list_shared':
+        return Icons.shopping_cart;
+      default:
+        return Icons.share;
+    }
+  }
+
+  static String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d sedan';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h sedan';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m sedan';
+    } else {
+      return 'Nu';
+    }
+  }
+
+  static void _openActivityContent(BuildContext context, Map<String, dynamic> activity) {
+    final String contentType = activity['contentType'] ?? '';
+    final String contentId = activity['contentId'] ?? '';
+
+    switch (contentType) {
+      case 'recipe':
+        Navigator.pushNamed(
+          context,
+          '/recipe-detail',
+          arguments: {'recipeId': contentId},
+        );
+        break;
+      case 'menu':
+        Navigator.pushNamed(
+          context,
+          '/menu-detail',
+          arguments: {'menuId': contentId},
+        );
+        break;
+      case 'shopping_list':
+        Navigator.pushNamed(
+          context,
+          '/shopping-list-detail',
+          arguments: {'listId': contentId},
+        );
+        break;
+    }
+  }
+
+  static void _showAllActivity(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+    // TODO: Implement show all activity page
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Visa all aktivitet kommer snart!'),
+        backgroundColor: AppColors.info,
+      ),
+    );
+  }
+}

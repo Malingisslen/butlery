@@ -44,7 +44,59 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 
-/// Centralized app router that handles all route generation and navigation
+/// Centralized application router managing navigation and route generation for Butlery.
+///
+/// This class implements a comprehensive routing system that handles all navigation
+/// throughout the application, including authentication checks, route animations,
+/// error handling, and argument passing. It provides a single point of control
+/// for all navigation logic and ensures consistent behavior across the app.
+///
+/// **Key Features:**
+/// - Centralized route management with named routes
+/// - Authentication-protected routes with automatic redirect
+/// - Custom route animations based on navigation context
+/// - Type-safe argument passing with validation
+/// - Comprehensive error handling with user-friendly fallbacks
+/// - Programmatic navigation utilities
+/// - Route resolution and preprocessing
+///
+/// **Architecture Integration:**
+/// - Works with Routes constants for route definitions
+/// - Integrates with FirebaseAuthRepository for authentication
+/// - Supports all major app sections (recipes, social, messaging, shopping)
+/// - Provides consistent UI transitions and animations
+///
+/// **Route Categories:**
+/// - **Base Routes**: Authentication, home screen
+/// - **Recipe Routes**: Creation, editing, import, detail views
+/// - **Menu & Shopping Routes**: Weekly planning, shopping lists
+/// - **Social Routes**: Friends, profiles, sharing, collaboration
+/// - **Messaging Routes**: Conversations, chat interfaces
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Navigate to a route
+/// AppRouter.navigateTo(context, Routes.laggTill);
+/// 
+/// // Navigate with arguments
+/// AppRouter.navigateTo(
+///   context, 
+///   Routes.receptDetalj, 
+///   arguments: recipe
+/// );
+/// 
+/// // Navigate and replace current route
+/// AppRouter.navigateAndReplace(context, Routes.auth);
+/// 
+/// // Navigate and clear stack
+/// AppRouter.navigateAndClearStack(context, Routes.home);
+/// ```
+///
+/// **Error Handling:**
+/// - Missing arguments result in user-friendly error screens
+/// - Unknown routes show appropriate error messages
+/// - Authentication failures redirect to login
+/// - All errors provide navigation back to home screen
 class AppRouter {
   static final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
 

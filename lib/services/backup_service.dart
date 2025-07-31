@@ -1,4 +1,36 @@
-// lib/services/backup_service.dart
+/// Comprehensive backup and restore service for recipe data management with cross-platform file operations.
+///
+/// This service provides sophisticated backup and restore functionality for recipe collections,
+/// implementing platform-specific file storage strategies and comprehensive data integrity validation.
+/// It enables users to export their recipe collections to JSON format and import recipes from
+/// backup files with duplicate detection, error handling, and detailed operation reporting.
+///
+/// **Architecture Integration:**
+/// - Integrates with [UnifiedRecipeService] for comprehensive recipe collection management
+/// - Uses [FirebaseAuthRepository] for user authentication and ownership tracking
+/// - Implements platform-specific file storage strategies for Android and iOS compatibility
+/// - Coordinates with core dependency injection system for service orchestration
+///
+/// **Backup and Export Features:**
+/// - **Cross-Platform Export**: Platform-specific file storage strategies for Android and iOS
+/// - **JSON Formatting**: Human-readable JSON export with comprehensive metadata
+/// - **Timestamped Files**: Automatic filename generation with export timestamps
+/// - **User Attribution**: Export metadata includes user email and authentication information
+/// - **Recipe Count Tracking**: Detailed statistics and recipe collection metadata
+/// - **Error Recovery**: Comprehensive error handling with detailed failure reporting
+///
+/// **Import and Restore Features:**
+/// - **File Format Validation**: Robust validation of backup file format and structure
+/// - **Duplicate Detection**: Intelligent duplicate recipe detection based on title matching
+/// - **Batch Processing**: Efficient batch import with detailed progress and error reporting
+/// - **Legacy Compatibility**: Support for both current and legacy backup file formats
+/// - **Data Integrity**: Comprehensive validation and error handling during import operations
+/// - **User Feedback**: Detailed import results with success counts, skipped items, and error details
+///
+/// **Platform-Specific Storage:**
+/// - **Android**: Intelligent Downloads folder management with fallback strategies
+/// - **iOS**: Documents directory integration with Files app accessibility
+/// - **File Organization**: Dedicated Butlery subdirectory creation for organized storage
 
 import 'dart:convert';
 import 'dart:io';
@@ -10,9 +42,73 @@ import 'package:butlery/core/injection.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
-/// Service som hanterar backup och restore av recept
+/// Backup and restore service providing comprehensive recipe data management with cross-platform file operations.
+///
+/// This service manages complete backup and restore workflows for recipe collections, implementing
+/// sophisticated platform-specific file storage strategies and comprehensive data validation.
+/// It provides both export and import functionality with detailed error handling, duplicate detection,
+/// and user-friendly progress reporting throughout all operations.
+///
+/// **Cross-Platform Architecture:**
+/// Implements platform-specific strategies for optimal file storage:
+/// - Android: Downloads folder access with app-specific storage fallbacks
+/// - iOS: Documents directory integration with Files app accessibility
+/// - Comprehensive error handling for platform-specific storage limitations
+///
+/// **Data Integrity and Validation:**
+/// Provides robust data handling including:
+/// - JSON format validation with backward compatibility
+/// - Duplicate recipe detection during import operations
+/// - Comprehensive error reporting with detailed failure analysis
+/// - Metadata preservation including export timestamps and user attribution
+///
+/// **Usage Examples:**
+/// ```dart
+/// final backupService = BackupService();
+/// 
+/// // Export all recipes to platform-specific location
+/// final exportResult = await backupService.exportToFile();
+/// if (exportResult.success) {
+///   print('Exported ${exportResult.recipeCount} recipes to ${exportResult.filePath}');
+/// }
+/// 
+/// // Import recipes from backup file
+/// final importResult = await backupService.importFromFile();
+/// if (importResult.success) {
+///   print('Imported ${importResult.successCount} recipes, skipped ${importResult.skipCount}');
+/// }
+/// ```
 class BackupService {
-  /// Exportera alla recept till JSON-fil i Downloads
+  /// Exports all recipes to a timestamped JSON file in platform-specific storage location.
+  ///
+  /// This method performs a comprehensive export of all available recipes to a JSON backup file,
+  /// implementing platform-specific storage strategies to ensure optimal file accessibility.
+  /// The export includes detailed metadata, timestamps, and user attribution for complete backup integrity.
+  ///
+  /// Returns [BackupResult] with detailed information about the export operation including:
+  /// - Success/failure status with descriptive error messages
+  /// - File path location for user reference and verification
+  /// - Recipe count statistics for export validation
+  /// - Platform-specific storage location details
+  ///
+  /// **Export Process:**
+  /// 1. Retrieves all recipes from UnifiedRecipeService
+  /// 2. Creates comprehensive JSON structure with metadata
+  /// 3. Generates timestamped filename for organization
+  /// 4. Implements platform-specific storage strategy (Android/iOS)
+  /// 5. Provides detailed success/failure reporting
+  ///
+  /// **Platform Storage Strategies:**
+  /// - **Android**: Downloads folder with Butlery subdirectory
+  /// - **iOS**: Documents directory accessible through Files app
+  /// - **Error Handling**: Comprehensive fallback strategies and error reporting
+  ///
+  /// **JSON Structure:**
+  /// The exported JSON includes:
+  /// - Backup version and timestamp metadata
+  /// - User email and authentication information
+  /// - Recipe count statistics and validation data
+  /// - Complete recipe collection with all properties preserved
   Future<BackupResult> exportToFile() async {
     try {
       // Hämta alla recept
@@ -150,7 +246,39 @@ class BackupService {
     }
   }
 
-  /// Importera recept från backup-fil
+  /// Imports recipes from a user-selected backup file with comprehensive validation and duplicate detection.
+  ///
+  /// This method provides a complete import workflow allowing users to restore recipes from backup files.
+  /// It implements sophisticated validation, duplicate detection, and detailed progress reporting to ensure
+  /// data integrity and provide comprehensive feedback about the import operation results.
+  ///
+  /// Returns [ImportResult] with detailed information about the import operation including:
+  /// - Success/failure status with comprehensive error reporting
+  /// - Total recipe count from backup file for validation
+  /// - Successfully imported recipe count with detailed statistics
+  /// - Skipped recipe count with duplicate detection results
+  /// - Export metadata including original export date and user information
+  /// - Detailed error list with specific failure reasons for troubleshooting
+  ///
+  /// **Import Process:**
+  /// 1. Opens file picker for user to select backup JSON file
+  /// 2. Validates backup file format and structure integrity
+  /// 3. Processes each recipe with duplicate detection (title-based matching)
+  /// 4. Creates new recipe entries with updated timestamps and IDs
+  /// 5. Provides comprehensive success/failure reporting with detailed statistics
+  ///
+  /// **Validation and Error Handling:**
+  /// - **Format Validation**: Ensures backup file is valid Butlery format
+  /// - **Duplicate Detection**: Prevents duplicate imports based on recipe titles
+  /// - **Legacy Compatibility**: Supports both current and legacy backup formats
+  /// - **Error Recovery**: Continues processing even if individual recipes fail
+  /// - **Detailed Reporting**: Provides specific error messages for troubleshooting
+  ///
+  /// **Data Processing:**
+  /// - Preserves original recipe data while updating system-specific fields
+  /// - Generates new unique IDs for imported recipes
+  /// - Updates timestamps to reflect import date
+  /// - Maintains source attribution with backup import metadata
   Future<ImportResult> importFromFile() async {
     try {
       // Låt användaren välja fil
@@ -285,13 +413,41 @@ class BackupService {
   }
 }
 
-/// Resultat från backup-operation
+/// Comprehensive result data for backup export operations with detailed success/failure information.
+///
+/// This class encapsulates all relevant information from a backup export operation, providing
+/// detailed feedback for user interfaces and logging systems. It includes success status,
+/// descriptive messages, file system information, and statistical data about the export process.
+///
+/// **Key Properties:**
+/// - [success] Boolean indicating whether the backup operation completed successfully
+/// - [message] User-friendly message describing the operation result or error details
+/// - [filePath] Complete file system path where the backup was saved (null on failure)
+/// - [recipeCount] Number of recipes included in the backup (null on failure)
+///
+/// **Usage Patterns:**
+/// - Success results include file path and recipe count for user confirmation
+/// - Error results provide detailed error messages for troubleshooting
+/// - Factory constructors ensure consistent result formatting across all operations
 class BackupResult {
+  /// Whether the backup operation completed successfully.
   final bool success;
+  
+  /// User-friendly message describing the operation result or error details.
   final String message;
+  
+  /// Complete file system path where the backup was saved (null on failure).
   final String? filePath;
+  
+  /// Number of recipes included in the backup (null on failure).
   final int? recipeCount;
 
+  /// Creates a BackupResult with comprehensive operation details.
+  ///
+  /// [success] Whether the backup operation completed successfully
+  /// [message] User-friendly message describing the operation result
+  /// [filePath] Optional file path where backup was saved (for successful operations)
+  /// [recipeCount] Optional count of recipes in backup (for successful operations)
   const BackupResult({
     required this.success,
     required this.message,
@@ -299,6 +455,14 @@ class BackupResult {
     this.recipeCount,
   });
 
+  /// Factory constructor for successful backup operations with comprehensive result data.
+  ///
+  /// Creates a BackupResult indicating successful completion with detailed operation information
+  /// including file location and recipe statistics for user confirmation and verification.
+  ///
+  /// [message] Success message describing the completed operation
+  /// [filePath] Complete file system path where the backup was saved
+  /// [recipeCount] Number of recipes successfully included in the backup
   factory BackupResult.success({
     required String message,
     required String filePath,
@@ -312,24 +476,82 @@ class BackupResult {
     );
   }
 
+  /// Factory constructor for failed backup operations with detailed error information.
+  ///
+  /// Creates a BackupResult indicating operation failure with comprehensive error details
+  /// for troubleshooting and user feedback. Includes null values for optional properties
+  /// to clearly indicate the operation did not complete successfully.
+  ///
+  /// [message] Error message describing what went wrong during the backup operation
   factory BackupResult.error(String message) {
     return BackupResult(success: false, message: message);
   }
 }
 
-/// Resultat från import-operation
+/// Comprehensive result data for backup import operations with detailed statistics and error reporting.
+///
+/// This class provides comprehensive feedback about import operations, including detailed statistics
+/// about successful imports, skipped duplicates, errors encountered, and metadata from the original
+/// backup file. It enables sophisticated user feedback and troubleshooting capabilities.
+///
+/// **Statistical Properties:**
+/// - [totalRecipes] Total number of recipes found in the backup file
+/// - [successCount] Number of recipes successfully imported into the system
+/// - [skipCount] Number of recipes skipped due to duplicates or errors
+/// - [errors] Detailed list of error messages for troubleshooting
+/// - [skippedTitles] List of recipe titles that were skipped during import
+///
+/// **Operation Status:**
+/// - [success] Whether the overall import operation completed successfully
+/// - [cancelled] Whether the user cancelled the file selection process
+/// - [errorMessage] General error message if the entire operation failed
+///
+/// **Backup Metadata:**
+/// - [exportDate] Original export date from the backup file metadata
+/// - [exportEmail] Email of the user who created the original backup
 class ImportResult {
+  /// Whether the overall import operation completed successfully.
   final bool success;
+  
+  /// Whether the user cancelled the file selection process.
   final bool cancelled;
+  
+  /// Total number of recipes found in the backup file.
   final int totalRecipes;
+  
+  /// Number of recipes successfully imported into the system.
   final int successCount;
+  
+  /// Number of recipes skipped due to duplicates or errors.
   final int skipCount;
+  
+  /// Original export date from the backup file metadata.
   final DateTime? exportDate;
+  
+  /// Email of the user who created the original backup.
   final String? exportEmail;
+  
+  /// Detailed list of error messages for troubleshooting.
   final List<String> errors;
+  
+  /// List of recipe titles that were skipped during import.
   final List<String> skippedTitles;
+  
+  /// General error message if the entire operation failed.
   final String? errorMessage;
 
+  /// Creates an ImportResult with comprehensive import operation details.
+  ///
+  /// [success] Whether the overall import operation completed successfully (defaults to true)
+  /// [cancelled] Whether the user cancelled the file selection process (defaults to false)
+  /// [totalRecipes] Total number of recipes found in the backup file (defaults to 0)
+  /// [successCount] Number of recipes successfully imported (defaults to 0)
+  /// [skipCount] Number of recipes skipped due to duplicates or errors (defaults to 0)
+  /// [exportDate] Original export date from backup file metadata
+  /// [exportEmail] Email of user who created the original backup
+  /// [errors] Detailed list of error messages for troubleshooting (defaults to empty)
+  /// [skippedTitles] List of recipe titles that were skipped (defaults to empty)
+  /// [errorMessage] General error message if the entire operation failed
   const ImportResult({
     this.success = true,
     this.cancelled = false,
@@ -343,10 +565,22 @@ class ImportResult {
     this.errorMessage,
   });
 
+  /// Factory constructor for cancelled import operations.
+  ///
+  /// Creates an ImportResult indicating that the user cancelled the file selection
+  /// process before any import operations could begin. This provides clear distinction
+  /// between user cancellation and actual import failures.
   factory ImportResult.cancelled() {
     return const ImportResult(cancelled: true, success: false);
   }
 
+  /// Factory constructor for failed import operations with detailed error information.
+  ///
+  /// Creates an ImportResult indicating operation failure with comprehensive error details
+  /// for troubleshooting and user feedback. Used when the entire import process fails
+  /// due to file format issues, system errors, or other critical problems.
+  ///
+  /// [message] Error message describing what went wrong during the import operation
   factory ImportResult.error(String message) {
     return ImportResult(success: false, errorMessage: message);
   }

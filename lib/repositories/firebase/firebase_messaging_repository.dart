@@ -1,4 +1,31 @@
-// lib/repositories/firebase/firebase_messaging_repository.dart
+/// Firebase Firestore implementation for comprehensive real-time messaging and conversation management.
+///
+/// This repository provides complete messaging functionality using Firebase Firestore as the backend,
+/// enabling users to engage in direct and group conversations with real-time message delivery,
+/// read receipts, typing indicators, and comprehensive conversation management. It implements
+/// sophisticated messaging features to support collaborative cooking community interactions.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
+/// - Uses [UserScopedFirebaseRepository] mixin for user-specific conversation filtering
+/// - Implements [MessagingRepository] interface for standardized messaging operations
+/// - Integrates with [AppLogger] for detailed messaging activity monitoring
+/// - Coordinates with notification system for message delivery alerts
+///
+/// **Messaging System Features:**
+/// - **Direct Conversations**: Private 1-on-1 messaging between users
+/// - **Group Conversations**: Multi-participant group messaging with management
+/// - **Real-time Updates**: Live message streams with instant delivery
+/// - **Message Status Tracking**: Comprehensive delivery and read receipt system
+/// - **Conversation Management**: Participant addition/removal and metadata updates
+/// - **Message Operations**: Send, edit, delete, and search message functionality
+/// - **Offline Support**: Message queueing and synchronization when connection restored
+///
+/// **Security and Privacy:**
+/// - **Participant Validation**: Ensures users can only access conversations they're part of
+/// - **Permission Checks**: Validates user permissions before message operations
+/// - **Data Integrity**: Maintains conversation consistency during participant changes
+/// - **Audit Logging**: Complete audit trail for messaging security monitoring
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
@@ -12,13 +39,64 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message_type.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
-
-/// Firebase implementation of MessagingRepository
+/// Firebase implementation for real-time messaging with comprehensive conversation management.
+///
+/// This repository provides complete messaging functionality using Firebase Firestore collections
+/// for both conversations and messages. It supports both direct (1-on-1) and group conversations
+/// with real-time message delivery, read receipts, message editing, and participant management.
+///
+/// **Messaging Architecture:**
+/// Uses a dual-collection approach for optimal performance and real-time capabilities:
+/// - `conversations`: Stores conversation metadata, participants, and last message info
+/// - `messages`: Stores individual messages with delivery status and content
+///
+/// **Real-time Features:**
+/// - **Live Message Streams**: Real-time message delivery using Firestore snapshots
+/// - **Conversation Updates**: Live participant changes and conversation metadata updates
+/// - **Message Status Updates**: Real-time delivery and read receipt tracking
+/// - **Typing Indicators**: Support for typing status updates (future enhancement)
+///
+/// **Performance Optimizations:**
+/// - **Efficient Queries**: Optimized Firestore queries with proper indexing
+/// - **Pagination Support**: Message loading with configurable limits
+/// - **Batch Operations**: Efficient bulk message status updates
+/// - **Conversation Caching**: Smart caching of conversation metadata
+///
+/// **Usage Examples:**
+/// ```dart
+/// final messagingRepo = FirebaseMessagingRepository(
+///   authRepository: sl<AuthRepository>(),
+/// );
+/// 
+/// // Create direct conversation
+/// final conversationId = await messagingRepo.createDirectConversation(
+///   user1Id: currentUserId,
+///   user1DisplayName: 'John',
+///   user2Id: friendId,
+///   user2DisplayName: 'Jane',
+/// );
+/// 
+/// // Send message
+/// final message = Message.text(
+///   conversationId: conversationId,
+///   senderId: currentUserId,
+///   content: 'Hello!',
+/// );
+/// await messagingRepo.sendMessage(message);
+/// 
+/// // Stream messages
+/// messagingRepo.getConversationMessages(conversationId: conversationId)
+///   .listen((messages) => updateUI(messages));
+/// ```
 class FirebaseMessagingRepository 
     extends BaseFirebaseRepository<Conversation>
     with UserScopedFirebaseRepository<Conversation>
     implements MessagingRepository {
 
+  /// Creates a Firebase messaging repository with dependency injection support.
+  ///
+  /// [firestore] Optional Firestore instance for testing, defaults to production instance
+  /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
   FirebaseMessagingRepository({
     super.firestore,
     AuthRepository? authRepository,

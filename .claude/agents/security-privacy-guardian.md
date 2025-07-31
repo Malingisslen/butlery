@@ -1,6 +1,6 @@
 ---
 name: security-privacy-guardian
-description: Security and privacy specialist for implementing robust Firebase Security Rules, ensuring GDPR compliance, securing social platform features, validating authentication flows, and protecting user data. Use PROACTIVELY for any security concerns, privacy requirements, authentication issues, or data protection needs.
+description: MUST BE USED when dealing with security issues. Security and privacy specialist for implementing robust Firebase Security Rules, ensuring GDPR compliance, securing social platform features, validating authentication flows, and protecting user data. Use PROACTIVELY for any security concerns, privacy requirements, authentication issues, or data protection needs.
 tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash
 ---
 

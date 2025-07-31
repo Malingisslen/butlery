@@ -1,43 +1,75 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Firebase Service Mixin - Firebase integration pattern consolidation
-/// File: lib/core/mixins/firebase_service_mixin.dart
-/// Quick Guide: Eliminates 300+ lines of duplicate Firebase patterns across 25+ services
-/// Dependencies IN: cloud_firestore, firebase_core, BaseService, ErrorHandlingMixin
-/// Dependencies OUT: All services that integrate with Firebase
-/// Data flow: Firebase operation -> Error handling -> Logging -> State update
-/// State management: Firebase connection state and error management
-/// Purpose: Standardize Firebase operations, error handling, and authentication checks
-/// Common issues: Inconsistent Firebase error handling, duplicate connection management
-/// Test coverage: Firebase operation testing with mocked Firestore instances
-/// Performance: Optimized Firebase operations with connection pooling
-/// Analytics: Firebase operation tracking and performance monitoring
-/// Code smells: None - clean mixin pattern with proper Firebase abstractions
-/// Connected to: All Firebase-dependent services (unified services, notifications, storage)
-/// Used in phases: Service Layer Consolidation - Firebase Pattern Unification
+/// Mixin providing standardized Firebase integration patterns for services.
+///
+/// This mixin eliminates 300+ lines of duplicate Firebase code found across 25+
+/// services by providing a comprehensive set of Firebase operation utilities with
+/// built-in error handling, connection management, and performance optimizations.
+///
+/// Key capabilities:
+/// - Centralized Firestore instance management with proper initialization
+/// - Standardized Firebase operation execution with comprehensive error handling
+/// - Firebase-specific error categorization and user-friendly messaging
+/// - Automatic retry logic for network-related Firebase operations
+/// - Firebase authentication state validation
+/// - Batch operation support for efficient bulk operations
+/// - Connection state monitoring and offline handling
+/// - Performance monitoring and operation timing
+///
+/// Architecture benefits:
+/// - Eliminates inconsistent Firebase error handling across services
+/// - Provides centralized Firebase connection management
+/// - Ensures proper Firebase initialization before operations
+/// - Simplifies testing with mockable Firebase operations
+/// - Improves performance through connection pooling and batching
+/// - Standardizes Firebase operation patterns across the app
+///
+/// Usage example:
+/// ```dart
+/// class RecipeService extends BaseService with FirebaseServiceMixin {
+///   Future<Recipe?> fetchRecipe(String id) async {
+///     return await executeFirebaseOperation(
+///       () async {
+///         final doc = await firestore.collection('recipes').doc(id).get();
+///         return Recipe.fromFirestore(doc);
+///       },
+///       operationName: 'Fetch recipe',
+///       requiresAuth: true,
+///     );
+///   }
+/// }
+/// ```
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
-/// Comprehensive Firebase integration mixin that eliminates duplicate Firebase patterns
-/// found across 25+ services in the codebase.
-/// 
-/// This mixin consolidates all common Firebase patterns:
-/// - FirebaseFirestore instance management (found in 25+ services)
-/// - Firebase operation error handling (found in 20+ services)
-/// - Firebase authentication validation (found in 18+ services)
-/// - Firebase connection state management (found in 15+ services)
-/// - Firebase batch operations (found in 12+ services)
+/// Mixin for standardizing Firebase operations across services.
+///
+/// Built on top of [ErrorHandlingMixin] to provide Firebase-specific error
+/// handling and operation patterns. This mixin should be used by all services
+/// that interact with Firebase services (Firestore, Auth, Storage, etc.).
+///
+/// Provides these Firebase operation types:
+/// - [executeFirebaseOperation] - Standard Firebase operations with error handling
+/// - [executeFirebaseOperationWithRetry] - Operations with retry logic
+/// - [executeBatchFirebaseOperation] - Efficient batch operations
+/// - [executeFirebaseTransaction] - Atomic transaction operations
+/// - [executeFirebaseQuery] - Query operations with pagination support
 mixin FirebaseServiceMixin on ErrorHandlingMixin {
   
   // ===== FIREBASE INSTANCE MANAGEMENT =====
   
-  /// Shared Firestore instance with proper initialization
-  /// Replaces individual firestore instances across services
+  /// Centralized Firestore instance for all Firebase operations.
+  ///
+  /// Provides access to the Firebase Firestore instance with proper initialization
+  /// checking. This replaces individual firestore instances scattered across services.
   FirebaseFirestore get firestore => FirebaseFirestore.instance;
   
-  /// Check if Firebase is initialized
+  /// Checks whether Firebase has been properly initialized.
+  ///
+  /// Returns true if Firebase apps are available, false otherwise.
+  /// This check prevents Firebase operations from failing due to
+  /// initialization issues.
   bool get isFirebaseInitialized {
     try {
       return Firebase.apps.isNotEmpty;
@@ -46,7 +78,22 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     }
   }
   
-  /// Ensure Firebase is initialized before operations
+  /// Ensures Firebase is initialized before executing operations.
+  ///
+  /// Attempts to initialize Firebase if it hasn't been initialized yet.
+  /// This method should be called before any Firebase operations to
+  /// prevent initialization errors.
+  ///
+  /// Returns true if Firebase is initialized (or was successfully initialized),
+  /// false if initialization failed.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (await ensureFirebaseInitialized()) {
+  ///   // Safe to perform Firebase operations
+  ///   final doc = await firestore.collection('users').doc(id).get();
+  /// }
+  /// ```
   Future<bool> ensureFirebaseInitialized() async {
     if (!isFirebaseInitialized) {
       try {
@@ -63,8 +110,30 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   
   // ===== FIREBASE OPERATION EXECUTION =====
   
-  /// Execute Firebase operation with standardized error handling
-  /// Replaces try-catch patterns found in 20+ services
+  /// Executes a Firebase operation with comprehensive error handling.
+  ///
+  /// This method provides standardized execution of Firebase operations with
+  /// automatic initialization checking, error handling, and logging. It replaces
+  /// the try-catch patterns found in 20+ services across the codebase.
+  ///
+  /// [operation] The Firebase operation to execute
+  /// [operationName] Human-readable name for logging and error reporting
+  /// [defaultValue] Value to return if the operation fails
+  /// [requiresAuth] Whether the operation requires user authentication (default: true)
+  /// [requiresNetwork] Whether the operation requires network connectivity (default: true)
+  ///
+  /// Returns the operation result or [defaultValue] if the operation fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final recipe = await executeFirebaseOperation(
+  ///   () async {
+  ///     final doc = await firestore.collection('recipes').doc(id).get();
+  ///     return Recipe.fromFirestore(doc);
+  ///   },
+  ///   operationName: 'Fetch recipe',
+  /// );
+  /// ```
   Future<T?> executeFirebaseOperation<T>(
     Future<T> Function() operation, {
     String? operationName,
@@ -92,7 +161,27 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     );
   }
   
-  /// Execute Firebase operation with retry logic for network issues
+  /// Executes a Firebase operation with automatic retry logic.
+  ///
+  /// This method automatically retries Firebase operations that fail due to
+  /// network issues or temporary Firebase service unavailability. Uses
+  /// exponential backoff to avoid overwhelming the service.
+  ///
+  /// [operation] The Firebase operation to execute with retry logic
+  /// [operationName] Human-readable name for logging and error reporting
+  /// [defaultValue] Value to return if all retry attempts fail
+  /// [maxRetries] Maximum number of retry attempts (default: 3)
+  ///
+  /// Returns the operation result or [defaultValue] if all retries fail.
+  ///
+  /// Example:
+  /// ```dart
+  /// final data = await executeFirebaseOperationWithRetry(
+  ///   () => firestore.collection('data').get(),
+  ///   operationName: 'Fetch critical data',
+  ///   maxRetries: 5,
+  /// );
+  /// ```
   Future<T?> executeFirebaseOperationWithRetry<T>(
     Future<T> Function() operation, {
     String? operationName,
