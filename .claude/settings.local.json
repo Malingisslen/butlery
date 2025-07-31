@@ -78,7 +78,8 @@
       "Bash(node run-validation.js)",
       "Bash(python3:*)",
       "Bash(true)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   },
