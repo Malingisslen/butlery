@@ -186,7 +186,10 @@ class RecipeParticipants {
   /// Get editor user IDs (users who can edit content)
   static List<String> getEditorIds(RealtimeRecipe recipe) {
     return recipe.participants.entries
-        .where((entry) => ResourcePermissionHelper.canEditContent(entry.value))
+        .where((entry) => entry.value == ResourcePermission.editor || 
+                          entry.value == ResourcePermission.write ||
+                          entry.value == ResourcePermission.admin || 
+                          entry.value == ResourcePermission.owner)
         .map((entry) => entry.key)
         .toList();
   }
@@ -346,7 +349,7 @@ class RecipeParticipants {
     final permission = getUserPermission(recipe, userId);
     if (permission == null) return false;
 
-    return ResourcePermissionHelper.canInviteParticipants(permission);
+    return permission == ResourcePermission.admin || permission == ResourcePermission.owner;
   }
 
   /// Check if user can manage permissions

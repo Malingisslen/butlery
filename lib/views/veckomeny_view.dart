@@ -30,7 +30,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Core
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 // Services
@@ -46,7 +46,7 @@ class VeckomenyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<MenuViewModel>(),
+      create: (_) => ServiceLocator.get<MenuViewModel>(),
       child: const _VeckomenyViewContent(),
     );
   }
@@ -61,8 +61,8 @@ class _VeckomenyViewContent extends StatefulWidget {
 
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
-  final ShareService _shareService = sl<ShareService>();
-  final UnifiedFriendsService _friendsService = sl<UnifiedFriendsService>();
+  final ShareService _shareService = ServiceLocator.get<ShareService>();
+  final UnifiedFriendsService _friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
   @override
   void initState() {
@@ -152,7 +152,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       context: context,
       builder: (context) => UniversalShareDialog.menu(
         menu: menuViewModel.menu,
-        viewModel: sl<UniversalShareDialogViewModel>(),
+        viewModel: ServiceLocator.get<UniversalShareDialogViewModel>(),
         initialMessage: 'Kolla min veckomeny!',
         availableFriends: availableFriends,
       ),

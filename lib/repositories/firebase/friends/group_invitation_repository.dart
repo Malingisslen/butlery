@@ -54,7 +54,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final invitationRepo = GroupInvitationRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Send group invitation

@@ -8,7 +8,7 @@ import 'package:butlery/services/storage_service.dart';
 // import '../../services/image_picker_service.dart'; // Currently unused
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Manages image operations for recipe forms
 class RecipeImageManager extends ChangeNotifier {
@@ -24,8 +24,8 @@ class RecipeImageManager extends ChangeNotifier {
   RecipeImageManager({
     StorageService? storageService,
     // ImagePickerService? imagePickerService, // Currently unused
-  }) : _storageService = storageService ?? sl<StorageService>();
-       // _imagePickerService = imagePickerService ?? sl<ImagePickerService>();
+  }) : _storageService = storageService ?? ServiceLocator.get<StorageService>();
+       // _imagePickerService = imagePickerService ?? ServiceLocator.get<ImagePickerService>();
 
   // ===== GETTERS =====
 

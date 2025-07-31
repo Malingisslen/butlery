@@ -1,7 +1,7 @@
 //lib/viewmodels/create_group_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/events/group_events.dart';
 
@@ -22,7 +22,7 @@ class CreateGroupViewModel extends ChangeNotifier {
 
   CreateGroupViewModel({
     UnifiedFriendsService? friendsService,
-  })  : _friendsService = friendsService ?? sl<UnifiedFriendsService>();
+  })  : _friendsService = friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
 
   // Getters
   String get name => _name;

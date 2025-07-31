@@ -11,7 +11,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Core
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/share_service.dart';
 
 // Focused Components
@@ -33,7 +33,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   @override
   void initState() {
     super.initState();
-    _viewModel = sl<UnifiedShoppingViewModel>();
+    _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
     _initializeViewModel();
   }
 
@@ -143,7 +143,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   void _shareListExternally() {
     if (_viewModel.activeList == null) return;
 
-    final shareService = sl<ShareService>();
+    final shareService = ServiceLocator.get<ShareService>();
     shareService.shareShoppingList(_viewModel.items);
   }
 

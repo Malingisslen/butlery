@@ -16,25 +16,37 @@ import 'package:butlery/services/notifications/modules/notification_analytics_ma
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:get_it/get_it.dart';
 
-/// Clean coordinator for all notification functionality in Butlery
-/// 
-/// 📋 REFACTORED ARCHITECTURE (Phase 9.7):
-/// This service now follows the Single Responsibility Principle with focused modules:
-/// ✅ NotificationContentManager - Message generation and templates
-/// ✅ NotificationPreferenceManager - User preferences and quiet hours
-/// ✅ NotificationOfflineManager - Offline queuing and retry logic
-/// ✅ NotificationBatchManager - Batching and spam prevention
-/// ✅ FCMTokenManager - Token management and topic subscriptions
-/// ✅ NotificationAnalyticsManager - Delivery tracking and metrics
-/// 
-/// 🏗️ COORDINATOR PATTERN:
-/// This main service acts as a clean facade that delegates to focused modules
-/// while maintaining the same public API for backward compatibility.
-/// Each module has a single, well-defined responsibility.
-/// 
-/// 🔧 DEVELOPMENT STATUS:
-/// All notification logic is fully functional with intentional logging for development.
-/// Production deployment requires only updating FCM delivery to use Cloud Functions.
+/// Comprehensive notification management service providing modular push notification functionality with FCM integration.
+///
+/// This service implements a sophisticated notification system using the coordinator pattern with focused modules
+/// for content management, user preferences, offline handling, batch processing, token management, and analytics.
+/// It provides comprehensive push notification functionality including recipe sharing alerts, friend interactions,
+/// cooking reminders, and social engagement notifications with Swedish localization and intelligent delivery optimization.
+///
+/// **Refactored Architecture (Single Responsibility Principle):**
+/// The service follows clean modular architecture with specialized components:
+/// - **NotificationContentManager**: Message generation, template management, and localized content creation
+/// - **NotificationPreferenceManager**: User preference management, quiet hours, and notification type controls
+/// - **NotificationOfflineManager**: Offline notification queuing, retry logic, and connection-aware delivery
+/// - **NotificationBatchManager**: Batch processing, spam prevention, and intelligent notification grouping
+/// - **FCMTokenManager**: Device token management, topic subscriptions, and cross-device synchronization
+/// - **NotificationAnalyticsManager**: Delivery tracking, engagement metrics, and performance analytics
+///
+/// **Coordinator Pattern Implementation:**
+/// This main service acts as a clean facade that delegates to focused modules while maintaining
+/// backward compatibility through unified public API. Each module has single, well-defined responsibility
+/// enabling maintainable code and flexible notification system evolution.
+///
+/// **Development and Production Ready:**
+/// All notification logic is fully functional with intentional development logging for debugging.
+/// Production deployment requires only updating FCM delivery configuration to use Cloud Functions
+/// for scalable server-side notification processing and enhanced delivery reliability.
+/// Comprehensive notification coordinator providing modular push notification functionality with FCM integration.
+///
+/// This service implements the coordinator pattern with specialized modules following Single Responsibility
+/// Principle for maintainable notification management. It provides comprehensive push notification functionality
+/// including recipe sharing, social interactions, cooking reminders, and system notifications with Swedish
+/// localization and intelligent delivery optimization.
 class NotificationService extends BaseService {
   @override
   String get serviceName => 'NotificationService';

@@ -186,7 +186,10 @@ class MenuParticipants {
   /// Get editor user IDs (including owner)
   static List<String> getEditorIds(RealtimeMenu menu) {
     return menu.participants.entries
-        .where((entry) => ResourcePermissionHelper.canEditContent(entry.value))
+        .where((entry) => entry.value == ResourcePermission.editor || 
+                          entry.value == ResourcePermission.write ||
+                          entry.value == ResourcePermission.admin || 
+                          entry.value == ResourcePermission.owner)
         .map((entry) => entry.key)
         .toList();
   }

@@ -3,7 +3,7 @@
 import 'dart:io';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 class ConnectivityCheck {
   static Future<bool> hasInternetConnection() async {
@@ -48,7 +48,7 @@ class ConnectivityCheck {
   static Future<bool> hasFirebaseConnectivity() async {
     try {
       // Use connectivity repository instead of direct Firebase access
-      final connectivityRepo = sl<ConnectivityRepository>();
+      final connectivityRepo = ServiceLocator.get<ConnectivityRepository>();
       return await connectivityRepo.checkFirebaseConnection();
     } catch (e) {
       AppLogger.debug('Firebase connectivity test failed: $e');

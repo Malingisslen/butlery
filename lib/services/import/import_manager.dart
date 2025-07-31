@@ -1,19 +1,55 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Import Manager - Coordinates different import strategies
-/// File: lib/services/import/import_manager.dart
-/// Quick Guide: Strategy pattern coordinator for recipe imports with auto-detection
-/// Dependencies IN: Import strategies, PersonalRecipeOperations
-/// Dependencies OUT: Used by import ViewModels and UI components
-/// Data flow: Input -> Strategy selection -> Strategy execution -> Recipe creation
-/// State management: Stateless coordination with strategy delegation
-/// Purpose: Unified import interface with automatic strategy selection
-/// Common issues: Strategy selection logic, error handling across strategies
-/// Test coverage: Unit tests for strategy selection and coordination
-/// Performance: Fast strategy selection with efficient delegation
-/// Analytics: Import strategy usage, success rates by strategy
-/// Code smells: None - follows strategy pattern with good separation
-/// Connected to: Import ViewModels, PersonalRecipeOperations, Import strategies
-/// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
+/// Comprehensive import management service providing intelligent strategy coordination for multi-format recipe imports.
+///
+/// This service implements the strategy pattern to coordinate different import approaches including text parsing,
+/// archive processing, URL extraction, and file processing. It provides intelligent strategy selection, fallback
+/// mechanisms, batch import capabilities, and comprehensive error handling for reliable recipe import functionality
+/// across diverse input formats and sources.
+///
+/// **Architecture Integration:**
+/// - Implements Strategy Pattern for pluggable import strategy management and extensibility
+/// - Integrates with [PersonalRecipeOperations] for recipe persistence and unified storage management
+/// - Coordinates multiple [ImportStrategy] implementations for comprehensive format support
+/// - Provides unified interface for ViewModels and UI components with consistent error handling
+///
+/// **Import Strategy Coordination:**
+/// - **Automatic Strategy Selection**: Intelligent input analysis for optimal strategy selection
+/// - **Fallback Chain**: Sequential strategy attempts with graceful degradation for reliability
+/// - **Strategy Registration**: Pluggable architecture supporting extensible import format additions
+/// - **Confidence Rating**: Strategy confidence scoring for optimal import approach recommendation
+/// - **Validation Integration**: Comprehensive input validation across all supported import strategies
+///
+/// **Supported Import Strategies:**
+/// - **Archive Import**: Recipe archive processing with ID-based retrieval and metadata preservation
+/// - **Text Import**: Intelligent text parsing with recipe structure recognition and Swedish language support
+/// - **URL Import**: Web-based recipe extraction from cooking websites and social media platforms
+/// - **File Import**: Recipe file processing supporting various document and image formats
+/// - **Batch Import**: Multi-input processing with progress tracking and error aggregation
+///
+/// **Advanced Features:**
+/// - **Batch Processing**: Efficient multi-recipe import with parallel processing and progress tracking
+/// - **Import Suggestions**: Strategy recommendation system with confidence scoring and user guidance
+/// - **Error Aggregation**: Comprehensive error collection and reporting across batch operations
+/// - **Metadata Preservation**: Import source tracking and recipe attribution management
+/// - **Strategy Analytics**: Import success rate tracking and strategy performance optimization
+///
+/// **Usage Examples:**
+/// ```dart
+/// final importManager = ImportManager(personalOperations);
+/// 
+/// // Auto-detect and import single recipe
+/// final result = await importManager.autoImport(recipeText);
+/// if (result.isSuccess) {
+///   showSuccessMessage('Recipe imported: ${result.recipe!.title}');
+/// }
+/// 
+/// // Batch import multiple recipes
+/// final batchResult = await importManager.batchImport(recipeTexts);
+/// showBatchResults('${batchResult.successCount}/${batchResult.totalProcessed} imported');
+/// 
+/// // Get import suggestions
+/// final suggestions = importManager.getImportSuggestions(input);
+/// displayStrategyOptions(suggestions);
+/// ```
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -21,14 +57,11 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 
-/// Import manager that coordinates different import strategies
-/// 
-/// Features:
-/// - Automatic strategy selection based on input
-/// - Fallback strategy chain
-/// - Batch import support
-/// - Import validation and error handling
-/// - Integration with PersonalRecipeOperations
+/// Comprehensive import manager coordinating multiple import strategies with intelligent selection and batch processing.
+///
+/// This service implements the strategy pattern to provide unified import functionality across diverse input formats
+/// including text, archives, URLs, and files. It provides automatic strategy selection, fallback mechanisms,
+/// batch processing capabilities, and comprehensive error handling for reliable recipe import operations.
 class ImportManager {
   final PersonalRecipeOperations _personalOperations;
   final List<ImportStrategy> _strategies = [];
@@ -52,7 +85,55 @@ class ImportManager {
   /// Get all available import strategies
   List<ImportStrategy> get availableStrategies => List.unmodifiable(_strategies);
 
-  /// Auto-detect and import recipe from input
+  /// Automatically detects optimal import strategy and imports recipe with intelligent fallback mechanisms.
+  ///
+  /// This method implements intelligent strategy selection by analyzing input characteristics and attempting
+  /// import with the most appropriate strategy. It provides fallback functionality by trying alternative
+  /// strategies if the primary approach fails, ensuring maximum import success rates across diverse inputs.
+  ///
+  /// [input] Recipe content in any supported format (text, URL, ID, etc.)
+  /// [preferredStrategy] Optional strategy to attempt first before auto-detection
+  /// [options] Optional configuration parameters for strategy-specific behavior
+  /// Returns [ImportManagerResult] with success status, imported recipe, and detailed metadata
+  ///
+  /// **Auto-Detection Algorithm:**
+  /// 1. **Preferred Strategy**: Attempts user-specified strategy first if provided and compatible
+  /// 2. **Compatibility Check**: Evaluates all strategies for input handling capability
+  /// 3. **Sequential Attempt**: Tries compatible strategies in confidence order until success
+  /// 4. **Comprehensive Reporting**: Provides detailed error information and available alternatives
+  ///
+  /// **Fallback Strategy:**
+  /// - Attempts strategies in order of compatibility and confidence rating
+  /// - Continues through all compatible strategies until successful import
+  /// - Aggregates error information from failed attempts for debugging
+  /// - Reports available strategies for user guidance on manual selection
+  ///
+  /// **Strategy Selection Priorities:**
+  /// - Archive import for known recipe IDs with highest confidence
+  /// - Text import for structured recipe content with medium confidence
+  /// - URL import for web links with platform-specific optimization
+  /// - File import for document and image inputs with format detection
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Auto-import with fallback
+  /// final result = await importManager.autoImport(recipeContent);
+  /// 
+  /// // Prefer specific strategy with fallback
+  /// final result = await importManager.autoImport(
+  ///   recipeContent,
+  ///   preferredStrategy: textImportStrategy,
+  ///   options: {'language': 'swedish'},
+  /// );
+  /// 
+  /// // Handle results with strategy information
+  /// if (result.isSuccess) {
+  ///   print('Imported with ${result.strategy} strategy');
+  ///   saveRecipe(result.recipe!);
+  /// } else {
+  ///   showErrorWithAlternatives(result.errorMessage, result.availableStrategies);
+  /// }
+  /// ```
   Future<ImportManagerResult> autoImport(String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
@@ -109,7 +190,55 @@ class ImportManager {
     return await _importWithStrategy(strategy, input, options);
   }
 
-  /// Batch import multiple inputs
+  /// Processes multiple recipe imports in batch with comprehensive progress tracking and error aggregation.
+  ///
+  /// This method provides efficient batch processing for multiple recipe imports with individual strategy
+  /// selection, comprehensive error collection, and detailed result reporting. It processes each input
+  /// independently while aggregating results for comprehensive batch operation feedback and analytics.
+  ///
+  /// [inputs] List of recipe content in various supported formats for batch processing
+  /// [preferredStrategy] Optional strategy to prefer for all imports in the batch
+  /// [options] Optional configuration parameters applied to all import operations
+  /// Returns [BatchImportResult] with individual results, success statistics, and error aggregation
+  ///
+  /// **Batch Processing Features:**
+  /// - **Individual Processing**: Each input processed independently with optimal strategy selection
+  /// - **Error Isolation**: Failed imports don't affect successful imports in the same batch
+  /// - **Progress Tracking**: Detailed statistics on success/failure rates and processing progress
+  /// - **Result Aggregation**: Comprehensive collection of successful recipes and error information
+  /// - **Strategy Analytics**: Tracking of strategy usage and success rates across batch operations
+  ///
+  /// **Performance Optimization:**
+  /// - Sequential processing prevents resource contention and ensures stability
+  /// - Memory-efficient processing with immediate result collection and cleanup
+  /// - Strategy reuse across batch items for optimal performance
+  /// - Comprehensive error handling prevents batch failure from individual errors
+  ///
+  /// **Result Management:**
+  /// - Separate collections for successful recipes and error messages
+  /// - Detailed statistics including success rate and processing counts
+  /// - Individual result preservation for detailed analysis and debugging
+  /// - Strategy tracking for batch operation analytics and optimization
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Batch import with progress tracking
+  /// final batchResult = await importManager.batchImport(recipeTexts);
+  /// 
+  /// // Display batch results
+  /// print('Imported ${batchResult.successCount}/${batchResult.totalProcessed} recipes');
+  /// print('Success rate: ${(batchResult.successRate * 100).toInt()}%');
+  /// 
+  /// // Handle successful imports
+  /// for (final recipe in batchResult.successfulRecipes) {
+  ///   addToRecipeCollection(recipe);
+  /// }
+  /// 
+  /// // Handle errors with detailed feedback
+  /// if (batchResult.hasErrors) {
+  ///   showBatchErrors(batchResult.errors);
+  /// }
+  /// ```
   Future<BatchImportResult> batchImport(
     List<String> inputs, {
     ImportStrategy? preferredStrategy,

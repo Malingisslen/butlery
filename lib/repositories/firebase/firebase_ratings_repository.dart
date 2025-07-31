@@ -50,7 +50,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final ratingsRepo = FirebaseRatingsRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Rate a recipe

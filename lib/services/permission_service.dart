@@ -246,6 +246,30 @@ class ResourcePermissionHelper {
   /// Checks if permission represents editor access.
   static bool isEditor(String permission) => permission == 'editor' || permission == 'write';
   
+  /// Checks if user can invite participants with given permission.
+  static bool canInviteParticipants(String permission) => 
+    permission == 'admin' || permission == 'owner';
+  
+  /// Checks if user can leave resource with given permission.
+  static bool canLeaveResource(String permission) => 
+    permission != 'owner'; // Owner cannot leave their own resource
+  
+  /// Checks if user can manage permissions with given permission.
+  static bool canManagePermissions(dynamic permission) {
+    if (permission is String) return permission == 'owner';
+    if (permission is ResourcePermission) return permission == ResourcePermission.owner;
+    if (permission is PermissionType) return permission == PermissionType.owner;
+    return false;
+  }
+  
+  /// Converts permission enum/object to string representation.
+  static String permissionToString(dynamic permission) {
+    if (permission is String) return permission;
+    if (permission is ResourcePermission) return permission.permissionType.name;
+    if (permission is PermissionType) return permission.name;
+    return permission.toString();
+  }
+  
   /// Helper method to convert string to PermissionType enum.
   static PermissionType _stringToPermissionType(String permission) {
     switch (permission.toLowerCase()) {
@@ -335,6 +359,15 @@ class PermissionService {
   /// [recipeId] Unique identifier of the recipe to check editing permissions for
   /// Returns `true` if current user can edit the recipe (mock implementation returns true)
   bool canEditRecipe(String recipeId) => true;
+  
+  /// Legacy method: Check if current user can invite others to a recipe.
+  ///
+  /// This method provides backward compatibility for existing recipe invitation checks.
+  /// In the consolidated system, this represents admin/owner permission validation.
+  ///
+  /// [recipeId] Unique identifier of the recipe to check invitation permissions for
+  /// Returns `true` if current user can invite others to the recipe (mock implementation returns true)
+  bool canInviteToRecipe(String recipeId) => true;
   
   /// Validates whether a user has the specified permission for a given resource with intelligent caching.
   ///

@@ -10,7 +10,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/component_themes.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
@@ -23,7 +23,7 @@ class UserProfileEditView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<UserProfileViewModel>(),
+      create: (_) => ServiceLocator.get<UserProfileViewModel>(),
       child: const _UserProfileEditViewContent(),
     );
   }

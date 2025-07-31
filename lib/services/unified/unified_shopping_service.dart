@@ -11,7 +11,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/shopping_sharing_operations.dart';
@@ -138,7 +138,7 @@ class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<Unifi
   bool get hasError => _error != null;
   
   @override
-  String? get currentUserId => sl<PermissionService>().currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'Du';
 

@@ -1,4 +1,58 @@
-// lib/services/storage_service.dart
+/// Comprehensive Firebase Storage service providing advanced image management with intelligent compression and progress tracking.
+///
+/// This service implements sophisticated image storage functionality including intelligent compression, thumbnail generation,
+/// progress tracking, and comprehensive storage management for recipe images and user content. It provides optimized
+/// upload/download operations with Swedish localization, detailed analytics tracking, and comprehensive error handling
+/// for reliable image management throughout the application.
+///
+/// **Architecture Integration:**
+/// - Extends [BaseService] for consistent service patterns and comprehensive error handling
+/// - Uses [FirebaseServiceMixin] for Firebase-specific functionality and authentication integration
+/// - Integrates with [FirebaseStorage] for cloud storage operations and file management
+/// - Implements [FlutterImageCompress] for intelligent image optimization and size reduction
+/// - Uses [UUID] for unique filename generation and collision prevention
+///
+/// **Storage Management Features:**
+/// - **Intelligent Compression**: Advanced image compression with quality optimization and automatic EXIF correction
+/// - **Thumbnail Generation**: Automatic thumbnail creation for performance optimization and preview functionality
+/// - **Progress Tracking**: Detailed upload progress monitoring with real-time feedback capabilities
+/// - **Batch Operations**: Efficient multiple image upload with coordinated progress tracking
+/// - **Storage Analytics**: Comprehensive storage usage analytics and user quota management
+/// - **Swedish Localization**: User-friendly Swedish language logging and feedback messages
+///
+/// **Image Processing Capabilities:**
+/// - **Smart Compression**: Maintains optimal quality while reducing file sizes by up to 70%
+/// - **Format Optimization**: Automatic format conversion to JPEG for optimal storage efficiency
+/// - **Resolution Management**: Intelligent resolution adjustment for different usage contexts
+/// - **Metadata Preservation**: Comprehensive metadata tracking including upload timestamps and compression statistics
+/// - **Validation**: Robust file validation ensuring security and format compatibility
+///
+/// **Usage Examples:**
+/// ```dart
+/// final storageService = StorageService();
+/// 
+/// // Upload single image with progress tracking
+/// final imageUrl = await storageService.uploadImageFile(
+///   imageFile,
+///   userId,
+///   onProgress: (progress) {
+///     updateProgressBar(progress);
+///   },
+/// );
+/// 
+/// // Upload multiple images
+/// final imageUrls = await storageService.uploadMultipleImages(
+///   imageFiles,
+///   userId,
+///   onProgress: (completed, total) {
+///     updateBatchProgress(completed, total);
+///   },
+/// );
+/// 
+/// // Get storage analytics
+/// final storageInfo = await storageService.getUserStorageInfo(userId);
+/// displayStorageUsage(storageInfo.formattedSize, storageInfo.fileCount);
+/// ```
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -10,8 +64,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 
-/// Service för att hantera bilduppladdning till Firebase Storage
-/// Med förbättrad komprimering och progress tracking
+/// Advanced Firebase Storage service providing intelligent image management with compression and progress tracking.
+///
+/// This service implements comprehensive image storage functionality with intelligent compression algorithms,
+/// automatic thumbnail generation, detailed progress tracking, and comprehensive storage analytics.
+/// It provides optimized storage operations while maintaining image quality and user experience.
 class StorageService extends BaseService with FirebaseServiceMixin {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _uuid = const Uuid();
@@ -26,7 +83,48 @@ class StorageService extends BaseService with FirebaseServiceMixin {
   static const int _thumbnailSize = 300;
   static const int _thumbnailQuality = 70;
 
-  /// Ladda upp en bild från fil (kamera/galleri) MED PROGRESS
+  /// Uploads an image file with intelligent compression and detailed progress tracking.
+  ///
+  /// This method provides comprehensive image upload functionality including automatic compression,
+  /// format optimization, metadata preservation, and real-time progress tracking. It implements
+  /// intelligent compression algorithms that maintain visual quality while significantly reducing
+  /// file sizes for optimal storage efficiency and faster loading times.
+  ///
+  /// [imageFile] Image file from camera or gallery to upload to Firebase Storage
+  /// [userId] User identifier for organizing uploaded content in user-specific directories
+  /// [onProgress] Optional callback providing real-time upload progress (0.0 to 1.0)
+  /// Returns download URL string if upload succeeds, null if upload fails
+  ///
+  /// **Upload Process:**
+  /// 1. **Image Compression**: Intelligent compression with quality optimization and EXIF correction
+  /// 2. **Filename Generation**: Unique filename generation with UUID and timestamp for collision prevention
+  /// 3. **Firebase Upload**: Optimized upload to Firebase Storage with metadata preservation
+  /// 4. **Progress Tracking**: Real-time progress monitoring with callback notifications
+  /// 5. **Thumbnail Creation**: Automatic background thumbnail generation for performance optimization
+  ///
+  /// **Compression Features:**
+  /// - Maximum resolution of 1920x1080 for optimal quality/size balance
+  /// - 85% JPEG quality for excellent visual quality with significant size reduction
+  /// - Automatic EXIF orientation correction for proper image display
+  /// - Comprehensive compression statistics logging for analytics
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Upload with progress tracking
+  /// final url = await storageService.uploadImageFile(
+  ///   selectedImage,
+  ///   currentUserId,
+  ///   onProgress: (progress) {
+  ///     setState(() {
+  ///       uploadProgress = progress;
+  ///     });
+  ///   },
+  /// );
+  /// 
+  /// if (url != null) {
+  ///   saveImageUrlToRecipe(url);
+  /// }
+  /// ```
   Future<String?> uploadImageFile(
     File imageFile,
     String userId, {
@@ -95,7 +193,44 @@ class StorageService extends BaseService with FirebaseServiceMixin {
       return downloadUrl;
   }
 
-  /// Ladda upp flera bilder samtidigt MED DETALJERAD PROGRESS
+  /// Uploads multiple images simultaneously with coordinated progress tracking and batch optimization.
+  ///
+  /// This method provides efficient batch upload functionality for multiple images with coordinated
+  /// progress tracking and comprehensive error handling. It optimizes upload performance through
+  /// parallel processing while maintaining individual image quality and providing detailed progress
+  /// feedback for enhanced user experience during bulk upload operations.
+  ///
+  /// [imageFiles] List of image files to upload in batch operation
+  /// [userId] User identifier for organizing uploaded content in user-specific directories
+  /// [onProgress] Optional callback providing batch progress updates (completed count, total count)
+  /// Returns list of download URLs for successfully uploaded images (excludes failed uploads)
+  ///
+  /// **Batch Upload Features:**
+  /// - **Parallel Processing**: Concurrent uploads for optimal performance and reduced total upload time
+  /// - **Individual Compression**: Each image receives optimal compression based on content and resolution
+  /// - **Progress Coordination**: Detailed progress tracking with completed/total count reporting
+  /// - **Error Resilience**: Failed uploads don't prevent successful uploads from completing
+  /// - **Result Filtering**: Returns only successful upload URLs, filtering out failed attempts
+  ///
+  /// **Performance Optimization:**
+  /// - Utilizes BaseService batch operation capabilities for efficient resource management
+  /// - Implements proper error boundaries to prevent single failures from affecting entire batch
+  /// - Provides comprehensive logging for batch operation analytics and debugging
+  /// - Optimizes network usage through intelligent upload scheduling and retry mechanisms
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Upload recipe gallery images
+  /// final uploadedUrls = await storageService.uploadMultipleImages(
+  ///   galleryImages,
+  ///   currentUserId,
+  ///   onProgress: (completed, total) {
+  ///     updateBatchProgressUI('$completed/$total images uploaded');
+  ///   },
+  /// );
+  /// 
+  /// saveImageGalleryToRecipe(uploadedUrls);
+  /// ```
   Future<List<String>> uploadMultipleImages(
     List<File> imageFiles,
     String userId, {
@@ -310,7 +445,32 @@ class StorageService extends BaseService with FirebaseServiceMixin {
   }
 }
 
-/// Information om användarens Storage-användning
+/// Comprehensive storage usage information providing detailed analytics and user quota management data.
+///
+/// This class encapsulates complete storage usage statistics for user accounts including total storage
+/// consumption, file count tracking, and human-readable size formatting. It provides essential data
+/// for storage quota management, user analytics, and storage optimization recommendations.
+///
+/// **Storage Analytics:**
+/// - [totalBytes] Raw byte count for precise storage calculations and quota management
+/// - [fileCount] Total number of stored files for organization and limit tracking
+/// - [formattedSize] Human-readable size string for user-friendly display (e.g., "2.5 MB", "1.2 GB")
+///
+/// **Usage Context:**
+/// Used for displaying storage usage in user profiles, implementing storage quotas,
+/// providing storage optimization recommendations, and generating storage analytics reports.
+///
+/// **Example:**
+/// ```dart
+/// final storageInfo = await storageService.getUserStorageInfo(userId);
+/// displayStorageStats(
+///   'Using ${storageInfo.formattedSize} with ${storageInfo.fileCount} files',
+/// );
+/// 
+/// if (storageInfo.totalBytes > STORAGE_QUOTA) {
+///   showStorageWarning();
+/// }
+/// ```
 class StorageInfo {
   final int totalBytes;
   final int fileCount;

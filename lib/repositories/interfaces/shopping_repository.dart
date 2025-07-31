@@ -29,7 +29,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final shoppingRepo = sl<ShoppingRepository>();
+/// final shoppingRepo = ServiceLocator.get<ShoppingRepository>();
 /// 
 /// // Create and set active shopping list
 /// final newList = UnifiedShoppingList(name: 'Weekly Groceries');

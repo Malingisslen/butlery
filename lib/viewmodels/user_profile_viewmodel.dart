@@ -8,7 +8,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 
@@ -58,7 +58,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   String? get error => _displayNameError ?? _bioError; // Combined error getter
   bool get hasError => _displayNameError != null || _bioError != null; // Combined error check
 
-  UserProfile? get currentProfile => sl<PermissionService>().currentUser;
+  UserProfile? get currentProfile => ServiceLocator.get<PermissionService>().currentUser;
   bool get hasProfile => currentProfile != null;
 
   // Validation
@@ -113,7 +113,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
           }
 
           // Get current user ID
-          final userId = sl<PermissionService>().currentUserId;
+          final userId = ServiceLocator.get<PermissionService>().currentUserId;
           if (userId == null) {
             throw Exception('Ingen användare inloggad');
           }

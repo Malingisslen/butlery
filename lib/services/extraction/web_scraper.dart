@@ -1,4 +1,55 @@
-// lib/services/extraction/web_scraper.dart
+/// Advanced headless web scraping service providing sophisticated content extraction from social media platforms.
+///
+/// This service implements comprehensive web scraping capabilities using headless browser technology to extract
+/// recipe content from various social media platforms and cooking websites. It provides platform-specific extraction
+/// strategies, intelligent timeout management, comprehensive error handling, and optimized content parsing algorithms
+/// for reliable recipe discovery and import functionality.
+///
+/// **Architecture Integration:**
+/// - Uses [HeadlessInAppWebView] for headless browser operations with full JavaScript support
+/// - Implements platform-specific extraction strategies for optimal content parsing
+/// - Integrates with [SourcePlatform] detection for appropriate scraping technique selection
+/// - Provides comprehensive timeout and error handling for reliable extraction operations
+///
+/// **Extraction Capabilities:**
+/// - **Instagram Extraction**: Advanced caption parsing with "mer" button expansion and multi-selector strategies
+/// - **Facebook Extraction**: Post content extraction with social media markup understanding
+/// - **TikTok Extraction**: Video description parsing with overlay text recognition
+/// - **Generic Extraction**: Structured recipe data parsing with fallback content strategies
+/// - **Content Validation**: Recipe-specific content validation with Swedish cooking terminology recognition
+///
+/// **Technical Features:**
+/// - **Headless Operation**: Browser automation without UI for efficient resource usage
+/// - **Timeout Management**: Configurable extraction timeouts preventing infinite loading scenarios
+/// - **Error Recovery**: Comprehensive error handling with graceful degradation strategies
+/// - **Resource Cleanup**: Proper browser instance disposal preventing memory leaks
+/// - **User Agent Spoofing**: Desktop browser mimicking for optimal content access
+///
+/// **Platform-Specific Optimizations:**
+/// - **Instagram**: Handles dynamic content loading, expansion buttons, and Swedish interface elements
+/// - **Facebook**: Navigates complex DOM structures and privacy-aware content extraction
+/// - **TikTok**: Extracts video descriptions and overlay content with mobile-optimized parsing
+/// - **Generic Sites**: Utilizes structured recipe markup and content area identification
+///
+/// **Usage Examples:**
+/// ```dart
+/// final scraper = WebScraper();
+/// 
+/// // Extract from Instagram post
+/// final result = await scraper.performExtraction(
+///   'https://instagram.com/p/recipe-post',
+///   SourcePlatform.instagram,
+/// );
+/// 
+/// if (result.success) {
+///   final recipeText = result.extractedText;
+///   final metadata = result.metadata;
+///   processExtractedRecipe(recipeText, metadata);
+/// }
+/// 
+/// // Clean up resources
+/// scraper.dispose();
+/// ```
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -7,7 +58,11 @@ import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 
-/// Web scraper for headless browser operations
+/// Advanced headless web scraper providing platform-specific content extraction with intelligent parsing algorithms.
+///
+/// This service implements sophisticated web scraping using headless browser technology with platform-optimized
+/// extraction strategies, comprehensive error handling, and intelligent content validation for reliable
+/// recipe content discovery from social media platforms and cooking websites.
 class WebScraper {
   // WebView controller
   HeadlessInAppWebView? _headlessWebView;
@@ -18,7 +73,52 @@ class WebScraper {
   // Timeout for extraction - 15 seconds
   static const Duration _extractionTimeout = Duration(seconds: 15);
 
-  /// Perform extraction with WebView
+  /// Performs comprehensive content extraction using headless browser with platform-specific optimization strategies.
+  ///
+  /// This method orchestrates the complete extraction process including browser initialization, content loading,
+  /// platform-specific parsing, and result formatting. It implements sophisticated timeout management, error recovery,
+  /// and resource cleanup to ensure reliable extraction operations across different social media platforms.
+  ///
+  /// [url] Target URL to extract recipe content from with full platform support
+  /// [platform] Detected platform type for optimization strategy selection
+  /// Returns [ExtractionResult] with success status, extracted content, and comprehensive metadata
+  ///
+  /// **Extraction Process:**
+  /// 1. **Browser Initialization**: Creates headless WebView with platform-optimized settings
+  /// 2. **Content Loading**: Loads target URL with progress monitoring and timeout management
+  /// 3. **Platform Parsing**: Applies platform-specific extraction strategies for optimal content retrieval
+  /// 4. **Content Validation**: Validates extracted content for recipe-specific information
+  /// 5. **Resource Cleanup**: Properly disposes browser resources preventing memory leaks
+  ///
+  /// **Platform Optimizations:**
+  /// - **Instagram**: Handles dynamic content expansion and Swedish language interface elements
+  /// - **Facebook**: Navigates complex social media markup with privacy-aware content access
+  /// - **TikTok**: Extracts video descriptions and overlay content with mobile-optimized parsing
+  /// - **Generic**: Utilizes structured recipe data and content area identification strategies
+  ///
+  /// **Error Handling:**
+  /// - Comprehensive timeout management with 15-second extraction limit
+  /// - Network error recovery with detailed error reporting
+  /// - Resource cleanup on failures preventing browser instance leaks
+  /// - Graceful degradation for partially supported platforms
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Extract from Instagram recipe post
+  /// final result = await scraper.performExtraction(
+  ///   'https://instagram.com/p/recipe123',
+  ///   SourcePlatform.instagram,
+  /// );
+  /// 
+  /// // Handle extraction results
+  /// if (result.success && result.extractedText != null) {
+  ///   final recipeContent = result.extractedText!;
+  ///   final extractionTime = result.metadata['extractedAt'];
+  ///   createRecipeFromContent(recipeContent);
+  /// } else {
+  ///   handleExtractionFailure(result.error);
+  /// }
+  /// ```
   Future<ExtractionResult> performExtraction(
     String url,
     SourcePlatform platform,

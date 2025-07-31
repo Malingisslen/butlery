@@ -36,7 +36,7 @@ import 'package:butlery/models/recipe_change.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final recipeRepo = sl<RecipeRepository>();
+/// final recipeRepo = ServiceLocator.get<RecipeRepository>();
 /// 
 /// // Watch user's recipes in real-time
 /// recipeRepo.watchRecipes(userId).listen((recipes) {

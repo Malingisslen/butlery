@@ -79,7 +79,8 @@
       "Bash(python3:*)",
       "Bash(true)",
       "Bash(git push:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(do echo \"=== Processing $file ===\")"
     ],
     "deny": []
   },
