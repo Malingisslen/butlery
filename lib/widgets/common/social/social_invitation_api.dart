@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/widgets/social/invitations/invitation_target_displays.dart';
-import 'package:butlery/widgets/social/invitations/invitation_target_inputs.dart';
+import 'package:butlery/widgets/common/social_components/invitation_displays.dart';
+import 'package:butlery/widgets/common/social_components/invitation_selectors.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/invitation_target_widgets.dart';
 import 'package:butlery/widgets/common/social/invitation_target_states.dart';
