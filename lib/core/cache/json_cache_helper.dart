@@ -1,19 +1,112 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: JsonCacheHelper - Eliminates JSON cache duplication in unified services
-/// File: lib/core/cache/json_cache_helper.dart
-/// Quick Guide: Centralizes the JSON + Hive pattern used by UnifiedRecipeService, UnifiedShoppingService, UnifiedFriendsService
-/// Dependencies IN: Hive, Dart JSON, Logger utilities
-/// Dependencies OUT: Used by unified services for consistent JSON caching
-/// Data flow: Service -> JsonCacheHelper -> Hive String -> Local storage
-/// State management: Stateless helper with user-specific box management
-/// Purpose: Eliminate the duplicated JSON cache pattern found in 3 unified services
-/// Common issues: JSON serialization errors, box management, user session cleanup
-/// Test coverage: Unit tests for cache operations and JSON handling
-/// Performance: Lazy box opening, efficient JSON operations, batch support
-/// Analytics: Cache operations tracking, storage usage monitoring
-/// Code smells: None - focused helper for specific existing pattern
-/// Connected to: UnifiedRecipeService, UnifiedShoppingService, UnifiedFriendsService
-/// Used in phases: Phase 6 - Eliminate Code Duplication Patterns
+/// Comprehensive JSON cache helper implementing unified local storage management for service layer data persistence.
+///
+/// This helper class serves as the centralized caching infrastructure throughout the Butlery application,
+/// eliminating JSON cache duplication patterns found across three major unified services while providing
+/// advanced features including user-scoped data isolation, batch operations, cache statistics monitoring,
+/// and comprehensive error handling. It standardizes the JSON + Hive storage pattern used throughout
+/// the application for consistent data persistence and optimal performance characteristics.
+///
+/// ## Core Architecture Features
+/// 
+/// **User-Scoped Data Isolation**
+/// - Automatic user-specific Hive box management with session-aware switching
+/// - Thread-safe box operations with lazy initialization and efficient resource management
+/// - Comprehensive cleanup and disposal patterns for memory optimization
+/// - Advanced user session management with automatic cache invalidation
+/// 
+/// **Service Layer Integration**
+/// - Direct replacement for duplicate JSON cache patterns in UnifiedRecipeService, UnifiedShoppingService, and UnifiedFriendsService
+/// - Factory pattern support for creating service-specific cache instances
+/// - Batch operations support for efficient bulk data operations
+/// - Active item tracking for complex service state management patterns
+/// 
+/// **Performance Optimization**
+/// - Lazy Hive box opening with intelligent caching and resource reuse
+/// - Efficient JSON serialization with comprehensive error handling
+/// - Batch operations support for reducing storage operation overhead
+/// - Cache statistics and monitoring for production performance analysis
+/// 
+/// ## Eliminated Duplication Patterns
+/// 
+/// This helper centralizes the exact pattern used by three major services:
+/// - **UnifiedRecipeService**: `_hiveBoxBaseName = 'unified_recipes_cache'`
+/// - **UnifiedShoppingService**: `_hiveBoxBaseName = 'unified_shopping_lists_cache'` 
+/// - **UnifiedFriendsService**: `_hiveBoxBaseName = 'unified_friends_cache'`
+/// 
+/// **Before (duplicated across 3 services):**
+/// ```dart
+/// String get _userSpecificBoxName => '${_hiveBoxBaseName}_${_authService.currentUserId}';
+/// final box = await Hive.openBox<String>(_userSpecificBoxName);
+/// await box.put(key, jsonEncode(data));
+/// final cached = box.get(key);
+/// final data = cached != null ? jsonDecode(cached) : null;
+/// ```
+/// 
+/// **After (centralized pattern):**
+/// ```dart
+/// final helper = JsonCacheHelper('unified_recipes_cache');
+/// await helper.saveJson(key, data);
+/// final data = await helper.loadJson(key);
+/// ```
+/// 
+/// ## Usage Examples
+/// 
+/// **Basic Service Integration:**
+/// ```dart
+/// class UnifiedRecipeService {
+///   final JsonCacheHelper _cache = JsonCacheFactory.recipeCache();
+///   
+///   Future<void> cacheRecipe(String id, Recipe recipe) async {
+///     await _cache.saveJson(id, recipe.toJson());
+///   }
+///   
+///   Future<Recipe?> getCachedRecipe(String id) async {
+///     final json = await _cache.loadJson(id);
+///     return json != null ? Recipe.fromJson(json) : null;
+///   }
+/// }
+/// ```
+/// 
+/// **Batch Operations for Performance:**
+/// ```dart
+/// // Save multiple recipes efficiently
+/// final recipeBatch = <String, Map<String, dynamic>>{};
+/// for (final recipe in recipes) {
+///   recipeBatch[recipe.id] = recipe.toJson();
+/// }
+/// final savedCount = await _cache.saveJsonBatch(recipeBatch);
+/// 
+/// // Load multiple recipes efficiently
+/// final recipeIds = ['recipe1', 'recipe2', 'recipe3'];
+/// final cachedRecipes = await _cache.loadJsonBatch(recipeIds);
+/// ```
+/// 
+/// **Active State Management (UnifiedShoppingService pattern):**
+/// ```dart
+/// // Save active shopping list ID
+/// await _cache.saveActiveId('active_list', shoppingListId);
+/// 
+/// // Load active shopping list ID
+/// final activeListId = await _cache.loadActiveId('active_list');
+/// ```
+/// 
+/// ## Performance Characteristics
+/// 
+/// - **Storage Efficiency**: User-scoped boxes prevent data leakage and optimize storage usage
+/// - **Operation Speed**: Lazy box opening with intelligent caching reduces initialization overhead
+/// - **Memory Management**: Proper disposal patterns and resource cleanup prevent memory leaks
+/// - **Batch Performance**: Efficient bulk operations for reducing storage operation overhead
+/// 
+/// ## Error Handling and Monitoring
+/// 
+/// - Comprehensive error handling with detailed logging and graceful degradation
+/// - Cache statistics and monitoring for production performance analysis
+/// - Automatic error recovery with fallback patterns for critical operations
+/// - Debug logging integration for development and troubleshooting scenarios
+/// 
+/// This helper is essential for maintaining consistent caching patterns across all unified services
+/// while providing advanced features for user data isolation, performance optimization, and
+/// production monitoring in the Swedish cooking application architecture.
 
 import 'dart:async';
 import 'dart:convert';

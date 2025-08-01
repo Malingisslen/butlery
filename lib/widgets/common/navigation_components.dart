@@ -1,4 +1,54 @@
-// lib/widgets/common/navigation_components.dart
+/// Comprehensive navigation components facade providing unified interface for dialogs, indicators, and user interaction patterns.
+///
+/// This facade implements a centralized navigation and interaction system that provides consistent interface patterns
+/// for recipe selection dialogs, confirmation dialogs, real-time collaboration indicators, and user interaction
+/// workflows. It delegates to specialized navigation modules while maintaining unified API design and supporting
+/// Swedish localization throughout all navigation and interaction scenarios.
+///
+/// **Architecture Integration:**
+/// - Implements Facade Pattern for unified access to specialized navigation modules
+/// - Provides consistent dialog and interaction patterns throughout the application
+/// - Integrates with real-time collaboration system for live editing indicators
+/// - Supports recipe selection workflows with social sharing capabilities
+/// - Maintains responsive design patterns for various screen sizes and device orientations
+///
+/// **Navigation Categories:**
+/// - **Recipe Selection**: Dialogs for selecting recipes for sharing and menu creation
+/// - **Confirmation Dialogs**: Standard, destructive, loading, and input confirmation patterns
+/// - **Real-time Indicators**: Live editing indicators, participant lists, and connection status
+/// - **User Interaction**: Text input, list selection, and multi-choice interaction patterns
+/// - **Collaborative Features**: Participant management and permission-based interactions
+///
+/// **Key Features:**
+/// - Comprehensive dialog system with Swedish localization and consistent theming
+/// - Real-time collaboration indicators with live participant tracking
+/// - Recipe selection workflows integrated with social sharing capabilities
+/// - Confirmation patterns for destructive actions with appropriate visual warnings
+/// - Responsive design support for various screen sizes and interaction patterns
+/// - Performance optimization through focused, specialized navigation modules
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Recipe selection for sharing
+/// await NavigationComponents.showRecipeSelector(
+///   context,
+///   friend: selectedFriend,
+/// );
+/// 
+/// // Destructive confirmation dialog
+/// final confirmed = await NavigationComponents.showDestructiveConfirmationDialog(
+///   context,
+///   title: 'Ta bort recept',
+///   message: 'Detta kan inte ångras',
+/// );
+/// 
+/// // Real-time editing indicator
+/// NavigationComponents.editIndicator(
+///   editorName: 'Anna',
+///   editingWhat: 'ingredienser',
+///   color: Theme.of(context).primaryColor,
+/// );
+/// ```
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -10,18 +60,23 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/indicators/realtime_indicators.dart';
 
-/// 🎯 UNIFIED NavigationComponents - API Facade för alla navigation patterns
-/// 
-/// Detta är en API facade som delegerar till fokuserade moduler:
-/// - RecipeSelectionDialogs: Recipe selection dialogs
-/// - ConfirmationDialogs: Confirmation dialogs
-/// - RealtimeIndicators: Realtime indicators
-/// 
-/// Fördelar med denna approach:
-/// - Enhetlig API för alla NavigationComponents
-/// - Fokuserade moduler för bättre maintainability
-/// - Bakåtkompatibilitet med befintlig kod
-/// - Enkel att utöka med nya moduler
+/// Comprehensive navigation components facade implementing unified interface for dialogs, indicators, and user interaction patterns.
+///
+/// This class serves as the central access point for all navigation and interaction-related functionality
+/// throughout the application, providing consistent interface patterns and delegating to specialized navigation
+/// modules for optimal performance and maintainability. It supports Swedish localization, real-time collaboration,
+/// and comprehensive user interaction workflows.
+///
+/// **Navigation Architecture:**
+/// - **Modular Design**: Each navigation type is handled by a focused specialized module
+/// - **Consistent API**: Unified method signatures and parameter patterns across all components
+/// - **Swedish Localization**: Native Swedish language support throughout all navigation messaging
+/// - **Real-time Integration**: Live collaboration features with participant tracking and editing indicators
+/// - **Responsive Support**: Adaptive layouts for various screen sizes and device orientations
+///
+/// **Migration Support:**
+/// This facade maintains full backward compatibility while providing improved organization,
+/// performance, and consistency through the delegation pattern to specialized navigation modules.
 class NavigationComponents {
   // =====================================
   // 📱 RECIPE SELECTION DIALOGS

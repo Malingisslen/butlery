@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -85,7 +86,7 @@ class _CreateSharedShoppingListViewState
   PreferredSizeWidget _buildAppBar(
       BuildContext context, CreateSharedListViewModel viewModel) {
     return AppBar(
-      title: const Text('Dela inköpslista'),
+      title: Text('${AppStrings.share} ${AppStrings.shoppingList.toLowerCase()}'),
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () => Navigator.pop(context),

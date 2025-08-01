@@ -1,19 +1,62 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Enhanced Error Handler - Centralized error handling utility
-/// File: lib/core/utils/error_handler.dart
-/// Quick Guide: Provides advanced error handling patterns and utilities
-/// Dependencies IN: ServiceOptimizer, Logger, User feedback systems
-/// Dependencies OUT: Used by services and ViewModels for error handling
-/// Data flow: Error -> ErrorHandler -> Categorization -> User feedback -> Logging
-/// State management: Tracks error patterns and recovery strategies
-/// Purpose: Standardize error handling across the application
-/// Common issues: Error categorization accuracy, user experience, logging overhead
-/// Test coverage: Unit tests for error categorization and handling
-/// Performance: Lightweight error processing
-/// Analytics: Error patterns, user impact tracking
-/// Code smells: None - focused error handling utility
-/// Connected to: All services, ViewModels, user feedback systems
-/// Used in phases: Phase 7 - Service Optimization
+/// Comprehensive centralized error handling utility providing intelligent error categorization and user-friendly feedback.
+///
+/// This singleton service implements sophisticated error handling functionality including automatic error categorization,
+/// user-friendly message generation, recovery suggestions, and comprehensive error analytics. It provides specialized
+/// handling for different error types including network, validation, permission, and system errors with Swedish
+/// localization and intelligent recovery strategies for optimal user experience.
+///
+/// **Architecture Integration:**
+/// - Uses [SingletonServiceMixin] for standardized singleton pattern and consistent instance management
+/// - Integrates with [ServiceOptimizer] for detailed error logging and performance monitoring
+/// - Coordinates with [AppLogger] for structured error logging with appropriate severity levels
+/// - Provides comprehensive error result objects for UI feedback and analytics tracking
+/// - Supports both synchronous and asynchronous error handling patterns throughout the application
+///
+/// **Error Handling Features:**
+/// - **Intelligent Categorization**: Automatic classification of errors into network, validation, permission, system, and unknown categories
+/// - **User-Friendly Messages**: Swedish-localized user messages with clear explanations and actionable guidance
+/// - **Recovery Suggestions**: Context-aware recovery suggestions with step-by-step user guidance
+/// - **Retry Logic**: Intelligent retry capabilities based on error type and recovery potential
+/// - **Severity Assessment**: Automatic severity level assignment for appropriate error handling and logging
+/// - **Specialized Handlers**: Dedicated handling for Firebase errors, validation errors, and field-specific issues
+///
+/// **Advanced Error Processing:**
+/// - **Async Operation Wrapping**: Comprehensive async operation error handling with fallback value support
+/// - **Stream Error Management**: Automatic stream error handling with retry logic and recovery strategies
+/// - **Context Preservation**: Detailed context tracking for debugging and error pattern analysis
+/// - **Firebase Integration**: Specialized Firebase error code detection and user-friendly message mapping
+/// - **Field Validation**: Detailed field-level validation error handling with specific user guidance
+///
+/// **Swedish Localization and User Experience:**
+/// - **Native Language Support**: Complete Swedish localization for all user-facing error messages
+/// - **Contextual Messaging**: Context-aware error messages that provide relevant information and guidance
+/// - **Recovery Guidance**: Step-by-step recovery instructions in Swedish for different error scenarios
+/// - **Consistent Experience**: Standardized error presentation ensuring consistent user experience across the application
+///
+/// **Usage Examples:**
+/// ```dart
+/// final errorHandler = ErrorHandler();
+/// 
+/// // Handle general errors with context
+/// final result = errorHandler.handleError(
+///   error: exception,
+///   context: 'Recipe creation',
+///   userId: currentUser.id,
+/// );
+/// 
+/// // Wrap async operations with error handling
+/// final data = await errorHandler.handleAsync(
+///   operationName: 'Fetch user recipes',
+///   operation: () => recipeService.getUserRecipes(),
+///   fallbackValue: [],
+/// );
+/// 
+/// // Handle Firebase-specific errors
+/// final firebaseResult = errorHandler.handleFirebaseError(
+///   firebaseException,
+///   'User authentication',
+/// );
+/// ```
 
 import 'dart:async';
 import 'dart:io';
@@ -21,20 +64,98 @@ import 'package:butlery/core/utils/service_optimizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
-/// Enhanced error handler with user-friendly messages and recovery suggestions
-/// Now using SingletonServiceMixin for standardized singleton pattern
+/// Comprehensive error categories for intelligent error classification and specialized handling.
+///
+/// This enumeration defines the primary error categories used by the error handling system to classify
+/// errors for appropriate user messaging, recovery strategies, and retry logic. Each category represents
+/// a distinct type of error condition with specific characteristics and handling requirements.
+///
+/// **Error Category Types:**
+/// - [network] Network connectivity issues, timeouts, and communication failures
+/// - [validation] Data validation errors, format issues, and input validation failures
+/// - [permission] Authorization failures, access denied errors, and authentication issues
+/// - [system] System-level errors, internal failures, and technical problems
+/// - [unknown] Unclassified errors that don't fit into specific categories
+enum ErrorCategory {
+  /// Network connectivity issues, timeouts, and communication failures.
+  network,
+  
+  /// Data validation errors, format issues, and input validation failures.
+  validation,
+  
+  /// Authorization failures, access denied errors, and authentication issues.
+  permission,
+  
+  /// System-level errors, internal failures, and technical problems.
+  system,
+  
+  /// Unclassified errors that don't fit into specific categories.
+  unknown,
+}
+
+/// Centralized error handler providing intelligent error categorization, user-friendly messaging, and recovery strategies.
+///
+/// This singleton service implements comprehensive error handling with automatic error classification, Swedish-localized
+/// user messages, and context-aware recovery suggestions. It provides specialized handling for different error types
+/// and integrates with the application's logging and monitoring systems for complete error management.
+///
+/// **Singleton Architecture:**
+/// Uses SingletonServiceMixin for standardized singleton implementation ensuring:
+/// - Consistent error handling behavior across the entire application
+/// - Centralized error categorization and message generation
+/// - Integrated logging and analytics for error pattern analysis
+/// - Memory-efficient single instance with proper lifecycle management
+///
+/// **Error Processing Pipeline:**
+/// 1. **Error Reception**: Receives errors with context and optional metadata
+/// 2. **Categorization**: Automatically classifies errors into appropriate categories
+/// 3. **Message Generation**: Creates user-friendly Swedish messages with actionable guidance
+/// 4. **Recovery Planning**: Determines retry capabilities and provides recovery suggestions
+/// 5. **Result Assembly**: Creates comprehensive ErrorResult objects for UI and analytics
 class ErrorHandler with SingletonServiceMixin<ErrorHandler> {
-  // Private constructor for singleton
+  /// Private constructor for singleton pattern implementation.
   ErrorHandler._internal();
   
-  // Factory constructor using SingletonServiceMixin
+  /// Factory constructor providing singleton access to the error handler service.
   factory ErrorHandler() => SingletonServiceMixin.createSingleton(() => ErrorHandler._internal());
 
+  /// Service optimizer for detailed error logging and performance monitoring.
   final ServiceOptimizer _optimizer = ServiceOptimizer();
 
   // ===== PUBLIC ERROR HANDLING API =====
 
-  /// Handle error with user-friendly feedback
+  /// Processes errors with intelligent categorization and generates comprehensive user-friendly feedback.
+  ///
+  /// This method serves as the primary error handling entry point, providing intelligent error classification,
+  /// Swedish-localized user messages, and comprehensive error result generation. It integrates with the
+  /// ServiceOptimizer for detailed logging and analytics while creating actionable feedback for users.
+  ///
+  /// [error] The error object or exception to be processed and categorized
+  /// [context] Descriptive context explaining where or why the error occurred
+  /// [stackTrace] Optional stack trace for detailed debugging and error analysis
+  /// [userId] Optional user identifier for personalized error tracking and analytics
+  /// [additionalData] Optional metadata for enhanced error context and debugging
+  /// Returns [ErrorResult] with comprehensive error information and user guidance
+  ///
+  /// **Error Processing Steps:**
+  /// 1. **Logging Integration**: Coordinates with ServiceOptimizer for detailed error logging
+  /// 2. **Error Categorization**: Automatically classifies the error into appropriate categories
+  /// 3. **Message Generation**: Creates Swedish-localized user-friendly messages
+  /// 4. **Recovery Planning**: Determines retry capabilities and generates recovery suggestions
+  /// 5. **Result Assembly**: Creates comprehensive ErrorResult for UI consumption
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Handle network error with context
+  /// final result = errorHandler.handleError(
+  ///   error: SocketException('Connection failed'),
+  ///   context: 'Recipe synchronization',
+  ///   userId: user.id,
+  /// );
+  /// 
+  /// // Display user message: result.userMessage
+  /// // Show recovery suggestions: result.recoverySuggestions
+  /// ```
   ErrorResult handleError({
     required dynamic error,
     required String context,
@@ -350,7 +471,17 @@ class ErrorHandler with SingletonServiceMixin<ErrorHandler> {
   }
 }
 
-/// Error result with user-friendly information
+/// Comprehensive error result container providing detailed error information and user guidance for optimal error handling.
+///
+/// This class encapsulates complete error processing results including the original error, categorization results,
+/// user-friendly messaging, recovery suggestions, and operational metadata. It serves as the primary data structure
+/// for communicating error information between the error handling system and UI components for consistent user experience.
+///
+/// **Error Information Categories:**
+/// - **Original Context**: Preserves the original error object and processing context for debugging
+/// - **User Communication**: Provides Swedish-localized messages and actionable recovery suggestions
+/// - **System Metadata**: Includes categorization, severity, and retry capability information
+/// - **Analytics Data**: Supports JSON serialization for error tracking and analytics systems
 class ErrorResult {
   final dynamic originalError;
   final ErrorCategory category;
@@ -384,10 +515,27 @@ class ErrorResult {
   };
 }
 
-/// Error severity levels
+/// Hierarchical error severity levels for appropriate error handling priority and user notification strategies.
+///
+/// This enumeration defines severity levels used throughout the error handling system to determine appropriate
+/// response strategies, logging priorities, and user notification approaches. Each level represents a different
+/// degree of impact on application functionality and user experience.
+///
+/// **Severity Level Hierarchy:**
+/// - [info] Informational issues with minimal impact on functionality
+/// - [warning] Potential problems that may require attention but don't block operations
+/// - [error] Significant issues that impact functionality and require immediate attention
+/// - [critical] Severe problems that prevent core functionality and require urgent resolution
 enum ErrorSeverity {
+  /// Informational issues with minimal impact on functionality.
   info,
+  
+  /// Potential problems that may require attention but don't block operations.
   warning,
+  
+  /// Significant issues that impact functionality and require immediate attention.
   error,
+  
+  /// Severe problems that prevent core functionality and require urgent resolution.
   critical,
 }

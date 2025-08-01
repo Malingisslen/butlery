@@ -37,7 +37,7 @@ class RealtimeMenuOperations {
     // Apply optimistic update
     _optimisticManager.applyChange(categoryName, (recipes) {
       return [...recipes, recipe];
-    }, []);
+    });
 
     try {
       await _menuService.addRecipeToCategory(
@@ -209,27 +209,47 @@ class RealtimeMenuOperations {
     }
   }
 
-  /// Regenerate category with AI (placeholder for future implementation)
+  /// Regenerate category with AI (feature stub - not yet implemented)
+  /// 
+  /// This is a placeholder for future AI-powered menu category regeneration.
+  /// When implemented, this will use the MenuService to regenerate specific
+  /// menu categories with AI-suggested recipes based on user preferences.
   Future<void> regenerateCategory({
     required String menuId,
     required String categoryName,
   }) async {
-    AppLogger.info('🤖 Regenerating category: $categoryName');
+    AppLogger.info('🤖 AI Menu Regeneration requested for category: $categoryName');
+    
+    // FEATURE STUB: AI menu regeneration not yet implemented
+    AppLogger.warning('⚠️ AI menu regeneration is not yet available');
+    
+    throw UnimplementedError(
+      'AI menu regeneration feature is planned for future release. '
+      'This will integrate with MenuService to provide AI-powered '
+      'category regeneration based on user preferences and dietary needs.'
+    );
 
-    try {
-      // TODO: Implement AI-regeneration via MenuService
-      // This would call your existing AI-generation for specific category
-      await Future.delayed(const Duration(seconds: 2));
-
-      // When AI-integration is ready:
-      // final newRecipes = await _aiService.generateRecipesForCategory(categoryName);
-      // await _menuService.regenerateCategory(menuId, categoryName, newRecipes);
-
-      AppLogger.success('✅ Category regenerated: $categoryName');
-    } catch (e) {
-      AppLogger.error('❌ Failed to regenerate category: $categoryName', e);
-      rethrow;
-    }
+    // FUTURE IMPLEMENTATION OUTLINE:
+    // try {
+    //   // 1. Get user preferences and dietary restrictions
+    //   final userPrefs = await _getUserPreferences();
+    //   
+    //   // 2. Call AI service for recipe suggestions
+    //   final aiService = ServiceLocator.get<AIRecipeService>();
+    //   final newRecipes = await aiService.generateRecipesForCategory(
+    //     categoryName, 
+    //     preferences: userPrefs,
+    //   );
+    //   
+    //   // 3. Update menu via MenuService
+    //   final menuService = ServiceLocator.get<MenuService>();
+    //   await menuService.regenerateCategory(menuId, categoryName, newRecipes);
+    //   
+    //   AppLogger.success('✅ AI regenerated category: $categoryName');
+    // } catch (e) {
+    //   AppLogger.error('❌ Failed to regenerate category: $categoryName', e);
+    //   rethrow;
+    // }
   }
 
   // ===== BATCH OPERATIONS =====
@@ -247,7 +267,7 @@ class RealtimeMenuOperations {
     // Apply optimistic update
     _optimisticManager.applyChange(categoryName, (currentRecipes) {
       return [...currentRecipes, ...recipes];
-    }, []);
+    });
 
     try {
       // Add recipes one by one (or implement batch operation in service)

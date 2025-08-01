@@ -1,24 +1,124 @@
-// lib/core/constants/routes.dart
+/// Comprehensive route management system providing unified navigation constants for the Butlery cooking application.
+///
+/// This route management system implements a sophisticated navigation architecture that organizes all application
+/// routes with clear categorization, authentication requirements, animation types, and Swedish-friendly naming
+/// conventions. It provides a centralized navigation structure that supports the cooking application's complex
+/// workflow requirements while maintaining consistent user experience patterns throughout the Swedish cooking interface.
+///
+/// **Architecture Integration:**
+/// - Provides centralized route definitions eliminating scattered navigation strings throughout codebase
+/// - Integrates with authentication system to enforce access control on protected routes
+/// - Supports animation system with route-specific transition types for enhanced user experience
+/// - Enables route aliasing for backward compatibility and user-friendly URL structures
+/// - Implements comprehensive route validation preventing navigation errors and broken links
+///
+/// **Route Categories:**
+/// - **Base Routes**: Fundamental application entry points (home, authentication)
+/// - **Recipe Routes**: Complete recipe management workflow including creation, editing, and import methods
+/// - **Menu & Shopping Routes**: Weekly menu planning and unified shopping list management
+/// - **Social Routes**: Friend management, sharing, collaboration, and community features
+/// - **Messaging Routes**: Real-time communication and conversation management
+/// - **Route Aliases**: User-friendly alternative paths for common navigation patterns
+///
+/// **Navigation Features:**
+/// The route system supports complex cooking application workflows with specialized paths for recipe import,
+/// collaborative shopping, social sharing, and real-time messaging that reflect the natural flow of Swedish
+/// cooking preparation and meal planning activities.
+///
+/// **Key Features:**
+/// - Swedish-friendly route naming reflecting cooking terminology and cultural preferences
+/// - Authentication-aware routing with automatic access control enforcement
+/// - Animation type assignment for consistent and delightful navigation transitions
+/// - Route validation system preventing broken navigation and error states
+/// - Alias support enabling multiple paths to common destinations for improved usability
+/// - Debug utilities providing comprehensive route analysis and validation tools
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Navigate to recipe creation
+/// Navigator.pushNamed(context, Routes.laggTill);
+/// 
+/// // Check authentication requirements
+/// if (Routes.requiresAuth(routeName)) {
+///   // Redirect to authentication
+///   Navigator.pushReplacementNamed(context, Routes.auth);
+/// }
+/// 
+/// // Get appropriate animation for route
+/// final animationType = Routes.getAnimationType(Routes.receptDetalj);
+/// 
+/// // Validate route before navigation
+/// if (Routes.isValidRoute(userProvidedRoute)) {
+///   Navigator.pushNamed(context, userProvidedRoute);
+/// }
+/// 
+/// // Use aliases for user-friendly URLs
+/// Navigator.pushNamed(context, '/shopping'); // Resolves to Routes.inkopslista
+/// ```
 
+/// Comprehensive route management system implementing unified navigation constants for cooking-focused user interface design.
+///
+/// This class serves as the authoritative source for all navigation routes throughout the Butlery application,
+/// providing organized route categorization, authentication integration, animation type management, and
+/// validation utilities. It ensures consistent navigation patterns while supporting the complex workflow
+/// requirements of Swedish cooking applications with appropriate terminology and user experience considerations.
+///
+/// **Route Architecture:**
+/// - **Centralized Definition**: Single source of truth for all navigation paths preventing route duplication
+/// - **Category Organization**: Logical grouping of routes by application domain and functionality
+/// - **Authentication Integration**: Automatic access control enforcement based on route requirements
+/// - **Animation Management**: Route-specific transition types for enhanced navigation experience
+/// - **Validation Framework**: Comprehensive route validation and error prevention mechanisms
+///
+/// **Design Principles:**
+/// The route system reflects the logical flow of cooking activities with intuitive navigation paths,
+/// Swedish terminology that feels natural to users, and organized structure that supports complex
+/// cooking workflows while maintaining simplicity and clarity in navigation patterns.
 class Routes {
   // ===== BASE ROUTES =====
+  
+  /// Home route - primary application entry point displaying user's main recipe collection
   static const String home = '/';
+  
+  /// Authentication route - user login and registration interface
   static const String auth = '/auth';
 
   // ===== RECIPE ROUTES =====
+  
+  /// Add recipe route - main recipe creation interface with import method selection
   static const String laggTill = '/laggTill';
+  
+  /// URL import route - recipe import from web URLs with intelligent parsing
   static const String importViaUrl = '/importViaUrl';
+  
+  /// Photo import route - OCR-based recipe extraction from images
   static const String photoImport = '/photoImport';
+  
+  /// Manual recipe creation route - free-form recipe writing interface
   static const String skrivSjalv = '/skrivSjalv';
+  
+  /// Social media import route - recipe extraction from social media posts
   static const String franSocialaMedier = '/franSocialaMedier';
+  
+  /// Archive import route - recipe selection from community archive
   static const String importFranArkiv = '/importFranArkiv';
+  
+  /// Recipe detail route - comprehensive recipe display with social features
   static const String receptDetalj = '/receptDetalj';
+  
+  /// Recipe editing route - full recipe modification interface
   static const String redigeraRecept = '/redigeraRecept';
+  
+  /// Shared recipe reception route - interface for receiving shared recipes
   static const String receiveShare = '/receiveShare';
 
   // ===== MENU & SHOPPING ROUTES =====
+  
+  /// Weekly menu route - comprehensive meal planning and menu generation interface
   static const String veckomeny = '/veckomeny';
-  static const String inkopslista = '/inkopslista'; // ✅ NYA UNIFIED SHOPPING
+  
+  /// Unified shopping list route - comprehensive shopping list management with collaboration
+  static const String inkopslista = '/inkopslista'; // ✅ UNIFIED SHOPPING SYSTEM
 
   // ===== SOCIAL ROUTES =====
   static const String profileEdit = '/profile/edit';

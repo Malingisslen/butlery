@@ -395,7 +395,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       await messagingService.deleteConversation(conversation.id);
       
       // Refresh the conversations list after successful deletion
-      await _viewModel.refreshConversations();
+      await _refreshConversations();
       
       if (mounted) {
         messenger.showSnackBar(

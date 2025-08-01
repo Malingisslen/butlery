@@ -1,4 +1,170 @@
-// lib/core/base/base_action_handler.dart
+/// Comprehensive action handler base class implementing standardized action execution patterns for Swedish cooking application.
+///
+/// This action handler system serves as the foundational action execution infrastructure throughout the Butlery application,
+/// providing standardized patterns for action execution, error handling, user feedback, and navigation management while
+/// eliminating duplicate action handling patterns across view models and UI components. It ensures consistent user experience
+/// through proper context safety, loading state management, confirmation workflows, and Swedish-localized feedback that
+/// enhances the Swedish cooking application's reliability and user interface consistency across all user interactions.
+///
+/// ## Core Architecture Features
+/// 
+/// **Standardized Action Execution**
+/// - Context safety validation with automatic mounted state checking and protection
+/// - Standardized error handling with comprehensive logging and user feedback integration
+/// - Loading state management with visual indicators and progress tracking capabilities
+/// - Success and error feedback with consistent snackbar patterns and Swedish localization
+/// 
+/// **Advanced Confirmation Workflows**
+/// - Integrated confirmation dialogs with CommonDialogActions integration for consistent UI
+/// - Delete confirmation patterns with item-specific messaging and warning displays
+/// - Action confirmation workflows with customizable styling and dangerous action highlighting
+/// - Cancellation handling with proper logging and user feedback for interrupted operations
+/// 
+/// **Navigation and State Management**
+/// - Safe navigation patterns with context validation and automatic error recovery
+/// - Loading dialog management with proper lifecycle handling and user experience optimization
+/// - State validation utilities with parameter checking and error prevention mechanisms
+/// - Navigation safety with mounted state checks and graceful error handling patterns
+/// 
+/// ## Eliminated Duplication Patterns
+/// 
+/// This action handler system eliminates repetitive patterns found across all action classes:
+/// - **Context Safety Checks**: Eliminates manual mounted state validation in every action method
+/// - **Error Handling**: Standardizes error capture, logging, and user feedback across all operations
+/// - **Success Feedback**: Consolidates success message display with consistent styling and timing
+/// - **Loading Management**: Unifies loading state handling with proper visual indicators and cleanup
+/// - **Navigation Safety**: Eliminates duplicate navigation validation and error handling patterns
+/// 
+/// **Before (duplicated across all action classes):**
+/// ```dart
+/// class RecipeActionHandler {
+///   Future<void> deleteRecipe(BuildContext context, String recipeId) async {
+///     if (!context.mounted) return;
+///     
+///     try {
+///       final success = await _recipeService.deleteRecipe(recipeId);
+///       
+///       if (!context.mounted) return;
+///       
+///       if (success) {
+///         ScaffoldMessenger.of(context).showSnackBar(
+///           SnackBar(content: Text('Recept borttaget'), backgroundColor: AppColors.success),
+///         );
+///         Navigator.of(context).pop();
+///       } else {
+///         ScaffoldMessenger.of(context).showSnackBar(
+///           SnackBar(content: Text('Kunde inte ta bort recept'), backgroundColor: AppColors.error),
+///         );
+///       }
+///     } catch (e) {
+///       AppLogger.error('Failed to delete recipe', e);
+///       if (context.mounted) {
+///         ScaffoldMessenger.of(context).showSnackBar(
+///           SnackBar(content: Text('Ett fel uppstod'), backgroundColor: AppColors.error),
+///         );
+///       }
+///     }
+///   }
+/// }
+/// ```
+/// 
+/// **After (standardized pattern):**
+/// ```dart
+/// class RecipeActionHandler extends BaseActionHandler {
+///   @override
+///   String get serviceName => 'RecipeActionHandler';
+///   
+///   Future<void> deleteRecipe(BuildContext context, String recipeId) async {
+///     await executeDeleteAction(
+///       context: context,
+///       deleteAction: () => _recipeService.deleteRecipe(recipeId),
+///       itemName: 'receptet',
+///       itemType: 'recept',
+///       successMessage: 'Recept borttaget',
+///       errorMessage: 'Kunde inte ta bort recept',
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// ## Usage Examples
+/// 
+/// **Basic Action Execution:**
+/// ```dart
+/// class ShoppingListActionHandler extends BaseActionHandler {
+///   @override
+///   String get serviceName => 'ShoppingListActionHandler';
+///   
+///   Future<void> addItem(BuildContext context, ShoppingItem item) async {
+///     await executeAction<bool>(
+///       context: context,
+///       action: () => _shoppingService.addItem(item),
+///       successMessage: 'Vara tillagd i listan',
+///       errorMessage: 'Kunde inte lägga till vara',
+///       loadingMessage: 'Lägger till vara...',
+///       showLoadingIndicator: true,
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **Confirmation Workflow:**
+/// ```dart
+/// class GroupActionHandler extends BaseActionHandler {
+///   @override
+///   String get serviceName => 'GroupActionHandler';
+///   
+///   Future<void> leaveGroup(BuildContext context, String groupId, String groupName) async {
+///     await executeWithConfirmation<bool>(
+///       context: context,
+///       action: () => _groupService.leaveGroup(groupId),
+///       confirmationTitle: 'Lämna grupp?',
+///       confirmationMessage: 'Vill du verkligen lämna gruppen "$groupName"?',
+///       confirmActionText: 'Lämna grupp',
+///       isDangerous: true,
+///       successMessage: 'Du har lämnat gruppen',
+///       errorMessage: 'Kunde inte lämna gruppen',
+///       popOnSuccess: true,
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **State Management Integration:**
+/// ```dart
+/// class RecipeFormHandler extends BaseActionHandler with ActionStateMixin {
+///   @override
+///   String get serviceName => 'RecipeFormHandler';
+///   
+///   Future<void> saveRecipe(BuildContext context, Recipe recipe) async {
+///     await executeWithLoadingState<Recipe>(
+///       context: context,
+///       action: () => _recipeService.saveRecipe(recipe),
+///       successMessage: 'Recept sparat',
+///       errorMessage: 'Kunde inte spara recept',
+///       popOnSuccess: true,
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// ## Performance Characteristics
+/// 
+/// - **Action Efficiency**: Lightweight action execution with minimal overhead and resource usage
+/// - **Context Safety**: Automatic mounted state validation with no performance impact
+/// - **Memory Management**: Proper lifecycle management with automatic cleanup and resource disposal
+/// - **Error Recovery**: Graceful error handling with user-friendly feedback and system stability
+/// 
+/// ## Integration Patterns
+/// 
+/// - **View Models**: Direct integration with all view models for consistent action execution
+/// - **UI Components**: Seamless integration with UI components for user interaction handling
+/// - **Service Layer**: Standardized interface for service layer operation execution
+/// - **Error Handling**: Comprehensive error handling with logging and user feedback systems
+/// 
+/// This action handler system is essential for maintaining consistent, reliable, and user-friendly
+/// action execution throughout the Swedish cooking application while eliminating code duplication
+/// and ensuring proper error handling and user feedback across all user interface interactions.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -6,40 +172,41 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// BaseActionHandler - Abstract base class for standardized action patterns
+/// Comprehensive base action handler that provides standardized action execution patterns for all application actions.
 /// 
-/// This class provides a foundation for all action handlers in the application,
-/// ensuring consistent patterns for:
-/// - Context safety checks
-/// - Loading state management
-/// - Error handling and user feedback
-/// - Action confirmation workflows
-/// - Navigation management
-/// - Logging and analytics
-/// 
-/// Common patterns eliminated:
+/// This abstract class eliminates duplicate action handling patterns by providing a foundation for consistent
+/// action execution including context safety checks, loading state management, error handling, user feedback,
+/// confirmation workflows, and navigation management across all view models and UI components.
+///
+/// **Key Features:**
+/// - Context safety validation with automatic mounted state checking and protection
+/// - Standardized error handling with comprehensive logging and Swedish-localized user feedback
+/// - Loading state management with visual indicators and progress tracking capabilities
+/// - Confirmation workflows with integrated dialog patterns and customizable styling options
+/// - Navigation safety with proper lifecycle management and graceful error recovery
+/// - Action state management through mixins for complex UI state requirements
+///
+/// **Integration Points:**
+/// - All view models extend or use this for consistent action execution patterns
+/// - UI components leverage this for reliable user interaction handling and feedback
+/// - Service layer operations utilize this for standardized error handling and logging
+/// - Dialog and feedback systems integrate through this for consistent user experience
+///
+/// **Example Usage:**
 /// ```dart
-/// // Before (duplicated across all action classes):
-/// if (!context.mounted) return;
-/// final success = await someOperation();
-/// if (!context.mounted) return;
-/// if (success) {
-///   ScaffoldMessenger.of(context).showSnackBar(
-///     SnackBar(content: Text('Success!'), backgroundColor: AppColors.success),
-///   );
-/// } else {
-///   ScaffoldMessenger.of(context).showSnackBar(
-///     SnackBar(content: Text('Error!'), backgroundColor: AppColors.error),
-///   );
+/// class MyActionHandler extends BaseActionHandler {
+///   @override
+///   String get serviceName => 'MyActionHandler';
+///   
+///   Future<void> performAction(BuildContext context) async {
+///     await executeAction<bool>(
+///       context: context,
+///       action: () => _service.performOperation(),
+///       successMessage: 'Operation framgångsrik',
+///       errorMessage: 'Operation misslyckades',
+///     );
+///   }
 /// }
-/// 
-/// // After (standardized):
-/// await executeAction(
-///   context: context,
-///   action: () => someOperation(),
-///   successMessage: 'Success!',
-///   errorMessage: 'Error!',
-/// );
 /// ```
 abstract class BaseActionHandler {
   /// Service name for logging and debugging

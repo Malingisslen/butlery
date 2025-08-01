@@ -175,11 +175,6 @@ class RecommendationService extends BaseService {
         final userPreferences = await _getUserPreferences(userId);
         final recentActivity = await _getUserRecentActivity(userId);
         
-        // Filter out already-seen recommendations to avoid duplicates
-        final unseenRecommendationTypes = types?.where((type) => 
-          !existingIds.any((id) => id.contains(type.toString()))
-        ).toList() ?? RecommendationType.values;
-        
         // Use recent activity to personalize recommendations
         final recentCategories = _extractCategoriesFromActivity(recentActivity);
         final personalizedPreferences = Map<String, dynamic>.from(userPreferences);
@@ -514,15 +509,17 @@ class RecommendationService extends BaseService {
     final cutoffTime = DateTime.now().subtract(age);
     final toRemove = <String>[];
     
-    _dismissalTimestamps.forEach((recId, timestamp) {
-      if (timestamp.isBefore(cutoffTime)) {
-        toRemove.add(recId);
+    for (final entry in _dismissalTimestamps.entries) {
+      if (entry.value.isBefore(cutoffTime)) {
+        toRemove.add(entry.key);
       }
-    });
+    }
     
     for (final recId in toRemove) {
       _dismissalTimestamps.remove(recId);
-      _dismissedRecommendations.values.forEach((set) => set.remove(recId));
+      for (final set in _dismissedRecommendations.values) {
+        set.remove(recId);
+      }
     }
     
     AppLogger.info('Cleared ${toRemove.length} old dismissals');
@@ -555,10 +552,10 @@ class RecommendationService extends BaseService {
     int totalLikes = 0;
     int totalDismissals = 0;
     
-    _feedbackHistory.values.forEach((feedback) {
+    for (final feedback in _feedbackHistory.values) {
       totalLikes += feedback[FeedbackType.like] ?? 0;
       totalDismissals += feedback[FeedbackType.dismiss] ?? 0;
-    });
+    }
     
     return {
       'totalRecommendations': _recommendationCache.length,

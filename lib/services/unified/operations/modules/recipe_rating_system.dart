@@ -36,7 +36,7 @@ class RecipeRatingSystem {
     try {
       AppLogger.info('⭐ Rating recipe $recipeId with $rating stars');
 
-      if (rating < 1.0 || rating > 5.0) {
+      if (rating < 1.0 || rating > 5.0 || rating.isNaN || rating.isInfinite) {
         AppLogger.error('❌ Rating must be between 1.0 and 5.0');
         return false;
       }

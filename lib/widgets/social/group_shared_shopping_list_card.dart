@@ -581,7 +581,7 @@ class GroupSharedShoppingListCard {
         ),
       );
       
-      if (shareOptions != null) {
+      if (shareOptions != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Delning via $shareOptions kommer snart!'),
@@ -590,12 +590,14 @@ class GroupSharedShoppingListCard {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Kunde inte öppna delningsmenyn: $e'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte öppna delningsmenyn: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 

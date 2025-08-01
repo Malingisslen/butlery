@@ -226,7 +226,7 @@ class MenuStorage {
         'menuCount': menuKeys.length,
         'totalSizeBytes': totalSize,
         'totalSizeKB': totalSize / 1024,
-        'averageSizePerMenu': menuKeys.isNotEmpty ? totalSize / menuKeys.length : 0,
+        'averageSizePerMenu': menuKeys.isNotEmpty ? totalSize.toDouble() / menuKeys.length.toDouble() : 0.0,
       };
     } catch (e) {
       AppLogger.error('Get storage info failed', e);

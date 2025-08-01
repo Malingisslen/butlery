@@ -514,6 +514,54 @@ class MessagingService extends BaseService {
     }
   }
 
+  /// Delete a conversation and all its messages
+  ///
+  /// ✅ IMPLEMENTED: Complete conversation deletion functionality
+  Future<void> deleteConversation(String conversationId) async {
+    try {
+      final currentUserId = _authRepository.currentUserId;
+      if (currentUserId == null) {
+        throw PermissionDeniedException(
+          'Must be logged in to delete conversations',
+          resource: 'conversation:$conversationId',
+          userId: null,
+        );
+      }
+
+      // Get conversation to check permissions
+      final conversation = await getConversation(conversationId);
+      if (conversation == null) {
+        throw ResourceNotFoundException(
+          'Conversation not found',
+          resourceType: 'conversation',
+          resourceId: conversationId,
+        );
+      }
+
+      // Check if user has permission to delete (owner or participant)
+      if (!conversation.participantIds.contains(currentUserId)) {
+        throw PermissionDeniedException(
+          'Cannot delete conversation - not a participant',
+          resource: 'conversation:$conversationId',
+          userId: currentUserId,
+        );
+      }
+
+      AppLogger.info('🗑️ Deleting conversation $conversationId for user $currentUserId');
+
+      // First delete all messages in the conversation
+      await deleteAllMessages(conversationId);
+
+      // Then delete the conversation itself
+      await _messagingRepository.deleteConversation(conversationId);
+
+      AppLogger.success('✅ Successfully deleted conversation $conversationId');
+    } catch (e) {
+      AppLogger.error('❌ Failed to delete conversation $conversationId', e);
+      rethrow;
+    }
+  }
+
   // ===== TYPING INDICATORS =====
 
   /// Set typing indicator for current user in conversation

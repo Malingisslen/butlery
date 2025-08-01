@@ -1,19 +1,193 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Stream Management Mixin - Stream and subscription lifecycle consolidation
-/// File: lib/core/mixins/stream_management_mixin.dart
-/// Quick Guide: Eliminates 200+ lines of duplicate stream patterns across 40+ services
-/// Dependencies IN: Timer, StreamSubscription, BaseService
-/// Dependencies OUT: All services that manage streams, timers, or subscriptions
-/// Data flow: Stream creation -> Subscription tracking -> Automatic cleanup on dispose
-/// State management: Stream subscription lifecycle and memory management
-/// Purpose: Standardize stream management, prevent memory leaks, automate cleanup
-/// Common issues: Memory leaks from uncanceled subscriptions, duplicate cleanup code
-/// Test coverage: Stream lifecycle testing, memory leak detection, disposal verification
-/// Performance: Optimized subscription management with minimal overhead
-/// Analytics: Stream usage tracking and memory leak detection
-/// Code smells: None - clean mixin pattern with proper resource management
-/// Connected to: All services with real-time data, timers, or async operations
-/// Used in phases: Service Layer Consolidation - Stream Pattern Unification
+/// Comprehensive stream lifecycle management mixin implementing intelligent resource coordination for reactive service architecture.
+///
+/// This mixin serves as the foundational stream management infrastructure throughout the Butlery application,
+/// eliminating duplicate stream patterns found across 40+ services while providing advanced features including
+/// automatic resource cleanup, intelligent subscription management, comprehensive error handling, and stream
+/// transformation utilities. It ensures consistent stream lifecycle management across all services while
+/// preventing memory leaks and providing optimal performance for Swedish cooking application's real-time
+/// collaborative features and reactive data flows.
+///
+/// ## Core Architecture Features
+/// 
+/// **Intelligent Resource Management**
+/// - Automatic StreamSubscription tracking with named subscription support
+/// - Timer lifecycle management with periodic and one-shot timer creation
+/// - StreamController management with broadcast and regular controller support
+/// - Comprehensive disposal coordination with resource leak detection
+/// 
+/// **Stream Transformation Intelligence**
+/// - Debounce, throttle, and buffer stream patterns for performance optimization
+/// - Stream merging capabilities for multi-source data coordination
+/// - Transform stream support with automatic subscription management
+/// - Error handling integration with comprehensive logging and recovery
+/// 
+/// **Memory Management Excellence**
+/// - Automatic cleanup prevention of memory leaks in long-running services
+/// - Resource leak detection with detailed warning and monitoring capabilities
+/// - Disposal state tracking with protection against post-disposal resource creation
+/// - Testing support with resource reset and active resource name retrieval
+/// 
+/// ## Eliminated Duplication Patterns
+/// 
+/// This mixin consolidates stream management patterns found across 40+ services:
+/// - **StreamSubscription Management**: Found in 40+ services, 200+ lines eliminated
+/// - **Timer Management**: Found in 30+ services, automatic cleanup and named timer support
+/// - **Disposal Cleanup**: Found in 35+ services, standardized disposal patterns
+/// - **Stream Error Handling**: Found in 25+ services, consistent error logging and recovery
+/// - **Stream Transformation**: Found in 20+ services, debounce, throttle, and buffer patterns
+/// 
+/// **Before (duplicated across 40+ services):**
+/// ```dart
+/// class MyService {
+///   final List<StreamSubscription> _subscriptions = [];
+///   final List<Timer> _timers = [];
+///   
+///   void startListening() {
+///     final subscription = dataStream.listen((data) => handleData(data));
+///     _subscriptions.add(subscription);
+///   }
+///   
+///   @override
+///   void dispose() {
+///     for (final subscription in _subscriptions) {
+///       subscription.cancel();
+///     }
+///     for (final timer in _timers) {
+///       timer.cancel();
+///     }
+///   }
+/// }
+/// ```
+/// 
+/// **After (centralized pattern):**
+/// ```dart
+/// class MyService extends BaseService with StreamManagementMixin {
+///   void startListening() {
+///     listenToStream(
+///       dataStream,
+///       (data) => handleData(data),
+///       name: 'main_data_stream',
+///     );
+///   }
+///   
+///   @override
+///   void dispose() {
+///     disposeStreamResources(); // Automatic cleanup
+///   }
+/// }
+/// ```
+/// 
+/// ## Usage Examples
+/// 
+/// **Real-Time Recipe Collaboration:**
+/// ```dart
+/// class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
+///   void startCollaboration(String menuId) {
+///     listenToStream(
+///       firestore.collection('menus').doc(menuId).snapshots(),
+///       (snapshot) => _handleMenuUpdate(snapshot),
+///       name: 'menu_updates',
+///     );
+///     
+///     createPeriodicTimer(
+///       Duration(seconds: 30),
+///       () => _syncPendingChanges(),
+///       name: 'sync_timer',
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **Shopping List Synchronization:**
+/// ```dart
+/// class UnifiedShoppingService extends ChangeNotifier with StreamManagementMixin {
+///   void syncShoppingList(String listId) {
+///     // Debounced updates for performance
+///     debounceStream(
+///       _localChangesController.stream,
+///       Duration(milliseconds: 500),
+///       (changes) => _syncToFirebase(changes),
+///       name: 'debounced_sync',
+///     );
+///     
+///     // Merge multiple data sources
+///     mergeStreams([
+///       _personalListStream,
+///       _sharedListStream,
+///       _collaborativeListStream,
+///     ], (listUpdate) => _handleListUpdate(listUpdate), name: 'merged_lists');
+///   }
+/// }
+/// ```
+/// 
+/// **Social Activity Feed:**
+/// ```dart
+/// class ActivityFeedService extends ChangeNotifier with StreamManagementMixin, StreamPatternMixin {
+///   void startActivityFeed() {
+///     // Throttled activity updates
+///     throttleStream(
+///       _activityStream,
+///       Duration(seconds: 1),
+///       (activity) => _addToFeed(activity),
+///       name: 'throttled_activity',
+///     );
+///     
+///     // Buffered notification processing
+///     bufferStream(
+///       _notificationStream,
+///       Duration(seconds: 5),
+///       (notifications) => _processBatchNotifications(notifications),
+///       name: 'buffered_notifications',
+///       maxBufferSize: 10,
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **Resource Management and Monitoring:**
+/// ```dart
+/// // Check for resource leaks in development
+/// void debugStreamResources() {
+///   final stats = getStreamStats();
+///   print('Active resources: $stats');
+///   
+///   final leaks = checkForResourceLeaks();
+///   if (leaks.isNotEmpty) {
+///     print('Resource leaks detected: $leaks');
+///   }
+/// }
+/// 
+/// // Named resource management
+/// void manageSpecificStreams() {
+///   if (hasActiveSubscription('recipe_updates')) {
+///     cancelNamedSubscription('recipe_updates');
+///   }
+///   
+///   createTimer(
+///     Duration(minutes: 5),
+///     () => _cleanupExpiredData(),
+///     name: 'cleanup_timer',
+///   );
+/// }
+/// ```
+/// 
+/// ## Performance Characteristics
+/// 
+/// - **Memory Efficiency**: Automatic cleanup prevents memory leaks in long-running services
+/// - **Resource Tracking**: Minimal overhead resource management with intelligent cleanup
+/// - **Stream Performance**: Optimized stream transformation with debounce, throttle, and buffer patterns
+/// - **Error Recovery**: Comprehensive error handling with detailed logging and graceful degradation
+/// 
+/// ## Integration Patterns
+/// 
+/// - **Service Layer**: Direct integration with all services requiring stream management
+/// - **Real-Time Features**: Essential for collaborative editing, live updates, and synchronization
+/// - **MVVM Architecture**: Stream data integration with ViewModels for reactive UI updates
+/// - **Testing Support**: Resource reset and monitoring capabilities for comprehensive testing
+/// 
+/// This mixin is essential for all services with real-time data requirements in the Swedish cooking
+/// application, providing reliable, performant, and memory-safe stream management while eliminating
+/// code duplication and ensuring consistent resource lifecycle patterns across the entire service layer.
 
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';

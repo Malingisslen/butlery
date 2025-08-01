@@ -60,6 +60,7 @@ import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/common/layout/auth_form_card.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 /// Comprehensive authentication view providing advanced user authentication through MVVM architecture integration.
 ///
 /// Manages complete authentication interface enabling user login and registration with form validation,
@@ -594,7 +595,7 @@ class _AuthViewState extends State<AuthView> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Återställ lösenord'),
+            title: Text(AppStrings.resetPassword),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -616,11 +617,11 @@ class _AuthViewState extends State<AuthView> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Avbryt'),
+                child: Text(AppStrings.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Skicka'),
+                child: Text(AppStrings.send),
               ),
             ],
           ),

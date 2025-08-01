@@ -35,7 +35,7 @@ class SocialEngagementMetrics {
       // Member count contributes to engagement
       if (recipe.isCollaborative) {
         final memberCount = recipe.socialData?.memberPermissions?.length ?? 0;
-        engagementScore += memberCount * 10;
+        engagementScore += memberCount.toDouble() * 10.0;
       }
 
       // Recent activity contributes to engagement
@@ -43,16 +43,16 @@ class SocialEngagementMetrics {
           .difference(recipe.core.updatedAt)
           .inDays;
       if (daysSinceLastEdit <= 7) {
-        engagementScore += (7 - daysSinceLastEdit) * 5;
+        engagementScore += (7.0 - daysSinceLastEdit.toDouble()) * 5.0;
       }
 
       // Recipe complexity (ingredients/instructions) contributes
-      engagementScore += recipe.core.ingredients.length * 2;
-      engagementScore += recipe.core.instructions.length * 3;
+      engagementScore += recipe.core.ingredients.length.toDouble() * 2.0;
+      engagementScore += recipe.core.instructions.length.toDouble() * 3.0;
 
       // Recipe completeness factor
       final completenessScore = _calculateRecipeCompleteness(recipe);
-      engagementScore += completenessScore * 5;
+      engagementScore += completenessScore * 5.0;
 
       metrics['engagement_score'] = engagementScore.round();
 

@@ -1,16 +1,95 @@
-// lib/theme/app_dimensions.dart
+/// Comprehensive dimension system providing unified spacing, sizing, and layout constants for the Butlery cooking application.
+///
+/// This dimension system implements a sophisticated spacing and sizing framework that ensures consistent
+/// visual rhythm, appropriate touch targets, and optimal layout patterns throughout the cooking application.
+/// The system combines Material 3 design principles with cooking-specific spatial requirements that enhance
+/// usability in kitchen environments and support complex recipe management workflows for Swedish users.
+///
+/// **Architecture Integration:**
+/// - Implements Material 3 dimension specifications with cooking-specific spatial adaptations
+/// - Provides semantic naming conventions that enhance code readability and maintainability
+/// - Supports responsive design patterns with appropriate scaling for various screen sizes
+/// - Integrates with component themes and visual design for cohesive spatial relationships
+/// - Maintains accessibility compliance with appropriate touch targets and spacing requirements
+///
+/// **Dimension Categories:**
+/// - **Spacing Constants**: Semantic spacing values for consistent layout rhythm and visual organization
+/// - **Padding Constants**: Component-specific padding values for optimal content presentation
+/// - **Border Radius Constants**: Rounded corner values that maintain visual consistency across components
+/// - **Elevation Constants**: Shadow and elevation values for appropriate depth hierarchy
+/// - **Icon Dimensions**: Icon sizing constants for consistent visual weight and touch targets
+/// - **Image Dimensions**: Image sizing for recipe photos, avatars, and content presentation
+/// - **Animation Constants**: Duration values for consistent motion design throughout the application
+///
+/// **Design Philosophy:**
+/// The dimension system reflects the precision and organization of cooking with consistent spacing that
+/// creates visual harmony, appropriate sizing for kitchen environment usability, and semantic naming
+/// that enhances developer experience and maintainability while supporting complex cooking workflows.
+///
+/// **Key Features:**
+/// - Semantic naming system that prioritizes clarity over numeric values (spacingM vs spacing8)
+/// - Context-specific constants for different usage scenarios (spacing, padding, margin)
+/// - Material 3 compliance with cooking-specific adaptations for kitchen environment usability
+/// - Accessibility-first approach with appropriate touch targets and spacing for all user interactions
+/// - Performance optimization through compile-time constants and efficient dimension application
+/// - Responsive design support with scalable dimensions for various screen sizes and orientations
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Semantic spacing for consistent layout rhythm
+/// Padding(
+///   padding: EdgeInsets.all(AppDimensions.spacingMd),
+///   child: RecipeCard(),
+/// );
+/// 
+/// // Component-specific padding for optimal presentation
+/// Container(
+///   padding: EdgeInsets.symmetric(
+///     horizontal: AppDimensions.paddingL,
+///     vertical: AppDimensions.paddingM,
+///   ),
+///   child: RecipeInstructions(),
+/// );
+/// 
+/// // Border radius for consistent visual design
+/// Card(
+///   shape: RoundedRectangleBorder(
+///     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+///   ),
+///   child: RecipeContent(),
+/// );
+/// 
+/// // Icon sizing for consistent visual weight
+/// Icon(
+///   Icons.favorite,
+///   size: AppDimensions.iconSizeL,
+/// );
+/// ```
 
 import 'package:flutter/material.dart';
 
-/// Spacing, sizing, and layout constants for the Butlery app
-/// Provides consistent dimensions throughout the application
-/// 
-/// Design Philosophy:
-/// - Semantic naming over numeric values (e.g., spacingM vs spacing8)
-/// - Separate constants for different contexts (spacing, padding, margin)
-/// - This allows for easy global adjustments and semantic clarity
+/// Comprehensive dimension system implementing unified spacing, sizing, and layout constants for cooking-focused user interface design.
+///
+/// This class serves as the central repository for all spatial and sizing constants used throughout the
+/// Butlery application, providing a carefully curated dimension system that ensures consistent visual
+/// rhythm, appropriate touch targets, and optimal layout patterns. The system prioritizes semantic
+/// naming over numeric values to enhance code readability and supports easy global adjustments for
+/// design system evolution and responsive design requirements.
+///
+/// **Dimension Architecture:**
+/// - **Semantic Organization**: Clear naming conventions that reflect usage context and spatial relationships
+/// - **Context Separation**: Distinct constants for different spatial contexts (spacing, padding, margin)
+/// - **Scalability Framework**: Dimension values that support responsive design and various screen sizes
+/// - **Accessibility Compliance**: Touch targets and spacing that meet accessibility requirements
+/// - **Performance Optimization**: Compile-time constants for efficient rendering and memory usage
+///
+/// **Design Principles:**
+/// The dimension system reflects the precision and organization of cooking with consistent spacing
+/// that creates visual harmony, appropriate sizing for kitchen environment usability, and semantic
+/// clarity that supports complex cooking workflow development and maintenance.
 class AppDimensions {
-  AppDimensions._(); // Private constructor to prevent instantiation
+  /// Private constructor to prevent instantiation of utility class
+  AppDimensions._();
 
   // ===== SPACING CONSTANTS (MATCHING ORIGINAL APPTHEME) =====
 

@@ -7,6 +7,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// Shopping list actions handler
 ///
@@ -23,23 +24,23 @@ class ShoppingListActions {
       icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeAction),
       onSelected: (action) => _handleListAction(context, action, list, viewModel),
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
-              Icon(Icons.edit, size: AppDimensions.iconSizeAction),
-              SizedBox(width: AppDimensions.spacingM),
-              Text('Byt namn'),
+              const Icon(Icons.edit, size: AppDimensions.iconSizeAction),
+              const SizedBox(width: AppDimensions.spacingM),
+              Text(AppStrings.rename),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'export',
           child: Row(
             children: [
-              Icon(Icons.share, size: AppDimensions.iconSizeAction),
-              SizedBox(width: AppDimensions.spacingM),
-              Text('Exportera'),
+              const Icon(Icons.share, size: AppDimensions.iconSizeAction),
+              const SizedBox(width: AppDimensions.spacingM),
+              Text(AppStrings.export),
             ],
           ),
         ),
@@ -54,7 +55,7 @@ class ShoppingListActions {
               ),
               SizedBox(width: AppDimensions.spacingM),
               Text(
-                'Ta bort',
+                AppStrings.delete,
                 style: TextStyle(color: AppColors.error),
               ),
             ],
@@ -95,14 +96,14 @@ class ShoppingListActions {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Byt namn på lista'),
+        title: Text(AppStrings.renameList),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: controller,
               decoration: const InputDecoration(
-                labelText: 'Nytt namn',
+                labelText: AppStrings.newName,
                 border: OutlineInputBorder(),
               ),
               autofocus: true,
@@ -113,11 +114,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
+            child: Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Spara'),
+            child: Text(AppStrings.save),
           ),
         ],
       ),
@@ -214,14 +215,14 @@ class ShoppingListActions {
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Skapa ny handlista'),
+        title: Text(AppStrings.createList),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: controller,
               decoration: const InputDecoration(
-                labelText: 'Namn på lista',
+                labelText: AppStrings.listName,
                 border: OutlineInputBorder(),
                 hintText: 'T.ex. "Veckans handlista"',
               ),
@@ -233,11 +234,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
+            child: Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Skapa'),
+            child: Text(AppStrings.create),
           ),
         ],
       ),
@@ -252,9 +253,9 @@ class ShoppingListActions {
   ) async {
     final result = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: 'Lägg till i "${list.name}"',
+      title: '${AppStrings.addToList} "${list.name}"',
       message: 'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
-      confirmText: 'Lägg till',
+      confirmText: AppStrings.add,
       icon: Icons.add_shopping_cart,
     );
 

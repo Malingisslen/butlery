@@ -687,7 +687,7 @@ class DiscoveryDashboardViewModel extends ChangeNotifier {
     }
     
     // Normalize score based on query length
-    return queryWords.isNotEmpty ? score / queryWords.length : 0.0;
+    return queryWords.isNotEmpty ? score / queryWords.length.toDouble() : 0.0;
   }
   
   /// Check if content matches search query

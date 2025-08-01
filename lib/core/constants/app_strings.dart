@@ -1,38 +1,84 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: App Strings - Centralized string constants for consistent messaging
-/// File: lib/core/constants/app_strings.dart
-/// Quick Guide: Single source of truth for all user-facing strings and error messages
-/// Dependencies IN: None (pure constants)
-/// Dependencies OUT: All widgets, services, and validators use these strings
-/// Data flow: Static string access throughout application
-/// State management: Immutable string constants
-/// Purpose: Eliminate scattered string literals and ensure consistent messaging
-/// Common issues: String consistency, internationalization preparation, typos
-/// Test coverage: String constant validation tests
-/// Performance: Minimal overhead, compile-time constants
-/// Analytics: Centralized error message tracking
-/// Code smells: None - clean constant definitions
-/// Connected to: All UI components, form validators, error handlers
-/// Used in phases: Code Consolidation Phase - String Centralization
-
-/// Centralized string constants for the Butlery application.
-/// 
-/// This class consolidates all user-facing strings to:
-/// - Ensure consistent messaging across the application
-/// - Eliminate duplicate string literals
-/// - Prepare for future internationalization
-/// - Provide single source of truth for UI text
-/// 
-/// Usage:
+/// Comprehensive centralized string constants system providing unified messaging for the Butlery cooking application.
+///
+/// This string constants system implements a sophisticated centralized approach to all user-facing text,
+/// error messages, validation feedback, and interface strings throughout the cooking application. It provides
+/// consistent Swedish localization, eliminates duplicate string literals, and establishes a foundation for
+/// future internationalization while ensuring cohesive messaging that reflects Swedish cooking culture and preferences.
+///
+/// **Architecture Integration:**
+/// - Provides single source of truth for all user-facing strings throughout the application
+/// - Eliminates duplicate string literals and ensures consistent messaging across components
+/// - Integrates with form validation systems providing standardized error messaging
+/// - Supports Swedish localization with culturally appropriate terminology and phrasing
+/// - Establishes foundation for future internationalization and multi-language support
+///
+/// **String Categories:**
+/// - **Common Actions**: Universal action strings (save, cancel, delete) with Swedish translations
+/// - **Form Validation**: Comprehensive validation messages with context-aware formatting
+/// - **Error Messages**: Standardized error messaging with severity levels and user guidance
+/// - **Success Messages**: Positive feedback messages celebrating user accomplishments
+/// - **Confirmation Messages**: Clear confirmation dialogs for destructive or important actions
+/// - **Feature-Specific Strings**: Specialized terminology for recipes, shopping, and social features
+/// - **Accessibility Strings**: Screen reader and accessibility support text
+/// - **Helper Methods**: Utility functions for dynamic string formatting and pluralization
+///
+/// **Swedish Localization Features:**
+/// The string system reflects Swedish cooking culture with appropriate terminology, measurement units,
+/// and cultural references that make the application feel native and intuitive for Swedish users
+/// while maintaining professional and friendly tone throughout all interactions.
+///
+/// **Key Features:**
+/// - Comprehensive coverage of all application strings with consistent Swedish terminology
+/// - Context-aware validation messages that provide clear guidance for form corrections
+/// - Dynamic string formatting with proper Swedish pluralization and grammar rules
+/// - Cooking-specific vocabulary that resonates with Swedish culinary traditions
+/// - Accessibility-first approach with appropriate strings for screen readers and assistive technology
+/// - Performance optimization through compile-time constants and efficient string access patterns
+///
+/// **Usage Examples:**
 /// ```dart
-/// // Instead of: 'Namn krävs'
-/// validator: (value) => value?.isEmpty == true ? AppStrings.fieldRequired('Namn') : null
+/// // Form validation with Swedish messaging
+/// validator: (value) => value?.isEmpty == true 
+///   ? AppStrings.fieldRequired('Receptnamn') 
+///   : null;
 /// 
-/// // Instead of scattered error messages
-/// showError(AppStrings.networkError);
+/// // Consistent error messaging
+/// showSnackBar(AppStrings.couldNotCreate('recept'));
+/// 
+/// // Success feedback with celebration
+/// displaySuccess(AppStrings.itemCreated('Recept'));
+/// 
+/// // Confirmation dialogs with clear Swedish messaging
+/// final confirmed = await showDialog<bool>(
+///   content: Text(AppStrings.confirmDelete(recipe.name)),
+/// );
+/// 
+/// // Dynamic formatting for cooking measurements
+/// Text(AppStrings.formatDuration(30)); // "30 min"
+/// Text(AppStrings.formatPortions(4));  // "4 portioner"
 /// ```
+
+/// Comprehensive centralized string constants system implementing unified messaging for cooking-focused user interface design.
+///
+/// This class serves as the authoritative source for all user-facing text throughout the Butlery application,
+/// providing consistent Swedish localization, standardized messaging patterns, and culturally appropriate
+ /// terminology. It eliminates string duplication while establishing a cohesive voice that reflects Swedish
+/// cooking culture and enhances the user experience through clear, friendly, and professional communication.
+///
+/// **String Architecture:**
+/// - **Centralized Management**: Single source of truth preventing scattered string literals across codebase
+/// - **Swedish Cultural Adaptation**: Terminology and phrasing appropriate for Swedish cooking traditions
+/// - **Consistency Framework**: Standardized messaging patterns ensuring coherent user experience
+/// - **Accessibility Integration**: Complete screen reader and assistive technology support
+/// - **Performance Optimization**: Compile-time constants for efficient memory usage and fast access
+///
+/// **Design Principles:**
+/// The string system reflects the warmth and precision of cooking with clear, helpful messaging that guides
+/// users through complex cooking workflows while maintaining the friendly, professional tone expected
+/// in Swedish applications and celebrating the joy of cooking and sharing meals.
 class AppStrings {
-  AppStrings._(); // Private constructor to prevent instantiation
+  /// Private constructor to prevent instantiation of utility class
+  AppStrings._();
 
   // ===== COMMON ACTIONS =====
   static const String save = 'Spara';
@@ -43,12 +89,26 @@ class AppStrings {
   static const String create = 'Skapa';
   static const String update = 'Uppdatera';
   static const String close = 'Stäng';
+  static const String share = 'Dela';
+  static const String rename = 'Byt namn';
+  static const String export = 'Exportera';
   static const String ok = 'OK';
   static const String yes = 'Ja';
   static const String no = 'Nej';
   static const String retry = 'Försök igen';
   static const String loading = 'Laddar...';
   static const String working = 'Arbetar...';
+
+  // ===== SHOPPING LIST ACTIONS =====
+  static const String renameList = 'Byt namn på lista';
+  static const String createList = 'Skapa ny handlista';
+  static const String newName = 'Nytt namn';
+  static const String listName = 'Namn på lista';
+  static const String addToList = 'Lägg till i';
+
+  // ===== AUTHENTICATION =====
+  static const String resetPassword = 'Återställ lösenord';
+  static const String send = 'Skicka';
 
   // ===== FORM VALIDATION MESSAGES =====
   static String fieldRequired(String fieldName) => '$fieldName krävs';

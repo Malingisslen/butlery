@@ -166,6 +166,9 @@ abstract class MessagingRepository {
   /// Delete message
   Future<void> deleteMessage(String messageId);
   
+  /// Delete conversation and all its messages
+  Future<void> deleteConversation(String conversationId);
+  
   // ===== UTILITY OPERATIONS =====
   
   /// Get conversation participants

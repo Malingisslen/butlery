@@ -733,4 +733,40 @@ class FirebaseMessagingRepository
       rethrow;
     }
   }
+
+  @override
+  Future<void> deleteConversation(String conversationId) async {
+    try {
+      // First get all messages in the conversation
+      final messagesQuery = await _messagesRef
+          .where('conversationId', isEqualTo: conversationId)
+          .get();
+
+      // Delete messages in batches to avoid Firestore limits
+      const batchSize = 500; // Firestore batch limit
+      final messages = messagesQuery.docs;
+      
+      AppLogger.info('🗑️ Deleting ${messages.length} messages from conversation $conversationId');
+
+      for (int i = 0; i < messages.length; i += batchSize) {
+        final batch = firestore.batch();
+        final batchDocs = messages.skip(i).take(batchSize);
+        
+        for (final doc in batchDocs) {
+          batch.delete(doc.reference);
+        }
+        
+        await batch.commit();
+        AppLogger.debug('Deleted batch of ${batchDocs.length} messages');
+      }
+
+      // Then delete the conversation document
+      await firestore.collection(collectionName).doc(conversationId).delete();
+      
+      AppLogger.success('✅ Successfully deleted conversation $conversationId');
+    } catch (e) {
+      AppLogger.error('Failed to delete conversation $conversationId', e);
+      rethrow;
+    }
+  }
 }

@@ -1,13 +1,126 @@
-// lib/core/form/form_fields_manager.dart
+/// Comprehensive dynamic form field manager implementing intelligent TextEditingController lifecycle management.
+///
+/// This manager class serves as the foundational form field infrastructure throughout the Butlery application,
+/// providing advanced controller management for dynamic form scenarios including recipe ingredient lists,
+/// instruction steps, and shopping list items. It ensures optimal memory management, synchronization between
+/// controllers and data models, and comprehensive lifecycle handling for Swedish cooking application's
+/// complex form requirements while maintaining performance and preventing memory leaks.
+///
+/// ## Core Architecture Features
+/// 
+/// **Intelligent Controller Lifecycle Management**
+/// - Automatic creation and disposal of TextEditingController instances
+/// - Synchronization between controller state and external data models
+/// - Memory-efficient controller reuse and proper resource cleanup
+/// - Dynamic field addition and removal with automatic index management
+/// 
+/// **Form State Synchronization**
+/// - Bidirectional synchronization between form controllers and data values
+/// - Real-time change detection with callback integration for reactive forms
+/// - External data model integration with automatic controller updates
+/// - Backward compatibility support for existing form patterns
+/// 
+/// **Memory Management Intelligence**
+/// - Automatic cleanup of unused controllers to prevent memory leaks
+/// - Efficient controller reorganization after field removal operations
+/// - Resource disposal coordination for proper Flutter widget lifecycle
+/// - Debug utilities for monitoring controller state and memory usage
+/// 
+/// ## Usage Examples
+/// 
+/// **Recipe Ingredient Management:**
+/// ```dart
+/// class RecipeFormViewModel {
+///   final FormFieldsManager _ingredientsManager = FormFieldsManager(
+///     initialItems: recipe.ingredients,
+///     onValueChanged: (index, value) {
+///       recipe.ingredients[index] = value;
+///       notifyListeners();
+///     },
+///   );
+///   
+///   void addIngredient() => _ingredientsManager.addController();
+///   void removeIngredient(int index) => _ingredientsManager.removeController(index);
+///   
+///   List<TextEditingController> get ingredientControllers => 
+///     _ingredientsManager.getControllers(recipe.ingredients);
+/// }
+/// ```
+/// 
+/// **Shopping List Item Management:**
+/// ```dart
+/// class ShoppingListView extends StatefulWidget {
+///   final FormFieldsManager _itemsManager = FormFieldsManager(
+///     onValueChanged: (index, value) {
+///       shoppingList.items[index].name = value;
+///       _saveChanges();
+///     },
+///   );
+///   
+///   Widget build(BuildContext context) {
+///     final controllers = _itemsManager.getControllers(
+///       shoppingList.items.map((item) => item.name).toList(),
+///     );
+///     
+///     return ListView.builder(
+///       itemCount: controllers.length,
+///       itemBuilder: (context, index) => TextFormField(
+///         controller: controllers[index],
+///         decoration: InputDecoration(
+///           hintText: 'Vara ${index + 1}',
+///         ),
+///       ),
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **Dynamic Instruction Steps:**
+/// ```dart
+/// class InstructionStepsWidget extends StatefulWidget {
+///   final FormFieldsManager _stepsManager = FormFieldsManager(
+///     initialItems: recipe.instructions,
+///     validator: (value) => value?.isEmpty == true ? 'Instruktion krävs' : null,
+///   );
+///   
+///   void _addStep() {
+///     _stepsManager.addController();
+///     setState(() {});
+///   }
+///   
+///   void _removeStep(int index) {
+///     _stepsManager.removeController(index);
+///     setState(() {});
+///   }
+/// }
+/// ```
+/// 
+/// ## Performance Characteristics
+/// 
+/// - **Memory Efficiency**: Controllers are reused when possible and properly disposed when unused
+/// - **Synchronization Speed**: Minimal overhead synchronization with intelligent change detection
+/// - **Resource Management**: Automatic cleanup prevents memory leaks in long-lived forms
+/// - **Index Management**: Efficient reorganization algorithms for field addition/removal operations
+/// 
+/// ## Integration Patterns
+/// 
+/// - **MVVM Architecture**: Direct integration with ViewModels for reactive form state management
+/// - **Form Validation**: Built-in validator support for comprehensive form validation workflows
+/// - **Widget Lifecycle**: Proper disposal integration with Flutter widget disposal patterns
+/// - **Data Binding**: Bidirectional binding with external data models for consistent state management
+/// 
+/// This manager is essential for all dynamic form scenarios in the Swedish cooking application,
+/// providing reliable, performant, and memory-efficient controller management for complex form
+/// interfaces while maintaining clean architecture patterns and optimal user experience.
 
 import 'package:flutter/material.dart';
 
-/// Hanterar TextEditingControllers för dynamiska formulärfält
+/// Hanterar TextEditingControllers för dynamiska formulärfält (Manages TextEditingControllers for dynamic form fields)
 ///
-/// Denna klass tar hand om:
-/// - Skapande och borttagning av controllers
-/// - Synkronisering mellan controllers och data
-/// - Korrekt dispose av controllers
+/// Denna klass tar hand om (This class handles):
+/// - Skapande och borttagning av controllers (Creation and removal of controllers)
+/// - Synkronisering mellan controllers och data (Synchronization between controllers and data)
+/// - Korrekt dispose av controllers (Proper disposal of controllers)
 /// - Memory management
 class FormFieldsManager {
   final Map<String, TextEditingController> _controllers = {};

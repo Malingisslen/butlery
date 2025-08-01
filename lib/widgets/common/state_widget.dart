@@ -1,4 +1,50 @@
-// lib/widgets/state_widget.dart
+/// Comprehensive universal state widget providing unified interface for all application state representations.
+///
+/// This widget serves as the central facade for displaying various application states including loading,
+/// empty content, error conditions, success messages, and informational displays. It implements intelligent
+/// delegation to specialized state modules while maintaining consistent visual design and user experience
+/// patterns throughout the application. The widget supports Swedish localization and responsive design.
+///
+/// **Architecture Integration:**
+/// - Implements Universal State Pattern for consistent state representation across all views
+/// - Delegates to specialized state modules for optimal performance and maintainability
+/// - Provides unified API for all state display scenarios with consistent theming
+/// - Supports responsive design patterns for various screen sizes and orientations
+/// - Integrates with application theme system for consistent visual appearance
+///
+/// **State Categories:**
+/// - **Loading States**: Spinners, skeleton loaders, and progressive loading indicators
+/// - **Empty States**: Content-specific empty scenarios with contextual actions
+/// - **Error States**: User-friendly error displays with retry mechanisms
+/// - **Success States**: Confirmation messages with optional follow-up actions
+/// - **Info States**: Informational messages and guidance for user interactions
+/// - **Warning States**: Cautionary messages for potentially destructive actions
+///
+/// **Key Features:**
+/// - Intelligent state delegation to specialized rendering modules
+/// - Comprehensive factory constructors for common use cases
+/// - Swedish localization support with contextual messaging
+/// - Responsive design with adaptive layouts for different screen sizes
+/// - Consistent theming and visual design across all state representations
+/// - Performance optimization through focused state-specific widgets
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Loading state with skeleton
+/// StateWidget.skeletonRecipeList(itemCount: 5);
+/// 
+/// // Empty state with action
+/// StateWidget.noRecipes(
+///   actionLabel: 'Lägg till recept',
+///   onAction: () => navigateToAddRecipe(),
+/// );
+/// 
+/// // Error state with retry
+/// StateWidget.error(
+///   message: 'Kunde inte ladda recept',
+///   onAction: () => retryLoading(),
+/// );
+/// ```
 
 import 'package:flutter/material.dart';
 
@@ -12,23 +58,67 @@ import 'package:butlery/widgets/common/state/message_states.dart';
 export 'state/state_enums.dart';
 export 'state/legacy_state_widgets.dart';
 
-/// 🔥 UNIVERSAL STATE WIDGET
-/// Ersätter: EmptyState, SkeletonLoader, och alla _buildEmptyState metoder
+/// Comprehensive universal state widget implementing unified interface for all application state representations.
+///
+/// This widget serves as the primary facade for displaying various application states through specialized
+/// state modules while maintaining consistent API and visual design. It provides intelligent delegation
+/// to focused state-specific widgets for optimal performance and supports comprehensive customization
+/// options for different contexts and user scenarios.
+///
+/// **Core Architecture:**
+/// - **Universal State Pattern**: Single entry point for all state display scenarios
+/// - **Modular Delegation**: Routes to specialized state widgets for optimal rendering
+/// - **Consistent Theming**: Unified visual design across all state representations
+/// - **Performance Optimization**: Focused widgets eliminate unnecessary complexity
+/// - **Responsive Design**: Adaptive layouts for various screen sizes and orientations
+///
+/// **Swedish Localization:**
+/// All state messages and actions are localized for Swedish users with contextual
+/// messaging that matches the application's cooking and recipe focus.
 class StateWidget extends StatelessWidget {
+  /// State type determining which specialized state module to delegate to for rendering
   final StateType type;
+  
+  /// Primary title text displayed prominently in the state widget
   final String? title;
+  
+  /// Secondary subtitle text providing additional context information
   final String? subtitle;
+  
+  /// Main message content for detailed state information and user guidance
   final String? message;
+  
+  /// Icon displayed with the state message for visual context and recognition
   final IconData? icon;
+  
+  /// Text label for the primary action button enabling user interaction
   final String? actionLabel;
+  
+  /// Callback function triggered when the primary action button is pressed
   final VoidCallback? onAction;
+  
+  /// Custom action widget for advanced interaction scenarios beyond standard buttons
   final Widget? customAction;
+  
+  /// Specific empty state variant for contextual empty content display
   final EmptyStateVariant? emptyVariant;
+  
+  /// Loading state variant controlling spinner, skeleton, or progress indicator type
   final LoadingVariant? loadingVariant;
+  
+  /// Number of skeleton items to display for skeleton loading states
   final int? skeletonItemCount;
+  
+  /// Custom color for the state icon to match specific design requirements
   final Color? iconColor;
+  
+  /// Custom size for the state icon to match layout and hierarchy needs
   final double? iconSize;
+  
+  /// Internal padding around the state content for spacing control
   final EdgeInsets? padding;
+  
+  /// Controls whether content should be centered or fill available space
   final bool centerContent;
 
   const StateWidget({

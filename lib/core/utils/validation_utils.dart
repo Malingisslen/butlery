@@ -1,51 +1,174 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Validation Utilities - Comprehensive validation consolidation
-/// File: lib/core/utils/validation_utils.dart
-/// Quick Guide: Eliminates 1,600-2,400 lines of duplicate validation patterns across 321+ files
-/// Dependencies IN: None (pure utility functions)
-/// Dependencies OUT: All forms, services, and validation logic throughout app
-/// Data flow: Input validation -> Standardized error messages -> Consistent UX
-/// State management: Stateless utility functions
-/// Purpose: Consolidate null/empty checks, format validation, business rule validation
-/// Common issues: Inconsistent validation messages, duplicate null checks, scattered validation logic
-/// Test coverage: Comprehensive unit tests for all validation scenarios
-/// Performance: Pure functions with optimal null-checking patterns
-/// Analytics: Centralized validation logging for UX insights
-/// Code smells: None - pure utility functions with clear separation of concerns
-/// Connected to: FormValidators, dialog validation, service validation, model validation
-/// Used in phases: Cross-Cutting Concerns Consolidation - Validation Pattern Unification
+/// Comprehensive validation utilities providing centralized validation patterns and business rule enforcement.
+///
+/// This utility class consolidates validation patterns found throughout the application, eliminating code duplication
+/// and ensuring consistent validation behavior. It provides pure utility functions for null/empty checks, format validation,
+/// business rule enforcement, and specialized validation patterns with optimal performance characteristics and
+/// comprehensive test coverage for reliable validation across all application components.
+///
+/// **Architecture Integration:**
+/// - Uses [AppStrings] for consistent localized validation error messages
+/// - Provides pure utility functions with no external dependencies for optimal performance
+/// - Integrates with all forms, services, and validation logic throughout the application
+/// - Supports comprehensive validation patterns from simple null checks to complex business rules
+///
+/// **Validation Consolidation Impact:**
+/// - **Null/Empty Checks**: Eliminates duplicate patterns found in 321+ files across the codebase
+/// - **String Format Validation**: Consolidates format validation logic found in 156+ files
+/// - **Collection Validation**: Unifies list and map validation patterns from 89+ files
+/// - **Business Rule Validation**: Centralizes business logic validation from 67+ files
+/// - **Permission Validation**: Consolidates permission checking patterns from 45+ files
+/// - **Total Impact**: Eliminates 1,600-2,400 lines of duplicate validation code
+///
+/// **Validation Categories:**
+/// - **Basic Validation**: Null, empty, and whitespace validation with optimized performance
+/// - **Format Validation**: Email, phone, URL, and specialized format validation with regex patterns
+/// - **Collection Validation**: List, map, and collection validation with comprehensive null safety
+/// - **Business Rules**: Application-specific validation rules and constraints
+/// - **Permission Validation**: User permission and authorization validation patterns
+/// - **Swedish Localization**: Integrated Swedish language support for all validation messages
+///
+/// **Performance Characteristics:**
+/// - **Pure Functions**: All validation methods are pure functions with no side effects
+/// - **Optimal Null Checking**: Efficient null-checking patterns with minimal overhead
+/// - **Stateless Design**: No state management overhead for maximum performance
+/// - **Comprehensive Coverage**: Unit tested validation scenarios ensuring reliability
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Basic null/empty validation
+/// if (ValidationUtils.isNullOrEmpty(userInput)) {
+///   return 'Field is required';
+/// }
+/// 
+/// // Email format validation
+/// if (!ValidationUtils.isValidEmail(email)) {
+///   return 'Invalid email format';
+/// }
+/// 
+/// // Business rule validation
+/// if (!ValidationUtils.isValidRecipeTitle(title)) {
+///   return 'Recipe title must be between 3-100 characters';
+/// }
+/// 
+/// // Collection validation
+/// if (ValidationUtils.isNullOrEmptyList(ingredients)) {
+///   return 'At least one ingredient is required';
+/// }
+/// ```
 
 import 'package:butlery/core/constants/app_strings.dart';
-
-/// Comprehensive validation utilities that eliminate duplicate validation patterns
-/// found across 321+ files in the codebase.
-/// 
-/// This class consolidates all common validation patterns:
-/// - Null/empty checks (found in 321 files)
-/// - String format validation (found in 156 files)  
-/// - List/collection validation (found in 89 files)
-/// - Business rule validation (found in 67 files)
-/// - Permission validation (found in 45 files)
+/// Comprehensive validation utility class providing centralized validation patterns and business rule enforcement.
+///
+/// This utility class serves as the centralized validation hub for the entire application, consolidating validation
+/// patterns that were previously scattered across hundreds of files. It provides pure, stateless functions with
+/// optimal performance characteristics and comprehensive null safety support for reliable validation operations.
+///
+/// **Static Utility Design:**
+/// - Private constructor prevents instantiation, ensuring pure utility function usage
+/// - All methods are static for convenient access without object creation overhead
+/// - Pure functions with no side effects for predictable validation behavior
+/// - Comprehensive null safety support throughout all validation methods
 class ValidationUtils {
-  ValidationUtils._(); // Private constructor - utility class
+  /// Private constructor preventing instantiation to enforce static utility usage.
+  ValidationUtils._();
 
   // ===== NULL/EMPTY VALIDATION CONSOLIDATION =====
   
-  /// Replaces the pattern: if (value == null || value.isEmpty) return 'error';
-  /// Found in 321+ files - highest impact consolidation
+  /// Validates whether a string value is null or empty, providing the most common validation pattern consolidation.
+  ///
+  /// This method replaces the ubiquitous pattern `if (value == null || value.isEmpty) return 'error';`
+  /// found in 321+ files throughout the codebase, representing the highest impact validation consolidation.
+  /// It provides optimized null checking with comprehensive null safety support.
+  ///
+  /// [value] The string value to validate for null or empty conditions
+  /// Returns `true` if value is null or empty, `false` if value contains content
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Replace scattered null/empty checks
+  /// if (ValidationUtils.isNullOrEmpty(userName)) {
+  ///   return 'Username is required';
+  /// }
+  /// 
+  /// // Form validation
+  /// final isValid = !ValidationUtils.isNullOrEmpty(recipeTitle);
+  /// ```
+  ///
+  /// **Performance:** O(1) - Single null check and property access
   static bool isNullOrEmpty(String? value) => value == null || value.isEmpty;
   
-  /// Replaces the pattern: if (value == null || value.trim().isEmpty) return 'error';
-  /// Found in 187+ files
+  /// Validates whether a string value is null, empty, or contains only whitespace characters.
+  ///
+  /// This method consolidates the pattern `if (value == null || value.trim().isEmpty) return 'error';`
+  /// found in 187+ files, providing comprehensive whitespace validation beyond basic empty checks.
+  /// It ensures meaningful content validation by excluding whitespace-only inputs.
+  ///
+  /// [value] The string value to validate for null, empty, or whitespace-only conditions
+  /// Returns `true` if value is null, empty, or whitespace-only, `false` if value contains meaningful content
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Validate meaningful input beyond just non-empty
+  /// if (ValidationUtils.isNullOrWhitespace(userComment)) {
+  ///   return 'Comment cannot be empty or whitespace only';
+  /// }
+  /// 
+  /// // Recipe description validation
+  /// final hasContent = !ValidationUtils.isNullOrWhitespace(description);
+  /// ```
+  ///
+  /// **Performance:** O(n) - String trimming operation where n is string length
   static bool isNullOrWhitespace(String? value) => 
       value == null || value.trim().isEmpty;
   
-  /// Replaces the pattern: if (list == null || list.isEmpty) return;
-  /// Found in 89+ files  
+  /// Validates whether a list is null or empty, providing comprehensive collection validation consolidation.
+  ///
+  /// This method replaces the pattern `if (list == null || list.isEmpty) return;` found in 89+ files,
+  /// consolidating collection validation logic with generic type support for type-safe validation
+  /// across different list types throughout the application.
+  ///
+  /// [list] The list to validate for null or empty conditions
+  /// Returns `true` if list is null or empty, `false` if list contains elements
+  ///
+  /// **Generic Type Support:** Works with any list type `List<T>` for comprehensive validation
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Recipe ingredients validation
+  /// if (ValidationUtils.isNullOrEmptyList(recipe.ingredients)) {
+  ///   return 'At least one ingredient is required';
+  /// }
+  /// 
+  /// // User selection validation
+  /// final hasSelections = !ValidationUtils.isNullOrEmptyList(selectedItems);
+  /// ```
+  ///
+  /// **Performance:** O(1) - Single null check and property access
   static bool isNullOrEmptyList<T>(List<T>? list) => list == null || list.isEmpty;
   
-  /// Replaces the pattern: if (map == null || map.isEmpty) return;
-  /// Found in 67+ files
+  /// Validates whether a map is null or empty, providing comprehensive key-value collection validation.
+  ///
+  /// This method consolidates the pattern `if (map == null || map.isEmpty) return;` found in 67+ files,
+  /// providing generic map validation with full type safety for both keys and values throughout
+  /// the application's map-based data structures.
+  ///
+  /// [map] The map to validate for null or empty conditions
+  /// Returns `true` if map is null or empty, `false` if map contains key-value pairs
+  ///
+  /// **Generic Type Support:** Works with any map type `Map<K, V>` for comprehensive validation
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Recipe metadata validation
+  /// if (ValidationUtils.isNullOrEmptyMap(recipe.metadata)) {
+  ///   // Handle missing metadata
+  /// }
+  /// 
+  /// // User preferences validation
+  /// final hasPreferences = !ValidationUtils.isNullOrEmptyMap(userSettings);
+  /// ```
+  ///
+  /// **Performance:** O(1) - Single null check and property access
   static bool isNullOrEmptyMap<K, V>(Map<K, V>? map) => map == null || map.isEmpty;
 
   // ===== STRING VALIDATION CONSOLIDATION =====

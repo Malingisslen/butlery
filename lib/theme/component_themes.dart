@@ -1,4 +1,65 @@
-// lib/theme/component_themes.dart
+/// Comprehensive component theme system providing unified styling for all Material Design components in the Butlery cooking application.
+///
+/// This component theme system implements specialized theming for every Material Design component used
+/// throughout the application, ensuring consistent visual appearance, behavior, and interaction patterns.
+/// The themes combine Material 3 design principles with cooking-specific customizations that enhance
+/// the recipe management and cooking preparation experience for Swedish users.
+///
+/// **Architecture Integration:**
+/// - Implements comprehensive Material 3 component theming with cooking-specific customizations
+/// - Provides consistent design language across all interface components and user interactions
+/// - Integrates with color palette, typography, and dimension systems for cohesive design
+/// - Supports accessibility requirements with appropriate contrast ratios and touch targets
+/// - Maintains Swedish cultural design preferences throughout all component interactions
+///
+/// **Component Categories:**
+/// - **Button Themes**: Primary, secondary, outlined, text, and icon button styling with cooking-focused design
+/// - **Input Themes**: Form fields, text inputs, and interactive elements optimized for recipe data entry
+/// - **Card Themes**: Content containers with appropriate elevation and spacing for recipe display
+/// - **Navigation Themes**: App bars, bottom navigation, and tab styling for cooking workflow organization
+/// - **Dialog Themes**: Modal dialogs, bottom sheets, and overlay components for recipe interactions
+/// - **Feedback Themes**: Snackbars, progress indicators, and status communication for cooking processes
+/// - **Selection Themes**: Switches, checkboxes, radio buttons, and sliders for recipe customization
+///
+/// **Design Philosophy:**
+/// The component themes reflect the warmth and precision of cooking with accessible interactions,
+/// intuitive feedback, and visual consistency that supports complex cooking workflows while maintaining
+/// the approachable and friendly aesthetic expected in Swedish cooking applications.
+///
+/// **Key Features:**
+/// - Material 3 compliance with cooking-specific visual adaptations and interaction patterns
+/// - Comprehensive component coverage ensuring consistent styling throughout the application
+/// - Accessibility-first approach with appropriate contrast ratios and touch target sizing
+/// - Swedish cultural design integration with appropriate color psychology and spacing
+/// - Performance optimization through efficient theme creation and Material 3 integration
+/// - Responsive design support for various screen sizes and device orientations
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Apply themes to MaterialApp
+/// MaterialApp(
+///   theme: ThemeData(
+///     colorScheme: AppColors.lightColorScheme,
+///     elevatedButtonTheme: ComponentThemes.elevatedButtonTheme,
+///     cardTheme: ComponentThemes.cardTheme,
+///     inputDecorationTheme: ComponentThemes.inputDecorationTheme,
+///   ),
+/// );
+/// 
+/// // Access individual component themes
+/// ElevatedButton(
+///   style: ComponentThemes.primaryButtonStyle,
+///   onPressed: () => saveRecipe(),
+///   child: Text('Spara recept'),
+/// );
+/// 
+/// // Use specialized button styles
+/// ElevatedButton(
+///   style: ComponentThemes.dangerButtonStyle,
+///   onPressed: () => deleteRecipe(),
+///   child: Text('Ta bort recept'),
+/// );
+/// ```
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -6,10 +67,26 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
 
-/// Component-specific theme configurations for the Butlery app
-/// Contains themes for buttons, cards, inputs, and other Material components
+/// Comprehensive component theme system implementing unified styling for all Material Design components in cooking-focused user interface.
+///
+/// This class serves as the central repository for all component-specific theme configurations throughout
+/// the Butlery application, providing consistent styling that combines Material 3 design principles with
+/// culinary-focused customizations. The system ensures visual coherence, accessibility compliance, and
+/// cultural appropriateness for Swedish users while maintaining optimal usability for cooking workflows.
+///
+/// **Component Theme Architecture:**
+/// - **Comprehensive Coverage**: Theming for all Material Design components used in the application
+/// - **Material 3 Integration**: Full Material 3 support with cooking-specific design adaptations
+/// - **Consistency Framework**: Unified styling patterns that maintain visual coherence across components
+/// - **Accessibility Compliance**: High contrast ratios and appropriate touch targets for all components
+/// - **Cultural Adaptation**: Swedish design preferences integrated throughout all component interactions
+///
+/// **Performance Optimization:**
+/// Component themes are created as static getters for optimal performance and efficient theme application
+/// throughout the application lifecycle, ensuring smooth cooking workflow interactions.
 class ComponentThemes {
-  ComponentThemes._(); // Private constructor to prevent instantiation
+  /// Private constructor to prevent instantiation of utility class
+  ComponentThemes._();
 
   // ===== BUTTON THEMES =====
 

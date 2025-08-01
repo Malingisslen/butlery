@@ -475,6 +475,104 @@ class NotificationRepository {
       AppLogger.error('❌ Failed to deactivate user devices', e);
     }
   }
+
+  // ===== FCM TOKEN MANAGEMENT METHODS =====
+
+  /// Save FCM token to Firestore
+  Future<void> saveTokenToFirestore(String collection, String docId, Map<String, dynamic> tokenData) async {
+    try {
+      await _firestore
+          .collection(collection)
+          .doc(docId)
+          .set(tokenData, SetOptions(merge: true));
+      
+      AppLogger.debug('✅ Saved FCM token to Firestore');
+    } catch (e) {
+      AppLogger.error('❌ Failed to save token to Firestore', e);
+      rethrow;
+    }
+  }
+
+  /// Update device information
+  Future<void> updateDeviceInfo(String collection, String docId, Map<String, dynamic> deviceData) async {
+    try {
+      await _firestore
+          .collection(collection)
+          .doc(docId)
+          .set(deviceData, SetOptions(merge: true));
+      
+      AppLogger.debug('✅ Updated device info');
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to update device info: $e');
+    }
+  }
+
+  /// Update token timestamp
+  Future<void> updateTokenTimestamp(String collection, String docId) async {
+    try {
+      await _firestore
+          .collection(collection)
+          .doc(docId)
+          .update({
+            'lastUpdated': FieldValue.serverTimestamp(),
+          });
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to update token timestamp: $e');
+    }
+  }
+
+  /// Remove old token by marking as inactive
+  Future<void> removeOldToken(String collection, String userId, String oldToken) async {
+    try {
+      final query = await _firestore
+          .collection(collection)
+          .where('userId', isEqualTo: userId)
+          .where('token', isEqualTo: oldToken)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in query.docs) {
+        batch.update(doc.reference, {'isActive': false});
+      }
+
+      if (query.docs.isNotEmpty) {
+        await batch.commit();
+        AppLogger.debug('🧹 Marked ${query.docs.length} old tokens as inactive');
+      }
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to remove old token: $e');
+    }
+  }
+
+  /// Get all active tokens for a user
+  Future<List<String>> getAllUserTokens(String collection, String userId) async {
+    try {
+      final query = await _firestore
+          .collection(collection)
+          .where('userId', isEqualTo: userId)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      return query.docs
+          .map((doc) => doc.data()['token'] as String)
+          .toList();
+    } catch (e) {
+      AppLogger.error('❌ Failed to get user tokens', e);
+      return [];
+    }
+  }
+
+  /// Mark device as inactive
+  Future<void> markDeviceInactive(String collection, String docId) async {
+    try {
+      await _firestore
+          .collection(collection)
+          .doc(docId)
+          .update({'isActive': false});
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to mark device as inactive: $e');
+    }
+  }
 }
 
 /// User notification preferences model
