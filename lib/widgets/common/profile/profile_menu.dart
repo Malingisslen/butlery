@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
@@ -62,11 +62,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
     if (!mounted) return;
     
     try {
-      final friendsViewModel = sl<FriendsViewModel>();
+      final friendsViewModel = ServiceLocator.get<FriendsViewModel>();
       await friendsViewModel.refresh();
 
-      final socialService = sl<SocialRecipeService>();
-      final currentUserId = sl<AuthService>().currentUser?.uid;
+      final socialService = ServiceLocator.get<SocialRecipeService>();
+      final currentUserId = ServiceLocator.get<AuthService>().currentUser?.uid;
       final newSharedItems = currentUserId == null
           ? 0
           : socialService.recipesSharedWithMe
@@ -152,7 +152,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
   /// Profile header with user info
   Widget _buildProfileHeader(BuildContext context) {
-    final user = sl<AuthRepository>().currentUser;
+    final user = ServiceLocator.get<AuthRepository>().currentUser;
 
     return Container(
       width: double.infinity,

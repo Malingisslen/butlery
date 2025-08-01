@@ -80,7 +80,10 @@
       "Bash(true)",
       "Bash(git push:*)",
       "Bash(git stash:*)",
-      "Bash(do echo \"=== Processing $file ===\")"
+      "Bash(do echo \"=== Processing $file ===\")",
+      "Bash(do)",
+      "Bash(perl -pi -e:*)",
+      "Bash(perl:*)"
     ],
     "deny": []
   },

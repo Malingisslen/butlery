@@ -1,16 +1,19 @@
+/// Comprehensive realtime menu factory providing centralized construction logic and specialized parsing for collaborative meal planning.
+
 // lib/models/realtime/realtime_menu_factory.dart
 
-// TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ✅ Firebase DocumentSnapshot dependency abstracted to repository layer
+// Note: Repositories handle Firebase-specific parsing and provide clean data maps
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
+import 'package:uuid/uuid.dart';
 
-/// Factory class for creating RealtimeMenu instances
+/// Comprehensive realtime menu factory with centralized construction logic and specialized parsing for collaborative meal planning.
 ///
-/// Handles all complex construction logic to keep the main RealtimeMenu class focused.
-/// Extracts creation patterns and reduces the main class size significantly.
+/// Provides complete construction infrastructure for realtime menu instantiation including participant management,
+/// data parsing, and parameter organization through focused factory patterns and robust error handling.
+/// This class serves as the construction coordination layer for all realtime menu creation scenarios.
 class RealtimeMenuFactory {
   
   /// Factory to create new realtime menu from existing MenuViewModel structure
@@ -26,41 +29,40 @@ class RealtimeMenuFactory {
     String? originalPrompt,
     DateTime? createdForDate,
   }) {
-    // Create participants map
-    final participants = <String, ResourcePermission>{};
-
-    // Owner gets owner permission
-    participants[ownerId] = ResourcePermission.owner;
-
+    final id = const Uuid().v4();
+    final now = DateTime.now();
+    
+    // Build participants map
+    final participants = <String, ResourcePermission>{
+      ownerId: ResourcePermission.owner,
+    };
+    
     // Add editors
     if (editorUserIds != null) {
       for (final userId in editorUserIds) {
-        if (userId != ownerId) {
-          participants[userId] = ResourcePermission.editor;
-        }
+        participants[userId] = ResourcePermission.editor;
       }
     }
-
+    
     // Add viewers
     if (viewerUserIds != null) {
       for (final userId in viewerUserIds) {
-        if (userId != ownerId && !participants.containsKey(userId)) {
-          participants[userId] = ResourcePermission.viewer;
-        }
+        participants[userId] = ResourcePermission.viewer;
       }
     }
 
+    // Create menu data
     final data = RealtimeMenuData.fromMenuCategories(
       menuTitle: menuTitle,
       menuSnapshot: menuSnapshot,
       menuNotes: menuNotes,
       favoriteRecipeIds: favoriteRecipeIds,
       originalPrompt: originalPrompt,
-      createdForDate: createdForDate,
+      createdForDate: createdForDate ?? now,
     );
 
     return {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'id': id,
       'ownerId': ownerId,
       'ownerDisplayName': ownerDisplayName,
       'participants': participants,
@@ -70,45 +72,58 @@ class RealtimeMenuFactory {
     };
   }
 
-  /// Extract metadata from Firestore document for RealtimeMenu creation
-  static Map<String, dynamic> parseFirestoreData(DocumentSnapshot doc) {
-    final documentData = doc.data() as Map<String, dynamic>;
-    final metadataMap = RealtimeResource.parseFirestoreMetadata(documentData, doc.id);
-    final data = RealtimeMenuData.fromFirestore(documentData);
+  /// Parse repository document data to construction parameters
+  /// 
+  /// @deprecated Use parseJsonData instead. This method will be removed when repositories are updated.
+  /// Repositories should provide clean DateTime objects and Map data.
+  static Map<String, dynamic> parseRepositoryData(String id, Map<String, dynamic> data) {
+    // Parse participants
+    final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
+    final participants = <String, ResourcePermission>{};
+    
+    for (final entry in participantsData.entries) {
+      final permission = ResourcePermission.values.firstWhere(
+        (p) => p.name == entry.value,
+        orElse: () => ResourcePermission.viewer,
+      );
+      participants[entry.key] = permission;
+    }
+
+    // Parse menu data - repositories should provide clean data
+    final menuData = RealtimeMenuData.fromFirestore(data);
 
     return {
-      'id': metadataMap['id'] as String,
-      'ownerId': metadataMap['ownerId'] as String,
-      'ownerDisplayName': metadataMap['ownerDisplayName'] as String,
-      'participants': metadataMap['participants'] as Map<String, ResourcePermission>,
-      'createdAt': metadataMap['createdAt'] as DateTime,
-      'lastEditedAt': metadataMap['lastEditedAt'] as DateTime,
-      'lastEditedBy': metadataMap['lastEditedBy'] as String,
-      'lastEditedByDisplayName': metadataMap['lastEditedByDisplayName'] as String,
-      'editCount': metadataMap['editCount'] as int,
-      'isActive': metadataMap['isActive'] as bool,
-      'metadata': metadataMap['metadata'] as Map<String, dynamic>,
-      'data': data,
+      'id': id,
+      'ownerId': data['ownerId'] as String,
+      'ownerDisplayName': data['ownerDisplayName'] as String,
+      'participants': participants,
+      'createdAt': data['createdAt'] as DateTime, // Repository provides DateTime
+      'lastEditedAt': data['lastEditedAt'] as DateTime, // Repository provides DateTime
+      'lastEditedBy': data['lastEditedBy'] as String,
+      'lastEditedByDisplayName': data['lastEditedByDisplayName'] as String,
+      'editCount': data['editCount'] as int? ?? 0,
+      'isActive': data['isActive'] as bool? ?? true,
+      'metadata': data['metadata'] as Map<String, dynamic>? ?? {},
+      'data': menuData,
     };
   }
 
-  /// Parse JSON data for RealtimeMenu creation
+  /// Parse JSON data to construction parameters
   static Map<String, dynamic> parseJsonData(Map<String, dynamic> json) {
     // Parse participants
     final participantsData = json['participants'] as Map<String, dynamic>? ?? {};
     final participants = <String, ResourcePermission>{};
-
+    
     for (final entry in participantsData.entries) {
-      try {
-        participants[entry.key] = ResourcePermissionHelper.fromString(
-          entry.value as String,
-        );
-      } catch (e) {
-        continue;
-      }
+      final permission = ResourcePermission.values.firstWhere(
+        (p) => p.name == entry.value,
+        orElse: () => ResourcePermission.viewer,
+      );
+      participants[entry.key] = permission;
     }
 
-    final data = RealtimeMenuData.fromJson(json);
+    // Parse menu data
+    final menuData = RealtimeMenuData.fromJson(json);
 
     return {
       'id': json['id'] as String,
@@ -121,17 +136,12 @@ class RealtimeMenuFactory {
       'lastEditedByDisplayName': json['lastEditedByDisplayName'] as String,
       'editCount': json['editCount'] as int? ?? 0,
       'isActive': json['isActive'] as bool? ?? true,
-      'metadata': Map<String, dynamic>.from(json['metadata'] ?? {}),
-      'data': data,
+      'metadata': json['metadata'] as Map<String, dynamic>? ?? {},
+      'data': menuData,
     };
   }
 
-  /// Create RealtimeMenu from Firestore document
-  static fromFirestore(DocumentSnapshot doc) {
-    return parseFirestoreData(doc);
-  }
-
-  /// Create construction parameters for copying with updated data
+  /// Create copy construction parameters for updates
   static Map<String, dynamic> createCopyParameters({
     required String id,
     required String ownerId,
@@ -145,12 +155,8 @@ class RealtimeMenuFactory {
     required bool isActive,
     required Map<String, dynamic> metadata,
     required RealtimeMenuData data,
-    DateTime? newLastEditedAt,
-    String? newLastEditedBy,
-    String? newLastEditedByDisplayName,
-    int? newEditCount,
-    bool? newIsActive,
-    Map<String, dynamic>? newMetadata,
+    required String newLastEditedBy,
+    required String newLastEditedByDisplayName,
   }) {
     return {
       'id': id,
@@ -158,12 +164,12 @@ class RealtimeMenuFactory {
       'ownerDisplayName': ownerDisplayName,
       'participants': participants,
       'createdAt': createdAt,
-      'lastEditedAt': newLastEditedAt ?? DateTime.now(),
-      'lastEditedBy': newLastEditedBy ?? lastEditedBy,
-      'lastEditedByDisplayName': newLastEditedByDisplayName ?? lastEditedByDisplayName,
-      'editCount': newEditCount ?? (editCount + 1),
-      'isActive': newIsActive ?? isActive,
-      'metadata': newMetadata ?? metadata,
+      'lastEditedAt': DateTime.now(),
+      'lastEditedBy': newLastEditedBy,
+      'lastEditedByDisplayName': newLastEditedByDisplayName,
+      'editCount': editCount + 1,
+      'isActive': isActive,
+      'metadata': metadata,
       'data': data,
     };
   }

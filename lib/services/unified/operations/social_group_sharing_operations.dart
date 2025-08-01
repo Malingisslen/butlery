@@ -23,30 +23,57 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
-/// Manages social group sharing operations with comprehensive content management.
+/// Comprehensive social group sharing operations providing advanced group-based content sharing and bulk operations management.
 ///
-/// This service provides a specialized interface for group-based content sharing
-/// operations within the unified friends system. It handles complex group
-/// membership validation, content permission management, and real-time sharing
-/// synchronization across multiple content types.
+/// This operations class implements sophisticated social group sharing functionality following Single Responsibility Principle,
+/// handling all aspects of group-based content sharing including member resolution, permission validation, bulk operations,
+/// and analytics tracking. It provides comprehensive group sharing capabilities while maintaining clean separation from
+/// individual friend sharing and basic content management concerns.
 ///
-/// Key responsibilities:
-/// - Sharing recipes, menus, and shopping lists to specific friend groups
-/// - Resolving group members and validating sharing permissions
-/// - Managing group-based content access controls and security
-/// - Tracking group sharing analytics and engagement metrics
-/// - Providing real-time updates for shared content within groups
+/// **Single Responsibility Focus:**
+/// This class exclusively handles social group sharing operations:
+/// - **Group Content Sharing**: Complete group-based sharing for recipes, menus, and shopping lists with validation
+/// - **Member Resolution**: Intelligent group member resolution with profile mapping and access control
+/// - **Bulk Operations**: Advanced bulk sharing operations with progress tracking and validation systems
+/// - **Permission Management**: Comprehensive group permission validation and access control with security checks
 ///
-/// The service integrates with the UnifiedFriendsService parent class and
-/// SocialSharingRepository to provide seamless group sharing experiences
-/// while maintaining proper separation of concerns.
+/// **What This Class Does NOT Handle:**
+/// - Individual friend sharing operations (handled by other sharing operations)
+/// - Basic content CRUD operations (handled by content services)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by permission services)
 ///
-/// Example usage:
+/// **Social Group Sharing Features:**
+/// - **Advanced Group Sharing**: Multi-content type sharing with intelligent member resolution and permission validation
+/// - **Bulk Operations**: Sophisticated bulk sharing with progress tracking, validation, and error recovery
+/// - **Analytics Integration**: Comprehensive group sharing analytics with engagement metrics and activity tracking
+/// - **Content Discovery**: Group-based content discovery and feed management with personalized recommendations
+/// - **Security Management**: Robust permission validation and access control ensuring secure group content sharing
+///
+/// **Usage Examples:**
 /// ```dart
-/// final success = await groupSharing.shareContentToGroup(
-///   groupId: 'group123',
+/// final groupSharingOps = SocialGroupSharingOperations(parentService);
+/// 
+/// // Individual group sharing
+/// await groupSharingOps.shareContentToGroup(
+///   groupId: 'family_group',
 ///   content: sharedRecipe,
 /// );
+/// 
+/// // Bulk sharing operations
+/// final results = await groupSharingOps.bulkShareContentToGroups(
+///   groupIds: ['family', 'friends', 'cooking_club'],
+///   contentList: [recipe1, recipe2, menu1],
+///   onProgress: (completed, total) => updateProgress(completed, total),
+/// );
+/// 
+/// // Member resolution and validation
+/// final members = groupSharingOps.resolveGroupMemberProfiles(groupId);
+/// final canShare = groupSharingOps.canShareToGroups(groupIds, userId);
+/// 
+/// // Analytics and discovery
+/// final stats = groupSharingOps.getGroupSharingStats(groupId);
+/// final content = await groupSharingOps.getContentSharedToGroup(groupId);
 /// ```
 class SocialGroupSharingOperations {
   final UnifiedFriendsService _parent;

@@ -1,3 +1,57 @@
+/// Comprehensive friends and groups management view providing social relationship coordination for Flutter applications.
+///
+/// This module implements sophisticated social relationship management following Single Responsibility Principle,
+/// specializing in friend management, group coordination, request handling, and comprehensive social interaction.
+/// It provides complete social management interface while maintaining clean separation from business logic,
+/// data persistence, and state management through FriendsViewModel integration and modern component architecture.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles social relationship UI presentation concerns through comprehensive social architecture:
+/// - **Friend Management Excellence**: Advanced friend display with search functionality and relationship status tracking
+/// - **Group Coordination Intelligence**: Sophisticated group management with creation, search, and membership coordination
+/// - **Request Handling System**: Comprehensive request management with incoming and outgoing request coordination
+/// - **Search and Filter Coordination**: Advanced search functionality with friend and group discovery capabilities
+/// - **Swedish Localization Excellence**: Complete Swedish language support for social operations and user feedback
+///
+/// **What This Module Does NOT Handle:**
+/// - Friend relationship business logic and data operations (handled by FriendsViewModel and social services)
+/// - Group creation and management logic (handled by UnifiedFriendsService and group infrastructure)
+/// - Search algorithms and friend discovery (handled by search services and discovery infrastructure)
+/// - Request processing and notification logic (handled by request services and notification systems)
+///
+/// **Friends List View Architecture:**
+/// - **Multi-Tab Interface**: Advanced tab system with friends, groups, and requests coordination
+/// - **Adaptive Search Integration**: Comprehensive search functionality with context-aware results and filtering
+/// - **Real-Time Request Management**: Sophisticated request handling with badge notifications and status updates
+/// - **Group Creation Workflow**: Complete group creation with member selection and invitation coordination
+/// - **Social Action System**: Advanced social actions with friend removal, group management, and interaction controls
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Navigate to friends list with specific tab
+/// Navigator.of(context).push(
+///   MaterialPageRoute(
+///     builder: (context) => FriendsListView(),
+///     settings: RouteSettings(
+///       arguments: {'tabIndex': 1}, // Open groups tab
+///     ),
+///   ),
+/// );
+/// 
+/// // The view provides comprehensive social management functionality:
+/// // - Multi-tab interface with friends, groups, and requests coordination
+/// // - Advanced search with friend and group discovery capabilities
+/// // - Real-time request management with badge notifications and status updates
+/// // - Group creation workflow with member selection and invitation coordination
+/// // - Social actions including friend removal, group management, and interactions
+/// 
+/// // Integration with specialized components:
+/// // - FriendsTab, GroupsTab, RequestsTab for tab-specific functionality
+/// // - SearchTab and GroupSearchTab for search result display
+/// // - SocialComponents for group creation and social action dialogs
+/// // - SearchFilterWidget for unified search interface
+/// ```
+
 // lib/views/social/friends_list_view.dart
 
 import 'package:flutter/material.dart';
@@ -10,7 +64,7 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 
@@ -21,15 +75,47 @@ import 'package:butlery/views/social/friends_list/search_tab.dart';
 import 'package:butlery/views/social/friends_list/groups_tab.dart';
 import 'package:butlery/views/social/friends_list/group_search_tab.dart';
 
+/// Comprehensive friends and groups management view providing social relationship coordination through advanced social architecture.
+///
+/// Manages complete social relationship interface enabling friend management, group coordination, request handling,
+/// and comprehensive social interaction while maintaining clean separation between UI presentation
+/// and business logic through FriendsViewModel integration and specialized component architecture.
+///
+/// **Core Responsibilities:**
+/// - Advanced friend management with display, search, relationship status tracking, and social action coordination
+/// - Group coordination with creation, search, membership management, and comprehensive group functionality
+/// - Request handling with incoming and outgoing request management, badge notifications, and status coordination
+/// - Search and filter coordination with friend discovery, group search, and comprehensive result management
+/// - Swedish localized social experience with comprehensive user feedback and interactive guidance
 class FriendsListView extends StatelessWidget {
+  /// Creates comprehensive friends and groups management view with social coordination.
+  /// 
+  /// Establishes social relationship interface with friend management, group coordination,
+  /// and comprehensive social functionality through multi-provider integration
+  /// and advanced social architecture with proper dependency injection.
   const FriendsListView({super.key});
 
+  /// Comprehensive social management interface construction with multi-provider integration and dependency coordination.
+  /// 
+  /// [context] Build context for theme access and component construction coordination
+  /// 
+  /// Constructs complete social management interface featuring friend management, group coordination,
+  /// and comprehensive social functionality through FriendsViewModel and UnifiedFriendsService integration
+  /// with multi-provider architecture and specialized content coordination.
+  /// 
+  /// **Interface Architecture:**
+  /// - FriendsViewModel integration with friend management and request coordination
+  /// - UnifiedFriendsService integration with group management and social operations
+  /// - Multi-provider setup with service locator dependency injection
+  /// - Content delegation with specialized component architecture
+  /// 
+  /// Returns complete social management interface with comprehensive functionality and multi-provider coordination.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: sl<FriendsViewModel>()),
-        ChangeNotifierProvider.value(value: sl<UnifiedFriendsService>()),
+        ChangeNotifierProvider.value(value: ServiceLocator.get<FriendsViewModel>()),
+        ChangeNotifierProvider.value(value: ServiceLocator.get<UnifiedFriendsService>()),
       ],
       child: const _FriendsListViewContent(),
     );

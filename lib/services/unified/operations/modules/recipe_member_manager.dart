@@ -31,9 +31,10 @@ class RecipeMemberManager {
     required String recipeId,
     required String memberId,
     required String memberDisplayName,
-    ResourcePermission permission = ResourcePermission.viewer,
+    ResourcePermission? permission,
   }) async {
     try {
+      permission ??= ResourcePermission.viewer; // Default permission
       AppLogger.info('👥 Adding member $memberId to recipe $recipeId');
 
       // Find the collaborative recipe

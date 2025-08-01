@@ -14,7 +14,7 @@ class GroupContentTabBar {
     TabController tabController,
   ) {
     return SliverToBoxAdapter(
-      child: Container(
+      child: ColoredBox(
         color: AppColors.surface,
         child: Column(
           children: [
@@ -73,7 +73,7 @@ class GroupContentTabBar {
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
-        overlayColor: MaterialStateProperty.all(
+        overlayColor: WidgetStateProperty.all(
           AppColors.primary.withValues(alpha: 0.05),
         ),
       ),

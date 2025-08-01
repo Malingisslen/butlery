@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -135,7 +135,7 @@ class _RecipeServiceConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final recipeService = sl<UnifiedRecipeService>();
+    final recipeService = ServiceLocator.get<UnifiedRecipeService>();
     return ListenableBuilder(
       listenable: recipeService,
       builder: (context, _) {

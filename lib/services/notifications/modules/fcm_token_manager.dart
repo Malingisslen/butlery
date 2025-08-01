@@ -1,14 +1,16 @@
 // lib/services/notifications/modules/fcm_token_manager.dart
 
-// TODO: Complete repository migration - this service needs advanced token management methods
-// Current state: Basic FCM methods migrated, but batch operations and token cleanup need custom repository methods
+// 🔄 PARTIALLY FIXED: Repository migration in progress - advanced methods added to repository
+// ✅ Added: Advanced token management methods to notification repository
+// 🔄 In Progress: Migrating remaining Firestore operations (6 methods remaining)
+// TODO: Complete migration of _removeOldToken, _saveTokenToFirestore, and other direct operations
 
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
+import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
@@ -56,7 +58,7 @@ import 'package:get_it/get_it.dart';
 /// await tokenManager.updateTopicSubscriptions(preferences);
 /// ```
 class FCMTokenManager {
-  final FirebaseFirestore _firestore;
+  final NotificationRepository _repository;
   final String _userId;
   
   // Token state tracking
@@ -71,10 +73,14 @@ class FCMTokenManager {
   // Local storage keys
   static const String _tokenStorageKey = 'fcm_token';
   static const String _tokenTimestampKey = 'fcm_token_timestamp';
+  
+  // Firestore instance
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   FCMTokenManager({
     required String userId,
-  }) : _firestore = GetIt.instance<FirebaseFirestore>(),
+    NotificationRepository? repository,
+  }) : _repository = repository ?? GetIt.instance<NotificationRepository>(),
        _userId = userId;
 
   // ===== INITIALIZATION AND TOKEN REGISTRATION =====
@@ -232,7 +238,7 @@ class FCMTokenManager {
   /// Subscribe to notification topics based on user preferences
   /// 
   /// This should be called after preferences are updated
-  Future<void> updateTopicSubscriptions(legacy.NotificationPreferences preferences) async {
+  Future<void> updateTopicSubscriptions(NotificationPreferences preferences) async {
     try {
       AppLogger.info('🔔 Updating FCM topic subscriptions based on preferences');
 
@@ -417,24 +423,12 @@ class FCMTokenManager {
   /// Clean up old devices for the user
   Future<void> _cleanupOldDevices() async {
     try {
-      final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
-      final cutoffTimestamp = Timestamp.fromDate(cutoffDate);
-
-      final query = await _firestore
-          .collection(_deviceInfoCollection)
-          .where('userId', isEqualTo: _userId)
-          .where('lastSeen', isLessThan: cutoffTimestamp)
-          .get();
-
-      if (query.docs.isNotEmpty) {
-        final batch = _firestore.batch();
-        for (final doc in query.docs) {
-          batch.update(doc.reference, {'isActive': false});
-        }
-        await batch.commit();
-        
-        AppLogger.info('🧹 Cleaned up ${query.docs.length} old devices');
-      }
+      // Use repository method for device cleanup
+      await _repository.cleanupOldDevices(
+        _deviceInfoCollection,
+        _userId,
+        olderThan: const Duration(days: 30),
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to cleanup old devices: $e');
     }

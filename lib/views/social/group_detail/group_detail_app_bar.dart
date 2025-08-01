@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// GroupDetailAppBar - App bar component
@@ -45,7 +45,7 @@ class GroupDetailAppBar {
     FriendCategory group,
     Function(String action) onMenuAction,
   ) {
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     final isAdmin = permissionService.isGroupAdmin(group.id);
     final canAddMembers = permissionService.canInviteToGroup(group.id);
 

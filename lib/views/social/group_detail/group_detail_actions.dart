@@ -5,7 +5,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -46,7 +46,7 @@ class GroupDetailActions {
 
     if (shouldRemove == true) {
       try {
-        final categoriesService = sl<UnifiedFriendsService>();
+        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
         final success = await categoriesService.categories.removeFriendFromCategory(
           friendId: member.uid,
           categoryId: group.id,
@@ -136,7 +136,7 @@ class GroupDetailActions {
 
     if (result == true) {
       try {
-        final categoriesService = sl<UnifiedFriendsService>();
+        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
         final success = await categoriesService.categories.updateCategory(
           categoryId: group.id,
           name: nameController.text.trim(),
@@ -183,7 +183,7 @@ class GroupDetailActions {
 
     if (shouldDelete == true) {
       try {
-        final categoriesService = sl<UnifiedFriendsService>();
+        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
         final success = await categoriesService.categories.deleteCategory(group.id);
 
         if (success && context.mounted) {
@@ -228,8 +228,8 @@ class GroupDetailActions {
 
     if (shouldLeave == true) {
       try {
-        final categoriesService = sl<UnifiedFriendsService>();
-        final permissionService = sl<PermissionService>();
+        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+        final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUserId;
 
         if (currentUserId != null) {

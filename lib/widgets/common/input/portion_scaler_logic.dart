@@ -1,6 +1,9 @@
 // lib/widgets/common/input/portion_scaler_logic.dart
 
-import 'package:butlery/utils/text_utils.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
+import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/unit_converter.dart';
+import 'package:butlery/utils/text/swedish_pluralization.dart';
 
 /// Contains the business logic for portion scaling and unit conversion
 class PortionScalerLogic {
@@ -140,7 +143,7 @@ class PortionScalerLogic {
     }
 
     // Format with Swedish fractions and units
-    final formattedQuantity = toSwedishHalfFraction(finalQuantity);
+    final formattedQuantity = TextFormatting.toSwedishHalfFraction(finalQuantity);
 
     // Build together again
     if (finalUnit.isNotEmpty) {

@@ -6,7 +6,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
@@ -413,7 +413,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         HapticFeedback.lightImpact();
       }
 
-      final imagePickerService = sl<ImagePickerService>();
+      final imagePickerService = ServiceLocator.get<ImagePickerService>();
       final result = await imagePickerService.pickMultipleImages();
 
       if (result.isNotEmpty) {

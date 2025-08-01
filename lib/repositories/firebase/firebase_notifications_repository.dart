@@ -49,7 +49,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final notificationRepo = FirebaseNotificationsRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Send notification

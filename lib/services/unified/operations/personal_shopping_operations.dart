@@ -19,13 +19,63 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Personal shopping operations feature interface
+/// Comprehensive personal shopping operations interface providing individual shopping list management and advanced features.
+///
+/// This operations interface implements sophisticated personal shopping functionality following Single Responsibility Principle,
+/// handling all aspects of individual shopping list management including CRUD operations, item management, import/export
+/// capabilities, and analytics. It provides comprehensive personal shopping features while maintaining clean separation
+/// from collaborative shopping operations and social features.
+///
+/// **Single Responsibility Focus:**
+/// This interface exclusively handles personal shopping operations:
+/// - **Personal List CRUD**: Complete lifecycle management for individual shopping lists with validation
+/// - **Item Management**: Comprehensive item operations with category organization and priority handling
+/// - **Import/Export Features**: Text-based import/export with recipe integration and structured data support
+/// - **Analytics Integration**: Shopping list statistics and category analysis with completion tracking
+///
+/// **What This Interface Does NOT Handle:**
+/// - Collaborative shopping operations (handled by CollaborativeShoppingOperations)
+/// - Social sharing and member management (handled by sharing operations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Personal Shopping Features:**
+/// - **Individual Lists**: Private shopping lists with offline support and cloud synchronization
+/// - **Smart Item Management**: Intelligent item categorization with priority-based sorting and completion tracking
+/// - **Recipe Integration**: Automatic shopping list creation from recipe ingredients with serving calculations
+/// - **Import/Export Tools**: Text-based import with intelligent parsing and structured data export capabilities
+/// - **Analytics Dashboard**: Comprehensive shopping analytics with category breakdown and completion statistics
+///
+/// **Usage Examples:**
+/// ```dart
+/// final personalOps = PersonalShoppingOperations(parentService);
 /// 
-/// Handles all operations related to personal (non-collaborative) shopping lists:
-/// - CRUD operations for personal shopping lists
-/// - Item management within personal lists
-/// - List export and formatting
-/// - Offline sync management
+/// // Create and manage personal shopping lists
+/// final listId = await personalOps.createList('Veckohandling');
+/// await personalOps.setActiveList(listId);
+/// 
+/// // Advanced item management
+/// await personalOps.addItem(
+///   name: 'Mjölk',
+///   amount: 2.0,
+///   unit: 'l',
+///   category: 'Mejeri',
+///   priority: 1,
+///   estimatedPrice: 25.90,
+/// );
+/// 
+/// // Recipe integration
+/// final recipeListId = await personalOps.createListFromRecipe(
+///   recipeName: 'Köttbullar',
+///   ingredients: ['500g köttfärs', '2 dl grädde', '1 gul lök'],
+///   servingMultiplier: 2.0,
+/// );
+/// 
+/// // Analytics and export
+/// final stats = personalOps.getListStats(listId);
+/// final exportData = personalOps.exportListAsData(listId);
+/// final textExport = personalOps.exportListAsText(listId);
+/// ```
 class PersonalShoppingOperations {
   final dynamic _parent; // UnifiedShoppingService
 

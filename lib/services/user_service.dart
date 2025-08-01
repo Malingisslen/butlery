@@ -61,8 +61,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final userService = UserService(
-///   repository: sl<UserRepository>(),
-///   authRepository: sl<AuthRepository>(),
+///   repository: ServiceLocator.get<UserRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Initialize service with authentication monitoring

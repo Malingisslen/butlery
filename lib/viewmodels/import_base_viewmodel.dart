@@ -1,50 +1,181 @@
+/// Comprehensive import base ViewModel providing advanced import infrastructure for Flutter applications.
+///
+/// This module implements sophisticated import functionality following Single Responsibility Principle,
+/// serving as the foundational base class for all import ViewModels including text imports, URL imports,
+/// photo imports, and archive imports. It provides complete import infrastructure while maintaining clean
+/// separation from UI rendering, data persistence, and platform-specific import implementations.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles import presentation layer foundations:
+/// - **Import Infrastructure Management**: Comprehensive base functionality for all import operations with unified state management
+/// - **Recipe Parsing Coordination**: Advanced recipe parsing through ImportManager with validation and error handling
+/// - **Import State Management**: Complete import workflow state including parsing, validation, and saving operations
+/// - **Cross-Import Type Support**: Unified interface for text, URL, photo, and archive imports with consistent behavior
+/// - **Import Validation Excellence**: Comprehensive validation system ensuring recipe completeness and data integrity
+///
+/// **What This Module Does NOT Handle:**
+/// - Platform-specific import implementations (handled by specialized import ViewModels and import strategies)
+/// - UI rendering and widget creation (handled by import views and presentation components)
+/// - Direct data persistence (handled by ImportManager and underlying storage services)
+/// - Complex business logic implementation (handled by import services and strategy pattern implementations)
+///
+/// **Import Base ViewModel Features:**
+/// - **Unified Import Interface**: Complete base functionality for all import types with consistent state management
+/// - **Advanced Recipe Parsing**: Sophisticated text-to-recipe parsing with ImportManager integration and error handling
+/// - **Import Validation System**: Comprehensive validation ensuring recipe completeness, data integrity, and user requirements
+/// - **State Management Excellence**: Complete import workflow state management with loading, error, and success coordination
+/// - **Mixin Architecture Support**: Advanced mixin system for specialized import functionality (text, URL, photo imports)
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Create specialized import ViewModel extending ImportBaseViewModel
+/// class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
+///   TextImportViewModel() : super(importManager: ServiceLocator.get<ImportManager>());
+/// }
+/// 
+/// // Initialize and use import functionality
+/// final textImportViewModel = TextImportViewModel();
+/// 
+/// // Text import workflow
+/// textImportViewModel.updateInputText('Ingredienser: 2 ägg, 200g mjöl...');
+/// await textImportViewModel.performImport();
+/// 
+/// if (textImportViewModel.hasParsedRecipe) {
+///   final recipe = textImportViewModel.parsedRecipe;
+///   final saved = await textImportViewModel.saveImportedRecipe();
+/// }
+/// 
+/// // URL import with content extraction
+/// class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
+///   // Implementation for URL content fetching
+/// }
+/// 
+/// // Complete import workflow
+/// final success = await importViewModel.completeImport();
+/// if (success) {
+///   // Recipe successfully imported and saved
+/// } else {
+///   // Handle error: importViewModel.error
+/// }
+/// 
+/// // Recipe manipulation during import
+/// importViewModel.updateParsedRecipe(
+///   title: 'Updated Recipe Title',
+///   mealType: 'Middag',
+///   portions: 4,
+/// );
+/// 
+/// // State monitoring and validation
+/// if (importViewModel.canImport && importViewModel.validateImportData()) {
+///   // Proceed with import operation
+/// }
+/// ```
+
 // lib/viewmodels/import_base_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
-
-/// Base class for all import ViewModels that provides common import functionality
-/// Eliminates duplication across PhotoImportViewModel, TextImportViewModel, etc.
+/// Comprehensive import base ViewModel providing advanced import infrastructure through ImportManager coordination.
+///
+/// Serves as the foundational base class for all import ViewModels, providing unified API for import operations,
+/// recipe parsing, validation, and state management while maintaining clean MVVM architecture separation
+/// between import business logic and UI presentation concerns.
+///
+/// **Core Responsibilities:**
+/// - Unified import workflow management with parsing, validation, and saving operations
+/// - Advanced recipe parsing through ImportManager with comprehensive error handling
+/// - Import state management including loading, error, and success coordination
+/// - Recipe manipulation and validation ensuring data completeness and integrity
+/// - Cross-import type support through mixin architecture for specialized functionality
 abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixin {
   final ImportManager _importManager;
 
-  // ===== COMMON IMPORT STATE =====
+  // ===== IMPORT STATE MANAGEMENT =====
   
+  /// Parsed recipe result from import operation for validation and manipulation.
+  /// 
+  /// Stores successfully parsed recipe data for user review, editing,
+  /// and final saving to the recipe collection.
   Recipe? _parsedRecipe;
+  
+  /// Source URL for imported recipe for attribution and reference tracking.
+  /// 
+  /// Maintains source attribution for imported recipes enabling proper
+  /// credit and reference management throughout the import process.
   String? _sourceUrl;
 
+  /// Initializes import base ViewModel with comprehensive ImportManager integration and state preparation.
+  /// 
+  /// [importManager] ImportManager instance for import strategy coordination and recipe parsing
+  /// 
+  /// Establishes import infrastructure with ImportManager integration, enabling comprehensive
+  /// import functionality across all import types with unified state management and error handling.
+  /// 
+  /// **Initialization Process:**
+  /// - ImportManager integration for strategy-based importing
+  /// - Base state preparation for import workflow management
+  /// - Async operation mixin setup for loading and error coordination
+  /// - Import validation system preparation
   ImportBaseViewModel({required ImportManager importManager})
       : _importManager = importManager;
 
-  // ===== COMMON GETTERS =====
+  // ===== IMPORT STATE ACCESSORS =====
 
-  /// The parsed recipe from import
+  /// Parsed recipe result from import operation for validation and display.
+  /// 
+  /// Provides access to successfully parsed recipe data enabling user review,
+  /// editing, and final import confirmation with comprehensive recipe management.
   Recipe? get parsedRecipe => _parsedRecipe;
 
-  /// Whether a recipe has been successfully parsed
+  /// Recipe parsing success indicator for UI conditional rendering and workflow management.
+  /// 
+  /// Indicates whether import operation has successfully generated a valid recipe
+  /// for UI state management and import workflow progression.
   bool get hasParsedRecipe => _parsedRecipe != null;
 
-  /// Source URL for the imported recipe (if applicable)
+  /// Source URL for imported recipe attribution and reference management.
+  /// 
+  /// Provides source URL for recipe attribution, reference tracking,
+  /// and import source management throughout the import process.
   String? get sourceUrl => _sourceUrl;
 
-  /// Whether the import can proceed (subclasses should override)
+  /// Import readiness indicator for workflow progression and operation validation.
+  /// 
+  /// Indicates whether import conditions are met for operation execution.
+  /// Subclasses should override with specific import type validation logic.
   bool get canImport => true;
 
-  /// Whether currently parsing/importing (common across import types)
+  /// Import operation state for UI progress indication and interaction control.
+  /// 
+  /// Indicates active import parsing operations for loading indicators
+  /// and user interaction management during import processing.
   bool get isParsing => isLoading;
 
-  /// Whether the input can be parsed (subclasses should override with specific logic)
+  /// Input parsing capability indicator for validation and UI enabling.
+  /// 
+  /// Indicates whether current input can be parsed for import operations.
+  /// Subclasses should override with import type specific validation logic.
   bool get canParse => true;
 
-  /// Import manager for strategy-based importing
+  /// ImportManager instance for strategy-based importing and recipe parsing coordination.
+  /// 
+  /// Provides protected access to ImportManager for subclass import operations
+  /// with strategy pattern implementation and comprehensive parsing functionality.
   @protected
   ImportManager get importManager => _importManager;
 
-  // ===== COMMON STATE MANAGEMENT =====
+  // ===== IMPORT STATE MANAGEMENT OPERATIONS =====
 
-  /// Set the parsed recipe and notify listeners
+  /// Sets parsed recipe with comprehensive state management and UI notification.
+  /// 
+  /// [recipe] Parsed recipe result for state management and user interaction
+  /// 
+  /// Updates parsed recipe state with disposal safety checks and immediate UI notification
+  /// for responsive import workflow and user feedback coordination.
+  /// 
+  /// **Protected Method**: For use by subclasses during import operations.
   @protected
   void setParsedRecipe(Recipe? recipe) {
     if (isDisposed) return;
@@ -53,7 +184,12 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
     notifyListeners();
   }
 
-  /// Set the source URL and notify listeners
+  /// Sets source URL with comprehensive attribution management and UI coordination.
+  /// 
+  /// [url] Source URL for recipe attribution and reference tracking
+  /// 
+  /// Updates source URL for recipe attribution with disposal safety checks
+  /// and immediate UI notification for import source management.
   void setSourceUrl(String? url) {
     if (isDisposed) return;
     
@@ -61,7 +197,12 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
     notifyListeners();
   }
 
-  /// Clear all import data
+  /// Clears all import data with comprehensive state reset and memory management.
+  /// 
+  /// Performs complete import state cleanup including parsed recipe, source URL,
+  /// and base state reset with disposal safety for proper memory management.
+  /// 
+  /// **Protected Method**: For use by subclasses during state cleanup operations.
   @protected
   void clearImportData() {
     if (isDisposed) return;
@@ -71,17 +212,56 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
     clearState();
   }
 
-  // ===== ABSTRACT METHODS =====
+  // ===== ABSTRACT IMPORT INTERFACE =====
 
-  /// Import method that subclasses must implement
+  /// Performs import operation with subclass-specific implementation and comprehensive coordination.
+  /// 
+  /// Abstract method that subclasses must implement for specialized import functionality.
+  /// Handles the core import logic specific to each import type (text, URL, photo, archive)
+  /// with comprehensive error handling and state management coordination.
+  /// 
+  /// **Implementation Requirements:**
+  /// - Parse input data into Recipe object using appropriate parsing strategy
+  /// - Set parsed recipe using setParsedRecipe() method for state management
+  /// - Handle import-specific errors with comprehensive error messaging
+  /// - Coordinate with ImportManager for strategy-based parsing operations
   Future<void> performImport();
 
-  /// Get the import type for analytics/logging
+  /// Gets import type identifier for analytics tracking and logging coordination.
+  /// 
+  /// Abstract getter that subclasses must implement to provide import type classification.
+  /// Used for analytics tracking, logging coordination, and import workflow identification
+  /// throughout the import process and system monitoring.
+  /// 
+  /// **Expected Values**: 'text', 'url', 'photo', 'archive', or other import type identifiers
   String get importType;
 
-  // ===== COMMON OPERATIONS =====
+  // ===== CORE IMPORT OPERATIONS =====
 
-  /// Parse text into a recipe using ImportManager
+  /// Parses text into recipe using ImportManager with comprehensive error handling and source attribution.
+  /// 
+  /// [text] Text content for recipe parsing and extraction
+  /// [url] Optional source URL for recipe attribution and reference tracking
+  /// 
+  /// Returns parsed Recipe object if successful, null if parsing fails.
+  /// Performs text-to-recipe parsing through ImportManager strategy pattern with comprehensive
+  /// error handling, source URL attribution, and async operation coordination.
+  /// 
+  /// **Parsing Process:**
+  /// - Text import strategy retrieval from ImportManager
+  /// - Recipe parsing with comprehensive validation and error handling
+  /// - Source URL attribution for imported recipes
+  /// - Async operation wrapper with loading state and error management
+  /// 
+  /// **Protected Method**: For use by subclasses during import operations.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// final recipe = await parseTextToRecipe(
+  ///   'Ingredienser: 2 ägg, 200g mjöl...',
+  ///   url: 'https://example.com/recipe',
+  /// );
+  /// ```
   @protected
   Future<Recipe?> parseTextToRecipe(String text, {String? url}) async {
     return await executeAsync<Recipe?>(
@@ -90,7 +270,7 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
         final result = await strategy.import(text);
         
         if (result.isSuccess && result.recipe != null) {
-          // Set source URL if provided
+          // Apply source URL attribution if provided
           if (url != null) {
             final recipe = result.recipe!;
             final updatedRecipe = recipe.copyWith(sourceUrl: url);
@@ -105,7 +285,27 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
     );
   }
 
-  /// Save the parsed recipe using ImportManager
+  /// Saves parsed recipe using ImportManager with comprehensive validation and error handling.
+  /// 
+  /// Returns true if save operation succeeds, false if validation fails or save errors occur.
+  /// Performs imported recipe saving through ImportManager with validation checks,
+  /// error handling, and async operation coordination for complete import workflow.
+  /// 
+  /// **Save Process:**
+  /// - Parsed recipe validation ensuring data availability
+  /// - ImportManager save operation with comprehensive error handling
+  /// - Async operation wrapper with loading state and error management
+  /// - Success/failure indication for UI feedback and workflow progression
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// if (viewModel.hasParsedRecipe) {
+  ///   final saved = await viewModel.saveImportedRecipe();
+  ///   if (saved) {
+  ///     // Recipe successfully saved to collection
+  ///   }
+  /// }
+  /// ```
   Future<bool> saveImportedRecipe() async {
     if (_parsedRecipe == null) {
       setError('No recipe to save');
@@ -123,52 +323,98 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
     );
   }
 
-  /// Validate import data before saving
+  /// Validates import data with comprehensive recipe completeness checking and Swedish error messaging.
+  /// 
+  /// Returns true if recipe data is valid and complete, false if validation fails.
+  /// Performs comprehensive recipe validation ensuring title, ingredients, and instructions
+  /// are present and valid with Swedish localized error messages for user feedback.
+  /// 
+  /// **Validation Requirements:**
+  /// - Recipe object must be present and valid
+  /// - Recipe title must be non-empty after trimming
+  /// - At least one ingredient must be specified
+  /// - At least one instruction must be provided
+  /// 
+  /// **Protected Method**: For use by subclasses during import validation.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// if (viewModel.validateImportData()) {
+  ///   // Proceed with recipe saving
+  /// } else {
+  ///   // Handle validation error: viewModel.error
+  /// }
+  /// ```
   @protected
   bool validateImportData() {
     if (_parsedRecipe == null) {
-      setError('No recipe to validate');
+      setError('Inget recept att validera');
       return false;
     }
 
     if (_parsedRecipe!.title.trim().isEmpty) {
-      setError('Recipe title is required');
+      setError('Recepttitel krävs');
       return false;
     }
 
     if (_parsedRecipe!.ingredients.isEmpty) {
-      setError('Recipe must have at least one ingredient');
+      setError('Receptet måste ha minst en ingrediens');
       return false;
     }
 
     if (_parsedRecipe!.instructions.isEmpty) {
-      setError('Recipe must have at least one instruction');
+      setError('Receptet måste ha minst en instruktion');
       return false;
     }
 
     return true;
   }
 
-  /// Complete import process: parse and save
+  /// Completes full import workflow with parsing, validation, and saving operations.
+  /// 
+  /// Returns true if complete import process succeeds, false if any step fails.
+  /// Performs comprehensive import workflow including condition validation, parsing,
+  /// data validation, and recipe saving with complete error handling and state management.
+  /// 
+  /// **Complete Import Process:**
+  /// 1. Import condition validation (canImport check)
+  /// 2. Subclass-specific import operation (performImport)
+  /// 3. Import result validation and error checking
+  /// 4. Recipe data validation (validateImportData)
+  /// 5. Recipe saving operation (saveImportedRecipe)
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// // Set up import data (text, URL, etc.)
+  /// viewModel.updateInputText('Recipe content...');
+  /// 
+  /// // Execute complete import workflow
+  /// final success = await viewModel.completeImport();
+  /// if (success) {
+  ///   // Recipe successfully imported and saved
+  /// } else {
+  ///   // Handle error: viewModel.error
+  /// }
+  /// ```
   Future<bool> completeImport() async {
     if (!canImport) {
-      setError('Import conditions not met');
+      setError('Importvillkor inte uppfyllda');
       return false;
     }
 
-    // Perform the import (subclass-specific logic)
+    // Execute subclass-specific import logic
     await performImport();
 
     if (hasError || _parsedRecipe == null) {
       return false;
     }
 
-    // Validate the imported data
+    // Validate imported recipe data
     if (!validateImportData()) {
       return false;
     }
 
-    // Save the recipe
+    // Save recipe to collection
     return await saveImportedRecipe();
   }
 

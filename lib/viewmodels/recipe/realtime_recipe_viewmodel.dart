@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';
@@ -13,7 +13,7 @@ import 'package:butlery/models/recipe_unified.dart';
 /// Handles ONLY real-time collaborative editing operations.
 /// This includes real-time sessions, live edits, active editor tracking, and connection management.
 class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
-  final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();
+  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'RealtimeRecipeViewModel';
 
@@ -198,10 +198,24 @@ class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   // ===== ACTIVE EDITOR TRACKING =====
 
+  Future<List<String>> getActiveEditorsAsync(String recipeId) async {
+    if (ValidationUtils.isNullOrEmpty(recipeId)) return [];
+    
+    return await LoggingUtils.loggedOperation(
+      'Get Active Editors',
+      () async {
+        final presence = await _recipeService.realtime.getRecipePresence(recipeId);
+        return presence.map((p) => p['userId'] as String? ?? '').toList();
+      },
+      metadata: {'recipe_id': recipeId},
+    );
+  }
+
   List<String> getActiveEditors(String recipeId) {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return [];
-    // TODO: Implement when realtime active editor tracking is available
-    return [];
+    
+    // Get active editors synchronously from presence tracking
+    return _recipeService.realtime.getActiveEditors(recipeId);
   }
 
   int getActiveEditorCount(String recipeId) {
@@ -217,6 +231,16 @@ class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (currentUser == null) return false;
     return isUserActivelyEditing(recipeId, currentUser);
   }
+  
+  Stream<List<String>> watchActiveEditors(String recipeId) {
+    if (ValidationUtils.isNullOrEmpty(recipeId)) {
+      return Stream.value([]);
+    }
+    
+    // Watch presence updates and extract user IDs
+    return _recipeService.realtime.watchRecipePresence(recipeId)
+        .map((presence) => presence.map((p) => p['userId'] as String? ?? '').toList());
+  }
 
   // ===== CONNECTION MANAGEMENT =====
 
@@ -224,8 +248,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return await LoggingUtils.loggedOperation(
       'Reconnect Realtime',
       () async {
-        // TODO: Implement when realtime reconnect is available
-        return true;
+        // Connection management is handled automatically by the service
+        // Force refresh of all active resources
+        if (!isRealtimeConnected) {
+          // Wait for connection to be re-established
+          await Future.delayed(const Duration(seconds: 1));
+          notifyListeners();
+        }
+        return isRealtimeConnected;
       },
       level: LogLevel.info,
     );
@@ -235,7 +265,9 @@ class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
     await LoggingUtils.loggedOperation(
       'Disconnect Realtime',
       () async {
-        // TODO: Implement when realtime disconnect is available
+        // Clear all presence when disconnecting
+        await _recipeService.realtime.clearAllPresence();
+        notifyListeners();
       },
       level: LogLevel.info,
     );
@@ -279,8 +311,39 @@ class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return await LoggingUtils.loggedOperation(
       'Resolve Edit Conflict',
       () async {
-        // TODO: Implement conflict resolution when realtime operations are available
-        return true;
+        // Get current recipe
+        final recipe = _recipeService.recipes.firstWhere(
+          (r) => r.id == recipeId,
+          orElse: () => throw Exception('Recipe not found'),
+        );
+        
+        // Apply resolution strategy
+        Recipe resolvedRecipe;
+        switch (resolution) {
+          case 'local':
+            // Apply local changes to current recipe
+            resolvedRecipe = _applyChangesToRecipe(recipe, localChanges);
+            break;
+          case 'remote':
+            // Apply remote changes to current recipe
+            resolvedRecipe = _applyChangesToRecipe(recipe, remoteChanges);
+            break;
+          case 'merge':
+            // Merge both changes (remote first, then local to give local priority)
+            final mergedRecipe = _applyChangesToRecipe(recipe, remoteChanges);
+            resolvedRecipe = _applyChangesToRecipe(mergedRecipe, localChanges);
+            break;
+          default:
+            throw ArgumentError('Invalid resolution type: $resolution');
+        }
+        
+        // Save resolved recipe through conflict resolution
+        return await _recipeService.realtime.resolveConflict(
+          recipeId: recipeId,
+          localVersion: resolution == 'local' ? resolvedRecipe : recipe,
+          remoteVersion: resolution == 'remote' ? resolvedRecipe : recipe,
+          resolution: resolution,
+        );
       },
       metadata: {
         'recipe_id': recipeId,
@@ -288,6 +351,36 @@ class RealtimeRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
         'local_keys': localChanges.keys.toList(),
         'remote_keys': remoteChanges.keys.toList(),
       },
+    );
+  }
+  
+  Recipe _applyChangesToRecipe(Recipe recipe, Map<String, dynamic> changes) {
+    // Create a new RecipeCore with updated values
+    final updatedCore = RecipeCore(
+      id: recipe.id,
+      title: changes['title'] as String? ?? recipe.title,
+      description: changes['description'] as String? ?? recipe.description,
+      ingredients: changes['ingredients']?.cast<String>() ?? recipe.ingredients,
+      instructions: changes['instructions']?.cast<String>() ?? recipe.instructions,
+      portions: changes['portions'] as int? ?? recipe.portions,
+      timeMinutes: changes['timeMinutes'] as int? ?? recipe.timeMinutes,
+      rating: changes['rating']?.toDouble() ?? recipe.rating,
+      tags: changes['tags']?.cast<String>() ?? recipe.tags,
+      imageUrls: changes['imageUrls']?.cast<String>() ?? recipe.imageUrls,
+      mealType: changes['mealType'] as String? ?? recipe.mealType,
+      sourceUrl: changes['sourceUrl'] as String? ?? recipe.sourceUrl,
+      createdAt: recipe.createdAt,
+      updatedAt: DateTime.now(),
+      createdBy: recipe.createdBy,
+      isPublic: recipe.isPublic,
+      lastCookedAt: recipe.lastCookedAt,
+    );
+    
+    // Create new Recipe with updated core
+    return Recipe(
+      core: updatedCore,
+      type: recipe.type,
+      socialData: recipe.socialData,
     );
   }
 

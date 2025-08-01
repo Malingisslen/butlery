@@ -29,12 +29,12 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 /// **Usage in Dependency Injection:**
 /// ```dart
 /// // Register in service locator
-/// sl.registerLazySingleton<AuthRepository>(
+/// ServiceLocator.registerLazySingleton<AuthRepository>(
 ///   () => FirebaseAuthRepository(),
 /// );
 /// 
 /// // Use in ViewModels and services
-/// final authRepo = sl<AuthRepository>();
+/// final authRepo = ServiceLocator.get<AuthRepository>();
 /// final user = await authRepo.login(email, password);
 /// ```
 class FirebaseAuthRepository implements AuthRepository {

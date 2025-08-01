@@ -67,7 +67,7 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 /// **Usage Example:**
 /// ```dart
 /// final socialRepo = FirebaseSocialRecipeRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Share recipe with engagement tracking

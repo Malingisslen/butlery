@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
@@ -40,9 +40,9 @@ class RecipeCollaborativeManager extends ChangeNotifier {
     PermissionService? permissionService,
     CollaborativeRecipeRepository? collaborativeRepository,
     ConnectivityMonitoringService? connectivityService,
-  }) : _permissionService = permissionService ?? sl<PermissionService>(),
-       _collaborativeRepository = collaborativeRepository ?? sl<CollaborativeRecipeRepository>(),
-       _connectivityService = connectivityService ?? sl<ConnectivityMonitoringService>();
+  }) : _permissionService = permissionService ?? ServiceLocator.get<PermissionService>(),
+       _collaborativeRepository = collaborativeRepository ?? ServiceLocator.get<CollaborativeRecipeRepository>(),
+       _connectivityService = connectivityService ?? ServiceLocator.get<ConnectivityMonitoringService>();
 
   // ===== GETTERS =====
 

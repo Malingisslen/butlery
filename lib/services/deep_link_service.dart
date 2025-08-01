@@ -29,7 +29,7 @@
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 
 /// Deep link service providing comprehensive URL management, navigation routing, and analytics tracking.
@@ -277,7 +277,7 @@ class DeepLinkService {
   /// Generate internal short URL using Firestore
   static Future<String?> _generateInternalShortUrl(String longUrl) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) {
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
         return null;
       }
       
@@ -287,7 +287,7 @@ class DeepLinkService {
         'expiresAt': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
       };
       
-      final shortCode = await sl<DeepLinkService>()._deepLinkRepository.createShortUrl(
+      final shortCode = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.createShortUrl(
         longUrl,
         metadata,
       );
@@ -425,7 +425,7 @@ class DeepLinkService {
   static Future<String?> resolveShortUrl(String shortCode) async {
     try {
       // Get the long URL from repository
-      final longUrl = await sl<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
+      final longUrl = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
       
       if (longUrl == null) {
         AppLogger.warning('Short URL not found: $shortCode');
@@ -433,7 +433,7 @@ class DeepLinkService {
       }
       
       // Track the click
-      await sl<DeepLinkService>()._deepLinkRepository.trackUrlClick(shortCode);
+      await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.trackUrlClick(shortCode);
       
       AppLogger.debug('Resolved short URL $shortCode to $longUrl');
       return longUrl;
@@ -447,14 +447,14 @@ class DeepLinkService {
   static Future<Map<String, dynamic>> getShortUrlAnalytics(String shortCode) async {
     try {
       // Get metadata from repository
-      final metadata = await sl<DeepLinkService>()._deepLinkRepository.getDeepLinkMetadata(shortCode);
+      final metadata = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.getDeepLinkMetadata(shortCode);
       
       if (metadata == null) {
         return {'error': 'Short URL not found'};
       }
       
       // Get the long URL
-      final longUrl = await sl<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
+      final longUrl = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
       
       return {
         'shortCode': shortCode,

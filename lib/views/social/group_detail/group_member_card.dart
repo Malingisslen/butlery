@@ -5,7 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 
@@ -19,7 +19,7 @@ class GroupMemberCard {
     FriendCategory group,
     VoidCallback onRemoved,
   ) {
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     final canRemoveMember = _canRemoveMember(member, group, permissionService);
 
     return Card(

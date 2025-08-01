@@ -5,7 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
@@ -58,7 +58,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     });
 
     try {
-      final friendsService = sl<UnifiedFriendsService>();
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       
       final categoryId = await friendsService.categories.createCategory(
         name: _nameController.text.trim(),

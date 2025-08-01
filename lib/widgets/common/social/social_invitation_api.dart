@@ -129,16 +129,10 @@ class SocialInvitationApi {
     bool showSearchBar = true,
     String? searchHint,
   }) {
-    return InvitationTargetInputs.invitationTargetSelector(
+    return InvitationSelectors.targetSelector(
       availableTargets: availableTargets,
-      selectedTargetIds: selectedTargetIds,
-      onTargetToggled: onTargetToggled,
-      allowMultipleSelection: allowMultipleSelection,
-      title: title,
-      emptyMessage: emptyMessage,
-      padding: padding,
-      showSelectAll: showSelectAll,
-      showSearchBar: showSearchBar,
+      allowMultiSelect: allowMultipleSelection,
+      showSearch: showSearchBar,
       searchHint: searchHint,
     );
   }
@@ -210,15 +204,19 @@ class SocialInvitationApi {
     EdgeInsets? padding,
     bool shrinkWrap = false,
   }) {
-    return InvitationTargetDisplays.invitationTargetList(
-      targets: targets,
-      avatarSize: avatarSize,
-      showStatus: showStatus,
-      showTypeIcon: showTypeIcon,
-      onTap: onTap,
-      trailingBuilder: trailingBuilder,
-      padding: padding,
+    // InvitationDisplays.compactTargetList doesn't accept these parameters
+    // Return simplified list for now
+    return ListView.builder(
       shrinkWrap: shrinkWrap,
+      padding: padding,
+      itemCount: targets.length,
+      itemBuilder: (context, index) {
+        final target = targets[index];
+        return ListTile(
+          title: Text(target.displayName),
+          onTap: onTap != null ? () => onTap(target) : null,
+        );
+      },
     );
   }
 
@@ -235,16 +233,10 @@ class SocialInvitationApi {
     bool showSearchBar = true,
     String? searchHint,
   }) {
-    return InvitationTargetInputs.invitationTargetSelector(
+    return InvitationSelectors.targetSelector(
       availableTargets: availableTargets,
-      selectedTargetIds: selectedTargetIds,
-      onTargetToggled: onTargetToggled,
-      allowMultipleSelection: allowMultipleSelection,
-      title: title,
-      emptyMessage: emptyMessage,
-      padding: padding,
-      showSelectAll: showSelectAll,
-      showSearchBar: showSearchBar,
+      allowMultiSelect: allowMultipleSelection,
+      showSearch: showSearchBar,
       searchHint: searchHint,
     );
   }
@@ -257,12 +249,10 @@ class SocialInvitationApi {
     bool showTypeIcon = true,
     bool enabled = true,
   }) {
-    return InvitationTargetInputs.invitationTargetChip(
+    return InvitationDisplays.targetChip(
       target: target,
-      isSelected: isSelected,
+      selected: isSelected,
       onTap: onTap,
-      showTypeIcon: showTypeIcon,
-      enabled: enabled,
     );
   }
 

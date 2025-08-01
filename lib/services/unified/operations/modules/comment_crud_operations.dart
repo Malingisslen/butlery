@@ -5,7 +5,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for comment CRUD operations
 /// 
@@ -21,7 +21,7 @@ class CommentCrudOperations {
 
   CommentCrudOperations({
     CommentsRepository? commentsRepository,
-  }) : _commentsRepository = commentsRepository ?? sl<CommentsRepository>();
+  }) : _commentsRepository = commentsRepository ?? ServiceLocator.get<CommentsRepository>();
 
   // ===== COMMENT CREATION =====
 

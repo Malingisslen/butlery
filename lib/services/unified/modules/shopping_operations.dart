@@ -1,5 +1,4 @@
 // Merged from shopping_item_management.dart + shopping_list_management.dart
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 

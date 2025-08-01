@@ -162,7 +162,7 @@ class CollaborativeShoppingPresence extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             statusIcon,
             size: 14,
             color: statusColor,
@@ -286,15 +286,15 @@ class ShoppingConflictDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Row(
+      title: const Row(
         children: [
-          const Icon(
+          Icon(
             Icons.warning_amber_rounded,
             color: AppColors.warning,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          SizedBox(width: AppDimensions.spacingS),
           Expanded(
-            child: const Text(
+            child: Text(
               'Konflikt i lista',
               style: AppTextStyles.titleMedium,
             ),

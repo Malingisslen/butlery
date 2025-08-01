@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
@@ -60,7 +60,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
     });
 
     try {
-      final friendsService = sl<UnifiedFriendsService>();
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       
       final success = await friendsService.categories.updateCategory(
         categoryId: widget.group.id,

@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Presence tracking module
@@ -34,9 +34,9 @@ class PresenceTrackingModule {
   /// Show user presence in recipe (user starts viewing/editing)
   Future<bool> showPresence(String recipeId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
       
-      final currentUser = sl<PermissionService>().currentUser;
+      final currentUser = ServiceLocator.get<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
       final currentUserId = currentUser.uid;
@@ -73,9 +73,9 @@ class PresenceTrackingModule {
   /// Hide user presence in recipe (user stops viewing/editing)
   Future<bool> hidePresence(String recipeId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
       
-      final currentUser = sl<PermissionService>().currentUser;
+      final currentUser = ServiceLocator.get<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
       final currentUserId = currentUser.uid;
@@ -108,9 +108,9 @@ class PresenceTrackingModule {
   /// Update presence heartbeat (keep user active)
   Future<bool> updatePresenceHeartbeat(String recipeId) async {
     try {
-      if (!sl<PermissionService>().isAuthenticated) return false;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
       
-      final currentUserId = sl<PermissionService>().currentUserId;
+      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
       // Update local timestamp

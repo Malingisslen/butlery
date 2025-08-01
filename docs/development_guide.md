@@ -31,7 +31,7 @@
 - **Push Notifications**: Firebase Cloud Messaging (Infrastructure complete)
 - **Offline**: Hive (lokal cache och sync-kö)
 - **State Management**: Provider + ChangeNotifier
-- **DI**: GetIt (60+ services registered)
+- **DI**: Modular GetIt system with 5 domain modules (ServiceLocator.get<T>())
 - **Arkitektur**: MVVM + Repository Pattern (Implemented, needs refinement)
 - **Social Features**: Infrastructure implemented, verification needed
 - **Kodkvalitet**: 235 analysis issues need attention
@@ -47,8 +47,11 @@ Smart app som automatiserar receptflödet - från import/skapande av recept till
 
 ```
 lib/ (369 Dart files in optimized architecture)
-├── core/                    # 🔧 Dependency injection, mixins, utilities
-│   ├── injection.dart       # GetIt DI (60+ services)
+├── core/                    # 🔧 Modular DI, mixins, utilities
+│   ├── di/                  # Modular dependency injection
+│   │   └── modules/         # 5 domain modules (Core, Content, Social, etc.)
+│   ├── bootstrap/           # Application initialization
+│   ├── providers/           # ServiceLocator access
 │   ├── mixins/              # Reusable patterns (FirebaseSync, etc.)
 │   └── utils/               # Core utilities
 ├── models/                  # 📊 Data classes + business logic

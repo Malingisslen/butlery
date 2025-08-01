@@ -15,70 +15,70 @@
 /// Connected to: BaseService, all service implementations, dependency injection container
 /// Used in phases: Cross-Cutting Concerns Consolidation - Service Access Pattern Unification
 
-import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/providers/application_provider.dart' as provider;
 
 /// Centralized service access helper that replaces static getters in BaseService
 /// 
 /// This helper provides typed service access patterns without circular dependencies:
-/// - Eliminates `ServiceLocator.get<ServiceType>()` duplication across 94+ files
+/// - Eliminates `provider.ServiceLocator.get<ServiceType>()` duplication across 94+ files
 /// - Provides clean service access without importing service implementations
 /// - Prevents circular import issues between BaseService and services
 /// - Maintains type safety with proper generic constraints
-class ServiceLocator {
+class ServiceHelper {
   
   // ===== CORE SERVICES =====
   
-  /// Get UserService instance - replaces `ServiceLocator.get<UserService>()` in 67+ files
-  static UserService get user => ServiceLocator.get<UserService>();
+  /// Get UserService instance - replaces `provider.ServiceLocator.get<UserService>()` in 67+ files
+  static UserService get user => provider.ServiceLocator.get<UserService>();
   
-  /// Get NotificationService instance - replaces `ServiceLocator.get<NotificationService>()` in 45+ files
-  static NotificationService get notifications => ServiceLocator.get<NotificationService>();
+  /// Get NotificationService instance - replaces `provider.ServiceLocator.get<NotificationService>()` in 45+ files
+  static NotificationService get notifications => provider.ServiceLocator.get<NotificationService>();
   
-  /// Get PermissionService instance - replaces `ServiceLocator.get<PermissionService>()` in 34+ files
-  static PermissionService get permissions => ServiceLocator.get<PermissionService>();
+  /// Get PermissionService instance - replaces `provider.ServiceLocator.get<PermissionService>()` in 34+ files
+  static PermissionService get permissions => provider.ServiceLocator.get<PermissionService>();
   
-  /// Get ConnectivityService instance - replaces `ServiceLocator.get<ConnectivityService>()` in 23+ files
-  static ConnectivityService get connectivity => ServiceLocator.get<ConnectivityService>();
+  /// Get ConnectivityService instance - replaces `provider.ServiceLocator.get<ConnectivityService>()` in 23+ files
+  static ConnectivityService get connectivity => provider.ServiceLocator.get<ConnectivityService>();
 
   // ===== REPOSITORIES =====
   
-  /// Get AuthRepository instance - replaces `ServiceLocator.get<AuthRepository>()` in 56+ files
-  static AuthRepository get auth => ServiceLocator.get<AuthRepository>();
+  /// Get AuthRepository instance - replaces `provider.ServiceLocator.get<AuthRepository>()` in 56+ files
+  static AuthRepository get auth => provider.ServiceLocator.get<AuthRepository>();
   
-  /// Get UserRepository instance - replaces `ServiceLocator.get<UserRepository>()` in 23+ files
-  static UserRepository get userRepository => ServiceLocator.get<UserRepository>();
+  /// Get UserRepository instance - replaces `provider.ServiceLocator.get<UserRepository>()` in 23+ files
+  static UserRepository get userRepository => provider.ServiceLocator.get<UserRepository>();
   
-  /// Get RecipeRepository instance - replaces `ServiceLocator.get<RecipeRepository>()` in 34+ files
-  static RecipeRepository get recipeRepository => ServiceLocator.get<RecipeRepository>();
+  /// Get RecipeRepository instance - replaces `provider.ServiceLocator.get<RecipeRepository>()` in 34+ files
+  static RecipeRepository get recipeRepository => provider.ServiceLocator.get<RecipeRepository>();
 
   // ===== BUSINESS SERVICES =====
   
-  /// Get UnifiedRecipeService instance - replaces `ServiceLocator.get<UnifiedRecipeService>()` in 45+ files
-  static UnifiedRecipeService get recipeService => ServiceLocator.get<UnifiedRecipeService>();
+  /// Get UnifiedRecipeService instance - replaces `provider.ServiceLocator.get<UnifiedRecipeService>()` in 45+ files
+  static UnifiedRecipeService get recipeService => provider.ServiceLocator.get<UnifiedRecipeService>();
   
-  /// Get UnifiedFriendsService instance - replaces `ServiceLocator.get<UnifiedFriendsService>()` in 28+ files
-  static UnifiedFriendsService get friendsService => ServiceLocator.get<UnifiedFriendsService>();
+  /// Get UnifiedFriendsService instance - replaces `provider.ServiceLocator.get<UnifiedFriendsService>()` in 28+ files
+  static UnifiedFriendsService get friendsService => provider.ServiceLocator.get<UnifiedFriendsService>();
   
-  /// Get UnifiedShoppingService instance - replaces `ServiceLocator.get<UnifiedShoppingService>()` in 19+ files
-  static UnifiedShoppingService get shoppingService => ServiceLocator.get<UnifiedShoppingService>();
+  /// Get UnifiedShoppingService instance - replaces `provider.ServiceLocator.get<UnifiedShoppingService>()` in 19+ files
+  static UnifiedShoppingService get shoppingService => provider.ServiceLocator.get<UnifiedShoppingService>();
 
   // ===== UTILITY SERVICES =====
   
-  /// Get StorageService instance - replaces `ServiceLocator.get<StorageService>()` in 15+ files
-  static StorageService get storage => ServiceLocator.get<StorageService>();
+  /// Get StorageService instance - replaces `provider.ServiceLocator.get<StorageService>()` in 15+ files
+  static StorageService get storage => provider.ServiceLocator.get<StorageService>();
   
-  /// Get AnalyticsService instance - replaces `ServiceLocator.get<AnalyticsService>()` in 12+ files
-  static AnalyticsService get analytics => ServiceLocator.get<AnalyticsService>();
+  /// Get AnalyticsService instance - replaces `provider.ServiceLocator.get<AnalyticsService>()` in 12+ files
+  static AnalyticsService get analytics => provider.ServiceLocator.get<AnalyticsService>();
   
-  /// Get DialogService instance - replaces `ServiceLocator.get<DialogService>()` in 18+ files
-  static DialogService get dialog => ServiceLocator.get<DialogService>();
+  /// Get DialogService instance - replaces `provider.ServiceLocator.get<DialogService>()` in 18+ files
+  static DialogService get dialog => provider.ServiceLocator.get<DialogService>();
 
   // ===== TYPED SERVICE ACCESS =====
   
   /// Get any service by type with proper error handling
   static T getService<T extends Object>() {
     try {
-      return ServiceLocator.get<T>();
+      return provider.ServiceLocator.get<T>();
     } catch (e) {
       throw ServiceLocatorException(
         'Failed to resolve service of type ${T.toString()}: $e'
@@ -89,7 +89,7 @@ class ServiceLocator {
   /// Check if service is registered
   static bool isRegistered<T extends Object>() {
     try {
-      ServiceLocator.get<T>();
+      provider.ServiceLocator.get<T>();
       return true;
     } catch (e) {
       return false;
@@ -99,7 +99,7 @@ class ServiceLocator {
   /// Get service safely with null return on failure
   static T? getServiceSafely<T extends Object>() {
     try {
-      return ServiceLocator.get<T>();
+      return provider.ServiceLocator.get<T>();
     } catch (e) {
       return null;
     }

@@ -51,7 +51,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final commentsRepo = FirebaseCommentsRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Add comment with validation

@@ -240,7 +240,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
       ),
       child: TabBar(
         controller: _tabController,
-        tabs: [
+        tabs: const [
           Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -251,7 +251,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
               ],
             ),
           ),
-          const Tab(
+          Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -563,7 +563,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                 onTap: () => widget.onToggleCommentLike(comment['id']),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       likes > 0 ? Icons.favorite : Icons.favorite_border,
                       size: 16,
                       color: likes > 0 ? AppColors.error : AppColors.onSurface.withValues(alpha: 0.6),
@@ -590,7 +590,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                 },
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.reply,
                       size: 16,
                       color: AppColors.onSurface.withValues(alpha: 0.6),
@@ -628,7 +628,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
             style: AppTextStyles.titleMedium,
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
+          Text(
             'Bli den första att betygsätta denna meny!',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.onSurface.withValues(alpha: 0.6),
@@ -656,7 +656,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
             style: AppTextStyles.titleMedium,
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
+          Text(
             'Starta diskussionen om denna meny!',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.onSurface.withValues(alpha: 0.6),

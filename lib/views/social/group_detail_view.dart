@@ -1,3 +1,56 @@
+/// Comprehensive group detail view providing detailed group management and member coordination for Flutter applications.
+///
+/// This module implements sophisticated group detail interface following Single Responsibility Principle,
+/// specializing in group information display, member management, permission handling, and comprehensive group interaction.
+/// It provides complete group detail interface while maintaining clean separation from business logic,
+/// data persistence, and state management through UnifiedFriendsService integration and modern component architecture.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles group detail UI presentation concerns through comprehensive group architecture:
+/// - **Group Information Excellence**: Advanced group display with header, statistics, and comprehensive information presentation
+/// - **Member Management Intelligence**: Sophisticated member coordination with invitation handling and membership tracking
+/// - **Permission System Integration**: Comprehensive permission validation with role-based access control and action authorization
+/// - **Real-Time Event Coordination**: Advanced event handling with group updates, member changes, and state synchronization
+/// - **Swedish Localization Excellence**: Complete Swedish language support for group operations and user feedback
+///
+/// **What This Module Does NOT Handle:**
+/// - Group business logic and data operations (handled by UnifiedFriendsService and group infrastructure)
+/// - Permission validation algorithms (handled by PermissionService and authorization infrastructure)
+/// - Member invitation processing (handled by invitation services and group management systems)
+/// - Event publishing and coordination (handled by GroupEventBus and event infrastructure)
+///
+/// **Group Detail View Architecture:**
+/// - **Comprehensive Group Display**: Advanced group presentation with header, statistics, and detailed information coordination
+/// - **Member Management System**: Sophisticated member display with invitation tracking and membership coordination
+/// - **Permission-Based Actions**: Complete action system with role-based permissions and authorization validation
+/// - **Real-Time Event Integration**: Advanced event handling with automatic updates and state synchronization
+/// - **Modular Component System**: Focused component architecture with specialized header, stats, and member list components
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Navigate to group detail view
+/// Navigator.of(context).push(
+///   MaterialPageRoute(
+///     builder: (context) => GroupDetailView(
+///       groupId: selectedGroupId,
+///     ),
+///   ),
+/// );
+/// 
+/// // The view provides comprehensive group detail functionality:
+/// // - Complete group information display with header, statistics, and member details
+/// // - Permission-based member management with invitation tracking and membership coordination
+/// // - Role-based action system with edit, delete, and leave group capabilities
+/// // - Real-time event integration with automatic updates and state synchronization
+/// // - Modular component architecture with specialized focused components
+/// 
+/// // Integration with specialized components:
+/// // - GroupDetailHeader for group information and visual presentation
+/// // - GroupDetailStats for membership statistics and group metrics
+/// // - GroupMembersList for member display and invitation management
+/// // - GroupDetailAppBar for navigation and action menu coordination
+/// ```
+
 // lib/views/social/group_detail_view.dart
 
 import 'package:flutter/material.dart';
@@ -12,7 +65,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/component_themes.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -25,10 +78,32 @@ import 'package:butlery/views/social/group_detail/group_detail_stats.dart';
 import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
 
-
+/// Comprehensive group detail view providing detailed group management and member coordination through advanced group architecture.
+///
+/// Manages complete group detail interface enabling group information display, member management, permission handling,
+/// and comprehensive group interaction while maintaining clean separation between UI presentation
+/// and business logic through UnifiedFriendsService integration and specialized component architecture.
+///
+/// **Core Responsibilities:**
+/// - Advanced group information display with header presentation, statistics coordination, and comprehensive detail management
+/// - Member management coordination with invitation tracking, membership display, and comprehensive member functionality
+/// - Permission system integration with role-based access control, action authorization, and comprehensive security validation
+/// - Real-time event handling with group updates, member changes, and automatic state synchronization through event coordination
+/// - Swedish localized group experience with comprehensive user feedback and interactive guidance
 class GroupDetailView extends StatefulWidget {
+  /// Group identifier for data loading and management coordination.
+  /// 
+  /// Contains group ID enabling group data loading, member management,
+  /// permission validation, and comprehensive group functionality.
   final String groupId;
 
+  /// Creates comprehensive group detail view with detailed management and member coordination.
+  /// 
+  /// [groupId] Group identifier for data loading and management coordination
+  /// 
+  /// Establishes group detail interface with information display, member management,
+  /// permission handling, and comprehensive group functionality through
+  /// UnifiedFriendsService integration and advanced group architecture.
   const GroupDetailView({
     super.key,
     required this.groupId,
@@ -76,7 +151,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
           _loadGroupData();
           break;
         case GroupEventType.deleted:
-          final categoriesService = sl<UnifiedFriendsService>();
+          final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
           final currentGroup =
               categoriesService.getCategoryById(widget.groupId);
           if (currentGroup == null) {
@@ -98,9 +173,9 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     });
 
     try {
-      final categoriesService = sl<UnifiedFriendsService>();
-      final friendsViewModel = sl<FriendsViewModel>();
-      final groupInvitationService = sl<UnifiedFriendsService>();
+      final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+      final friendsViewModel = ServiceLocator.get<FriendsViewModel>();
+      final groupInvitationService = ServiceLocator.get<UnifiedFriendsService>();
 
       // Force refresh: Säkerställ att vi har senaste datan
       await groupInvitationService.refresh();
@@ -142,7 +217,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
   void _debugGroupInfo() {
     if (_group == null) return;
 
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUserId;
     debugPrint('🔍 DEBUG: Group info för ${_group!.name}:');
     debugPrint('   - ownerId: ${_group!.ownerId}');
@@ -159,9 +234,9 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
   }
 
   Future<void> _refreshData() async {
-    final categoriesService = sl<UnifiedFriendsService>();
-    final friendsViewModel = sl<FriendsViewModel>();
-    final groupInvitationService = sl<UnifiedFriendsService>();
+    final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsViewModel = ServiceLocator.get<FriendsViewModel>();
+    final groupInvitationService = ServiceLocator.get<UnifiedFriendsService>();
 
     await Future.wait([
       categoriesService.refresh(),
@@ -310,7 +385,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Edit button
-        if (sl<PermissionService>().isGroupAdmin(group.id)) ...[
+        if (ServiceLocator.get<PermissionService>().isGroupAdmin(group.id)) ...[
           FilledButton.icon(
             onPressed: () => _showEditGroupDialog(group),
             icon: const Icon(Icons.edit),
@@ -320,7 +395,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
         ],
 
         // Delete or Leave button
-        if (sl<PermissionService>().isGroupAdmin(group.id))
+        if (ServiceLocator.get<PermissionService>().isGroupAdmin(group.id))
           OutlinedButton.icon(
             onPressed: () => _showDeleteGroupDialog(group),
             icon: const Icon(Icons.delete),
@@ -340,8 +415,8 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
 
   /// ✅ NYTT: Lägg till metod för att lämna grupp
   Future<void> _leaveGroup(FriendCategory group) async {
-    final currentUserId = sl<PermissionService>().currentUserId;
-    if (!sl<PermissionService>().isAuthenticated) return;
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (!ServiceLocator.get<PermissionService>().isAuthenticated) return;
 
     final shouldLeave = await CommonDialogActions.showLeaveGroupConfirmation(
       context: context,
@@ -349,7 +424,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     );
 
     if (shouldLeave == true && mounted) {
-      final categoriesService = sl<UnifiedFriendsService>();
+      final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
       final success = await categoriesService.categories.removeFriendFromCategory(
         friendId: currentUserId!,
         categoryId: group.id,

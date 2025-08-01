@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friend_requests/friend_requests_header.dart';
@@ -18,7 +18,7 @@ class FriendRequestsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<FriendsViewModel>(),
+      create: (_) => ServiceLocator.get<FriendsViewModel>(),
       child: const _FriendRequestsViewContent(),
     );
   }

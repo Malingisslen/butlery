@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:butlery/core/injection.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/component_themes.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -34,7 +34,7 @@ class DiscoveryDashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<DiscoveryDashboardViewModel>(
-      create: (context) => sl<DiscoveryDashboardViewModel>(),
+      create: (context) => DiscoveryDashboardViewModel(),
       child: const _DiscoveryDashboardViewContent(),
     );
   }
@@ -121,7 +121,7 @@ class _DiscoveryDashboardViewContentState
 
   Widget _buildTabBar(BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return SliverToBoxAdapter(
-      child: Container(
+      child: ColoredBox(
         color: AppColors.surface,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
@@ -148,7 +148,7 @@ class _DiscoveryDashboardViewContentState
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             dividerColor: Colors.transparent,
-            overlayColor: MaterialStateProperty.all(
+            overlayColor: WidgetStateProperty.all(
               AppColors.primary.withValues(alpha: 0.05),
             ),
           ),
@@ -312,7 +312,6 @@ class _DiscoveryDashboardViewContentState
     
     if (searchResults.isEmpty) {
       return StateWidget.noSearchResults(
-        message: 'Inga resultat för "${viewModel.searchQuery}"',
         actionLabel: 'Rensa sökning',
         onAction: () {
           _searchController.clear();
@@ -336,7 +335,7 @@ class _DiscoveryDashboardViewContentState
     final type = item['type'] as String;
     final title = item['title'] as String;
     final description = item['description'] as String?;
-    final imageUrl = item['imageUrl'] as String?;
+    // final imageUrl = item['imageUrl'] as String?; // Unused for now
     final ownerName = item['ownerName'] as String?;
 
     return Card(
@@ -431,21 +430,50 @@ class _DiscoveryDashboardViewContentState
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        // TODO: Implement popular with friends content
-        Container(
-          height: 120,
-          decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              style: BorderStyle.solid,
+        // Show trending recipes from discovery service
+        if (viewModel.trendingRecipes.isNotEmpty)
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: viewModel.trendingRecipes.length,
+              itemBuilder: (context, index) {
+                final recipe = viewModel.trendingRecipes[index];
+                return Container(
+                  width: 200,
+                  margin: const EdgeInsets.only(right: AppDimensions.spacingM),
+                  padding: const EdgeInsets.all(AppDimensions.spacingM),
+                  decoration: ComponentThemes.trendingRecipeCardDecoration,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        recipe.title,
+                        style: AppTextStyles.titleSmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${recipe.mealType} • ${recipe.portions ?? 0} portioner',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.onSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          )
+        else
+          Container(
+            height: 120,
+            decoration: ComponentThemes.emptyStateContainerDecoration,
+            child: const Center(
+              child: Text('Inga populära recept än'),
             ),
           ),
-          child: const Center(
-            child: Text('Populärt innehåll kommer snart!'),
-          ),
-        ),
       ],
     );
   }
@@ -456,7 +484,7 @@ class _DiscoveryDashboardViewContentState
       children: [
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.access_time,
               color: AppColors.secondary,
               size: 20,
@@ -478,21 +506,68 @@ class _DiscoveryDashboardViewContentState
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        // TODO: Implement recently shared content
-        Container(
-          height: 120,
-          decoration: BoxDecoration(
-            color: AppColors.secondaryContainer.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-            border: Border.all(
-              color: AppColors.secondary.withValues(alpha: 0.2),
-              style: BorderStyle.solid,
+        // Show friend activity from discovery service
+        if (viewModel.friendActivity.isNotEmpty)
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              itemCount: viewModel.friendActivity.length,
+              itemBuilder: (context, index) {
+                final activity = viewModel.friendActivity[index];
+                final title = activity['title'] as String? ?? 'Okänt innehåll';
+                final user = activity['user'] as String? ?? 'Okänd användare';
+                final type = activity['type'] as String? ?? 'delning';
+                
+                return Container(
+                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                  padding: const EdgeInsets.all(AppDimensions.spacingM),
+                  decoration: ComponentThemes.activityTimelineItemDecoration,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
+                        child: Text(
+                          user.substring(0, 1).toUpperCase(),
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '$user delade $type',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.onSurface.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          )
+        else
+          Container(
+            height: 120,
+            decoration: ComponentThemes.activityTimelineItemDecoration,
+            child: const Center(
+              child: Text('Ingen vänaktivitet än'),
             ),
           ),
-          child: const Center(
-            child: Text('Nyligen delat innehåll kommer snart!'),
-          ),
-        ),
       ],
     );
   }

@@ -39,8 +39,8 @@ class RealtimeEditorTracker {
         );
         AppLogger.debug('✅ Registered as active editor for recipe $recipeId');
       } else {
-        // TODO: Implement removePresence method in repository
-        AppLogger.debug('✅ Unregistered as active editor for recipe $recipeId (placeholder)');
+        await collaborativeRepo.removePresence(recipeId, currentUserId);
+        AppLogger.debug('✅ Unregistered as active editor for recipe $recipeId');
       }
     } catch (e) {
       AppLogger.error('❌ Error registering active editor: $e');
@@ -54,9 +54,9 @@ class RealtimeEditorTracker {
     required String currentUserId,
   }) async {
     try {
-      // Note: This requires a heartbeat method in the repository
-      // For now, we'll just log the operation
-      AppLogger.debug('Updated presence for user $currentUserId in recipe $recipeId (placeholder)');
+      final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
+      await collaborativeRepo.updatePresenceHeartbeat(recipeId, currentUserId);
+      AppLogger.debug('Updated presence for user $currentUserId in recipe $recipeId');
     } catch (e) {
       AppLogger.error('❌ Error updating editor presence: $e');
       // Don't rethrow for presence updates - they're not critical
@@ -89,10 +89,10 @@ class RealtimeEditorTracker {
     required String recipeId,
   }) async {
     try {
-      // TODO: Implement active editors retrieval via repository
-      // For now, return empty list as placeholder
-      AppLogger.debug('Getting active editors for recipe $recipeId (placeholder)');
-      return <Map<String, dynamic>>[];
+      final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
+      final editors = await collaborativeRepo.getActiveEditors(recipeId);
+      AppLogger.debug('Retrieved ${editors.length} active editors for recipe $recipeId');
+      return editors;
     } catch (e) {
       AppLogger.error('❌ Error getting active editors: $e');
       return [];
@@ -129,9 +129,10 @@ class RealtimeEditorTracker {
     required String userId,
   }) async {
     try {
-      // TODO: Implement via repository
-      AppLogger.debug('Checking if user $userId is actively editing recipe $recipeId (placeholder)');
-      return false; // Placeholder implementation
+      final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
+      final isActive = await collaborativeRepo.isUserActivelyEditing(recipeId, userId);
+      AppLogger.debug('User $userId actively editing recipe $recipeId: $isActive');
+      return isActive;
     } catch (e) {
       AppLogger.error('❌ Error checking if user is actively editing: $e');
       return false;
@@ -175,8 +176,9 @@ class RealtimeEditorTracker {
     required String recipeId,
   }) async {
     try {
-      AppLogger.debug('Cleaning up inactive editors for recipe $recipeId (placeholder)');
-      // TODO: Implement cleanup via repository
+      final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
+      await collaborativeRepo.cleanupInactiveEditors(recipeId);
+      AppLogger.debug('Cleaned up inactive editors for recipe $recipeId');
     } catch (e) {
       AppLogger.error('❌ Error cleaning up inactive editors: $e');
     }

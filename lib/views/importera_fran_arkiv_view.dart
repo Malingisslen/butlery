@@ -12,7 +12,7 @@ import 'package:butlery/widgets/common/filter_status_chip.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatelessWidget {
@@ -21,7 +21,7 @@ class ImporteraFranArkivView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<ArchiveImportViewModel>(),
+      create: (_) => ServiceLocator.get<ArchiveImportViewModel>(),
       child: const _ImporteraFranArkivViewContent(),
     );
   }

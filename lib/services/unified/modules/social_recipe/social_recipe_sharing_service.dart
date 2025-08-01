@@ -6,6 +6,8 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Social Recipe Sharing Service
 /// 
@@ -126,16 +128,33 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     try {
       AppLogger.info('Sharing recipe $recipeId with ${groupIds.length} groups');
       
-      // TODO: Implement group sharing
-      // This would involve:
-      // 1. Loading the recipe
-      // 2. Resolving group IDs to user IDs
-      // 3. Converting to collaborative recipe if needed
-      // 4. Adding group members with specified permissions
-      // 5. Sending notifications
-      // 6. Saving to Firebase
+      // Resolve group IDs to member user IDs
+      final allMemberIds = <String>{};
+      final memberDisplayNames = <String, String>{};
       
-      return true;
+      for (final groupId in groupIds) {
+        final groupMembers = await _resolveGroupMembers(groupId);
+        allMemberIds.addAll(groupMembers.keys);
+        memberDisplayNames.addAll(groupMembers);
+      }
+      
+      if (allMemberIds.isEmpty) {
+        _setError('Inga gruppmedlemmar hittades');
+        return false;
+      }
+      
+      // Use existing shareRecipeWithUsers method for actual sharing
+      final success = await shareRecipeWithUsers(
+        recipeId,
+        allMemberIds.toList(),
+        permission,
+      );
+      
+      if (success) {
+        AppLogger.success('✅ Recipe shared with ${allMemberIds.length} group members');
+      }
+      
+      return success;
     } catch (e) {
       AppLogger.error('❌ Could not share recipe with groups: $e');
       _setError('Kunde inte dela recept med grupper: $e');
@@ -238,5 +257,45 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   /// Create failure result for operations
   RecipeOperationResult createFailureResult(String error) {
     return RecipeOperationResult.failure(error);
+  }
+
+  /// Resolve group IDs to member user IDs and display names
+  /// 
+  /// ✅ FIXED: Integrated with friends service for actual group member resolution
+  Future<Map<String, String>> _resolveGroupMembers(String groupId) async {
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      
+      // Get the group (friend category) by ID
+      final group = friendsService.getCategoryByIdInternal(groupId);
+      if (group == null) {
+        AppLogger.warning('Group $groupId not found');
+        return <String, String>{};
+      }
+
+      AppLogger.debug('Resolving ${group.friendUserIds.length} members for group "${group.name}"');
+      
+      // Get all friends to map user IDs to display names
+      final allFriends = friendsService.friends;
+      final memberMap = <String, String>{};
+      
+      // Resolve each group member ID to display name
+      for (final memberId in group.friendUserIds) {
+        final friend = allFriends.where((f) => f.uid == memberId).firstOrNull;
+        if (friend != null) {
+          memberMap[memberId] = friend.displayName;
+        } else {
+          // If friend not found, use fallback display name
+          memberMap[memberId] = 'Unknown User';
+          AppLogger.warning('Friend $memberId not found in friends list');
+        }
+      }
+      
+      AppLogger.success('Resolved ${memberMap.length} group members for group "${group.name}"');
+      return memberMap;
+    } catch (e) {
+      AppLogger.error('Error resolving group members for $groupId: $e');
+      return <String, String>{};
+    }
   }
 }

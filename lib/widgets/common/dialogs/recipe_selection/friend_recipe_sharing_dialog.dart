@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/recipe_selection_viewmodel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Dialog for sharing recipes with friends
 class FriendRecipeSharingDialog extends StatelessWidget {
@@ -24,8 +25,10 @@ class FriendRecipeSharingDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) =>
-          sl<RecipeSelectionViewModel>(param1: friend)..loadRecipes(),
+      create: (_) => RecipeSelectionViewModel(
+        recipeService: ServiceLocator.get<UnifiedRecipeService>(),
+        targetFriend: friend,
+      )..loadRecipes(),
       child: Consumer<RecipeSelectionViewModel>(
         builder: (context, viewModel, child) {
           return AlertDialog(

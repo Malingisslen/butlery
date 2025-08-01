@@ -11,7 +11,7 @@ import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -64,10 +64,10 @@ class _CreateSharedShoppingListViewState
           create: (_) => CreateSharedListViewModel(),
         ),
         ChangeNotifierProvider(
-          create: (_) => sl<FriendsViewModel>(),
+          create: (_) => ServiceLocator.get<FriendsViewModel>(),
         ),
         ChangeNotifierProvider.value(
-          value: sl<UnifiedFriendsService>(),
+          value: ServiceLocator.get<UnifiedFriendsService>(),
         ),
       ],
       child: Consumer<CreateSharedListViewModel>(

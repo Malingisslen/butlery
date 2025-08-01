@@ -10,7 +10,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/component_themes.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/widgets/common/indicators/emoji_avatar.dart';
 import 'package:butlery/widgets/common/indicators/member_count_badge.dart';
@@ -23,7 +23,7 @@ class GroupInvitationsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<GroupInvitationsViewModel>(
-      create: (context) => sl<GroupInvitationsViewModel>(),
+      create: (context) => ServiceLocator.get<GroupInvitationsViewModel>(),
       child: Consumer<GroupInvitationsViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(

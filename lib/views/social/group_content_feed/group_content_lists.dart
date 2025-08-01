@@ -2,8 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/social_recipe_service.dart';
 
 // Import existing shared content cards
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
@@ -46,7 +52,7 @@ class GroupContentLists {
           return Card(
             child: SharedRecipeCard.build(
               context,
-              null, // We don't need the SharedContentViewModel here
+              ServiceLocator.get<SharedContentViewModel>(),
               sharedRecipe,
             ),
           );
@@ -86,7 +92,7 @@ class GroupContentLists {
           return Card(
             child: SharedMenuCard.build(
               context,
-              null, // We don't need the SharedContentViewModel here
+              ServiceLocator.get<SharedContentViewModel>(),
               sharedMenu,
             ),
           );
@@ -154,40 +160,70 @@ class GroupContentLists {
   }
 
   /// Show share recipe dialog
-  static void _showShareRecipeDialog(
+  static Future<void> _showShareRecipeDialog(
     BuildContext context,
     GroupContentViewModel viewModel,
-  ) {
-    // TODO: Implement share recipe to group dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Dela recept till grupp kommer snart!'),
+  ) async {
+    final sharedRecipe = viewModel.filteredGroupRecipes.first;
+    final shareViewModel = UniversalShareDialogViewModel(
+      socialRecipeService: ServiceLocator.get<SocialRecipeService>(),
+      shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
+    );
+    
+    await showDialog(
+      context: context,
+      builder: (context) => UniversalShareDialog(
+        content: sharedRecipe,
+        contentType: ShareContentType.recipe,
+        viewModel: shareViewModel,
+        availableGroups: const [], // Groups would be loaded from friends service
+        initialMessage: 'Dela detta recept med gruppen',
       ),
     );
   }
 
   /// Show share menu dialog
-  static void _showShareMenuDialog(
+  static Future<void> _showShareMenuDialog(
     BuildContext context,
     GroupContentViewModel viewModel,
-  ) {
-    // TODO: Implement share menu to group dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Dela meny till grupp kommer snart!'),
+  ) async {
+    final sharedMenu = viewModel.filteredGroupMenus.first;
+    final shareViewModel = UniversalShareDialogViewModel(
+      socialRecipeService: ServiceLocator.get<SocialRecipeService>(),
+      shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
+    );
+    
+    await showDialog(
+      context: context,
+      builder: (context) => UniversalShareDialog(
+        content: sharedMenu,
+        contentType: ShareContentType.menu,
+        viewModel: shareViewModel,
+        availableGroups: const [], // Groups would be loaded from friends service
+        initialMessage: 'Dela denna meny med gruppen',
       ),
     );
   }
 
   /// Show share shopping list dialog
-  static void _showShareShoppingListDialog(
+  static Future<void> _showShareShoppingListDialog(
     BuildContext context,
     GroupContentViewModel viewModel,
-  ) {
-    // TODO: Implement share shopping list to group dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Dela inköpslista till grupp kommer snart!'),
+  ) async {
+    final sharedList = viewModel.filteredGroupShoppingLists.first;
+    final shareViewModel = UniversalShareDialogViewModel(
+      socialRecipeService: ServiceLocator.get<SocialRecipeService>(),
+      shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
+    );
+    
+    await showDialog(
+      context: context,
+      builder: (context) => UniversalShareDialog(
+        content: sharedList,
+        contentType: ShareContentType.shoppingList,
+        viewModel: shareViewModel,
+        availableGroups: const [], // Groups would be loaded from friends service
+        initialMessage: 'Dela denna inköpslista med gruppen',
       ),
     );
   }

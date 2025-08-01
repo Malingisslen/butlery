@@ -9,7 +9,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
@@ -92,7 +92,7 @@ class ShoppingDialogs {
     if (viewModel.activeList == null) return;
 
     try {
-      final friendsService = sl<UnifiedFriendsService>();
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       await friendsService.initialize();
       final availableFriends = friendsService.friends;
 
@@ -115,7 +115,7 @@ class ShoppingDialogs {
         return;
       }
 
-      final shareViewModel = sl<UniversalShareDialogViewModel>();
+      final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
       if (context.mounted) {
         await showDialog(
           context: context,

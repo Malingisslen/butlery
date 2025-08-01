@@ -46,7 +46,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final userRepo = FirebaseUserRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Create/update profile with validation

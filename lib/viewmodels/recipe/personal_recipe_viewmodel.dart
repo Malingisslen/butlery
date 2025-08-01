@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';
@@ -14,7 +14,7 @@ import 'package:butlery/models/recipe_unified.dart';
 /// Handles ONLY personal recipe operations and management.
 /// This includes creation, editing, deletion, and content management for personal recipes.
 class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
-  final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();
+  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'PersonalRecipeViewModel';
 

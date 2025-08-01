@@ -52,7 +52,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final deepLinkRepo = FirebaseDeepLinkRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Create shareable short URL

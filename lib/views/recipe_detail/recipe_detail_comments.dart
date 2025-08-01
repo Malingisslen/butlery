@@ -10,7 +10,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 
 /// Recipe detail comments widget
@@ -440,7 +440,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     final commentText = _commentController.text.trim();
     if (commentText.isEmpty) return;
 
-    final userService = sl<UserService>();
+    final userService = ServiceLocator.get<UserService>();
     final currentUser = FirebaseAuthRepository().currentUser;
 
     if (currentUser == null) {
@@ -464,9 +464,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
       // Post comment or reply
       if (_replyingToCommentId != null) {
-        await socialViewModel.postComment();
+        await socialViewModel.postComment(widget.recipe.id);
       } else {
-        await socialViewModel.postComment();
+        await socialViewModel.postComment(widget.recipe.id);
       }
 
       // Clear form

@@ -9,11 +9,11 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/services/share_service.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 
 /// Recipe detail actions handler
@@ -104,7 +104,7 @@ class RecipeDetailActions {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
-    final shareService = sl<ShareService>();
+    final shareService = ServiceLocator.get<ShareService>();
 
     try {
       await shareService.shareRecipe(viewModel.recipe);
@@ -132,10 +132,10 @@ class RecipeDetailActions {
     await showDialog(
       context: context,
       builder: (context) => ChangeNotifierProvider(
-        create: (_) => sl<UniversalShareDialogViewModel>(),
+        create: (_) => ServiceLocator.get<UniversalShareDialogViewModel>(),
         child: UniversalShareDialog.recipe(
           recipe: viewModel.recipe,
-          viewModel: sl<UniversalShareDialogViewModel>(),
+          viewModel: ServiceLocator.get<UniversalShareDialogViewModel>(),
         ),
       ),
     );
@@ -175,11 +175,12 @@ class RecipeDetailActions {
   Future<void> postComment(
     BuildContext context,
     String commentText,
+    String recipeId,
   ) async {
     if (!context.mounted || commentText.trim().isEmpty) return;
 
     final socialViewModel = context.read<SocialRecipeViewModel>();
-    final userService = sl<UserService>();
+    final userService = ServiceLocator.get<UserService>();
     final currentUser = FirebaseAuthRepository().currentUser;
 
     if (currentUser == null) {
@@ -206,7 +207,7 @@ class RecipeDetailActions {
       }
 
       // Post comment
-      await socialViewModel.postComment();
+      await socialViewModel.postComment(recipeId);
       if (!context.mounted) return;
 
       if (!context.mounted) return;
@@ -229,7 +230,7 @@ class RecipeDetailActions {
   Future<void> createUserProfile(BuildContext context) async {
     if (!context.mounted) return;
 
-    final userService = sl<UserService>();
+    final userService = ServiceLocator.get<UserService>();
     final currentUser = FirebaseAuthRepository().currentUser;
 
     if (currentUser == null) return;

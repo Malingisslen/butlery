@@ -115,8 +115,7 @@ class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
     }
 
     // Step 2: Detect platform
-    final detectionResult = await _platformDetector.detectPlatform(webUrl);
-    final platform = detectionResult.platform;
+    final platform = _platformDetector.detectPlatform(webUrl);
 
     if (!_platformDetector.isSupportedPlatform(platform)) {
       return ExtractionResult(
@@ -126,7 +125,7 @@ class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
     }
 
     // Step 3: Perform extraction
-    final result = await _webScraper.performExtraction(webUrl, platform!);
+    final result = await _webScraper.performExtraction(webUrl, platform);
 
     return result;
   }

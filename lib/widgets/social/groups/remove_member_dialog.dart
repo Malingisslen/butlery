@@ -7,7 +7,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
@@ -27,7 +27,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
 
   @override
   Future<bool> performAction(BuildContext context) async {
-    final friendsService = sl<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
     
     final success = await friendsService.categories.removeFriendFromCategory(
       friendId: member.uid,

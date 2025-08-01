@@ -37,6 +37,7 @@ import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/recommendation_service.dart';
 
 // Import core module for dependencies
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -70,6 +71,7 @@ class ContentModule implements DIModule {
     ImagePickerService,
     OfflineService,
     CollaborativeRecipeRepository,
+    RecommendationService,
   ];
 
   @override
@@ -173,6 +175,13 @@ class ContentModule implements DIModule {
         debugPrint('✅ [ContentModule] OfflineService registered');
       }
 
+      // Recommendation service for AI-powered content recommendations
+      container.registerSingleton<RecommendationService>(RecommendationService());
+      
+      if (kDebugMode) {
+        debugPrint('✅ [ContentModule] RecommendationService registered');
+      }
+
       if (kDebugMode) {
         debugPrint('✅ [ContentModule] All content services configured');
       }
@@ -259,6 +268,7 @@ class ContentModule implements DIModule {
         'ImagePickerService': container<ImagePickerService>(),
         'OfflineService': container<OfflineService>(),
         'CollaborativeRecipeRepository': container<CollaborativeRecipeRepository>(),
+        'RecommendationService': container<RecommendationService>(),
       };
 
       // Perform health checks on services that support it

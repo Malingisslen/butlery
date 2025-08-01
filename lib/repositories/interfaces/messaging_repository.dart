@@ -2,7 +2,7 @@
 
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/models/messaging/message_type.dart';
+// MessageStatus and MessageType available through message.dart import
 
 /// Repository interface for real-time messaging and conversation management.
 ///
@@ -40,7 +40,7 @@ import 'package:butlery/models/messaging/message_type.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final messagingRepo = sl<MessagingRepository>();
+/// final messagingRepo = ServiceLocator.get<MessagingRepository>();
 /// 
 /// // Create direct conversation
 /// final conversationId = await messagingRepo.createDirectConversation(
@@ -126,6 +126,13 @@ abstract class MessagingRepository {
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
     int limit = 50,
+  });
+  
+  /// Get messages for a conversation with pagination support
+  Future<List<Message>> getConversationMessagesPage({
+    required String conversationId,
+    int limit = 50,
+    DateTime? startAfter,
   });
   
   /// Send a new message

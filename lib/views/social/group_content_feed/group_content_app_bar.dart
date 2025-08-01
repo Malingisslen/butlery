@@ -1,6 +1,7 @@
 // lib/views/social/group_content_feed/group_content_app_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -185,25 +186,205 @@ class GroupContentAppBar {
     GroupContentViewModel viewModel,
     FriendCategory group,
   ) {
-    // TODO: Implement share to group dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Delningsfunktion kommer snart!'),
-        backgroundColor: AppColors.info,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppDimensions.spacingL),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Dela till ${group.name}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            
+            ListTile(
+              leading: const Icon(Icons.restaurant),
+              title: const Text('Dela recept'),
+              subtitle: const Text('Dela dina favoritrecept med gruppen'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareContentToGroup(context, 'recipe', group);
+              },
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Dela meny'),
+              subtitle: const Text('Dela en veckomeny med gruppen'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareContentToGroup(context, 'menu', group);
+              },
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.shopping_cart),
+              title: const Text('Dela inköpslista'),
+              subtitle: const Text('Dela en inköpslista med gruppen'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareContentToGroup(context, 'shopping', group);
+              },
+            ),
+            
+            const SizedBox(height: AppDimensions.spacingM),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Avbryt'),
+            ),
+          ],
+        ),
       ),
     );
   }
+  
+  static void _shareContentToGroup(BuildContext context, String contentType, FriendCategory group) {
+    switch (contentType) {
+      case 'recipe':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Receptdelning med ${group.name} kommer snart!'),
+            backgroundColor: AppColors.info,
+          ),
+        );
+        break;
+      case 'menu':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Menydelning med ${group.name} kommer snart!'),
+            backgroundColor: AppColors.info,
+          ),
+        );
+        break;
+      case 'shopping':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Listdelning med ${group.name} kommer snart!'),
+            backgroundColor: AppColors.info,
+          ),
+        );
+        break;
+    }
+  }
 
-  static void _exportGroupContent(
+  static Future<void> _exportGroupContent(
     BuildContext context,
     GroupContentViewModel viewModel,
     FriendCategory group,
-  ) {
-    // TODO: Implement export functionality
+  ) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppDimensions.spacingL),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Exportera ${group.name}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            
+            ListTile(
+              leading: const Icon(Icons.text_snippet),
+              title: const Text('Exportera som text'),
+              subtitle: const Text('Kopiera allt innehåll som text'),
+              onTap: () {
+                Navigator.pop(context);
+                _exportAsText(context, viewModel, group);
+              },
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Dela gruppsammanfattning'),
+              subtitle: const Text('Skapa en delbar sammanfattning'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareGroupSummary(context, viewModel, group);
+              },
+            ),
+            
+            const SizedBox(height: AppDimensions.spacingM),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Avbryt'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  static Future<void> _exportAsText(BuildContext context, GroupContentViewModel viewModel, FriendCategory group) async {
+    try {
+      final StringBuffer buffer = StringBuffer();
+      buffer.writeln('👥 ${group.name}');
+      buffer.writeln('=' * (group.name.length + 2));
+      buffer.writeln();
+      
+      if (group.description?.isNotEmpty == true) {
+        buffer.writeln(group.description);
+        buffer.writeln();
+      }
+      
+      // Add group statistics
+      buffer.writeln('📊 Gruppstatistik:');
+      buffer.writeln('- Medlemmar: ${group.friendCount} personer');
+      buffer.writeln('- Recept: ${viewModel.filteredGroupRecipes.length} delade');
+      buffer.writeln('- Inköpslistor: ${viewModel.filteredGroupShoppingLists.length} delade');
+      buffer.writeln();
+      
+      // Add recent activity summary
+      buffer.writeln('📈 Senaste aktivitet:');
+      buffer.writeln('Gruppens innehåll och aktivitet exporterad via Butlery');
+      
+      // Copy to clipboard
+      await Clipboard.setData(ClipboardData(text: buffer.toString()));
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gruppinnehåll kopierat till urklipp!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte exportera: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+  
+  static void _shareGroupSummary(BuildContext context, GroupContentViewModel viewModel, FriendCategory group) {
+    // Create a shareable summary
+    final summary = '👥 Kolla in gruppen "${group.name}" på Butlery!\n\n'
+        '🍳 ${viewModel.filteredGroupRecipes.length} delade recept\n'
+        '🛍️ ${viewModel.filteredGroupShoppingLists.length} inköpslistor\n'
+        '👤 ${group.friendCount} medlemmar\n\n'
+        'Gå med i vår matcommunity! 🍽️';
+    
+    Clipboard.setData(ClipboardData(text: summary));
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Exportfunktion kommer snart!'),
-        backgroundColor: AppColors.info,
+        content: Text('Gruppsammanfattning kopierad! Klistra in för att dela.'),
+        backgroundColor: AppColors.success,
       ),
     );
   }

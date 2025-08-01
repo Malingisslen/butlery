@@ -38,7 +38,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
@@ -112,7 +112,7 @@ class BackupService {
   Future<BackupResult> exportToFile() async {
     try {
       // Hämta alla recept
-      final recipeService = sl<UnifiedRecipeService>();
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       final recipes = recipeService.recipes;
 
       if (recipes.isEmpty) {
@@ -314,7 +314,7 @@ class BackupService {
       final recipesJson = backupData['recipes'] as List;
 
       // Importera recept
-      final recipeService = sl<UnifiedRecipeService>();
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       int successCount = 0;
       int skipCount = 0;
       final errors = <String>[];

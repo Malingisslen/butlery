@@ -19,16 +19,68 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
-/// Collaborative shopping operations feature interface
+/// Comprehensive collaborative shopping operations interface providing multi-user shopping list management and social shopping features.
+///
+/// This operations interface implements sophisticated collaborative shopping functionality following Single Responsibility Principle,
+/// handling all aspects of multi-user shopping list collaboration including member management, real-time item synchronization,
+/// and social shopping features. It provides comprehensive collaborative shopping capabilities while maintaining clean
+/// separation from personal shopping operations and individual list management concerns.
+///
+/// **Single Responsibility Focus:**
+/// This interface exclusively handles collaborative shopping operations:
+/// - **Collaborative List Management**: Complete lifecycle management for shared shopping lists with member coordination
+/// - **Member Administration**: Comprehensive member management with permissions, invitations, and role-based access control
+/// - **Real-time Item Synchronization**: Live item updates with optimistic UI updates and conflict resolution
+/// - **Activity Tracking**: Complete collaboration activity monitoring with notifications and engagement analytics
+///
+/// **What This Interface Does NOT Handle:**
+/// - Personal shopping list operations (handled by PersonalShoppingOperations)
+/// - Basic shopping list CRUD operations (handled by parent service)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by permission services)
+///
+/// **Collaborative Shopping Features:**
+/// - **Multi-user Lists**: Shared shopping lists with real-time synchronization and member collaboration
+/// - **Permission System**: Granular permission control with view, edit, and admin roles for collaborative access
+/// - **Activity Monitoring**: Complete collaboration activity tracking with member engagement analytics
+/// - **Social Integration**: Integration with social features for friend-based shopping collaboration
+/// - **Real-time Updates**: Live item updates with optimistic UI updates and automatic conflict resolution
+///
+/// **Usage Examples:**
+/// ```dart
+/// final collaborativeOps = CollaborativeShoppingOperations(parentService);
 /// 
-/// Handles all operations related to collaborative shopping lists:
-/// - Creating and managing collaborative lists
-/// - Member management and permissions
-/// - Real-time collaborative item management
-/// - Activity tracking and notifications
-/// - Integration with social features
+/// // Create collaborative shopping list
+/// final listId = await collaborativeOps.createList(
+///   name: 'Familjehandling',
+///   memberIds: ['partner', 'child1'],
+///   memberDisplayNames: {'partner': 'Anna', 'child1': 'Erik'},
+///   allowGuestEditing: true,
+/// );
+/// 
+/// // Member management
+/// await collaborativeOps.addMember(
+///   listId: listId,
+///   userId: friendId,
+///   userDisplayName: 'Maria',
+///   permission: SharedListPermission.edit,
+/// );
+/// 
+/// // Collaborative item management
+/// await collaborativeOps.addItem(
+///   listId: listId,
+///   name: 'Mjölk',
+///   amount: 2.0,
+///   unit: 'l',
+///   category: 'Mejeri',
+/// );
+/// 
+/// // Activity and statistics
+/// final stats = collaborativeOps.getListStats(listId);
+/// final activity = collaborativeOps.getRecentActivity(listId);
+/// ```
 class CollaborativeShoppingOperations {
   final dynamic _parent; // UnifiedShoppingService
 
@@ -73,7 +125,7 @@ class CollaborativeShoppingOperations {
 
   /// Get collaborative lists where current user is owner
   List<UnifiedShoppingList> getOwnedLists() {
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     if (!permissionService.isAuthenticated) return [];
     
     return _parent.collaborativeLists
@@ -83,7 +135,7 @@ class CollaborativeShoppingOperations {
 
   /// Get collaborative lists where current user is member (not owner)
   List<UnifiedShoppingList> getSharedWithMe() {
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     if (!permissionService.isAuthenticated) return [];
     
     return _parent.collaborativeLists
@@ -134,7 +186,7 @@ class CollaborativeShoppingOperations {
     }
     
     // Check if current user is owner
-    if (!sl<PermissionService>().isShoppingListOwner(collaborativeList.id)) {
+    if (!ServiceLocator.get<PermissionService>().isShoppingListOwner(collaborativeList.id)) {
       AppLogger.error('Cannot convert: Only owner can convert to personal');
       return null;
     }
@@ -219,7 +271,7 @@ class CollaborativeShoppingOperations {
     }
     
     // Cannot remove owner
-    if (sl<PermissionService>().isShoppingListOwner(listId) && sl<PermissionService>().currentUserId == userId) {
+    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) && ServiceLocator.get<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot remove owner from list');
       return false;
     }
@@ -262,7 +314,7 @@ class CollaborativeShoppingOperations {
     }
     
     // Cannot change owner permission
-    if (sl<PermissionService>().isShoppingListOwner(listId) && sl<PermissionService>().currentUserId == userId) {
+    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) && ServiceLocator.get<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot change owner permission');
       return false;
     }
@@ -302,13 +354,13 @@ class CollaborativeShoppingOperations {
       return false;
     }
     
-    if (!sl<PermissionService>().isAuthenticated) {
+    if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       AppLogger.error('Cannot leave: User not authenticated');
       return false;
     }
     
     // Owner cannot leave, must transfer ownership or delete
-    if (sl<PermissionService>().isShoppingListOwner(listId)) {
+    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId)) {
       AppLogger.error('Owner cannot leave list. Transfer ownership or delete list.');
       return false;
     }
@@ -497,31 +549,31 @@ class CollaborativeShoppingOperations {
 
   /// Check if current user can edit list
   bool canEdit(String listId) {
-    return sl<PermissionService>().canEditShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canEditShoppingList(listId);
   }
 
   /// Check if current user can view list
   bool canView(String listId) {
-    return sl<PermissionService>().canViewShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canViewShoppingList(listId);
   }
 
   /// Check if current user can manage members
   bool canManageMembers(String listId) {
-    return sl<PermissionService>().canManageShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canManageShoppingList(listId);
   }
 
   /// Check if current user can delete list
   bool canDelete(String listId) {
-    return sl<PermissionService>().canDeleteShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canDeleteShoppingList(listId);
   }
 
   /// Get current user's permission for list
   SharedListPermission? getUserPermission(String listId) {
     final list = getListById(listId);
-    if (list == null || !sl<PermissionService>().isAuthenticated) return null;
+    if (list == null || !ServiceLocator.get<PermissionService>().isAuthenticated) return null;
     
     // Use PermissionService to check permissions
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     
     if (permissionService.canManageShoppingList(listId)) {
       return SharedListPermission.admin;

@@ -302,12 +302,104 @@ class FriendActivitySection {
   }
 
   static void _showAllActivity(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    // TODO: Implement show all activity page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Visa all aktivitet kommer snart!'),
-        backgroundColor: AppColors.info,
+    // Navigate to extended activity view
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => _buildActivityPage(context, viewModel),
       ),
+    );
+  }
+  
+  static Widget _buildActivityPage(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Vänaktivitet'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+      ),
+      body: viewModel.friendActivity.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.people_outline,
+                    size: 64,
+                    color: AppColors.onSurface,
+                  ),
+                  SizedBox(height: AppDimensions.spacingM),
+                  Text(
+                    'Ingen vänaktivitet än',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                  SizedBox(height: AppDimensions.spacingS),
+                  Text(
+                    'Aktivitet från dina vänner visas här',
+                    style: TextStyle(
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              itemCount: viewModel.friendActivity.length,
+              itemBuilder: (context, index) {
+                final activity = viewModel.friendActivity[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      child: Text(
+                        (activity['userName'] as String? ?? 'U').substring(0, 1).toUpperCase(),
+                        style: const TextStyle(color: AppColors.onPrimary),
+                      ),
+                    ),
+                    title: Text(activity['userName'] as String? ?? 'Okänd användare'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(activity['action'] as String? ?? 'Utförde en aktivitet'),
+                        const SizedBox(height: 4),
+                        Text(
+                          activity['timestamp'] as String? ?? 'Nyligen',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      // Handle activity item tap
+                      final activityType = activity['type'] as String?;
+                      final contentId = activity['contentId'] as String?;
+                      
+                      if (activityType == 'recipe' && contentId != null) {
+                        Navigator.pushNamed(
+                          context,
+                          '/receptDetalj',
+                          arguments: {'recipeId': contentId},
+                        );
+                      } else if (activityType == 'menu' && contentId != null) {
+                        Navigator.pushNamed(
+                          context,
+                          '/menu-preview',
+                          arguments: {'menuId': contentId},
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
     );
   }
 }

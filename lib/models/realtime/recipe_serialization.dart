@@ -1,6 +1,7 @@
 // lib/models/realtime/recipe_serialization.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ✅ Firebase DocumentSnapshot dependency abstracted to repository layer
+// Note: Repositories handle Firebase-specific parsing and provide clean data maps
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -30,7 +31,10 @@ class RecipeSerialization {
     };
   }
 
-  /// Serialize recipe with metadata for storage
+  /// Serialize recipe with metadata for storage (repository-agnostic)
+  /// 
+  /// Returns clean data map without Firebase-specific types.
+  /// Repositories handle conversion to their specific format (Firestore, etc.)
   static Map<String, dynamic> serializeWithMetadata({
     required Recipe recipe,
     required String id,
@@ -45,10 +49,10 @@ class RecipeSerialization {
     bool isActive = true,
     Map<String, dynamic>? metadata,
   }) {
-    // Manually create the complete serialization without circular dependency
+    // Create clean serialization without Firebase dependencies
     final result = <String, dynamic>{};
     
-    // Add metadata
+    // Add metadata with DateTime objects (repositories handle conversion)
     result.addAll({
       'type': RealtimeResourceType.recipe.value,
       'ownerId': ownerId,
@@ -57,8 +61,8 @@ class RecipeSerialization {
         (userId, permission) => MapEntry(
             userId, ResourcePermissionHelper.permissionToString(permission)),
       ),
-      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt) : Timestamp.fromDate(DateTime.now()),
-      'lastEditedAt': lastEditedAt != null ? Timestamp.fromDate(lastEditedAt) : Timestamp.fromDate(DateTime.now()),
+      'createdAt': createdAt ?? DateTime.now(),
+      'lastEditedAt': lastEditedAt ?? DateTime.now(),
       'lastEditedBy': lastEditedBy,
       'lastEditedByDisplayName': lastEditedByDisplayName,
       'editCount': editCount,
@@ -103,16 +107,31 @@ class RecipeSerialization {
     );
   }
 
-  /// Deserialize complete realtime recipe from Firestore document
+  /// Deserialize complete realtime recipe from repository data
+  /// 
+  /// @deprecated Repositories should use fromData() constructors instead.
+  /// This maintains backward compatibility during repository updates.
   static (Recipe recipe, Map<String, dynamic> metadata) deserializeRealtimeRecipe(
-    DocumentSnapshot doc
+    String id, Map<String, dynamic> data
   ) {
-    final data = doc.data() as Map<String, dynamic>;
-    final metadataMap = RealtimeResource.parseFirestoreMetadata(data, doc.id);
-
     // Parse recipe data
     final recipeData = data['recipe'] as Map<String, dynamic>? ?? {};
-    final recipe = deserializeRecipe(recipeData, doc.id);
+    final recipe = deserializeRecipe(recipeData, id);
+
+    // Extract metadata without Firebase-specific parsing
+    final metadataMap = {
+      'id': id,
+      'ownerId': data['ownerId'] as String,
+      'ownerDisplayName': data['ownerDisplayName'] as String,
+      'participants': data['participants'] as Map<String, dynamic>? ?? {},
+      'createdAt': data['createdAt'], // Repository provides DateTime
+      'lastEditedAt': data['lastEditedAt'], // Repository provides DateTime
+      'lastEditedBy': data['lastEditedBy'] as String,
+      'lastEditedByDisplayName': data['lastEditedByDisplayName'] as String,
+      'editCount': data['editCount'] as int? ?? 0,
+      'isActive': data['isActive'] as bool? ?? true,
+      'metadata': data['metadata'] as Map<String, dynamic>? ?? {},
+    };
 
     return (recipe, metadataMap);
   }
@@ -207,13 +226,11 @@ class RecipeSerialization {
 
   // ===== HELPER METHODS =====
 
-  /// Parse timestamp from various formats
+  /// Parse timestamp from various formats (repository-agnostic)
+  /// 
+  /// Repositories should provide DateTime objects, but this handles legacy formats.
   static DateTime? _parseTimestamp(dynamic timestamp) {
     if (timestamp == null) return null;
-    
-    if (timestamp is Timestamp) {
-      return timestamp.toDate();
-    }
     
     if (timestamp is DateTime) {
       return timestamp;
@@ -227,6 +244,7 @@ class RecipeSerialization {
       return DateTime.fromMillisecondsSinceEpoch(timestamp);
     }
     
+    // Note: Firebase Timestamp handling moved to repository layer
     return null;
   }
 

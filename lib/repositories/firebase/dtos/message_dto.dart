@@ -28,7 +28,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/models/messaging/message_type.dart';
+// MessageStatus is already available through message.dart import
 /// Firebase DTO for message data serialization with comprehensive status tracking and metadata support.
 ///
 /// This static utility class provides sophisticated bidirectional conversion between Message domain

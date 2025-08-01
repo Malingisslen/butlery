@@ -1,5 +1,4 @@
 // Merged from shopping_cache_management.dart + shopping_conflict_resolver.dart
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 

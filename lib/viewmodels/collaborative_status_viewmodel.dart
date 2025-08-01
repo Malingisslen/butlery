@@ -6,7 +6,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
@@ -75,11 +75,11 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
 
   CollaborativeStatusViewModel({
     SocialRecipeService? socialRecipeService,
-  })  : _socialRecipeService = socialRecipeService ?? sl<SocialRecipeService>();
+  })  : _socialRecipeService = socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
 
   // ===== PUBLIC GETTERS =====
 
-  String? get currentUserId => sl<PermissionService>().currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
 
   // ===== SAFE NOTIFICATION HELPER =====
   

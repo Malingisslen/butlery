@@ -198,6 +198,41 @@ class ComponentThemes {
     );
   }
 
+  // ===== SOCIAL DISCOVERY THEMES =====
+
+  /// Trending recipe card decoration following design system
+  static BoxDecoration get trendingRecipeCardDecoration {
+    return BoxDecoration(
+      color: AppColors.primaryContainer.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      border: Border.all(
+        color: AppColors.primary.withValues(alpha: 0.2),
+      ),
+    );
+  }
+
+  /// Activity timeline item decoration following design system  
+  static BoxDecoration get activityTimelineItemDecoration {
+    return BoxDecoration(
+      color: AppColors.secondaryContainer.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      border: Border.all(
+        color: AppColors.secondary.withValues(alpha: 0.2),
+      ),
+    );
+  }
+
+  /// Empty state container decoration following design system
+  static BoxDecoration get emptyStateContainerDecoration {
+    return BoxDecoration(
+      color: AppColors.primaryContainer.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      border: Border.all(
+        color: AppColors.primary.withValues(alpha: 0.2),
+      ),
+    );
+  }
+
   // ===== APP BAR THEMES =====
 
   /// App bar theme - follows design spec for blue header with white text

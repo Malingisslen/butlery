@@ -27,17 +27,64 @@ import 'package:butlery/services/unified/operations/realtime_recipe/collaboratio
 import 'package:butlery/services/unified/operations/realtime_recipe/presence_tracking_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 
-/// Realtime recipe operations feature interface
+/// Comprehensive realtime recipe operations providing advanced collaborative editing and real-time synchronization systems.
+///
+/// This operations coordinator implements sophisticated real-time collaborative editing functionality following Single Responsibility Principle,
+/// orchestrating specialized modules for different aspects of real-time collaboration including live editing, presence tracking, conflict
+/// resolution, and notification management. It provides comprehensive real-time capabilities while maintaining clean modular architecture
+/// with focused single-responsibility modules.
+///
+/// **Single Responsibility Focus:**
+/// This coordinator exclusively orchestrates real-time collaborative operations:
+/// - **Real-time Stream Management**: Live recipe watching with automatic retry and multi-recipe synchronization
+/// - **Collaborative Editing**: Advanced editing operations with conflict resolution and batch processing capabilities
+/// - **Presence Tracking**: Real-time user presence monitoring with heartbeat management and activity analytics
+/// - **Collaboration Management**: Recipe collaboration lifecycle with member management and permission control
+///
+/// **What This Coordinator Does NOT Handle:**
+/// - Basic recipe CRUD operations (handled by parent UnifiedRecipeService)
+/// - Static recipe data management (handled by recipe operations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Modular Architecture:**
+/// - **RealtimeWatchingModule**: Stream management for watching recipes with connection monitoring and retry logic
+/// - **RealtimeEditingModule**: Edit operations and conflict resolution with validation and batch processing
+/// - **CollaborationManagementModule**: Enable/disable collaborative editing with member and permission management
+/// - **PresenceTrackingModule**: User presence tracking and management with automatic heartbeat and statistics
+/// - **RealtimeNotificationModule**: Collaboration notifications with event broadcasting and member communication
+///
+/// **Realtime Features:**
+/// - **Live Synchronization**: Real-time recipe updates with automatic conflict resolution and optimistic UI updates
+/// - **Multi-User Collaboration**: Advanced collaborative editing with presence awareness and activity tracking
+/// - **Connection Management**: Robust connection handling with automatic retry and offline capability detection
+/// - **Conflict Resolution**: Intelligent conflict detection and resolution with manual and automatic strategies
+/// - **Analytics Integration**: Comprehensive collaboration analytics with editing statistics and usage insights
+///
+/// **Usage Examples:**
+/// ```dart
+/// final realtimeOps = RealtimeRecipeOperations(parentService, realtimeSyncService);
 /// 
-/// Clean coordinator that delegates to focused single-responsibility modules:
-/// - RealtimeWatchingModule: Stream management for watching recipes
-/// - RealtimeEditingModule: Edit operations and conflict resolution
-/// - CollaborationManagementModule: Enable/disable collaborative editing
-/// - PresenceTrackingModule: User presence tracking and management
-/// - RealtimeNotificationModule: Collaboration notifications
+/// // Real-time watching
+/// final recipeStream = realtimeOps.watchRecipe('recipe_123');
+/// recipeStream.listen((recipe) => updateUI(recipe));
 /// 
-/// This coordinator maintains backward compatibility while providing
-/// a clean, modular architecture for real-time collaborative editing.
+/// // Collaborative editing
+/// await realtimeOps.enableCollaborativeEditing(recipeId, memberIds);
+/// await realtimeOps.startRealtimeEditing(recipeId);
+/// 
+/// // Real-time edits with conflict resolution
+/// await realtimeOps.makeRealtimeEdit(
+///   recipeId: recipeId,
+///   changes: {'title': 'Uppdaterat recept', 'servings': 4},
+///   editDescription: 'Ändrade titel och portioner',
+/// );
+/// 
+/// // Presence tracking
+/// await realtimeOps.showPresence(recipeId);
+/// final presence = await realtimeOps.getRecipePresence(recipeId);
+/// final presenceStream = realtimeOps.watchRecipePresence(recipeId);
+/// ```
 
 // Export conflict info class for backward compatibility
 export 'realtime_recipe/realtime_editing_module.dart' show ConflictInfo;

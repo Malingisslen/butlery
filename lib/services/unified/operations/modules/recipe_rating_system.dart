@@ -3,7 +3,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for recipe rating system
 /// 
@@ -19,7 +19,7 @@ class RecipeRatingSystem {
 
   RecipeRatingSystem({
     RatingsRepository? ratingsRepository,
-  }) : _ratingsRepository = ratingsRepository ?? sl<RatingsRepository>();
+  }) : _ratingsRepository = ratingsRepository ?? ServiceLocator.get<RatingsRepository>();
 
   // ===== RATING OPERATIONS =====
 
