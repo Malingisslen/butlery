@@ -109,12 +109,4 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout() => signOut();
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }

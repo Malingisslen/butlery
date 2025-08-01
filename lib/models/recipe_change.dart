@@ -172,12 +172,4 @@ class RecipeChange {
   /// data structures requiring hash-based operations and change identification.
   @override
   int get hashCode => Object.hash(type, recipe.id);
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }

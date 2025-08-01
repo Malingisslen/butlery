@@ -540,12 +540,4 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     'hasExtractedContent': hasExtractedText,
     'extractedContentLength': hasExtractedText ? extractedText.length : 0,
   };
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }
