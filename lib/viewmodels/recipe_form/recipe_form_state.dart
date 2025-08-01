@@ -274,12 +274,4 @@ class RecipeFormState extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  @override
-  void dispose() {
-    _ingredientsManager.dispose();
-    _instructionsManager.dispose();
-    _tagsManager.dispose();
-    super.dispose();
-  }
 }

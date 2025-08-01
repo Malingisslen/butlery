@@ -176,12 +176,4 @@ abstract class Repository<T> {
   /// assert(deletedUser == null);
   /// ```
   Future<void> delete(String id);
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }

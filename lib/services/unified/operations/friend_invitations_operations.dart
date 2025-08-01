@@ -592,12 +592,4 @@ class BulkOperationResult {
   double get successRate => totalOperations > 0 ? successful.length / totalOperations : 0.0;
   bool get hasFailures => failed.isNotEmpty;
   bool get allSuccessful => failed.isEmpty && totalOperations > 0;
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }

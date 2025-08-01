@@ -268,12 +268,4 @@ class ResourcePermissionHelper {
   static bool canEditContent(ResourcePermission userPermission, ResourcePermission requiredPermission) {
     return isHigherThan(userPermission, requiredPermission) || userPermission == requiredPermission;
   }
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }

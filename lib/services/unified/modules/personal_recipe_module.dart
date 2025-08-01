@@ -532,12 +532,4 @@ class PersonalRecipeModule {
   void clearError() {
     // This would be handled by the parent service
   }
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }

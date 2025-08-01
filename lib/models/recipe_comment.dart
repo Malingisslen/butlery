@@ -481,12 +481,4 @@ class RecipeComment {
   /// data structures requiring hash-based operations and comment identification.
   @override
   int get hashCode => id.hashCode;
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
 }
