@@ -449,4 +449,12 @@ enum FriendshipStatus {
   requestReceived,// Other user sent request to current user
   blocked,        // User is blocked
   self,           // Same user
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

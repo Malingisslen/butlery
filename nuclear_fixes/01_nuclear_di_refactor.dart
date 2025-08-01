@@ -140,7 +140,7 @@ Future<FileProcessResult> _processFile(File file) async {
         final importLine = "import 'package:butlery/core/providers/application_provider.dart';\n";
         
         // Find the last import line to insert after it
-        final importRegex = RegExp(r"^import\s+['\"][^'\"]*['\"];?\s*$", multiLine: true);
+        final importRegex = RegExp(r"^import\s+['\"][^'\"]*['\"];?\s*\$", multiLine: true);
         final matches = importRegex.allMatches(modifiedContent).toList();
         
         if (matches.isNotEmpty) {

@@ -380,7 +380,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
   /// Handle page change
   void _onPageChanged(int index) {
-    setState(() {
+    if (mounted) setState(() {
       _currentIndex = index;
     });
   }
@@ -404,7 +404,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       return;
     }
 
-    setState(() {
+    if (mounted) setState(() {
       _isAddingImage = true;
     });
 
@@ -431,7 +431,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       AppLogger.error('Failed to add images: $e');
     } finally {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isAddingImage = false;
         });
       }

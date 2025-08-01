@@ -57,7 +57,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             // Comments header with expand/collapse
             InkWell(
               onTap: () {
-                setState(() {
+                if (mounted) setState(() {
                   _isCommentsExpanded = !_isCommentsExpanded;
                 });
               },
@@ -257,7 +257,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      setState(() {
+                      if (mounted) setState(() {
                         _replyingToCommentId = null;
                         _replyingToUserName = null;
                       });
@@ -366,7 +366,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 // Reply button
                 IconButton(
                   onPressed: () {
-                    setState(() {
+                    if (mounted) setState(() {
                       _replyingToCommentId = comment.id;
                       _replyingToUserName = comment.author?.displayName ?? 'Anonym';
                     });
@@ -471,7 +471,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
       // Clear form
       _commentController.clear();
-      setState(() {
+      if (mounted) setState(() {
         _replyingToCommentId = null;
         _replyingToUserName = null;
       });

@@ -52,7 +52,7 @@ class _DebouncedCheckboxState extends State<DebouncedCheckbox> {
   void _handleChanged(bool? newValue) {
     if (newValue == null || widget.onChanged == null) return;
     
-    setState(() {
+    if (mounted) setState(() {
       _currentValue = newValue;
     });
 

@@ -214,7 +214,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
     await Future.delayed(const Duration(milliseconds: 500));
 
     final result = await _detector.detectContent(widget.content);
-    setState(() {
+    if (mounted) setState(() {
       _detectionResult = result;
       _isProcessing = false;
     });
@@ -308,7 +308,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
   Future<void> _extractFromSocialMedia() async {
     if (_detectionResult.extractedUrl == null) return;
 
-    setState(() {
+    if (mounted) setState(() {
       _isExtracting = true;
       _extractionError = null;
     });
@@ -349,7 +349,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
             );
 
             if (mounted) {
-              setState(() {
+              if (mounted) setState(() {
                 _extractionError = errorMessage;
                 _isExtracting = false;
               });
@@ -369,7 +369,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
           errorType: 'exception',
         );
 
-        setState(() {
+        if (mounted) setState(() {
           _extractionError = 'Ett fel uppstod: ${e.toString()}';
           _isExtracting = false;
         });

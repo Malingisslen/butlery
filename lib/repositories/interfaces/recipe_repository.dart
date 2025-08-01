@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Repository interface for recipe data operations and management.
 ///
@@ -55,7 +56,7 @@ import 'package:butlery/models/recipe_change.dart';
 /// final selectedRecipe = await recipeRepo.fetchArchiveRecipe(recipeId);
 /// await recipeRepo.create(selectedRecipe.copyWith(ownerId: currentUserId));
 /// ```
-abstract class RecipeRepository extends Repository<Recipe> {
+abstract class RecipeRepository extends Repository<Recipe> with StreamManagementMixin {
   /// Provides a real-time stream of all recipes belonging to the specified user.
   ///
   /// Returns a [Stream] that emits updated recipe lists whenever recipes are
@@ -81,7 +82,7 @@ abstract class RecipeRepository extends Repository<Recipe> {
   /// late StreamSubscription subscription;
   /// subscription = recipeRepo.watchRecipes(currentUserId).listen(
   ///   (recipes) {
-  ///     setState(() {
+  ///     if (mounted) setState(() {
   ///       userRecipes = recipes;
   ///     });
   ///   },
@@ -267,16 +268,16 @@ abstract class RecipeRepository extends Repository<Recipe> {
   /// Example:
   /// ```dart
   /// // Load archive recipes with loading state
-  /// setState(() { isLoadingArchive = true; });
+  /// if (mounted) setState(() { isLoadingArchive = true; });
   /// try {
   ///   final archiveRecipes = await recipeRepo.fetchArchiveRecipes();
-  ///   setState(() {
+  ///   if (mounted) setState(() {
   ///     availableRecipes = archiveRecipes;
   ///     isLoadingArchive = false;
   ///   });
   /// } catch (e) {
   ///   handleArchiveError(e);
-  ///   setState(() { isLoadingArchive = false; });
+  ///   if (mounted) setState(() { isLoadingArchive = false; });
   /// }
   /// 
   /// // Import selected recipe

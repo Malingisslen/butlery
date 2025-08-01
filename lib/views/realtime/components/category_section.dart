@@ -67,7 +67,7 @@ class _CategorySectionState extends State<CategorySection>
   }
 
   void _toggleExpanded() {
-    setState(() {
+    if (mounted) setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
         _expandController.forward();

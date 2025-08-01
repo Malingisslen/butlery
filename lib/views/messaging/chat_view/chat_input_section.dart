@@ -52,7 +52,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   void _onTextChanged() {
     final isComposing = _textController.text.trim().isNotEmpty;
     if (isComposing != _isComposing) {
-      setState(() {
+      if (mounted) setState(() {
         _isComposing = isComposing;
       });
     }
@@ -60,7 +60,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
   void _onFocusChanged() {
     if (_focusNode.hasFocus && _showAttachments) {
-      setState(() {
+      if (mounted) setState(() {
         _showAttachments = false;
       });
     }
@@ -75,7 +75,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       
       // Clear input immediately for responsive UX
       _textController.clear();
-      setState(() {
+      if (mounted) setState(() {
         _isComposing = false;
       });
 
@@ -88,14 +88,14 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       
       // Restore text on error
       _textController.text = text;
-      setState(() {
+      if (mounted) setState(() {
         _isComposing = true;
       });
     }
   }
 
   void _toggleAttachments() {
-    setState(() {
+    if (mounted) setState(() {
       _showAttachments = !_showAttachments;
     });
     
@@ -109,7 +109,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       AppLogger.debug('Handling attachment: $type');
       
       // Hide attachments panel
-      setState(() {
+      if (mounted) setState(() {
         _showAttachments = false;
       });
 

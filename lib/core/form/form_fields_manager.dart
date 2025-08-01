@@ -85,12 +85,12 @@
 ///   
 ///   void _addStep() {
 ///     _stepsManager.addController();
-///     setState(() {});
+///     if (mounted) setState(() {});
 ///   }
 ///   
 ///   void _removeStep(int index) {
 ///     _stepsManager.removeController(index);
-///     setState(() {});
+///     if (mounted) setState(() {});
 ///   }
 /// }
 /// ```

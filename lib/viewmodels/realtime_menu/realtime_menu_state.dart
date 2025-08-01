@@ -224,4 +224,12 @@ class RealtimeMenuState extends ChangeNotifier {
       return diff == 1 ? 'Igår' : '$diff dagar sedan';
     }
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

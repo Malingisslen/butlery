@@ -6,6 +6,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Firebase Firestore implementation for recipe data operations and real-time synchronization.
 ///
@@ -58,7 +59,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// final results = await recipeRepo.searchRecipes('chicken');
 /// // Searches within 200 most recent recipes
 /// ```
-class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
+class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe> with StreamManagementMixin
     with UserScopedFirebaseRepository<Recipe>
     implements RecipeRepository {
   // ignore: use_super_parameters

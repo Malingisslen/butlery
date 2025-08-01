@@ -284,7 +284,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   }
 
   Future<void> _loadInitialActivities() async {
-    setState(() {
+    if (mounted) setState(() {
       _isLoading = true;
       _hasError = false;
     });
@@ -296,7 +296,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       );
 
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _activities = activities;
           _isLoading = false;
           _hasMoreActivities = activities.length >= widget.initialLimit;
@@ -310,7 +310,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoading = false;
           _hasError = true;
           _errorMessage = e.toString();
@@ -322,7 +322,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   Future<void> _loadMoreActivities() async {
     if (_isLoadingMore || !_hasMoreActivities) return;
 
-    setState(() {
+    if (mounted) setState(() {
       _isLoadingMore = true;
     });
 
@@ -334,7 +334,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       );
 
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _activities.addAll(moreActivities);
           _isLoadingMore = false;
           _hasMoreActivities = moreActivities.length >= 20;
@@ -348,7 +348,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoadingMore = false;
         });
       }
@@ -367,7 +367,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
             : activities;
         
         if (newActivities.isNotEmpty) {
-          setState(() {
+          if (mounted) setState(() {
             _hasUnseenActivities = true;
             _unseenActivityCount = newActivities.length;
           });
@@ -378,7 +378,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
 
   Future<void> _refreshFeed() async {
     await _loadInitialActivities();
-    setState(() {
+    if (mounted) setState(() {
       _hasUnseenActivities = false;
       _unseenActivityCount = 0;
     });
@@ -516,7 +516,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   Future<void> _hideActivity(ActivityFeedItem activity) async {
     try {
       await _activityService.hideActivity(activity.id);
-      setState(() {
+      if (mounted) setState(() {
         _activities.removeWhere((a) => a.id == activity.id);
       });
       
@@ -537,7 +537,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   Future<void> _blockActivityType(ActivityType activityType) async {
     try {
       await _activityService.blockActivityType(activityType);
-      setState(() {
+      if (mounted) setState(() {
         _activities.removeWhere((a) => a.type == activityType);
       });
       
@@ -582,7 +582,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
                 title: Text(type.displayName),
                 value: isSelected,
                 onChanged: (value) {
-                  setState(() {
+                  if (mounted) setState(() {
                     _selectedActivityTypes ??= ActivityType.values.where((t) => t != ActivityType.unknown).toList();
                     if (value == true) {
                       _selectedActivityTypes!.add(type);

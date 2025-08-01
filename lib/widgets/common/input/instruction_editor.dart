@@ -53,7 +53,7 @@ class _InstructionEditorState extends State<InstructionEditor> {
     final before = text.substring(0, selection.start);
     final after = text.substring(selection.end);
 
-    setState(() {
+    if (mounted) setState(() {
       controller.text = before;
       controller.selection = TextSelection.collapsed(offset: before.length);
       final newController = TextEditingController(text: after);

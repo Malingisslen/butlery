@@ -142,7 +142,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
-        setState(() {
+        if (mounted) setState(() {
           _currentTabIndex = _tabController.index;
         });
       }
@@ -155,7 +155,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         final tabIndex = args['tabIndex'] as int;
         if (tabIndex >= 0 && tabIndex < 3) {
           _tabController.animateTo(tabIndex);
-          setState(() {
+          if (mounted) setState(() {
             _currentTabIndex = tabIndex;
           });
         }
@@ -170,7 +170,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   void _onSearchChanged(String query) {
-    setState(() {
+    if (mounted) setState(() {
       _searchQuery = query;
     });
     final viewModel = context.read<FriendsViewModel>();
@@ -339,7 +339,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
     if (result == true && mounted) {
       SnackBarUtils.showSuccess(context, 'Gruppen skapades! 🎉');
-      setState(() {}); // Uppdatera vyn
+      if (mounted) setState(() {}); // Uppdatera vyn
     }
   }
 

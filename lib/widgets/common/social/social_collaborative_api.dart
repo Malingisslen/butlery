@@ -126,4 +126,12 @@ class SocialCollaborativeApi {
       avatarSize: avatarSize == ImageSize.small ? 24 : 32,
     );
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

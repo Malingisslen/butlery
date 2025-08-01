@@ -32,6 +32,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Real-time connectivity monitoring service with comprehensive network and Firebase status management.
 ///
@@ -71,7 +72,7 @@ import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 /// // Check current connectivity status
 /// final status = await connectivityService.getCurrentConnectivity();
 /// ```
-class ConnectivityMonitoringService extends ChangeNotifier {
+class ConnectivityMonitoringService extends ChangeNotifier with StreamManagementMixin {
   final ConnectivityRepository _connectivityRepository;
   
   // For backwards compatibility, maintain singleton pattern

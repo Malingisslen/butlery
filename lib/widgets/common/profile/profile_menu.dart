@@ -77,7 +77,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
                   .length;
 
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _pendingRequestsCount = friendsViewModel.pendingRequestsCount;
           _sharedItemsCount = newSharedItems;
         });
@@ -392,5 +392,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
   String _formatDate(DateTime? date) {
     if (date == null) return 'Okänt';
     return DateFormat('yyyy-MM-dd').format(date);
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

@@ -26,6 +26,7 @@ import 'package:butlery/services/unified/operations/realtime_recipe/realtime_edi
 import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/presence_tracking_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive realtime recipe operations providing advanced collaborative editing and real-time synchronization systems.
 ///
@@ -90,7 +91,7 @@ import 'package:butlery/services/unified/operations/realtime_recipe/realtime_not
 export 'realtime_recipe/realtime_editing_module.dart' show ConflictInfo;
 export 'realtime_recipe/realtime_watching_module.dart' show ConnectionStatus;
 
-class RealtimeRecipeOperations extends BaseService {
+class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   @override
   String get serviceName => 'RealtimeRecipeOperations';
   final dynamic _parent; // UnifiedRecipeService
@@ -656,5 +657,13 @@ class RealtimeRecipeOperations extends BaseService {
       },
       operationName: 'Dispose RealtimeRecipeOperations',
     );
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

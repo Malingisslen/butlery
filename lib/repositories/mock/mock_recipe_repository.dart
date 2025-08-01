@@ -3,9 +3,10 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/repositories/mock/in_memory_repository.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// In-memory implementation of [RecipeRepository] for tests.
-class MockRecipeRepository extends InMemoryRepository<Recipe>
+class MockRecipeRepository extends InMemoryRepository<Recipe> with StreamManagementMixin
     implements RecipeRepository {
   MockRecipeRepository() : super((r) => r.id);
 

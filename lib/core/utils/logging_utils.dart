@@ -682,4 +682,12 @@ extension LoggingExtensions on String {
   void logError([Map<String, dynamic>? metadata]) {
     LoggingUtils._log(LogLevel.error, this, metadata);
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

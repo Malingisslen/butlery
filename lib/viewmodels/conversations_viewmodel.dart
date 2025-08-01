@@ -98,6 +98,7 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive conversations list ViewModel providing advanced messaging coordination through service integration.
 ///
@@ -111,7 +112,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Conversation creation and management including direct messages and group conversations
 /// - Messaging state coordination with loading states, error handling, and operation status tracking
 /// - Swedish localized error messages and user feedback coordination
-class ConversationsViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin with ErrorHandlingMixin {
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
 

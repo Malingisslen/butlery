@@ -109,6 +109,7 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive chat ViewModel providing advanced real-time messaging through service integration.
 ///
@@ -122,7 +123,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Typing indicator coordination with user presence tracking and automatic cleanup
 /// - Conversation interaction state management with loading states and comprehensive error handling
 /// - Swedish localized error messages and user feedback coordination
-class ChatViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class ChatViewModel extends ChangeNotifier with StreamManagementMixin with ErrorHandlingMixin {
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
   

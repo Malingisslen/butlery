@@ -14,8 +14,9 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Manages real-time collaborative editing for recipe forms
-class RecipeCollaborativeManager extends ChangeNotifier {
+class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMixin {
   final PermissionService _permissionService;
   final CollaborativeRecipeRepository _collaborativeRepository;
   final ConnectivityMonitoringService _connectivityService;

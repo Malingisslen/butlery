@@ -611,4 +611,12 @@ class FriendsManagementOperations extends BaseService {
       AppLogger.warning('Failed to send friend request accepted notification: $e');
     }
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

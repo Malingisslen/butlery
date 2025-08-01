@@ -34,7 +34,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   }
 
   Future<void> _loadSavedMenus() async {
-    setState(() {
+    if (mounted) setState(() {
       _isLoading = true;
     });
 
@@ -43,14 +43,14 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       await widget.viewModel.refreshSavedMenus(); // Ensure menus are loaded
       
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _savedMenus = widget.viewModel.savedMenus;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoading = false;
         });
       }
@@ -281,7 +281,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         
         if (mounted) {
           if (success) {
-            setState(() {
+            if (mounted) setState(() {
               _savedMenus.remove(menu);
             });
             ScaffoldMessenger.of(context).showSnackBar(
@@ -310,5 +310,13 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         }
       }
     }
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

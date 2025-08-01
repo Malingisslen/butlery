@@ -54,7 +54,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
   Future<void> _updateGroup() async {
     if (!_formKey.currentState!.validate()) return;
     
-    setState(() {
+    if (mounted) setState(() {
       _isUpdating = true;
       _error = null;
     });
@@ -76,18 +76,18 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
           Navigator.of(context).pop(true);
         }
       } else {
-        setState(() {
+        if (mounted) setState(() {
           _error = 'Kunde inte uppdatera grupp. Försök igen.';
         });
       }
     } catch (e) {
       AppLogger.error('Error updating group', e);
-      setState(() {
+      if (mounted) setState(() {
         _error = 'Ett fel uppstod: ${e.toString()}';
       });
     } finally {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isUpdating = false;
         });
       }
@@ -122,7 +122,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                     EmojiSelector(
                       selectedEmoji: _selectedEmoji,
                       onEmojiSelected: (emoji) {
-                        setState(() {
+                        if (mounted) setState(() {
                           _selectedEmoji = emoji;
                         });
                       },

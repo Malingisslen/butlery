@@ -57,7 +57,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           // Header with expand/collapse
           InkWell(
             onTap: () {
-              setState(() {
+              if (mounted) setState(() {
                 _isCommentsExpanded = !_isCommentsExpanded;
               });
 
@@ -521,5 +521,13 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     } else {
       return '${dateTime.day}/${dateTime.month}';
     }
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

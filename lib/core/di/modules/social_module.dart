@@ -347,4 +347,12 @@ class SocialModuleFactory {
     // In future, this could customize the module based on config
     return SocialModule();
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

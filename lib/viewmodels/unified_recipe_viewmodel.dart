@@ -112,12 +112,13 @@ import 'package:butlery/viewmodels/recipe/personal_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe/realtime_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Comprehensive unified recipe ViewModel providing advanced recipe management and operations through focused architecture.
 ///
 /// Serves as the main facade coordinating specialized ViewModels for recipe operations, providing unified API
 /// for personal recipes, collaborative features, real-time editing, and advanced querying while maintaining
 /// clean MVVM architecture separation and backward compatibility with existing application interfaces.
-class UnifiedRecipeViewModel extends ChangeNotifier {
+class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   // ===== FOCUSED VIEWMODEL ARCHITECTURE =====
