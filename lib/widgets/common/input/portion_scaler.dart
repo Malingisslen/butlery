@@ -66,7 +66,7 @@ class _PortionScalerState extends State<PortionScaler>
       return;
     }
 
-    setState(() {
+    if (mounted) setState(() {
       _currentPortions = newPortions;
       _scaledIngredients = PortionScalerLogic.scaleIngredients(
         widget.originalIngredients,
@@ -85,7 +85,7 @@ class _PortionScalerState extends State<PortionScaler>
   }
 
   void _toggleUnitConversion() {
-    setState(() {
+    if (mounted) setState(() {
       _convertToSwedish = !_convertToSwedish;
       _scaledIngredients = PortionScalerLogic.scaleIngredients(
         widget.originalIngredients,

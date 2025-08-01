@@ -52,7 +52,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   Future<void> _createGroup() async {
     if (!_formKey.currentState!.validate()) return;
     
-    setState(() {
+    if (mounted) setState(() {
       _isCreating = true;
       _error = null;
     });
@@ -74,17 +74,17 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           Navigator.of(context).pop(true);
         }
       } else {
-        setState(() {
+        if (mounted) setState(() {
           _error = 'Kunde inte skapa grupp. Försök igen.';
         });
       }
     } catch (e) {
-      setState(() {
+      if (mounted) setState(() {
         _error = 'Ett fel uppstod: ${e.toString()}';
       });
     } finally {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isCreating = false;
         });
       }
@@ -119,7 +119,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                     EmojiSelector(
                       selectedEmoji: _selectedEmoji,
                       onEmojiSelected: (emoji) {
-                        setState(() {
+                        if (mounted) setState(() {
                           _selectedEmoji = emoji;
                         });
                       },

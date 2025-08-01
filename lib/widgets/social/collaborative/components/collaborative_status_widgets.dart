@@ -287,4 +287,12 @@ class _CollaborativeAppBar extends StatelessWidget implements PreferredSizeWidge
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

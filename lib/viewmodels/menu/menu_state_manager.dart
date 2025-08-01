@@ -148,4 +148,12 @@ class SavedMenuInfo {
     if (isOwned) return 'restaurantMenu';
     return 'person';
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

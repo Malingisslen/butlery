@@ -730,6 +730,14 @@ const String _codeDocumentationJson = r'''
     "connectedTo": "RealtimeSyncService, Recipe models, collaborative recipe views",
     "usedInPhases": "Fas 2 (Recipe + Gruppstöd) - Recipe-specific real-time operations"
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }
 ''';
 

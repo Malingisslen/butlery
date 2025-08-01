@@ -262,4 +262,12 @@ class LiveEditor {
   String toString() {
     return 'LiveEditor(userId: $userId, displayName: $displayName, isActive: $isActive, currentField: $currentField)';
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

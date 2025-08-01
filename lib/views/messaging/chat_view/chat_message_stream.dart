@@ -53,7 +53,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       final messages = <Message>[];
       
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _messages.clear();
           _messages.addAll(messages);
           _isLoading = false;
@@ -68,7 +68,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     } catch (e) {
       AppLogger.error('Failed to initialize message stream', e);
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoading = false;
           _error = 'Ett fel uppstod';
         });
@@ -92,7 +92,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       final messages = <Message>[];
       
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _messages.clear();
           _messages.addAll(messages);
           _error = null;
@@ -101,7 +101,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     } catch (e) {
       AppLogger.error('Failed to refresh messages', e);
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _error = 'Ett fel uppstod';
         });
       }

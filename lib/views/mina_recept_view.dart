@@ -523,7 +523,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               ],
             ),
             onPressed: () {
-              setState(() {
+              if (mounted) setState(() {
                 _showFilters = !_showFilters;
               });
             },
@@ -759,5 +759,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         ],
       ),
     );
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

@@ -196,7 +196,7 @@ class _AddUnifiedShoppingItemDialogState
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setState(() {
+                          if (mounted) setState(() {
                             _selectedUnit = value;
                           });
                         }
@@ -235,7 +235,7 @@ class _AddUnifiedShoppingItemDialogState
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
-                    setState(() {
+                    if (mounted) setState(() {
                       _selectedCategory = value;
                     });
                   }

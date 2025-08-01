@@ -767,4 +767,12 @@ extension StringExtension on String {
     if (isEmpty) return this;
     return this[0].toUpperCase() + substring(1);
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

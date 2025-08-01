@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Menu Rating and Comments Widget
 /// 
 /// Displays rating stars, comments, and allows users to rate and comment on menus
-class MenuRatingCommentsWidget extends StatefulWidget {
+class MenuRatingCommentsWidget extends StatefulWidget with StreamManagementMixin {
   final String menuId;
   final double averageRating;
   final int ratingsCount;
@@ -443,7 +444,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
-                      setState(() {
+                      if (mounted) setState(() {
                         _replyToCommentId = null;
                         _replyToDisplayName = null;
                       });
@@ -583,7 +584,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
               const SizedBox(width: AppDimensions.spacingM),
               GestureDetector(
                 onTap: () {
-                  setState(() {
+                  if (mounted) setState(() {
                     _replyToCommentId = comment['id'];
                     _replyToDisplayName = commentedByDisplayName;
                   });
@@ -707,7 +708,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                 final starRating = index + 1;
                 return GestureDetector(
                   onTap: () {
-                    setState(() {
+                    if (mounted) setState(() {
                       _selectedRating = starRating.toDouble();
                     });
                   },
@@ -753,7 +754,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
     if (comment.isNotEmpty) {
       widget.onComment(comment, _replyToCommentId);
       _commentController.clear();
-      setState(() {
+      if (mounted) setState(() {
         _replyToCommentId = null;
         _replyToDisplayName = null;
       });

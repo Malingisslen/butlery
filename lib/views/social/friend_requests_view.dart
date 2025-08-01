@@ -59,14 +59,14 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   }
 
   void _clearSelection() {
-    setState(() {
+    if (mounted) setState(() {
       _selectedIncoming.clear();
       _selectedSent.clear();
     });
   }
 
   void _onIncomingSelectionChanged(String requestId, bool selected) {
-    setState(() {
+    if (mounted) setState(() {
       if (selected) {
         _selectedIncoming.add(requestId);
       } else {
@@ -76,7 +76,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   }
 
   void _onSentSelectionChanged(String requestId, bool selected) {
-    setState(() {
+    if (mounted) setState(() {
       if (selected) {
         _selectedSent.add(requestId);
       } else {

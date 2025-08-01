@@ -165,7 +165,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       subtitle: const Text('Dela denna meny med valda vänner'),
       value: _enableSocialSharing,
       onChanged: _isLoading ? null : (value) {
-        setState(() {
+        if (mounted) setState(() {
           _enableSocialSharing = value;
           if (!value) {
             _selectedFriendIds.clear();
@@ -221,7 +221,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   Future<void> _saveMenu() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
+    if (mounted) setState(() {
       _isLoading = true;
     });
 
@@ -255,7 +255,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(

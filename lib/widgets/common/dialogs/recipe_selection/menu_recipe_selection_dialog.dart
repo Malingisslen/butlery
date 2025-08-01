@@ -111,7 +111,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
         SearchFilterWidget.searchOnly(
           searchQuery: _searchQuery,
           onSearchChanged: (query) {
-            setState(() {
+            if (mounted) setState(() {
               _searchQuery = query;
             });
           },
@@ -127,7 +127,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           child: filteredRecipes.isEmpty && _searchQuery.isNotEmpty
               ? StateWidget.noSearchResults(
                   onAction: () {
-                    setState(() {
+                    if (mounted) setState(() {
                       _searchQuery = '';
                     });
                   },
@@ -142,7 +142,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                       recipe: unifiedRecipe,
                       isSelected: isSelected,
                       onSelectionChanged: (selected) {
-                        setState(() {
+                        if (mounted) setState(() {
                           if (selected) {
                             _selectedRecipeIds.add(unifiedRecipe.id);
                           } else {
@@ -183,7 +183,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           const Spacer(),
           TextButton(
             onPressed: () {
-              setState(() {
+              if (mounted) setState(() {
                 _selectedRecipeIds.clear();
               });
             },
@@ -322,5 +322,13 @@ class MenuRecipeListItem extends StatelessWidget {
         size: AppDimensions.iconSizeAction,
       ),
     );
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

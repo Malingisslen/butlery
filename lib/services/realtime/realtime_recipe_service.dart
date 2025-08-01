@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 // Focused modules
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
 import 'package:butlery/services/realtime/modules/recipe_participants.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Clean facade for realtime recipe management using focused modules
 ///
@@ -20,7 +21,7 @@ import 'package:butlery/services/realtime/modules/recipe_participants.dart';
 /// - RecipeParticipants: Participant management (adding, removing, permissions)
 ///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
-class RealtimeRecipeService extends ChangeNotifier {
+class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
   final RealtimeSyncService _syncService;
   final PermissionService _permissionService;
 
@@ -515,5 +516,13 @@ class RealtimeRecipeService extends ChangeNotifier {
   void clearError() {
     _clearError();
     notifyListeners();
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

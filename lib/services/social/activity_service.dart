@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_re
 import 'package:butlery/models/social/activity_feed_item.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Universal activity service providing comprehensive social activity feed functionality
 ///
@@ -60,7 +61,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 ///   updateFeedUI(activities);
 /// });
 /// ```
-class ActivityService extends BaseService {
+class ActivityService extends BaseService with StreamManagementMixin {
   final ActivityRepository _activityRepository;
   final auth_repo.AuthRepository _authRepository;
 

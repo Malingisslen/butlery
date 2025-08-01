@@ -9,6 +9,7 @@ import 'package:butlery/models/social/reaction_type.dart';
 import 'package:butlery/models/social/reaction_statistics.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 // import 'package:butlery/services/notifications/notification_service.dart' as notifications;
 // import 'package:butlery/core/providers/application_provider.dart';
 
@@ -59,7 +60,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// reactionsService.getReactionStatisticsStream('recipe_123', 'recipe')
 ///   .listen((stats) => updateReactionCounts(stats));
 /// ```
-class ReactionsService extends BaseService {
+class ReactionsService extends BaseService with StreamManagementMixin {
   final ReactionsRepository _reactionsRepository;
   final auth_repo.AuthRepository _authRepository;
 

@@ -352,4 +352,12 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
     AppLogger.info('Generated menu ID: $menuId for menu with $dayCount days and $recipeCount recipes');
     return menuId;
   }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
+  }
 }

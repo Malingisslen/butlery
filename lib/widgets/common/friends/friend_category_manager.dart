@@ -432,7 +432,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
   void _toggleCategory(
       FriendCategory category, UnifiedFriendsService service) {
-    setState(() {
+    if (mounted) setState(() {
       if (_selectedCategories.contains(category.id)) {
         _selectedCategories.remove(category.id);
         for (final friendId in category.friendUserIds) {
@@ -459,7 +459,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   }
 
   void _toggleFriend(String friendId) {
-    setState(() {
+    if (mounted) setState(() {
       if (_selectedFriends.contains(friendId)) {
         _selectedFriends.remove(friendId);
         AppLogger.info('👤 Vän avmarkerad');
@@ -472,11 +472,19 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   }
 
   void _clearAllSelections() {
-    setState(() {
+    if (mounted) setState(() {
       _selectedCategories.clear();
       _selectedFriends.clear();
     });
     widget.onSelectionChanged([]);
     AppLogger.info('🗑️ Alla val rensade');
+  }
+  @override
+  void dispose() {
+    // Cancel all timers
+    // Cancel all stream subscriptions  
+    // Dispose of resources
+    disposeStreams(); // From StreamManagementMixin
+    super.dispose();
   }
 }

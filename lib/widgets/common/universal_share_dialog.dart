@@ -270,19 +270,19 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       _selectedFriendIds,
       _selectedGroupIds,
       _searchQuery,
-      (tab) => setState(() {
+      (tab) => if (mounted) setState(() {
         _selectedTab = tab;
         _searchQuery = ''; // Clear search when switching tabs
       }),
       (query) => setState(() => _searchQuery = query),
-      (friendId) => setState(() {
+      (friendId) => if (mounted) setState(() {
         if (_selectedFriendIds.contains(friendId)) {
           _selectedFriendIds.remove(friendId);
         } else {
           _selectedFriendIds.add(friendId);
         }
       }),
-      (groupId) => setState(() {
+      (groupId) => if (mounted) setState(() {
         if (_selectedGroupIds.contains(groupId)) {
           _selectedGroupIds.remove(groupId);
         } else {

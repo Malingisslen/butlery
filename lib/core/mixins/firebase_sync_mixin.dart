@@ -56,7 +56,7 @@
 /// 
 /// **After (centralized pattern):**
 /// ```dart
-/// class MyService extends ChangeNotifier with FirebaseSyncMixin<MyDataType> {
+/// class MyService extends ChangeNotifier with StreamManagementMixin with FirebaseSyncMixin<MyDataType> {
 ///   @override
 ///   List<SyncCollection> get syncCollections => [
 ///     SyncCollection(
@@ -141,6 +141,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Mixin that provides common Firebase sync functionality to services
 /// 

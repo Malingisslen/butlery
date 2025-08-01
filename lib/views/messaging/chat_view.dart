@@ -348,7 +348,7 @@ class _ChatViewState extends State<ChatView> {
     if (_conversation == null) {
       final conversation = await _messagingService.getConversation(widget.conversationId);
       if (conversation != null && mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _conversation = conversation;
         });
       }
@@ -372,7 +372,7 @@ class _ChatViewState extends State<ChatView> {
       limit: 50,
     ).listen((messages) {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _messages = messages;
           _isLoading = false;
         });
@@ -421,7 +421,7 @@ class _ChatViewState extends State<ChatView> {
     final content = _messageController.text.trim();
     if (content.isEmpty || _isSending) return;
 
-    setState(() {
+    if (mounted) setState(() {
       _isSending = true;
     });
 
@@ -458,7 +458,7 @@ class _ChatViewState extends State<ChatView> {
       }
     } finally {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isSending = false;
         });
       }
@@ -646,8 +646,8 @@ class _ChatViewState extends State<ChatView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ChatAppBar(
-        title: _getAppBarTitle(),
-        actions: [_buildAppBarActions()],
+        conversation: _conversation,
+        onMenuAction: _handleMenuAction,
       ),
       body: Column(
         children: [
@@ -1267,7 +1267,7 @@ class _ChatViewState extends State<ChatView> {
   Future<void> _loadMoreMessages() async {
     if (_isLoadingMore || !_hasMoreMessages) return;
     
-    setState(() {
+    if (mounted) setState(() {
       _isLoadingMore = true;
     });
     
@@ -1286,7 +1286,7 @@ class _ChatViewState extends State<ChatView> {
       );
       
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           if (olderMessages.isEmpty) {
             _hasMoreMessages = false;
           } else {
@@ -1298,7 +1298,7 @@ class _ChatViewState extends State<ChatView> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoadingMore = false;
         });
         _showInfoMessage('Kunde inte ladda fler meddelanden: $e');
@@ -1495,7 +1495,7 @@ class _ChatViewState extends State<ChatView> {
   /// - State management with proper reply coordination
   /// - Focus handling with input field activation
   void _replyToMessageMethod(Message message) {
-    setState(() {
+    if (mounted) setState(() {
       _replyToMessage = message;
       _messageFocusNode.requestFocus();
     });
@@ -1514,7 +1514,7 @@ class _ChatViewState extends State<ChatView> {
   /// - Content loading with input field preparation
   /// - Focus handling with editing interface activation
   Future<void> _editMessage(Message message) async {
-    setState(() {
+    if (mounted) setState(() {
       _isEditing = true;
       _editingMessageId = message.id;
       _messageController.text = message.content;
@@ -1557,7 +1557,7 @@ class _ChatViewState extends State<ChatView> {
   /// - UI reset with proper interface restoration
   /// - User control with cancellation functionality
   void _cancelReply() {
-    setState(() {
+    if (mounted) setState(() {
       _replyToMessage = null;
     });
   }
@@ -1573,7 +1573,7 @@ class _ChatViewState extends State<ChatView> {
   /// - Input restoration with content clearing
   /// - User control with cancellation functionality
   void _cancelEdit() {
-    setState(() {
+    if (mounted) setState(() {
       _isEditing = false;
       _editingMessageId = null;
       _messageController.clear();

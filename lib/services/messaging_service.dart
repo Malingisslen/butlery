@@ -38,6 +38,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/services/notifications/notification_service.dart' as notifications;
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Messaging service providing comprehensive real-time communication with advanced conversation management.
 ///
@@ -83,7 +84,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// messagingService.getConversationMessages(conversationId: conversationId)
 ///   .listen((messages) => updateUI(messages));
 /// ```
-class MessagingService extends BaseService {
+class MessagingService extends BaseService with StreamManagementMixin {
   final MessagingRepository _messagingRepository;
   final auth_repo.AuthRepository _authRepository;
 

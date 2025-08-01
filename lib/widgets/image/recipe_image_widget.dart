@@ -254,7 +254,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     return PageView.builder(
       controller: _pageController,
       onPageChanged: (index) {
-        setState(() {
+        if (mounted) setState(() {
           _currentIndex = index;
         });
       },
@@ -369,7 +369,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
-                setState(() {
+                if (mounted) setState(() {
                   _currentIndex = index;
                 });
                 widget.onPageChanged?.call(index);

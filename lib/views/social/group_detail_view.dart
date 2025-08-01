@@ -77,6 +77,7 @@ import 'package:butlery/views/social/group_detail/group_detail_header.dart';
 import 'package:butlery/views/social/group_detail/group_detail_stats.dart';
 import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive group detail view providing detailed group management and member coordination through advanced group architecture.
 ///
@@ -90,7 +91,7 @@ import 'package:butlery/views/social/group_detail/group_members_list.dart';
 /// - Permission system integration with role-based access control, action authorization, and comprehensive security validation
 /// - Real-time event handling with group updates, member changes, and automatic state synchronization through event coordination
 /// - Swedish localized group experience with comprehensive user feedback and interactive guidance
-class GroupDetailView extends StatefulWidget {
+class GroupDetailView extends StatefulWidget with StreamManagementMixin {
   /// Group identifier for data loading and management coordination.
   /// 
   /// Contains group ID enabling group data loading, member management,
@@ -168,7 +169,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
   Future<void> _loadGroupData() async {
     if (!mounted) return;
 
-    setState(() {
+    if (mounted) setState(() {
       _isLoading = true;
     });
 
@@ -206,7 +207,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       _pendingInvitations = [];
     } finally {
       if (mounted) {
-        setState(() {
+        if (mounted) setState(() {
           _isLoading = false;
         });
       }
@@ -324,7 +325,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     );
 
     if (shouldDelete == true && mounted && !_isNavigating) {
-      setState(() {
+      if (mounted) setState(() {
         _isNavigating = true;
       });
 
@@ -351,7 +352,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
         }
       } finally {
         if (mounted) {
-          setState(() {
+          if (mounted) setState(() {
             _isNavigating = false;
           });
         }
