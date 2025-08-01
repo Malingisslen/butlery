@@ -277,7 +277,11 @@ abstract class BaseService with ErrorHandlingMixin {
   Future<bool> checkPermission(String permission) async {
     return await getCachedOrExecute(
       'permission_$permission',
-      () async => true, // Simplified permission check - consolidation removed detailed permission service
+      () async {
+        // SECURITY: Must integrate with actual permission service
+        // For now, require authentication at minimum
+        return await _isAuthenticated();
+      },
       cacheDuration: const Duration(minutes: 1),
     ) ?? false;
   }

@@ -83,7 +83,9 @@
       "Bash(do echo \"=== Processing $file ===\")",
       "Bash(do)",
       "Bash(perl -pi -e:*)",
-      "Bash(perl:*)"
+      "Bash(perl:*)",
+      "Bash(chmod:*)",
+      "Bash(./nuclear_fixes/run_nuclear_option.sh:*)"
     ],
     "deny": []
   },

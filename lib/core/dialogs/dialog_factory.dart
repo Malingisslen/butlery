@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// Consolidated dialog factory with all dialog functionality
 class DialogFactory {
@@ -15,7 +16,7 @@ class DialogFactory {
     required String title,
     required String message,
     String confirmText = 'OK',
-    String cancelText = 'Avbryt',
+    String cancelText = AppStrings.cancel,
     Color? confirmColor,
     bool isDangerous = false,
   }) {
@@ -47,8 +48,8 @@ class DialogFactory {
     required String title,
     String? hint,
     String? initialValue,
-    String confirmText = 'Skicka',
-    String cancelText = 'Avbryt',
+    String confirmText = AppStrings.send,
+    String cancelText = AppStrings.cancel,
   }) {
     final controller = TextEditingController(text: initialValue);
     return showDialog<String>(
@@ -140,8 +141,8 @@ class DialogFactory {
     required String itemName,
     required String itemType,
     String title = 'Bekräfta borttagning',
-    String confirmText = 'Ta bort',
-    String cancelText = 'Avbryt',
+    String confirmText = AppStrings.delete,
+    String cancelText = AppStrings.cancel,
   }) {
     return showConfirmation(
       context,
@@ -160,7 +161,7 @@ class DialogFactory {
     String? hintText,
     String? initialValue,
     String confirmText = 'OK',
-    String cancelText = 'Avbryt',
+    String cancelText = AppStrings.cancel,
     bool required = false,
     int maxLines = 1,
   }) {

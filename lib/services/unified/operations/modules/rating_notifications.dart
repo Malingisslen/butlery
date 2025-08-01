@@ -326,7 +326,7 @@ class RatingNotifications {
       final ratingCount = ratings.length;
       final averageRating = ratings.fold<double>(
         0.0, (sum, r) => sum + (r['rating'] as double)
-      ) / ratingCount;
+      ) / ratingCount.toDouble();
 
       final message = ratingCount == 2 
           ? 'Ditt recept fick 2 nya betyg!'

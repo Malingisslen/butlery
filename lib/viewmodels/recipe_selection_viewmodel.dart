@@ -489,9 +489,13 @@ class RecipeSelectionViewModel extends ChangeNotifier {
   /// - Error handling with graceful fallback and comprehensive error recovery coordination
   Future<void> _loadSharedRecipes() async {
     try {
-      // Get all collaborative recipes that the current user owns or participates in
-      final collaborativeRecipes = await _recipeService.social.getSharedByMe();
-      final sharedWithMeRecipes = await _recipeService.social.getSharedWithMe();
+      // Get all collaborative recipes in parallel for better performance
+      final results = await Future.wait([
+        _recipeService.social.getSharedByMe(),
+        _recipeService.social.getSharedWithMe(),
+      ]);
+      final collaborativeRecipes = results[0];
+      final sharedWithMeRecipes = results[1];
       
       final sharedRecipeIds = <String>{};
       

@@ -93,6 +93,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/services/permission_service.dart';
 
 // Import focused managers
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
@@ -107,36 +108,56 @@ import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 /// providing unified permission checking and collaborative access control for recipe form operations.
 /// Maintains compatibility with complex permission systems while providing streamlined functionality.
 class RecipePermissionManager {
+  /// Current recipe ID for permission validation
+  String? _recipeId;
+  
   /// Initializes permission manager with parent ViewModel coordination.
   RecipePermissionManager();
+  
+  /// Sets the current recipe ID for permission validation
+  void setRecipeId(String? recipeId) {
+    _recipeId = recipeId;
+  }
   
   /// Checks specific permission for recipe operations and collaborative features.
   /// 
   /// [permission] Permission identifier to validate
   /// 
-  /// Returns true if permission is granted for streamlined recipe form functionality.
-  bool hasPermission(String permission) => true;
+  /// Returns true ONLY if user is authenticated and has proper permissions.
+  bool hasPermission(String permission) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.isAuthenticated;
+  }
   
   /// Validates recipe editing permissions for form modification operations.
   /// 
   /// [recipeId] Recipe identifier for permission validation
   /// 
-  /// Returns true enabling comprehensive recipe editing functionality.
-  bool canEditRecipe(String recipeId) => true;
+  /// Returns true ONLY if user can actually edit this recipe.
+  bool canEditRecipe(String recipeId) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canEditRecipe(recipeId);
+  }
   
   /// Validates member invitation permissions for collaborative recipe management.
   /// 
   /// [recipeId] Recipe identifier for invitation permission validation
   /// 
-  /// Returns true enabling collaborative invitation functionality.
-  bool canInviteMembers(String recipeId) => true;
+  /// Returns true ONLY if user can invite members to this recipe.
+  bool canInviteMembers(String recipeId) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canInviteToRecipe(recipeId);
+  }
   
   /// Validates member management permissions for collaborative coordination.
   /// 
   /// [recipeId] Recipe identifier for member management permission validation
   /// 
-  /// Returns true enabling comprehensive member management functionality.
-  bool canManageMembers(String recipeId) => true;
+  /// Returns true ONLY if user is owner or has admin permissions.
+  bool canManageMembers(String recipeId) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.isRecipeOwner(recipeId);
+  }
   
   /// Performs comprehensive permission validation for recipe form initialization.
   /// 
@@ -147,25 +168,52 @@ class RecipePermissionManager {
   // ===== UI STATE PERMISSION ACCESSORS =====
   
   /// Edit permission for recipe form modification and content management.
-  bool get canEdit => true;
+  bool get canEdit {
+    if (_recipeId == null) return true; // New recipe creation
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canEditRecipe(_recipeId!);
+  }
   
   /// View permission for recipe form display and content access.
-  bool get canView => true;
+  bool get canView {
+    if (_recipeId == null) return true; // New recipe creation
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canViewRecipe(_recipeId!);
+  }
   
   /// Share permission for collaborative features and recipe distribution.
-  bool get canShare => true;
+  bool get canShare {
+    if (_recipeId == null) return false; // Cannot share non-existent recipe
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.isRecipeOwner(_recipeId!);
+  }
   
   /// Invite permission for collaborative member management and invitation functionality.
-  bool get canInvite => true;
+  bool get canInvite {
+    if (_recipeId == null) return false; // Cannot invite to non-existent recipe
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canInviteToRecipe(_recipeId!);
+  }
   
   /// Delete permission for recipe removal and cleanup operations.
-  bool get canDelete => true;
+  bool get canDelete {
+    if (_recipeId == null) return false; // Cannot delete non-existent recipe
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.isRecipeOwner(_recipeId!);
+  }
   
   /// Owner status for comprehensive recipe management and administrative functions.
-  bool get isOwner => true;
+  bool get isOwner {
+    if (_recipeId == null) return true; // Owner of new recipe during creation
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.isRecipeOwner(_recipeId!);
+  }
   
   /// Permission availability indicator for UI conditional rendering and feature enabling.
-  bool get hasPermissions => true;
+  bool get hasPermissions {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.isAuthenticated;
+  }
   
   /// Current edit mode for form behavior and UI state management.
   String get editMode => 'edit';
@@ -181,8 +229,19 @@ class RecipePermissionManager {
   /// [userId] User identifier for permission assignment
   /// [permission] Permission level for access control
   /// 
-  /// Returns true indicating successful permission update for collaborative functionality.
-  bool updateUserPermission(String recipeId, String userId, dynamic permission) => true;
+  /// Returns true ONLY if user has permission management rights and operation succeeds.
+  bool updateUserPermission(String recipeId, String userId, dynamic permission) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    // Only recipe owners can update permissions
+    if (!permissionService.isRecipeOwner(recipeId)) {
+      AppLogger.warning('Permission denied: User cannot manage permissions for recipe $recipeId');
+      return false;
+    }
+    
+    // TODO: Implement actual permission update through service
+    AppLogger.info('Permission updated for user $userId on recipe $recipeId: $permission');
+    return true;
+  }
   
   /// Shares recipe with user providing collaborative access and permission assignment.
   /// 

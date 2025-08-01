@@ -1,4 +1,120 @@
-// lib/core/router/route_animations.dart
+/// Comprehensive route animation system implementing intelligent navigation transitions for Swedish cooking application UI.
+///
+/// This animation system serves as the centralized navigation transition infrastructure throughout the Butlery application,
+/// providing context-aware animations based on route types while maintaining consistent Swedish design principles and
+/// optimal user experience. It ensures smooth, culturally appropriate transitions between views while integrating
+/// seamlessly with the application's theme system and route management architecture for cohesive navigation patterns
+/// that enhance the Swedish cooking application's usability and aesthetic appeal.
+///
+/// ## Core Architecture Features
+/// 
+/// **Intelligent Animation Selection**
+/// - Context-aware animation types based on route purpose and content hierarchy
+/// - Fade transitions for authentication and home screen navigation
+/// - Slide-from-bottom animations for import, create, and modal-style screens
+/// - Slide-from-right transitions for standard navigation and content browsing
+/// - Scale animations for error screens and special modal presentations
+/// 
+/// **Swedish Design Integration**
+/// - Animation timing optimized for calm, unhurried Swedish design aesthetics
+/// - Smooth curves and transitions that reflect Swedish minimalism principles
+/// - Consistent theming integration with AppColors, AppTextStyles, and AppDimensions
+/// - Error screen design with Swedish localization and cultural design patterns
+/// 
+/// **Performance Optimization**
+/// - Efficient PageRouteBuilder implementation with minimal memory overhead
+/// - Optimized transition durations for different animation types and user contexts
+/// - Proper resource management with automatic cleanup and disposal
+/// - Debug utilities for animation mapping analysis and performance monitoring
+/// 
+/// ## Animation Type Classifications
+/// 
+/// **Authentication & Core Navigation (Fade)**
+/// - Home screen and authentication flows for seamless entry experience
+/// - Low-impact transitions that don't distract from content focus
+/// - Fast timing for immediate feedback and responsive feel
+/// 
+/// **Content Creation & Import (Slide from Bottom)**
+/// - Recipe import screens (photo, text, URL, social media)
+/// - Recipe creation and editing interfaces
+/// - Modal-style presentations that feel like overlays
+/// - Medium timing for substantial content presentation
+/// 
+/// **Standard Navigation (Slide from Right)**
+/// - Recipe browsing and detailed recipe views
+/// - Social features including friends, profiles, and shared content
+/// - Shopping list management and collaborative features
+/// - Standard timing for comfortable content transitions
+/// 
+/// **Error & Special Modals (Scale)**
+/// - Error screens with attention-grabbing but non-alarming presentation
+/// - Special modal presentations requiring user attention
+/// - Combined scale and fade effects for sophisticated visual appeal
+/// 
+/// ## Usage Examples
+/// 
+/// **Automatic Route-Based Animation:**
+/// ```dart
+/// // In AppRouter or navigation logic
+/// static Route<T> generateRoute<T>(RouteSettings settings) {
+///   return RouteAnimations.createRoute<T>(pageWidget, settings);
+///   // Automatically selects appropriate animation based on route name
+/// }
+/// ```
+/// 
+/// **Specific Animation Types:**
+/// ```dart
+/// // Manual animation selection for custom scenarios
+/// Navigator.push(
+///   context,
+///   RouteAnimations.slideFromBottomRoute(
+///     ImportRecipeView(),
+///     RouteSettings(name: '/custom-import'),
+///   ),
+/// );
+/// 
+/// // Error handling with consistent styling
+/// Navigator.push(
+///   context,
+///   RouteAnimations.createErrorRoute('Recept kunde inte laddas'),
+/// );
+/// ```
+/// 
+/// **Route Configuration Analysis:**
+/// ```dart
+/// // Debug animation mappings
+/// final mappings = RouteAnimations.getAnimationMappings();
+/// print('Route animations: $mappings');
+/// 
+/// // Check animation duration for specific type
+/// final duration = RouteAnimations.getDurationForType(RouteAnimationType.fade);
+/// ```
+/// 
+/// ## Error Screen Integration
+/// 
+/// The built-in error screen provides:
+/// - Swedish localization with culturally appropriate error messaging
+/// - Consistent theme integration with application design system
+/// - Clear navigation back to home screen for user recovery
+/// - Accessible design with proper contrast and sizing
+/// 
+/// ## Performance Characteristics
+/// 
+/// - **Animation Efficiency**: Optimized curves and timing for 60fps performance
+/// - **Memory Management**: Proper PageRouteBuilder usage with automatic cleanup
+/// - **Theme Integration**: Direct integration with centralized theme system
+/// - **Route Intelligence**: Smart animation selection based on route patterns
+/// 
+/// ## Integration Patterns
+/// 
+/// - **Route Management**: Seamless integration with Routes class and route definitions
+/// - **Theme System**: 100% integration with AppTheme for consistent styling
+/// - **Navigation Flow**: Enhanced user experience through contextually appropriate transitions
+/// - **Error Handling**: Comprehensive error screen integration for graceful failure handling
+/// 
+/// This animation system is essential for providing a polished, culturally appropriate navigation
+/// experience throughout the Swedish cooking application while maintaining performance and
+/// consistency across all user interface transitions and route changes.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';

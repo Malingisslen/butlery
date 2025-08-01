@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 
 /// EmptyStates - Empty state implementations
 ///
@@ -88,15 +89,15 @@ class EmptyStates {
       case EmptyStateVariant.noRecipes:
         return const _EmptyStateConfig(
           icon: Icons.restaurant_menu,
-          title: 'Inga recept ännu',
+          title: AppStrings.noResults,
           subtitle:
-              'Lägg till ditt första recept genom att trycka på "Lägg till"',
+              'Lägg till ditt första recept genom att trycka på "${AppStrings.add}"',
           actionIcon: Icons.add,
         );
       case EmptyStateVariant.noSearchResults:
         return const _EmptyStateConfig(
           icon: Icons.search_off,
-          title: 'Inga recept matchade din sökning',
+          title: AppStrings.noResults,
           subtitle: 'Prova att söka på något annat eller rensa sökningen',
           actionIcon: Icons.clear,
         );

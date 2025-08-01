@@ -1,19 +1,164 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: JSON Serializable Mixins - Eliminates serialization duplication in 24+ model files
-/// File: lib/core/mixins/json_serializable_mixin.dart
-/// Quick Guide: Provides common JSON and Firestore serialization patterns for models
-/// Dependencies IN: Cloud Firestore, Dart core libraries
-/// Dependencies OUT: Used by all model classes needing serialization
-/// Data flow: Model -> Mixin -> JSON/Firestore format -> Storage/Network
-/// State management: Stateless mixins with standardized serialization patterns
-/// Purpose: Eliminate duplicated fromJson/toJson/toFirestore patterns
-/// Common issues: Date serialization, null handling, nested object serialization
-/// Test coverage: Unit tests for all serialization scenarios and edge cases
-/// Performance: Efficient serialization with minimal overhead
-/// Analytics: Serialization error tracking, data format monitoring
-/// Code smells: None - clean abstraction for common serialization patterns
-/// Connected to: All model classes in the app (Recipe, UserProfile, etc.)
-/// Used in phases: Phase 7 - Additional Code Duplication Elimination
+/// Comprehensive JSON serialization mixins implementing standardized data transformation patterns for model layer architecture.
+///
+/// This mixin system serves as the foundational serialization infrastructure throughout the Butlery application,
+/// eliminating duplicate JSON and Firestore serialization patterns found across 24+ model files while providing
+/// advanced features including type-safe deserialization, comprehensive error handling, nested object support,
+/// and specialized mixins for common model patterns. It ensures consistent data transformation across all
+/// model classes while maintaining optimal performance and reliable error recovery for Swedish cooking
+/// application's complex data requirements.
+///
+/// ## Core Architecture Features
+/// 
+/// **Comprehensive Serialization Support**
+/// - JSON serialization with intelligent type conversion and null safety
+/// - Firestore integration with automatic Timestamp conversion and nested object handling
+/// - Specialized mixins for common model patterns (timestamped, identifiable, owned)
+/// - Utility functions for safe data extraction and validation
+/// 
+/// **Type-Safe Data Transformation**
+/// - Safe extraction methods for all primitive types with intelligent fallbacks
+/// - Enum serialization and deserialization with error recovery
+/// - List and map handling with type conversion and filtering
+/// - Deep copy operations for immutable data patterns
+/// 
+/// **Error Handling and Validation**
+/// - Comprehensive error logging with detailed failure information
+/// - Required field validation with missing field detection
+/// - Graceful degradation for malformed data with fallback values
+/// - Production-ready error recovery patterns for robust data processing
+/// 
+/// ## Eliminated Duplication Patterns
+/// 
+/// This mixin system consolidates serialization patterns found across 24+ model files:
+/// - **JSON Conversion**: Standardized toJson()/fromJson() patterns
+/// - **DateTime Handling**: ISO string conversion with null safety
+/// - **Type Safety**: Safe extraction with intelligent type conversion
+/// - **Firestore Integration**: Timestamp conversion and document mapping
+/// 
+/// **Before (duplicated across 24+ model files):**
+/// ```dart
+/// class MyModel {
+///   Map<String, dynamic> toJson() {
+///     return {
+///       'id': id,
+///       'name': name,
+///       'createdAt': createdAt?.toIso8601String(),
+///       'updatedAt': updatedAt?.toIso8601String(),
+///     };
+///   }
+///   
+///   factory MyModel.fromJson(Map<String, dynamic> json) {
+///     return MyModel(
+///       id: json['id'] as String,
+///       name: json['name'] as String,
+///       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+///       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **After (centralized pattern):**
+/// ```dart
+/// class MyModel with JsonSerializableMixin, TimestampedMixin, IdentifiableMixin {
+///   @override
+///   Map<String, dynamic> toJson() {
+///     return {
+///       ...serializeId(),
+///       ...serializeTimestamps(),
+///       'name': name,
+///     };
+///   }
+///   
+///   factory MyModel.fromJson(Map<String, dynamic> json) {
+///     final timestamps = MyModel().deserializeTimestamps(json);
+///     return MyModel(
+///       id: MyModel().extractId(json),
+///       name: MyModel().extractString(json, 'name'),
+///       createdAt: timestamps['createdAt'],
+///       updatedAt: timestamps['updatedAt'],
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// ## Usage Examples
+/// 
+/// **Recipe Model Integration:**
+/// ```dart
+/// class Recipe with JsonSerializableMixin, TimestampedMixin, IdentifiableMixin, OwnedMixin {
+///   @override
+///   Map<String, dynamic> toJson() {
+///     return {
+///       ...serializeId(),
+///       ...serializeTimestamps(),
+///       ...serializeOwnership(),
+///       'title': title,
+///       'ingredients': serializeList(ingredients),
+///       'difficulty': serializeEnum(difficulty),
+///     };
+///   }
+///   
+///   factory Recipe.fromJson(Map<String, dynamic> json) {
+///     return Recipe(
+///       id: Recipe().extractId(json),
+///       title: Recipe().extractString(json, 'title'),
+///       ingredients: Recipe().deserializeList(json['ingredients'], Ingredient.fromJson),
+///       difficulty: Recipe().deserializeEnum(json['difficulty'], DifficultyLevel.values),
+///     );
+///   }
+/// }
+/// ```
+/// 
+/// **Firestore Integration:**
+/// ```dart
+/// class ShoppingList with JsonSerializableMixin, FirestoreSerializableMixin {
+///   // Automatic Firestore conversion
+///   Future<void> saveToFirestore() async {
+///     await firestore.collection('shopping_lists').doc(id).set(toFirestore());
+///   }
+///   
+///   static ShoppingList fromFirestoreDoc(DocumentSnapshot doc) {
+///     final data = FirestoreSerializableMixin.fromFirestore(doc);
+///     return ShoppingList.fromJson(data);
+///   }
+/// }
+/// ```
+/// 
+/// **Safe Data Extraction:**
+/// ```dart
+/// factory UserProfile.fromJson(Map<String, dynamic> json) {
+///   return UserProfile(
+///     name: extractString(json, 'name', defaultValue: 'Okänd användare'),
+///     age: extractInt(json, 'age', defaultValue: 0),
+///     isVerified: extractBool(json, 'isVerified'),
+///     preferences: extractList(
+///       json, 
+///       'preferences', 
+///       (item) => Preference.fromJson(item),
+///       defaultValue: [],
+///     ),
+///   );
+/// }
+/// ```
+/// 
+/// ## Performance Characteristics
+/// 
+/// - **Serialization Speed**: Optimized conversion methods with minimal object allocation
+/// - **Memory Efficiency**: Lazy evaluation and efficient type conversion patterns
+/// - **Error Recovery**: Graceful handling of malformed data without throwing exceptions
+/// - **Type Safety**: Compile-time type checking with runtime validation for robust data processing
+/// 
+/// ## Integration Patterns
+/// 
+/// - **Model Layer**: Direct integration with all data models for consistent serialization behavior
+/// - **Repository Pattern**: Seamless integration with Firebase and local storage repositories
+/// - **API Communication**: Standardized JSON format for network communication and caching
+/// - **Testing Support**: Reliable serialization patterns for unit testing and data mocking
+/// 
+/// This mixin system is essential for all data models in the Swedish cooking application,
+/// providing reliable, performant, and consistent serialization while eliminating code
+/// duplication and ensuring robust error handling across the entire data layer.
 
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';

@@ -1,9 +1,8 @@
 // lib/services/notifications/modules/fcm_token_manager.dart
 
-// 🔄 PARTIALLY FIXED: Repository migration in progress - advanced methods added to repository
-// ✅ Added: Advanced token management methods to notification repository
-// 🔄 In Progress: Migrating remaining Firestore operations (6 methods remaining)
-// TODO: Complete migration of _removeOldToken, _saveTokenToFirestore, and other direct operations
+// ✅ MIGRATION COMPLETE: All Firestore operations now use repository pattern
+// ✅ Repository Pattern: FCM token management fully migrated to NotificationRepository
+// ✅ Architecture: Clean separation between service logic and data persistence
 
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -74,8 +73,6 @@ class FCMTokenManager {
   static const String _tokenStorageKey = 'fcm_token';
   static const String _tokenTimestampKey = 'fcm_token_timestamp';
   
-  // Firestore instance
-  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   FCMTokenManager({
     required String userId,
@@ -335,12 +332,11 @@ class FCMTokenManager {
         'isActive': true,
       };
 
-      await _firestore
-          .collection(_tokensCollection)
-          .doc('${_userId}_${_getDeviceId()}')
-          .set(tokenDoc, SetOptions(merge: true));
-
-      AppLogger.debug('✅ Saved FCM token to Firestore');
+      await _repository.saveTokenToFirestore(
+        _tokensCollection,
+        '${_userId}_${_getDeviceId()}',
+        tokenDoc,
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to save token to Firestore', e);
       rethrow;
@@ -371,12 +367,11 @@ class FCMTokenManager {
         'isActive': true,
       };
 
-      await _firestore
-          .collection(_deviceInfoCollection)
-          .doc('${_userId}_${_getDeviceId()}')
-          .set(deviceDoc, SetOptions(merge: true));
-
-      AppLogger.debug('✅ Updated device info');
+      await _repository.updateDeviceInfo(
+        _deviceInfoCollection,
+        '${_userId}_${_getDeviceId()}',
+        deviceDoc,
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to update device info: $e');
     }
@@ -385,12 +380,10 @@ class FCMTokenManager {
   /// Update token timestamp without changing the token
   Future<void> _updateTokenTimestamp(String token) async {
     try {
-      await _firestore
-          .collection(_tokensCollection)
-          .doc('${_userId}_${_getDeviceId()}')
-          .update({
-            'lastUpdated': FieldValue.serverTimestamp(),
-          });
+      await _repository.updateTokenTimestamp(
+        _tokensCollection,
+        '${_userId}_${_getDeviceId()}',
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to update token timestamp: $e');
     }
@@ -399,22 +392,7 @@ class FCMTokenManager {
   /// Remove old token from Firestore
   Future<void> _removeOldToken(String oldToken) async {
     try {
-      // Query for documents with the old token
-      final query = await _firestore
-          .collection(_tokensCollection)
-          .where('userId', isEqualTo: _userId)
-          .where('token', isEqualTo: oldToken)
-          .get();
-
-      final batch = _firestore.batch();
-      for (final doc in query.docs) {
-        batch.update(doc.reference, {'isActive': false});
-      }
-
-      if (query.docs.isNotEmpty) {
-        await batch.commit();
-        AppLogger.debug('🧹 Marked ${query.docs.length} old tokens as inactive');
-      }
+      await _repository.removeOldToken(_tokensCollection, _userId, oldToken);
     } catch (e) {
       AppLogger.warning('⚠️ Failed to remove old token: $e');
     }
@@ -464,15 +442,7 @@ class FCMTokenManager {
   /// Get all active tokens for the current user (for admin purposes)
   Future<List<String>> getAllUserTokens() async {
     try {
-      final query = await _firestore
-          .collection(_tokensCollection)
-          .where('userId', isEqualTo: _userId)
-          .where('isActive', isEqualTo: true)
-          .get();
-
-      return query.docs
-          .map((doc) => doc.data()['token'] as String)
-          .toList();
+      return await _repository.getAllUserTokens(_tokensCollection, _userId);
     } catch (e) {
       AppLogger.error('❌ Failed to get user tokens', e);
       return [];
@@ -505,10 +475,10 @@ class FCMTokenManager {
 
       // Mark device as inactive
       try {
-        await _firestore
-            .collection(_deviceInfoCollection) 
-            .doc('${_userId}_${_getDeviceId()}')
-            .update({'isActive': false});
+        await _repository.markDeviceInactive(
+          _deviceInfoCollection,
+          '${_userId}_${_getDeviceId()}',
+        );
       } catch (e) {
         AppLogger.warning('⚠️ Failed to mark device as inactive: $e');
       }

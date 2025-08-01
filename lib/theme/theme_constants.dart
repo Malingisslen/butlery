@@ -1,11 +1,92 @@
-// lib/theme/theme_constants.dart
+/// Comprehensive theme constants system providing specialized values for opacity, elevation, animation, and visual effects in the Butlery cooking application.
+///
+/// This constants system implements a sophisticated collection of specialized theme values that complement
+/// the core color, typography, and dimension systems. It provides consistent opacity values, elevation
+/// shadows, animation timing, and visual effects that enhance the cooking application's user interface
+/// with Material 3 design principles and cooking-specific visual requirements for Swedish users.
+///
+/// **Architecture Integration:**
+/// - Complements AppDimensions, AppColors, and AppTextStyles for complete theme system coverage
+/// - Provides Material 3 compliant elevation shadows and animation timing values
+/// - Supports consistent opacity and overlay effects throughout the application interface
+/// - Integrates with component themes for cohesive visual effects and user interaction feedback
+/// - Maintains accessibility compliance with appropriate contrast ratios and visual clarity
+///
+/// **Constants Categories:**
+/// - **Opacity Constants**: Standardized transparency values for consistent overlay and visual effects
+/// - **Blur and Spread Radius**: Shadow effect parameters for appropriate depth perception
+/// - **Color Overlays**: Pre-configured overlay colors for modals, tooltips, and visual feedback
+/// - **Animation Curves**: Motion design curves that reflect cooking workflow timing and user expectations
+/// - **Duration Constants**: Standardized animation timing for consistent motion throughout the application
+/// - **Elevation Shadows**: Material 3 compliant shadow configurations for appropriate depth hierarchy
+///
+/// **Design Philosophy:**
+/// The theme constants reflect the precision and consistency of cooking with standardized values that
+/// create visual harmony, appropriate timing for cooking workflow interactions, and professional
+/// visual effects that enhance the Swedish cooking application experience without overwhelming users.
+///
+/// **Key Features:**
+/// - Material 3 compliant elevation shadows with appropriate depth perception for cooking interfaces
+/// - Standardized opacity values that maintain accessibility while providing visual hierarchy
+/// - Animation timing that reflects natural cooking workflow pacing and user expectations
+/// - Pre-configured overlay colors for consistent modal and feedback interactions
+/// - Performance optimization through compile-time constants and efficient visual effect application
+/// - Cultural adaptation with timing and visual effects appropriate for Swedish user preferences
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Standardized opacity for overlay effects
+/// Container(
+///   color: AppColors.darkNavy.withValues(alpha: ThemeConstants.opacity40),
+///   child: ModalContent(),
+/// );
+/// 
+/// // Material 3 elevation shadows for recipe cards
+/// Container(
+///   decoration: BoxDecoration(
+///     boxShadow: ThemeConstants.elevationMedium,
+///     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+///   ),
+///   child: RecipeCard(),
+/// );
+/// 
+/// // Consistent animation timing for cooking workflows
+/// AnimatedContainer(
+///   duration: ThemeConstants.durationStandard,
+///   curve: ThemeConstants.materialCurve,
+///   child: RecipeInstructions(),
+/// );
+/// 
+/// // Pre-configured overlay colors for modal interactions
+/// Container(
+///   color: ThemeConstants.blackOverlay40,
+///   child: DialogOverlay(),
+/// );
+/// ```
 
 import 'package:flutter/material.dart';
 
-/// Additional theme constants for opacity, elevation, and animation values
-/// These complement AppDimensions and AppColors for a complete theme system
+/// Comprehensive theme constants system implementing specialized values for opacity, elevation, animation, and visual effects in cooking-focused user interface design.
+///
+/// This class serves as the central repository for all specialized theme constants that complement the
+/// core color, typography, and dimension systems throughout the Butlery application. It provides
+/// standardized values for visual effects, animation timing, and interaction feedback that enhance
+/// the cooking application experience with Material 3 compliance and Swedish cultural preferences.
+///
+/// **Constants Architecture:**
+/// - **Systematic Organization**: Clear categorization of constants by usage context and visual purpose
+/// - **Material 3 Integration**: Full compliance with Material 3 elevation, timing, and effect specifications
+/// - **Consistency Framework**: Standardized values that ensure visual harmony across all application components
+/// - **Performance Optimization**: Compile-time constants for efficient rendering and animation performance
+/// - **Cultural Adaptation**: Values tuned for Swedish user preferences and cooking workflow expectations
+///
+/// **Design Principles:**
+/// The theme constants reflect the precision and professionalism of cooking with standardized values
+/// that create consistent user experiences, appropriate visual feedback, and smooth interactions
+/// that support complex cooking workflows without creating visual noise or distraction.
 class ThemeConstants {
-  ThemeConstants._(); // Private constructor to prevent instantiation
+  /// Private constructor to prevent instantiation of utility class
+  ThemeConstants._();
 
   // ===== OPACITY CONSTANTS =====
   

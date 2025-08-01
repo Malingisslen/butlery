@@ -1,29 +1,112 @@
-// lib/widgets/messaging/chat_app_bar.dart
+/// Nuclear Chat App Bar Component - Conversation Header Logic
+/// 
+/// Focused component handling ONLY chat app bar presentation and menu actions
+/// that was previously embedded within the massive ChatView architecture.
+/// Implements clean conversation header with action coordination.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/utils/logger.dart';
 
-/// Styled app bar for chat view
+/// Clean chat app bar with conversation info and menu actions
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final List<Widget> actions;
+  final Conversation? conversation;
+  final Function(String) onMenuAction;
 
   const ChatAppBar({
     super.key,
-    required this.title,
-    this.actions = const [],
+    this.conversation,
+    required this.onMenuAction,
   });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  Future<void> _handleMenuAction(String action) async {
+    try {
+      AppLogger.debug('Chat app bar menu action: $action');
+      await onMenuAction(action);
+    } catch (e) {
+      AppLogger.error('Failed to handle menu action: $action', e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(title),
+      title: _buildTitle(),
       backgroundColor: AppColors.primaryBlue,
       foregroundColor: AppColors.cardWhite,
-      actions: actions,
+      actions: [
+        PopupMenuButton<String>(
+          onSelected: _handleMenuAction,
+          icon: const Icon(Icons.more_vert),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'info',
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline),
+                  const SizedBox(width: 12),
+                  const Text('Konversationsinfo'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'mute',
+              child: Row(
+                children: [
+                  const Icon(Icons.notifications_off_outlined),
+                  const SizedBox(width: 12),
+                  const Text('Tysta'),
+                ],
+              ),
+            ),
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              value: 'leave',
+              child: Row(
+                children: [
+                  Icon(Icons.exit_to_app, color: AppColors.error),
+                  const SizedBox(width: 12),
+                  const Text('Lämna konversation'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Widget _buildTitle() {
+    if (conversation == null) {
+      return const Text('Chatt');
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          conversation!.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        if (conversation!.participantCount > 2)
+          Text(
+            '${conversation!.participantCount} deltagare',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+      ],
+    );
+  }
 }

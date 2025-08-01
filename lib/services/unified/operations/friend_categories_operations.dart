@@ -472,9 +472,41 @@ class FriendCategoriesOperations {
     return ServiceLocator.get<PermissionService>().canDeleteGroup(category.id);
   }
 
-  // TODO: Add public/private category support when needed
-  // bool _canViewCategory(FriendCategory category) {
-  //   return category.ownerId == _parent.currentUserId ||
-  //          category.memberIds.contains(_parent.currentUserId);
-  // }
+  // FUTURE IMPLEMENTATION NOTE: Public/private friend categories
+  // When implemented, will need a method to check view permissions:
+  // - Public categories: viewable by anyone
+  // - Private categories: viewable by owner and members only
+  // Implementation will be added when privacy feature is developed
+
+  /// Set category privacy level (feature stub - not yet implemented)
+  /// 
+  /// FEATURE STUB: This will allow users to make friend categories
+  /// public (discoverable by others) or private (invitation-only).
+  Future<void> setCategoryPrivacy(String categoryId, {required bool isPublic}) async {
+    AppLogger.info('🔒 Privacy setting requested for category: $categoryId (public: $isPublic)');
+    
+    // FEATURE STUB: Privacy controls not yet implemented
+    AppLogger.warning('⚠️ Friend category privacy controls are not yet available');
+    
+    throw UnimplementedError(
+      'Friend category privacy controls are planned for future release. '
+      'This will allow categories to be set as public (discoverable) or '
+      'private (invitation-only) with appropriate permission management.'
+    );
+
+    // FUTURE IMPLEMENTATION:
+    // try {
+    //   final category = await getFriendCategory(categoryId);
+    //   if (category != null && _canEditCategory(category)) {
+    //     final updatedCategory = category.copyWith(isPublic: isPublic);
+    //     await _repository.updateFriendCategory(categoryId, updatedCategory);
+    //     AppLogger.success('✅ Category privacy updated: $categoryId');
+    //   } else {
+    //     throw PermissionDeniedException('Cannot modify category privacy');
+    //   }
+    // } catch (e) {
+    //   AppLogger.error('❌ Failed to update category privacy', e);
+    //   rethrow;
+    // }
+  }
 }

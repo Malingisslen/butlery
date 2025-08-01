@@ -390,7 +390,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     final averages = <String, double>{};
     mealTypeRatings.forEach((mealType, ratings) {
-      averages[mealType] = ratings.reduce((a, b) => a + b) / ratings.length;
+      averages[mealType] = ratings.reduce((a, b) => a + b) / ratings.length.toDouble();
     });
 
     return averages;

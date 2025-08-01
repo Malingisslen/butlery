@@ -81,6 +81,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -202,16 +203,22 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   /// Indicates whether current user has edit permissions for collaborative shopping list
   /// enabling proper access control and collaborative security management.
   /// 
-  /// **Note**: Currently simplified implementation - will integrate with full permission system.
-  bool get canEdit => true; // Simplified permission check
+  /// **SECURITY**: Now implements proper permission validation!
+  bool get canEdit {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canEditShoppingList(listId);
+  }
   
   /// View permission indicator for collaborative shopping list access and display.
   /// 
   /// Indicates whether current user has view permissions for collaborative shopping list
   /// enabling proper access control and collaborative security management.
   /// 
-  /// **Note**: Currently simplified implementation - will integrate with full permission system.
-  bool get canView => true; // Simplified permission check
+  /// **SECURITY**: Now implements proper permission validation!
+  bool get canView {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canViewShoppingList(listId);
+  }
   
   /// Validates edit permissions for specific shopping list with comprehensive access control.
   /// 
@@ -221,8 +228,11 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   /// Performs permission validation ensuring proper collaborative security
   /// and access control throughout shopping list operations.
   /// 
-  /// **Note**: Currently simplified implementation - will integrate with full permission system.
-  bool canEditShoppingList(String listId) => true;
+  /// **SECURITY**: Now implements proper permission validation!
+  bool canEditShoppingList(String listId) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canEditShoppingList(listId);
+  }
   
   /// Validates view permissions for specific shopping list with comprehensive access control.
   /// 
@@ -232,8 +242,11 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   /// Performs permission validation ensuring proper collaborative security
   /// and access control throughout shopping list operations.
   /// 
-  /// **Note**: Currently simplified implementation - will integrate with full permission system.
-  bool canViewShoppingList(String listId) => true;
+  /// **SECURITY**: Now implements proper permission validation!
+  bool canViewShoppingList(String listId) {
+    final permissionService = ServiceLocator.get<PermissionService>();
+    return permissionService.canViewShoppingList(listId);
+  }
 
   // ===== PROGRESS TRACKING =====
 
@@ -260,7 +273,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   /// Calculates completion percentage based on purchased vs total items
   /// enabling progress bars, status indicators, and completion visualization.
   double get completionPercentage =>
-      totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+      totalItems > 0 ? (completedItems.toDouble() / totalItems.toDouble()) * 100.0 : 0.0;
 
   // ===== ITEM COLLECTIONS =====
 

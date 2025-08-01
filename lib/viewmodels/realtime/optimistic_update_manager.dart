@@ -26,10 +26,11 @@ class OptimisticUpdateManager {
   /// Applicera optimistisk ändring för en kategori
   void applyChange(
     String categoryName,
-    List<Recipe> Function(List<Recipe>) updateFunction,
-    List<Recipe> currentRecipes,
-  ) {
-    _optimisticChanges[categoryName] = updateFunction(currentRecipes);
+    List<Recipe> Function(List<Recipe>) updateFunction, [
+    List<Recipe>? currentRecipes,
+  ]) {
+    final baseRecipes = currentRecipes ?? _optimisticChanges[categoryName] ?? [];
+    _optimisticChanges[categoryName] = updateFunction(baseRecipes);
     _hasOptimisticChanges = true;
 
     // Auto-rollback efter 10 sekunder

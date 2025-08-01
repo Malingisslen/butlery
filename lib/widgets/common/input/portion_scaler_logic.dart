@@ -80,7 +80,7 @@ class PortionScalerLogic {
       return List.from(originalIngredients);
     }
 
-    final scaleFactor = newPortions / originalPortions;
+    final scaleFactor = newPortions.toDouble() / originalPortions.toDouble();
     final scaledList = <String>[];
 
     for (final ingredient in originalIngredients) {
