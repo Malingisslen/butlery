@@ -12,15 +12,54 @@ import 'package:butlery/services/unified/modules/firebase_sync_manager.dart';
 import 'package:butlery/services/unified/modules/debounced_sync_operations.dart';
 import 'package:butlery/services/unified/modules/cache_optimization.dart';
 
-/// Clean facade for recipe cache management using focused modules
+/// Comprehensive recipe cache management module providing unified caching functionality with real-time synchronization.
 ///
-/// This facade provides a unified API that delegates to focused modules:
-/// - CacheOperations: Local cache save/load/remove operations  
-/// - FirebaseSyncManager: Real-time Firebase synchronization
-/// - DebouncedSyncOperations: Debounced Firebase writes
-/// - CacheOptimization: Cache cleanup and optimization
+/// This module implements sophisticated recipe caching using facade pattern with focused specialized modules
+/// for local storage operations, Firebase synchronization, debounced writes, and cache optimization. It provides
+/// comprehensive caching capabilities ensuring optimal performance and data consistency across all recipe
+/// operations while maintaining clean separation between different caching concerns.
 ///
-/// ❌ DOES NOT CONTAIN: Complex implementation details, direct Firebase/cache logic
+/// **Facade Pattern Architecture:**
+/// This module orchestrates recipe caching through focused specialized modules:
+/// - **[CacheOperations]**: Local cache save/load/remove operations with validation and integrity checks
+/// - **[FirebaseSyncManager]**: Real-time Firebase synchronization with automatic conflict resolution
+/// - **[DebouncedSyncOperations]**: Intelligent debounced Firebase writes with batch processing optimization
+/// - **[CacheOptimization]**: Cache cleanup, optimization, and performance monitoring
+///
+/// **Single Responsibility Orchestration:**
+/// This module exclusively coordinates recipe caching concerns while delegating specific functionality
+/// to focused modules, ensuring clean separation of responsibilities and maintainable architecture
+/// for complex caching scenarios and real-time synchronization requirements.
+///
+/// **Recipe Caching Features:**
+/// - **Local Storage**: High-performance local caching with JSON serialization and integrity validation
+/// - **Real-time Sync**: Automatic Firebase synchronization with conflict resolution and offline support  
+/// - **Debounced Writes**: Intelligent write batching to minimize Firebase operations and improve performance
+/// - **Cache Optimization**: Automatic cleanup, memory management, and performance optimization
+/// - **Multi-user Support**: User-specific cache isolation with secure data separation
+///
+/// **Usage Examples:**
+/// ```dart
+/// final cacheModule = RecipeCacheModule(
+///   cacheHelper: cacheHelper,
+///   getCurrentUserId: () => authService.currentUserId,
+///   setError: errorHandler,
+///   notifyListeners: stateNotifier,
+/// );
+/// 
+/// // Initialize and load cached recipes
+/// final cachedRecipes = await cacheModule.initializeCache();
+/// 
+/// // Real-time Firebase synchronization
+/// await cacheModule.startFirebaseSync();
+/// 
+/// // Cache recipe with debounced sync
+/// await cacheModule.saveRecipeToCache(recipe);
+/// cacheModule.scheduleSyncForRecipe(recipe.id);
+/// 
+/// // Cache statistics and monitoring
+/// final stats = await cacheModule.getCacheStatistics();
+/// ```
 class RecipeCacheModule {
   // Firebase instance removed - using repository pattern instead
   final JsonCacheHelper _cacheHelper;

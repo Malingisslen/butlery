@@ -13,7 +13,7 @@ cmd.exe /c "flutter COMMAND"
 ## Architecture & Standards
 - **Pattern**: MVVM + Repository Pattern (Views → ViewModels → Services → Repositories → Firebase)
 - **File Size Limit**: 500 lines max (use facade pattern for larger files)
-- **Services**: Services with unified patterns and dependency injection
+- **Dependency Injection**: Modular DI system with domain-driven modules (see below)
 - **Notifications**: Complete FCM system with development logging approach
 - **Social Features**: 90% infrastructure implemented (social views and services exist, need verification)
 - **Code Quality**: Single Responsibility Principle enforced
@@ -24,6 +24,36 @@ cmd.exe /c "flutter COMMAND"
   - Ownership validation and role-based access control
 - **Type Safety**: Map-based data access replaced with proper model usage
 - **Flutter Color Syntax**: Use `withValues(alpha: 0.8)` instead of deprecated `withOpacity(0.8)`
+
+### Dependency Injection System
+**Architecture**: Clean modular DI with GetIt service locator
+- **5 Domain Modules**: Core, Content, Social, Messaging, Collaboration
+- **Bootstrap Pattern**: ApplicationBootstrap orchestrates initialization
+- **Service Access**: Use `ServiceLocator.get<T>()` for all service access
+- **NO LEGACY CODE**: The old `sl<T>()` pattern has been completely removed
+
+**Module Structure:**
+```dart
+// Import for service access
+import 'package:butlery/core/providers/application_provider.dart';
+
+// Get services using
+final service = ServiceLocator.get<UnifiedRecipeService>();
+```
+
+**Domain Modules:**
+1. **Core Module** (`lib/core/di/modules/core_module.dart`): Auth, Storage, Analytics
+2. **Content Module** (`lib/core/di/modules/content_module.dart`): Recipes, Menus, Import
+3. **Social Module** (`lib/core/di/modules/social_module.dart`): Friends, Sharing, Comments
+4. **Messaging Module** (`lib/core/di/modules/messaging_module.dart`): Chat, Notifications
+5. **Collaboration Module** (`lib/core/di/modules/collaboration_module.dart`): Realtime, Shopping
+
+**Main.dart Structure:**
+```dart
+// Clean bootstrap initialization
+await ApplicationBootstrap.initialize();
+// Followed by widget bindings and app startup
+```
 
 ### Code Intelligence Platform (`tools/code_intelligence_platform.dart`)
 - **Multi-Dimensional Analysis**: Security (30%), Performance (25%), Architecture (20%), Quality (15%)

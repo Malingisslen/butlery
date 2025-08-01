@@ -22,14 +22,60 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
-/// Social menu operations feature interface
+/// Comprehensive social menu operations providing advanced menu sharing and collaborative dining features.
+///
+/// This operations class implements sophisticated menu sharing functionality following Single Responsibility Principle,
+/// handling all aspects of social menu interaction including friend-based sharing, group sharing, menu import/export,
+/// and collaborative dining features. It provides comprehensive menu social capabilities while maintaining clean separation
+/// from basic menu management and recipe operations.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles social menu operations:
+/// - **Friend-Based Sharing**: Direct menu sharing with individual friends and family members with custom messaging
+/// - **Group Sharing**: Menu sharing with predefined friend categories and groups with bulk operation efficiency
+/// - **Import/Export System**: Menu import and export functionality with data validation and format preservation
+/// - **Activity Tracking**: Complete sharing activity monitoring with analytics and engagement statistics
+///
+/// **What This Class Does NOT Handle:**
+/// - Basic menu CRUD operations (handled by menu services)
+/// - Recipe management and operations (handled by recipe services)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by permission services)
+///
+/// **Social Menu Features:**
+/// - **Multi-Target Sharing**: Advanced sharing system supporting individual friends and group categories with validation
+/// - **Collaborative Dining**: Menu sharing for collaborative meal planning with family and friend groups
+/// - **Import/Export Tools**: Comprehensive menu data exchange with format preservation and validation
+/// - **Activity Analytics**: Detailed sharing statistics with engagement tracking and usage insights
+/// - **Permission Management**: Granular sharing permissions with access control and ownership validation
+///
+/// **Usage Examples:**
+/// ```dart
+/// final socialMenuOps = SocialMenuOperations(
+///   firestore: firestore,
+///   friendsService: friendsService,
+/// );
 /// 
-/// Handles all operations related to sharing menus:
-/// - Sharing menus with specific friends
-/// - Sharing menus with friend groups/categories
-/// - Creating public menu links
-/// - Managing shared menu permissions
-/// - Menu import and export functionality
+/// // Friend-based menu sharing
+/// await socialMenuOps.shareMenuWithFriends(
+///   menu: weeklyMenu,
+///   friendUserIds: [friendId1, friendId2],
+///   message: 'Veckans meny - perfekt för familjemiddag!',
+///   customTitle: 'Familjeveckans måltider',
+/// );
+/// 
+/// // Group sharing with categories
+/// await socialMenuOps.shareMenuWithGroup(
+///   menu: dinnerPartyMenu,
+///   categoryId: familyGroupId,
+///   message: 'Menyn för helgens middagsbjudning',
+/// );
+/// 
+/// // Menu import and activity tracking
+/// await socialMenuOps.importSharedMenu(sharedMenuId);
+/// final stats = await socialMenuOps.getSharingStats();
+/// final sharedMenus = await socialMenuOps.getMenusSharedWithMe();
+/// ```
 class SocialMenuOperations {
   final FirebaseFirestore _firestore;
   final UnifiedFriendsService _friendsService;

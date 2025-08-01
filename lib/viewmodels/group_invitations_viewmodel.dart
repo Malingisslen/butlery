@@ -6,7 +6,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_handler.dart';
 
@@ -74,7 +74,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   bool get hasError => _error != null;
 
   /// Aktuell användare
-  String? get _currentUserId => sl<PermissionService>().currentUserId;
+  String? get _currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
 
   /// Kombinerat "har något att visa" state
   bool get hasContent =>

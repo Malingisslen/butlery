@@ -89,17 +89,16 @@ class RealtimeParticipants {
 
   /// Get numeric level for permission comparison
   static int _getPermissionLevel(ResourcePermission permission) {
-    switch (permission) {
-      case ResourcePermission.owner:
-        return 4;
-      case ResourcePermission.admin:
-        return 3;
-      case ResourcePermission.editor:
-      case ResourcePermission.write:
-        return 2;
-      case ResourcePermission.viewer:
-      case ResourcePermission.read:
-        return 1;
+    if (permission == ResourcePermission.owner) {
+      return 4;
+    } else if (permission == ResourcePermission.admin) {
+      return 3;
+    } else if (permission == ResourcePermission.editor || permission == ResourcePermission.write) {
+      return 2;
+    } else if (permission == ResourcePermission.viewer || permission == ResourcePermission.read) {
+      return 1;
+    } else {
+      return 0;
     }
   }
 
@@ -174,22 +173,16 @@ class RealtimeParticipants {
     };
     
     for (final permission in participants.values) {
-      switch (permission) {
-        case ResourcePermission.owner:
-          stats['owners'] = stats['owners']! + 1;
-          break;
-        case ResourcePermission.admin:
-          stats['admins'] = stats['admins']! + 1;
-          break;
-        case ResourcePermission.editor:
-        case ResourcePermission.write:
-          stats['editors'] = stats['editors']! + 1;
-          break;
-        case ResourcePermission.viewer:
-        case ResourcePermission.read:
-          stats['viewers'] = stats['viewers']! + 1;
-          break;
+      if (permission == ResourcePermission.owner) {
+        stats['owners'] = stats['owners']! + 1;
+      } else if (permission == ResourcePermission.admin) {
+        stats['admins'] = stats['admins']! + 1;
+      } else if (permission == ResourcePermission.editor || permission == ResourcePermission.write) {
+        stats['editors'] = stats['editors']! + 1;
+      } else if (permission == ResourcePermission.viewer || permission == ResourcePermission.read) {
+        stats['viewers'] = stats['viewers']! + 1;
       }
+      // Unknown permissions are skipped
     }
     
     return stats;

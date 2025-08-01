@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/component_themes.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
 class ImportViaUrlView extends StatelessWidget {
@@ -18,7 +18,7 @@ class ImportViaUrlView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<UrlImportViewModel>(),
+      create: (_) => ServiceLocator.get<UrlImportViewModel>(),
       child: const _ImportViaUrlViewContent(),
     );
   }

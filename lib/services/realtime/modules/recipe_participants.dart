@@ -293,19 +293,20 @@ class RecipeParticipants {
 
   /// Get permission hierarchy level (higher number = more permissions)
   static int getPermissionLevel(ResourcePermission permission) {
-    switch (permission) {
-      case ResourcePermission.read:
-        return 1;
-      case ResourcePermission.viewer:
-        return 2;
-      case ResourcePermission.write:
-        return 3;
-      case ResourcePermission.editor:
-        return 4;
-      case ResourcePermission.admin:
-        return 5;
-      case ResourcePermission.owner:
-        return 6;
+    if (permission == ResourcePermission.read) {
+      return 1;
+    } else if (permission == ResourcePermission.viewer) {
+      return 2;
+    } else if (permission == ResourcePermission.write) {
+      return 3;
+    } else if (permission == ResourcePermission.editor) {
+      return 4;
+    } else if (permission == ResourcePermission.admin) {
+      return 5;
+    } else if (permission == ResourcePermission.owner) {
+      return 6;
+    } else {
+      return 0;
     }
   }
 

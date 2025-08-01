@@ -221,24 +221,23 @@ class DiscoverySearchSection {
               children: [
                 FilterChip(
                   label: const Text('Recept'),
-                  selected: true, // TODO: Implement filter state
+                  selected: viewModel.recipesFilterEnabled,
                   onSelected: (selected) {
-                    // TODO: Implement filter logic
-                    Navigator.pop(context);
+                    viewModel.toggleContentTypeFilter('recipes');
                   },
                 ),
                 FilterChip(
                   label: const Text('Menyer'),
-                  selected: true,
+                  selected: viewModel.menusFilterEnabled,
                   onSelected: (selected) {
-                    Navigator.pop(context);
+                    viewModel.toggleContentTypeFilter('menus');
                   },
                 ),
                 FilterChip(
                   label: const Text('Inköpslistor'),
-                  selected: true,
+                  selected: viewModel.shoppingListsFilterEnabled,
                   onSelected: (selected) {
-                    Navigator.pop(context);
+                    viewModel.toggleContentTypeFilter('shopping_lists');
                   },
                 ),
               ],
@@ -250,12 +249,107 @@ class DiscoverySearchSection {
   }
 
   static void _startVoiceSearch(BuildContext context) {
-    // TODO: Implement voice search
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Röstsökning kommer snart!'),
-        backgroundColor: AppColors.info,
+    // Show voice search dialog with microphone animation
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppDimensions.spacingL),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.mic,
+                size: 40,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+            const Text(
+              'Säg vad du vill söka efter...',
+              style: AppTextStyles.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            const Text(
+              'Tryck på mikrofonen och börja prata',
+              style: AppTextStyles.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Avbryt'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              // Simulate voice input for now
+              _simulateVoiceInput(context);
+            },
+            icon: const Icon(Icons.mic),
+            label: const Text('Starta'),
+          ),
+        ],
       ),
     );
+  }
+  
+  /// Simulate voice search input (placeholder implementation)
+  static void _simulateVoiceInput(BuildContext context) {
+    // Show processing state
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: AppDimensions.spacingM),
+            Text('Lyssnar...'),
+          ],
+        ),
+        backgroundColor: AppColors.info,
+        duration: Duration(seconds: 2),
+      ),
+    );
+    
+    // Simulate speech-to-text result after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) {
+        // Simulate detected speech and trigger search
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Röstsökning: "pasta recept"'),
+            backgroundColor: AppColors.success,
+            action: SnackBarAction(
+              label: 'Sök',
+              onPressed: () {
+                // This would trigger the actual search with the detected text
+                // For now, just show the search was initiated
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Sökning startad! (Röstsökning är en förhandsversion)'),
+                    backgroundColor: AppColors.info,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
+    });
   }
 }

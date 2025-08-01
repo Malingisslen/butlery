@@ -28,7 +28,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final authRepo = sl<AuthRepository>();
+/// final authRepo = ServiceLocator.get<AuthRepository>();
 /// 
 /// // User registration
 /// try {

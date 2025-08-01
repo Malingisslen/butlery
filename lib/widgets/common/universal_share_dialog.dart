@@ -34,13 +34,15 @@ enum ShareMode {
 
 /// Universell delningsdialog som hanterar alla content-typer
 class UniversalShareDialog extends StatefulWidget {
-  // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList
+  // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList  
+  // För bulk sharing: List<dynamic> med flera items
   final dynamic content;
   final ShareContentType contentType;
   final String? initialMessage;
   final List<UserProfile>? availableFriends;
   final List<FriendCategory>? availableGroups;
   final UniversalShareDialogViewModel viewModel;
+  final bool isBulkSharing; // Indikerar om detta är bulk sharing
 
   const UniversalShareDialog({
     super.key,
@@ -50,6 +52,7 @@ class UniversalShareDialog extends StatefulWidget {
     this.initialMessage,
     this.availableFriends,
     this.availableGroups,
+    this.isBulkSharing = false,
   });
 
   /// Factory constructors för type safety
@@ -101,6 +104,26 @@ class UniversalShareDialog extends StatefulWidget {
       initialMessage: initialMessage,
       availableFriends: availableFriends,
       availableGroups: availableGroups,
+    );
+  }
+
+  /// Factory constructor för bulk sharing av flera items
+  factory UniversalShareDialog.bulkShare({
+    required List<dynamic> contentItems,
+    required ShareContentType primaryContentType, // Typ för majoriteten av items
+    required UniversalShareDialogViewModel viewModel,
+    String? initialMessage,
+    List<UserProfile>? availableFriends,
+    List<FriendCategory>? availableGroups,
+  }) {
+    return UniversalShareDialog(
+      content: contentItems,
+      contentType: primaryContentType,
+      viewModel: viewModel,
+      initialMessage: initialMessage,
+      availableFriends: availableFriends,
+      availableGroups: availableGroups,
+      isBulkSharing: true,
     );
   }
 

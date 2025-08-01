@@ -5,15 +5,53 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 
-/// Focused module for cache optimization and cleanup
+/// Specialized cache optimization module providing intelligent cleanup and performance enhancement for recipe storage.
+///
+/// This module implements comprehensive cache optimization following Single Responsibility Principle,
+/// handling all aspects of cache maintenance including periodic cleanup, old data removal, corruption detection,
+/// and performance optimization strategies. It provides intelligent cache management ensuring optimal
+/// storage utilization while maintaining clean separation from basic cache operations.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles cache optimization operations:
+/// - **Periodic Cleanup**: Automated scheduled cleanup with configurable intervals and comprehensive maintenance
+/// - **Data Validation**: Corruption detection, permission validation, and integrity verification
+/// - **Performance Optimization**: LRU (Least Recently Used) and priority-based cache optimization strategies
+/// - **Health Monitoring**: Cache health assessment with actionable recommendations and optimization suggestions
+///
+/// **What This Module Does NOT Handle:**
+/// - Basic cache CRUD operations (handled by CacheOperations)
+/// - Firebase synchronization and real-time updates (handled by FirebaseSyncManager)
+/// - Debounced write operations (handled by DebouncedSyncOperations)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Cache Optimization Features:**
+/// - **Intelligent Cleanup**: Permission-based, age-based, and corruption-based automatic cleanup
+/// - **Performance Strategies**: LRU and priority-based optimization for optimal cache utilization
+/// - **Health Assessment**: Comprehensive cache health monitoring with actionable recommendations
+/// - **Flexible Scheduling**: Configurable periodic cleanup with smart resource management
+/// - **Targeted Operations**: Specific cleanup operations for corrupted entries, permissions, and age
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Start periodic cache cleanup
+/// final cleanupTimer = CacheOptimization.startPeriodicCleanup(
+///   cleanupInterval: Duration(hours: 24),
+///   cacheHelper: cacheHelper,
+///   getCurrentUserId: () => authService.currentUserId,
+/// );
 /// 
-/// This module handles ONLY cache optimization operations:
-/// - Periodic cache cleanup and maintenance
-/// - Old recipe detection and removal
-/// - Cache validation and integrity checks
-/// - User permission-based cleanup
+/// // Targeted cleanup operations
+/// await CacheOptimization.cleanupInvalidPermissions(cacheHelper, userId);
+/// await CacheOptimization.cleanupOldRecipes(cacheHelper, Duration(days: 365), userId);
 /// 
-/// ❌ DOES NOT CONTAIN: Basic cache operations, Firebase sync, statistics, auth handling
+/// // Performance optimization
+/// await CacheOptimization.optimizeCacheByLRU(cacheHelper, maxSize: 1000);
+/// await CacheOptimization.optimizeCacheByPriority(cacheHelper, userId, maxSize: 1000);
+/// 
+/// // Health monitoring
+/// final health = await CacheOptimization.assessCacheHealth(cacheHelper, userId);
+/// ```
 class CacheOptimization {
 
   // ===== CACHE CLEANUP SCHEDULING =====

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/widgets/common/social_components/invitation_selectors.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
@@ -102,7 +101,7 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),
-      content: Text('Target selection dialog - simplified implementation'),
+      content: const Text('Target selection dialog - simplified implementation'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, null),

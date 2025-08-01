@@ -1,35 +1,37 @@
+/// Comprehensive realtime menu data providing pure data representation for collaborative meal planning infrastructure.
+///
+/// This class implements sophisticated menu data management following Single Responsibility Principle,
+/// handling all aspects of menu data representation including category-based recipe organization, temporal management,
+/// comprehensive serialization, and basic data access operations. It provides complete data infrastructure while
+/// maintaining clean separation from business logic, analytics, and UI presentation concerns.
+
 // lib/models/realtime/realtime_menu_data.dart
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 
-/// Pure data representation for realtime menu content
-/// 
-/// This class contains ONLY:
-/// - Menu data fields
-/// - Serialization methods
-/// - Basic data access
-/// 
-/// ❌ DOES NOT CONTAIN: Business logic, operations, analytics, UI concerns
+/// Comprehensive realtime menu data with pure data representation and robust serialization for collaborative meal planning.
+///
+/// Represents complete menu data structure with category-based recipe organization, temporal management,
+/// and comprehensive metadata support through focused data responsibility and clean serialization patterns.
+/// This class serves as the foundation for all menu data operations and persistence functionality.
 class RealtimeMenuData {
-  /// Title for the menu (e.g. "Family Andersson's weekly menu")
+  /// Menu title for identification and display purposes in collaborative meal planning.
   final String menuTitle;
 
-  /// When the menu was created/planned for
+  /// Target date for meal planning timeline organization and scheduling coordination.
   final DateTime createdForDate;
 
-  /// Category-based menu structure: Category -> List of recipes
-  /// Key: 'Middag', 'Lunch', 'Frukost', etc. (same as existing menu structure)
-  /// Value: List of Recipe objects for that category
+  /// Category-based recipe organization providing structured meal planning with Swedish meal categories.
   final Map<String, List<Recipe>> menuSnapshot;
 
-  /// Extra notes for the entire menu
+  /// Optional menu notes providing additional context and collaborative planning information.
   final String? menuNotes;
 
-  /// Favorite recipes often used (for quick-add)
+  /// Optional favorite recipe IDs for personalized quick-access and preference tracking.
   final List<String>? favoriteRecipeIds;
 
-  /// Original prompt used to generate the menu (if applicable)
+  /// Optional original AI generation prompt preserving menu creation context and regeneration capability.
   final String? originalPrompt;
 
   const RealtimeMenuData({
@@ -60,29 +62,25 @@ class RealtimeMenuData {
     );
   }
 
-  /// Create copy with updated data
-  RealtimeMenuData copyWith({
-    String? menuTitle,
-    DateTime? createdForDate,
-    Map<String, List<Recipe>>? menuSnapshot,
-    String? menuNotes,
-    List<String>? favoriteRecipeIds,
-    String? originalPrompt,
-  }) {
-    return RealtimeMenuData(
-      menuTitle: menuTitle ?? this.menuTitle,
-      createdForDate: createdForDate ?? this.createdForDate,
-      menuSnapshot: menuSnapshot ?? this.menuSnapshot,
-      menuNotes: menuNotes ?? this.menuNotes,
-      favoriteRecipeIds: favoriteRecipeIds ?? this.favoriteRecipeIds,
-      originalPrompt: originalPrompt ?? this.originalPrompt,
-    );
-  }
-
-  // ===== BASIC DATA ACCESS =====
-
-  /// All categories in this menu
+  /// Get all categories
   List<String> get categories => menuSnapshot.keys.toList();
+
+  /// Get all unique recipes (deduplicated across categories)
+  List<Recipe> get allUniqueRecipes {
+    final seen = <String>{};
+    final unique = <Recipe>[];
+    
+    for (final recipes in menuSnapshot.values) {
+      for (final recipe in recipes) {
+        if (!seen.contains(recipe.id)) {
+          seen.add(recipe.id);
+          unique.add(recipe);
+        }
+      }
+    }
+    
+    return unique;
+  }
 
   /// Get recipes for specific category
   List<Recipe> getRecipesForCategory(String categoryName) {
@@ -91,42 +89,18 @@ class RealtimeMenuData {
 
   /// Check if category has recipes
   bool categoryHasRecipes(String categoryName) {
-    return getRecipesForCategory(categoryName).isNotEmpty;
-  }
-
-  /// Get all unique recipes in the menu
-  List<Recipe> get allUniqueRecipes {
-    final allRecipes = <Recipe>[];
-    final seenIds = <String>{};
-
-    for (final categoryRecipes in menuSnapshot.values) {
-      for (final recipe in categoryRecipes) {
-        if (!seenIds.contains(recipe.id)) {
-          allRecipes.add(recipe);
-          seenIds.add(recipe.id);
-        }
-      }
-    }
-
-    return allRecipes;
+    return menuSnapshot[categoryName]?.isNotEmpty ?? false;
   }
 
   /// Convert to MenuViewModel format
-  Map<String, List<Recipe>> toMenuViewModelFormat() {
-    return Map<String, List<Recipe>>.from(menuSnapshot);
-  }
+  Map<String, List<Recipe>> toMenuViewModelFormat() => Map.from(menuSnapshot);
 
   /// Check if menu contains a specific recipe
   bool containsRecipe(String recipeId) {
-    for (final recipes in menuSnapshot.values) {
-      if (recipes.any((recipe) => recipe.id == recipeId)) {
-        return true;
-      }
-    }
-    return false;
+    return allUniqueRecipes.any((recipe) => recipe.id == recipeId);
   }
 
-  /// Find which category a recipe belongs to
+  /// Find which category a recipe belongs to  
   String? findRecipeCategory(String recipeId) {
     for (final entry in menuSnapshot.entries) {
       if (entry.value.any((recipe) => recipe.id == recipeId)) {
@@ -136,17 +110,12 @@ class RealtimeMenuData {
     return null;
   }
 
-  // ===== SERIALIZATION =====
-
-  /// Serialize content for Firestore
+  /// Serialize for Firestore
   Map<String, dynamic> serializeContent() {
-    // Serialize menuSnapshot to Firestore format (same as SharedMenu)
+    // Serialize menuSnapshot for Firestore
     final menuData = <String, List<Map<String, dynamic>>>{};
     for (final entry in menuSnapshot.entries) {
-      final categoryName = entry.key;
-      final recipes = entry.value;
-      menuData[categoryName] =
-          recipes.map((recipe) => recipe.toFirestore()).toList();
+      menuData[entry.key] = entry.value.map((recipe) => recipe.toFirestore()).toList();
     }
 
     return {
@@ -159,49 +128,24 @@ class RealtimeMenuData {
     };
   }
 
-  /// Create from Firestore document data
+  /// Create from Firestore data
   factory RealtimeMenuData.fromFirestore(Map<String, dynamic> data) {
-    // Parse menu-specific data (same structure as SharedMenu)
+    // Parse menuSnapshot from Firestore
     final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
     final menuSnapshot = <String, List<Recipe>>{};
 
-    // Convert menu data back to Recipe objects
     for (final entry in menuData.entries) {
-      final categoryName = entry.key;
       final recipesData = entry.value as List<dynamic>? ?? [];
-
       final recipes = recipesData
-          .map((recipeData) => Recipe(
-                core: RecipeCore(
-                  id: recipeData['id'] as String? ?? '',
-                  title: recipeData['title'] as String? ?? '',
-                  description: recipeData['description'] as String? ?? '',
-                  ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-                  instructions: List<String>.from(recipeData['instructions'] ?? []),
-                  imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-                  mealType: recipeData['mealType'] as String? ?? 'Middag',
-                  portions: recipeData['portions'] as int?,
-                  timeMinutes: recipeData['timeMinutes'] as int?,
-                  rating: (recipeData['rating'] as num?)?.toDouble(),
-                  tags: recipeData['tags'] != null
-                      ? List<String>.from(recipeData['tags'])
-                      : null,
-                  sourceUrl: recipeData['sourceUrl'] as String?,
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                  createdBy: '',
-                ),
-                type: RecipeType.personal,
-              ))
+          .map((recipeData) => Recipe.fromMap('', recipeData as Map<String, dynamic>))
           .toList();
 
-      menuSnapshot[categoryName] = recipes;
+      menuSnapshot[entry.key] = recipes;
     }
 
     return RealtimeMenuData(
       menuTitle: data['menuTitle'] as String? ?? '',
-      createdForDate:
-          AppTimestamp.fromFirestore(data['createdForDate']).dateTime,
+      createdForDate: AppTimestamp.fromFirestore(data['createdForDate']).dateTime,
       menuSnapshot: menuSnapshot,
       menuNotes: data['menuNotes'] as String?,
       favoriteRecipeIds: data['favoriteRecipeIds'] != null
@@ -216,8 +160,7 @@ class RealtimeMenuData {
     // Serialize menuSnapshot for JSON
     final menuData = <String, List<Map<String, dynamic>>>{};
     for (final entry in menuSnapshot.entries) {
-      menuData[entry.key] =
-          entry.value.map((recipe) => recipe.toJson()).toList();
+      menuData[entry.key] = entry.value.map((recipe) => recipe.toFirestore()).toList();
     }
 
     return {
@@ -239,9 +182,9 @@ class RealtimeMenuData {
     for (final entry in menuData.entries) {
       final recipesData = entry.value as List<dynamic>? ?? [];
       final recipes = recipesData
-          .map((recipeData) =>
-              Recipe.fromJson(recipeData as Map<String, dynamic>))
+          .map((recipeData) => Recipe.fromMap('', recipeData as Map<String, dynamic>))
           .toList();
+
       menuSnapshot[entry.key] = recipes;
     }
 
@@ -257,37 +200,47 @@ class RealtimeMenuData {
     );
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is RealtimeMenuData &&
-          runtimeType == other.runtimeType &&
-          menuTitle == other.menuTitle &&
-          createdForDate == other.createdForDate &&
-          _mapEquals(menuSnapshot, other.menuSnapshot) &&
-          menuNotes == other.menuNotes &&
-          _listEquals(favoriteRecipeIds, other.favoriteRecipeIds) &&
-          originalPrompt == other.originalPrompt;
-
-  @override
-  int get hashCode =>
-      menuTitle.hashCode ^
-      createdForDate.hashCode ^
-      menuSnapshot.hashCode ^
-      menuNotes.hashCode ^
-      favoriteRecipeIds.hashCode ^
-      originalPrompt.hashCode;
-
-  @override
-  String toString() {
-    return 'RealtimeMenuData('
-        'title: $menuTitle, '
-        'categories: ${categories.length}, '
-        'createdFor: ${createdForDate.toIso8601String().substring(0, 10)}'
-        ')';
+  /// Create copy with updated values
+  RealtimeMenuData copyWith({
+    String? menuTitle,
+    DateTime? createdForDate,
+    Map<String, List<Recipe>>? menuSnapshot,
+    String? menuNotes,
+    List<String>? favoriteRecipeIds,
+    String? originalPrompt,
+  }) {
+    return RealtimeMenuData(
+      menuTitle: menuTitle ?? this.menuTitle,
+      createdForDate: createdForDate ?? this.createdForDate,
+      menuSnapshot: menuSnapshot ?? this.menuSnapshot,
+      menuNotes: menuNotes ?? this.menuNotes,
+      favoriteRecipeIds: favoriteRecipeIds ?? this.favoriteRecipeIds,
+      originalPrompt: originalPrompt ?? this.originalPrompt,
+    );
   }
 
-  // Helper methods for equality comparison
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is RealtimeMenuData &&
+        other.menuTitle == menuTitle &&
+        other.createdForDate == createdForDate &&
+        _mapEquals(other.menuSnapshot, menuSnapshot) &&
+        other.menuNotes == menuNotes &&
+        _listEquals(other.favoriteRecipeIds, favoriteRecipeIds) &&
+        other.originalPrompt == originalPrompt;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    menuTitle,
+    createdForDate,
+    menuSnapshot,
+    menuNotes,
+    favoriteRecipeIds,
+    originalPrompt,
+  );
+
   bool _mapEquals<K, V>(Map<K, List<V>>? a, Map<K, List<V>>? b) {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;

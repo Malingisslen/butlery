@@ -37,7 +37,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/services/notifications/notification_service.dart' as notifications;
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Messaging service providing comprehensive real-time communication with advanced conversation management.
 ///
@@ -63,8 +63,8 @@ import 'package:butlery/core/injection.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final messagingService = MessagingService(
-///   messagingRepository: sl<MessagingRepository>(),
-///   authRepository: sl<AuthRepository>(),
+///   messagingRepository: ServiceLocator.get<MessagingRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Start direct conversation
@@ -214,6 +214,24 @@ class MessagingService extends BaseService {
     );
   }
 
+  /// Get messages for a conversation with pagination support
+  Future<List<Message>> getConversationMessagesPage({
+    required String conversationId,
+    int limit = 50,
+    DateTime? startAfter,
+  }) async {
+    try {
+      return await _messagingRepository.getConversationMessagesPage(
+        conversationId: conversationId,
+        limit: limit,
+        startAfter: startAfter,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to get conversation messages page for $conversationId', e);
+      return [];
+    }
+  }
+
   /// Send a text message
   Future<void> sendTextMessage({
     required String conversationId,
@@ -282,6 +300,70 @@ class MessagingService extends BaseService {
       AppLogger.debug('Recipe share sent: ${shareMessage.id}');
     } catch (e) {
       AppLogger.error('Failed to send recipe share', e);
+      rethrow;
+    }
+  }
+
+  /// Send a menu share message
+  Future<void> sendMenuShare({
+    required String conversationId,
+    required String menuId,
+    required String menuTitle,
+    String? message,
+  }) async {
+    try {
+      final currentUser = _authRepository.currentUser;
+      if (currentUser == null) {
+        throw AuthenticationException('User must be authenticated');
+      }
+
+      final shareMessage = Message.menuShare(
+        conversationId: conversationId,
+        senderId: currentUser.uid,
+        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderAvatarUrl: currentUser.photoURL,
+        menuId: menuId,
+        menuTitle: menuTitle,
+        message: message,
+      );
+
+      await _messagingRepository.sendMessage(shareMessage);
+      
+      AppLogger.debug('Menu share sent: ${shareMessage.id}');
+    } catch (e) {
+      AppLogger.error('Failed to send menu share', e);
+      rethrow;
+    }
+  }
+
+  /// Send a shopping list share message
+  Future<void> sendShoppingListShare({
+    required String conversationId,
+    required String listId,
+    required String listTitle,
+    String? message,
+  }) async {
+    try {
+      final currentUser = _authRepository.currentUser;
+      if (currentUser == null) {
+        throw AuthenticationException('User must be authenticated');
+      }
+
+      final shareMessage = Message.shoppingListShare(
+        conversationId: conversationId,
+        senderId: currentUser.uid,
+        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderAvatarUrl: currentUser.photoURL,
+        listId: listId,
+        listTitle: listTitle,
+        message: message,
+      );
+
+      await _messagingRepository.sendMessage(shareMessage);
+      
+      AppLogger.debug('Shopping list share sent: ${shareMessage.id}');
+    } catch (e) {
+      AppLogger.error('Failed to send shopping list share', e);
       rethrow;
     }
   }
@@ -373,6 +455,61 @@ class MessagingService extends BaseService {
       AppLogger.debug('Message deleted: $messageId');
     } catch (e) {
       AppLogger.error('Failed to delete message $messageId', e);
+      rethrow;
+    }
+  }
+
+  /// Delete all messages in a conversation (chat clear functionality)
+  /// 
+  /// ✅ FIXED: Implemented conversation message clearing functionality
+  Future<void> deleteAllMessages(String conversationId) async {
+    try {
+      final currentUserId = _authRepository.currentUserId;
+      if (currentUserId == null) {
+        throw PermissionDeniedException(
+          'Must be logged in to delete messages',
+          resource: 'conversation:$conversationId',
+          userId: null,
+        );
+      }
+
+      // Get all messages in the conversation
+      final messages = await _messagingRepository.searchMessages(
+        conversationId: conversationId,
+        query: '', // Empty query to get all messages
+        limit: 1000, // High limit to get all messages
+      );
+
+      AppLogger.info('🧹 Deleting ${messages.length} messages from conversation $conversationId');
+
+      // Delete messages in batches to avoid overwhelming the system
+      const batchSize = 50;
+      for (int i = 0; i < messages.length; i += batchSize) {
+        final batch = messages.skip(i).take(batchSize);
+        
+        // Delete each message in the batch
+        final deleteFutures = batch.map((message) async {
+          try {
+            // Only delete messages sent by current user (permission check)
+            if (message.senderId == currentUserId) {
+              await _messagingRepository.deleteMessage(message.id);
+            }
+          } catch (e) {
+            AppLogger.warning('Failed to delete message ${message.id}: $e');
+          }
+        });
+        
+        await Future.wait(deleteFutures);
+        
+        // Small delay between batches to prevent overwhelming the backend
+        if (i + batchSize < messages.length) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+      }
+
+      AppLogger.success('✅ Successfully cleared conversation messages for user $currentUserId');
+    } catch (e) {
+      AppLogger.error('❌ Failed to delete all messages in conversation $conversationId', e);
       rethrow;
     }
   }
@@ -558,7 +695,7 @@ class MessagingService extends BaseService {
       }
 
       // Get notification service
-      final notificationService = sl<notifications.NotificationService>();
+      final notificationService = ServiceLocator.get<notifications.NotificationService>();
 
       // Determine notification title and body based on conversation type
       String title;

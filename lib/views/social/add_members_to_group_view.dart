@@ -19,7 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
@@ -70,8 +70,10 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       create: (context) {
         // Create ViewModel with group ID for member management
         try {
-          final viewModel =
-              sl<AddMembersToGroupViewModel>(param1: widget.groupId);
+          final viewModel = AddMembersToGroupViewModel(
+            groupId: widget.groupId,
+            friendsService: ServiceLocator.get(),
+          );
           return viewModel;
         } catch (e) {
           // Log error and rethrow for proper error handling

@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -13,7 +13,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
 /// This includes search functionality, filtering by various criteria, and providing insights.
 class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin {
-  final UnifiedRecipeService _recipeService = sl<UnifiedRecipeService>();
+  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'RecipeQueryViewModel';
 
@@ -195,8 +195,11 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   List<Recipe> getFavoriteRecipes() {
-    // TODO: Implement when favorite functionality is available
-    return [];
+    // For now, consider recipes with rating >= 4.5 as favorites
+    // In the future, this would be based on user-specific favorite flags
+    return allRecipes.where((recipe) => 
+      recipe.rating != null && recipe.rating! >= 4.5
+    ).toList()..sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
   }
 
   List<Recipe> getHighRatedRecipes({double minRating = 4.0}) {

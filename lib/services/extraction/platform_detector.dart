@@ -29,18 +29,31 @@
 ///   performExtractionWithPlatform(result.platform);
 /// }
 /// ```
-class PlatformDetector with SingletonServiceMixin<PlatformDetector> {
-  // Private constructor for singleton
-  PlatformDetector._internal();
-  
-  // Factory constructor using SingletonServiceMixin
-  factory PlatformDetector() => SingletonServiceMixin.createSingleton(() => PlatformDetector._internal());
 
-  final ContentDetectorService _detector = ContentDetectorService();
+/// Enum for supported social media platforms
+enum SourcePlatform {
+  instagram,
+  facebook,
+  tiktok,
+  youtube,
+  pinterest,
+  unknown,
+}
+
+class PlatformDetector {
+  // Singleton implementation
+  static final PlatformDetector _instance = PlatformDetector._internal();
+  factory PlatformDetector() => _instance;
+  PlatformDetector._internal();
 
   /// Detect platform from URL
-  Future<ContentDetectionResult> detectPlatform(String url) async {
-    return await _detector.detectContent(url);
+  SourcePlatform detectPlatform(String url) {
+    if (url.contains('instagram.com')) return SourcePlatform.instagram;
+    if (url.contains('facebook.com')) return SourcePlatform.facebook;
+    if (url.contains('tiktok.com')) return SourcePlatform.tiktok;
+    if (url.contains('youtube.com') || url.contains('youtu.be')) return SourcePlatform.youtube;
+    if (url.contains('pinterest.com')) return SourcePlatform.pinterest;
+    return SourcePlatform.unknown;
   }
 
   /// Convert Instagram app links to web URLs

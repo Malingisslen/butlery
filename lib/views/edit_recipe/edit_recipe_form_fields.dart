@@ -6,7 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_image_picker.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_dynamic_list.dart';
 
@@ -35,7 +35,7 @@ class EditRecipeFormFields {
       // Image management
       UniversalImageManager.recipeEdit(
         imageUrls: viewModel.imageUrls,
-        userId: sl<PermissionService>().currentUserId ?? '',
+        userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
         onAddImage: viewModel.addImageUrl,
         onRemoveImage: viewModel.removeImageAt,
         onSetPrimary: (index) {

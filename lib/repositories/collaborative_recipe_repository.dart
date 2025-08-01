@@ -171,6 +171,19 @@ class CollaborativeRecipeRepository {
     }, SetOptions(merge: true));
   }
 
+  /// Update presence heartbeat (lightweight update for active users)
+  Future<void> updatePresenceHeartbeat(String recipeId, String userId) {
+    return _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .doc(userId)
+        .update({
+      'lastSeen': DateTime.now().millisecondsSinceEpoch,
+      'isActive': true,
+    });
+  }
+
   Future<void> clearUserPresence(String recipeId, String userId) {
     return _firestore
         .collection('realtime_recipes')
@@ -178,5 +191,89 @@ class CollaborativeRecipeRepository {
         .collection('presence')
         .doc(userId)
         .update({'isActive': false});
+  }
+
+  /// Remove user presence completely from recipe (needed by RealtimeEditorTracker)
+  Future<void> removePresence(String recipeId, String userId) {
+    return _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .doc(userId)
+        .delete();
+  }
+
+  /// Get all active editors for a recipe (needed by RealtimeEditorTracker)
+  Future<List<Map<String, dynamic>>> getActiveEditors(String recipeId) async {
+    final snapshot = await _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .where('isActive', isEqualTo: true)
+        .get();
+    
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      final lastSeen = data['lastSeen'] as int?;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final isCurrentlyActive = lastSeen != null && (now - lastSeen) < 60000; // Within 1 minute
+      
+      return {
+        'userId': doc.id,
+        'displayName': data['displayName'] as String? ?? 'Unknown',
+        'lastSeen': lastSeen,
+        'isActive': data['isActive'] as bool? ?? false,
+        'isCurrentlyActive': isCurrentlyActive,
+      };
+    }).toList();
+  }
+
+  /// Check if specific user is actively editing (needed by RealtimeEditorTracker)
+  Future<bool> isUserActivelyEditing(String recipeId, String userId) async {
+    final doc = await _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .doc(userId)
+        .get();
+    
+    if (!doc.exists) return false;
+    
+    final data = doc.data()!;
+    final isActive = data['isActive'] as bool? ?? false;
+    final lastSeen = data['lastSeen'] as int?;
+    
+    if (!isActive || lastSeen == null) return false;
+    
+    // Consider user active if seen within last minute
+    final now = DateTime.now().millisecondsSinceEpoch;
+    return (now - lastSeen) < 60000;
+  }
+
+  /// Clean up inactive editors (older than 5 minutes)
+  Future<void> cleanupInactiveEditors(String recipeId) async {
+    final fiveMinutesAgo = DateTime.now().millisecondsSinceEpoch - (5 * 60 * 1000);
+    
+    // Get all presence documents
+    final snapshot = await _firestore
+        .collection('realtime_recipes')
+        .doc(recipeId)
+        .collection('presence')
+        .get();
+    
+    // Batch operation for cleanup
+    final batch = _firestore.batch();
+    
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final lastSeen = data['lastSeen'] as int?;
+      
+      // Mark as inactive if last seen more than 5 minutes ago
+      if (lastSeen != null && lastSeen < fiveMinutesAgo) {
+        batch.update(doc.reference, {'isActive': false});
+      }
+    }
+    
+    await batch.commit();
   }
 }

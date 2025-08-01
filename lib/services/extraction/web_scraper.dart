@@ -8,7 +8,7 @@
 /// **Architecture Integration:**
 /// - Uses [HeadlessInAppWebView] for headless browser operations with full JavaScript support
 /// - Implements platform-specific extraction strategies for optimal content parsing
-/// - Integrates with [SourcePlatform] detection for appropriate scraping technique selection
+/// - Integrates with platform detection for appropriate scraping technique selection
 /// - Provides comprehensive timeout and error handling for reliable extraction operations
 ///
 /// **Extraction Capabilities:**
@@ -38,7 +38,7 @@
 /// // Extract from Instagram post
 /// final result = await scraper.performExtraction(
 ///   'https://instagram.com/p/recipe-post',
-///   SourcePlatform.instagram,
+///   pd.SourcePlatform.instagram,
 /// );
 /// 
 /// if (result.success) {
@@ -54,7 +54,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
-import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 
@@ -107,7 +107,7 @@ class WebScraper {
   /// // Extract from Instagram recipe post
   /// final result = await scraper.performExtraction(
   ///   'https://instagram.com/p/recipe123',
-  ///   SourcePlatform.instagram,
+  ///   pd.SourcePlatform.instagram,
   /// );
   /// 
   /// // Handle extraction results
@@ -121,7 +121,7 @@ class WebScraper {
   /// ```
   Future<ExtractionResult> performExtraction(
     String url,
-    SourcePlatform platform,
+    pd.SourcePlatform platform,
   ) async {
     final completer = Completer<ExtractionResult>();
     bool hasExtracted = false;
@@ -164,7 +164,7 @@ class WebScraper {
           if (progress == 100 && !hasExtracted && !completer.isCompleted) {
             hasExtracted = true;
 
-            final delay = platform == SourcePlatform.instagram
+            final delay = platform == pd.SourcePlatform.instagram
                 ? AppDimensions.animationDurationSlow
                 : AppDimensions.animationDurationMedium;
 
@@ -313,16 +313,16 @@ class WebScraper {
   /// Extract text based on platform
   Future<String?> _extractTextForPlatform(
     InAppWebViewController controller,
-    SourcePlatform platform,
+    pd.SourcePlatform platform,
   ) async {
     if (_isDisposed) return null;
 
     switch (platform) {
-      case SourcePlatform.instagram:
+      case pd.SourcePlatform.instagram:
         return _extractInstagram(controller);
-      case SourcePlatform.facebook:
+      case pd.SourcePlatform.facebook:
         return _extractFacebook(controller);
-      case SourcePlatform.tiktok:
+      case pd.SourcePlatform.tiktok:
         return _extractTikTok(controller);
       default:
         return _extractGeneric(controller);
@@ -330,20 +330,20 @@ class WebScraper {
   }
 
   /// Platform-specific selectors
-  static const Map<SourcePlatform, List<String>> _platformSelectors = {
-    SourcePlatform.instagram: [
+  static final Map<pd.SourcePlatform, List<String>> _platformSelectors = {
+    pd.SourcePlatform.instagram: [
       'article div span[dir="auto"]',
       'article div h1',
       'meta[property="og:description"]',
       'meta[name="description"]',
     ],
-    SourcePlatform.facebook: [
+    pd.SourcePlatform.facebook: [
       'div[data-ad-preview="message"]',
       'div[role="article"] span[dir="auto"]',
       'div[data-testid="post_message"]',
       'meta[property="og:description"]',
     ],
-    SourcePlatform.tiktok: [
+    pd.SourcePlatform.tiktok: [
       'h1[data-e2e="browse-video-desc"]',
       'span[data-e2e="video-desc"]',
       'meta[property="og:description"]',
@@ -499,7 +499,7 @@ class WebScraper {
 
     debugPrint('📘 Extracting from Facebook...');
 
-    final selectors = _platformSelectors[SourcePlatform.facebook] ?? [];
+    final selectors = _platformSelectors[pd.SourcePlatform.facebook] ?? [];
 
     for (final selector in selectors) {
       if (_isDisposed) break;
@@ -530,7 +530,7 @@ class WebScraper {
 
     debugPrint('🎵 Extracting from TikTok...');
 
-    final selectors = _platformSelectors[SourcePlatform.tiktok] ?? [];
+    final selectors = _platformSelectors[pd.SourcePlatform.tiktok] ?? [];
 
     for (final selector in selectors) {
       if (_isDisposed) break;
@@ -586,7 +586,7 @@ class WebScraper {
   }
 
   /// User agent to mimic desktop browser
-  String _getUserAgent(SourcePlatform platform) {
+  String _getUserAgent(pd.SourcePlatform platform) {
     return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
         'AppleWebKit/537.36 (KHTML, like Gecko) '
         'Chrome/120.0.0.0 Safari/537.36';

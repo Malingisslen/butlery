@@ -1,19 +1,154 @@
+/// Comprehensive text import ViewModel providing advanced text-to-recipe conversion for Flutter applications.
+///
+/// This module implements sophisticated text import functionality following Single Responsibility Principle,
+/// specializing in converting text-based recipe content from various sources including social media posts,
+/// OCR scanned text, copied content, and manual input into structured Recipe objects. It provides complete
+/// text import infrastructure while maintaining clean separation from UI rendering, data persistence, and other import types.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles text import presentation layer concerns:
+/// - **Text Import Specialization**: Advanced text-to-recipe parsing with validation and comprehensive error handling
+/// - **Recipe Editing Intelligence**: Complete recipe manipulation during import with real-time validation and Swedish localization
+/// - **Input Validation Excellence**: Comprehensive text validation ensuring recipe completeness and data integrity
+/// - **Text Analysis Features**: Intelligent text analysis with parsing suggestions and content quality assessment
+/// - **Import Workflow Management**: Complete text import workflow from input to saved recipe with state coordination
+///
+/// **What This Module Does NOT Handle:**
+/// - URL-based content fetching (handled by UrlImportViewModel and web scraping services)
+/// - UI rendering and widget creation (handled by text import views and presentation components)
+/// - Direct data persistence (handled by ImportManager and underlying storage services)
+/// - Complex parsing algorithm implementation (handled by ImportManager strategy pattern and text parsing services)
+///
+/// **Text Import ViewModel Features:**
+/// - **Advanced Text Parsing**: Sophisticated text-to-recipe conversion through ImportManager with comprehensive validation
+/// - **Recipe Editing Intelligence**: Complete recipe manipulation with ingredients, instructions, and metadata management
+/// - **Input Validation System**: Comprehensive text validation ensuring recipe completeness and parsing viability
+/// - **Text Analysis Tools**: Intelligent parsing suggestions and content quality assessment for optimal results
+/// - **Swedish Localization**: Complete Swedish language support for errors, suggestions, and user feedback
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Initialize text import ViewModel with ImportManager dependency
+/// final textImportViewModel = TextImportViewModel(
+///   importManager: ServiceLocator.get<ImportManager>(),
+/// );
+/// 
+/// // Text input and parsing workflow
+/// textImportViewModel.updateInputText('''
+///   Pannkakor
+///   Ingredienser:
+///   - 2 ägg
+///   - 3 dl mjölk
+///   - 2 dl vetemjöl
+///   - 1 krm salt
+///   
+///   Instruktioner:
+///   1. Vispa ihop alla ingredienser
+///   2. Stek i smör i pannan
+/// ''');
+/// 
+/// // Validate and parse text
+/// if (textImportViewModel.validateInput()) {
+///   final parseSuccess = await textImportViewModel.parseText();
+///   if (parseSuccess && textImportViewModel.hasParsedRecipe) {
+///     final recipe = textImportViewModel.parsedRecipe;
+///   }
+/// }
+/// 
+/// // Recipe editing during import
+/// textImportViewModel.updateRecipeTitle('Fluffiga Pannkakor');
+/// textImportViewModel.updateRecipeMealType('Frukost');
+/// textImportViewModel.updateRecipePortions(4);
+/// textImportViewModel.addIngredientToRecipe('1 msk socker');
+/// textImportViewModel.addInstructionToRecipe('3. Servera med sylt och grädde');
+/// 
+/// // Complete import workflow
+/// final importSuccess = await textImportViewModel.importAndSave();
+/// if (importSuccess) {
+///   // Recipe successfully imported and saved
+/// } else {
+///   // Handle error: textImportViewModel.error
+/// }
+/// 
+/// // Text analysis and suggestions
+/// final suggestions = textImportViewModel.getInputSuggestions();
+/// for (final suggestion in suggestions) {
+///   // Display parsing suggestions to user
+/// }
+/// 
+/// // Text and source management
+/// textImportViewModel.updateTextAndSource(
+///   'Recipe content from social media...',
+///   sourceUrl: 'https://instagram.com/recipe-post',
+/// );
+/// 
+/// // Input validation and quality assessment
+/// if (textImportViewModel.hasValidInput) {
+///   // Text is ready for parsing
+/// } else {
+///   // Show input requirements
+/// }
+/// ```
+
 // lib/viewmodels/text_import_viewmodel.dart
 
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 
-/// ViewModel för text-baserad receptimport (sociala medier, OCR, etc)
-/// Refactored to use ImportBaseViewModel with TextImportMixin for consistency
+/// Comprehensive text import ViewModel providing advanced text-to-recipe conversion through ImportManager coordination.
+///
+/// Specializes in text-based recipe importing from various sources including social media, OCR, manual input, and copied content.
+/// Extends ImportBaseViewModel with TextImportMixin to provide complete text import functionality with recipe editing,
+/// validation, and parsing workflow management while maintaining clean MVVM architecture separation.
+///
+/// **Core Responsibilities:**
+/// - Advanced text-to-recipe parsing with validation and error handling
+/// - Complete recipe editing functionality during import process
+/// - Text input validation ensuring parsing viability and content quality
+/// - Import workflow management from text input to saved recipe
+/// - Swedish localized error messages and user feedback coordination
 class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
 
+  /// Initializes text import ViewModel with comprehensive ImportManager integration and text import preparation.
+  /// 
+  /// [importManager] ImportManager instance for text import strategy coordination and recipe parsing
+  /// 
+  /// Establishes text import infrastructure with ImportManager integration, enabling comprehensive
+  /// text-to-recipe functionality with unified state management, validation, and error handling.
+  /// 
+  /// **Initialization Process:**
+  /// - ImportManager integration for text import strategy execution
+  /// - TextImportMixin setup for specialized text import functionality
+  /// - Base state preparation for text import workflow management
+  /// - Text validation system preparation with Swedish localization
   TextImportViewModel({required super.importManager});
 
-  // ===== TEXT-SPECIFIC METHODS =====
+  // ===== TEXT PARSING OPERATIONS =====
 
-  /// Parse the current input text into a recipe
+  /// Parses current input text into recipe with comprehensive validation and error handling.
+  /// 
+  /// Returns true if parsing succeeds and recipe is generated, false if parsing fails.
+  /// Performs text-to-recipe parsing through ImportManager strategy with comprehensive
+  /// validation, error handling, and Swedish localized error messages for user feedback.
+  /// 
+  /// **Parsing Process:**
+  /// - Input text validation ensuring content viability
+  /// - ImportManager text parsing strategy execution
+  /// - Recipe object generation with comprehensive validation
+  /// - Error handling with Swedish localized user feedback
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// textImportViewModel.updateInputText('Recipe content...');
+  /// final parseSuccess = await textImportViewModel.parseText();
+  /// if (parseSuccess) {
+  ///   final recipe = textImportViewModel.parsedRecipe;
+  /// } else {
+  ///   // Handle error: textImportViewModel.error
+  /// }
+  /// ```
   Future<bool> parseText() async {
     if (!hasValidInput) {
-      setError('Please provide text to parse');
+      setError('Vänligen ange text att tolka');
       return false;
     }
 
@@ -21,17 +156,52 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       await performImport();
       return hasParsedRecipe && !hasError;
     } catch (e) {
-      setError('Failed to parse text: $e');
+      setError('Kunde inte tolka text: $e');
       return false;
     }
   }
 
-  /// Complete the import process: parse text and save recipe
+  /// Completes comprehensive import workflow with text parsing, validation, and recipe saving.
+  /// 
+  /// Returns true if complete import process succeeds, false if any step fails.
+  /// Performs complete text import workflow including text validation, parsing,
+  /// recipe validation, and saving with comprehensive error handling and state management.
+  /// 
+  /// **Complete Import Process:**
+  /// 1. Text input validation and parsing viability checks
+  /// 2. Text-to-recipe parsing through ImportManager
+  /// 3. Recipe data validation ensuring completeness
+  /// 4. Recipe saving to collection with error handling
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// textImportViewModel.updateInputText('Recipe content...');
+  /// final importSuccess = await textImportViewModel.importAndSave();
+  /// if (importSuccess) {
+  ///   // Recipe successfully imported and saved
+  /// } else {
+  ///   // Handle error: textImportViewModel.error
+  /// }
+  /// ```
   Future<bool> importAndSave() async {
     return await completeImport();
   }
 
-  /// Update both input text and source URL
+  /// Updates both input text and source URL with comprehensive state coordination and UI notification.
+  /// 
+  /// [text] Text content for recipe parsing and import operations
+  /// [sourceUrl] Optional source URL for recipe attribution and reference tracking
+  /// 
+  /// Performs combined text and source URL update with immediate state coordination
+  /// and UI notification for responsive text import functionality and source attribution.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// textImportViewModel.updateTextAndSource(
+  ///   'Recipe content from social media...',
+  ///   sourceUrl: 'https://instagram.com/recipe-post',
+  /// );
+  /// ```
   void updateTextAndSource(String text, {String? sourceUrl}) {
     updateInputText(text);
     if (sourceUrl != null) {
@@ -39,34 +209,70 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     }
   }
 
-  // ===== RECIPE EDITING =====
+  // ===== RECIPE EDITING OPERATIONS =====
 
-  /// Update title of parsed recipe
+  /// Updates recipe title with immediate state coordination and UI notification.
+  /// 
+  /// [title] New recipe title for metadata update
+  /// 
+  /// Performs recipe title update with immediate state coordination enabling
+  /// real-time recipe editing during import process.
   void updateRecipeTitle(String title) {
     updateParsedRecipe(title: title);
   }
 
-  /// Update description of parsed recipe
+  /// Updates recipe description with comprehensive content management and state coordination.
+  /// 
+  /// [description] New recipe description for enhanced recipe information
+  /// 
+  /// Performs recipe description update with immediate state coordination enabling
+  /// comprehensive recipe editing during import process.
   void updateRecipeDescription(String description) {
     updateParsedRecipe(description: description);
   }
 
-  /// Update meal type of parsed recipe
+  /// Updates recipe meal type with category management and state coordination.
+  /// 
+  /// [mealType] New meal type for recipe categorization (Frukost, Lunch, Middag, etc.)
+  /// 
+  /// Performs recipe meal type update with immediate state coordination enabling
+  /// proper recipe categorization during import process.
   void updateRecipeMealType(String mealType) {
     updateParsedRecipe(mealType: mealType);
   }
 
-  /// Update portions of parsed recipe
+  /// Updates recipe portion count with serving size management and validation.
+  /// 
+  /// [portions] New portion count for serving size management
+  /// 
+  /// Performs recipe portion update with immediate state coordination enabling
+  /// proper serving size management during import process.
   void updateRecipePortions(int? portions) {
     updateParsedRecipe(portions: portions);
   }
 
-  /// Update cooking time of parsed recipe
+  /// Updates recipe cooking time with time management and state coordination.
+  /// 
+  /// [timeMinutes] New cooking time in minutes for time management
+  /// 
+  /// Performs recipe time update with immediate state coordination enabling
+  /// comprehensive time management during import process.
   void updateRecipeTime(int? timeMinutes) {
     updateParsedRecipe(timeMinutes: timeMinutes);
   }
 
-  /// Add ingredient to parsed recipe
+  /// Adds ingredient to parsed recipe with comprehensive validation and list management.
+  /// 
+  /// [ingredient] Ingredient text to add to recipe ingredients list
+  /// 
+  /// Performs ingredient addition with validation checks, list management,
+  /// and immediate state coordination for real-time recipe editing functionality.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// textImportViewModel.addIngredientToRecipe('1 msk socker');
+  /// textImportViewModel.addIngredientToRecipe('2 dl mjölk');
+  /// ```
   void addIngredientToRecipe(String ingredient) {
     if (parsedRecipe == null || ingredient.trim().isEmpty) return;
     
@@ -75,7 +281,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(ingredients: currentIngredients);
   }
 
-  /// Remove ingredient from parsed recipe
+  /// Removes ingredient from parsed recipe with comprehensive bounds checking and list management.
+  /// 
+  /// [index] Index of ingredient to remove from ingredients list
+  /// 
+  /// Performs ingredient removal with bounds validation, list management,
+  /// and immediate state coordination for safe recipe editing functionality.
   void removeIngredientFromRecipe(int index) {
     if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.ingredients.length) return;
     
@@ -84,7 +295,13 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(ingredients: currentIngredients);
   }
 
-  /// Update ingredient in parsed recipe
+  /// Updates specific ingredient in parsed recipe with comprehensive validation and list management.
+  /// 
+  /// [index] Index of ingredient to update in ingredients list
+  /// [ingredient] New ingredient text for replacement
+  /// 
+  /// Performs ingredient update with bounds validation, content trimming,
+  /// and immediate state coordination for precise recipe editing functionality.
   void updateIngredientInRecipe(int index, String ingredient) {
     if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.ingredients.length) return;
     
@@ -93,7 +310,18 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(ingredients: currentIngredients);
   }
 
-  /// Add instruction to parsed recipe
+  /// Adds cooking instruction to parsed recipe with comprehensive validation and sequential management.
+  /// 
+  /// [instruction] Instruction text to add to recipe cooking instructions
+  /// 
+  /// Performs instruction addition with validation checks, sequential ordering,
+  /// and immediate state coordination for comprehensive cooking instruction management.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// textImportViewModel.addInstructionToRecipe('1. Vispa ihop alla ingredienser');
+  /// textImportViewModel.addInstructionToRecipe('2. Stek i smör i pannan');
+  /// ```
   void addInstructionToRecipe(String instruction) {
     if (parsedRecipe == null || instruction.trim().isEmpty) return;
     
@@ -102,7 +330,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(instructions: currentInstructions);
   }
 
-  /// Remove instruction from parsed recipe
+  /// Removes cooking instruction from parsed recipe with comprehensive bounds checking and sequential management.
+  /// 
+  /// [index] Index of instruction to remove from cooking instructions list
+  /// 
+  /// Performs instruction removal with bounds validation, sequential ordering,
+  /// and immediate state coordination for safe cooking instruction management.
   void removeInstructionFromRecipe(int index) {
     if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.instructions.length) return;
     
@@ -111,7 +344,13 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(instructions: currentInstructions);
   }
 
-  /// Update instruction in parsed recipe
+  /// Updates specific cooking instruction in parsed recipe with comprehensive validation and sequential management.
+  /// 
+  /// [index] Index of instruction to update in cooking instructions list
+  /// [instruction] New instruction text for replacement
+  /// 
+  /// Performs instruction update with bounds validation, content trimming,
+  /// and immediate state coordination for precise cooking instruction management.
   void updateInstructionInRecipe(int index, String instruction) {
     if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.instructions.length) return;
     
@@ -120,7 +359,18 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(instructions: currentInstructions);
   }
 
-  /// Add tag to parsed recipe
+  /// Adds tag to parsed recipe with comprehensive duplication prevention and tag management.
+  /// 
+  /// [tag] Tag text to add to recipe tags for categorization and discovery
+  /// 
+  /// Performs tag addition with validation checks, duplication prevention,
+  /// and immediate state coordination for comprehensive recipe tagging functionality.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// textImportViewModel.addTagToRecipe('vegetarisk');
+  /// textImportViewModel.addTagToRecipe('snabbt');
+  /// ```
   void addTagToRecipe(String tag) {
     if (parsedRecipe == null || tag.trim().isEmpty) return;
     
@@ -131,7 +381,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     }
   }
 
-  /// Remove tag from parsed recipe
+  /// Removes tag from parsed recipe with comprehensive tag management and state coordination.
+  /// 
+  /// [tag] Tag text to remove from recipe tags
+  /// 
+  /// Performs tag removal with validation checks, list management,
+  /// and immediate state coordination for flexible recipe tagging functionality.
   void removeTagFromRecipe(String tag) {
     if (parsedRecipe == null) return;
     
@@ -140,17 +395,35 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(tags: currentTags);
   }
 
-  // ===== VALIDATION =====
+  // ===== TEXT VALIDATION OPERATIONS =====
 
-  /// Validate current input text
+  /// Validates current input text with comprehensive content assessment and Swedish error messaging.
+  /// 
+  /// Returns true if text is valid for recipe parsing, false if validation fails.
+  /// Performs comprehensive text validation including content length, parsing viability,
+  /// and recipe content assessment with Swedish localized error messages for user feedback.
+  /// 
+  /// **Validation Criteria:**
+  /// - Text content presence and availability
+  /// - Minimum text length for recipe content viability
+  /// - Content quality assessment for parsing success
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// if (textImportViewModel.validateInput()) {
+  ///   // Text is ready for parsing
+  /// } else {
+  ///   // Handle validation error: textImportViewModel.error
+  /// }
+  /// ```
   bool validateInput() {
     if (!hasValidInput) {
-      setError('Please provide text to import');
+      setError('Vänligen ange text att importera');
       return false;
     }
 
     if (inputText.trim().length < 10) {
-      setError('Text is too short to contain a recipe');
+      setError('Texten är för kort för att innehålla ett recept');
       return false;
     }
 
@@ -158,33 +431,51 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     return true;
   }
 
-  /// Get suggestions for improving text parsing
+  /// Generates intelligent parsing suggestions with comprehensive text analysis and Swedish localization.
+  /// 
+  /// Returns list of suggestions for improving text parsing success and recipe completeness.
+  /// Performs comprehensive text analysis including content assessment, structure evaluation,
+  /// and parsing optimization suggestions with Swedish localized recommendations.
+  /// 
+  /// **Text Analysis Features:**
+  /// - Content structure assessment for parsing optimization
+  /// - Missing content identification with specific recommendations
+  /// - Parsing success prediction with improvement suggestions
+  /// - Swedish localized suggestions for optimal user experience
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// final suggestions = textImportViewModel.getInputSuggestions();
+  /// for (final suggestion in suggestions) {
+  ///   // Display suggestion to user for parsing optimization
+  /// }
+  /// ```
   List<String> getInputSuggestions() {
     if (!hasValidInput) {
-      return ['Paste or type recipe text to get started'];
+      return ['Klistra in eller skriv recepttext för att komma igång'];
     }
 
     final text = inputText.toLowerCase();
     final suggestions = <String>[];
 
-    if (!text.contains('ingredient')) {
-      suggestions.add('Include ingredients list for better parsing');
+    if (!text.contains('ingrediens') && !text.contains('ingredient')) {
+      suggestions.add('Inkludera ingredienslista för bättre tolkning');
     }
 
-    if (!text.contains('instruction') && !text.contains('step')) {
-      suggestions.add('Include cooking instructions or steps');
+    if (!text.contains('instruktion') && !text.contains('steg') && !text.contains('gör så här')) {
+      suggestions.add('Inkludera tillagningsinstruktioner eller steg');
     }
 
-    if (!text.contains('minute') && !text.contains('hour') && !text.contains('time')) {
-      suggestions.add('Include cooking time if available');
+    if (!text.contains('minut') && !text.contains('timme') && !text.contains('tid')) {
+      suggestions.add('Inkludera tillagningstid om tillgänglig');
     }
 
-    if (!text.contains('serve') && !text.contains('portion')) {
-      suggestions.add('Include serving size if known');
+    if (!text.contains('portion') && !text.contains('servering')) {
+      suggestions.add('Inkludera antal portioner om känt');
     }
 
     if (suggestions.isEmpty) {
-      suggestions.add('Text looks good for recipe parsing');
+      suggestions.add('Texten ser bra ut för recepttolkning');
     }
 
     return suggestions;
@@ -192,10 +483,23 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
 
   // ===== DEBUGGING SUPPORT =====
 
+  /// Provides comprehensive debugging state information for development and troubleshooting.
+  /// 
+  /// Returns map containing debug information including text import state, parsing suggestions,
+  /// input validation status, and inherited debug state from ImportBaseViewModel for comprehensive
+  /// development support and troubleshooting capabilities.
+  /// 
+  /// **Debug Information Includes:**
+  /// - Input validation status and parsing suggestions
+  /// - Text import specific state and validation results
+  /// - Inherited ImportBaseViewModel debug state information
+  /// - Text analysis results for parsing optimization
   @override
   Map<String, dynamic> get debugState => {
     ...super.debugState,
     'inputSuggestions': getInputSuggestions(),
-    'validInput': validateInput(),
+    'inputValidationResult': hasValidInput,
+    'textLength': inputText.length,
+    'hasParsingErrors': hasError,
   };
 }

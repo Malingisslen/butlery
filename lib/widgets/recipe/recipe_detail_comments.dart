@@ -2,23 +2,25 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import 'package:butlery/viewmodels/recipe/social_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Standalone widget for displaying and managing recipe comments
 class RecipeDetailComments extends StatefulWidget {
   final SocialRecipeViewModel socialViewModel;
+  final String recipeId;
   final VoidCallback? onCommentPosted;
 
   const RecipeDetailComments({
     super.key,
     required this.socialViewModel,
+    required this.recipeId,
     this.onCommentPosted,
   });
 
@@ -61,7 +63,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
               // Load comments when expanding for the first time
               if (_isCommentsExpanded && !widget.socialViewModel.hasComments) {
-                widget.socialViewModel.refreshComments();
+                widget.socialViewModel.refreshComments(widget.recipeId);
               }
             },
             child: Padding(
@@ -180,7 +182,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   // DEBUG INFO + CREATE PROFILE
                   Builder(
                     builder: (context) {
-                      final userService = sl<UserService>();
+                      final userService = ServiceLocator.get<UserService>();
                       final authUser = FirebaseAuthRepository().currentUser;
 
                       return Container(
@@ -349,10 +351,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               onPressed: socialViewModel.newCommentText.trim().isNotEmpty &&
                       !socialViewModel.isPostingComment
                   ? () async {
-                      final success = await socialViewModel.postComment();
-                      if (success) {
+                      try {
+                        await socialViewModel.postComment(widget.recipeId);
                         _showSnackBarSafely('Kommentar publicerad!');
                         widget.onCommentPosted?.call();
+                      } catch (e) {
+                        _showSnackBarSafely('Kunde inte publicera kommentar', isError: true);
                       }
                     }
                   : null,

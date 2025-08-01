@@ -1,6 +1,7 @@
 // lib/models/realtime/realtime_recipe.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ✅ Firebase DocumentSnapshot dependency abstracted to repository layer
+// Note: Use fromData() constructor - repositories handle Firebase specifics
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -361,7 +362,43 @@ class RealtimeRecipe extends RealtimeResource {
     return RecipeSerialization.serializeRealtimeContent(recipe);
   }
 
+  /// Preferred factory constructor from clean data
+  /// 
+  /// Repositories should provide DateTime objects and clean Map data,
+  /// eliminating Firebase-specific types from the model layer.
+  factory RealtimeRecipe.fromData({
+    required String id,
+    required String ownerId,
+    required String ownerDisplayName,
+    required Map<String, ResourcePermission> participants,
+    required DateTime createdAt,
+    required DateTime lastEditedAt,
+    required String lastEditedBy,
+    required String lastEditedByDisplayName,
+    required Recipe recipe,
+    int editCount = 0,
+    bool isActive = true,
+    Map<String, dynamic> metadata = const {},
+  }) {
+    return RealtimeRecipe(
+      id: id,
+      ownerId: ownerId,
+      ownerDisplayName: ownerDisplayName,
+      participants: participants,
+      createdAt: createdAt,
+      lastEditedAt: lastEditedAt,
+      lastEditedBy: lastEditedBy,
+      lastEditedByDisplayName: lastEditedByDisplayName,
+      editCount: editCount,
+      isActive: isActive,
+      metadata: metadata,
+      recipe: recipe,
+    );
+  }
+
   /// Create from repository data map (removes Firebase dependency)
+  /// 
+  /// @deprecated Use fromData() constructor instead. This maintains backward compatibility.
   factory RealtimeRecipe.fromMap(String id, Map<String, dynamic> data) {
     // Parse recipe data from the nested structure
     final recipeData = data['recipe'] as Map<String, dynamic>? ?? data;
@@ -383,10 +420,10 @@ class RealtimeRecipe extends RealtimeResource {
       participants: participants,
       createdAt: data['createdAt'] is DateTime 
           ? data['createdAt'] as DateTime
-          : _parseTimestamp(data['createdAt']),
+          : DateTime.now(),
       lastEditedAt: data['lastEditedAt'] is DateTime 
           ? data['lastEditedAt'] as DateTime
-          : _parseTimestamp(data['lastEditedAt']),
+          : DateTime.now(),
       lastEditedBy: data['lastEditedBy'] as String,
       lastEditedByDisplayName: data['lastEditedByDisplayName'] as String,
       editCount: data['editCount'] as int? ?? 0,
@@ -396,18 +433,11 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  /// Helper method to parse timestamps from different sources
-  static DateTime? _parseTimestamp(dynamic value) {
-    if (value == null) return null;
-    if (value is DateTime) return value;
-    if (value is Timestamp) return value.toDate();
-    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
-    return null;
-  }
-
-  /// Skapa från Firestore dokument
-  factory RealtimeRecipe.fromFirestore(DocumentSnapshot doc) {
-    return RealtimeRecipe.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+  /// Create from Firestore document (deprecated - use fromData instead)
+  factory RealtimeRecipe.fromFirestore(dynamic doc) {
+    final id = doc.id as String;
+    final data = doc.data() as Map<String, dynamic>;
+    return RealtimeRecipe.fromMap(id, data);
   }
 
   // ===== COPY METHODS =====

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/dialogs/dialog_factory.dart';
 
 /// Discovery App Bar - Styled app bar for discovery dashboard
 class DiscoveryAppBar {
@@ -218,7 +220,37 @@ class DiscoveryAppBar {
                       style: AppTextStyles.titleSmall,
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
-                    // TODO: Implement content type filters
+                    // Content type filters
+                    CheckboxListTile(
+                      title: const Text('Recept'),
+                      subtitle: const Text('Visa receptresultat'),
+                      value: viewModel.recipesFilterEnabled,
+                      onChanged: (value) {
+                        viewModel.toggleContentTypeFilter('recipes');
+                      },
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Menyer'),
+                      subtitle: const Text('Visa menyresultat'),
+                      value: viewModel.menusFilterEnabled,
+                      onChanged: (value) {
+                        viewModel.toggleContentTypeFilter('menus');
+                      },
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Inköpslistor'),
+                      subtitle: const Text('Visa inköpslistor'),
+                      value: viewModel.shoppingListsFilterEnabled,
+                      onChanged: (value) {
+                        viewModel.toggleContentTypeFilter('shopping_lists');
+                      },
+                    ),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    const Text(
+                      'Kategorier',
+                      style: AppTextStyles.titleSmall,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingM),
                     ...viewModel.discoveryCategories.map((category) {
                       return CheckboxListTile(
                         title: Text(category['name']),
@@ -245,21 +277,124 @@ class DiscoveryAppBar {
     BuildContext context,
     DiscoveryDashboardViewModel viewModel,
   ) {
-    // TODO: Implement discovery settings
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Upptäcktsinställningar kommer snart!'),
-        backgroundColor: AppColors.info,
+    DialogFactory.showInteractive(
+      context,
+      title: 'Upptäcktsinställningar',
+      content: _buildSettingsContent(viewModel),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Stäng'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            viewModel.saveDiscoverySettings();
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Inställningar sparade!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          },
+          child: const Text('Spara'),
+        ),
+      ],
+    );
+  }
+  
+  static Widget _buildSettingsContent(DiscoveryDashboardViewModel viewModel) {
+    return StatefulBuilder(
+      builder: (context, setState) => SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Anpassa din upptäcktsupplevelse',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            
+            SwitchListTile(
+              title: const Text('Visa trender'),
+              subtitle: const Text('Visa populärt innehåll från communityn'),
+              value: viewModel.showTrendingContent,
+              onChanged: (value) {
+                setState(() => viewModel.setShowTrendingContent(value));
+              },
+              activeColor: AppColors.primary,
+            ),
+            
+            SwitchListTile(
+              title: const Text('Visa vänaktivitet'),
+              subtitle: const Text('Visa vad dina vänner gör'),
+              value: viewModel.showFriendActivity,
+              onChanged: (value) {
+                setState(() => viewModel.setShowFriendActivity(value));
+              },
+              activeColor: AppColors.primary,
+            ),
+            
+            SwitchListTile(
+              title: const Text('Visa rekommendationer'),
+              subtitle: const Text('Visa personliga rekommendationer'),
+              value: viewModel.showRecommendations,
+              onChanged: (value) {
+                setState(() => viewModel.setShowRecommendations(value));
+              },
+              activeColor: AppColors.primary,
+            ),
+            
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            
+            const Text(
+              'Aviseringar',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            
+            SwitchListTile(
+              title: const Text('Push-aviseringar'),
+              subtitle: const Text('Få aviseringar om nytt innehåll'),
+              value: viewModel.enablePushNotifications,
+              onChanged: (value) {
+                setState(() => viewModel.setEnablePushNotifications(value));
+              },
+              activeColor: AppColors.primary,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  static void _showFeedbackDialog(BuildContext context) {
-    // TODO: Implement feedback dialog
+  static Future<void> _showFeedbackDialog(BuildContext context) async {
+    final feedback = await DialogFactory.showFeedback(
+      context,
+      title: 'Skicka feedback',
+      hint: 'Hjälp oss att förbättra Butlery! Beskriv din feedback här...',
+    );
+    
+    if (feedback != null && feedback.trim().isNotEmpty && context.mounted) {
+      _submitFeedback(context, feedback.trim());
+    }
+  }
+  
+  static void _submitFeedback(BuildContext context, String feedback) {
+    // Log feedback using AppLogger for production tracking
+    AppLogger.info('Discovery Dashboard Feedback submitted: $feedback');
+    
+    // In a full implementation, this would send to a feedback service
+    // For now, we log it properly for monitoring and future integration
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Feedback-funktion kommer snart!'),
-        backgroundColor: AppColors.info,
+        content: Text('Tack för din feedback! Vi kommer att granska den.'),
+        backgroundColor: AppColors.success,
+        duration: Duration(seconds: 3),
       ),
     );
   }

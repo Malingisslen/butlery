@@ -9,7 +9,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Dialog for selecting recipes for menu categories
 class MenuRecipeSelectionDialog extends StatefulWidget {
@@ -31,7 +31,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<RecipeListViewModel>(),
+      create: (_) => ServiceLocator.get<RecipeListViewModel>(),
       child: Consumer<RecipeListViewModel>(
         builder: (context, viewModel, child) {
           return AlertDialog(

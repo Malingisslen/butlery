@@ -1,3 +1,56 @@
+/// Comprehensive friend profile view providing detailed friend information and social interaction for Flutter applications.
+///
+/// This module implements sophisticated friend profile display following Single Responsibility Principle,
+/// specializing in profile presentation, social statistics, activity tracking, and comprehensive friend interaction.
+/// It provides complete friend profile interface while maintaining clean separation from business logic,
+/// data persistence, and state management through FriendsViewModel integration and modern component architecture.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles friend profile UI presentation concerns through comprehensive profile architecture:
+/// - **Profile Display Excellence**: Advanced profile presentation with avatar, bio, and comprehensive information display
+/// - **Social Statistics Intelligence**: Sophisticated statistics display with friend counts, recipe metrics, and activity tracking
+/// - **Interaction Management System**: Complete social interactions with messaging, recipe sharing, and relationship management
+/// - **Activity Timeline Coordination**: Advanced activity display with membership information and engagement tracking
+/// - **Swedish Localization Excellence**: Complete Swedish language support for profile operations and user feedback
+///
+/// **What This Module Does NOT Handle:**
+/// - Friend relationship business logic and data operations (handled by FriendsViewModel and social services)
+/// - Recipe sharing implementation and content selection (handled by NavigationComponents and sharing infrastructure)
+/// - Messaging functionality and conversation management (handled by messaging services and chat infrastructure)
+/// - Profile data synchronization and updates (handled by user profile services and data management)
+///
+/// **Friend Profile View Architecture:**
+/// - **Comprehensive Profile Display**: Advanced profile presentation with avatar, bio, and detailed information coordination
+/// - **Social Statistics Dashboard**: Sophisticated metrics display with friend counts, recipe statistics, and activity insights
+/// - **Interactive Action System**: Complete social actions with messaging, recipe sharing, and friendship management
+/// - **Activity and Membership Tracking**: Advanced timeline display with activity history and membership information
+/// - **Relationship Management Controls**: Comprehensive friend management with removal confirmation and status tracking
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Navigate to friend profile view
+/// Navigator.of(context).push(
+///   MaterialPageRoute(
+///     builder: (context) => FriendProfileView(
+///       friend: selectedFriend,
+///     ),
+///   ),
+/// );
+/// 
+/// // The view provides comprehensive friend profile functionality:
+/// // - Complete profile display with avatar, bio, and detailed friend information
+/// // - Social statistics dashboard with friend counts, recipe metrics, and activity insights
+/// // - Interactive social actions including messaging, recipe sharing, and relationship management
+/// // - Activity timeline with membership information and engagement tracking
+/// // - Relationship controls with friend removal confirmation and status management
+/// 
+/// // Integration with specialized components:
+/// // - UserDisplayWidgets for avatar and profile information display
+/// // - CardContent for structured information presentation
+/// // - NavigationComponents for recipe selection and sharing workflow
+/// // - DialogFactory for confirmation dialogs and user interaction
+/// ```
+
 // lib/views/social/friend_profile_view.dart
 
 import 'package:flutter/material.dart';
@@ -12,12 +65,34 @@ import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
-/// Enkel vänprofilvy för att visa väninformation
+/// Comprehensive friend profile view providing detailed friend information and social interaction through advanced profile architecture.
+///
+/// Manages complete friend profile interface enabling profile display, social statistics, interaction management,
+/// and comprehensive friend functionality while maintaining clean separation between UI presentation
+/// and business logic through FriendsViewModel integration and specialized component architecture.
+///
+/// **Core Responsibilities:**
+/// - Advanced profile display with avatar presentation, bio information, and comprehensive friend details
+/// - Social statistics coordination with friend counts, recipe metrics, activity tracking, and engagement insights
+/// - Interaction management with messaging integration, recipe sharing workflow, and social action coordination
+/// - Activity timeline handling with membership information, engagement tracking, and comprehensive activity display
+/// - Swedish localized friend experience with comprehensive user feedback and interactive guidance
 class FriendProfileView extends StatelessWidget {
+  /// Friend profile data for comprehensive display and interaction coordination.
+  /// 
+  /// Contains complete friend information enabling profile display, social statistics,
+  /// interaction management, and comprehensive friend functionality.
   final UserProfile friend;
 
+  /// Creates comprehensive friend profile view with detailed information and social interaction coordination.
+  /// 
+  /// [friend] Friend profile data for comprehensive display and interaction coordination
+  /// 
+  /// Establishes friend profile interface with profile display, social statistics,
+  /// interaction management, and comprehensive friend functionality through
+  /// UserProfile integration and advanced social architecture.
   const FriendProfileView({
     super.key,
     required this.friend,
@@ -201,7 +276,7 @@ class FriendProfileView extends StatelessWidget {
     );
 
     if (shouldRemove == true && context.mounted) {
-      final viewModel = sl<FriendsViewModel>();
+      final viewModel = ServiceLocator.get<FriendsViewModel>();
       final success = await viewModel.removeFriend(friend.uid);
       if (success && context.mounted) {
         SnackBarUtils.showSuccess(

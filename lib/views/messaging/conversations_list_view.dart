@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -261,7 +262,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               title: const Text('Grupinformation'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to group info
+                _navigateToGroupInfo(context, conversation);
               },
             ),
             ListTile(
@@ -278,7 +279,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               title: const Text('Visa profil'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to user profile
+                _navigateToUserProfile(context, conversation);
               },
             ),
           ],
@@ -355,18 +356,65 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             child: const Text('Avbryt'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              // TODO: Implement conversation deletion
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Funktionen kommer snart!')),
-              );
+              await _performConversationDeletion(conversation);
             },
             child: const ErrorText('Radera'),
           ),
         ],
       ),
     );
+  }
+  
+  void _navigateToGroupInfo(BuildContext context, Conversation conversation) {
+    // Navigate to group detail using existing routes
+    Navigator.pushNamed(
+      context,
+      '/group-detail',
+      arguments: {'groupId': conversation.id},
+    );
+  }
+  
+  void _navigateToUserProfile(BuildContext context, Conversation conversation) {
+    // Navigate to friend profile using existing routes
+    Navigator.pushNamed(
+      context,
+      Routes.friendProfile,
+      arguments: {'userId': conversation.id}, // In 1:1 chats, conversation.id is often the other user's ID
+    );
+  }
+  
+  Future<void> _performConversationDeletion(Conversation conversation) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      // Get messaging service from DI for conversation deletion
+      final messagingService = ServiceLocator.get<MessagingService>();
+      
+      // Attempt to delete the conversation
+      await messagingService.deleteConversation(conversation.id);
+      
+      // Refresh the conversations list after successful deletion
+      await _viewModel.refreshConversations();
+      
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Konversation "${conversation.title}" raderad'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte radera konversation: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override

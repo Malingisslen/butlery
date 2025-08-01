@@ -4,7 +4,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 
@@ -27,7 +27,7 @@ class RealtimeParticipantManager {
     required ParticipantTracker participantTracker,
   }) : _menuService = menuService,
        _participantTracker = participantTracker,
-       _permissionService = sl<PermissionService>();
+       _permissionService = ServiceLocator.get<PermissionService>();
 
   // ===== PERMISSION GETTERS =====
 

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/models/messaging/message_type.dart';
+// MessageStatus and MessageType available through message.dart import
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';

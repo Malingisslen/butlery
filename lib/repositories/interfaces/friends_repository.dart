@@ -36,7 +36,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final friendsRepo = sl<FriendsRepository>();
+/// final friendsRepo = ServiceLocator.get<FriendsRepository>();
 /// 
 /// // Send friend request
 /// final success = await friendsRepo.sendFriendRequest(

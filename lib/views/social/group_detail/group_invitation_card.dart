@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// GroupInvitationCard - Invitation card component
 ///
@@ -150,7 +150,7 @@ class GroupInvitationCard {
     );
 
     if (shouldCancel == true && context.mounted) {
-      final groupInvitationService = sl<UnifiedFriendsService>();
+      final groupInvitationService = ServiceLocator.get<UnifiedFriendsService>();
       final success = await groupInvitationService.cancelSentInvitation(
         invitation.id,
       );

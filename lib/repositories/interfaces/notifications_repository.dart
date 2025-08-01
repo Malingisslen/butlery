@@ -35,7 +35,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 ///
 /// **Usage Examples:**
 /// ```dart
-/// final notificationRepo = sl<NotificationsRepository>();
+/// final notificationRepo = ServiceLocator.get<NotificationsRepository>();
 /// 
 /// // Send notification to user
 /// await notificationRepo.sendNotification(

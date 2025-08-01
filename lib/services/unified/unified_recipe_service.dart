@@ -24,15 +24,56 @@ import 'package:butlery/services/unified/operations/realtime_recipe_operations.d
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
-/// Unified Recipe Service - Clean coordinator with focused module delegation
+/// Comprehensive unified recipe service providing coordinated access to personal, social, and real-time recipe functionality.
 ///
-/// This service provides a clean API that coordinates between focused modules:
-/// - PersonalRecipeModule: Personal recipe CRUD operations
-/// - SocialRecipeModule: Social recipe sharing and collaboration
-/// - RealtimeRecipeModule: Real-time collaborative editing
-/// - RecipeCacheModule: Caching and sync management
+/// This service implements a sophisticated recipe management system using modular architecture with focused components
+/// for personal recipe operations, social recipe sharing, real-time collaborative editing, and intelligent caching.
+/// It provides a unified API surface that coordinates between specialized modules while maintaining backward compatibility
+/// and clean separation of concerns for maintainable and scalable recipe management across all application features.
 ///
-/// ❌ DOES NOT CONTAIN: Business logic implementation, Firebase operations, caching logic
+/// **Architecture Integration:**
+/// - Extends [ChangeNotifier] for reactive UI updates with recipe state changes across all modules
+/// - Uses [ErrorHandlingMixin] for comprehensive error management and graceful degradation strategies
+/// - Implements [FirebaseServiceMixin] for Firebase integration and authentication-aware operations
+/// - Coordinates specialized modules following Single Responsibility Principle for maintainable architecture
+///
+/// **Modular Coordination Architecture:**
+/// This service coordinates between focused modules with clear responsibilities:
+/// - **[PersonalRecipeModule]**: Personal recipe CRUD operations, local storage, and user-specific management
+/// - **[SocialRecipeModule]**: Social recipe sharing, community features, and friend-based recipe discovery
+/// - **[RealtimeRecipeModule]**: Real-time collaborative editing, live synchronization, and conflict resolution
+/// - **[RecipeCacheModule]**: Intelligent caching, offline support, and performance optimization strategies
+///
+/// **Unified API Benefits:**
+/// - **Single Entry Point**: Unified interface for all recipe operations reducing complexity for ViewModels
+/// - **Coordinated Operations**: Seamless integration between personal, social, and real-time recipe features
+/// - **Backward Compatibility**: Legacy operation interfaces maintained for smooth migration and existing code support
+/// - **Clean Separation**: Each module handles specific concerns without cross-module business logic contamination
+/// - **Reactive Updates**: Comprehensive state management with automatic UI updates across all recipe operations
+///
+/// **What This Service Does NOT Contain:**
+/// - Business logic implementation (delegated to specialized modules for focused responsibility)
+/// - Direct Firebase operations (handled by modules and repository layers for proper abstraction)
+/// - Caching logic implementation (managed by RecipeCacheModule for performance optimization)
+/// - Authentication management (handled by FirebaseAuthRepository and authentication mixins)
+///
+/// **Usage Examples:**
+/// ```dart
+/// final recipeService = UnifiedRecipeService(firestore, authRepository);
+/// await recipeService.initialize();
+/// 
+/// // Personal recipe operations
+/// final personalRecipes = await recipeService.personal.getAllRecipes();
+/// await recipeService.personal.createRecipe(title: 'Köttbullar');
+/// 
+/// // Social recipe sharing
+/// await recipeService.social.shareRecipeWithFriend(recipeId, friendId);
+/// final sharedRecipes = await recipeService.social.getSharedRecipes();
+/// 
+/// // Real-time collaborative editing
+/// final realtimeRecipe = await recipeService.realtime.startCollaborativeSession(recipeId);
+/// recipeService.realtime.watchRecipeChanges(recipeId).listen(updateUI);
+/// ```
 class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;

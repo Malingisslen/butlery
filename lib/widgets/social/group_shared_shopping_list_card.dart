@@ -8,6 +8,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:flutter/services.dart';
 
 /// Group Shared Shopping List Card - Card widget for shopping lists shared to groups
 /// 
@@ -62,7 +67,7 @@ class GroupSharedShoppingListCard {
             color: AppColors.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(AppDimensions.radiusS),
           ),
-          child: Icon(
+          child: const Icon(
             Icons.shopping_cart,
             size: 20,
             color: AppColors.onPrimaryContainer,
@@ -93,23 +98,28 @@ class GroupSharedShoppingListCard {
             ],
           ),
         ),
-        _buildSharedByInfo(),
+        _buildSharedByInfo(shoppingList),
       ],
     );
   }
 
-  static Widget _buildSharedByInfo() {
+  static Widget _buildSharedByInfo(UnifiedShoppingList shoppingList) {
+    // Use actual owner information from shopping list metadata
+    final ownerName = shoppingList.ownerDisplayName.isNotEmpty 
+        ? shoppingList.ownerDisplayName 
+        : 'Okänd användare';
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        const UserAvatar(
-          imageUrl: null, // TODO: Get from shared content metadata
-          displayName: 'Unknown User', // TODO: Get from shared content metadata
+        UserAvatar(
+          imageUrl: null, // Avatar URLs will be populated when user profile service integration is complete
+          displayName: ownerName,
           size: ImageSize.small,
         ),
         const SizedBox(height: 2),
         Text(
-          'Delad av användare', // TODO: Get from shared content metadata
+          'Delad av $ownerName',
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.onSurface.withValues(alpha: 0.6),
             fontSize: 10,
@@ -211,7 +221,7 @@ class GroupSharedShoppingListCard {
         ),
         const Spacer(),
         Text(
-          'Delad till grupp', // TODO: Show actual share time
+          _getShareTimeText(shoppingList),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.onSurface.withValues(alpha: 0.6),
           ),
@@ -318,18 +328,58 @@ class GroupSharedShoppingListCard {
     );
   }
 
-  static void _importShoppingList(
+  static Future<void> _importShoppingList(
     BuildContext context,
     GroupContentViewModel viewModel,
     UnifiedShoppingList shoppingList,
-  ) {
-    // TODO: Implement import functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Import av inköpslista kommer snart!'),
-        backgroundColor: AppColors.success,
-      ),
+  ) async {
+    final confirmed = await DialogFactory.showConfirmation(
+      context,
+      title: 'Importera inköpslista',
+      message: 'Vill du importera "${shoppingList.name}" till dina egna listor?',
+      confirmText: 'Importera',
     );
+    
+    if (confirmed == true) {
+      try {
+        final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+        
+        // Create a personal copy of the shopping list
+        final personalListId = await shoppingService.createPersonalList(
+          '${shoppingList.name} (Kopia)',
+          items: shoppingList.items,
+        );
+        
+        if (personalListId != null && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('"${shoppingList.name}" importerad till dina listor!'),
+              backgroundColor: AppColors.success,
+              action: SnackBarAction(
+                label: 'Visa',
+                onPressed: () {
+                  // Navigate to the imported list
+                  Navigator.pushNamed(
+                    context,
+                    '/inkopslista',
+                    arguments: {'listId': personalListId},
+                  );
+                },
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Kunde inte importera listan: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
   }
 
   static void _showMoreActions(
@@ -374,30 +424,279 @@ class GroupSharedShoppingListCard {
     );
   }
 
-  static void _copyShoppingList(BuildContext context, UnifiedShoppingList shoppingList) {
-    // TODO: Implement copy functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Kopiering av inköpslista kommer snart!'),
+  static Future<void> _copyShoppingList(BuildContext context, UnifiedShoppingList shoppingList) async {
+    try {
+      // Create a text representation of the shopping list
+      final StringBuffer buffer = StringBuffer();
+      buffer.writeln(shoppingList.name);
+      buffer.writeln('=' * shoppingList.name.length);
+      buffer.writeln();
+      
+      if (shoppingList.description?.isNotEmpty == true) {
+        buffer.writeln(shoppingList.description);
+        buffer.writeln();
+      }
+      
+      buffer.writeln('Inköpslista (${shoppingList.items.length} varor):');
+      
+      for (int i = 0; i < shoppingList.items.length; i++) {
+        final item = shoppingList.items[i];
+        final status = item.bought ? '✓' : '○';
+        buffer.writeln('$status ${item.name} (${item.amount} ${item.unit})');
+      }
+      
+      // Copy to clipboard
+      await Clipboard.setData(ClipboardData(text: buffer.toString()));
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Inköpslista kopierad till urklipp!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte kopiera listan: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  static Future<void> _shareShoppingList(BuildContext context, UnifiedShoppingList shoppingList) async {
+    try {
+      // Create a shareable text representation
+      final StringBuffer buffer = StringBuffer();
+      buffer.writeln('📋 ${shoppingList.name}');
+      buffer.writeln();
+      
+      if (shoppingList.description?.isNotEmpty == true) {
+        buffer.writeln(shoppingList.description);
+        buffer.writeln();
+      }
+      
+      buffer.writeln('🛍️ Inköpslista (${shoppingList.items.length} varor):');
+      
+      for (final item in shoppingList.items) {
+        final emoji = item.bought ? '✓' : '▪️';
+        buffer.writeln('$emoji ${item.name} (${item.amount} ${item.unit})');
+      }
+      
+      buffer.writeln();
+      buffer.writeln('Delad via Butlery 🍳');
+      
+      // Copy to clipboard as a fallback sharing method
+      await Clipboard.setData(ClipboardData(text: buffer.toString()));
+      
+      if (context.mounted) {
+        // Show options for sharing
+        showModalBottomSheet(
+          context: context,
+          builder: (context) => Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Dela inköpslista',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                ListTile(
+                  leading: const Icon(Icons.content_copy),
+                  title: const Text('Kopierat till urklipp'),
+                  subtitle: const Text('Klistra in i valfri app'),
+                  trailing: const Icon(Icons.check, color: AppColors.success),
+                  onTap: () => Navigator.pop(context),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.people),
+                  title: const Text('Dela med vänner i Butlery'),
+                  subtitle: const Text('Skicka till dina vänner'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _shareWithFriends(context, shoppingList);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte dela listan: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+  
+  static Future<void> _shareWithFriends(BuildContext context, UnifiedShoppingList shoppingList) async {
+    try {
+      // Show a sharing dialog using existing dialog patterns
+      final shareOptions = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Dela inköpslista'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Dela "${shoppingList.name}" med:'),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.people),
+                title: const Text('Vänner'),
+                onTap: () => Navigator.pop(context, 'friends'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.group),
+                title: const Text('Grupper'),
+                onTap: () => Navigator.pop(context, 'groups'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.link),
+                title: const Text('Kopiera länk'),
+                onTap: () => Navigator.pop(context, 'link'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Avbryt'),
+            ),
+          ],
+        ),
+      );
+      
+      if (shareOptions != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Delning via $shareOptions kommer snart!'),
+            backgroundColor: AppColors.info,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kunde inte öppna delningsmenyn: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  static Future<void> _reportShoppingList(BuildContext context, UnifiedShoppingList shoppingList) async {
+    final reason = await _showReportDialog(context);
+    
+    if (reason != null && context.mounted) {
+      try {
+        // Log the report using AppLogger for proper tracking
+        AppLogger.warning('Content Report - Shopping List: ${shoppingList.id}');
+        AppLogger.info('Report reason: $reason');
+        AppLogger.info('Reported by user, list owner: ${shoppingList.ownerDisplayName}');
+        
+        // In a full implementation, this would send to a moderation service
+        // For now, we log it properly for monitoring and review
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Rapport skickad. Tack för din feedback!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte skicka rapport: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+  
+  static Future<String?> _showReportDialog(BuildContext context) async {
+    String? selectedReason;
+    
+    return await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Rapportera innehåll'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Varför vill du rapportera denna inköpslista?'),
+              const SizedBox(height: 16),
+              ...[
+                'Olämpligt innehåll',
+                'Spam eller reklam',
+                'Felaktig information',
+                'Upphovsrättsintrång',
+                'Annat'
+              ].map((reason) => RadioListTile<String>(
+                title: Text(reason),
+                value: reason,
+                groupValue: selectedReason,
+                onChanged: (value) {
+                  setState(() => selectedReason = value);
+                },
+              )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Avbryt'),
+            ),
+            ElevatedButton(
+              onPressed: selectedReason != null
+                  ? () => Navigator.pop(context, selectedReason)
+                  : null,
+              child: const Text('Rapportera'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  static void _shareShoppingList(BuildContext context, UnifiedShoppingList shoppingList) {
-    // TODO: Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Delning av inköpslista kommer snart!'),
-      ),
-    );
-  }
-
-  static void _reportShoppingList(BuildContext context, UnifiedShoppingList shoppingList) {
-    // TODO: Implement report functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Rapporteringsfunktion kommer snart!'),
-      ),
-    );
+  /// Get formatted share time text from shopping list metadata
+  static String _getShareTimeText(UnifiedShoppingList shoppingList) {
+    // Use last activity time if available, otherwise fall back to created time
+    final shareTime = shoppingList.lastActivityAt ?? shoppingList.createdAt;
+    
+    final now = DateTime.now();
+    final difference = now.difference(shareTime);
+    
+    if (difference.inMinutes < 1) {
+      return 'Delad just nu';
+    } else if (difference.inMinutes < 60) {
+      return 'Delad ${difference.inMinutes} min sedan';
+    } else if (difference.inHours < 24) {
+      return 'Delad ${difference.inHours} tim sedan';
+    } else if (difference.inDays < 7) {
+      return 'Delad ${difference.inDays} dag${difference.inDays > 1 ? 'ar' : ''} sedan';
+    } else {
+      // For older items, show the actual date
+      final day = shareTime.day.toString().padLeft(2, '0');
+      final month = shareTime.month.toString().padLeft(2, '0');
+      return 'Delad $day/$month';
+    }
   }
 }

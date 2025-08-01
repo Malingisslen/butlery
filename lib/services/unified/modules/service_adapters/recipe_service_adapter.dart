@@ -4,7 +4,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -26,10 +26,10 @@ class RecipeServiceAdapter {
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
-  }) : _recipeRepository = recipeRepository ?? sl<RecipeRepository>(),
-       _commentsRepository = commentsRepository ?? sl<CommentsRepository>(),
-       _ratingsRepository = ratingsRepository ?? sl<RatingsRepository>(),
-       _notificationsRepository = notificationsRepository ?? sl<NotificationsRepository>();
+  }) : _recipeRepository = recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
+       _commentsRepository = commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+       _ratingsRepository = ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+       _notificationsRepository = notificationsRepository ?? ServiceLocator.get<NotificationsRepository>();
 
   // ===== RECIPE OPERATIONS =====
 

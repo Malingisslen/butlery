@@ -18,17 +18,59 @@
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 
-/// Friends operations feature interface
+/// Comprehensive friends operations providing core social relationship management and user discovery systems.
+///
+/// This operations class implements sophisticated friend management functionality following Single Responsibility Principle,
+/// handling all aspects of core social relationship operations including friend requests, user discovery, relationship status
+/// management, and social networking features. It provides comprehensive friend management capabilities while maintaining
+/// clean separation from friend categorization and invitation systems.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles core friend operations:
+/// - **Friend Request Management**: Complete friend request lifecycle with sending, accepting, declining, and cancellation
+/// - **User Discovery**: Advanced user search and discovery with mutual friend suggestions and social graph analysis
+/// - **Relationship Management**: Core friend relationship operations with removal, blocking, and status tracking
+/// - **Social Networking**: Basic social networking features with friend suggestions and interaction-based recommendations
+///
+/// **What This Class Does NOT Handle:**
+/// - Friend categorization and organization (handled by FriendsCategoriesOperations)
+/// - Social invitations and group management (handled by FriendsInvitationsOperations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by permission services)
+///
+/// **Friends Operations Features:**
+/// - **Advanced Request System**: Comprehensive friend request management with validation, status tracking, and duplicate prevention
+/// - **Smart Discovery**: Intelligent user search with mutual friend analysis and interaction-based recommendations
+/// - **Relationship Analytics**: Complete relationship status tracking with friendship lifecycle management
+/// - **Social Suggestions**: Advanced friend suggestion system based on mutual connections and collaborative activities
+/// - **Privacy Controls**: Robust blocking and privacy management with relationship cleanup and security features
+///
+/// **Usage Examples:**
+/// ```dart
+/// final friendsOps = FriendsOperations(parentService);
 /// 
-/// Handles all core friend management operations:
-/// - Friend requests (send, accept, decline)
-/// - Friend removal
-/// - User search and discovery
-/// - Friend list management
-/// - Basic friend status checks
+/// // Friend request management
+/// await friendsOps.sendRequest(userId);
+/// await friendsOps.acceptRequest(requestId);
+/// await friendsOps.declineRequest(requestId);
+/// 
+/// // User discovery and search
+/// final searchResults = await friendsOps.searchUsers('Anna');
+/// final userByEmail = await friendsOps.searchUserByEmail('anna@example.com');
+/// final suggestions = await friendsOps.getSuggestedFriends();
+/// 
+/// // Relationship management
+/// await friendsOps.removeFriend(friendId);
+/// await friendsOps.blockUser(problematicUserId);
+/// 
+/// // Status and analytics
+/// final status = friendsOps.getRelationshipStatus(userId);
+/// final friendsCount = friendsOps.getFriendsCount();
+/// final incomingRequests = friendsOps.getIncomingRequests();
+/// ```
 class FriendsOperations {
   final dynamic _parent; // UnifiedFriendsService
 
@@ -38,7 +80,7 @@ class FriendsOperations {
 
   /// Send friend request to user
   Future<bool> sendRequest(String userId) async {
-    if (!sl<PermissionService>().isAuthenticated) {
+    if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       AppLogger.warning('Cannot send friend request: User not logged in');
       return false;
     }

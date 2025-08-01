@@ -10,7 +10,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Manages content shared within social groups, providing filtering and activity tracking.
 ///
@@ -32,8 +32,8 @@ import 'package:butlery/core/injection.dart';
 /// Example usage:
 /// ```dart
 /// final viewModel = GroupContentViewModel(
-///   friendsService: sl<UnifiedFriendsService>(),
-///   sharingRepository: sl<SocialSharingRepository>(),
+///   friendsService: ServiceLocator.get<UnifiedFriendsService>(),
+///   sharingRepository: ServiceLocator.get<SocialSharingRepository>(),
 /// );
 /// await viewModel.initialize(selectedGroup);
 /// // Content is now available via getters like groupSharedRecipes
@@ -308,7 +308,7 @@ class GroupContentViewModel extends ChangeNotifier {
     if (_group == null) return {};
 
     try {
-      final friendsService = sl<UnifiedFriendsService>();
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final groupOperations = friendsService.groupSharing;
       
       return groupOperations.getGroupSharingStats(_group!.id);

@@ -349,6 +349,132 @@ class NotificationRepository {
   void clearCache() {
     _cachedPreferences = null;
   }
+
+  // ===== DEVICE TOKEN MANAGEMENT METHODS =====
+  // ✅ FIXED: Added advanced token management methods for FCM token manager
+
+  /// Batch update device information for FCM token management
+  Future<void> batchUpdateDevices(String collection, List<Map<String, dynamic>> updates) async {
+    try {
+      if (updates.isEmpty) return;
+      
+      final batch = _firestore.batch();
+      
+      for (final update in updates.take(500)) { // Firestore batch limit
+        final docId = update['id'] as String;
+        final data = Map<String, dynamic>.from(update);
+        data.remove('id'); // Remove id from data
+        
+        final docRef = _firestore.collection(collection).doc(docId);
+        batch.update(docRef, data);
+      }
+      
+      await batch.commit();
+      AppLogger.info('📱 Batch updated ${updates.length} device records');
+    } catch (e) {
+      AppLogger.error('❌ Failed to batch update devices', e);
+      rethrow;
+    }
+  }
+
+  /// Cleanup old devices for a specific user
+  Future<void> cleanupOldDevices(String collection, String userId, {Duration? olderThan}) async {
+    try {
+      final cutoffDate = DateTime.now().subtract(olderThan ?? const Duration(days: 30));
+      final cutoffTimestamp = Timestamp.fromDate(cutoffDate);
+
+      final query = await _firestore
+          .collection(collection)
+          .where('userId', isEqualTo: userId)
+          .where('lastSeen', isLessThan: cutoffTimestamp)
+          .limit(100) // Process in batches
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        final batch = _firestore.batch();
+        for (final doc in query.docs) {
+          batch.update(doc.reference, {'isActive': false});
+        }
+        await batch.commit();
+        
+        AppLogger.info('🧹 Cleaned up ${query.docs.length} old devices for user $userId');
+      }
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to cleanup old devices: $e');
+    }
+  }
+
+  /// Query devices with advanced filtering
+  Future<List<Map<String, dynamic>>> queryDevices(
+    String collection, 
+    Map<String, dynamic> filters,
+    {int? limit}
+  ) async {
+    try {
+      Query query = _firestore.collection(collection);
+      
+      // Apply filters
+      filters.forEach((key, value) {
+        if (value != null) {
+          query = query.where(key, isEqualTo: value);
+        }
+      });
+      
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+      
+      final snapshot = await query.get();
+      return snapshot.docs.map((doc) => {
+        'id': doc.id,
+        ...doc.data() as Map<String, dynamic>,
+      }).toList();
+    } catch (e) {
+      AppLogger.error('❌ Failed to query devices', e);
+      return [];
+    }
+  }
+
+  /// Update device last seen timestamp
+  Future<void> updateDeviceLastSeen(String collection, String deviceId) async {
+    try {
+      await _firestore
+          .collection(collection)
+          .doc(deviceId)
+          .update({
+        'lastSeen': Timestamp.now(),
+        'isActive': true,
+      });
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to update device last seen: $e');
+    }
+  }
+
+  /// Deactivate devices for a user (used during logout)
+  Future<void> deactivateUserDevices(String collection, String userId) async {
+    try {
+      final query = await _firestore
+          .collection(collection)
+          .where('userId', isEqualTo: userId)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        final batch = _firestore.batch();
+        for (final doc in query.docs) {
+          batch.update(doc.reference, {
+            'isActive': false,
+            'deactivatedAt': Timestamp.now(),
+          });
+        }
+        await batch.commit();
+        
+        AppLogger.info('📱 Deactivated ${query.docs.length} devices for user $userId');
+      }
+    } catch (e) {
+      AppLogger.error('❌ Failed to deactivate user devices', e);
+    }
+  }
 }
 
 /// User notification preferences model

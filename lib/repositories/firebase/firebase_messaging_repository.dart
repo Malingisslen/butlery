@@ -36,7 +36,7 @@ import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/models/messaging/message_type.dart';
+// MessageStatus and MessageType available through message.dart import
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 /// Firebase implementation for real-time messaging with comprehensive conversation management.
@@ -65,7 +65,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final messagingRepo = FirebaseMessagingRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Create direct conversation
@@ -410,6 +410,34 @@ class FirebaseMessagingRepository
     } catch (e) {
       AppLogger.error('Failed to get messages for conversation $conversationId', e);
       return const Stream.empty();
+    }
+  }
+
+  @override
+  Future<List<Message>> getConversationMessagesPage({
+    required String conversationId,
+    int limit = 50,
+    DateTime? startAfter,
+  }) async {
+    try {
+      var query = _messagesRef
+          .where('conversationId', isEqualTo: conversationId)
+          .orderBy('sentAt', descending: true);
+      
+      if (startAfter != null) {
+        query = query.startAfter([Timestamp.fromDate(startAfter)]);
+      }
+      
+      final snapshot = await query.limit(limit).get();
+      
+      return snapshot.docs
+          .map((doc) => MessageDto.fromFirestore(doc))
+          .toList()
+          .reversed // Reverse to show oldest first
+          .toList();
+    } catch (e) {
+      AppLogger.error('Failed to get messages page for conversation $conversationId', e);
+      return [];
     }
   }
 

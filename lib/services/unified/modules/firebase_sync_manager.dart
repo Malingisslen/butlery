@@ -4,19 +4,63 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-// Removed unused collaborative repository import
+import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
-/// Focused module for Firebase synchronization
+/// Specialized Firebase synchronization manager providing real-time data streaming and subscription management.
+///
+/// This module implements comprehensive Firebase synchronization following Single Responsibility Principle,
+/// handling all aspects of real-time data streaming including subscription management, change processing,
+/// and health monitoring. It provides robust Firebase streaming capabilities ensuring real-time data
+/// consistency while maintaining clean separation from cache operations and debounced synchronization.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles Firebase real-time synchronization:
+/// - **Stream Management**: Complete Firebase stream setup, lifecycle management, and subscription handling
+/// - **Change Processing**: Real-time document change processing with type-safe recipe conversion
+/// - **Health Monitoring**: Sync health assessment with automatic restart and recovery mechanisms
+/// - **Selective Sync**: Granular control over personal and collaborative recipe synchronization streams
+///
+/// **What This Module Does NOT Handle:**
+/// - Local cache operations and storage (handled by CacheOperations)
+/// - Debounced write operations and batching (handled by DebouncedSyncOperations)
+/// - Cache cleanup and optimization (handled by CacheOptimization)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Firebase Sync Features:**
+/// - **Real-time Streams**: Live Firebase document streaming with automatic reconnection and error recovery
+/// - **Repository Integration**: Seamless integration with personal and collaborative recipe repositories
+/// - **Health Monitoring**: Comprehensive sync health monitoring with automatic recovery and restart
+/// - **Selective Control**: Granular control over individual sync streams for optimal performance
+/// - **Error Handling**: Robust error handling with detailed logging and recovery mechanisms
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Start complete Firebase synchronization
+/// final subscriptions = await FirebaseSyncManager.startFirebaseSync(
+///   currentUserId: userId,
+///   onRecipeUpdated: handleRecipeUpdate,
+///   onRecipeRemoved: handleRecipeRemoval,
+///   onSyncError: handleSyncError,
+/// );
 /// 
-/// This module handles ONLY Firebase real-time synchronization:
-/// - Firebase stream setup and management
-/// - Personal and collaborative recipe sync streams
-/// - Document change handling and processing
-/// - Sync subscription lifecycle management
+/// // Start selective sync streams
+/// final personalSub = FirebaseSyncManager.startPersonalSyncOnly(
+///   currentUserId: userId,
+///   onRecipeUpdated: handleUpdate,
+///   onRecipeRemoved: handleRemoval,
+///   onSyncError: handleError,
+/// );
 /// 
-/// ❌ DOES NOT CONTAIN: Cache operations, debounced sync, cleanup, statistics
+/// // Monitor and maintain sync health
+/// await FirebaseSyncManager.ensureSyncHealth(
+///   subscriptions: subscriptions,
+///   currentUserId: userId,
+///   // ... callback handlers
+/// );
+/// ```
 class FirebaseSyncManager {
 
   // ===== SYNC STREAM MANAGEMENT =====
@@ -142,18 +186,21 @@ class FirebaseSyncManager {
     required void Function(String, dynamic) onSyncError,
   }) {
     try {
-      // TODO: Implement collaborative recipe streaming via repository
-      // For now, create a dummy stream that doesn't do anything
-      final controller = StreamController<void>();
-      final subscription = controller.stream.listen(
-        (_) {}, // No-op listener
+      // Watch for collaborative recipes where user is a participant
+      final subscription = FirebaseFirestore.instance
+          .collection('realtime_recipes')
+          .where('participants.$currentUserId', isNotEqualTo: null)
+          .snapshots()
+          .listen(
+        (snapshot) => _handleCollaborativeRecipeChanges(
+          snapshot: snapshot,
+          onRecipeUpdated: onRecipeUpdated,
+          onRecipeRemoved: onRecipeRemoved,
+        ),
         onError: (error) => onSyncError('collaborative_recipes', error),
       );
-      
-      // Schedule the controller to be closed when the subscription is cancelled
-      subscription.onDone(() => controller.close());
 
-      AppLogger.debug('Collaborative recipes sync started (placeholder)');
+      AppLogger.debug('Collaborative recipes sync started');
       return subscription;
     } catch (e) {
       AppLogger.error('Error starting collaborative recipes sync: $e');
@@ -161,8 +208,29 @@ class FirebaseSyncManager {
     }
   }
 
-  // Removed unused _handleCollaborativeRecipeChanges method
-  // Collaborative recipe change handling will be implemented when repository supports it
+  /// Handle collaborative recipe changes
+  static void _handleCollaborativeRecipeChanges({
+    required QuerySnapshot<Map<String, dynamic>> snapshot,
+    required void Function(Recipe, String) onRecipeUpdated,
+    required void Function(String, String) onRecipeRemoved,
+  }) {
+    try {
+      for (final docChange in snapshot.docChanges) {
+        switch (docChange.type) {
+          case DocumentChangeType.added:
+          case DocumentChangeType.modified:
+            final realtimeRecipe = RealtimeRecipe.fromFirestore(docChange.doc);
+            onRecipeUpdated(realtimeRecipe.recipe, 'collaborative');
+            break;
+          case DocumentChangeType.removed:
+            onRecipeRemoved(docChange.doc.id, 'collaborative');
+            break;
+        }
+      }
+    } catch (e) {
+      AppLogger.error('Error handling collaborative recipe changes: $e');
+    }
+  }
 
   // ===== RECIPE CHANGE HANDLING =====
   // Removed old Firebase-specific document change handling

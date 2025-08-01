@@ -19,14 +19,59 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
-/// Friends invitations operations feature interface
+/// Comprehensive friends invitations operations providing multi-channel invitation management and tracking systems.
+///
+/// This operations class implements sophisticated friend invitation functionality following Single Responsibility Principle,
+/// handling all aspects of social invitation management including multi-channel delivery, status tracking, bulk operations,
+/// and contact integration. It provides comprehensive invitation capabilities while maintaining clean separation from
+/// friend management and categorization concerns.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles friend invitation operations:
+/// - **Multi-Channel Delivery**: Complete invitation sending via email, SMS, and shareable links with validation
+/// - **Status Tracking**: Comprehensive invitation lifecycle management with real-time status updates and notifications
+/// - **Bulk Operations**: Efficient mass invitation processing with progress tracking and error recovery
+/// - **Contact Integration**: Smart contact discovery and import with intelligent invitation suggestions
+///
+/// **What This Class Does NOT Handle:**
+/// - Friend relationship management (handled by FriendsManagementOperations)
+/// - Friend categorization operations (handled by FriendsCategoriesOperations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Friends Invitations Features:**
+/// - **Multi-Channel Support**: Email, SMS, and shareable link invitations with channel-specific optimizations
+/// - **Smart Tracking**: Real-time invitation status monitoring with response analytics and engagement metrics
+/// - **Bulk Processing**: Efficient mass invitation operations with contact import and batch processing capabilities
+/// - **Contact Integration**: Intelligent contact discovery with invitation suggestions and social graph analysis
+/// - **Analytics Dashboard**: Comprehensive invitation analytics with success rates, response times, and performance metrics
+///
+/// **Usage Examples:**
+/// ```dart
+/// final invitationsOps = FriendsInvitationsOperations(parentService);
 /// 
-/// Handles all operations related to friend invitations:
-/// - Sending invitations via various channels
-/// - Tracking invitation status and responses
-/// - Managing invitation templates and messages
-/// - Contact integration and discovery
-/// - Invitation analytics and insights
+/// // Single channel invitations
+/// await invitationsOps.sendEmailInvitation(
+///   email: 'anna@example.com',
+///   customMessage: 'Hej Anna! Kom och gå med i Butlery för att dela recept.',
+///   senderName: 'Erik',
+/// );
+/// 
+/// // Multi-channel bulk invitations
+/// final results = await invitationsOps.sendBulkInvitations(
+///   contacts: contactList,
+///   customMessage: 'Upptäck nya recept tillsammans!',
+/// );
+/// 
+/// // Invitation management
+/// await invitationsOps.resendInvitation(invitationId);
+/// await invitationsOps.cancelInvitation(expiredInvitationId);
+/// 
+/// // Analytics and tracking
+/// final stats = invitationsOps.getInvitationStats();
+/// final metrics = invitationsOps.getInvitationMetrics();
+/// final suggestions = await invitationsOps.getInvitationSuggestions();
+/// ```
 class FriendsInvitationsOperations {
   final UnifiedFriendsService _parent;
 

@@ -7,7 +7,7 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/services/social_recipe_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Banner components for edit recipe view
 class EditRecipeBanners {
@@ -41,7 +41,7 @@ class EditRecipeBanners {
         debugPrint('🔍 Recipe ID: ${recipe.id}');
         debugPrint('🔍 Recipe owner: ${recipe.createdBy}');
 
-        final socialService = sl<SocialRecipeService>();
+        final socialService = ServiceLocator.get<SocialRecipeService>();
         for (final shared in socialService.sharedWithMe) {
           debugPrint(
               '🔍 Shared recipe: ${shared.originalRecipeId} by ${shared.sharedByUserId}');

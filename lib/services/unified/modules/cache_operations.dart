@@ -4,15 +4,53 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 
-/// Focused module for recipe cache operations
+/// Specialized cache operations module providing focused local storage management for recipe data.
+///
+/// This module implements comprehensive local cache management following Single Responsibility Principle,
+/// handling all aspects of recipe cache operations including save/load/remove operations, batch processing,
+/// cache validation, and integrity management. It provides high-performance local storage capabilities
+/// while maintaining clean separation from synchronization and optimization concerns.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles local cache operations:
+/// - **Recipe CRUD Operations**: Complete create, read, update, delete operations for cached recipe data
+/// - **Batch Processing**: Efficient batch save/load/remove operations for multiple recipes simultaneously
+/// - **Cache Validation**: Comprehensive integrity checks with corruption detection and automatic repair
+/// - **Data Management**: Cache size analysis, compaction detection, and user-specific cache operations
+///
+/// **What This Module Does NOT Handle:**
+/// - Firebase synchronization and real-time updates (handled by FirebaseSyncManager)
+/// - Cache cleanup and optimization scheduling (handled by CacheOptimization)
+/// - Debounced write operations (handled by DebouncedSyncOperations)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Cache Operation Features:**
+/// - **High Performance**: Optimized JSON serialization with batch processing capabilities
+/// - **Data Integrity**: Comprehensive validation with automatic corruption detection and repair
+/// - **Batch Support**: Efficient multi-recipe operations for bulk data management
+/// - **Size Management**: Cache size analysis and compaction detection for optimal storage
+/// - **User Isolation**: User-specific cache operations ensuring secure data separation
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Initialize cache and load all recipes
+/// final recipes = await CacheOperations.initializeCache(
+///   cacheHelper: cacheHelper,
+///   currentUserId: userId,
+///   setError: errorHandler,
+/// );
 /// 
-/// This module handles ONLY local cache management:
-/// - Recipe save/load/remove operations
-/// - Cache initialization and data retrieval
-/// - Cache key management and validation
-/// - Cache data consistency checks
+/// // Individual recipe operations
+/// await CacheOperations.saveRecipeToCache(cacheHelper: helper, recipe: recipe);
+/// final recipe = await CacheOperations.loadRecipeFromCache(helper, recipeId);
 /// 
-/// ❌ DOES NOT CONTAIN: Firebase sync, cleanup logic, statistics, auth handling
+/// // Batch operations for performance
+/// await CacheOperations.saveMultipleRecipesToCache(helper, recipes);
+/// 
+/// // Cache validation and maintenance
+/// final stats = await CacheOperations.validateCacheIntegrity(helper);
+/// await CacheOperations.fixCacheCorruption(helper);
+/// ```
 class CacheOperations {
 
   // ===== CACHE INITIALIZATION =====

@@ -8,7 +8,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 // Focused modules
@@ -50,7 +50,7 @@ class RealtimeMenuService extends ChangeNotifier {
 
   /// Current user display name
   String get _currentUserDisplayName =>
-      sl<PermissionService>().currentUser?.displayName ?? 'Okänd användare';
+      ServiceLocator.get<PermissionService>().currentUser?.displayName ?? 'Okänd användare';
 
   /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];

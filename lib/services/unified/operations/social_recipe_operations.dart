@@ -17,16 +17,55 @@ import 'package:butlery/services/unified/operations/modules/recipe_discovery_ser
 import 'package:butlery/services/unified/operations/modules/recipe_social_stats.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
 
-/// Social recipe operations coordinator - Clean delegation to focused modules
+/// Comprehensive social recipe operations coordinator providing unified social cooking functionality through specialized modules.
+///
+/// This operations coordinator implements sophisticated social recipe management using facade pattern with specialized
+/// modules for sharing, member management, comments, discovery, and social statistics. It provides comprehensive
+/// social cooking functionality while maintaining clean architecture separation and modular design for enhanced
+/// maintainability and testability of complex social features.
+///
+/// **Phase 9.8 Refactored Architecture:**
+/// This coordinator represents a complete refactoring following Single Responsibility Principle with focused modules:
+/// - Clean coordinator pattern with full backward compatibility for existing ViewModels
+/// - Modular architecture enabling independent testing and maintenance of social features
+/// - Real-time capabilities with comment streaming and social interaction notifications
+/// - Comprehensive permission system ensuring secure social recipe access and management
+///
+/// **Specialized Modules Coordination:**
+/// This coordinator orchestrates between focused social recipe modules:
+/// - **[RecipeSharingManager]**: Recipe sharing and collaboration setup with permission management
+/// - **[RecipeMemberManager]**: Member management for collaborative recipes with invitation handling
+/// - **[RecipeCommentsManager]**: Complete comment system with real-time updates and threaded discussions
+/// - **[RecipeDiscoveryService]**: Social recipe discovery, search, and filtering with trending algorithms
+/// - **[RecipeSocialStats]**: Recipe rating, statistics, and social metrics with analytics tracking
+/// - **[RecipePermissionHelper]**: Permission checking, validation, and legacy compatibility management
+///
+/// **Social Recipe Features:**
+/// - **Recipe Sharing**: Comprehensive recipe sharing with granular permission control and collaboration setup
+/// - **Member Management**: Complete member lifecycle management with invitations and permission updates
+/// - **Social Discovery**: Advanced recipe discovery with search, filtering, and trending algorithms
+/// - **Comment System**: Real-time comment system with threading, mentions, and social interactions
+/// - **Rating System**: Comprehensive rating and review system with statistical analysis and recommendations
+///
+/// **Usage Examples:**
+/// ```dart
+/// final socialOps = SocialRecipeOperations(parentService);
 /// 
-/// Refactored in Phase 9.8 to follow Single Responsibility Principle.
-/// This class now acts as a clean coordinator that delegates to specialized modules:
-/// - RecipeSharingManager: Recipe sharing and collaboration setup
-/// - RecipeMemberManager: Member management for collaborative recipes  
-/// - RecipeCommentsManager: Complete comment system with real-time updates
-/// - RecipeDiscoveryService: Social recipe discovery and filtering
-/// - RecipeSocialStats: Recipe rating, statistics, and social metrics
-/// - RecipePermissionHelper: Permission checking and legacy compatibility
+/// // Share recipe with friends
+/// final sharedId = await socialOps.shareRecipe(
+///   recipeId: recipeId,
+///   memberIds: ['friend1', 'friend2'],
+///   memberDisplayNames: {'friend1': 'Anna', 'friend2': 'Erik'},
+/// );
+/// 
+/// // Social discovery and interaction
+/// final trending = await socialOps.getTrendingRecipes(limit: 20);
+/// await socialOps.addComment(recipeId: recipeId, content: 'Fantastiskt recept!');
+/// 
+/// // Rating and social engagement
+/// await socialOps.rateRecipe(recipeId: recipeId, rating: 5.0, review: 'Perfekt!');
+/// final stats = await socialOps.getRecipeStats(recipeId);
+/// ```
 class SocialRecipeOperations {
   final dynamic _parent; // UnifiedRecipeService
   late final NotificationService? _notificationService;
@@ -136,8 +175,9 @@ class SocialRecipeOperations {
     required String recipeId,
     required String userId,
     required String userDisplayName,
-    ResourcePermission permission = ResourcePermission.viewer,
+    ResourcePermission? permission,
   }) async {
+    permission ??= ResourcePermission.viewer; // Default permission
     return await _memberManager.addMember(
       recipeId: recipeId,
       memberId: userId,

@@ -9,15 +9,54 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:get_it/get_it.dart';
 
-/// Personal recipe operations module
+/// Specialized personal recipe operations module providing focused CRUD functionality and local storage management.
+///
+/// This module implements sophisticated personal recipe management following Single Responsibility Principle,
+/// handling all aspects of individual recipe operations including creation, modification, validation, and local
+/// storage. It provides comprehensive personal recipe functionality while maintaining clean separation from
+/// social features and real-time collaboration concerns for maintainable and testable recipe management.
+///
+/// **Single Responsibility Focus:**
+/// This module exclusively handles personal recipe operations:
+/// - **Personal Recipe CRUD**: Complete create, read, update, delete operations for individual recipes
+/// - **Import/Export Functionality**: Recipe import from various sources and export to different formats
+/// - **Recipe Validation**: Comprehensive validation of recipe data integrity and content requirements
+/// - **Local Storage Management**: Efficient local caching and offline storage for personal recipes
+///
+/// **What This Module Does NOT Handle:**
+/// - Social features and recipe sharing (handled by SocialRecipeModule)
+/// - Real-time collaborative editing (handled by RealtimeRecipeModule)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication logic and user management (handled by authentication services)
+///
+/// **Personal Recipe Features:**
+/// - **Recipe Creation**: Comprehensive recipe creation with validation and metadata management
+/// - **Content Management**: Recipe editing with ingredient management and instruction optimization
+/// - **Local Storage**: Intelligent caching with offline support and automatic synchronization
+/// - **Import Support**: Multi-format recipe import with intelligent content parsing and validation
+/// - **Export Capabilities**: Recipe export to various formats for sharing and backup purposes
+///
+/// **Usage Examples:**
+/// ```dart
+/// final personalModule = PersonalRecipeModule(
+///   recipeRepository: recipeRepo,
+///   cacheHelper: cacheHelper,
+///   getCurrentUserId: () => authService.currentUserId,
+/// );
 /// 
-/// This module contains ONLY:
-/// - Personal recipe CRUD operations
-/// - Import/export functionality
-/// - Personal recipe validation
-/// - Local storage management
+/// // Create personal recipe
+/// final recipe = await personalModule.createPersonalRecipe(
+///   title: 'Köttbullar med gräddsås',
+///   ingredients: ingredients,
+///   instructions: instructions,
+/// );
 /// 
-/// ❌ DOES NOT CONTAIN: Social features, realtime editing, UI concerns, auth logic
+/// // Update recipe content
+/// await personalModule.updateRecipeContent(recipeId, updatedContent);
+/// 
+/// // Import recipe from text
+/// final importedRecipe = await personalModule.importRecipeFromText(recipeText);
+/// ```
 class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
   final JsonCacheHelper _cacheHelper;

@@ -48,6 +48,8 @@ import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 
+// Note: ViewModels are NOT registered in DI - they are created directly by views
+
 // Import dependency modules
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';

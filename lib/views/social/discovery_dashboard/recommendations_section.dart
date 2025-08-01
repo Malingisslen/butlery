@@ -5,6 +5,8 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Recommendations Section - Shows personalized content recommendations
 class RecommendationsSection {
@@ -325,41 +327,116 @@ class RecommendationsSection {
     }
   }
 
-  static void _likeRecommendation(BuildContext context, Map<String, dynamic> recommendation) {
-    // TODO: Implement recommendation feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tack för din feedback! Vi förbättrar rekommendationerna.'),
-        backgroundColor: AppColors.success,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  static Future<void> _likeRecommendation(BuildContext context, Map<String, dynamic> recommendation) async {
+    try {
+      // Send feedback to recommendation service
+      final recommendationId = recommendation['id'] as String?;
+      if (recommendationId != null) {
+        // Here we would call the recommendation service to record the feedback
+        // For now, we'll show success feedback to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tack för din feedback! Vi förbättrar rekommendationerna.'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        // Provide like feedback through recommendation service
+        final recommendationService = ServiceLocator.get<RecommendationService>();
+        await recommendationService.provideFeedback(recommendationId, FeedbackType.like);
+      }
+    } catch (e) {
+      // Check if context is still valid
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kunde inte skicka feedback just nu.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
-  static void _dismissRecommendation(BuildContext context, Map<String, dynamic> recommendation) {
-    // TODO: Implement recommendation dismissal
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Rekommendation dold. Vi visar inte liknande innehåll.'),
-        backgroundColor: AppColors.info,
-        duration: const Duration(seconds: 2),
-        action: SnackBarAction(
-          label: 'Ångra',
-          onPressed: () {
-            // TODO: Undo dismissal
-          },
+  static Future<void> _dismissRecommendation(BuildContext context, Map<String, dynamic> recommendation) async {
+    try {
+      final recommendationId = recommendation['id'] as String?;
+      if (recommendationId != null) {
+        // Record dismissal
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rekommendation dold. Vi visar inte liknande innehåll.'),
+            backgroundColor: AppColors.info,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Ångra',
+              onPressed: () => _undoDismissal(context, recommendationId),
+            ),
+          ),
+        );
+        
+        // Dismiss recommendation through recommendation service
+        final recommendationService = ServiceLocator.get<RecommendationService>();
+        await recommendationService.dismissRecommendation(recommendationId);
+      }
+    } catch (e) {
+      // Check if context is still valid
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kunde inte dölja rekommendation just nu.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+  
+  static Future<void> _undoDismissal(BuildContext context, String recommendationId) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rekommendation återställd.'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
         ),
-      ),
-    );
+      );
+      
+      // Undo dismissal through recommendation service
+      final recommendationService = ServiceLocator.get<RecommendationService>();
+      await recommendationService.undoDismissal(recommendationId);
+    } catch (e) {
+      // Check if context is still valid
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kunde inte återställa rekommendation.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   static void _showAllRecommendations(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    // TODO: Implement show all recommendations page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Visa alla rekommendationer kommer snart!'),
-        backgroundColor: AppColors.info,
-      ),
-    );
+    Navigator.pushNamed(
+      context,
+      '/recommendations',
+      arguments: {
+        'viewModel': viewModel,
+      },
+    ).catchError((error) {
+      // Fallback if route doesn't exist yet
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Visa alla rekommendationer kommer snart!'),
+            backgroundColor: AppColors.info,
+          ),
+        );
+      }
+      return null; // Return value for catchError
+    });
   }
 }

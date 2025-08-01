@@ -23,18 +23,60 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/notification_service.dart' as notif;
 import 'package:butlery/services/notifications/notification_types.dart';
 
-/// Friends management operations feature interface
+/// Comprehensive friends management operations providing complete social relationship lifecycle management and discovery features.
+///
+/// This operations class implements sophisticated friend management functionality following Single Responsibility Principle,
+/// handling all aspects of social relationship management including friend requests, relationship lifecycle, blocking,
+/// and discovery features. It provides comprehensive friend management capabilities while maintaining clean separation
+/// from friend categorization and invitation system concerns.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles friends management operations:
+/// - **Friend Request Management**: Complete friend request lifecycle with sending, accepting, rejecting, and cancellation
+/// - **Relationship Management**: Friend relationship lifecycle including addition, removal, and status management
+/// - **User Discovery**: Advanced user search and discovery with mutual friend detection and social graph analysis
+/// - **Security Features**: User blocking and unblocking with comprehensive security and privacy controls
+///
+/// **What This Class Does NOT Handle:**
+/// - Friend categorization and organization (handled by FriendsCategoriesOperations)
+/// - Group invitations and group management (handled by FriendsInvitationsOperations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Friends Management Features:**
+/// - **Advanced Request System**: Comprehensive friend request management with validation, duplicate prevention, and status tracking
+/// - **Social Discovery**: Intelligent user search with friend recommendations and mutual friend analysis
+/// - **Relationship Analytics**: Detailed friend statistics and social graph insights with engagement tracking
+/// - **Security Management**: Robust blocking system with privacy controls and relationship cleanup
+/// - **Notification Integration**: Complete notification system for friend activities and relationship changes
+///
+/// **Usage Examples:**
+/// ```dart
+/// final friendsManagement = FriendsManagementOperations(parentService);
 /// 
-/// Handles all operations related to friend management:
-/// - Sending and managing friend requests
-/// - Accepting/rejecting friend requests
-/// - Managing friend relationships
-/// - Blocking and unblocking users
-/// - Friend search and discovery
+/// // Friend request management
+/// await friendsManagement.sendFriendRequest(
+///   userId,
+///   message: 'Hej! Vi träffades på matlagningskursen.',
+/// );
+/// await friendsManagement.acceptFriendRequest(requestId);
+/// 
+/// // User discovery and search
+/// final searchResults = await friendsManagement.searchUsers('Anna');
+/// final mutualFriends = await friendsManagement.getMutualFriends(userId);
+/// 
+/// // Relationship management
+/// await friendsManagement.removeFriend(friendId);
+/// await friendsManagement.blockUser(problematicUserId);
+/// 
+/// // Analytics and insights
+/// final stats = friendsManagement.getFriendStats();
+/// final isBlocked = friendsManagement.isBlocked(userId);
+/// ```
 class FriendsManagementOperations extends BaseService {
   @override
   String get serviceName => 'FriendsManagementOperations';
@@ -43,7 +85,7 @@ class FriendsManagementOperations extends BaseService {
   late final notif.NotificationService? _notificationService;
 
   FriendsManagementOperations(this._parent) {
-    _userService = sl<user_svc.UserService>();
+    _userService = ServiceLocator.get<user_svc.UserService>();
     
     // Initialize notification service if user is authenticated
     _notificationService = safeExecuteSync<notif.NotificationService?>(

@@ -1,5 +1,4 @@
 // Merged from 6 friends service files
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/friend.dart';
 import 'package:butlery/core/utils/logger.dart';
 

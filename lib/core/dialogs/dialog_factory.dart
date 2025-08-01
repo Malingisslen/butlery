@@ -133,4 +133,63 @@ class DialogFactory {
       ),
     );
   }
+
+  // Delete confirmation dialog
+  static Future<bool?> showDeleteConfirmation(
+    BuildContext context, {
+    required String itemName,
+    required String itemType,
+    String title = 'Bekräfta borttagning',
+    String confirmText = 'Ta bort',
+    String cancelText = 'Avbryt',
+  }) {
+    return showConfirmation(
+      context,
+      title: title,
+      message: 'Är du säker på att du vill ta bort $itemName från $itemType?',
+      confirmText: confirmText,
+      cancelText: cancelText,
+      isDangerous: true,
+    );
+  }
+
+  // Text input dialog
+  static Future<String?> showTextInput(
+    BuildContext context, {
+    required String title,
+    String? hintText,
+    String? initialValue,
+    String confirmText = 'OK',
+    String cancelText = 'Avbryt',
+    bool required = false,
+    int maxLines = 1,
+  }) {
+    final controller = TextEditingController(text: initialValue);
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(hintText: hintText),
+          maxLines: maxLines,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(cancelText),
+          ),
+          TextButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (required && text.isEmpty) return;
+              Navigator.pop(context, text.isEmpty ? null : text);
+            },
+            child: Text(confirmText),
+          ),
+        ],
+      ),
+    );
+  }
 }

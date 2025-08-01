@@ -57,7 +57,7 @@ import 'package:butlery/repositories/firebase/friends/group_invitation_repositor
 /// **Usage Examples:**
 /// ```dart
 /// final friendsRepo = FirebaseFriendsRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Send and manage friend requests

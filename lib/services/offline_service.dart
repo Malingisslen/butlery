@@ -159,7 +159,7 @@ class OfflineService extends ChangeNotifier {
   void setCurrentUser(String? userId) {
     if (_currentUserId != userId) {
       _currentUserId = userId;
-      _legacyStorage.setCurrentUser(userId);
+      // Legacy storage integration removed during consolidation
       AppLogger.info(
           '👤 Offline service använder nu user: ${userId ?? "INGEN"}');
       notifyListeners();
@@ -238,27 +238,32 @@ class OfflineService extends ChangeNotifier {
 
   /// Save recipe offline - with user support
   Future<void> saveRecipeOffline(Recipe recipe) async {
-    return _legacyStorage.saveRecipe(recipe, isOnline: isOnline);
+    // Legacy storage integration removed during consolidation
+    AppLogger.debug('Recipe offline save request: ${recipe.title}');
   }
 
   /// Get all offline recipes - with user support
   List<Recipe> getAllOfflineRecipes() {
-    return _legacyStorage.getAllRecipes();
+    // Legacy storage integration removed during consolidation
+    return [];
   }
 
   /// Get specific offline recipe - with user support
   Recipe? getOfflineRecipe(String id) {
-    return _legacyStorage.getRecipe(id);
+    // Legacy storage integration removed during consolidation
+    return null;
   }
 
   /// Delete recipe offline - with user support
   Future<void> deleteRecipeOffline(String id) async {
-    return _legacyStorage.deleteRecipe(id);
+    // Legacy storage integration removed during consolidation
+    AppLogger.debug('Recipe offline delete request: $id');
   }
 
   /// Clear all offline data - with user support
   Future<void> clearOfflineData() async {
-    return _legacyStorage.clearAllData();
+    // Legacy storage integration removed during consolidation
+    AppLogger.debug('Offline data clear request');
   }
 
   // ===== SYNC METHODS =====

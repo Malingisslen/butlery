@@ -5,7 +5,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 
@@ -26,8 +26,8 @@ class CreateSharedListViewModel extends ChangeNotifier {
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
     UnifiedFriendsService? friendsService,
-  })  : _shoppingService = shoppingService ?? sl<UnifiedShoppingService>(),
-        _friendsService = friendsService ?? sl<UnifiedFriendsService>();
+  })  : _shoppingService = shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
+        _friendsService = friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
 
   // ===== GETTERS (UI State) =====
 
@@ -139,7 +139,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
     }
 
     // Kontrollera att användaren har en profil
-    if (!sl<PermissionService>().isAuthenticated) {
+    if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       _setError('Du måste skapa en profil först');
       return null;
     }

@@ -265,19 +265,20 @@ class RecipePermissionHelper {
 
   /// Get permission rank for comparison (higher number = more permissions)
   int _getPermissionRank(ResourcePermission permission) {
-    switch (permission) {
-      case ResourcePermission.read:
-        return 0;
-      case ResourcePermission.viewer:
-        return 1;
-      case ResourcePermission.write:
-        return 2;
-      case ResourcePermission.editor:
-        return 3;
-      case ResourcePermission.admin:
-        return 4;
-      case ResourcePermission.owner:
-        return 5;
+    if (permission == ResourcePermission.read) {
+      return 0;
+    } else if (permission == ResourcePermission.viewer) {
+      return 1;
+    } else if (permission == ResourcePermission.write) {
+      return 2;
+    } else if (permission == ResourcePermission.editor) {
+      return 3;
+    } else if (permission == ResourcePermission.admin) {
+      return 4;
+    } else if (permission == ResourcePermission.owner) {
+      return 5;
+    } else {
+      return -1;
     }
   }
 
@@ -374,19 +375,20 @@ class RecipePermissionHelper {
   /// 
   /// Returns user-friendly text describing permission level
   String getPermissionDescription(ResourcePermission permission) {
-    switch (permission) {
-      case ResourcePermission.read:
-        return 'Ingen åtkomst';
-      case ResourcePermission.viewer:
-        return 'Kan visa recept';
-      case ResourcePermission.write:
-        return 'Kan skriva kommentarer';
-      case ResourcePermission.editor:
-        return 'Kan redigera recept';
-      case ResourcePermission.admin:
-        return 'Kan hantera medlemmar';
-      case ResourcePermission.owner:
-        return 'Ägare av recept';
+    if (permission == ResourcePermission.read) {
+      return 'Ingen åtkomst';
+    } else if (permission == ResourcePermission.viewer) {
+      return 'Kan visa recept';
+    } else if (permission == ResourcePermission.write) {
+      return 'Kan skriva kommentarer';
+    } else if (permission == ResourcePermission.editor) {
+      return 'Kan redigera recept';
+    } else if (permission == ResourcePermission.admin) {
+      return 'Kan hantera medlemmar';
+    } else if (permission == ResourcePermission.owner) {
+      return 'Ägare av recept';
+    } else {
+      return 'Okänd behörighet';
     }
   }
 

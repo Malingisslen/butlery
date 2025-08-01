@@ -21,14 +21,61 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:collection/collection.dart';
 
-/// Friends categories operations feature interface
+/// Comprehensive friends categories operations providing advanced friend organization and smart categorization management.
+///
+/// This operations class implements sophisticated friend categorization functionality following Single Responsibility Principle,
+/// handling all aspects of friend organization including category lifecycle management, friend assignment operations, bulk
+/// categorization features, and intelligent categorization suggestions. It provides comprehensive friend organization capabilities
+/// while maintaining clean separation from friend management and social interaction concerns.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles friend categorization operations:
+/// - **Category Lifecycle Management**: Complete category creation, modification, deletion, and validation with duplicate prevention
+/// - **Friend Assignment Operations**: Comprehensive friend-to-category assignment with relationship management and validation
+/// - **Organization Analytics**: Advanced categorization statistics and usage analysis with smart insights
+/// - **Bulk Operations**: Efficient multi-friend categorization operations with progress tracking and error handling
+///
+/// **What This Class Does NOT Handle:**
+/// - Friend management operations (handled by FriendsManagementOperations)
+/// - Social invitations and group management (handled by FriendsInvitationsOperations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by parent services)
+///
+/// **Friends Categories Features:**
+/// - **Advanced Organization**: Comprehensive friend categorization with custom categories, default categories, and smart suggestions
+/// - **Bulk Operations**: Efficient multi-friend assignment operations with batch processing and validation
+/// - **Analytics Integration**: Detailed categorization analytics with usage statistics and organization insights
+/// - **Smart Categorization**: Intelligent category suggestions based on friend relationships and interaction patterns
+/// - **Category Management**: Complete category lifecycle with validation, duplicate prevention, and relationship integrity
+///
+/// **Usage Examples:**
+/// ```dart
+/// final categoriesOps = FriendsCategoriesOperations(parentService);
 /// 
-/// Handles all operations related to friend categories:
-/// - Creating and managing categories
-/// - Assigning friends to categories
-/// - Organizing and filtering friends
-/// - Category-based permissions and features
-/// - Smart categorization suggestions
+/// // Create and manage categories
+/// final categoryId = await categoriesOps.createCategory(
+///   name: 'Familj',
+///   description: 'Familjemedlemmar och nära släkt',
+///   icon: '👨‍👩‍👧‍👦',
+/// );
+/// 
+/// // Friend assignment operations
+/// await categoriesOps.assignFriendToCategory(
+///   friendId: friendId,
+///   categoryId: categoryId,
+/// );
+/// 
+/// // Bulk operations
+/// await categoriesOps.assignMultipleFriendsToCategory(
+///   friendIds: [friend1, friend2, friend3],
+///   categoryId: workCategoryId,
+/// );
+/// 
+/// // Analytics and insights
+/// final stats = categoriesOps.getCategoryStats();
+/// final mostUsed = categoriesOps.getMostUsedCategories();
+/// final suggestions = await categoriesOps.suggestCategoriesForFriend(friendId);
+/// ```
 class FriendsCategoriesOperations {
   final UnifiedFriendsService _parent;
 

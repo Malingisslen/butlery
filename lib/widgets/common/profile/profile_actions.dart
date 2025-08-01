@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -290,7 +290,7 @@ class ProfileActions {
   /// Handle backup
   static Future<void> _handleBackup(BuildContext context) async {
     try {
-      final backupService = sl<BackupService>();
+      final backupService = ServiceLocator.get<BackupService>();
       await backupService.exportToFile();
       if (context.mounted) {
         _showBackupResult(context, true, 'Backup skapad framgångsrikt!');
@@ -306,7 +306,7 @@ class ProfileActions {
   /// Handle restore
   static Future<void> _handleRestore(BuildContext context) async {
     try {
-      final backupService = sl<BackupService>();
+      final backupService = ServiceLocator.get<BackupService>();
       await backupService.importFromFile();
       if (context.mounted) {
         _showRestoreResult(context, true, 'Återställning genomförd!');
@@ -374,7 +374,7 @@ class ProfileActions {
   /// Perform logout
   static Future<void> _performLogout(BuildContext context) async {
     try {
-      await sl<AuthRepository>().signOut();
+      await ServiceLocator.get<AuthRepository>().signOut();
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,

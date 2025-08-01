@@ -1,74 +1,222 @@
+/// Comprehensive realtime invitation model providing advanced invitation management for collaborative resource sharing.
+///
+/// This model implements sophisticated invitation lifecycle management following Single Responsibility Principle,
+/// handling all aspects of realtime resource invitations including status tracking, temporal management, notification
+/// generation, and comprehensive UI support. It provides complete invitation management capabilities while maintaining
+/// clean separation from UI concerns and resource-specific business logic.
+///
+/// **Single Responsibility Focus:**  
+/// This model exclusively handles realtime invitation representation and lifecycle management:
+/// - **Invitation Lifecycle**: Complete status management from creation through acceptance, rejection, or expiration
+/// - **Temporal Management**: Advanced time-based operations including expiration tracking and user-friendly time displays
+/// - **Notification Integration**: Rich notification content generation with Swedish localization for optimal user experience
+/// - **State Transitions**: Immutable state transition methods for accepting, rejecting, cancelling, and expiring invitations
+///
+/// **What This Model Does NOT Handle:**
+/// - Invitation delivery and notification services (handled by messaging and notification services)
+/// - Resource access control and permission enforcement (handled by permission services and resource managers)
+/// - UI presentation and interaction handling (handled by ViewModels and UI components)
+/// - Firebase persistence operations (handled by invitation repositories and database services)
+///
+/// **Realtime Invitation Features:**
+/// - **Comprehensive Status Tracking**: Full invitation lifecycle with pending, accepted, rejected, expired, and cancelled states
+/// - **Temporal Intelligence**: Advanced time management with expiration tracking, urgency detection, and user-friendly displays
+/// - **Multi-Target Support**: Integration with InvitationTarget for both individual and group invitation capabilities
+/// - **Swedish Localization**: Complete Swedish language support for notifications, status messages, and time displays
+/// - **Rich UI Integration**: Comprehensive UI helper methods for icons, descriptions, and status presentations
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Create a new realtime invitation
+/// final invitation = RealtimeInvitation.create(
+///   resourceType: RealtimeResourceType.recipe,
+///   resourceId: 'recipe_123',
+///   resourceTitle: 'Mormors köttbullar',
+///   fromUserId: currentUserId,
+///   fromUserDisplayName: 'Anna Andersson',
+///   target: InvitationTarget.individual(friend),
+///   message: 'Vill du laga denna tillsammans?',
+///   permissionLevel: 'editor',
+///   expiresIn: Duration(days: 3),
+/// );
+/// 
+/// // Check invitation status and respond
+/// if (invitation.canRespond) {
+///   final acceptedInvitation = invitation.accept();
+///   await invitationService.updateInvitation(acceptedInvitation);
+/// }
+/// 
+/// // Generate notification content
+/// showNotification(
+///   title: invitation.notificationTitle,
+///   message: invitation.notificationDescription,
+///   icon: invitation.resourceIcon,
+/// );
+/// 
+/// // Display invitation in UI
+/// InvitationCard(
+///   title: invitation.shortDescription,
+///   status: invitation.statusText,
+///   statusIcon: invitation.statusIcon,
+///   timeInfo: invitation.expiresSoon ? invitation.expiresInText : invitation.timeAgoText,
+///   message: invitation.message,
+/// );
+/// ```
+
 // lib/models/invitations/realtime_invitation.dart
 
-// TODO: Abstract Firebase DocumentSnapshot dependency to repository layer
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ✅ FIXED: Abstracted Firebase dependencies to repository layer
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 
 
-/// Status för inbjudningar
+/// Enumeration defining comprehensive invitation status lifecycle for realtime resource collaboration.
+///
+/// Provides complete status classification for invitation lifecycle management with temporal
+/// awareness and clear status progression from creation through resolution or expiration.
 enum RealtimeInvitationStatus {
-  /// Väntande svar
+  /// Pending response status indicating the invitation awaits recipient action.
+  ///
+  /// Initial status for new invitations, remains active until recipient responds
+  /// or invitation expires. Enables response actions and UI prompt displays.
   pending,
 
-  /// Accepterad
+  /// Accepted status indicating successful invitation acceptance and resource access granted.
+  ///
+  /// Terminal status achieved when recipient accepts the invitation, enabling
+  /// resource access and collaborative participation initiation.
   accepted,
 
-  /// Avvisad
+  /// Rejected status indicating invitation was declined by the recipient.
+  ///
+  /// Terminal status when recipient explicitly declines participation, preventing
+  /// further response actions while maintaining invitation history for analytics.
   rejected,
 
-  /// Utgången (automatiskt)
+  /// Expired status indicating automatic expiration due to time limit exceeded.
+  ///
+  /// Terminal status achieved when invitation passes expiration time without response,
+  /// preventing delayed responses while preserving invitation audit trail.
   expired,
 
-  /// Avbruten av avsändare
+  /// Cancelled status indicating sender revoked the invitation before response.
+  ///
+  /// Terminal status when invitation sender cancels the invitation, preventing
+  /// recipient responses and indicating resource access is no longer available.
   cancelled,
 }
 
-/// Inbjudan till att delta i en realtidsresurs
+/// Comprehensive realtime invitation with lifecycle management and collaborative resource integration.
+///
+/// Represents a complete invitation to participate in realtime collaborative resources with comprehensive
+/// status tracking, temporal management, and rich UI integration. Supports both individual and group
+/// invitations with expiration handling and immutable state transitions for reliable invitation workflow.
 class RealtimeInvitation {
-  /// Unik ID för inbjudan
+  /// Unique identifier for this invitation instance.
+  ///
+  /// Auto-generated UUID ensuring unique identification across all invitation systems
+  /// and enabling reliable tracking throughout the invitation lifecycle.
   final String id;
 
-  /// Typ av resurs som bjuds in till
+  /// Type classification of the collaborative resource being shared.
+  ///
+  /// Determines the resource category (recipe, menu, shopping list) for appropriate
+  /// invitation handling, UI presentation, and notification generation.
   final RealtimeResourceType resourceType;
 
-  /// ID för resursen som bjuds in till
+  /// Unique identifier of the specific resource being shared.
+  ///
+  /// References the exact resource instance that recipients will gain access to
+  /// upon invitation acceptance, enabling direct resource navigation and access.
   final String resourceId;
 
-  /// Titel på resursen (cached för UI)
+  /// Cached display title of the resource for UI performance optimization.
+  ///
+  /// Stored locally to avoid additional resource lookups during invitation display,
+  /// notification generation, and user interface presentation operations.
   final String resourceTitle;
 
-  /// Vem som skickade inbjudan
+  /// User identifier of the invitation sender for attribution and permissions.
+  ///
+  /// References the user who created and sent the invitation, used for permission
+  /// validation, sender attribution, and invitation management operations.
   final String fromUserId;
 
-  /// Namn på avsändaren (cached för UI)
+  /// Cached display name of the invitation sender for UI performance optimization.
+  ///
+  /// Stored locally to avoid additional user profile lookups during invitation display,
+  /// notification generation, and sender attribution in user interfaces.
   final String fromUserDisplayName;
 
-  /// Vem som ska få inbjudan (kan vara person eller grupp)
+  /// Invitation target supporting both individual users and group recipients.
+  ///
+  /// Unified target system enabling flexible invitation delivery to individual users
+  /// or groups with automatic member expansion and comprehensive metadata support.
   final InvitationTarget target;
 
-  /// Status för inbjudan
+  /// Current status of the invitation in its lifecycle progression.
+  ///
+  /// Tracks invitation state from pending through terminal states (accepted, rejected,
+  /// expired, cancelled) enabling appropriate UI state and action availability.
   final RealtimeInvitationStatus status;
 
-  /// När inbjudan skickades
+  /// Timestamp when the invitation was originally sent to recipients.
+  ///
+  /// Used for chronological tracking, time-based displays, and invitation aging
+  /// calculations for user interface presentation and analytics.
   final DateTime sentAt;
 
-  /// När inbjudan besvarades (om den är besvarad)
+  /// Optional timestamp when the invitation received a response from recipients.
+  ///
+  /// Set when invitation transitions to terminal state (accepted, rejected, expired,
+  /// cancelled) for response time tracking and invitation lifecycle analytics.
   final DateTime? respondedAt;
 
-  /// När inbjudan går ut
+  /// Timestamp when the invitation will automatically expire and become invalid.
+  ///
+  /// Defines invitation validity period with automatic expiration handling,
+  /// urgency detection, and time-remaining calculations for user interface displays.
   final DateTime expiresAt;
 
-  /// Personligt meddelande från avsändaren
+  /// Optional personal message from the sender to recipients.
+  ///
+  /// Allows invitation customization with personal context, collaboration intent,
+  /// or specific instructions for enhanced invitation communication and user experience.
   final String? message;
 
-  /// Behörighet som deltagaren kommer få vid accept
+  /// Permission level that recipients will receive upon invitation acceptance.
+  ///
+  /// Defines collaboration capabilities ('editor' or 'viewer') that recipients will have
+  /// in the shared resource, enabling appropriate access control and feature availability.
   final String permissionLevel; // 'editor' eller 'viewer'
 
-  /// Extra metadata
+  /// Flexible metadata container for invitation-specific information and future extensions.
+  ///
+  /// Extensible storage for additional invitation data, analytics information,
+  /// or feature-specific metadata without requiring schema modifications.
   final Map<String, dynamic> metadata;
 
+  /// Creates a new realtime invitation with comprehensive configuration and automatic defaults.
+  ///
+  /// This constructor provides complete invitation initialization with support for all invitation
+  /// features including custom expiration, permission levels, and metadata. Automatic ID generation
+  /// and timestamp handling ensure consistent invitation creation with proper defaults.
+  ///
+  /// [id] Optional custom identifier, auto-generated UUID if not provided
+  /// [resourceType] Required resource type classification for invitation targeting
+  /// [resourceId] Required unique identifier of the resource being shared
+  /// [resourceTitle] Required display title of the resource for UI presentation
+  /// [fromUserId] Required sender user ID for attribution and permission validation
+  /// [fromUserDisplayName] Required sender display name for UI presentation
+  /// [target] Required invitation target supporting individual users and groups
+  /// [status] Initial invitation status, defaults to pending for new invitations
+  /// [sentAt] Optional send timestamp, defaults to current time for new invitations
+  /// [respondedAt] Optional response timestamp for invitation lifecycle tracking
+  /// [expiresAt] Optional expiration timestamp, defaults to 7 days from creation
+  /// [message] Optional personal message from sender for enhanced communication
+  /// [permissionLevel] Permission level for recipients, defaults to 'editor' for full collaboration
+  /// [metadata] Optional metadata container for additional invitation information
   RealtimeInvitation({
     String? id,
     required this.resourceType,
@@ -88,7 +236,23 @@ class RealtimeInvitation {
         sentAt = sentAt ?? DateTime.now(),
         expiresAt = expiresAt ?? DateTime.now().add(const Duration(days: 7));
 
-  /// Factory constructor för att skapa ny inbjudan
+  /// Creates a new realtime invitation with streamlined parameters and intelligent defaults.
+  ///
+  /// This factory provides simplified invitation creation with intuitive parameter naming
+  /// and automatic configuration for common invitation scenarios. Handles timestamp generation
+  /// and expiration calculation with flexible duration specification for various invitation types.
+  ///
+  /// [resourceType] Required resource type classification for invitation targeting
+  /// [resourceId] Required unique identifier of the resource being shared
+  /// [resourceTitle] Required display title of the resource for UI presentation
+  /// [fromUserId] Required sender user ID for attribution and permission validation
+  /// [fromUserDisplayName] Required sender display name for UI presentation
+  /// [target] Required invitation target supporting individual users and groups
+  /// [message] Optional personal message from sender for enhanced communication
+  /// [permissionLevel] Permission level for recipients, defaults to 'editor' for full collaboration
+  /// [expiresIn] Optional custom expiration duration, defaults to 7 days for standard invitations
+  ///
+  /// Returns a new [RealtimeInvitation] instance with current timestamps and calculated expiration.
   factory RealtimeInvitation.create({
     required RealtimeResourceType resourceType,
     required String resourceId,
@@ -113,36 +277,63 @@ class RealtimeInvitation {
     );
   }
 
-  // ===== STATUS CHECKS =====
+  /// Status validation methods for invitation lifecycle management and UI state control.
 
-  /// Är inbjudan väntande?
+  /// Checks if the invitation is currently pending and awaiting recipient response.
+  ///
+  /// Returns true only when invitation has pending status and has not expired,
+  /// indicating the invitation is actively awaiting response and can still be acted upon.
   bool get isPending =>
       status == RealtimeInvitationStatus.pending && !isExpired;
 
-  /// Är inbjudan accepterad?
+  /// Checks if the invitation has been accepted by the recipient.
+  ///
+  /// Returns true when invitation status is accepted, indicating successful
+  /// invitation acceptance and resource access should be granted to recipient.
   bool get isAccepted => status == RealtimeInvitationStatus.accepted;
 
-  /// Är inbjudan avvisad?
+  /// Checks if the invitation has been rejected by the recipient.
+  ///
+  /// Returns true when invitation status is rejected, indicating recipient
+  /// declined participation and no resource access should be granted.
   bool get isRejected => status == RealtimeInvitationStatus.rejected;
 
-  /// Är inbjudan avbruten?
+  /// Checks if the invitation has been cancelled by the sender.
+  ///
+  /// Returns true when invitation status is cancelled, indicating sender
+  /// revoked the invitation and recipient can no longer respond or access resource.
   bool get isCancelled => status == RealtimeInvitationStatus.cancelled;
 
-  /// Är inbjudan utgången?
+  /// Checks if the invitation has expired due to time limit exceeded.
+  ///
+  /// Returns true when current time exceeds expiration time or status is explicitly
+  /// expired, indicating invitation is no longer valid for response or resource access.
   bool get isExpired {
     return DateTime.now().isAfter(expiresAt) ||
         status == RealtimeInvitationStatus.expired;
   }
 
-  /// Är inbjudan besvarad (accepted, rejected, eller expired)?
+  /// Checks if the invitation has received any form of response from recipient.
+  ///
+  /// Returns true when respondedAt timestamp is set, indicating invitation has
+  /// transitioned from pending to a terminal state through user or system action.
   bool get isResponded => respondedAt != null;
 
-  /// Kan inbjudan fortfarande besvaras?
+  /// Checks if the invitation can still be responded to by the recipient.
+  ///
+  /// Returns true only when invitation is pending and not expired, enabling
+  /// response UI elements and preventing responses to invalid invitations.
   bool get canRespond => isPending;
 
-  // ===== TIME HELPERS =====
+  /// Temporal utility methods for user-friendly time displays and urgency detection.
 
-  /// Hur länge sedan inbjudan skickades
+  /// Gets Swedish-localized text describing how long ago the invitation was sent.
+  ///
+  /// Provides human-readable time descriptions for invitation age display in UI,
+  /// using Swedish language with appropriate time unit selection based on elapsed duration.
+  /// Used for invitation list displays and activity timeline presentations.
+  ///
+  /// Returns Swedish time description from "Nu" for immediate to "X veckor sedan" for old invitations.
   String get timeAgoText {
     final duration = DateTime.now().difference(sentAt);
 
@@ -159,7 +350,13 @@ class RealtimeInvitation {
     }
   }
 
-  /// Hur lång tid kvar till utgång
+  /// Gets Swedish-localized text describing time remaining until invitation expires.
+  ///
+  /// Provides human-readable countdown descriptions for invitation expiration display,
+  /// using Swedish language with appropriate urgency indication. Returns "Utgången" for
+  /// expired invitations and scaled time units for active invitation time remaining.
+  ///
+  /// Returns Swedish time remaining description or "Utgången" for expired invitations.
   String get expiresInText {
     if (isExpired) return 'Utgången';
 
@@ -176,15 +373,25 @@ class RealtimeInvitation {
     }
   }
 
-  /// Kontrollera om inbjudan går ut snart (inom 24 timmar)
+  /// Checks if the invitation expires soon requiring urgent attention.
+  ///
+  /// Determines if invitation will expire within 24 hours, enabling urgent UI styling,
+  /// priority notifications, and user attention highlighting for time-sensitive invitations.
+  ///
+  /// Returns true if invitation expires within 24 hours, false if more time remains.
   bool get expiresSoon {
     final timeLeft = expiresAt.difference(DateTime.now());
     return timeLeft.inHours < 24;
   }
 
-  // ===== UI HELPERS =====
+  /// UI integration methods for notification generation and user interface presentation.
 
-  /// Titel för notifikation
+  /// Gets Swedish-localized notification title based on resource type for system notifications.
+  ///
+  /// Provides appropriate notification titles for different resource types enabling
+  /// consistent notification presentation across the application with proper Swedish localization.
+  ///
+  /// Returns Swedish notification title appropriate for the invitation resource type.
   String get notificationTitle {
     switch (resourceType) {
       case RealtimeResourceType.recipe:
@@ -196,7 +403,13 @@ class RealtimeInvitation {
     }
   }
 
-  /// Beskrivning för notifikation
+  /// Gets Swedish-localized notification description with sender and target information.
+  ///
+  /// Provides comprehensive notification content including sender attribution, target
+  /// identification (individual or group), and resource details for rich notification
+  /// presentation with proper Swedish grammar and context.
+  ///
+  /// Returns Swedish notification description with complete invitation context.
   String get notificationDescription {
     final prefix = target.isGroup
         ? '$fromUserDisplayName bjöd in gruppen "${target.displayName}"'
@@ -207,11 +420,17 @@ class RealtimeInvitation {
     return '$prefix $suffix';
   }
 
-  /// Kort beskrivning för lista
+  /// Gets concise Swedish-localized description for invitation list displays.
+  ///
+  /// Provides compact invitation description combining resource type and title
+  /// for efficient space usage in invitation lists and summary displays.
+  ///
+  /// Returns Swedish short description with resource type and title.
   String get shortDescription {
     return '${_getResourceTypeName().capitalizeFirst()}: $resourceTitle';
   }
 
+  /// Gets Swedish resource type name for localized text generation.
   String _getResourceTypeName() {
     switch (resourceType) {
       case RealtimeResourceType.recipe:
@@ -223,7 +442,10 @@ class RealtimeInvitation {
     }
   }
 
-  /// Ikon för resursen
+  /// Gets emoji icon representing the resource type for visual UI elements.
+  ///
+  /// Provides consistent emoji representation for different resource types
+  /// enabling visual resource identification in invitation displays and notifications.
   String get resourceIcon {
     switch (resourceType) {
       case RealtimeResourceType.recipe:
@@ -235,7 +457,10 @@ class RealtimeInvitation {
     }
   }
 
-  /// Statusikon
+  /// Gets emoji icon representing the current invitation status for visual feedback.
+  ///
+  /// Provides status-specific emoji icons with expiration awareness for clear
+  /// visual status communication in invitation UI elements and status displays.
   String get statusIcon {
     switch (status) {
       case RealtimeInvitationStatus.pending:
@@ -251,7 +476,10 @@ class RealtimeInvitation {
     }
   }
 
-  /// Statustext
+  /// Gets Swedish-localized status text for invitation status display.
+  ///
+  /// Provides human-readable Swedish status descriptions with expiration awareness
+  /// for clear status communication in invitation UI elements and status summaries.
   String get statusText {
     switch (status) {
       case RealtimeInvitationStatus.pending:
@@ -267,9 +495,12 @@ class RealtimeInvitation {
     }
   }
 
-  // ===== STATE CHANGES =====
+  /// Immutable state transition methods for invitation lifecycle management.
 
-  /// Acceptera inbjudan
+  /// Accepts the invitation transitioning to accepted status with response timestamp.
+  ///
+  /// Creates new invitation instance with accepted status and current response timestamp
+  /// for immutable state management and invitation lifecycle tracking.
   RealtimeInvitation accept() {
     return copyWith(
       status: RealtimeInvitationStatus.accepted,
@@ -277,7 +508,10 @@ class RealtimeInvitation {
     );
   }
 
-  /// Avvisa inbjudan
+  /// Rejects the invitation transitioning to rejected status with response timestamp.
+  ///
+  /// Creates new invitation instance with rejected status and current response timestamp
+  /// for immutable state management and invitation lifecycle tracking.
   RealtimeInvitation reject() {
     return copyWith(
       status: RealtimeInvitationStatus.rejected,
@@ -285,7 +519,10 @@ class RealtimeInvitation {
     );
   }
 
-  /// Avbryt inbjudan (endast avsändare)
+  /// Cancels the invitation transitioning to cancelled status with response timestamp.
+  ///
+  /// Creates new invitation instance with cancelled status for sender-initiated cancellation,
+  /// preventing recipient responses and maintaining invitation audit trail.
   RealtimeInvitation cancel() {
     return copyWith(
       status: RealtimeInvitationStatus.cancelled,
@@ -293,7 +530,10 @@ class RealtimeInvitation {
     );
   }
 
-  /// Markera som utgången
+  /// Expires the invitation transitioning to expired status with response timestamp.
+  ///
+  /// Creates new invitation instance with expired status for system-initiated expiration,
+  /// preventing delayed responses and maintaining invitation lifecycle completeness.
   RealtimeInvitation expire() {
     return copyWith(
       status: RealtimeInvitationStatus.expired,
@@ -301,8 +541,12 @@ class RealtimeInvitation {
     );
   }
 
-  // ===== COPY WITH =====
+  /// Utility methods for invitation manipulation and immutable updates.
 
+  /// Creates a copy of this invitation with updated values while preserving immutability.
+  ///
+  /// Used for all invitation modifications while maintaining immutable data patterns and ensuring
+  /// consistent state management for invitation lifecycle operations and status transitions.
   RealtimeInvitation copyWith({
     String? resourceTitle,
     RealtimeInvitationStatus? status,
@@ -330,9 +574,12 @@ class RealtimeInvitation {
     );
   }
 
-  // ===== SERIALIZATION =====
+  /// Data persistence and serialization methods for Firestore and caching integration.
 
-  /// Konvertera till Firestore
+  /// Converts the invitation to Firestore-compatible format for persistence.
+  ///
+  /// Transforms all invitation data including target, timestamps, and metadata into Firestore format
+  /// with proper field mapping and type preservation for efficient database storage and querying.
   Map<String, dynamic> toFirestore() {
     return {
       'resourceType': resourceType.value,
@@ -342,22 +589,22 @@ class RealtimeInvitation {
       'fromUserDisplayName': fromUserDisplayName,
       'target': target.toFirestore(),
       'status': status.name,
-      'sentAt': Timestamp.fromDate(sentAt),
-      'respondedAt':
-          respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
-      'expiresAt': Timestamp.fromDate(expiresAt),
+      'sentAt': sentAt,
+      'respondedAt': respondedAt,
+      'expiresAt': expiresAt,
       'message': message,
       'permissionLevel': permissionLevel,
       'metadata': metadata,
     };
   }
 
-  /// Skapa från Firestore
-  factory RealtimeInvitation.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
+  /// Creates an invitation instance from repository data with robust parsing.
+  ///
+  /// Transforms repository data into a complete RealtimeInvitation instance with proper
+  /// type conversion, enum parsing, and fallback handling for missing or invalid data.
+  factory RealtimeInvitation.fromMap(String id, Map<String, dynamic> data) {
     return RealtimeInvitation(
-      id: doc.id,
+      id: id,
       resourceType: RealtimeResourceType.fromString(
         data['resourceType'] as String? ?? 'recipe',
       ),
@@ -372,9 +619,9 @@ class RealtimeInvitation {
         (s) => s.name == data['status'],
         orElse: () => RealtimeInvitationStatus.pending,
       ),
-      sentAt: (data['sentAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      respondedAt: (data['respondedAt'] as Timestamp?)?.toDate(),
-      expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ??
+      sentAt: _parseDateTime(data['sentAt']) ?? DateTime.now(),
+      respondedAt: _parseDateTime(data['respondedAt']),
+      expiresAt: _parseDateTime(data['expiresAt']) ??
           DateTime.now().add(const Duration(days: 7)),
       message: data['message'] as String?,
       permissionLevel: data['permissionLevel'] as String? ?? 'editor',
@@ -382,7 +629,10 @@ class RealtimeInvitation {
     );
   }
 
-  /// JSON serialization
+  /// Converts the invitation to JSON format for caching and client-side storage.
+  ///
+  /// Provides JSON serialization for client-side caching, local storage, and data transfer
+  /// with complete metadata preservation and ISO timestamp formatting.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -402,6 +652,10 @@ class RealtimeInvitation {
     };
   }
 
+  /// Creates an invitation instance from JSON data for caching and deserialization.
+  ///
+  /// Transforms JSON cache data into a complete RealtimeInvitation instance with proper
+  /// type conversion and enum parsing for client-side caching support.
   factory RealtimeInvitation.fromJson(Map<String, dynamic> json) {
     return RealtimeInvitation(
       id: json['id'] as String,
@@ -430,6 +684,12 @@ class RealtimeInvitation {
     );
   }
 
+  /// Standard object methods for debugging, comparison, and identity management.
+
+  /// Returns a string representation of the invitation for debugging and logging.
+  ///
+  /// Provides essential invitation information in a readable format for development
+  /// and debugging purposes with resource details, sender, target, and status.
   @override
   String toString() {
     return 'RealtimeInvitation('
@@ -441,18 +701,68 @@ class RealtimeInvitation {
         ')';
   }
 
+  /// Compares two invitations for equality based on unique identifier.
+  ///
+  /// Uses invitation ID for equality comparison ensuring consistent object identity
+  /// across different instances of the same invitation data.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is RealtimeInvitation && other.id == id;
   }
 
+  /// Generates hash code based on unique invitation identifier.
+  ///
+  /// Provides consistent hash code generation for use in collections and
+  /// data structures requiring hash-based operations and invitation identification.
   @override
   int get hashCode => id.hashCode;
+  
+  /// Helper method to parse DateTime from various formats without Firebase dependencies.
+  ///
+  /// Handles DateTime parsing from different data sources including:
+  /// - DateTime objects (pass-through)
+  /// - ISO strings (JSON format)
+  /// - Timestamp-like maps (Firebase format handled by repository)
+  /// - Milliseconds since epoch (int format)
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is DateTime) {
+      return value;
+    } else if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (e) {
+        return null;
+      }
+    } else if (value is Map && value.containsKey('seconds')) {
+      // Handle Firestore Timestamp-like objects passed from repository
+      final seconds = value['seconds'] as int?;
+      final nanoseconds = value['nanoseconds'] as int? ?? 0;
+      if (seconds != null) {
+        return DateTime.fromMillisecondsSinceEpoch(
+          seconds * 1000 + nanoseconds ~/ 1000000,
+        );
+      }
+    } else if (value is int) {
+      // Handle milliseconds since epoch
+      return DateTime.fromMillisecondsSinceEpoch(value);
+    }
+    
+    return null;
+  }
 }
 
-/// Extension för att lägga till capitalize-funktionalitet
+/// String extension providing text capitalization utilities for Swedish localization.
+///
+/// Extends String with capitalization methods supporting proper Swedish text formatting
+/// for UI display and localized text presentation throughout the invitation system.
 extension StringExtension on String {
+  /// Capitalizes the first character of the string for proper Swedish text formatting.
+  ///
+  /// Provides first-letter capitalization for Swedish text display with empty string handling
+  /// ensuring robust text formatting throughout the Swedish-localized invitation interface.
   String capitalizeFirst() {
     if (isEmpty) return this;
     return this[0].toUpperCase() + substring(1);

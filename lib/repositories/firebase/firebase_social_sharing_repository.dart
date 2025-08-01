@@ -50,7 +50,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final sharingRepo = FirebaseSocialSharingRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Share content with specific users

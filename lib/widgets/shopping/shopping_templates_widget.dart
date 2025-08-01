@@ -96,7 +96,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
             style: AppTextStyles.titleSmall,
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          Text(
+          const Text(
             'Skapa mallar från dina vanligaste inköpslistor för att spara tid.',
             style: AppTextStyles.bodyMedium,
             textAlign: TextAlign.center,
@@ -162,7 +162,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                       color: AppColors.primaryContainer.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.library_books,
                       color: AppColors.primary,
                       size: 20,
@@ -291,7 +291,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Skapa lista från mall',
           style: AppTextStyles.titleMedium,
         ),
@@ -348,7 +348,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(
+            child: const Text(
               'Avbryt',
               style: AppTextStyles.bodyMedium,
             ),

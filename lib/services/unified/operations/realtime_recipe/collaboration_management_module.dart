@@ -2,7 +2,7 @@
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Collaboration management module
@@ -36,7 +36,7 @@ class CollaborationManagementModule {
         return true;
       }
 
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can enable collaborative editing');
         return false;
       }
@@ -92,7 +92,7 @@ class CollaborationManagementModule {
         return true;
       }
 
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can disable collaborative editing');
         return false;
       }
@@ -132,7 +132,7 @@ class CollaborationManagementModule {
     if (recipe == null) return false;
     
     return !recipe.isCollaborative && 
-           sl<PermissionService>().isRecipeOwner(recipeId);
+           ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId);
   }
 
   /// Check if recipe collaboration can be disabled
@@ -141,7 +141,7 @@ class CollaborationManagementModule {
     if (recipe == null) return false;
     
     return recipe.isCollaborative && 
-           sl<PermissionService>().isRecipeOwner(recipeId);
+           ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId);
   }
 
   // ===== MEMBER MANAGEMENT =====
@@ -160,7 +160,7 @@ class CollaborationManagementModule {
         return false;
       }
 
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can add collaborators');
         return false;
       }
@@ -204,7 +204,7 @@ class CollaborationManagementModule {
         return false;
       }
 
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can remove collaborators');
         return false;
       }
@@ -246,7 +246,7 @@ class CollaborationManagementModule {
         return false;
       }
 
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can update member permissions');
         return false;
       }
@@ -292,7 +292,7 @@ class CollaborationManagementModule {
         return false;
       }
 
-      if (!sl<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
         AppLogger.error('Only current owner can transfer ownership');
         return false;
       }
@@ -383,8 +383,8 @@ class CollaborationManagementModule {
           'permission': entry.value.toString().split('.').last,
           'isActive': activeEditors.contains(entry.key),
         }).toList() ?? [],
-        'canEdit': sl<PermissionService>().canEditRecipe(recipeId),
-        'canManage': sl<PermissionService>().isRecipeOwner(recipeId),
+        'canEdit': ServiceLocator.get<PermissionService>().canEditRecipe(recipeId),
+        'canManage': ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId),
       };
     } catch (e) {
       AppLogger.error('Failed to get collaboration details', e);

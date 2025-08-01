@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// Trending Content Section - Shows trending recipes, menus, shopping lists
 class TrendingContentSection {
@@ -229,12 +230,129 @@ class TrendingContentSection {
   }
 
   static void _showAllTrending(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    // TODO: Implement show all trending page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Visa alla populära kommer snart!'),
-        backgroundColor: AppColors.info,
+    // Navigate to extended trending content view
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => _buildTrendingContentPage(context, viewModel),
       ),
+    );
+  }
+  
+  static Widget _buildTrendingContentPage(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Populärt innehåll'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
+        child: Column(
+          children: [
+            // Extended trending recipes section
+            if (viewModel.trendingRecipes.isNotEmpty) ...[
+              _buildSectionHeader('Populära recept', viewModel.trendingRecipes.length),
+              const SizedBox(height: AppDimensions.spacingS),
+              ...viewModel.trendingRecipes.take(20).map((recipe) => 
+                Card(
+                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                  child: ListTile(
+                    leading: const Icon(Icons.restaurant),
+                    title: Text(recipe.core.title),
+                    subtitle: Text(recipe.core.description),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      Routes.receptDetalj,
+                      arguments: {'recipe': recipe},
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+            ],
+            
+            // Extended trending menus section
+            if (viewModel.trendingMenus.isNotEmpty) ...[
+              _buildSectionHeader('Populära menyer', viewModel.trendingMenus.length),
+              const SizedBox(height: AppDimensions.spacingS),
+              ...viewModel.trendingMenus.take(10).map((menu) => 
+                Card(
+                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                  child: ListTile(
+                    leading: const Icon(Icons.calendar_month),
+                    title: Text(menu.menuTitle),
+                    subtitle: Text('${menu.totalRecipeCount} recept'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      Routes.menuPreview,
+                      arguments: {'menu': menu},
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+            ],
+            
+            // Extended trending shopping lists section
+            if (viewModel.trendingShoppingLists.isNotEmpty) ...[
+              _buildSectionHeader('Populära inköpslistor', viewModel.trendingShoppingLists.length),
+              const SizedBox(height: AppDimensions.spacingS),
+              ...viewModel.trendingShoppingLists.take(10).map((list) => 
+                Card(
+                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                  child: ListTile(
+                    leading: const Icon(Icons.shopping_cart),
+                    title: Text(list.name),
+                    subtitle: Text('${list.items.length} varor'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      Routes.inkopslista,
+                      arguments: {'listId': list.id},
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+  
+  static Widget _buildSectionHeader(String title, int count) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingS,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            count.toString(),
+            style: const TextStyle(
+              color: AppColors.onPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

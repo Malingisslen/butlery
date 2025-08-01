@@ -53,7 +53,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final relationshipRepo = FriendRelationshipRepository(
-///   authRepository: sl<AuthRepository>(),
+///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// 
 /// // Create mutual friendship  

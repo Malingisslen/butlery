@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/widgets/user/user_display_models.dart';
 
 /// Group Activity Timeline - Shows group activity feed
 /// 
@@ -75,14 +76,14 @@ class GroupActivityTimeline {
     final ownerAvatarUrl = activity['ownerAvatarUrl'] as String?;
     final title = activity['title'] as String;
     final action = activity['action'] as String;
-    final groupName = activity['groupName'] as String;
+    // final groupName = activity['groupName'] as String; // Unused for now
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           children: [
-            _buildActivityAvatar(ownerAvatarUrl, activityType),
+            _buildActivityAvatar(ownerAvatarUrl, activityType, ownerName),
             if (!isLast)
               Container(
                 width: 2,
@@ -119,14 +120,15 @@ class GroupActivityTimeline {
     );
   }
 
-  static Widget _buildActivityAvatar(String? avatarUrl, String activityType) {
+  static Widget _buildActivityAvatar(String? avatarUrl, String activityType, String ownerName) {
     final IconData activityIcon = _getActivityIcon(activityType);
     
     return Stack(
       children: [
         UserAvatar(
           imageUrl: avatarUrl,
-          size: 32,
+          displayName: ownerName,
+          size: ImageSize.small,
         ),
         Positioned(
           right: -2,

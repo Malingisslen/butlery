@@ -11,7 +11,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/core/validators/form_validators.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
@@ -28,8 +28,8 @@ class SkrivSjalvReceptView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => RecipeFormViewModel(
-        recipeService: sl(),
-        analyticsService: sl(),
+        recipeService: ServiceLocator.get(),
+        analyticsService: ServiceLocator.get(),
         initialRecipe: initialRecipe,
         isTemplate: isTemplate,
       ),
@@ -230,7 +230,7 @@ class _SkrivSjalvReceptViewContentState
                         viewModel.setPrimaryImage(viewModel.imageUrls[index]);
                       }
                     },
-                    userId: sl<PermissionService>().currentUserId ?? '',
+                    userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
                     onPickImage: () => _pickImage(viewModel),
                     maxImages: 5,
                   ),

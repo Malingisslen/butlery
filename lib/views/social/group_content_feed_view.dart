@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -39,7 +38,7 @@ class GroupContentFeedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<GroupContentViewModel>(
-      create: (context) => sl<GroupContentViewModel>()..initialize(group),
+      create: (context) => ServiceLocator.get<GroupContentViewModel>()..initialize(group),
       child: _GroupContentFeedViewContent(group: group),
     );
   }
@@ -180,12 +179,98 @@ class _GroupContentFeedViewContentState
   }
 
   void _showShareContentDialog(BuildContext context) {
-    // TODO: Implement share content dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Delningsfunktion kommer snart!'),
-        backgroundColor: AppColors.info,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppDimensions.spacingL),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Dela innehåll med gruppen',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            
+            ListTile(
+              leading: const Icon(Icons.restaurant),
+              title: const Text('Dela recept'),
+              subtitle: const Text('Välj ett recept att dela'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareRecipe(context);
+              },
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Dela meny'),
+              subtitle: const Text('Dela en veckomeny'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareMenu(context);
+              },
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.shopping_cart),
+              title: const Text('Dela inköpslista'),
+              subtitle: const Text('Dela en inköpslista'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareShoppingList(context);
+              },
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.chat),
+              title: const Text('Skicka meddelande'),
+              subtitle: const Text('Starta en konversation'),
+              onTap: () {
+                Navigator.pop(context);
+                _startConversation(context);
+              },
+            ),
+            
+            const SizedBox(height: AppDimensions.spacingM),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Avbryt'),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+  
+  void _shareRecipe(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      '/mina-recept',
+      arguments: {
+        'selectMode': true,
+        'groupId': widget.group.id,
+      },
+    );
+  }
+  
+  void _shareMenu(BuildContext context) {
+    Navigator.pushNamed(context, '/veckomeny');
+  }
+  
+  void _shareShoppingList(BuildContext context) {
+    Navigator.pushNamed(context, '/inkopslista');
+  }
+  
+  void _startConversation(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      '/messages',
+      arguments: {'groupId': widget.group.id},
     );
   }
 }

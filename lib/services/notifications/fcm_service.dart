@@ -57,7 +57,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 
 /// Advanced Firebase Cloud Messaging service providing comprehensive push notification functionality with deep linking.
@@ -239,7 +239,7 @@ class FCMService {
       AppLogger.info('🔔 Updating user profile with FCM token: ${token.substring(0, 20)}...');
       
       // Update user profile with FCM token - implemented in our notification system
-      final userService = sl<UserService>();
+      final userService = ServiceLocator.get<UserService>();
       await userService.updateFCMToken(token);
       
     } catch (e) {

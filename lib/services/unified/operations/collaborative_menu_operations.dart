@@ -6,16 +6,65 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
-/// Collaborative Menu Operations
+/// Comprehensive collaborative menu operations providing real-time menu sharing and social cooking collaboration features.
+///
+/// This operations class implements sophisticated collaborative menu functionality following Single Responsibility Principle,
+/// handling all aspects of multi-user menu collaboration including real-time editing, rating systems, commenting,
+/// and template management. It provides comprehensive collaborative cooking features while maintaining clean separation
+/// from basic menu operations and individual recipe management concerns.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles collaborative menu operations:
+/// - **Real-time Collaboration**: Live menu editing with multiple users and conflict resolution
+/// - **Social Rating System**: Comprehensive menu rating and review system with statistical tracking
+/// - **Comment System**: Threaded menu discussions with likes and real-time streaming capabilities
+/// - **Template Management**: Collaborative menu templates with sharing and reuse functionality
+///
+/// **What This Class Does NOT Handle:**
+/// - Basic menu CRUD operations (handled by parent service)
+/// - Individual recipe management (handled by recipe operations)
+/// - User authentication and permissions (handled by permission services)
+/// - Non-collaborative menu features (handled by basic menu operations)
+///
+/// **Collaborative Menu Features:**
+/// - **Real-time Editing**: Multi-user menu collaboration with live updates and activity logging
+/// - **Rating System**: Comprehensive 5-star rating system with comments and average rating calculations
+/// - **Discussion System**: Threaded comments with likes, replies, and real-time streaming
+/// - **Template System**: Menu template creation, sharing, and reuse with usage tracking
+/// - **Activity Logging**: Complete collaboration activity tracking with detailed audit trails
+///
+/// **Usage Examples:**
+/// ```dart
+/// final collaborativeOps = CollaborativeMenuOperations(parentService, firestore);
 /// 
-/// Extends menu sharing with real-time collaboration features:
-/// - Real-time menu editing and synchronization
-/// - Menu rating and commenting system
-/// - Collaborative menu templates
-/// - Menu version control and conflict resolution
-/// - Menu discussion threads and feedback
+/// // Enable collaborative menu editing
+/// await collaborativeOps.enableMenuCollaboration(
+///   menuId: menuId,
+///   collaboratorIds: ['user1', 'user2'],
+///   collaboratorDisplayNames: {'user1': 'Anna', 'user2': 'Erik'},
+/// );
+/// 
+/// // Collaborative recipe management
+/// await collaborativeOps.addRecipeToCollaborativeMenu(
+///   menuId: menuId,
+///   category: 'Huvudrätt',
+///   recipe: recipe,
+///   suggestion: 'Perfekt för söndagsmiddag!',
+/// );
+/// 
+/// // Social interaction features
+/// await collaborativeOps.rateMenu(menuId: menuId, rating: 5.0, comment: 'Fantastisk meny!');
+/// await collaborativeOps.addMenuComment(menuId: menuId, comment: 'Vilken kreativ kombination!');
+/// 
+/// // Template system
+/// final templateId = await collaborativeOps.createMenuTemplate(
+///   templateName: 'Veckomeny Familj',
+///   menuSnapshot: menuData,
+///   description: 'Perfekt för familjer med barn',
+/// );
+/// ```
 class CollaborativeMenuOperations {
   final FirebaseFirestore _firestore;
   final dynamic _parent; // UnifiedMenuService
@@ -37,8 +86,8 @@ class CollaborativeMenuOperations {
     Map<String, String>? collaboratorDisplayNames,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
-      final userDisplayName = sl<PermissionService>().currentUserDisplayName;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userDisplayName = ServiceLocator.get<PermissionService>().currentUserDisplayName;
       
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot enable collaboration: User not authenticated');
@@ -85,8 +134,8 @@ class CollaborativeMenuOperations {
     String? suggestion,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
-      final userDisplayName = sl<PermissionService>().currentUserDisplayName;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userDisplayName = ServiceLocator.get<PermissionService>().currentUserDisplayName;
       
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot add recipe: User not authenticated');
@@ -147,8 +196,8 @@ class CollaborativeMenuOperations {
     String? reason,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
-      final userDisplayName = sl<PermissionService>().currentUserDisplayName;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userDisplayName = ServiceLocator.get<PermissionService>().currentUserDisplayName;
       
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot remove recipe: User not authenticated');
@@ -223,8 +272,8 @@ class CollaborativeMenuOperations {
     String? comment,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
-      final userDisplayName = sl<PermissionService>().currentUserDisplayName;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userDisplayName = ServiceLocator.get<PermissionService>().currentUserDisplayName;
       
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot rate menu: User not authenticated');
@@ -317,8 +366,8 @@ class CollaborativeMenuOperations {
     String? replyToCommentId,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
-      final userDisplayName = sl<PermissionService>().currentUserDisplayName;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userDisplayName = ServiceLocator.get<PermissionService>().currentUserDisplayName;
       
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot add comment: User not authenticated');
@@ -380,7 +429,7 @@ class CollaborativeMenuOperations {
     required String commentId,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
       if (userId == null) return false;
 
       final commentRef = _firestore
@@ -429,8 +478,8 @@ class CollaborativeMenuOperations {
     List<String>? tags,
   }) async {
     try {
-      final userId = sl<PermissionService>().currentUserId;
-      final userDisplayName = sl<PermissionService>().currentUserDisplayName;
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userDisplayName = ServiceLocator.get<PermissionService>().currentUserDisplayName;
       
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot create template: User not authenticated');
@@ -502,8 +551,8 @@ class CollaborativeMenuOperations {
 
       // Create shared menu using existing factory
       final sharedMenu = SharedMenu.create(
-        sharedByUserId: sl<PermissionService>().currentUserId!,
-        sharedByDisplayName: sl<PermissionService>().currentUserDisplayName!,
+        sharedByUserId: ServiceLocator.get<PermissionService>().currentUserId!,
+        sharedByDisplayName: ServiceLocator.get<PermissionService>().currentUserDisplayName!,
         sharedToUserIds: sharedToUserIds ?? [],
         shareMessage: shareMessage,
         menuTitle: menuTitle,

@@ -19,16 +19,56 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
-/// Friend categories operations feature interface
+/// Comprehensive friend categories operations providing advanced friend organization and group management systems.
+///
+/// This operations class implements sophisticated friend categorization functionality following Single Responsibility Principle,
+/// handling all aspects of friend organization including category lifecycle management, friend assignment operations, bulk
+/// categorization features, and group-based permissions. It provides comprehensive friend organization capabilities while
+/// maintaining clean separation from basic friend management and social interaction concerns.
+///
+/// **Single Responsibility Focus:**
+/// This class exclusively handles friend categorization operations:
+/// - **Category Lifecycle Management**: Complete category CRUD operations with validation, duplicate prevention, and privacy controls
+/// - **Friend Assignment Operations**: Comprehensive friend-to-category assignment with bulk operations and relationship management
+/// - **Group Permissions**: Advanced category-based permissions with sharing controls and access management
+/// - **Organization Analytics**: Category usage statistics and organization insights with bulk operation tracking
+///
+/// **What This Class Does NOT Handle:**
+/// - Basic friend relationship management (handled by FriendsOperations)  
+/// - Social invitations and group invitations (handled by FriendsInvitationsOperations)
+/// - UI concerns and presentation logic (handled by ViewModels and UI components)
+/// - Authentication and user management (handled by permission services)
+///
+/// **Friend Categories Features:**
+/// - **Advanced Organization**: Comprehensive friend categorization with custom categories, privacy controls, and sharing options
+/// - **Bulk Operations**: Efficient multi-friend assignment operations with progress tracking and validation
+/// - **Permission Management**: Category-based sharing and permissions with access control and ownership validation
+/// - **Analytics Integration**: Detailed categorization analytics with usage statistics and organization insights
+/// - **Smart Organization**: Intelligent category suggestions and organization tools for efficient friend management
+///
+/// **Usage Examples:**
+/// ```dart
+/// final categoriesOps = FriendCategoriesOperations(parentService);
 /// 
-/// Handles all friend categorization and grouping operations:
-/// - Category CRUD (create, read, update, delete)
-/// - Friend-to-category assignments
-/// - Category-based friend filtering
-/// - Bulk operations on categories
-/// - Category sharing and permissions
+/// // Category lifecycle management
+/// final categoryId = await categoriesOps.createCategory(
+///   name: 'Arbetskamrater',
+///   description: 'Kollegor och arbetskamrater',  
+///   isPrivate: false,
+///   initialMemberIds: [colleague1, colleague2],
+/// );
+/// 
+/// // Friend assignment operations
+/// await categoriesOps.assignFriendsToCategory(categoryId, friendIds);
+/// await categoriesOps.removeFriendsFromCategory(categoryId, [friendId]);
+/// 
+/// // Category management and analytics
+/// final categories = categoriesOps.getAllCategories();
+/// final usage = categoriesOps.getCategoryUsageStats();
+/// final mostUsed = categoriesOps.getMostUsedCategories();
+/// ```
 class FriendCategoriesOperations {
   final dynamic _parent; // UnifiedFriendsService
 
@@ -43,7 +83,7 @@ class FriendCategoriesOperations {
     bool isPrivate = false,
     List<String>? initialMemberIds,
   }) async {
-    if (!sl<PermissionService>().isAuthenticated) {
+    if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       AppLogger.warning('Cannot create category: User not logged in');
       return null;
     }
@@ -337,7 +377,7 @@ class FriendCategoriesOperations {
 
   /// Get categories where current user is a member
   List<FriendCategory> getMemberCategories() {
-    if (!sl<PermissionService>().isAuthenticated) return [];
+    if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
     
     return _parent.categoriesList
         .where((category) => category.memberIds.contains(_parent.currentUserId))
@@ -424,12 +464,12 @@ class FriendCategoriesOperations {
 
   bool _canEditCategory(FriendCategory category) {
     // Can edit if owner or has edit permissions
-    return sl<PermissionService>().isGroupAdmin(category.id);
+    return ServiceLocator.get<PermissionService>().isGroupAdmin(category.id);
   }
 
   bool _canDeleteCategory(FriendCategory category) {
     // Can delete if owner
-    return sl<PermissionService>().canDeleteGroup(category.id);
+    return ServiceLocator.get<PermissionService>().canDeleteGroup(category.id);
   }
 
   // TODO: Add public/private category support when needed

@@ -7,7 +7,7 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/injection.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 
@@ -117,7 +117,7 @@ class GroupMembersList {
   }
 
   static bool _canAddMembers(FriendCategory group) {
-    final permissionService = sl<PermissionService>();
+    final permissionService = ServiceLocator.get<PermissionService>();
     return permissionService.canInviteToGroup(group.id);
   }
 }
