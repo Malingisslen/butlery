@@ -54,10 +54,12 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
   Future<void> _updateGroup() async {
     if (!_formKey.currentState!.validate()) return;
     
-    if (mounted) setState(() {
-      _isUpdating = true;
-      _error = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isUpdating = true;
+        _error = null;
+      });
+    }
 
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
@@ -76,18 +78,22 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
           Navigator.of(context).pop(true);
         }
       } else {
-        if (mounted) setState(() {
-          _error = 'Kunde inte uppdatera grupp. Försök igen.';
-        });
+        if (mounted) {
+          setState(() {
+            _error = 'Kunde inte uppdatera grupp. Försök igen.';
+          });
+        }
       }
     } catch (e) {
       AppLogger.error('Error updating group', e);
-      if (mounted) setState(() {
-        _error = 'Ett fel uppstod: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Ett fel uppstod: ${e.toString()}';
+        });
+      }
     } finally {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isUpdating = false;
         });
       }
@@ -122,9 +128,11 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                     EmojiSelector(
                       selectedEmoji: _selectedEmoji,
                       onEmojiSelected: (emoji) {
-                        if (mounted) setState(() {
-                          _selectedEmoji = emoji;
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _selectedEmoji = emoji;
+                          });
+                        }
                       },
                     ),
                     

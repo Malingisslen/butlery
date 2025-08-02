@@ -52,32 +52,40 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   void _onTextChanged() {
     final isComposing = _textController.text.trim().isNotEmpty;
     if (isComposing != _isComposing) {
-      if (mounted) setState(() {
-        _isComposing = isComposing;
-      });
+      if (mounted) {
+        setState(() {
+          _isComposing = isComposing;
+        });
+      }
     }
   }
 
   void _onFocusChanged() {
     if (_focusNode.hasFocus && _showAttachments) {
-      if (mounted) setState(() {
-        _showAttachments = false;
-      });
+      if (mounted) {
+        setState(() {
+          _showAttachments = false;
+        });
+      }
     }
   }
 
   Future<void> _handleSendMessage() async {
     final text = _textController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      return;
+    }
 
     try {
       AppLogger.debug('Sending message: $text');
       
       // Clear input immediately for responsive UX
       _textController.clear();
-      if (mounted) setState(() {
-        _isComposing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isComposing = false;
+        });
+      }
 
       // Send message through action handler
       await widget.onSendMessage(text, type: MessageType.text);
@@ -88,38 +96,26 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       
       // Restore text on error
       _textController.text = text;
-      if (mounted) setState(() {
-        _isComposing = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isComposing = true;
+        });
+      }
     }
   }
 
   void _toggleAttachments() {
-    if (mounted) setState(() {
-      _showAttachments = !_showAttachments;
-    });
+    if (mounted) {
+      setState(() {
+        _showAttachments = !_showAttachments;
+      });
+    }
     
     if (_showAttachments) {
       _focusNode.unfocus();
     }
   }
 
-  Future<void> _handleAttachment(String type) async {
-    try {
-      AppLogger.debug('Handling attachment: $type');
-      
-      // Hide attachments panel
-      if (mounted) setState(() {
-        _showAttachments = false;
-      });
-
-      // Handle attachment through action handler
-      await widget.onAttachment(type);
-      
-    } catch (e) {
-      AppLogger.error('Failed to handle attachment', e);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

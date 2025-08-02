@@ -57,9 +57,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             // Comments header with expand/collapse
             InkWell(
               onTap: () {
-                if (mounted) setState(() {
-                  _isCommentsExpanded = !_isCommentsExpanded;
-                });
+                if (mounted) {
+                  setState(() {
+                    _isCommentsExpanded = !_isCommentsExpanded;
+                  });
+                }
               },
               child: Container(
                 width: double.infinity,
@@ -131,17 +133,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           _buildCommentForm(socialViewModel),
           
           // Comments list
-          if (socialViewModel.isLoadingComments) {
+          if (socialViewModel.isLoadingComments)
             StateWidget.loading(message: 'Laddar kommentarer...')
-          }
-          else if (socialViewModel.commentsError != null) {
+          else if (socialViewModel.commentsError != null)
             StateWidget.error(
-          }
               message: socialViewModel.commentsError!,
             )
-          else if (socialViewModel.comments.isEmpty) {
+          else if (socialViewModel.comments.isEmpty)
             Padding(
-          }
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: StateWidget.empty(
                 title: 'Inga kommentarer än',
@@ -260,10 +259,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      if (mounted) setState(() {
-                        _replyingToCommentId = null;
-                        _replyingToUserName = null;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _replyingToCommentId = null;
+                          _replyingToUserName = null;
+                        });
+                      }
                     },
                     icon: const Icon(
                       Icons.close,
@@ -369,10 +370,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 // Reply button
                 IconButton(
                   onPressed: () {
-                    if (mounted) setState(() {
-                      _replyingToCommentId = comment.id;
-                      _replyingToUserName = comment.author?.displayName ?? 'Anonym';
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _replyingToCommentId = comment.id;
+                        _replyingToUserName = comment.author?.displayName ?? 'Anonym';
+                      });
+                    }
                   },
                   icon: const Icon(
                     Icons.reply,
@@ -422,9 +425,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   return Column(
                     children: [
                       _buildCommentItem(reply, socialViewModel, isReply: true),
-                      if (reply != comment.replies.last) {
+                      if (reply != comment.replies.last)
                         const Divider(
-                      }
                           height: AppDimensions.borderWidthThin,
                           color: AppColors.divider,
                         ),
@@ -442,7 +444,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   /// Post a comment or reply
   Future<void> _postComment(SocialRecipeViewModel socialViewModel) async {
     final commentText = _commentController.text.trim();
-    if (commentText.isEmpty) return;
+    if (commentText.isEmpty) {
+      return;
+    }
 
     final userService = ServiceLocator.get<UserService>();
     final currentUser = FirebaseAuthRepository().currentUser;
@@ -475,10 +479,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
       // Clear form
       _commentController.clear();
-      if (mounted) setState(() {
-        _replyingToCommentId = null;
-        _replyingToUserName = null;
-      });
+      if (mounted) {
+        setState(() {
+          _replyingToCommentId = null;
+          _replyingToUserName = null;
+        });
+      }
 
       _showSnackBarSafely(
         'Kommentar postad',

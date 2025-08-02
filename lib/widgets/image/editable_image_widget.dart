@@ -380,9 +380,11 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
   /// Handle page change
   void _onPageChanged(int index) {
-    if (mounted) setState(() {
-      _currentIndex = index;
-    });
+    if (mounted) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
   }
 
   /// Handle dot tap
@@ -404,9 +406,11 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       return;
     }
 
-    if (mounted) setState(() {
-      _isAddingImage = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isAddingImage = true;
+      });
+    }
 
     try {
       if (widget.config.enableHapticFeedback) {
@@ -431,7 +435,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       AppLogger.error('Failed to add images: $e');
     } finally {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isAddingImage = false;
         });
       }

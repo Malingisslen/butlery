@@ -442,10 +442,12 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
-                      if (mounted) setState(() {
-                        _replyToCommentId = null;
-                        _replyToDisplayName = null;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _replyToCommentId = null;
+                          _replyToDisplayName = null;
+                        });
+                      }
                     },
                     child: const Icon(
                       Icons.close,
@@ -582,10 +584,12 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
               const SizedBox(width: AppDimensions.spacingM),
               GestureDetector(
                 onTap: () {
-                  if (mounted) setState(() {
-                    _replyToCommentId = comment['id'];
-                    _replyToDisplayName = commentedByDisplayName;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      _replyToCommentId = comment['id'];
+                      _replyToDisplayName = commentedByDisplayName;
+                    });
+                  }
                 },
                 child: Row(
                   children: [
@@ -706,9 +710,11 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                 final starRating = index + 1;
                 return GestureDetector(
                   onTap: () {
-                    if (mounted) setState(() {
-                      _selectedRating = starRating.toDouble();
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _selectedRating = starRating.toDouble();
+                      });
+                    }
                   },
                   child: Icon(
                     _selectedRating >= starRating ? Icons.star : Icons.star_border,
@@ -752,10 +758,12 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
     if (comment.isNotEmpty) {
       widget.onComment(comment, _replyToCommentId);
       _commentController.clear();
-      if (mounted) setState(() {
-        _replyToCommentId = null;
-        _replyToDisplayName = null;
-      });
+      if (mounted) {
+        setState(() {
+          _replyToCommentId = null;
+          _replyToDisplayName = null;
+        });
+      }
     }
   }
 

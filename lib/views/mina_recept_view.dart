@@ -522,9 +522,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               ],
             ),
             onPressed: () {
-              if (mounted) setState(() {
-                _showFilters = !_showFilters;
-              });
+              if (mounted) {
+                setState(() {
+                  _showFilters = !_showFilters;
+                });
+              }
             },
             tooltip: 'Filtrera',
           ),
@@ -763,6 +765,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Dispose of resources
+    super.dispose();
   }
 }

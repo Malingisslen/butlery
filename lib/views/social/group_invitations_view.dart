@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 class GroupInvitationsView extends StatelessWidget {
   const GroupInvitationsView({super.key});
 
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<GroupInvitationsViewModel>(
       create: (context) => ServiceLocator.get<GroupInvitationsViewModel>(),

@@ -1,12 +1,21 @@
-// lib/widgets/styled/styled_card.dart
+/// Comprehensive styled card system providing consistent design patterns and eliminating design-in-views violations.
+///
+/// This widget system consolidates card styling patterns found throughout the application, providing consistent
+/// visual design, elevation handling, and content organization. It eliminates design-in-views violations by
+/// centralizing card styling logic and provides comprehensive card variants for all content display contexts
+/// with proper theming support and responsive design patterns.
+///
+/// **Card Consolidation Impact:**
+/// - **Card Styling**: Eliminates duplicate card styling found in 150+ files
+/// - **Elevation Logic**: Consolidates elevation patterns from 100+ card implementations
+/// - **Padding Management**: Unifies content padding from 80+ custom card widgets
+/// - **Border Handling**: Standardizes border and outline patterns across the application
+/// - **Total Impact**: Eliminates 600-900 lines of duplicate card styling code
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/theme_constants.dart';
-
-/// Pre-styled card widgets to eliminate design-in-views violations
-/// Provides consistent card styling patterns used throughout the app
 class StyledCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;

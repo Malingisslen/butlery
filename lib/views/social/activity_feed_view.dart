@@ -284,10 +284,12 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   }
 
   Future<void> _loadInitialActivities() async {
-    if (mounted) setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+      });
+    }
 
     try {
       final activities = await _activityService.getFriendActivityFeed(
@@ -296,11 +298,13 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       );
 
       if (mounted) {
-        if (mounted) setState(() {
-          _activities = activities;
-          _isLoading = false;
-          _hasMoreActivities = activities.length >= widget.initialLimit;
-        });
+        if (mounted) {
+          setState(() {
+            _activities = activities;
+            _isLoading = false;
+            _hasMoreActivities = activities.length >= widget.initialLimit;
+          });
+        }
         
         // Mark activities as seen
         if (activities.isNotEmpty) {
@@ -310,21 +314,27 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       }
     } catch (e) {
       if (mounted) {
-        if (mounted) setState(() {
-          _isLoading = false;
-          _hasError = true;
-          _errorMessage = e.toString();
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _hasError = true;
+            _errorMessage = e.toString();
+          });
+        }
       }
     }
   }
 
   Future<void> _loadMoreActivities() async {
-    if (_isLoadingMore || !_hasMoreActivities) return;
+    if (_isLoadingMore || !_hasMoreActivities) {
+      return;
+    }
 
-    if (mounted) setState(() {
-      _isLoadingMore = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoadingMore = true;
+      });
+    }
 
     try {
       final moreActivities = await _activityService.getFriendActivityFeed(
@@ -334,11 +344,13 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       );
 
       if (mounted) {
-        if (mounted) setState(() {
-          _activities.addAll(moreActivities);
-          _isLoadingMore = false;
-          _hasMoreActivities = moreActivities.length >= 20;
-        });
+        if (mounted) {
+          setState(() {
+            _activities.addAll(moreActivities);
+            _isLoadingMore = false;
+            _hasMoreActivities = moreActivities.length >= 20;
+          });
+        }
         
         // Mark new activities as seen
         if (moreActivities.isNotEmpty) {
@@ -348,9 +360,11 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
       }
     } catch (e) {
       if (mounted) {
-        if (mounted) setState(() {
-          _isLoadingMore = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoadingMore = false;
+          });
+        }
       }
     }
   }
@@ -367,10 +381,12 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
             : activities;
         
         if (newActivities.isNotEmpty) {
-          if (mounted) setState(() {
-            _hasUnseenActivities = true;
-            _unseenActivityCount = newActivities.length;
-          });
+          if (mounted) {
+            setState(() {
+              _hasUnseenActivities = true;
+              _unseenActivityCount = newActivities.length;
+            });
+          }
         }
       }
     });
@@ -378,10 +394,12 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
 
   Future<void> _refreshFeed() async {
     await _loadInitialActivities();
-    if (mounted) setState(() {
-      _hasUnseenActivities = false;
-      _unseenActivityCount = 0;
-    });
+    if (mounted) {
+      setState(() {
+        _hasUnseenActivities = false;
+        _unseenActivityCount = 0;
+      });
+    }
   }
 
   void _onActivityTap(ActivityFeedItem activity) {
@@ -516,9 +534,11 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   Future<void> _hideActivity(ActivityFeedItem activity) async {
     try {
       await _activityService.hideActivity(activity.id);
-      if (mounted) setState(() {
-        _activities.removeWhere((a) => a.id == activity.id);
-      });
+      if (mounted) {
+        setState(() {
+          _activities.removeWhere((a) => a.id == activity.id);
+        });
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -537,9 +557,11 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
   Future<void> _blockActivityType(ActivityType activityType) async {
     try {
       await _activityService.blockActivityType(activityType);
-      if (mounted) setState(() {
-        _activities.removeWhere((a) => a.type == activityType);
-      });
+      if (mounted) {
+        setState(() {
+          _activities.removeWhere((a) => a.type == activityType);
+        });
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -582,14 +604,16 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
                 title: Text(type.displayName),
                 value: isSelected,
                 onChanged: (value) {
-                  if (mounted) setState(() {
-                    _selectedActivityTypes ??= ActivityType.values.where((t) => t != ActivityType.unknown).toList();
-                    if (value == true) {
-                      _selectedActivityTypes!.add(type);
-                    } else {
-                      _selectedActivityTypes!.remove(type);
-                    }
-                  });
+                  if (mounted) {
+                    setState(() {
+                      _selectedActivityTypes ??= ActivityType.values.where((t) => t != ActivityType.unknown).toList();
+                      if (value == true) {
+                        _selectedActivityTypes!.add(type);
+                      } else {
+                        _selectedActivityTypes!.remove(type);
+                      }
+                    });
+                  }
                 },
               );
             }),

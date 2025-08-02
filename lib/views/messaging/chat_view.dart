@@ -1,60 +1,4 @@
-/// Comprehensive chat view providing real-time messaging and content sharing for Flutter applications.
-///
-/// This module implements sophisticated chat interface following Single Responsibility Principle,
-/// specializing in real-time messaging, content sharing, message management, and comprehensive chat functionality.
-/// It provides complete chat interface while maintaining clean separation from business logic, data persistence,
-/// and state management through messaging service integration and modern component architecture.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles chat UI presentation concerns through comprehensive messaging architecture:
-/// - **Real-Time Messaging Excellence**: Comprehensive message display with auto-scroll and typing indicators
-/// - **Content Sharing Intelligence**: Advanced content sharing with recipe, menu, and shopping list integration
-/// - **Message Management System**: Complete message operations including editing, replying, deletion, and copying
-/// - **Conversation Coordination**: Sophisticated conversation management with participant handling and group features
-/// - **Swedish Localization Excellence**: Complete Swedish language support for messaging operations and user feedback
-///
-/// **What This Module Does NOT Handle:**
-/// - Messaging business logic and data operations (handled by MessagingService and messaging infrastructure)
-/// - Content sharing business logic (handled by UniversalShareDialogViewModel and sharing services)
-/// - Authentication and user management (handled by AuthRepository and user services)
-/// - Real-time communication infrastructure (handled by messaging repositories and Firebase services)
-///
-/// **Chat View Architecture:**
-/// - **Real-Time Message Stream**: Advanced message streaming with live updates and pagination support
-/// - **Content Sharing Integration**: Comprehensive sharing functionality with recipe, menu, and shopping list coordination
-/// - **Message Action System**: Complete message interaction with reply, edit, delete, and copy functionality
-/// - **Typing Indicator Management**: Sophisticated typing awareness with user indicator coordination
-/// - **Attachment Options**: Modern attachment system with content type selection and sharing workflow
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Navigate to chat view with conversation
-/// Navigator.of(context).push(
-///   MaterialPageRoute(
-///     builder: (context) => ChatView(
-///       conversationId: selectedConversationId,
-///       conversation: selectedConversation,
-///     ),
-///   ),
-/// );
-/// 
-/// // The view provides comprehensive chat functionality:
-/// // - Real-time message display with auto-scroll and pagination
-/// // - Content sharing with recipe, menu, and shopping list integration
-/// // - Message actions including reply, edit, delete, and copy operations
-/// // - Typing indicators with user awareness and real-time coordination
-/// // - Attachment options with content selection and sharing workflow
-/// 
-/// // Integration with specialized components:
-/// // - MessageBubble for individual message display and interaction
-/// // - ChatAppBar for conversation title and menu actions
-/// // - MessageInputContainer for message composition and sending
-/// // - TypingIndicatorContainer for typing awareness display
-/// // - AttachmentOptionsContainer for content sharing options
-/// ```
-
-// lib/views/messaging/chat_view.dart
-
+/// Chat view with real-time messaging and content sharing.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -109,143 +53,34 @@ class ChatView extends StatefulWidget {
   /// and conversation feature coordination when available for enhanced user experience.
   final Conversation? conversation;
 
-  /// Creates comprehensive chat view with real-time messaging and content sharing functionality.
-  /// 
-  /// [conversationId] Conversation identifier for message loading and real-time coordination
-  /// [conversation] Optional conversation data model for initial display and coordination
-  /// 
-  /// Establishes chat interface with real-time message streaming, content sharing integration,
-  /// and comprehensive messaging functionality through MessagingService coordination
-  /// and specialized component architecture with user experience optimization.
   const ChatView({
     super.key,
     required this.conversationId,
     this.conversation,
   });
 
-  /// Creates chat view state with messaging service integration and lifecycle management.
-  /// 
-  /// Establishes stateful chat interface enabling message streaming, content sharing,
-  /// and comprehensive messaging functionality through proper state lifecycle
-  /// and messaging service coordination with real-time updates.
   @override
   State<ChatView> createState() => _ChatViewState();
 }
 
-/// Chat view state managing real-time messaging, content sharing, and comprehensive user interaction coordination.
-///
-/// Handles complete chat state management including message streaming, typing indicators, content sharing,
-/// message actions, and user interaction handling while maintaining clean messaging architecture
-/// and proper lifecycle management through comprehensive MessagingService integration.
 class _ChatViewState extends State<ChatView> {
-  /// Message input controller for text composition and editing coordination.
-  /// 
-  /// Manages message text input enabling composition, editing, reply coordination,
-  /// and comprehensive message creation functionality with validation and processing.
   final TextEditingController _messageController = TextEditingController();
-  
-  /// Scroll controller for message list navigation and auto-scroll coordination.
-  /// 
-  /// Manages message list scrolling enabling auto-scroll to bottom, pagination triggering,
-  /// and comprehensive scroll behavior coordination with user interaction optimization.
   final ScrollController _scrollController = ScrollController();
-  
-  /// Focus node for message input field coordination and keyboard management.
-  /// 
-  /// Manages input focus enabling keyboard coordination, conversation read status,
-  /// and comprehensive input interaction with user experience optimization.
   final FocusNode _messageFocusNode = FocusNode();
-  
-  /// Messaging service for real-time message operations and conversation management.
-  /// 
-  /// Manages messaging functionality enabling message sending, conversation loading,
-  /// typing indicators, and comprehensive messaging coordination through service integration.
   late final MessagingService _messagingService;
-  
-  /// Authentication repository for user identification and permission management.
-  /// 
-  /// Manages user authentication enabling message ownership determination,
-  /// permission validation, and comprehensive user coordination throughout messaging.
   late final AuthRepository _authRepository;
-  
-  /// Current user identifier for message ownership and permission coordination.
-  /// 
-  /// Enables message ownership determination, permission validation,
-  /// and comprehensive user-specific functionality coordination throughout chat interface.
   String? _currentUserId;
-  
-  /// Current conversation data for display and feature coordination.
-  /// 
-  /// Stores conversation metadata enabling title display, participant management,
-  /// and comprehensive conversation functionality with real-time updates.
   Conversation? _conversation;
-  
-  /// Message list for display and interaction coordination.
-  /// 
-  /// Maintains message collection enabling real-time display, pagination management,
-  /// and comprehensive message interaction with proper state synchronization.
   List<Message> _messages = [];
-  
-  /// Loading state for initial message loading coordination.
-  /// 
-  /// Manages initial loading state enabling loading indicators, user feedback,
-  /// and comprehensive loading experience with proper state management.
   bool _isLoading = true;
-  
-  /// Sending state for message submission coordination.
-  /// 
-  /// Manages message sending state enabling send button coordination, user feedback,
-  /// and comprehensive sending experience with operation progress indication.
   bool _isSending = false;
-  
-  /// Pagination loading state for older message loading coordination.
-  /// 
-  /// Manages pagination loading enabling load more functionality, user feedback,
-  /// and comprehensive pagination experience with proper state management.
   bool _isLoadingMore = false;
-  
-  /// Pagination availability for older message loading coordination.
-  /// 
-  /// Determines pagination availability enabling load more functionality,
-  /// pagination triggering, and comprehensive message history access.
   bool _hasMoreMessages = true;
-  
-  /// Typing users list for typing indicator coordination.
-  /// 
-  /// Maintains typing user collection enabling typing indicator display,
-  /// user awareness, and comprehensive typing coordination with real-time updates.
   final List<String> _typingUsers = [];
-  
-  /// Reply target message for reply functionality coordination.
-  /// 
-  /// Stores reply target enabling reply functionality, context display,
-  /// and comprehensive reply coordination with proper message threading.
   Message? _replyToMessage;
-  
-  /// Editing state for message modification coordination.
-  /// 
-  /// Manages editing state enabling message editing functionality, UI updates,
-  /// and comprehensive editing coordination with proper state management.
   bool _isEditing = false;
-  
-  /// Editing message identifier for modification coordination.
-  /// 
-  /// Stores editing target enabling message modification, content updates,
-  /// and comprehensive editing functionality with proper message identification.
   String? _editingMessageId;
 
-  /// Chat state initialization with service setup and listener coordination.
-  /// 
-  /// Initializes chat state enabling messaging service integration, listener setup,
-  /// conversation loading, and comprehensive chat functionality through proper
-  /// lifecycle management and real-time coordination with user experience optimization.
-  /// 
-  /// **Initialization Process:**
-  /// - Messaging service and authentication repository acquisition through dependency injection
-  /// - Current user identification with authentication state coordination
-  /// - Initial conversation data setup with metadata coordination
-  /// - Listener setup for typing indicators, focus changes, and scroll behavior
-  /// - Conversation and message loading with real-time stream coordination
   @override
   void initState() {
     super.initState();
@@ -348,9 +183,11 @@ class _ChatViewState extends State<ChatView> {
     if (_conversation == null) {
       final conversation = await _messagingService.getConversation(widget.conversationId);
       if (conversation != null && mounted) {
-        if (mounted) setState(() {
-          _conversation = conversation;
-        });
+        if (mounted) {
+          setState(() {
+            _conversation = conversation;
+          });
+        }
       }
     }
   }
@@ -372,10 +209,12 @@ class _ChatViewState extends State<ChatView> {
       limit: 50,
     ).listen((messages) {
       if (mounted) {
-        if (mounted) setState(() {
-          _messages = messages;
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _messages = messages;
+            _isLoading = false;
+          });
+        }
         
         // Auto-scroll to bottom when new messages arrive
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -421,9 +260,11 @@ class _ChatViewState extends State<ChatView> {
     final content = _messageController.text.trim();
     if (content.isEmpty || _isSending) return;
 
-    if (mounted) setState(() {
-      _isSending = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isSending = true;
+      });
+    }
 
     try {
       if (_isEditing && _editingMessageId != null) {
@@ -458,99 +299,14 @@ class _ChatViewState extends State<ChatView> {
       }
     } finally {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isSending = false;
         });
       }
     }
   }
 
-  /// App bar title generation based on conversation data and user context.
-  /// 
-  /// Generates appropriate title enabling conversation identification, user context,
-  /// and comprehensive title display through conversation metadata analysis
-  /// with proper fallback handling and user experience optimization.
-  /// 
-  /// **Title Generation Features:**
-  /// - Conversation-specific title with metadata integration
-  /// - User context consideration with personalized display
-  /// - Loading state handling with appropriate placeholder display
-  /// - Fallback title coordination with proper error handling
-  /// 
-  /// Returns appropriate conversation title string for app bar display.
-  String _getAppBarTitle() {
-    if (_conversation == null) return 'Laddar...';
-    
-    if (_currentUserId == null) return _conversation!.title ?? 'Chatt';
-    
-    return _conversation!.getDisplayTitle(_currentUserId!);
-  }
 
-  /// App bar actions menu construction with conversation-specific options.
-  /// 
-  /// Constructs action menu enabling conversation management, user interaction,
-  /// and comprehensive chat functionality through context-specific menu options
-  /// with proper permission handling and feature coordination.
-  /// 
-  /// **Action Menu Features:**
-  /// - Group conversation actions with member management and information display
-  /// - Individual conversation actions with profile access and user interaction
-  /// - Common actions with message search and conversation clearing
-  /// - Permission-based feature display with proper access control
-  /// 
-  /// Returns action menu widget with conversation-specific functionality.
-  Widget _buildAppBarActions() {
-    if (_conversation == null || _currentUserId == null) return const SizedBox.shrink();
-    
-    return PopupMenuButton<String>(
-      onSelected: _handleMenuAction,
-      itemBuilder: (context) => [
-        if (_conversation!.isGroup) ...[
-          const PopupMenuItem<String>(
-            value: 'group_info',
-            child: ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('Grupinformation'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          const PopupMenuItem<String>(
-            value: 'add_participants',
-            child: ListTile(
-              leading: Icon(Icons.person_add),
-              title: Text('Lägg till medlemmar'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ] else ...[
-          const PopupMenuItem<String>(
-            value: 'user_profile',
-            child: ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Visa profil'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
-        const PopupMenuItem<String>(
-          value: 'search',
-          child: ListTile(
-            leading: Icon(Icons.search),
-            title: Text('Sök meddelanden'),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'clear_chat',
-          child: ListTile(
-            leading: Icon(Icons.delete_outline),
-            title: Text('Rensa chatt'),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ],
-    );
-  }
 
   /// Menu action handling with comprehensive conversation management coordination.
   /// 
@@ -826,7 +582,13 @@ class _ChatViewState extends State<ChatView> {
             ),
           ),
           IconButton(
-            onPressed: _isEditing ? _cancelEdit : _cancelReply,
+            onPressed: () {
+              if (_isEditing) {
+                _cancelEdit();
+              } else {
+                _cancelReply();
+              }
+            },
             icon: const Icon(Icons.close, size: 18),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             padding: EdgeInsets.zero,
@@ -1265,11 +1027,15 @@ class _ChatViewState extends State<ChatView> {
   /// - Error handling with user feedback and operation recovery
   /// - Loading state management with proper UI feedback and coordination
   Future<void> _loadMoreMessages() async {
-    if (_isLoadingMore || !_hasMoreMessages) return;
+    if (_isLoadingMore || !_hasMoreMessages) {
+      return;
+    }
     
-    if (mounted) setState(() {
-      _isLoadingMore = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoadingMore = true;
+      });
+    }
     
     try {
       // Use the oldest message's timestamp as the startAfter cursor
@@ -1286,7 +1052,7 @@ class _ChatViewState extends State<ChatView> {
       );
       
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           if (olderMessages.isEmpty) {
             _hasMoreMessages = false;
           } else {
@@ -1298,7 +1064,7 @@ class _ChatViewState extends State<ChatView> {
       }
     } catch (e) {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isLoadingMore = false;
         });
         _showInfoMessage('Kunde inte ladda fler meddelanden: $e');
@@ -1495,10 +1261,12 @@ class _ChatViewState extends State<ChatView> {
   /// - State management with proper reply coordination
   /// - Focus handling with input field activation
   void _replyToMessageMethod(Message message) {
-    if (mounted) setState(() {
-      _replyToMessage = message;
-      _messageFocusNode.requestFocus();
-    });
+    if (mounted) {
+      setState(() {
+        _replyToMessage = message;
+        _messageFocusNode.requestFocus();
+      });
+    }
   }
 
   /// Message editing activation with content coordination.
@@ -1514,12 +1282,14 @@ class _ChatViewState extends State<ChatView> {
   /// - Content loading with input field preparation
   /// - Focus handling with editing interface activation
   Future<void> _editMessage(Message message) async {
-    if (mounted) setState(() {
-      _isEditing = true;
-      _editingMessageId = message.id;
-      _messageController.text = message.content;
-      _messageFocusNode.requestFocus();
-    });
+    if (mounted) {
+      setState(() {
+        _isEditing = true;
+        _editingMessageId = message.id;
+        _messageController.text = message.content;
+        _messageFocusNode.requestFocus();
+      });
+    }
   }
 
   /// Message copying with clipboard integration coordination.
@@ -1557,9 +1327,11 @@ class _ChatViewState extends State<ChatView> {
   /// - UI reset with proper interface restoration
   /// - User control with cancellation functionality
   void _cancelReply() {
-    if (mounted) setState(() {
-      _replyToMessage = null;
-    });
+    if (mounted) {
+      setState(() {
+        _replyToMessage = null;
+      });
+    }
   }
 
   /// Editing cancellation with state cleanup and input restoration coordination.
@@ -1573,11 +1345,13 @@ class _ChatViewState extends State<ChatView> {
   /// - Input restoration with content clearing
   /// - User control with cancellation functionality
   void _cancelEdit() {
-    if (mounted) setState(() {
-      _isEditing = false;
-      _editingMessageId = null;
-      _messageController.clear();
-    });
+    if (mounted) {
+      setState(() {
+        _isEditing = false;
+        _editingMessageId = null;
+        _messageController.clear();
+      });
+    }
   }
 
   /// Message deletion with confirmation and data management coordination.

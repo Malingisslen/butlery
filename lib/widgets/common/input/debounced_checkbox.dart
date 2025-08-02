@@ -50,11 +50,15 @@ class _DebouncedCheckboxState extends State<DebouncedCheckbox> {
   }
 
   void _handleChanged(bool? newValue) {
-    if (newValue == null || widget.onChanged == null) return;
+    if (newValue == null || widget.onChanged == null) {
+      return;
+    }
     
-    if (mounted) setState(() {
-      _currentValue = newValue;
-    });
+    if (mounted) {
+      setState(() {
+        _currentValue = newValue;
+      });
+    }
 
     // Cancel previous timer if it exists
     _debounceTimer?.cancel();

@@ -196,9 +196,11 @@ class _AddUnifiedShoppingItemDialogState
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          if (mounted) setState(() {
-                            _selectedUnit = value;
-                          });
+                          if (mounted) {
+                            setState(() {
+                              _selectedUnit = value;
+                            });
+                          }
                         }
                       },
                     ),
@@ -235,9 +237,11 @@ class _AddUnifiedShoppingItemDialogState
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
-                    if (mounted) setState(() {
-                      _selectedCategory = value;
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _selectedCategory = value;
+                      });
+                    }
                   }
                 },
               ),

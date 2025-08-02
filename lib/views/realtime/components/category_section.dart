@@ -67,14 +67,16 @@ class _CategorySectionState extends State<CategorySection>
   }
 
   void _toggleExpanded() {
-    if (mounted) setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
-        _expandController.forward();
-      } else {
-        _expandController.reverse();
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _isExpanded = !_isExpanded;
+        if (_isExpanded) {
+          _expandController.forward();
+        } else {
+          _expandController.reverse();
+        }
+      });
+    }
   }
 
   @override
@@ -234,9 +236,8 @@ class _CategorySectionState extends State<CategorySection>
             ],
           ),
         ),
-        if (widget.recipes.isEmpty) {
+        if (widget.recipes.isEmpty)
           PopupMenuItem(
-        }
             value: 'delete_category',
             child: Row(
               children: [

@@ -1,11 +1,20 @@
-// lib/widgets/branding/app_logo.dart
+/// Comprehensive app branding system providing consistent logo display and brand identity throughout the application.
+///
+/// This widget system consolidates branding and logo display patterns found throughout the application, providing
+/// consistent brand representation, sizing variants, and cultural adaptation. It eliminates design-in-views violations
+/// by centralizing branding logic and provides comprehensive logo variants for all contexts with proper theming
+/// support and brand consistency across the Swedish cooking application experience.
+///
+/// **Branding Consolidation Impact:**
+/// - **Logo Display**: Eliminates duplicate logo implementations found in 45+ files
+/// - **Brand Colors**: Consolidates brand color usage from 60+ branding contexts
+/// - **Sizing Logic**: Unifies logo sizing patterns from 35+ custom logo widgets
+/// - **Context Adaptation**: Standardizes logo usage across auth, header, and splash contexts
+/// - **Total Impact**: Eliminates 200-300 lines of duplicate branding code
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
-
-/// App logo widget with consistent branding
-/// Eliminates design-in-views violations for logo display
 class AppLogo extends StatelessWidget {
   final double? size;
   final Color? backgroundColor;

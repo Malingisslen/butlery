@@ -1,14 +1,6 @@
 // lib/models/realtime/realtime_metadata.dart
 
 /// Focused module for realtime metadata management
-/// 
-/// This module handles ONLY realtime tracking metadata:
-/// - Edit tracking (timestamps, edit counts, last editor)
-/// - Activity status management
-/// - Metadata updates and validation
-/// - Edit session management
-/// 
-/// ❌ DOES NOT CONTAIN: Recipe content, serialization, participant management
 class RealtimeMetadata {
   
   // ===== EDIT TRACKING =====

@@ -1,139 +1,72 @@
-/// Comprehensive color palette system providing unified color management for the Butlery cooking application.
-///
-/// This color system implements a sophisticated palette designed specifically for cooking applications,
-/// combining Material 3 design principles with culinary-inspired colors that enhance the recipe management
-/// and cooking preparation experience. The palette includes warm, earth-toned colors that reflect the
-/// comfort and warmth of cooking while maintaining accessibility compliance and Swedish cultural preferences.
-///
-/// **Architecture Integration:**
-/// - Implements Material 3 ColorScheme specification with cooking-specific customizations
-/// - Provides comprehensive color categories for all application scenarios
-/// - Maintains accessibility compliance with WCAG 2.1 AA contrast ratios
-/// - Supports both light and dark theme variants with consistent color relationships
-/// - Integrates with Swedish cultural color preferences and design traditions
-///
-/// **Color Categories:**
-/// - **Primary Palette**: Core brand colors reflecting culinary warmth and trustworthiness
-/// - **Semantic Colors**: Status colors for success, warning, error, and informational states
-/// - **Text Colors**: Hierarchical text colors optimized for recipe content readability
-/// - **Specialized Colors**: Cooking-specific colors for ratings, metadata, and content states
-/// - **Material 3 Schemes**: Complete ColorScheme implementations for theme integration
-///
-/// **Design Philosophy:**
-/// The color palette draws inspiration from natural cooking elements - warm blues from kitchen ceramics,
-/// earth tones from natural ingredients, and gold accents from culinary achievements. All colors are
-/// tested for accessibility and kitchen environment readability.
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Using primary colors
-/// Container(
-///   color: AppColors.primaryBlue,
-///   child: Text('Recept', style: TextStyle(color: AppColors.cardWhite)),
-/// );
-/// 
-/// // Using semantic colors
-/// Icon(Icons.star, color: AppColors.starGold);
-/// Text('Sparat!', style: TextStyle(color: AppColors.success));
-/// 
-/// // Using Material 3 ColorScheme
-/// Theme(
-///   data: ThemeData(colorScheme: AppColors.lightColorScheme),
-///   child: MyWidget(),
-/// );
-/// ```
+/// Color palette system for the Butlery cooking application.
 
 import 'package:flutter/material.dart';
 
-/// Comprehensive color palette system implementing unified color management for cooking-focused user interface design.
-///
-/// This class serves as the central repository for all color definitions used throughout the Butlery application,
-/// providing a carefully curated palette that combines Material 3 design principles with culinary-inspired
-/// colors. The system ensures visual consistency, accessibility compliance, and cultural appropriateness
-/// for Swedish users while maintaining the warmth and approachability expected in cooking applications.
-///
-/// **Color Philosophy:**
-/// - **Culinary Inspiration**: Colors drawn from natural cooking elements and kitchen environments
-/// - **Accessibility First**: All colors meet WCAG 2.1 AA contrast requirements for readability
-/// - **Cultural Adaptation**: Color psychology appropriate for Swedish users and cooking traditions
-/// - **Material 3 Compliance**: Full integration with Material 3 design system specifications
-/// - **Semantic Clarity**: Clear color roles for different UI states and content types
-///
-/// **Performance Optimization:**
-/// Colors are defined as compile-time constants for optimal performance and memory efficiency.
+/// Central repository for all color definitions in the Butlery application.
 class AppColors {
-  AppColors._(); // Private constructor to prevent instantiation
+  AppColors._();
 
-  // ===== PRIMARY COLOR PALETTE =====
+  // Primary colors
+  static const Color primaryBlue = Color(0xFF4E6F8B);
+  static const Color darkNavy = Color(0xFF2C3E50);
+  static const Color backgroundBeige = Color(0xFFEFE9E3);
+  static const Color cardWhite = Color(0xFFFFFFFF);
+  
+  // Text colors
+  static const Color textDark = Color(0xFF2C3E50);
+  static const Color textMedium = Color(0xFF6B7280);
+  static const Color textLight = Color(0xFF9CA3AF);
+  static const Color textTertiary = Color(0xFFD1D5DB);
+  static const Color textSecondary = textMedium;
+  
+  // Semantic colors
+  static const Color accent = Color(0xFFA7C4D9);
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color error = Color(0xFFEF4444);
+  static const Color errorContainer = Color(0xFFFEF2F2);
+  static const Color onErrorContainer = Color(0xFF991B1B);
+  static const Color successContainer = Color(0xFFF0FDF4);
+  static const Color onSuccessContainer = Color(0xFF166534);
+  static const Color warningContainer = Color(0xFFFFFBEB);
+  static const Color onWarningContainer = Color(0xFF92400E);
+  static const Color infoContainer = Color(0xFFF0F9FF);
+  static const Color onInfoContainer = Color(0xFF1E40AF);
+  static const Color info = Color(0xFF3B82F6);
+  static const Color divider = Color(0xFFE5E7EB);
+  
+  // Specialized colors
+  static const Color recipeMeta = Color(0xFF757575);
+  static const Color sectionHeader = Color(0xFF374151);
+  static const Color starGold = Color(0xFFFBBF24);
+  
+  // Alias colors
+  static const Color accentColor = accent;
+  static const Color warningColor = warning;
+  static const Color backgroundColor = backgroundBeige;
+  static const Color cardColor = cardWhite;
+  static const Color dividerColor = divider;
+  static const Color starColor = starGold;
+  static const Color backgroundTint = Color(0xFFF8F9FA);
+  static const Color textPrimary = textDark;
+  static const Color overlay = Color(0x80000000);
+  static const Color transparent = Colors.transparent;
 
-  static const Color primaryBlue = Color(0xFF4E6F8B); // Updated primary blue per user request
-  static const Color darkNavy = Color(0xFF2C3E50); // Bottom navigation
-  static const Color backgroundBeige = Color(0xFFEFE9E3); // Main background
-  static const Color cardWhite = Color(0xFFFFFFFF); // White cards
-  
-  // ===== TEXT COLORS =====
-  
-  static const Color textDark = Color(0xFF2C3E50); // Dark text
-  static const Color textMedium = Color(0xFF6B7280); // Medium gray text
-  static const Color textLight = Color(0xFF9CA3AF); // Light gray text
-  static const Color textTertiary = Color(0xFFD1D5DB); // Tertiary gray text
-  static const Color textSecondary = textMedium; // Alias for backwards compatibility
-  
-  // ===== SEMANTIC COLORS =====
-  
-  static const Color accent = Color(0xFFA7C4D9); // Accent blue for buttons
-  static const Color success = Color(0xFF10B981); // Green for success
-  static const Color warning = Color(0xFFF59E0B); // Yellow for warnings
-  static const Color error = Color(0xFFEF4444); // Red for errors
-  static const Color errorContainer = Color(0xFFFEF2F2); // Light red container
-  static const Color onErrorContainer = Color(0xFF991B1B); // Dark red on error container
-  static const Color successContainer = Color(0xFFF0FDF4); // Light green container  
-  static const Color onSuccessContainer = Color(0xFF166534); // Dark green on success container
-  static const Color warningContainer = Color(0xFFFFFBEB); // Light yellow container
-  static const Color onWarningContainer = Color(0xFF92400E); // Dark yellow on warning container
-  static const Color infoContainer = Color(0xFFF0F9FF); // Light blue container
-  static const Color onInfoContainer = Color(0xFF1E40AF); // Dark blue on info container
-  static const Color info = Color(0xFF3B82F6); // Blue for info
-  static const Color divider = Color(0xFFE5E7EB); // Dividers
-  
-  // ===== SPECIALIZED COLORS =====
-  
-  static const Color recipeMeta = Color(0xFF757575); // Colors.grey[600] - better contrast for metadata
-  static const Color sectionHeader = Color(0xFF374151); // For "Middagar", "Lunch" etc
-  static const Color starGold = Color(0xFFFBBF24); // Gold yellow for stars
-  
-  // ===== ALIAS COLORS =====
-  
-  static const Color accentColor = accent; // Alias for accent
-  static const Color warningColor = warning; // Alias for warning
-  static const Color backgroundColor = backgroundBeige; // Alias for background
-  static const Color cardColor = cardWhite; // Alias for card white
-  static const Color dividerColor = divider; // Alias for divider
-  static const Color starColor = starGold; // Alias for star color
-  static const Color backgroundTint = Color(0xFFF8F9FA); // Light background tint
-  static const Color textPrimary = textDark; // Alias for primary text
-  static const Color overlay = Color(0x80000000); // Semi-transparent overlay
-  static const Color transparent = Colors.transparent; // Transparent color
+  // Neutral colors
+  static const Color neutralLight = Color(0xFFFFFFFF);
+  static const Color neutralMedium = Color(0xFF9CA3AF);
+  static const Color neutralDark = Color(0xFF1F2937);
 
-  // ===== NEUTRAL COLORS =====
+  // Shared recipe colors
+  static const Color sharedRecipeText = Color(0xFF9CA3AF);
+  static const Color sharedRecipeIcon = Color(0xFFD1D5DB);
+  static const Color sharedRecipeBackground = Color(0xFFF9FAFB);
   
-  static const Color neutralLight = Color(0xFFFFFFFF); // Light neutral (white)
-  static const Color neutralMedium = Color(0xFF9CA3AF); // Medium neutral (gray)
-  static const Color neutralDark = Color(0xFF1F2937); // Dark neutral (dark gray)
-
-  // ===== SHARED RECIPE COLORS =====
-
-  /// Colors for recipes that have already been shared with friends
-  static const Color sharedRecipeText = Color(0xFF9CA3AF); // Light gray for text
-  static const Color sharedRecipeIcon = Color(0xFFD1D5DB); // Even lighter for icons
-  static const Color sharedRecipeBackground = Color(0xFFF9FAFB); // Very light background
-  
-  // Aliases for shared recipe colors
   static const Color sharedRecipeTextColor = sharedRecipeText;
   static const Color sharedRecipeIconColor = sharedRecipeIcon;
   static const Color sharedRecipeBackgroundColor = sharedRecipeBackground;
 
-  // ===== MATERIAL 3 COLOR SCHEME =====
+  // Material 3 ColorScheme
 
   static const ColorScheme lightColorScheme = ColorScheme(
     brightness: Brightness.light,
@@ -201,67 +134,27 @@ class AppColors {
 
 
 
-  // ===== LEGACY COMPATIBILITY COLORS =====
-  // Additional colors for backwards compatibility
-
-  /// Shadow color for elevation effects
+  // Legacy compatibility colors
   static const Color shadowColor = Color(0x1A000000);
-
-  /// Light background color
   static const Color backgroundLight = backgroundBeige;
-
-  /// Secondary purple color for special highlights
   static const Color secondaryPurple = Color(0xFF9C27B0);
-
-  /// Background dark color
   static const Color backgroundDark = neutralDark;
-  static const Color surfaceDark = Color(0xFF374151); // Dark surface color
+  static const Color surfaceDark = Color(0xFF374151);
 
-  // ===== NEW COMPONENT COMPATIBILITY =====
-  // Properties expected by new social platform components
-
-  /// Primary color (alias for primaryBlue)
+  // Component compatibility colors
   static const Color primary = primaryBlue;
-  
-  /// Secondary color (alias for accent)
   static const Color secondary = accent;
-  
-  /// Surface color (alias for backgroundBeige)
   static const Color surface = backgroundBeige;
-  
-  /// Surface variant (alias for cardWhite)
   static const Color surfaceVariant = cardWhite;
-  
-  /// On surface color (alias for textDark)
   static const Color onSurface = textDark;
-  
-  /// Primary container (existing in ColorScheme but need static access)
   static const Color primaryContainer = Color(0xFFE3F2FD);
-  
-  /// Secondary container (existing in ColorScheme but need static access) 
   static const Color secondaryContainer = Color(0xFFE1F5FE);
-  
-  /// On primary container (alias for darkNavy)
   static const Color onPrimaryContainer = darkNavy;
-  
-  /// On primary color (alias for cardWhite)
   static const Color onPrimary = cardWhite;
-  
-  /// Outline color (alias for divider)
   static const Color outline = divider;
-  
-  /// Shadow color (alias for shadowColor)
   static const Color shadow = shadowColor;
-  
-  /// On success color (cardWhite for contrast)
   static const Color onSuccess = cardWhite;
-  
-  /// On error color (cardWhite for contrast)
   static const Color onError = cardWhite;
-  
-  /// On warning color (darkNavy for contrast)
   static const Color onWarning = darkNavy;
-  
-  /// On info color (cardWhite for contrast)
   static const Color onInfo = cardWhite;
 }

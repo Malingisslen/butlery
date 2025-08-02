@@ -366,9 +366,11 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
       HapticFeedback.lightImpact();
     }
 
-    if (mounted) setState(() {
-      _isExpanded = !_isExpanded;
-    });
+    if (mounted) {
+      setState(() {
+        _isExpanded = !_isExpanded;
+      });
+    }
 
     if (_isExpanded) {
       _animationController.forward();
@@ -445,8 +447,10 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
       HapticFeedback.lightImpact();
     }
 
-    if (mounted) setState(() {
-      _shouldLoad = true;
-    });
+    if (mounted) {
+      setState(() {
+        _shouldLoad = true;
+      });
+    }
   }
 }

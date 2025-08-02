@@ -19,6 +19,7 @@ class MenuRecipeSelectionDialog extends StatefulWidget {
     required this.categoryName,
   });
 
+  @override
   State<MenuRecipeSelectionDialog> createState() => _MenuRecipeSelectionDialogState();
 }
 
@@ -26,6 +27,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
   final Set<String> _selectedRecipeIds = {};
   String _searchQuery = '';
 
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ServiceLocator.get<RecipeListViewModel>(),
@@ -108,9 +110,11 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
         SearchFilterWidget.searchOnly(
           searchQuery: _searchQuery,
           onSearchChanged: (query) {
-            if (mounted) setState(() {
-              _searchQuery = query;
-            });
+            if (mounted) {
+              setState(() {
+                _searchQuery = query;
+              });
+            }
           },
           searchHint: 'Sök recept att lägga till...',
           autofocus: true,
@@ -124,9 +128,11 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           child: filteredRecipes.isEmpty && _searchQuery.isNotEmpty
               ? StateWidget.noSearchResults(
                   onAction: () {
-                    if (mounted) setState(() {
-                      _searchQuery = '';
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _searchQuery = '';
+                      });
+                    }
                   },
                 )
               : ListView.builder(
@@ -139,13 +145,15 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                       recipe: unifiedRecipe,
                       isSelected: isSelected,
                       onSelectionChanged: (selected) {
-                        if (mounted) setState(() {
-                          if (selected) {
-                            _selectedRecipeIds.add(unifiedRecipe.id);
-                          } else {
-                            _selectedRecipeIds.remove(unifiedRecipe.id);
-                          }
-                        });
+                        if (mounted) {
+                          setState(() {
+                            if (selected) {
+                              _selectedRecipeIds.add(unifiedRecipe.id);
+                            } else {
+                              _selectedRecipeIds.remove(unifiedRecipe.id);
+                            }
+                          });
+                        }
                       },
                     );
                   },
@@ -180,9 +188,11 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           const Spacer(),
           TextButton(
             onPressed: () {
-              if (mounted) setState(() {
-                _selectedRecipeIds.clear();
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedRecipeIds.clear();
+                });
+              }
             },
             child: const Text('Rensa val'),
           ),
@@ -213,6 +223,7 @@ class MenuRecipeListItem extends StatelessWidget {
     required this.onSelectionChanged,
   });
 
+  @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: AppDimensions.listItemPadding,

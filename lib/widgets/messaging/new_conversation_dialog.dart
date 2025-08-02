@@ -56,7 +56,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       final friends = _friendsService.friends;
       
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _friends = friends;
           _filteredFriends = friends;
           _isLoading = false;
@@ -64,7 +64,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       }
     } catch (e) {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isLoading = false;
         });
       }
@@ -73,16 +73,18 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
 
   void _filterFriends() {
     final query = _searchController.text.toLowerCase();
-    if (mounted) setState(() {
-      if (query.isEmpty) {
-        _filteredFriends = _friends;
-      } else {
-        _filteredFriends = _friends.where((friend) {
-          return friend.displayName.toLowerCase().contains(query) ||
-                 friend.email.toLowerCase().contains(query);
-        }).toList();
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (query.isEmpty) {
+          _filteredFriends = _friends;
+        } else {
+          _filteredFriends = _friends.where((friend) {
+            return friend.displayName.toLowerCase().contains(query) ||
+                   friend.email.toLowerCase().contains(query);
+          }).toList();
+        }
+      });
+    }
   }
 
   @override
@@ -195,13 +197,15 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           subtitle: Text(friend.email),
           value: isSelected,
           onChanged: (bool? selected) {
-            if (mounted) setState(() {
-              if (selected == true) {
-                _selectedFriendIds.add(friend.uid);
-              } else {
-                _selectedFriendIds.remove(friend.uid);
-              }
-            });
+            if (mounted) {
+              setState(() {
+                if (selected == true) {
+                  _selectedFriendIds.add(friend.uid);
+                } else {
+                  _selectedFriendIds.remove(friend.uid);
+                }
+              });
+            }
           },
           secondary: CircleAvatar(
             child: Text(
@@ -221,9 +225,11 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   Future<void> _createConversation() async {
     if (_selectedFriendIds.isEmpty || _isCreating) return;
 
-    if (mounted) setState(() {
-      _isCreating = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isCreating = true;
+      });
+    }
 
     try {
       String? conversationId;
@@ -274,7 +280,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       }
     } finally {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isCreating = false;
         });
       }

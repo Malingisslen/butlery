@@ -54,9 +54,11 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       body: PageView.builder(
         controller: _pageController,
         onPageChanged: (index) {
-          if (mounted) setState(() {
-            _currentIndex = index;
-          });
+          if (mounted) {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
         },
         itemCount: widget.imageUrls.length,
         itemBuilder: (context, index) {

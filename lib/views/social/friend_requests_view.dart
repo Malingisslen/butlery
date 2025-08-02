@@ -59,30 +59,36 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   }
 
   void _clearSelection() {
-    if (mounted) setState(() {
-      _selectedIncoming.clear();
-      _selectedSent.clear();
-    });
+    if (mounted) {
+      setState(() {
+        _selectedIncoming.clear();
+        _selectedSent.clear();
+      });
+    }
   }
 
   void _onIncomingSelectionChanged(String requestId, bool selected) {
-    if (mounted) setState(() {
-      if (selected) {
-        _selectedIncoming.add(requestId);
-      } else {
-        _selectedIncoming.remove(requestId);
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (selected) {
+          _selectedIncoming.add(requestId);
+        } else {
+          _selectedIncoming.remove(requestId);
+        }
+      });
+    }
   }
 
   void _onSentSelectionChanged(String requestId, bool selected) {
-    if (mounted) setState(() {
-      if (selected) {
-        _selectedSent.add(requestId);
-      } else {
-        _selectedSent.remove(requestId);
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (selected) {
+          _selectedSent.add(requestId);
+        } else {
+          _selectedSent.remove(requestId);
+        }
+      });
+    }
   }
 
   @override

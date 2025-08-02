@@ -76,7 +76,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
                   .length;
 
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _pendingRequestsCount = friendsViewModel.pendingRequestsCount;
           _sharedItemsCount = newSharedItems;
         });
@@ -396,6 +396,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Dispose of resources
+    super.dispose();
   }
 }

@@ -6,8 +6,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -18,9 +16,7 @@ class ChatActionHandler {
   ChatActionHandler({
     required this.conversationId,
     required this.context,
-  }) {
-    _messagingService = ServiceLocator.get<MessagingService>();
-  }
+  });
 
   /// Handle menu actions from chat app bar
   Future<void> handleMenuAction(String action) async {

@@ -165,12 +165,14 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       subtitle: const Text('Dela denna meny med valda vänner'),
       value: _enableSocialSharing,
       onChanged: _isLoading ? null : (value) {
-        if (mounted) setState(() {
-          _enableSocialSharing = value;
-          if (!value) {
-            _selectedFriendIds.clear();
-          }
-        });
+        if (mounted) {
+          setState(() {
+            _enableSocialSharing = value;
+            if (!value) {
+              _selectedFriendIds.clear();
+            }
+          });
+        }
       },
     );
   }
@@ -221,9 +223,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   Future<void> _saveMenu() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (mounted) setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       // FIXED: Use actual ViewModel save logic
@@ -255,9 +259,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       }
     } catch (e) {
       if (mounted) {
-        if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fel vid sparande: $e'),

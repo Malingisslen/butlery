@@ -272,6 +272,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Dispose of resources
+    super.dispose();
   }
 }
