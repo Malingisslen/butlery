@@ -33,12 +33,18 @@ import 'package:butlery/core/di/modules/content_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
 import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
+import 'package:butlery/core/di/modules/performance_module.dart';
 
 // Application provider
 import 'package:butlery/core/providers/application_provider.dart';
 
 // Deep link handling
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
+
+// Performance optimization
+import 'package:butlery/services/performance/startup_optimization_manager.dart';
+import 'package:butlery/services/performance/performance_monitoring_service.dart';
+import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 
 // All services accessed through DI system - no direct imports needed
 
@@ -68,8 +74,18 @@ Future<void> main() async {
       debugPrint('🚀 Starting Butlery with modular system');
     }
 
+    // Initialize startup optimization
+    final startupManager = StartupOptimizationManager();
+    startupManager.registerStandardServices();
+    
+    // Start optimized initialization
+    await startupManager.startOptimizedInitialization();
+
     // Initialize modular system
     await _initializeModularSystem();
+    
+    // Wait for critical services
+    await startupManager.waitForCriticalServices();
 
     // Start the application
     runApp(const ButleryApp());
@@ -96,6 +112,7 @@ Future<void> _initializeModularSystem() async {
     SocialModule(),
     MessagingModule(),
     CollaborationModule(),
+    PerformanceModule(),
   ];
 
   // Create bootstrap stages
@@ -115,6 +132,23 @@ Future<void> _initializeModularSystem() async {
 
   // Initialize global service locator
   ServiceLocator.initialize(ApplicationBootstrap().container);
+  
+  // Initialize performance services
+  try {
+    final perfMonitoring = ServiceLocator.get<PerformanceMonitoringService>();
+    perfMonitoring.initialize();
+    
+    final cacheManager = ServiceLocator.get<IntelligentCacheManager>();
+    await cacheManager.initialize();
+    
+    if (kDebugMode) {
+      debugPrint('✅ Performance services initialized');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('⚠️ Performance services initialization failed: $e');
+    }
+  }
 
   if (kDebugMode) {
     debugPrint('✅ Modular system initialized successfully');
