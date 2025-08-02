@@ -234,8 +234,9 @@ class _CategorySectionState extends State<CategorySection>
             ],
           ),
         ),
-        if (widget.recipes.isEmpty)
+        if (widget.recipes.isEmpty) {
           PopupMenuItem(
+        }
             value: 'delete_category',
             child: Row(
               children: [

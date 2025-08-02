@@ -91,16 +91,16 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          conversation!.title,
+          conversation?.title ?? '',
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
-        if (conversation!.participantCount > 2)
+        if (conversation != null && conversation!.participantIds.length > 2)
           Text(
-            '${conversation!.participantCount} deltagare',
-            style: TextStyle(
+            '${conversation!.participantIds.length} deltagare',
+            style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
               fontWeight: FontWeight.normal,

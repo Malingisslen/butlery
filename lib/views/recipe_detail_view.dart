@@ -193,6 +193,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   @override
   void initState() {
     super.initState();
+    super.initState();
     _actions.initializeActions(context);
   }
 

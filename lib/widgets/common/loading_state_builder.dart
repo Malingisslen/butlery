@@ -137,7 +137,6 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     this.skeletonItemCount = 5,
   });
 
-  @override
   Widget build(BuildContext context) {
     // Error state - highest priority
     if (error != null) {
@@ -444,7 +443,6 @@ class LoadingStateBuilderUtils {
       onErrorRetry: onErrorRetry,
     );
   }
-  @override
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  

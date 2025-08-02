@@ -26,7 +26,6 @@ class ChatMessageStream extends StatefulWidget {
 }
 
 class _ChatMessageStreamState extends State<ChatMessageStream> {
-  late final MessagingService _messagingService;
   final ScrollController _scrollController = ScrollController();
   final List<Message> _messages = [];
   bool _isLoading = true;

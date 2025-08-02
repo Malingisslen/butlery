@@ -131,14 +131,17 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           _buildCommentForm(socialViewModel),
           
           // Comments list
-          if (socialViewModel.isLoadingComments)
+          if (socialViewModel.isLoadingComments) {
             StateWidget.loading(message: 'Laddar kommentarer...')
-          else if (socialViewModel.commentsError != null)
+          }
+          else if (socialViewModel.commentsError != null) {
             StateWidget.error(
+          }
               message: socialViewModel.commentsError!,
             )
-          else if (socialViewModel.comments.isEmpty)
+          else if (socialViewModel.comments.isEmpty) {
             Padding(
+          }
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: StateWidget.empty(
                 title: 'Inga kommentarer än',
@@ -419,8 +422,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   return Column(
                     children: [
                       _buildCommentItem(reply, socialViewModel, isReply: true),
-                      if (reply != comment.replies.last)
+                      if (reply != comment.replies.last) {
                         const Divider(
+                      }
                           height: AppDimensions.borderWidthThin,
                           color: AppColors.divider,
                         ),

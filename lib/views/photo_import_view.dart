@@ -98,7 +98,6 @@ class PhotoImportView extends StatelessWidget {
   /// - Content presentation with preview functionality and text extraction display
   /// 
   /// Returns complete photo import interface with comprehensive functionality and OCR processing.
-  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ServiceLocator.get<PhotoImportViewModel>(),
@@ -232,7 +231,6 @@ class _PhotoImportViewContent extends StatelessWidget {
   /// - Error handling with user feedback and recovery options
   /// 
   /// Returns complete photo import interface with comprehensive functionality and OCR processing.
-  @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PhotoImportViewModel>();
 
@@ -386,7 +384,6 @@ class _PhotoImportViewContent extends StatelessWidget {
       ),
     );
   }
-  @override
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
