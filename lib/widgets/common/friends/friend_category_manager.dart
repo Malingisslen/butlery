@@ -9,7 +9,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-
 /// Friend Category Manager
 /// 
 /// Handles ONLY interactive friend category management with state.
@@ -483,8 +482,6 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

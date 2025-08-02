@@ -123,7 +123,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// - Typing indicator coordination with user presence tracking and automatic cleanup
 /// - Conversation interaction state management with loading states and comprehensive error handling
 /// - Swedish localized error messages and user feedback coordination
-class ChatViewModel extends ChangeNotifier with StreamManagementMixin with ErrorHandlingMixin {
+class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
   

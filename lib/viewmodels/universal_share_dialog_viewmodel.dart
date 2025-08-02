@@ -92,6 +92,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive universal sharing dialog ViewModel providing advanced multi-content social distribution through service integration.
 ///
@@ -105,7 +106,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Cross-service integration with social recipe and shopping services for content distribution
 /// - Complete sharing state management with progress tracking and comprehensive error handling
 /// - Swedish localized error messages and user feedback coordination throughout sharing operations
-class UniversalShareDialogViewModel extends ChangeNotifier {
+class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagementMixin {
   final SocialRecipeService _socialRecipeService;
   final UnifiedShoppingService _shoppingService;
 
@@ -357,7 +358,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-
 /// Bottom sheet for loading a saved menu
 ///
 /// This bottom sheet allows users to browse and load their saved menus,
@@ -315,8 +314,6 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

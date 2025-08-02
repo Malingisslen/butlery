@@ -8,12 +8,13 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart' show RecipeOperationResult;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Personal Recipe ViewModel
 /// 
 /// Handles ONLY personal recipe operations and management.
 /// This includes creation, editing, deletion, and content management for personal recipes.
-class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {
   final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'PersonalRecipeViewModel';
@@ -325,7 +326,7 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

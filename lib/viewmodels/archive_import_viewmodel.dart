@@ -76,6 +76,7 @@ import 'package:butlery/services/search_service.dart';
 import 'package:butlery/data/archived_recipes.dart' as archive;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Time-based filtering criteria for archived recipe filtering and search optimization.
 /// 
@@ -104,7 +105,7 @@ enum TimeFilter {
 /// - Batch import operations with validation and comprehensive error handling
 /// - Performance optimization through intelligent caching and filtering strategies
 /// - Swedish localized error messages and user feedback coordination
-class ArchiveImportViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class ArchiveImportViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
 
@@ -750,7 +751,7 @@ class ArchiveImportViewModel extends ChangeNotifier with ErrorHandlingMixin {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

@@ -138,6 +138,7 @@
 import 'dart:async';
 import 'package:butlery/core/utils/service_optimizer.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Mixin for adding performance monitoring to services
 /// 
@@ -146,7 +147,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Error rate monitoring
 /// - Resource usage tracking
 /// - Health check capabilities
-mixin PerformanceMonitoringMixin {
+mixin PerformanceMonitoringMixin on StreamManagementMixin {
   final ServiceOptimizer _optimizer = ServiceOptimizer();
   
   /// Service name for monitoring (override in implementing class)
@@ -369,7 +370,7 @@ mixin PerformanceMonitoringMixin {
 }
 
 /// Enhanced performance monitoring for critical services
-mixin CriticalServiceMonitoringMixin on PerformanceMonitoringMixin {
+mixin CriticalServiceMonitoringMixin on PerformanceMonitoringMixin, StreamManagementMixin {
   @override
   bool get isMonitoringEnabled => true; // Always enabled for critical services
 
@@ -427,12 +428,5 @@ mixin CriticalServiceMonitoringMixin on PerformanceMonitoringMixin {
 
     return checks;
   }
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
-  }
+  
 }

@@ -17,7 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/unified/unified_friends_service_enhanced.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 
 /// User behavior pattern data
@@ -148,7 +148,7 @@ class IntelligentCacheManager {
   
   // Services (lazy loaded)
   UnifiedRecipeService? _recipeService;
-  UnifiedFriendsServiceEnhanced? _friendsService;
+  UnifiedFriendsService? _friendsService;
   PermissionService? _permissionService;
   
   IntelligentCacheManager() : _behaviorCache = JsonCacheFactory.custom('intelligent_cache_behavior');
@@ -280,7 +280,7 @@ class IntelligentCacheManager {
     if (friendIds.isEmpty) return;
     
     try {
-      _friendsService ??= ServiceLocator.get<UnifiedFriendsServiceEnhanced>();
+      _friendsService ??= ServiceLocator.get<UnifiedFriendsService>();
       _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
       
       // Get friends' recent recipes (would need to implement this method)

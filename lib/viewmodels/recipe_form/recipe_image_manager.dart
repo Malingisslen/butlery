@@ -9,9 +9,10 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Manages image operations for recipe forms
-class RecipeImageManager extends ChangeNotifier {
+class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   final StorageService _storageService;
   // final ImagePickerService _imagePickerService; // Currently unused
 
@@ -288,7 +289,7 @@ class RecipeImageManager extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

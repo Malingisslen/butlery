@@ -735,7 +735,6 @@ const String _codeDocumentationJson = r'''
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
     super.dispose();
   }
 }

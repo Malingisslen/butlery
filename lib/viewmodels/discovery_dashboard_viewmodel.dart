@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Manages the unified content discovery dashboard with trending content and social features.
 ///
@@ -36,7 +37,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// await viewModel.initialize();
 /// // Access trending content via trendingRecipes, friendActivity, etc.
 /// ```
-class DiscoveryDashboardViewModel extends ChangeNotifier {
+class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMixin {
   late final UnifiedRecipeService _recipeService;
   late final RecommendationService _recommendationService;
   late final RecipeDiscoveryService _discoveryService;
@@ -1196,7 +1197,7 @@ class DiscoveryDashboardViewModel extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

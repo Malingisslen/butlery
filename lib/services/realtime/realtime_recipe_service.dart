@@ -522,7 +522,7 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

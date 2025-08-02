@@ -13,7 +13,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// 
 /// Handles ONLY real-time collaborative editing operations.
 /// This includes real-time sessions, live edits, active editor tracking, and connection management.
-class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin with ErrorHandlingMixin {
+class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'RealtimeRecipeViewModel';
@@ -415,7 +415,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin 
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

@@ -27,7 +27,7 @@ import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_social_sharing_repository.dart';
 
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_friends_service_enhanced.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
@@ -48,7 +48,7 @@ class SocialModule implements DIModule {
     UserRepository,
     UserService,
     FriendsRepository,
-    UnifiedFriendsServiceEnhanced,
+    UnifiedFriendsService,
     CommentsRepository,
     RatingsRepository,
     SocialRecipeRepository,
@@ -90,8 +90,8 @@ class SocialModule implements DIModule {
         FirebaseFriendsRepository(authRepository: container<AuthRepository>()),
       );
       
-      container.registerSingleton<UnifiedFriendsServiceEnhanced>(
-        UnifiedFriendsServiceEnhanced(
+      container.registerSingleton<UnifiedFriendsService>(
+        UnifiedFriendsService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
         ),
@@ -162,7 +162,7 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<SocialMenuOperations>(
         () => SocialMenuOperations(
           firestore: container<FirestoreRepository>().firestore,
-          friendsService: container<UnifiedFriendsServiceEnhanced>(),
+          friendsService: container<UnifiedFriendsService>(),
         ),
       );
       
@@ -201,7 +201,7 @@ class SocialModule implements DIModule {
       }
 
       // Initialize Enhanced UnifiedFriendsService
-      final friendsService = container<UnifiedFriendsServiceEnhanced>();
+      final friendsService = container<UnifiedFriendsService>();
       await friendsService.initialize();
       
       if (kDebugMode) {
@@ -246,7 +246,7 @@ class SocialModule implements DIModule {
         'UserRepository': container<UserRepository>(),
         'UserService': container<UserService>(),
         'FriendsRepository': container<FriendsRepository>(),
-        'UnifiedFriendsServiceEnhanced': container<UnifiedFriendsServiceEnhanced>(),
+        'UnifiedFriendsService': container<UnifiedFriendsService>(),
         'CommentsRepository': container<CommentsRepository>(),
         'RatingsRepository': container<RatingsRepository>(),
         'SocialRecipeRepository': container<SocialRecipeRepository>(),

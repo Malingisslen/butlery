@@ -10,7 +10,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-
 /// Standalone widget for displaying and managing recipe comments
 class RecipeDetailComments extends StatefulWidget {
   final SocialRecipeViewModel socialViewModel;
@@ -526,8 +525,6 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

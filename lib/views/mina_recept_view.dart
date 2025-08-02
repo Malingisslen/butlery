@@ -84,7 +84,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-
 /// Comprehensive personal recipe management view providing advanced recipe browsing through multi-provider architecture.
 ///
 /// Manages complete personal recipe interface enabling recipe collection management, social integration,
@@ -764,8 +763,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

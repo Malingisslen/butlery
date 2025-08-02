@@ -15,8 +15,6 @@ import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/widgets/common/indicators/emoji_avatar.dart';
 import 'package:butlery/widgets/common/indicators/member_count_badge.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-
-
 class GroupInvitationsView extends StatelessWidget {
   const GroupInvitationsView({super.key});
 
@@ -385,8 +383,6 @@ class GroupInvitationsView extends StatelessWidget {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

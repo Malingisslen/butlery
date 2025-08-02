@@ -32,6 +32,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_re
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Firebase authentication service with comprehensive state management and error handling.
 ///
 /// This service provides complete authentication functionality using Firebase Auth with sophisticated
@@ -65,7 +66,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 ///   }
 /// });
 /// ```
-class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
+class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin, StreamManagementMixin {
   /// Repository handling all Firebase Auth communication and operations.
   final auth_repo.AuthRepository _authRepository;
 
@@ -243,7 +244,7 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }
