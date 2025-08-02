@@ -17,11 +17,15 @@ echo "Make sure you have:"
 echo "- Backed up your repository"
 echo "- No uncommitted changes"
 echo ""
-read -p "Are you sure you want to continue? (yes/no): " confirm
 
-if [ "$confirm" != "yes" ]; then
-    echo "Operation cancelled."
-    exit 1
+# Non-interactive mode for automation
+echo "Running in non-interactive mode..."
+
+echo ""
+echo "Checking for existing backup branch..."
+if git show-ref --verify --quiet refs/heads/backup-before-sensitive-removal; then
+    echo "Backup branch already exists. Deleting it..."
+    git branch -D backup-before-sensitive-removal
 fi
 
 echo ""
@@ -29,16 +33,20 @@ echo "Creating backup branch..."
 git branch backup-before-sensitive-removal
 
 echo ""
-echo "Removing google-services.json from history..."
+echo "Current commit count: $(git rev-list --all --count)"
+
+echo ""
+echo "Removing sensitive files from history using BFG-like approach..."
+# Remove google-services.json
 git filter-branch --force --index-filter \
   'git rm --cached --ignore-unmatch android/app/google-services.json' \
-  --prune-empty --tag-name-filter cat -- --all
+  --prune-empty --tag-name-filter cat -- --all 2>&1 | tail -20
 
 echo ""
 echo "Removing GoogleService-Info.plist from history..."
 git filter-branch --force --index-filter \
   'git rm --cached --ignore-unmatch ios/Runner/GoogleService-Info.plist' \
-  --prune-empty --tag-name-filter cat -- --all
+  --prune-empty --tag-name-filter cat -- --all 2>&1 | tail -20
 
 echo ""
 echo "Cleaning up..."
