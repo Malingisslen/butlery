@@ -1,30 +1,4 @@
-/// Comprehensive Firebase Analytics service providing sophisticated event tracking and user behavior analysis.
-///
-/// This singleton service provides advanced analytics functionality using Firebase Analytics as the backend,
-/// tracking user interactions, application performance, error events, and business metrics throughout the
-/// application. It implements intelligent event categorization, user journey tracking, and comprehensive
-/// error monitoring to enable data-driven decision making and continuous application improvement.
-///
-/// **Architecture Integration:**
-/// - Extends [BaseService] for consistent service patterns and error handling
-/// - Uses [SingletonServiceMixin] for standardized singleton implementation and lifecycle management
-/// - Integrates with Firebase Analytics for comprehensive event tracking and user analytics
-/// - Coordinates with ContentDetectorService for content-specific analytics and insights
-/// - Provides navigation tracking through FirebaseAnalyticsObserver for user journey analysis
-///
-/// **Analytics Features:**
-/// - **Event Tracking**: Comprehensive tracking of user interactions and application events
-/// - **Error Monitoring**: Sophisticated error tracking with detailed context and categorization
-/// - **User Journey**: Complete user navigation and behavior flow analysis
-/// - **Performance Metrics**: Application performance tracking and optimization insights
-/// - **Custom Events**: Flexible custom event tracking for business-specific metrics
-/// - **Debug Control**: Intelligent analytics collection control based on build configuration
-///
-/// **Privacy and Compliance:**
-/// - **Debug Mode Control**: Automatic analytics disabling in debug mode for development privacy
-/// - **User Consent**: Analytics collection respects user privacy preferences and consent
-/// - **Data Minimization**: Efficient event tracking minimizing unnecessary data collection
-/// - **Secure Transmission**: All analytics data transmitted securely through Firebase infrastructure
+/// Firebase Analytics service for tracking user interactions and app metrics
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
@@ -32,33 +6,25 @@ import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsService> {
-  // Private constructor for singleton
   AnalyticsService._internal();
   
-  // Factory constructor using SingletonServiceMixin
   factory AnalyticsService() => SingletonServiceMixin.createSingleton(() => AnalyticsService._internal());
   
   @override
   String get serviceName => 'AnalyticsService';
 
-  // Firebase Analytics instance
   late final FirebaseAnalytics _analytics;
-
-  // Observer för navigation tracking
   FirebaseAnalyticsObserver? _observer;
 
-  /// Initialisera analytics
   @override
   Future<void> initialize() async {
-    await super.initialize(); // Call BaseService initialization
+    await super.initialize();
     
     await executeServiceOperation(
       () async {
         _analytics = FirebaseAnalytics.instance;
         _observer = FirebaseAnalyticsObserver(analytics: _analytics);
 
-        // Sätt grundläggande properties
-        // Analytics är alltid aktiverat i release mode, inaktiverat i debug mode
         await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
 
         debugPrint(
@@ -71,15 +37,10 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     );
   }
 
-  /// Hämta navigation observer för MaterialApp
   FirebaseAnalyticsObserver? get observer => _observer;
-
-  /// Hämta Firebase Analytics instance
   FirebaseAnalytics get analytics => _analytics;
 
-  // ==================== IMPORT & EXTRAKTION TRACKING ====================
-
-  /// Logga när en import startar
+  /// Log import start event
   Future<void> logImportStarted({
     required String source,
     String? platform,
@@ -89,7 +50,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
         await _analytics.logEvent(
           name: 'import_started',
           parameters: {
-            'source': source, // 'url', 'text', 'photo', 'archive', 'share'
+            'source': source,
             if (platform != null) 'platform': platform,
             'timestamp': DateTime.now().toIso8601String(),
           },
@@ -101,7 +62,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     );
   }
 
-  /// Logga lyckad import
+  /// Log successful import
   Future<void> logImportSuccess({
     required String source,
     String? platform,
@@ -122,7 +83,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Logga misslyckad extraktion från sociala medier
+  /// Log extraction error
   Future<void> logExtractionError({
     required String url,
     required SourcePlatform platform,
@@ -130,7 +91,6 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     String? errorType,
   }) async {
     try {
-      // Kategorisera error-typer för bättre analys
       final String category = _categorizeError(error);
 
       await _analytics.logEvent(
@@ -154,7 +114,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Logga när användare väljer manuell kopiering som fallback
+  /// Log manual copy fallback usage
   Future<void> logManualCopyFallback({
     required SourcePlatform platform,
     String? reason,
@@ -173,9 +133,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  // ==================== RECEPT-HÄNDELSER ====================
-
-  /// Logga när ett recept skapas
+  /// Log recipe creation
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
@@ -194,9 +152,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Logga när ett recept delas
+  /// Log recipe sharing
   Future<void> logRecipeShared({
-    required String method, // 'text', 'json', 'link'
+    required String method,
   }) async {
     try {
       await _analytics.logEvent(
@@ -211,7 +169,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// NY! Logga när ett recept markeras som tillagat
+  /// Log when recipe is marked as cooked
   Future<void> logRecipeCooked({
     required String recipeId,
     required String recipeTitle,
@@ -227,24 +185,23 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
           'recipe_title': recipeTitle,
           'meal_type': mealType,
           'is_first_time':
-              isFirstTime ? 'true' : 'false', // Konvertera bool till string
+              isFirstTime ? 'true' : 'false',
           if (daysSinceLastCooked != null)
             'days_since_last': daysSinceLastCooked,
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
 
-      // Logga också user property för att spåra aktiva användare
       await setUserProperties(hasCooked: true);
     } catch (e) {
       debugPrint('Analytics fel: $e');
     }
   }
 
-  /// Logga när veckomeny genereras
+  /// Log menu generation
   Future<void> logMenuGenerated({
     required int recipeCount,
-    required String method, // 'manual', 'prompt'
+    required String method,
   }) async {
     try {
       await _analytics.logEvent(
@@ -260,7 +217,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Logga när ett recept tas bort
+  /// Log recipe deletion
   Future<void> logRecipeDeleted({
     required String recipeId,
     required String recipeTitle,
@@ -293,9 +250,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  // ==================== APP-HÄNDELSER ====================
-
-  /// Logga när användare loggar in
+  /// Log user login
   Future<void> logLogin({required String method}) async {
     try {
       await _analytics.logLogin(loginMethod: method);
@@ -304,7 +259,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Logga när användare registrerar sig
+  /// Log user sign up
   Future<void> logSignUp({required String method}) async {
     try {
       await _analytics.logSignUp(signUpMethod: method);
@@ -313,7 +268,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Logga när användare loggar ut
+  /// Log user logout
   Future<void> logLogout() async {
     try {
       await _analytics.logEvent(name: 'logout');
@@ -322,9 +277,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  // ==================== HJÄLPMETODER ====================
-
-  /// Kategorisera fel för bättre analytics
+  /// Categorize error for analytics
   String _categorizeError(String error) {
     final errorLower = error.toLowerCase();
 
@@ -345,7 +298,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Sätt user properties för segmentering
+  /// Set user properties for segmentation
   Future<void> setUserProperties({
     int? recipeCount,
     bool? hasUsedImport,
@@ -354,7 +307,6 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   }) async {
     try {
       if (recipeCount != null) {
-        // Kategorisera användare baserat på antal recept
         String userType = 'new';
         if (recipeCount > 50) {
           userType = 'power_user';
@@ -397,7 +349,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     }
   }
 
-  /// Hämta recipe count range för analytics
+  /// Get recipe count range for analytics
   String _getRecipeCountRange(int count) {
     if (count == 0) return '0';
     if (count <= 5) return '1-5';

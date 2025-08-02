@@ -1,28 +1,14 @@
-/// Social module for social platform services.
-///
-/// This module handles all social functionality including:
-/// - User profiles and management
-/// - Friend relationships and groups
-/// - Social recipe sharing and interactions
-/// - Comments and ratings systems
-/// - Social sharing capabilities
-/// - Deep link handling for social features
-///
-/// Depends on Core Module and Content Module for foundational services.
 library;
 
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
-// Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
-// Dependencies from Core Module
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
-// Social repositories and interfaces
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
@@ -40,30 +26,16 @@ import 'package:butlery/repositories/firebase/firebase_connectivity_repository.d
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_social_sharing_repository.dart';
 
-// Social services
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_friends_service_enhanced.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 
-// Note: ViewModels are NOT registered in DI - they are created directly by views
-
-// Import dependency modules
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 
-/// Social module providing social platform services.
-///
-/// This module handles all social functionality and depends on both
-/// Core and Content modules. It provides:
-/// - User profile management
-/// - Friend relationships and social groups
-/// - Social recipe sharing and interactions
-/// - Comments and ratings on content
-/// - Social sharing capabilities
-/// - Deep link handling for social features
 class SocialModule implements DIModule {
   @override
   String get name => 'Social';
@@ -76,7 +48,7 @@ class SocialModule implements DIModule {
     UserRepository,
     UserService,
     FriendsRepository,
-    UnifiedFriendsService,
+    UnifiedFriendsServiceEnhanced,
     CommentsRepository,
     RatingsRepository,
     SocialRecipeRepository,
@@ -90,7 +62,7 @@ class SocialModule implements DIModule {
   ];
 
   @override
-  int get priority => 20; // After Core (1) and Content (10)
+  int get priority => 20;
 
   @override
   Future<void> configure(GetIt container) async {
@@ -99,9 +71,6 @@ class SocialModule implements DIModule {
     }
 
     try {
-      // ==================== USER MANAGEMENT ====================
-      
-      // User repository and service
       container.registerSingleton<UserRepository>(
         FirebaseUserRepository(authRepository: container<AuthRepository>()),
       );
@@ -117,31 +86,25 @@ class SocialModule implements DIModule {
         debugPrint('✅ [SocialModule] User services registered');
       }
 
-      // ==================== FRIENDS SYSTEM ====================
-      
-      // Friends repository
       container.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: container<AuthRepository>()),
       );
       
-      // Unified friends service
-      container.registerSingleton<UnifiedFriendsService>(UnifiedFriendsService(
-        firestoreRepository: container<FirestoreRepository>(),
-        authRepository: container<AuthRepository>(),
-      ));
+      container.registerSingleton<UnifiedFriendsServiceEnhanced>(
+        UnifiedFriendsServiceEnhanced(
+          firestoreRepository: container<FirestoreRepository>(),
+          authRepository: container<AuthRepository>(),
+        ),
+      );
       
       if (kDebugMode) {
         debugPrint('✅ [SocialModule] Friends services registered');
       }
 
-      // ==================== SOCIAL INTERACTIONS ====================
-      
-      // Comments repository
       container.registerSingleton<CommentsRepository>(
         FirebaseCommentsRepository(authRepository: container<AuthRepository>()),
       );
       
-      // Ratings repository
       container.registerSingleton<RatingsRepository>(
         FirebaseRatingsRepository(authRepository: container<AuthRepository>()),
       );
@@ -199,7 +162,7 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<SocialMenuOperations>(
         () => SocialMenuOperations(
           firestore: container<FirestoreRepository>().firestore,
-          friendsService: container<UnifiedFriendsService>(),
+          friendsService: container<UnifiedFriendsServiceEnhanced>(),
         ),
       );
       
@@ -237,8 +200,8 @@ class SocialModule implements DIModule {
         debugPrint('✅ [SocialModule] UserService initialized');
       }
 
-      // Initialize UnifiedFriendsService
-      final friendsService = container<UnifiedFriendsService>();
+      // Initialize Enhanced UnifiedFriendsService
+      final friendsService = container<UnifiedFriendsServiceEnhanced>();
       await friendsService.initialize();
       
       if (kDebugMode) {
@@ -283,7 +246,7 @@ class SocialModule implements DIModule {
         'UserRepository': container<UserRepository>(),
         'UserService': container<UserService>(),
         'FriendsRepository': container<FriendsRepository>(),
-        'UnifiedFriendsService': container<UnifiedFriendsService>(),
+        'UnifiedFriendsServiceEnhanced': container<UnifiedFriendsServiceEnhanced>(),
         'CommentsRepository': container<CommentsRepository>(),
         'RatingsRepository': container<RatingsRepository>(),
         'SocialRecipeRepository': container<SocialRecipeRepository>(),

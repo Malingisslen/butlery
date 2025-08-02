@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
+import 'package:butlery/services/performance/optimized_image_loader.dart';
 
-/// Recipe image widget for cards and detail views
 class RecipeImageWidget extends StatefulWidget {
   final List<String> imageUrls;
   final ImageConfig config;
@@ -23,7 +23,6 @@ class RecipeImageWidget extends StatefulWidget {
     this.heroTag,
   });
 
-  /// Factory constructor for recipe card
   factory RecipeImageWidget.card({
     Key? key,
     required List<String> imageUrls,
@@ -50,7 +49,6 @@ class RecipeImageWidget extends StatefulWidget {
     );
   }
 
-  /// Factory constructor for recipe detail
   factory RecipeImageWidget.detail({
     Key? key,
     required List<String> imageUrls,
@@ -98,7 +96,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Remove unused theme variable
     final dimensions = widget.config.getDimensions();
     final hasImages = widget.imageUrls.isNotEmpty;
 
@@ -113,7 +110,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     );
   }
 
-  /// Build image content based on config type
   Widget _buildImageContent() {
     switch (widget.config.type) {
       case ImageType.recipeCard:
@@ -125,38 +121,23 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     }
   }
 
-  /// Build recipe card image
   Widget _buildRecipeCard() {
-    // Remove unused theme variable
     final primaryImage = widget.imageUrls.first;
 
     return Stack(
       children: [
-        // Main image
-        ClipRRect(
-          borderRadius: widget.config.effectiveBorderRadius,
-          child: ImageComponents.buildOptimizedCachedImage(
-            imageUrl: primaryImage,
-            config: widget.config,
-            fit: BoxFit.cover,
-            onTap: widget.onTap,
-            placeholder: ImageComponents.buildLoadingPlaceholder(
-              config: widget.config,
-            ),
-            errorWidget: ImageComponents.buildErrorPlaceholder(
-              config: widget.config,
-            ),
-          ),
+        OptimizedImageLoader.recipeCard(
+          imageUrl: primaryImage,
+          config: widget.config,
+          onTap: widget.onTap,
         ),
 
-        // Multiple image indicator
         if (widget.config.showMultipleIndicator && widget.imageUrls.length > 1)
           ImageComponents.buildMultipleIndicator(
             imageCount: widget.imageUrls.length,
             config: widget.config,
           ),
 
-        // Gradient overlay for better text readability
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -176,13 +157,10 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     );
   }
 
-  /// Build recipe detail carousel
   Widget _buildRecipeDetail() {
-    // Remove unused theme variable
 
     return Stack(
       children: [
-        // Image carousel
         ClipRRect(
           borderRadius: widget.config.effectiveBorderRadius,
           child: widget.imageUrls.length == 1
@@ -190,7 +168,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
               : _buildImageCarousel(),
         ),
 
-        // Navigation dots
         if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
           ImageComponents.buildNavigationDots(
             currentIndex: _currentIndex,
@@ -199,7 +176,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
             onDotTap: _onDotTap,
           ),
 
-        // Image counter
         if (widget.config.showImageCounter && widget.imageUrls.length > 1)
           ImageComponents.buildImageCounter(
             currentIndex: _currentIndex,
@@ -210,21 +186,13 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     );
   }
 
-  /// Build single image
   Widget _buildSingleImage(String imageUrl) {
-    Widget image = ImageComponents.buildOptimizedCachedImage(
+    Widget image = OptimizedImageLoader.recipeDetail(
       imageUrl: imageUrl,
       config: widget.config,
-      fit: BoxFit.cover,
-      placeholder: ImageComponents.buildLoadingPlaceholder(
-        config: widget.config,
-      ),
-      errorWidget: ImageComponents.buildErrorPlaceholder(
-        config: widget.config,
-      ),
+      onTap: null,
     );
 
-    // Wrap with hero if needed
     if (widget.heroTag != null) {
       image = Hero(
         tag: widget.heroTag!,
@@ -232,7 +200,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       );
     }
 
-    // Add tap handler
     if (widget.onTap != null || widget.onImageTap != null) {
       image = GestureDetector(
         onTap: () {
@@ -249,14 +216,15 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     return image;
   }
 
-  /// Build image carousel
   Widget _buildImageCarousel() {
     return PageView.builder(
       controller: _pageController,
       onPageChanged: (index) {
-        if (mounted) setState(() {
-          _currentIndex = index;
-        });
+        if (mounted) {
+          setState(() {
+            _currentIndex = index;
+          });
+        }
       },
       itemCount: widget.imageUrls.length,
       itemBuilder: (context, index) {
@@ -268,23 +236,16 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
             widget.onTap?.call();
             widget.onImageTap?.call(index);
           },
-          child: ImageComponents.buildOptimizedCachedImage(
+          child: OptimizedImageLoader.recipeDetail(
             imageUrl: widget.imageUrls[index],
             config: widget.config,
-            fit: BoxFit.cover,
-            placeholder: ImageComponents.buildLoadingPlaceholder(
-              config: widget.config,
-            ),
-            errorWidget: ImageComponents.buildErrorPlaceholder(
-              config: widget.config,
-            ),
+            onTap: null,
           ),
         );
       },
     );
   }
 
-  /// Build empty state
   Widget _buildEmptyState() {
     return ImageComponents.buildPlaceholder(
       config: widget.config,
@@ -302,7 +263,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     );
   }
 
-  /// Handle dot tap
   void _onDotTap(int index) {
     if (widget.config.enableHapticFeedback) {
       HapticFeedback.lightImpact();
@@ -316,7 +276,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 }
 
-/// Image carousel widget for standalone use
 class ImageCarouselWidget extends StatefulWidget {
   final List<String> imageUrls;
   final ImageConfig config;
@@ -363,15 +322,16 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
       height: dimensions.height,
       child: Stack(
         children: [
-          // Image carousel
-          ClipRRect(
+            ClipRRect(
             borderRadius: widget.config.effectiveBorderRadius,
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
-                if (mounted) setState(() {
-                  _currentIndex = index;
-                });
+                if (mounted) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                }
                 widget.onPageChanged?.call(index);
               },
               itemCount: widget.imageUrls.length,
@@ -399,8 +359,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
             ),
           ),
 
-          // Navigation dots
-          if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
+            if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
             ImageComponents.buildNavigationDots(
               currentIndex: _currentIndex,
               totalImages: widget.imageUrls.length,
@@ -408,8 +367,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
               onDotTap: _onDotTap,
             ),
 
-          // Image counter
-          if (widget.config.showImageCounter && widget.imageUrls.length > 1)
+            if (widget.config.showImageCounter && widget.imageUrls.length > 1)
             ImageComponents.buildImageCounter(
               currentIndex: _currentIndex,
               totalImages: widget.imageUrls.length,
@@ -420,7 +378,6 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
     );
   }
 
-  /// Handle dot tap
   void _onDotTap(int index) {
     if (widget.config.enableHapticFeedback) {
       HapticFeedback.lightImpact();
