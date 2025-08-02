@@ -432,50 +432,56 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
   void _toggleCategory(
       FriendCategory category, UnifiedFriendsService service) {
-    if (mounted) setState(() {
-      if (_selectedCategories.contains(category.id)) {
-        _selectedCategories.remove(category.id);
-        for (final friendId in category.friendUserIds) {
-          _selectedFriends.remove(friendId);
-        }
-        AppLogger.info('🏷️ Kategori "${category.name}" avmarkerad');
-      } else {
-        if (widget.allowMultipleCategories || _selectedCategories.isEmpty) {
-          _selectedCategories.add(category.id);
-          _selectedFriends.addAll(category.friendUserIds);
-          AppLogger.info(
-              '🏷️ Kategori "${category.name}" vald (${category.friendCount} vänner)');
+    if (mounted) {
+      setState(() {
+        if (_selectedCategories.contains(category.id)) {
+          _selectedCategories.remove(category.id);
+          for (final friendId in category.friendUserIds) {
+            _selectedFriends.remove(friendId);
+          }
+          AppLogger.info('🏷️ Kategori "${category.name}" avmarkerad');
         } else {
-          _selectedCategories.clear();
-          _selectedFriends.clear();
-          _selectedCategories.add(category.id);
-          _selectedFriends.addAll(category.friendUserIds);
-          AppLogger.info(
-              '🏷️ Kategori "${category.name}" vald (ersatt tidigare val)');
+          if (widget.allowMultipleCategories || _selectedCategories.isEmpty) {
+            _selectedCategories.add(category.id);
+            _selectedFriends.addAll(category.friendUserIds);
+            AppLogger.info(
+                '🏷️ Kategori "${category.name}" vald (${category.friendCount} vänner)');
+          } else {
+            _selectedCategories.clear();
+            _selectedFriends.clear();
+            _selectedCategories.add(category.id);
+            _selectedFriends.addAll(category.friendUserIds);
+            AppLogger.info(
+                '🏷️ Kategori "${category.name}" vald (ersatt tidigare val)');
+          }
         }
-      }
-    });
+      });
+    }
     widget.onSelectionChanged(_selectedFriends.toList());
   }
 
   void _toggleFriend(String friendId) {
-    if (mounted) setState(() {
-      if (_selectedFriends.contains(friendId)) {
-        _selectedFriends.remove(friendId);
-        AppLogger.info('👤 Vän avmarkerad');
-      } else {
-        _selectedFriends.add(friendId);
-        AppLogger.info('👤 Vän vald');
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (_selectedFriends.contains(friendId)) {
+          _selectedFriends.remove(friendId);
+          AppLogger.info('👤 Vän avmarkerad');
+        } else {
+          _selectedFriends.add(friendId);
+          AppLogger.info('👤 Vän vald');
+        }
+      });
+    }
     widget.onSelectionChanged(_selectedFriends.toList());
   }
 
   void _clearAllSelections() {
-    if (mounted) setState(() {
-      _selectedCategories.clear();
-      _selectedFriends.clear();
-    });
+    if (mounted) {
+      setState(() {
+        _selectedCategories.clear();
+        _selectedFriends.clear();
+      });
+    }
     widget.onSelectionChanged([]);
     AppLogger.info('🗑️ Alla val rensade');
   }
@@ -483,6 +489,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Dispose of resources
+    super.dispose();
   }
 }

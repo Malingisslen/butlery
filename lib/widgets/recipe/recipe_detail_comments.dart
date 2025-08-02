@@ -56,9 +56,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           // Header with expand/collapse
           InkWell(
             onTap: () {
-              if (mounted) setState(() {
-                _isCommentsExpanded = !_isCommentsExpanded;
-              });
+              if (mounted) {
+                setState(() {
+                  _isCommentsExpanded = !_isCommentsExpanded;
+                });
+              }
 
               // Load comments when expanding for the first time
               if (_isCommentsExpanded && !widget.socialViewModel.hasComments) {
@@ -525,6 +527,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Dispose of resources
+    super.dispose();
   }
 }

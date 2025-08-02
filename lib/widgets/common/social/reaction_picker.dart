@@ -160,9 +160,11 @@ class _ReactionPickerState extends State<ReactionPicker>
   void _expandPicker() {
     if (_isExpanded) return;
     
-    if (mounted) setState(() {
-      _isExpanded = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isExpanded = true;
+      });
+    }
     
     _showOverlay();
     _expandController.forward();
@@ -173,7 +175,7 @@ class _ReactionPickerState extends State<ReactionPicker>
     
     _expandController.reverse().then((_) {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isExpanded = false;
         });
         _removeOverlay();

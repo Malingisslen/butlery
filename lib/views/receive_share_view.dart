@@ -214,10 +214,12 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
     await Future.delayed(const Duration(milliseconds: 500));
 
     final result = await _detector.detectContent(widget.content);
-    if (mounted) setState(() {
-      _detectionResult = result;
-      _isProcessing = false;
-    });
+    if (mounted) {
+      setState(() {
+        _detectionResult = result;
+        _isProcessing = false;
+      });
+    }
 
     // Logga att en delning mottagits
     _analytics.logImportStarted(
@@ -306,12 +308,16 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
   /// - Error handling with user feedback and recovery options
   /// - Analytics integration with extraction monitoring and error reporting
   Future<void> _extractFromSocialMedia() async {
-    if (_detectionResult.extractedUrl == null) return;
+    if (_detectionResult.extractedUrl == null) {
+      return;
+    }
 
-    if (mounted) setState(() {
-      _isExtracting = true;
-      _extractionError = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isExtracting = true;
+        _extractionError = null;
+      });
+    }
 
     await safeExecute(
       () async {
@@ -349,10 +355,12 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
             );
 
             if (mounted) {
-              if (mounted) setState(() {
-                _extractionError = errorMessage;
-                _isExtracting = false;
-              });
+              if (mounted) {
+                setState(() {
+                  _extractionError = errorMessage;
+                  _isExtracting = false;
+                });
+              }
             }
           }
         }
@@ -369,10 +377,12 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
           errorType: 'exception',
         );
 
-        if (mounted) setState(() {
-          _extractionError = 'Ett fel uppstod: ${e.toString()}';
-          _isExtracting = false;
-        });
+        if (mounted) {
+          setState(() {
+            _extractionError = 'Ett fel uppstod: ${e.toString()}';
+            _isExtracting = false;
+          });
+        }
       }
     });
   }

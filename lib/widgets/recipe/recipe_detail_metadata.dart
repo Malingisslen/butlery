@@ -265,6 +265,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Dispose of resources
+    super.dispose();
   }
 }

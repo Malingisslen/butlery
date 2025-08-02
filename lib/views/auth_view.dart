@@ -595,7 +595,7 @@ class _AuthViewState extends State<AuthView> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text(AppStrings.resetPassword),
+            title: const Text(AppStrings.resetPassword),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -617,11 +617,11 @@ class _AuthViewState extends State<AuthView> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(AppStrings.cancel),
+                child: const Text(AppStrings.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text(AppStrings.send),
+                child: const Text(AppStrings.send),
               ),
             ],
           ),

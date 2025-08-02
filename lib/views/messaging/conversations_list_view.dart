@@ -70,23 +70,27 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _onSearchChanged() {
-    if (mounted) setState(() {
-      _searchQuery = _searchController.text.trim().toLowerCase();
-      _filterConversations();
-    });
+    if (mounted) {
+      setState(() {
+        _searchQuery = _searchController.text.trim().toLowerCase();
+        _filterConversations();
+      });
+    }
   }
 
   void _loadConversations() {
     if (_currentUserId == null) {
-      if (mounted) setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       return;
     }
 
     _messagingService.getMyConversations().listen((conversations) {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _allConversations = conversations;
           _filterConversations();
           _isLoading = false;

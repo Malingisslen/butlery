@@ -6,8 +6,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Optimized message stream with real-time updates and pagination
@@ -34,7 +32,6 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   @override
   void initState() {
     super.initState();
-    _messagingService = ServiceLocator.get<MessagingService>();
     _initializeMessageStream();
   }
 
@@ -52,7 +49,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       final messages = <Message>[];
       
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _messages.clear();
           _messages.addAll(messages);
           _isLoading = false;
@@ -67,7 +64,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     } catch (e) {
       AppLogger.error('Failed to initialize message stream', e);
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isLoading = false;
           _error = 'Ett fel uppstod';
         });
@@ -91,7 +88,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       final messages = <Message>[];
       
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _messages.clear();
           _messages.addAll(messages);
           _error = null;
@@ -100,7 +97,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     } catch (e) {
       AppLogger.error('Failed to refresh messages', e);
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _error = 'Ett fel uppstod';
         });
       }

@@ -142,9 +142,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
-        if (mounted) setState(() {
-          _currentTabIndex = _tabController.index;
-        });
+        if (mounted) {
+          setState(() {
+            _currentTabIndex = _tabController.index;
+          });
+        }
       }
     });
 
@@ -155,9 +157,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         final tabIndex = args['tabIndex'] as int;
         if (tabIndex >= 0 && tabIndex < 3) {
           _tabController.animateTo(tabIndex);
-          if (mounted) setState(() {
-            _currentTabIndex = tabIndex;
-          });
+          if (mounted) {
+            setState(() {
+              _currentTabIndex = tabIndex;
+            });
+          }
         }
       }
     });
@@ -170,9 +174,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   void _onSearchChanged(String query) {
-    if (mounted) setState(() {
-      _searchQuery = query;
-    });
+    if (mounted) {
+      setState(() {
+        _searchQuery = query;
+      });
+    }
     final viewModel = context.read<FriendsViewModel>();
     viewModel.updateSearch(query);
   }

@@ -222,9 +222,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   /// Select a list
   void _selectList(String listId) {
-    if (mounted) setState(() {
-      _selectedListId = listId;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedListId = listId;
+      });
+    }
     widget.onListSelected?.call();
   }
 
@@ -248,9 +250,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         );
 
         if (success) {
-          if (mounted) setState(() {
-            _selectedListId = _viewModel.activeList?.id;
-          });
+          if (mounted) {
+            setState(() {
+              _selectedListId = _viewModel.activeList?.id;
+            });
+          }
         }
       }
     }
@@ -270,9 +274,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     );
 
     if (confirmed) {
-      if (mounted) setState(() {
-        _isAddingToList = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isAddingToList = true;
+        });
+      }
 
       try {
         final success = await viewModel.addItemsToList(selectedList.id, menuItems);
@@ -291,7 +297,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         }
       } finally {
         if (mounted) {
-          if (mounted) setState(() {
+          setState(() {
             _isAddingToList = false;
           });
         }

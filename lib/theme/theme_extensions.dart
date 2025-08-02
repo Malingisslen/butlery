@@ -1,71 +1,10 @@
-/// Comprehensive theme extensions system providing compatibility layer and enhanced property access for the Butlery cooking application.
-///
-/// This extension system implements a sophisticated compatibility and enhancement layer that bridges gaps
-/// between existing theme properties and new component requirements throughout the cooking application.
-/// It provides seamless property mapping, static access patterns, and enhanced theme integration that
-/// maintains backward compatibility while supporting modern component architecture and Swedish design preferences.
-///
-/// **Architecture Integration:**
-/// - Provides compatibility layer between existing theme classes and new component requirements
-/// - Implements static access patterns for enhanced theme property retrieval and usage
-/// - Maintains backward compatibility while supporting modern Material 3 component architecture
-/// - Integrates seamlessly with existing color, dimension, and typography systems
-/// - Supports enhanced theme property organization and developer experience improvements
-///
-/// **Extension Categories:**
-/// - **AppColors Extensions**: Enhanced color property access with semantic mapping and static access
-/// - **AppDimensions Extensions**: Improved dimension property retrieval with consistent naming patterns
-/// - **Theme Properties Wrapper**: Unified static access layer for all theme properties and values
-/// - **Compatibility Mapping**: Seamless integration between old and new component property requirements
-/// - **Enhanced Access Patterns**: Improved developer experience with consistent property access methods
-///
-/// **Design Philosophy:**
-/// The theme extensions reflect the evolution and refinement of the cooking application's design system
-/// with seamless compatibility, enhanced developer experience, and consistent property access that
-/// supports complex cooking workflows while maintaining design system integrity and performance.
-///
-/// **Key Features:**
-/// - Seamless compatibility layer that bridges existing and new theme property requirements
-/// - Static access patterns that enhance developer experience and code readability
-/// - Consistent property mapping that maintains design system integrity and visual consistency
-/// - Performance optimization through efficient property access and minimal runtime overhead
-/// - Enhanced theme integration that supports modern component architecture patterns
-/// - Cultural adaptation with property mappings appropriate for Swedish cooking application requirements
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Enhanced static access to theme properties
-/// Container(
-///   color: ThemeProperties.primary,
-///   padding: EdgeInsets.all(ThemeProperties.spacingM),
-///   child: RecipeContent(),
-/// );
-/// 
-/// // Extension-based property access
-/// Text(
-///   'Köttbullar med gräddsås',
-///   style: ThemeProperties.titleLarge,
-/// );
-/// 
-/// // Seamless integration with existing theme system
-/// Card(
-///   color: ThemeProperties.surfaceVariant,
-///   child: RecipeCard(),
-/// );
-/// 
-/// // Compatible access patterns for modern components
-/// BorderRadius.circular(ThemeProperties.radiusM);
-/// ```
+/// Theme extensions providing compatibility layer and enhanced property access.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-/// Enhanced AppColors extension providing additional color property access and semantic mapping for modern component architecture.
-///
-/// This extension enhances the AppColors class with additional static properties that provide seamless
-/// access to color values using modern naming conventions while maintaining compatibility with existing
-/// color definitions. It bridges the gap between traditional color naming and Material 3 semantic color roles.
+/// Enhanced AppColors extension with additional color property access.
 extension AppColorsExtension on AppColors {
   // ===== ENHANCED COLOR PROPERTIES =====
   
@@ -112,11 +51,7 @@ extension AppColorsExtension on AppColors {
   static Color get onInfo => AppColors.cardWhite;
 }
 
-/// Enhanced AppDimensions extension providing additional dimension property access and consistent naming patterns.
-///
-/// This extension enhances the AppDimensions class with additional static properties that provide consistent
-/// access to dimension values using modern naming conventions while maintaining compatibility with existing
-/// dimension definitions. It ensures consistent property access patterns across all theme components.
+/// Enhanced AppDimensions extension with additional dimension property access.
 extension AppDimensionsExtension on AppDimensions {
   // ===== ENHANCED DIMENSION PROPERTIES =====
   
@@ -133,22 +68,7 @@ extension AppDimensionsExtension on AppDimensions {
   // spacingXs, spacingS, spacingM, spacingL, spacingXl are all defined
 }
 
-/// Comprehensive static access wrapper providing unified interface for all theme properties throughout the cooking application.
-///
-/// This wrapper class serves as the central access point for all theme properties, providing a unified
-/// interface that combines colors, dimensions, and text styles into a single, consistent API. It enhances
-/// developer experience by providing static access to all theme values while maintaining performance
-/// and compatibility with existing theme architecture patterns.
-///
-/// **Property Categories:**
-/// - **Color Properties**: Complete color palette access with semantic naming and Material 3 compliance
-/// - **Dimension Properties**: Comprehensive dimension values with consistent naming and usage patterns
-/// - **Text Style Properties**: Typography access with semantic organization and Swedish localization support
-/// - **Compatibility Layer**: Seamless integration between old and new component property requirements
-///
-/// **Design Integration:**
-/// The wrapper maintains design system integrity while providing enhanced access patterns that support
-/// modern component architecture and cooking-focused user interface development requirements.
+/// Static access wrapper providing unified interface for all theme properties.
 class ThemeProperties {
   /// Private constructor to prevent instantiation of utility class
   ThemeProperties._();

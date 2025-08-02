@@ -6,7 +6,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -44,34 +43,34 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           onSelected: _handleMenuAction,
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) => [
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'info',
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline),
-                  const SizedBox(width: 12),
-                  const Text('Konversationsinfo'),
+                  Icon(Icons.info_outline),
+                  SizedBox(width: 12),
+                  Text('Konversationsinfo'),
                 ],
               ),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'mute',
               child: Row(
                 children: [
-                  const Icon(Icons.notifications_off_outlined),
-                  const SizedBox(width: 12),
-                  const Text('Tysta'),
+                  Icon(Icons.notifications_off_outlined),
+                  SizedBox(width: 12),
+                  Text('Tysta'),
                 ],
               ),
             ),
             const PopupMenuDivider(),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'leave',
               child: Row(
                 children: [
                   Icon(Icons.exit_to_app, color: AppColors.error),
-                  const SizedBox(width: 12),
-                  const Text('Lämna konversation'),
+                  SizedBox(width: 12),
+                  Text('Lämna konversation'),
                 ],
               ),
             ),

@@ -24,22 +24,22 @@ class ShoppingListActions {
       icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeAction),
       onSelected: (action) => _handleListAction(context, action, list, viewModel),
       itemBuilder: (context) => [
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
-              const Icon(Icons.edit, size: AppDimensions.iconSizeAction),
-              const SizedBox(width: AppDimensions.spacingM),
+              Icon(Icons.edit, size: AppDimensions.iconSizeAction),
+              SizedBox(width: AppDimensions.spacingM),
               Text(AppStrings.rename),
             ],
           ),
         ),
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'export',
           child: Row(
             children: [
-              const Icon(Icons.share, size: AppDimensions.iconSizeAction),
-              const SizedBox(width: AppDimensions.spacingM),
+              Icon(Icons.share, size: AppDimensions.iconSizeAction),
+              SizedBox(width: AppDimensions.spacingM),
               Text(AppStrings.export),
             ],
           ),
@@ -96,7 +96,7 @@ class ShoppingListActions {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.renameList),
+        title: const Text(AppStrings.renameList),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -114,11 +114,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppStrings.cancel),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(AppStrings.save),
+            child: const Text(AppStrings.save),
           ),
         ],
       ),
@@ -215,7 +215,7 @@ class ShoppingListActions {
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.createList),
+        title: const Text(AppStrings.createList),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -234,11 +234,11 @@ class ShoppingListActions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppStrings.cancel),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(AppStrings.create),
+            child: const Text(AppStrings.create),
           ),
         ],
       ),

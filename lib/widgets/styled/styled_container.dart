@@ -1,12 +1,14 @@
-// lib/widgets/styled/styled_container.dart
+/// Comprehensive styled container system providing consistent design patterns and eliminating design-in-views violations.
+///
+/// This widget system consolidates container styling patterns found throughout the application, providing consistent
+/// visual design, spacing management, and layout organization. It eliminates design-in-views violations by
+/// centralizing container styling logic and provides comprehensive container variants for all layout contexts
+/// with proper theming support and responsive design patterns.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/theme_constants.dart';
-
-/// Pre-styled container widgets to eliminate design-in-views violations
-/// Provides consistent styling patterns used throughout the app
 class StyledContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;

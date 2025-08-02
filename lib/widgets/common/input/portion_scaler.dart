@@ -66,15 +66,17 @@ class _PortionScalerState extends State<PortionScaler>
       return;
     }
 
-    if (mounted) setState(() {
-      _currentPortions = newPortions;
-      _scaledIngredients = PortionScalerLogic.scaleIngredients(
-        widget.originalIngredients,
-        widget.originalPortions,
-        newPortions,
-        _convertToSwedish,
-      );
-    });
+    if (mounted) {
+      setState(() {
+        _currentPortions = newPortions;
+        _scaledIngredients = PortionScalerLogic.scaleIngredients(
+          widget.originalIngredients,
+          widget.originalPortions,
+          newPortions,
+          _convertToSwedish,
+        );
+      });
+    }
 
     _animationController.forward().then((_) {
       _animationController.reverse();
@@ -85,15 +87,17 @@ class _PortionScalerState extends State<PortionScaler>
   }
 
   void _toggleUnitConversion() {
-    if (mounted) setState(() {
-      _convertToSwedish = !_convertToSwedish;
-      _scaledIngredients = PortionScalerLogic.scaleIngredients(
-        widget.originalIngredients,
-        widget.originalPortions,
-        _currentPortions,
-        _convertToSwedish,
+    if (mounted) {
+      setState(() {
+        _convertToSwedish = !_convertToSwedish;
+        _scaledIngredients = PortionScalerLogic.scaleIngredients(
+          widget.originalIngredients,
+          widget.originalPortions,
+          _currentPortions,
+          _convertToSwedish,
       );
-    });
+      });
+    }
 
     HapticFeedback.mediumImpact();
     widget.onPortionChanged(_currentPortions, _scaledIngredients);

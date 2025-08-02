@@ -165,11 +165,15 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
 
   /// Ladda både gruppdata OCH pending inbjudningar med force refresh
   Future<void> _loadGroupData() async {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
-    if (mounted) setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
@@ -205,7 +209,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       _pendingInvitations = [];
     } finally {
       if (mounted) {
-        if (mounted) setState(() {
+        setState(() {
           _isLoading = false;
         });
       }
@@ -314,7 +318,9 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
 
   // ✅ UPPDATERAD: Använd SocialComponents.showDeleteGroupDialog
   Future<void> _showDeleteGroupDialog(FriendCategory group) async {
-    if (_isNavigating) return;
+    if (_isNavigating) {
+      return;
+    }
 
     final shouldDelete = await SocialComponents.showDeleteGroupDialog(
       context: context,
@@ -323,14 +329,18 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     );
 
     if (shouldDelete == true && mounted && !_isNavigating) {
-      if (mounted) setState(() {
-        _isNavigating = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isNavigating = true;
+        });
+      }
 
       try {
         await Future.delayed(const Duration(milliseconds: 100));
 
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -350,7 +360,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
         }
       } finally {
         if (mounted) {
-          if (mounted) setState(() {
+          setState(() {
             _isNavigating = false;
           });
         }

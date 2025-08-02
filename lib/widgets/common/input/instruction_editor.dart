@@ -53,12 +53,14 @@ class _InstructionEditorState extends State<InstructionEditor> {
     final before = text.substring(0, selection.start);
     final after = text.substring(selection.end);
 
-    if (mounted) setState(() {
-      controller.text = before;
-      controller.selection = TextSelection.collapsed(offset: before.length);
-      final newController = TextEditingController(text: after);
-      controllers.insert(index + 1, newController);
-    });
+    if (mounted) {
+      setState(() {
+        controller.text = before;
+        controller.selection = TextSelection.collapsed(offset: before.length);
+        final newController = TextEditingController(text: after);
+        controllers.insert(index + 1, newController);
+      });
+    }
 
     // Notify parent about changes
     _notifyChanges();

@@ -1,22 +1,6 @@
 // lib/models/social/reaction_type.dart
 
 /// Enumeration of available reaction types for content interaction
-/// 
-/// This enum defines the complete set of emotional and functional reactions
-/// users can express on various content types throughout the application.
-/// Each reaction type has associated emoji representation and semantic meaning
-/// optimized for food-related social interactions.
-///
-/// **Reaction Categories:**
-/// - **Appreciation**: like, love, helpful - general positive feedback
-/// - **Food-Specific**: delicious, easy, creative - culinary context reactions  
-/// - **Social**: Designed for Swedish food culture and social cooking
-///
-/// **Usage Context:**
-/// - Recipes: All reaction types appropriate for cooking feedback
-/// - Comments: Appreciation and food-specific reactions for discussion
-/// - Menus: Planning-focused reactions (helpful, easy, creative)
-/// - Shopping Lists: Practical reactions (helpful, easy)
 enum ReactionType {
   /// ❤️ Standard like reaction - universal positive feedback
   /// Replaces traditional thumbs-up for warmer social interaction

@@ -21,6 +21,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
     required this.friend,
   });
 
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => RecipeSelectionViewModel(
@@ -246,6 +247,7 @@ class FriendRecipeListItem extends StatelessWidget {
     required this.onSelectionChanged,
   });
 
+  @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
