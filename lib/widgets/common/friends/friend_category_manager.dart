@@ -40,6 +40,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   @override
   void initState() {
     super.initState();
+    super.initState();
     _selectedCategories = <String>{};
     _selectedFriends = Set.from(widget.selectedFriendIds);
 

@@ -19,7 +19,6 @@ class MenuRecipeSelectionDialog extends StatefulWidget {
     required this.categoryName,
   });
 
-  @override
   State<MenuRecipeSelectionDialog> createState() => _MenuRecipeSelectionDialogState();
 }
 
@@ -27,7 +26,6 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
   final Set<String> _selectedRecipeIds = {};
   String _searchQuery = '';
 
-  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ServiceLocator.get<RecipeListViewModel>(),
@@ -215,7 +213,6 @@ class MenuRecipeListItem extends StatelessWidget {
     required this.onSelectionChanged,
   });
 
-  @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: AppDimensions.listItemPadding,
@@ -322,7 +319,6 @@ class MenuRecipeListItem extends StatelessWidget {
       ),
     );
   }
-  @override
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  

@@ -309,7 +309,6 @@ class SharedMenuCard {
       ],
     );
   }
-  @override
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  

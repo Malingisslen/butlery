@@ -14,7 +14,6 @@ import 'package:butlery/core/utils/logger.dart';
 class ChatActionHandler {
   final String conversationId;
   final BuildContext context;
-  late final MessagingService _messagingService;
 
   ChatActionHandler({
     required this.conversationId,
