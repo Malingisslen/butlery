@@ -65,13 +65,14 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Social recipe sharing service providing comprehensive collaborative cooking and meal planning functionality.
 ///
 /// This service manages all aspects of social recipe and menu sharing including content distribution,
 /// import functionality, dismissal management, and participant tracking. It implements reactive state
 /// management for real-time UI updates and provides backward compatibility with existing social features.
-class SocialRecipeService extends ChangeNotifier {
+class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
@@ -628,7 +629,7 @@ class SocialRecipeService extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

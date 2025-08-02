@@ -112,7 +112,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// - Conversation creation and management including direct messages and group conversations
 /// - Messaging state coordination with loading states, error handling, and operation status tracking
 /// - Swedish localized error messages and user feedback coordination
-class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin with ErrorHandlingMixin {
+class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
 

@@ -11,6 +11,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Manages content shared within social groups, providing filtering and activity tracking.
 ///
@@ -38,7 +39,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// await viewModel.initialize(selectedGroup);
 /// // Content is now available via getters like groupSharedRecipes
 /// ```
-class GroupContentViewModel extends ChangeNotifier {
+class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
   final SocialSharingRepository _sharingRepository;
 
   // ===== STATE MANAGEMENT =====
@@ -525,7 +526,7 @@ class GroupContentViewModel extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

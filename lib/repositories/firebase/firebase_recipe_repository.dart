@@ -59,8 +59,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// final results = await recipeRepo.searchRecipes('chicken');
 /// // Searches within 200 most recent recipes
 /// ```
-class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe> with StreamManagementMixin
-    with UserScopedFirebaseRepository<Recipe>
+class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe> 
+    with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>
     implements RecipeRepository {
   // ignore: use_super_parameters
   FirebaseRecipeRepository({

@@ -63,7 +63,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-
 /// Comprehensive photo import view providing intelligent OCR processing and recipe extraction through advanced image analysis.
 ///
 /// Manages complete photo-based import interface enabling image capture, OCR processing, text extraction,
@@ -391,8 +390,6 @@ class _PhotoImportViewContent extends StatelessWidget {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

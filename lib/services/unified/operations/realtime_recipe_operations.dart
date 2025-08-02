@@ -657,13 +657,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
       },
       operationName: 'Dispose RealtimeRecipeOperations',
     );
-  }
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    
+    // Dispose stream resources
+    await disposeStreamResources();
   }
 }

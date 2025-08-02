@@ -77,8 +77,6 @@ import 'package:butlery/views/social/group_detail/group_detail_header.dart';
 import 'package:butlery/views/social/group_detail/group_detail_stats.dart';
 import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
-import 'package:butlery/core/mixins/stream_management_mixin.dart';
-
 /// Comprehensive group detail view providing detailed group management and member coordination through advanced group architecture.
 ///
 /// Manages complete group detail interface enabling group information display, member management, permission handling,
@@ -91,7 +89,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// - Permission system integration with role-based access control, action authorization, and comprehensive security validation
 /// - Real-time event handling with group updates, member changes, and automatic state synchronization through event coordination
 /// - Swedish localized group experience with comprehensive user feedback and interactive guidance
-class GroupDetailView extends StatefulWidget with StreamManagementMixin {
+class GroupDetailView extends StatefulWidget {
   /// Group identifier for data loading and management coordination.
   /// 
   /// Contains group ID enabling group data loading, member management,

@@ -67,7 +67,6 @@ import 'package:butlery/views/edit_recipe/edit_recipe_app_bar.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_banners.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_bottom_bar.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_form_fields.dart';
-
 /// Comprehensive recipe editing view serving as facade for focused component architecture and collaborative editing.
 ///
 /// This view has been refactored to use the focused components pattern for enhanced maintainability and clean separation:
@@ -273,8 +272,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

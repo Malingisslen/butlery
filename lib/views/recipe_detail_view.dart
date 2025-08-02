@@ -420,8 +420,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

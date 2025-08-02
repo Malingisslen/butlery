@@ -9,7 +9,6 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-
 /// SharedMenuCard - Card for displaying shared menus
 ///
 /// Displays shared menu information with action buttons.
@@ -314,8 +313,6 @@ class SharedMenuCard {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

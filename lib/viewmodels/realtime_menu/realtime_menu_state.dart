@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Status för realtidsmeny-operationer
 enum RealtimeMenuStatus {
@@ -23,7 +24,7 @@ enum RealtimeMenuStatus {
 /// - UI state variables (selected category, show participants)
 /// 
 /// ❌ DOES NOT CONTAIN: Service operations, streaming, participant logic
-class RealtimeMenuState extends ChangeNotifier {
+class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   // Core menu state
   RealtimeMenu? _currentMenu;
   RealtimeMenuStatus _status = RealtimeMenuStatus.idle;
@@ -229,7 +230,7 @@ class RealtimeMenuState extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

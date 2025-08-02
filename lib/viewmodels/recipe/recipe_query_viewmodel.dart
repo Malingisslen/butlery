@@ -7,12 +7,13 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Recipe Query ViewModel
 /// 
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
 /// This includes search functionality, filtering by various criteria, and providing insights.
-class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {
   final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'RecipeQueryViewModel';
@@ -412,7 +413,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

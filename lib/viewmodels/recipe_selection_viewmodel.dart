@@ -98,6 +98,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive recipe selection ViewModel providing advanced recipe sharing through service integration.
 ///
@@ -111,7 +112,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Sharing status coordination with already shared recipe tracking and visual feedback
 /// - Social recipe distribution with friend targeting and delivery confirmation
 /// - Swedish localized error messages and user feedback coordination throughout selection operations
-class RecipeSelectionViewModel extends ChangeNotifier {
+class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin {
   final UnifiedRecipeService _recipeService;
   
   /// Target friend for recipe sharing and social distribution coordination.
@@ -534,7 +535,7 @@ class RecipeSelectionViewModel extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

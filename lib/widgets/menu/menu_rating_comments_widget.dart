@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/mixins/stream_management_mixin.dart';
-
 /// Menu Rating and Comments Widget
 /// 
 /// Displays rating stars, comments, and allows users to rate and comment on menus
-class MenuRatingCommentsWidget extends StatefulWidget with StreamManagementMixin {
+class MenuRatingCommentsWidget extends StatefulWidget {
   final String menuId;
   final double averageRating;
   final int ratingsCount;

@@ -1,4 +1,5 @@
 // lib/viewmodels/menu/menu_state_manager.dart
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -12,7 +13,7 @@ import 'package:butlery/models/recipe_unified.dart';
 /// - State notifications and updates
 /// 
 /// ❌ DOES NOT CONTAIN: Business logic, external service calls, persistence
-class MenuStateManager extends ChangeNotifier {
+class MenuStateManager extends ChangeNotifier  with StreamManagementMixin{
   // Core state variables
   Map<String, List<Recipe>> _menu = {};
   bool _isGenerating = false;
@@ -112,7 +113,7 @@ class MenuStateManager extends ChangeNotifier {
 }
 
 /// Data class for saved menu information
-class SavedMenuInfo {
+class SavedMenuInfo  {
   final String key;
   final String name;
   final DateTime savedDate;
@@ -123,7 +124,7 @@ class SavedMenuInfo {
   final bool isOwned;
   final String? firebaseId;
 
-  const SavedMenuInfo({
+  SavedMenuInfo({
     required this.key,
     required this.name,
     required this.savedDate,
@@ -147,13 +148,5 @@ class SavedMenuInfo {
     if (isOwned && isModified) return 'autoFixHigh';
     if (isOwned) return 'restaurantMenu';
     return 'person';
-  }
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
   }
 }

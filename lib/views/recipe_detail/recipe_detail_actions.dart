@@ -15,7 +15,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
-
 /// Recipe detail actions handler
 ///
 /// This class provides action methods and helper functionality for the recipe detail view.
@@ -358,8 +357,6 @@ class RecipeDetailActions {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

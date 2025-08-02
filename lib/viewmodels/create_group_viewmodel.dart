@@ -77,6 +77,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/events/group_events.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Comprehensive group creation ViewModel providing advanced social group creation through service integration.
 ///
@@ -90,7 +91,7 @@ import 'package:butlery/core/events/group_events.dart';
 /// - Multi-step group creation process with validation, creation, and invitation workflow management
 /// - Invitation sending coordination with email validation and delivery status tracking
 /// - Swedish localized error messages and user feedback coordination throughout creation process
-class CreateGroupViewModel extends ChangeNotifier {
+class CreateGroupViewModel extends ChangeNotifier with StreamManagementMixin {
   final UnifiedFriendsService _friendsService;
 
   // ===== GROUP FORM STATE =====
@@ -482,7 +483,7 @@ class CreateGroupViewModel extends ChangeNotifier {
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
+    disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }
 }

@@ -17,7 +17,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
 /// 
 /// This widget wraps the existing StateWidget with a convenient builder pattern
@@ -449,8 +448,6 @@ class LoadingStateBuilderUtils {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }

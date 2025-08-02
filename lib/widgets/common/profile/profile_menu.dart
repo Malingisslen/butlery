@@ -11,7 +11,6 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
 import 'package:intl/intl.dart';
-
 /// Profile menu display components
 ///
 /// This module provides the main profile menu widget with user information
@@ -397,8 +396,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
   void dispose() {
     // Cancel all timers
     // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreams(); // From StreamManagementMixin
-    super.dispose();
+    // Dispose of resources    super.dispose();
   }
 }
