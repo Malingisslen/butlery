@@ -60,6 +60,9 @@ import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 
+// Constants and theming
+import 'package:butlery/core/constants/app_strings.dart';
+
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_card.dart';
@@ -310,19 +313,19 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Avsluta Butlery?'),
-        content: const Text('Vill du verkligen avsluta appen?'),
+        title: const Text(AppStrings.exitApp),
+        content: const Text(AppStrings.exitAppConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Avsluta'),
+            child: const Text(AppStrings.exit),
           ),
         ],
       ),
@@ -713,8 +716,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         itemBuilder: (context, index) {
           final recipe = recipes[index];
 
-          return ContentCard.recipe(
-            recipe: recipe,
+          return ContentCard(
+            key: ValueKey(recipe.id),
+            item: recipe,
+            type: ContentCardType.recipe,
             onTap: () async {
               // Navigera till detaljer
               await Navigator.pushNamed(

@@ -89,6 +89,7 @@ class OptimisticUpdateManager {
 
   void dispose() {
     _rollbackTimer?.cancel();
+    _rollbackTimer = null;
     clear();
     AppLogger.debug('🗑️ OptimisticUpdateManager disposed');
   }

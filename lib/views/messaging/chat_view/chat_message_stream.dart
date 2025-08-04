@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Optimized message stream with real-time updates and pagination
 class ChatMessageStream extends StatefulWidget {
@@ -26,8 +28,10 @@ class ChatMessageStream extends StatefulWidget {
 class _ChatMessageStreamState extends State<ChatMessageStream> {
   final ScrollController _scrollController = ScrollController();
   final List<Message> _messages = [];
+  final MessagingService _messagingService = ServiceLocator.get<MessagingService>();
   bool _isLoading = true;
   String? _error;
+  Stream<List<Message>>? _messageStream;
 
   @override
   void initState() {
@@ -45,8 +49,17 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     try {
       AppLogger.debug('Initializing message stream for conversation: ${widget.conversationId}');
       
-      // TODO: Load initial messages from MessagingService
-      final messages = <Message>[];
+      // Load initial messages from MessagingService
+      final messages = await _messagingService.getConversationMessagesPage(
+        conversationId: widget.conversationId,
+        limit: 50,
+      );
+      
+      // Set up real-time message stream
+      _messageStream = _messagingService.getConversationMessages(
+        conversationId: widget.conversationId,
+        limit: 50,
+      );
       
       if (mounted) {
         setState(() {
@@ -54,6 +67,17 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           _messages.addAll(messages);
           _isLoading = false;
           _error = null;
+        });
+        
+        // Listen to real-time updates
+        _messageStream?.listen((newMessages) {
+          if (mounted) {
+            setState(() {
+              _messages.clear();
+              _messages.addAll(newMessages);
+            });
+            _scrollToBottom();
+          }
         });
 
         // Auto-scroll to bottom for new messages
@@ -84,8 +108,11 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
 
   Future<void> _refreshMessages() async {
     try {
-      // TODO: Refresh messages from MessagingService
-      final messages = <Message>[];
+      // Refresh messages from MessagingService
+      final messages = await _messagingService.getConversationMessagesPage(
+        conversationId: widget.conversationId,
+        limit: 50,
+      );
       
       if (mounted) {
         setState(() {
@@ -141,6 +168,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         itemBuilder: (context, index) {
           final message = _messages[index];
           return Padding(
+            key: ValueKey(message.id),
             padding: const EdgeInsets.only(bottom: 8),
             child: Container(
               padding: const EdgeInsets.all(12),

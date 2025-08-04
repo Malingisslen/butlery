@@ -42,6 +42,7 @@ class Routes {
   static const String inkopslista = '/inkopslista';
 
   // Social routes
+  static const String discovery = '/discovery';
   static const String profileEdit = '/profile/edit';
   static const String friends = '/friends';
   static const String friendRequests = '/friends/requests';
@@ -75,6 +76,7 @@ class Routes {
     receiveShare,
     veckomeny,
     inkopslista,
+    discovery,
     profileEdit,
     friends,
     friendRequests,
@@ -102,6 +104,7 @@ class Routes {
   /// Routes using slide-from-right animation
   static const Set<String> rightSlideRoutes = {
     inkopslista,
+    discovery,
     profileEdit,
     friends,
     friendRequests,
@@ -175,6 +178,7 @@ class Routes {
     inkopslista,
 
     // Social features
+    discovery,
     profileEdit,
     friends,
     friendRequests,

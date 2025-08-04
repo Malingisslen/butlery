@@ -98,6 +98,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
 
   Widget _buildItemCard(BuildContext context, dynamic item, bool isCompleted) {
     return Card(
+      key: ValueKey(item.id),
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,

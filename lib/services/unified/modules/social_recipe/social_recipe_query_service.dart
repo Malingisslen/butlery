@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Social Recipe Query Service
 /// 
@@ -27,7 +28,7 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     RecipeServiceAdapter? serviceAdapter,
   }) : _cacheHelper = cacheHelper,
        _getCurrentUserId = getCurrentUserId,
-       _serviceAdapter = serviceAdapter ?? RecipeServiceAdapter();
+       _serviceAdapter = serviceAdapter ?? SocialRecipeQueryService._createDefaultServiceAdapter();
 
   // ===== COLLABORATIVE RECIPE QUERIES =====
 
@@ -268,5 +269,15 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
       AppLogger.error('Failed to get cache stats: $e');
       return {'total_cached': 0, 'collaborative_cached': 0};
     }
+  }
+  
+  /// Create default service adapter using ServiceLocator
+  static RecipeServiceAdapter _createDefaultServiceAdapter() {
+    return RecipeServiceAdapter(
+      recipeRepository: ServiceLocator.get(),
+      commentsRepository: ServiceLocator.get(),
+      ratingsRepository: ServiceLocator.get(),
+      notificationsRepository: ServiceLocator.get(),
+    );
   }
 }

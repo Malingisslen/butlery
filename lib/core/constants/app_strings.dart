@@ -33,7 +33,24 @@ class AppStrings {
 
   // Authentication
   static const String resetPassword = 'Återställ lösenord';
+  static const String forgotPassword = 'Glömt lösenord?';
+  static const String enterPassword = 'Ange ditt lösenord';
+  static const String passwordMinLength = 'Minst 6 tecken';
+  static const String resetPasswordInstructions = 'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.';
   static const String send = 'Skicka';
+
+  // App navigation
+  static const String exitApp = 'Avsluta Butlery?';
+  static const String exitAppConfirmation = 'Vill du verkligen avsluta appen?';
+  static const String exit = 'Avsluta';
+
+  // Image picker
+  static const String addImage = 'Lägg till bild';
+  static const String takePhoto = 'Ta foto';
+  static const String useCamera = 'Använd kameran';
+  static const String fromGallery = 'Från galleriet';
+  static const String selectFromGallery = 'Välj en bild från galleriet';
+  static String selectUpToImages(int count) => 'Välj upp till $count bilder';
 
   // Form validation messages
   static String fieldRequired(String fieldName) => '$fieldName krävs';

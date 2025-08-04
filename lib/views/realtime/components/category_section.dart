@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
-import 'package:butlery/widgets/common/content_cards/recipe_card.dart';
+import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -332,9 +332,9 @@ class _CategorySectionState extends State<CategorySection>
                 recipe: recipe,
                 style: RecipeCardStyle.compact,
                 margin: EdgeInsets.zero,
-                onTap: () => _handleRecipeTap(context, recipe),
+                onTap: (_) => _handleRecipeTap(context, recipe),
                 onLongPress: widget.canEdit
-                    ? () => _showRecipeOptions(context, viewModel, recipe, index)
+                    ? (_) => _showRecipeOptions(context, viewModel, recipe, index)
                     : null,
               ),
             )
@@ -342,7 +342,7 @@ class _CategorySectionState extends State<CategorySection>
               recipe: recipe,
               style: RecipeCardStyle.compact,
               margin: EdgeInsets.zero,
-              onTap: () => _handleRecipeTap(context, recipe),
+              onTap: (_) => _handleRecipeTap(context, recipe),
             ),
     );
   }

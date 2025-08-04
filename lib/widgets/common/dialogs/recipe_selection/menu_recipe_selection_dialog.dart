@@ -142,6 +142,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                     final isSelected = _selectedRecipeIds.contains(unifiedRecipe.id);
 
                     return MenuRecipeListItem(
+                      key: ValueKey(unifiedRecipe.id),
                       recipe: unifiedRecipe,
                       isSelected: isSelected,
                       onSelectionChanged: (selected) {

@@ -4,7 +4,6 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -22,14 +21,14 @@ class RecipeServiceAdapter {
   final NotificationsRepository _notificationsRepository;
 
   RecipeServiceAdapter({
-    RecipeRepository? recipeRepository,
-    CommentsRepository? commentsRepository,
-    RatingsRepository? ratingsRepository,
-    NotificationsRepository? notificationsRepository,
-  }) : _recipeRepository = recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
-       _commentsRepository = commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
-       _ratingsRepository = ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-       _notificationsRepository = notificationsRepository ?? ServiceLocator.get<NotificationsRepository>();
+    required RecipeRepository recipeRepository,
+    required CommentsRepository commentsRepository,
+    required RatingsRepository ratingsRepository,
+    required NotificationsRepository notificationsRepository,
+  }) : _recipeRepository = recipeRepository,
+       _commentsRepository = commentsRepository,
+       _ratingsRepository = ratingsRepository,
+       _notificationsRepository = notificationsRepository;
 
   // ===== RECIPE OPERATIONS =====
 

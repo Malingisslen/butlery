@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Centralized health checker for the application.
 ///
@@ -41,7 +42,7 @@ class ApplicationHealthChecker {
   /// Returns a detailed health report.
   Future<HealthReport> performHealthCheck() async {
     if (kDebugMode) {
-      print('🔍 Performing comprehensive health check...');
+      AppLogger.debug('🔍 Performing comprehensive health check...');
     }
 
     try {
@@ -52,11 +53,11 @@ class ApplicationHealthChecker {
       _lastHealthReport = healthReport;
 
       if (kDebugMode) {
-        print('${healthReport.isHealthy ? '✅' : '❌'} Health check complete: ${healthReport.healthyCount}/${healthReport.totalCount} services healthy');
+        AppLogger.debug('${healthReport.isHealthy ? '✅' : '❌'} Health check complete: ${healthReport.healthyCount}/${healthReport.totalCount} services healthy');
         
         if (!healthReport.isHealthy) {
           for (final unhealthy in healthReport.unhealthyServices) {
-            print('  ❌ ${unhealthy.serviceName}: ${unhealthy.message}');
+            AppLogger.error('  ❌ ${unhealthy.serviceName}: ${unhealthy.message}');
           }
         }
       }
@@ -64,7 +65,7 @@ class ApplicationHealthChecker {
       return healthReport;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Health check failed: $e');
+        AppLogger.error('❌ Health check failed', e);
       }
       
       final errorReport = HealthReport([
@@ -99,7 +100,7 @@ class ApplicationHealthChecker {
       return healthyPercentage >= 0.8; // 80% of services must be healthy
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Readiness check failed: $e');
+        AppLogger.error('❌ Readiness check failed', e);
       }
       return false;
     }
@@ -121,7 +122,7 @@ class ApplicationHealthChecker {
     while (stopwatch.elapsed < timeout) {
       if (await isApplicationReady()) {
         if (kDebugMode) {
-          print('✅ Application ready after ${stopwatch.elapsed.inSeconds}s');
+          AppLogger.success('✅ Application ready after ${stopwatch.elapsed.inSeconds}s');
         }
         return true;
       }
@@ -130,7 +131,7 @@ class ApplicationHealthChecker {
     }
 
     if (kDebugMode) {
-      print('⏰ Application readiness timeout after ${timeout.inSeconds}s');
+      AppLogger.warning('⏰ Application readiness timeout after ${timeout.inSeconds}s');
     }
     return false;
   }
@@ -145,7 +146,7 @@ class ApplicationHealthChecker {
       return await performHealthCheck().timeout(timeout);
     } catch (e) {
       if (kDebugMode) {
-        print('⏰ Health check timed out: $e');
+        AppLogger.warning('⏰ Health check timed out: $e');
       }
       
       return HealthReport([
@@ -179,7 +180,7 @@ class ApplicationHealthChecker {
     Duration interval = const Duration(minutes: 5),
   }) {
     if (kDebugMode) {
-      print('🔄 Starting background health monitoring (interval: ${interval.inMinutes}m)');
+      AppLogger.debug('🔄 Starting background health monitoring (interval: ${interval.inMinutes}m)');
     }
 
     // Schedule periodic health checks
@@ -188,7 +189,7 @@ class ApplicationHealthChecker {
         await performHealthCheckWithTimeout();
       } catch (e) {
         if (kDebugMode) {
-          print('⚠️ Background health check failed: $e');
+          AppLogger.warning('⚠️ Background health check failed: $e');
         }
       }
     });

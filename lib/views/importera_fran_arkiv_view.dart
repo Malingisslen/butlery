@@ -270,8 +270,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
-          child: ContentCard.recipe(
-            recipe: recipe,
+          child: ContentCard(
+            key: ValueKey(recipe.id),
+            item: recipe,
+            type: ContentCardType.recipe,
             onTap: () => Navigator.pushNamed(
               context,
               '/receptDetalj',

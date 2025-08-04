@@ -85,7 +85,8 @@
       "Bash(perl -pi -e:*)",
       "Bash(perl:*)",
       "Bash(chmod:*)",
-      "Bash(./nuclear_fixes/run_nuclear_option.sh:*)"
+      "Bash(./nuclear_fixes/run_nuclear_option.sh:*)",
+      "Bash(/mnt/c/tools/flutter/bin/dart tools/fix_final_issues.dart)"
     ],
     "deny": []
   },

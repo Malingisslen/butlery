@@ -206,7 +206,7 @@ class MyActionHandler extends BaseActionHandler {
   final MyRepository _repository;
   
   MyActionHandler({MyRepository? repository}) 
-    : _repository = repository ?? sl<MyRepository>();
+    : _repository = repository ?? ServiceLocator.get<MyRepository>();
     
   Future<void> performAction(BuildContext context) async {
     await executeAction(

@@ -49,6 +49,8 @@
 
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 /// Permission management service providing centralized authorization and access control for collaborative features.
 ///
 /// This singleton service implements a comprehensive permission system with mock authentication for development
@@ -68,35 +70,52 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 /// - Production-ready API surface for easy migration to real authentication
 /// - Consistent permission semantics regardless of authentication backend
 class PermissionService {
+  /// Repository handling all Firebase Auth communication and operations.
+  final AuthRepository _authRepository;
+  
   /// Private singleton instance for thread-safe singleton implementation.
-  static final PermissionService _instance = PermissionService._internal();
+  static PermissionService? _instance;
   
   /// Factory constructor providing singleton access to the permission service.
-  factory PermissionService() => _instance;
+  factory PermissionService({AuthRepository? authRepository}) {
+    _instance ??= PermissionService._internal(authRepository ?? FirebaseAuthRepository());
+    return _instance!;
+  }
   
   /// Private constructor for singleton pattern implementation.
-  PermissionService._internal();
+  PermissionService._internal(this._authRepository);
 
   /// Current authenticated user ID for permission validation and ownership checks.
   /// 
-  /// Returns a mock user ID for development and testing environments. In production,
-  /// this would integrate with the actual authentication system to provide the
-  /// currently authenticated user's unique identifier.
-  String? get currentUserId => 'mock-user-id';
+  /// Returns the actual Firebase Auth user ID for the currently authenticated user.
+  /// Returns null if no user is authenticated, which is used for permission validation.
+  String? get currentUserId => _authRepository.currentUserId;
   
   /// Current authenticated user profile for comprehensive user information access.
   /// 
-  /// Returns `null` in the mock implementation. In production, this would return
-  /// the complete [UserProfile] object for the currently authenticated user,
-  /// enabling access to display name, avatar, and other user metadata.
-  UserProfile? get currentUser => null;
+  /// Returns the UserProfile for the currently authenticated user by converting
+  /// from Firebase Auth User. Returns null if no user is authenticated.
+  UserProfile? get currentUser {
+    final firebaseUser = _authRepository.currentUser;
+    if (firebaseUser == null) return null;
+    
+    // Convert Firebase Auth User to UserProfile
+    return UserProfile(
+      uid: firebaseUser.uid,
+      displayName: firebaseUser.displayName ?? 'User',
+      email: firebaseUser.email ?? '',
+      avatarUrl: firebaseUser.photoURL,
+      isOnline: true, // Always true for current user
+      joinedAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
+      lastActiveAt: DateTime.now(),
+    );
+  }
   
   /// Current authenticated user's display name for UI presentation and attribution.
   /// 
-  /// Returns a mock display name for development environments. In production,
-  /// this would provide the actual user's display name for UI elements,
+  /// Returns the actual Firebase Auth user's display name for UI elements,
   /// notifications, and user attribution features.
-  String? get currentUserDisplayName => 'Mock User';
+  String? get currentUserDisplayName => _authRepository.currentUser?.displayName;
   
   /// Checks if a user is currently authenticated and authorized to perform actions.
   /// 
@@ -126,15 +145,25 @@ class PermissionService {
   /// - Provide cached user profiles for performance optimization
   /// - Support privacy settings and user visibility controls
   Future<UserProfile?> getUserProfile(String userId) async {
+    // Security: Validate user ID
+    if (userId.isEmpty) return null;
+    
+    // Check if this is the current user
+    if (userId == currentUserId) {
+      return currentUser;
+    }
+    
+    // For other users, this would query Firestore
+    // For now, return a mock profile
     final now = DateTime.now();
     return UserProfile(
       uid: userId,
-      displayName: 'Mock User $userId',
-      email: 'mock@example.com',
+      displayName: 'User $userId',
+      email: 'user$userId@example.com',
       avatarUrl: null,
-      isOnline: true,
-      joinedAt: now.subtract(const Duration(days: 30)),
-      lastActiveAt: now,
+      isOnline: false, // Other users assumed offline in mock
+      joinedAt: now.subtract(const Duration(days: 90)),
+      lastActiveAt: now.subtract(const Duration(hours: 2)),
     );
   }
 
@@ -159,9 +188,19 @@ class PermissionService {
     // Security: Validate recipe ID
     if (recipeId.isEmpty) return false;
     
-    // TODO: Implement proper ownership/collaboration checks
-    // For now, authenticated users can invite (safer than always true)
-    return isAuthenticated;
+    // Check if user is the recipe owner
+    if (isRecipeOwner(recipeId)) return true;
+    
+    // Check if user has editor permission and owner allows member invites
+    final permission = getUserPermission(recipeId);
+    if (permission == ResourcePermission.editor) {
+      // For collaborative recipes, editors can invite if owner allows
+      // This would need to check recipe.socialData?.allowMemberInvites
+      // For now, allow editors to invite
+      return true;
+    }
+    
+    return false;
   }
 
   /// Validates user permission to edit and modify a specific recipe.
@@ -185,9 +224,12 @@ class PermissionService {
     // Security: Validate recipe ID
     if (recipeId.isEmpty) return false;
     
-    // TODO: Implement proper ownership/collaboration checks
-    // For now, authenticated users can edit their own recipes (safer than always true)
-    return isAuthenticated;
+    // Check if user is the recipe owner
+    if (isRecipeOwner(recipeId)) return true;
+    
+    // Check if user has editor permission
+    final permission = getUserPermission(recipeId);
+    return permission == ResourcePermission.editor || permission == ResourcePermission.owner;
   }
 
   /// Validates user permission to view and access a specific recipe.
@@ -204,7 +246,25 @@ class PermissionService {
   /// - Private recipes require explicit sharing or collaboration
   /// - Friends-only recipes respect social relationship settings
   /// - Anonymous users may have limited access to public content
-  bool canViewRecipe(String recipeId) => true;
+  bool canViewRecipe(String recipeId) {
+    // Security: Must be authenticated to view recipes
+    if (currentUserId == null) return false;
+    
+    // Security: Validate recipe ID
+    if (recipeId.isEmpty) return false;
+    
+    // Check if user is the recipe owner
+    if (isRecipeOwner(recipeId)) return true;
+    
+    // Check if user has any permission level (viewer, editor, or owner)
+    final permission = getUserPermission(recipeId);
+    if (permission != null) return true;
+    
+    // For public recipes, all authenticated users can view
+    // This would need to check recipe.socialData?.allowGuestViewing
+    // For now, allow authenticated users to view
+    return isAuthenticated;
+  }
 
   /// Retrieves the current user's permission level for a specific resource.
   ///
@@ -219,7 +279,21 @@ class PermissionService {
   /// - [ResourcePermission.owner] Full control including deletion and permission management
   /// - [ResourcePermission.editor] Can modify content but not manage permissions
   /// - [ResourcePermission.viewer] Read-only access to resource content
-  ResourcePermission getUserPermission(String resourceId) => ResourcePermission.editor;
+  ResourcePermission? getUserPermission(String resourceId) {
+    // Security: Must be authenticated to have permissions
+    if (currentUserId == null) return null;
+    
+    // Security: Validate resource ID
+    if (resourceId.isEmpty) return null;
+    
+    // NOTE: In a full implementation, this would:
+    // 1. Query the resource (recipe/shopping list/group) from the appropriate repository
+    // 2. Check the resource's socialData.memberPermissions map for the current user
+    // 3. Return the appropriate permission level
+    
+    // For now, return viewer permission for authenticated users
+    return ResourcePermission.viewer;
+  }
 
   /// Validates whether the current user has at least the specified permission level for a resource.
   ///
@@ -235,7 +309,43 @@ class PermissionService {
   /// - Owner permissions include all editor and viewer capabilities
   /// - Editor permissions include all viewer capabilities
   /// - Viewer permissions are the minimum level for resource access
-  bool hasPermission(String resourceId, ResourcePermission permission) => true;
+  bool hasPermission(String resourceId, ResourcePermission permission) {
+    // Security: Must be authenticated to have any permissions
+    if (currentUserId == null) return false;
+    
+    // Security: Validate resource ID
+    if (resourceId.isEmpty) return false;
+    
+    // Get the actual user permission for this resource
+    final userPermission = getUserPermission(resourceId);
+    if (userPermission == null) return false;
+    
+    // Check permission hierarchy
+    switch (permission) {
+      case ResourcePermission.viewer:
+        // Any permission level grants viewer access
+        return true;
+      case ResourcePermission.editor:
+        // Editor or owner permissions grant editor access
+        return userPermission == ResourcePermission.editor || 
+               userPermission == ResourcePermission.owner;
+      case ResourcePermission.owner:
+        // Only owner permission grants owner access
+        return userPermission == ResourcePermission.owner;
+      case ResourcePermission.read:
+        // Read is equivalent to viewer
+        return true;
+      case ResourcePermission.write:
+        // Write is equivalent to editor
+        return userPermission == ResourcePermission.write || 
+               userPermission == ResourcePermission.editor || 
+               userPermission == ResourcePermission.owner ||
+               userPermission == ResourcePermission.admin;
+      case ResourcePermission.admin:
+        // Only admin permission grants admin access
+        return userPermission == ResourcePermission.admin;
+    }
+  }
 
   // REMOVED: Duplicate isAuthenticated getter - already defined on line 105
 
@@ -247,7 +357,21 @@ class PermissionService {
   ///
   /// [listId] Unique identifier of the shopping list for ownership validation
   /// Returns `true` if current user owns the shopping list, `false` otherwise
-  bool isShoppingListOwner(String listId) => true;
+  bool isShoppingListOwner(String listId) {
+    // Security: Must be authenticated to own anything
+    if (currentUserId == null) return false;
+    
+    // Security: Validate list ID
+    if (listId.isEmpty) return false;
+    
+    // Check ownership directly from the shopping list ID format
+    // Shopping lists created by a user typically include their ID
+    // For collaborative lists, we would need to query Firebase
+    // Since UnifiedShoppingList includes ownerId field, we check that
+    // For now, assume ownership if the list ID contains the user ID
+    // This is a temporary implementation until full Firebase integration
+    return listId.contains(currentUserId!);
+  }
 
   /// Validates user permission to view and access a specific shopping list.
   ///
@@ -257,7 +381,21 @@ class PermissionService {
   ///
   /// [listId] Unique identifier of the shopping list for view permission validation
   /// Returns `true` if user can view the shopping list, `false` otherwise
-  bool canViewShoppingList(String listId) => true;
+  bool canViewShoppingList(String listId) {
+    // Security: Must be authenticated to view shopping lists
+    if (currentUserId == null) return false;
+    
+    // Security: Validate list ID
+    if (listId.isEmpty) return false;
+    
+    // Check if user is the owner
+    if (isShoppingListOwner(listId)) return true;
+    
+    // Check if user has any permission level for this list
+    // In a full implementation, this would query Firebase
+    // For now, allow authenticated users to view lists (collaborative feature)
+    return true;
+  }
 
   /// Validates user permission to edit and modify items in a specific shopping list.
   ///
@@ -267,7 +405,21 @@ class PermissionService {
   ///
   /// [listId] Unique identifier of the shopping list for edit permission validation
   /// Returns `true` if user can edit the shopping list, `false` otherwise
-  bool canEditShoppingList(String listId) => true;
+  bool canEditShoppingList(String listId) {
+    // Security: Must be authenticated to edit shopping lists
+    if (currentUserId == null) return false;
+    
+    // Security: Validate list ID
+    if (listId.isEmpty) return false;
+    
+    // Check if user is the owner
+    if (isShoppingListOwner(listId)) return true;
+    
+    // Check if user has editor or owner permission
+    // In a full implementation, this would query Firebase
+    // For now, allow authenticated users to edit lists they can view
+    return canViewShoppingList(listId);
+  }
 
   /// Validates user permission to manage sharing and collaboration settings for a shopping list.
   ///
@@ -277,7 +429,17 @@ class PermissionService {
   ///
   /// [listId] Unique identifier of the shopping list for management permission validation
   /// Returns `true` if user can manage the shopping list, `false` otherwise
-  bool canManageShoppingList(String listId) => true;
+  bool canManageShoppingList(String listId) {
+    // Security: Must be authenticated to manage shopping lists
+    if (currentUserId == null) return false;
+    
+    // Security: Validate list ID
+    if (listId.isEmpty) return false;
+    
+    // Only owners can manage shopping lists
+    // In production, this might also check for admin-level permissions
+    return isShoppingListOwner(listId);
+  }
 
   /// Validates user permission to permanently delete a specific shopping list.
   ///
@@ -287,7 +449,16 @@ class PermissionService {
   ///
   /// [listId] Unique identifier of the shopping list for deletion permission validation
   /// Returns `true` if user can delete the shopping list, `false` otherwise
-  bool canDeleteShoppingList(String listId) => true;
+  bool canDeleteShoppingList(String listId) {
+    // Security: Must be authenticated to delete shopping lists
+    if (currentUserId == null) return false;
+    
+    // Security: Validate list ID
+    if (listId.isEmpty) return false;
+    
+    // Only owners can delete shopping lists
+    return isShoppingListOwner(listId);
+  }
 
   /// Validates whether the current user has administrative privileges for a specific group.
   ///
@@ -303,7 +474,20 @@ class PermissionService {
   /// - Modifying group settings and description
   /// - Controlling content sharing and visibility
   /// - Delegating admin privileges to other members
-  bool isGroupAdmin(String groupId) => true;
+  bool isGroupAdmin(String groupId) {
+    // Security: Must be authenticated to have admin privileges
+    if (currentUserId == null) return false;
+    
+    // Security: Validate group ID
+    if (groupId.isEmpty) return false;
+    
+    // Check if user is a group admin
+    // In a full implementation, this would query the group from Firebase
+    // and check if group.adminIds.contains(currentUserId)
+    // For now, check if the group ID suggests ownership
+    // Groups created by a user might include their ID in the group ID
+    return groupId.contains(currentUserId!);
+  }
 
   /// Validates user permission to permanently delete a specific group.
   ///
@@ -319,7 +503,16 @@ class PermissionService {
   /// - Designated admins may be granted deletion permissions
   /// - Regular members cannot delete groups
   /// - Requires confirmation and affects all group content
-  bool canDeleteGroup(String groupId) => true;
+  bool canDeleteGroup(String groupId) {
+    // Security: Must be authenticated to delete groups
+    if (currentUserId == null) return false;
+    
+    // Security: Validate group ID
+    if (groupId.isEmpty) return false;
+    
+    // Check if user is a group admin (which includes creators)
+    return isGroupAdmin(groupId);
+  }
 
   /// Validates whether the current user is the owner of a specific recipe.
   ///
@@ -335,7 +528,20 @@ class PermissionService {
   /// - Managing collaboration and sharing settings
   /// - Inviting and removing collaborators
   /// - Deleting the recipe permanently
-  bool isRecipeOwner(String recipeId) => true;
+  bool isRecipeOwner(String recipeId) {
+    // Security: Must be authenticated to own recipes
+    if (currentUserId == null) return false;
+    
+    // Security: Validate recipe ID
+    if (recipeId.isEmpty) return false;
+    
+    // Check recipe ownership
+    // In a full implementation, this would query the recipe from Firebase
+    // and check if recipe.userId == currentUserId
+    // For now, check if the recipe ID pattern suggests ownership
+    // Personal recipes often include the user ID in their ID
+    return recipeId.contains(currentUserId!);
+  }
 
   /// Validates user permission to invite others to join a specific group.
   ///
@@ -351,7 +557,20 @@ class PermissionService {
   /// - Regular members may have invitation privileges based on group settings
   /// - Some groups may restrict invitations to creators only
   /// - Open groups may allow broader invitation permissions
-  bool canInviteToGroup(String groupId) => true;
+  bool canInviteToGroup(String groupId) {
+    // Security: Must be authenticated to invite to groups
+    if (currentUserId == null) return false;
+    
+    // Security: Validate group ID
+    if (groupId.isEmpty) return false;
+    
+    // Check if user is a group admin
+    if (isGroupAdmin(groupId)) return true;
+    
+    // In production, also check if group.settings.allowMemberInvites
+    // and if user is a member of the group
+    return false;
+  }
 
   /// Validates whether the current user is the owner of a resource by comparing user IDs.
   ///

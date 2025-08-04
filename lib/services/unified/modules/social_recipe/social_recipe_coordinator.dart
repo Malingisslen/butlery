@@ -11,6 +11,7 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 // import 'package:butlery/services/notifications/notification_service.dart' as notif;
 // import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 // Import the focused services
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_creation_service.dart';
@@ -55,7 +56,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
     RecipeServiceAdapter? serviceAdapter,
-  }) : _serviceAdapter = serviceAdapter ?? RecipeServiceAdapter() {
+  }) : _serviceAdapter = serviceAdapter ?? SocialRecipeCoordinator._createDefaultServiceAdapter() {
     
     // Initialize focused services
     _creationService = SocialRecipeCreationService(
@@ -253,4 +254,14 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   // Note: _hasAdminPermission removed - now handled by SocialRecipePermissionService
+  
+  /// Create default service adapter using ServiceLocator
+  static RecipeServiceAdapter _createDefaultServiceAdapter() {
+    return RecipeServiceAdapter(
+      recipeRepository: ServiceLocator.get(),
+      commentsRepository: ServiceLocator.get(),
+      ratingsRepository: ServiceLocator.get(),
+      notificationsRepository: ServiceLocator.get(),
+    );
+  }
 }

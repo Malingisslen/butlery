@@ -57,13 +57,13 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 
 // Import focused card modules
-import 'package:butlery/widgets/common/content_cards/recipe_card.dart';
+import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/content_cards/menu_card.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 
 // Re-export for backward compatibility
-export 'content_cards/recipe_card.dart' show RecipeCardStyle;
+export 'package:butlery/widgets/recipe/recipe_card.dart' show RecipeCardStyle;
 export 'content_cards/friend_card.dart' show FriendCardStyle;
 export 'content_cards/menu_card.dart' show MenuCardStyle;
 export 'content_cards/shopping_list_card.dart' show ShoppingListCardStyle;
@@ -282,8 +282,8 @@ class ContentCard extends StatelessWidget {
     
     return RecipeCard(
       recipe: recipe,
-      onTap: onTap,
-      onLongPress: onLongPress,
+      onTap: onTap != null ? (_) => onTap!() : null,
+      onLongPress: onLongPress != null ? (_) => onLongPress!() : null,
       showImage: showImage,
       showTags: showTags,
       showMetadata: showMetadata,

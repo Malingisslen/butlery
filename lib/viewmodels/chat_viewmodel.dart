@@ -25,6 +25,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   bool _isSending = false;
   String? _sendError;
   final Map<String, DateTime> _typingUsers = {};
+  Message? _replyToMessage;
   
   List<String> get typingUserNames => _typingUsers.entries
       .where((entry) => DateTime.now().difference(entry.value).inSeconds < 5)
@@ -56,11 +57,33 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   bool get hasTypingUsers => typingUserNames.isNotEmpty;
   bool get hasMessages => _messages.isNotEmpty;
   String? get currentUserId => _authRepository.currentUserId;
+  Message? get replyToMessage => _replyToMessage;
+  bool get hasReplyTarget => _replyToMessage != null;
   
   String get conversationTitle {
     if (_conversation == null) return 'Laddar...';
     if (currentUserId == null) return _conversation!.title ?? 'Chatt';
     return _conversation!.getDisplayTitle(currentUserId!);
+  }
+
+  String get conversationSubtitle {
+    if (_conversation == null) return '';
+    
+    // For group conversations, show participant count
+    if (_conversation!.isGroup) {
+      final count = _conversation!.participantIds.length;
+      return '$count deltagare';
+    }
+    
+    // For direct conversations, show last seen or online status
+    final otherParticipantId = _conversation!.participantIds
+        .firstWhere((id) => id != currentUserId, orElse: () => '');
+    
+    if (otherParticipantId.isEmpty) return '';
+    
+    // Could return online status or last seen time here
+    // For now, just return empty string since we don't track online status
+    return '';
   }
 
   bool get canSendMessages => _conversation != null && !_isDisposed;
@@ -151,8 +174,14 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
       await _messagingService.sendTextMessage(
         conversationId: conversationId,
         content: content.trim(),
+        replyToMessageId: _replyToMessage?.id,
       );
 
+      // Clear reply if we had one
+      if (_replyToMessage != null) {
+        _replyToMessage = null;
+      }
+      
       _isSending = false;
       _safeNotifyListeners();
       
@@ -248,6 +277,52 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
     
     _typingUsers.remove(displayName);
     _safeNotifyListeners();
+  }
+
+  // Reply functionality
+  void setReplyToMessage(Message message) {
+    if (_isDisposed) return;
+    
+    _replyToMessage = message;
+    _safeNotifyListeners();
+  }
+
+  void clearReplyToMessage() {
+    if (_isDisposed) return;
+    
+    _replyToMessage = null;
+    _safeNotifyListeners();
+  }
+
+  Future<bool> sendReply({
+    required String content,
+  }) async {
+    if (_isDisposed || _replyToMessage == null) return false;
+    
+    _isSending = true;
+    _sendError = null;
+    _safeNotifyListeners();
+
+    try {
+      await _messagingService.sendTextMessage(
+        conversationId: conversationId,
+        content: content.trim(),
+        replyToMessageId: _replyToMessage!.id,
+      );
+
+      _replyToMessage = null; // Clear reply after sending
+      _isSending = false;
+      _safeNotifyListeners();
+      
+      AppLogger.debug('Reply sent successfully');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to send reply', e);
+      _sendError = 'Kunde inte skicka svaret: ${e.toString()}';
+      _isSending = false;
+      _safeNotifyListeners();
+      return false;
+    }
   }
 
   void _startTypingCleanUp() {
