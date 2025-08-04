@@ -120,8 +120,10 @@ class FirebaseShoppingRepository
       final personalLists = await readAllSafe();
       
       // Get shared/collaborative lists where user is a member
+      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
       final sharedSnapshot = await _sharedListsRef
           .where('memberPermissions.$uid', isNotEqualTo: null)
+          .limit(20) // Most users won't have more than 20 shared lists
           .get();
       
       final sharedLists = sharedSnapshot.docs
@@ -267,7 +269,10 @@ class FirebaseShoppingRepository
   Stream<List<UnifiedShoppingList>> personalListsStream() {
     try {
       final uid = requireCurrentUserId();
+      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded streaming
       return getUserCollection(uid)
+          .orderBy('updatedAt', descending: true)
+          .limit(20) // Limit personal lists to 20 most recent
           .snapshots()
           .map((snap) => snap.docs.map(fromFirestore).toList());
     } catch (e) {
@@ -279,8 +284,11 @@ class FirebaseShoppingRepository
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() {
     try {
       final uid = requireCurrentUserId();
+      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded streaming
       return _sharedListsRef
           .where('memberPermissions.$uid', isNotEqualTo: null)
+          .orderBy('updatedAt', descending: true)
+          .limit(20) // Limit collaborative lists to 20 most recent
           .snapshots()
           .map((snap) =>
               snap.docs.map(UnifiedShoppingList.fromFirestore).toList());
@@ -415,9 +423,11 @@ class FirebaseShoppingRepository
   Future<List<Map<String, dynamic>>> getUserTemplates() async {
     final uid = requireCurrentUserId();
     
+    // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
     final snapshot = await _templatesRef
         .where('ownerId', isEqualTo: uid)
         .orderBy('createdAt', descending: true)
+        .limit(50) // Limit user templates to 50 most recent
         .get();
 
     return snapshot.docs.map((doc) => {

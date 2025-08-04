@@ -4,6 +4,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -16,6 +22,7 @@ import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
 import 'package:butlery/services/unified/modules/realtime_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
+import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 
 // Legacy feature interfaces (for backward compatibility)
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -77,6 +84,11 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
+  final RecipeRepository? _recipeRepository;
+  final CommentsRepository? _commentsRepository;
+  final RatingsRepository? _ratingsRepository;
+  final NotificationsRepository? _notificationsRepository;  
+  final FirestoreRepository? _firestoreRepository;
 
   // Focused modules
   late final PersonalRecipeModule _personalModule;
@@ -101,8 +113,18 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   UnifiedRecipeService({
     FirebaseFirestore? firestore,
     FirebaseAuthRepository? authRepository,
+    RecipeRepository? recipeRepository,
+    CommentsRepository? commentsRepository,
+    RatingsRepository? ratingsRepository,
+    NotificationsRepository? notificationsRepository,
+    FirestoreRepository? firestoreRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository ?? FirebaseAuthRepository() {
+        _authRepository = authRepository ?? FirebaseAuthRepository(),
+        _recipeRepository = recipeRepository,
+        _commentsRepository = commentsRepository,  
+        _ratingsRepository = ratingsRepository,
+        _notificationsRepository = notificationsRepository,
+        _firestoreRepository = firestoreRepository {
     
     // Initialize both modules and legacy interfaces
     _initializeModules();
@@ -111,17 +133,36 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     AppLogger.info('✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
   }
 
+  // ===== DEPENDENCY HELPERS =====
+  
+  /// Get recipe repository with fallback to service locator
+  RecipeRepository _getRecipeRepository() {
+    return _recipeRepository ?? ServiceLocator.get<RecipeRepository>();
+  }
+  
+  /// Create service adapter with all dependencies
+  RecipeServiceAdapter _createServiceAdapter() {
+    return RecipeServiceAdapter(
+      recipeRepository: _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
+      commentsRepository: _commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+      ratingsRepository: _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+      notificationsRepository: _notificationsRepository ?? ServiceLocator.get<NotificationsRepository>(),
+    );
+  }
+
   // ===== MODULE INITIALIZATION =====
 
   void _initializeModules() {
     final cacheHelper = JsonCacheFactory.recipeCache();
     
     _personalModule = PersonalRecipeModule(
+      recipeRepository: _getRecipeRepository(),
       cacheHelper: cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
       setError: _setError,
       notifyListeners: notifyListeners,
+      serviceAdapter: _createServiceAdapter(),
     );
 
     _socialModule = SocialRecipeModule(
@@ -155,7 +196,11 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
     personal = PersonalRecipeOperations(this);
-    social = SocialRecipeOperations(this);
+    social = SocialRecipeOperations(
+      this,
+      ratingsRepository: _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+      firestoreRepository: _firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+    );
     realtime = RealtimeRecipeOperations(this);
   }
 

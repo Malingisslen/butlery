@@ -129,9 +129,11 @@ class FirebaseMessagingRepository
   @override
   Stream<List<Conversation>> getUserConversations(String userId) {
     try {
+      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded streaming
       return firestore.collection(collectionName)
           .where('participantIds', arrayContains: userId)
           .orderBy('updatedAt', descending: true)
+          .limit(50) // Limit to 50 most recent conversations
           .snapshots()
           .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
     } catch (e) {
@@ -231,9 +233,11 @@ class FirebaseMessagingRepository
     required String user2Id,
   }) async {
     try {
+      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
       final query = await firestore.collection(collectionName)
           .where('participantIds', arrayContains: user1Id)
           .where('isGroup', isEqualTo: false)
+          .limit(20) // Most users won't have more than 20 direct conversations
           .get();
 
       for (final doc in query.docs) {
@@ -626,8 +630,10 @@ class FirebaseMessagingRepository
     try {
       // This is a simplified implementation - in production you might want
       // to use a more efficient aggregation or counter approach
+      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
       final conversations = await firestore.collection(collectionName)
           .where('participantIds', arrayContains: userId)
+          .limit(100) // Limit unread count check to 100 most recent conversations
           .get();
 
       int totalUnread = 0;

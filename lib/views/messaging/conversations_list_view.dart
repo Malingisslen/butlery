@@ -22,7 +22,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/views/messaging/chat_view.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 
 /// Conversations list view showing all user's messaging conversations
 /// 
@@ -122,7 +122,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   void _navigateToChat(Conversation conversation) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ChatView(
+        builder: (context) => ChatViewFacade(
           conversationId: conversation.id,
           conversation: conversation,
         ),
@@ -137,7 +137,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         onConversationCreated: (conversationId) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ChatView(conversationId: conversationId),
+              builder: (context) => ChatViewFacade(conversationId: conversationId),
             ),
           );
         },
@@ -234,6 +234,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           final conversation = _filteredConversations[index];
           
           return ConversationListItem(
+            key: ValueKey(conversation.id),
             conversation: conversation,
             currentUserId: _currentUserId ?? '',
             onTap: () => _navigateToChat(conversation),

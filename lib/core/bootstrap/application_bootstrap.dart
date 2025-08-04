@@ -144,6 +144,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Comprehensive bootstrap orchestrator that manages the complete application initialization process for the Butlery application.
 ///
@@ -223,7 +224,7 @@ class ApplicationBootstrap {
     _stagesByType[stage.runtimeType] = stage;
     
     if (kDebugMode) {
-      print('📋 Registered bootstrap stage: ${stage.name}');
+      AppLogger.debug('📋 Registered bootstrap stage: ${stage.name}');
     }
   }
 
@@ -258,7 +259,7 @@ class ApplicationBootstrap {
   ) async {
     if (_isInitialized) {
       if (kDebugMode) {
-        print('⚠️ Application already initialized, skipping');
+        AppLogger.warning('⚠️ Application already initialized, skipping');
       }
       return;
     }
@@ -274,7 +275,7 @@ class ApplicationBootstrap {
     _initializationInProgress = true;
 
     if (kDebugMode) {
-      print('🚀 Starting application bootstrap...');
+      AppLogger.info('🚀 Starting application bootstrap...');
     }
 
     try {
@@ -299,13 +300,13 @@ class ApplicationBootstrap {
       _initializationInProgress = false;
 
       if (kDebugMode) {
-        print('✅ Application bootstrap complete!');
+        AppLogger.success('✅ Application bootstrap complete!');
       }
     } catch (e) {
       _initializationInProgress = false;
       
       if (kDebugMode) {
-        print('❌ Application bootstrap failed: $e');
+        AppLogger.error('❌ Application bootstrap failed: $e');
       }
       
       rethrow;
@@ -315,14 +316,14 @@ class ApplicationBootstrap {
   /// Initialize the dependency injection container.
   Future<void> _initializeDependencyInjection() async {
     if (kDebugMode) {
-      print('🔧 Initializing dependency injection...');
+      AppLogger.info('🔧 Initializing dependency injection...');
     }
 
     try {
       await _diContainer.initialize();
       
       if (kDebugMode) {
-        print('✅ Dependency injection initialized');
+        AppLogger.success('✅ Dependency injection initialized');
       }
     } catch (e) {
       throw BootstrapException(
@@ -338,13 +339,13 @@ class ApplicationBootstrap {
   Future<void> _executeBootstrapStages() async {
     if (_stages.isEmpty) {
       if (kDebugMode) {
-        print('⚠️ No bootstrap stages registered, skipping stage execution');
+        AppLogger.warning('⚠️ No bootstrap stages registered, skipping stage execution');
       }
       return;
     }
 
     if (kDebugMode) {
-      print('🚀 Executing ${_stages.length} bootstrap stages...');
+      AppLogger.info('🚀 Executing ${_stages.length} bootstrap stages...');
     }
 
     // Sort stages by priority
@@ -352,7 +353,7 @@ class ApplicationBootstrap {
       ..sort((a, b) => a.priority.compareTo(b.priority));
 
     if (kDebugMode) {
-      print('📋 Stage execution order: ${sortedStages.map((s) => s.name).join(' → ')}');
+      AppLogger.debug('📋 Stage execution order: ${sortedStages.map((s) => s.name).join(' → ')}');
     }
 
     for (final stage in sortedStages) {
@@ -360,14 +361,14 @@ class ApplicationBootstrap {
     }
 
     if (kDebugMode) {
-      print('✅ All bootstrap stages completed');
+      AppLogger.success('✅ All bootstrap stages completed');
     }
   }
 
   /// Execute a single bootstrap stage.
   Future<void> _executeStage(BootstrapStage stage) async {
     if (kDebugMode) {
-      print('🚀 Executing stage: ${stage.name}');
+      AppLogger.info('🚀 Executing stage: ${stage.name}');
     }
 
     try {
@@ -382,7 +383,7 @@ class ApplicationBootstrap {
       if (!isValid) {
         if (stage.isOptional) {
           if (kDebugMode) {
-            print('⚠️ Optional stage ${stage.name} validation failed, continuing');
+            AppLogger.warning('⚠️ Optional stage ${stage.name} validation failed, continuing');
           }
         } else {
           throw BootstrapException(
@@ -394,12 +395,12 @@ class ApplicationBootstrap {
       }
 
       if (kDebugMode) {
-        print('✅ Stage completed: ${stage.name}');
+        AppLogger.success('✅ Stage completed: ${stage.name}');
       }
     } catch (e) {
       if (stage.isOptional) {
         if (kDebugMode) {
-          print('⚠️ Optional stage ${stage.name} failed: $e');
+          AppLogger.warning('⚠️ Optional stage ${stage.name} failed: $e');
         }
       } else {
         throw BootstrapException(
@@ -419,7 +420,7 @@ class ApplicationBootstrap {
       // Note: This is a simplified check - in a full implementation,
       // you might want more sophisticated module availability checking
       if (kDebugMode) {
-        print('🔍 Validating required module for stage ${stage.name}: $moduleType');
+        AppLogger.debug('🔍 Validating required module for stage ${stage.name}: $moduleType');
       }
     }
   }
@@ -427,7 +428,7 @@ class ApplicationBootstrap {
   /// Perform final validation after all initialization is complete.
   Future<void> _validateInitialization() async {
     if (kDebugMode) {
-      print('🔍 Performing final validation...');
+      AppLogger.info('🔍 Performing final validation...');
     }
 
     try {
@@ -442,7 +443,7 @@ class ApplicationBootstrap {
       }
 
       if (kDebugMode) {
-        print('✅ Final validation passed - ${healthReport.healthyCount} services healthy');
+        AppLogger.success('✅ Final validation passed - ${healthReport.healthyCount} services healthy');
       }
     } catch (e) {
       throw BootstrapException(
@@ -463,7 +464,7 @@ class ApplicationBootstrap {
     _initializationInProgress = false;
     
     if (kDebugMode) {
-      print('🔄 ApplicationBootstrap reset complete');
+      AppLogger.info('🔄 ApplicationBootstrap reset complete');
     }
   }
 

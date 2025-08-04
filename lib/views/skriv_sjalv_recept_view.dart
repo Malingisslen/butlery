@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -79,7 +80,7 @@ class _SkrivSjalvReceptViewContentState
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Text(
-                'Lägg till bild',
+                AppStrings.addImage,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -89,8 +90,8 @@ class _SkrivSjalvReceptViewContentState
                 Icons.photo_camera,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text('Ta foto'),
-              subtitle: const Text('Använd kameran'),
+              title: const Text(AppStrings.takePhoto),
+              subtitle: const Text(AppStrings.useCamera),
               onTap: () => Navigator.pop(context, 'camera'),
             ),
             ListTile(
@@ -98,11 +99,11 @@ class _SkrivSjalvReceptViewContentState
                 Icons.photo_library,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text('Från galleriet'),
+              title: const Text(AppStrings.fromGallery),
               subtitle: Text(
                 viewModel.canAddMoreImages
-                    ? 'Välj upp till ${RecipeFormViewModel.maxImages - viewModel.imageUrls.length} bilder'
-                    : 'Välj en bild från galleriet',
+                    ? AppStrings.selectUpToImages(RecipeFormViewModel.maxImages - viewModel.imageUrls.length)
+                    : AppStrings.selectFromGallery,
               ),
               onTap: () => Navigator.pop(context, 'gallery'),
             ),

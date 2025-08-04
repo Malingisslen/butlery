@@ -376,7 +376,7 @@ class _AuthViewState extends State<AuthView> {
       controller: _passwordController,
       focusNode: _passwordFocus,
       label: 'Lösenord',
-      hint: viewModel.isLoginMode ? 'Ange ditt lösenord' : 'Minst 6 tecken',
+      hint: viewModel.isLoginMode ? AppStrings.enterPassword : AppStrings.passwordMinLength,
       obscureText: !viewModel.isPasswordVisible,
       enabled: !viewModel.isLoading,
       validator: FormValidators.authPassword(isSignUp: !viewModel.isLoginMode),
@@ -421,7 +421,7 @@ class _AuthViewState extends State<AuthView> {
                 ? null
                 : () => _showPasswordResetDialog(context, viewModel),
         child: Text(
-          'Glömt lösenord?',
+          AppStrings.forgotPassword,
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue),
         ),
       ),
@@ -600,7 +600,7 @@ class _AuthViewState extends State<AuthView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.',
+                  AppStrings.resetPasswordInstructions,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),

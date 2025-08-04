@@ -26,6 +26,7 @@ import 'package:butlery/views/receive_share_view.dart';
 import 'package:butlery/views/unified_shopping_view.dart';
 
 // Social views
+import 'package:butlery/views/social/discovery_dashboard_view.dart';
 import 'package:butlery/views/social/user_profile_edit_view.dart';
 import 'package:butlery/views/social/friends_list_view.dart';
 import 'package:butlery/views/social/friend_requests_view.dart';
@@ -34,10 +35,11 @@ import 'package:butlery/views/social/collaborative_shopping_view.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
 import 'package:butlery/views/social/friend_profile_view.dart';
+import 'package:butlery/views/social/shared_shopping_lists_view.dart';
 
 // Messaging views
 import 'package:butlery/views/messaging/conversations_list_view.dart';
-import 'package:butlery/views/messaging/chat_view.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 
 // Models
 import 'package:butlery/models/recipe_unified.dart';
@@ -221,6 +223,9 @@ class AppRouter {
         case Routes.friends:
           return _buildRoute(const FriendsListView(), settings, Routes.getAnimationType(routeName));
         
+        case Routes.discovery:
+          return _buildRoute(const DiscoveryDashboardView(), settings, Routes.getAnimationType(routeName));
+        
         case Routes.friendRequests:
           return _buildRoute(const FriendRequestsView(), settings, Routes.getAnimationType(routeName));
         
@@ -251,6 +256,9 @@ class AppRouter {
           }
           return _buildRoute(FriendProfileView(friend: userProfile), settings, Routes.getAnimationType(routeName));
 
+        case Routes.sharedShoppingLists:
+          return _buildRoute(const SharedShoppingListsView(), settings, Routes.getAnimationType(routeName));
+
         // ===== MESSAGING ROUTES =====
         case Routes.messages:
           return _buildRoute(const ConversationsListView(), settings, Routes.getAnimationType(routeName));
@@ -260,7 +268,7 @@ class AppRouter {
           if (conversationId == null) {
             return _errorRoute('Conversation ID argument missing for chat');
           }
-          return _buildRoute(ChatView(conversationId: conversationId), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(ChatViewFacade(conversationId: conversationId), settings, Routes.getAnimationType(routeName));
 
         default:
           return _errorRoute('Unknown route: ${settings.name}');

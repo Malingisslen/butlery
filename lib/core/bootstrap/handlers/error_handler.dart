@@ -8,6 +8,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Centralized error handler for the bootstrap process.
 ///
@@ -97,14 +98,14 @@ class BootstrapErrorHandler {
     _errorCounts[errorType] = (_errorCounts[errorType] ?? 0) + 1;
 
     if (kDebugMode) {
-      print('❌ Bootstrap Error$contextStr: $exception');
+      AppLogger.error('❌ Bootstrap Error$contextStr: $exception');
     }
   }
 
   /// Attempt recovery from a bootstrap exception.
   Future<bool> _attemptRecovery(BootstrapException exception) async {
     if (kDebugMode) {
-      print('🔧 Attempting recovery from bootstrap error: ${exception.stage}');
+      AppLogger.info('🔧 Attempting recovery from bootstrap error: ${exception.stage}');
     }
 
     try {
@@ -120,7 +121,7 @@ class BootstrapErrorHandler {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Recovery attempt failed: $e');
+        AppLogger.error('❌ Recovery attempt failed: $e');
       }
       return false;
     }
@@ -129,7 +130,7 @@ class BootstrapErrorHandler {
   /// Attempt recovery from a module exception.
   Future<bool> _attemptModuleRecovery(DIModuleException exception) async {
     if (kDebugMode) {
-      print('🔧 Attempting recovery from module error: ${exception.module}');
+      AppLogger.info('🔧 Attempting recovery from module error: ${exception.module}');
     }
 
     try {
@@ -145,7 +146,7 @@ class BootstrapErrorHandler {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Module recovery attempt failed: $e');
+        AppLogger.error('❌ Module recovery attempt failed: $e');
       }
       return false;
     }
@@ -154,7 +155,7 @@ class BootstrapErrorHandler {
   /// Attempt recovery from a general exception.
   Future<bool> _attemptGeneralRecovery(Exception exception) async {
     if (kDebugMode) {
-      print('🔧 Attempting recovery from general error: ${exception.runtimeType}');
+      AppLogger.info('🔧 Attempting recovery from general error: ${exception.runtimeType}');
     }
 
     // General recovery strategies (limited)
@@ -171,7 +172,7 @@ class BootstrapErrorHandler {
   Future<bool> _recoverFromExecutionError(BootstrapException exception) async {
     // Strategy: Retry the operation once after a short delay
     if (kDebugMode) {
-      print('🔄 Retrying stage execution: ${exception.stage}');
+      AppLogger.info('🔄 Retrying stage execution: ${exception.stage}');
     }
     
     await Future.delayed(const Duration(seconds: 1));
@@ -182,7 +183,7 @@ class BootstrapErrorHandler {
   Future<bool> _recoverFromValidationError(BootstrapException exception) async {
     // Strategy: Mark as warning but continue if stage is optional
     if (kDebugMode) {
-      print('⚠️ Stage validation failed, attempting to continue: ${exception.stage}');
+      AppLogger.warning('⚠️ Stage validation failed, attempting to continue: ${exception.stage}');
     }
     
     return true; // Allow continuation
@@ -192,7 +193,7 @@ class BootstrapErrorHandler {
   Future<bool> _recoverFromTimeoutError(BootstrapException exception) async {
     // Strategy: Extend timeout and retry
     if (kDebugMode) {
-      print('⏰ Stage timed out, retrying with extended timeout: ${exception.stage}');
+      AppLogger.warning('⏰ Stage timed out, retrying with extended timeout: ${exception.stage}');
     }
     
     return true; // Signal extended retry
@@ -202,7 +203,7 @@ class BootstrapErrorHandler {
   Future<bool> _recoverFromConfigurationError(DIModuleException exception) async {
     // Strategy: Skip non-critical services in the module
     if (kDebugMode) {
-      print('🔧 Module configuration failed, attempting partial recovery: ${exception.module}');
+      AppLogger.warning('🔧 Module configuration failed, attempting partial recovery: ${exception.module}');
     }
     
     // This would require module-specific recovery logic
@@ -213,7 +214,7 @@ class BootstrapErrorHandler {
   Future<bool> _recoverFromInitializationError(DIModuleException exception) async {
     // Strategy: Skip initialization if module is non-critical
     if (kDebugMode) {
-      print('⚠️ Module initialization failed: ${exception.module}');
+      AppLogger.warning('⚠️ Module initialization failed: ${exception.module}');
     }
     
     // Check if module is critical (would need metadata)
@@ -224,7 +225,7 @@ class BootstrapErrorHandler {
   Future<bool> _recoverFromDependencyError(DIModuleException exception) async {
     // Strategy: These are usually fatal
     if (kDebugMode) {
-      print('💥 Dependency resolution error: ${exception.module}');
+      AppLogger.error('💥 Dependency resolution error: ${exception.module}');
     }
     
     return false; // Dependency errors are critical

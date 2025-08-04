@@ -4,6 +4,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -267,9 +268,207 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<List<Recipe>> fetchUserRecipes(String userId) async {
     // Use the mixin method for user-specific collection
+    // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
     final snap = await getCollectionForUser(userId)
         .orderBy('updatedAt', descending: true)
+        .limit(50) // Limit to 50 most recent recipes
         .get();
     return snap.docs.map(fromFirestore).toList();
+  }
+
+  // ===== SEARCH AND FILTER METHODS =====
+
+  /// Find recipes by meal type (e.g., 'Frukost', 'Lunch', 'Middag')
+  Future<List<Recipe>> findByMealType(String mealType) async {
+    final userId = currentUserId;
+    if (userId == null) return [];
+    
+    final snap = await getCollectionForUser(userId)
+        .where('mealType', isEqualTo: mealType)
+        .orderBy('updatedAt', descending: true)
+        .limit(100)
+        .get();
+    
+    return snap.docs.map(fromFirestore).toList();
+  }
+
+  /// Find recipes containing a specific ingredient
+  Future<List<Recipe>> findByIngredient(String ingredient) async {
+    final userId = currentUserId;
+    if (userId == null) return [];
+    
+    // Note: Firestore doesn't support array-contains with case-insensitive search
+    // This is a basic implementation - for production, consider using Algolia or similar
+    final snap = await getCollectionForUser(userId)
+        .orderBy('updatedAt', descending: true)
+        .limit(200)
+        .get();
+    
+    final lowerIngredient = ingredient.toLowerCase();
+    return snap.docs
+        .map(fromFirestore)
+        .where((recipe) => recipe.ingredients.any(
+            (recipeIngredient) => recipeIngredient.toLowerCase().contains(lowerIngredient)))
+        .toList();
+  }
+
+  /// Search recipes by title with more focused search
+  Future<List<Recipe>> searchByTitle(String title) async {
+    final userId = currentUserId;
+    if (userId == null) return [];
+    
+    final lowerTitle = title.toLowerCase();
+    final snap = await getCollectionForUser(userId)
+        .orderBy('updatedAt', descending: true)
+        .limit(200)
+        .get();
+    
+    return snap.docs
+        .map(fromFirestore)
+        .where((recipe) => recipe.title.toLowerCase().contains(lowerTitle))
+        .toList();
+  }
+
+  // ===== PERMISSION METHODS =====
+
+  /// Check if user can read a specific recipe
+  Future<bool> canRead(String recipeId, String userId) async {
+    try {
+      final recipe = await read(recipeId);
+      if (recipe == null) return false;
+      
+      // User can read if:
+      // 1. They own the recipe
+      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy ?? '';
+      if (ownerId == userId) return true;
+      
+      // 2. Recipe is shared with them (check member permissions)
+      final memberPermissions = recipe.socialData?.memberPermissions ?? {};
+      if (memberPermissions.containsKey(userId)) return true;
+      
+      // 3. Recipe is public (future feature)
+      // if (recipe.socialData?.isPublic ?? false) return true;
+      
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Check if user can write/edit a specific recipe
+  Future<bool> canWrite(String recipeId, String userId) async {
+    try {
+      final recipe = await read(recipeId);
+      if (recipe == null) return false;
+      
+      // User can write if:
+      // 1. They own the recipe
+      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy ?? '';
+      if (ownerId == userId) return true;
+      
+      // 2. They are a member with write permissions
+      final memberPermissions = recipe.socialData?.memberPermissions ?? {};
+      final userPermission = memberPermissions[userId];
+      if (userPermission != null) {
+        // Check if user has write or admin permission
+        return userPermission == ResourcePermission.admin || 
+               userPermission == ResourcePermission.editor;
+      }
+      
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Check if user can delete a specific recipe
+  Future<bool> canDelete(String recipeId, String userId) async {
+    try {
+      final recipe = await read(recipeId);
+      if (recipe == null) return false;
+      
+      // User can delete if they own the recipe
+      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy ?? '';
+      return ownerId == userId;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ===== COLLABORATION METHODS =====
+
+  /// Add a collaborator to a recipe
+  Future<void> addCollaborator(String recipeId, String userId) async {
+    final currentUser = requireCurrentUserId();
+    
+    // First verify current user owns the recipe
+    final recipe = await read(recipeId);
+    if (recipe == null) {
+      throw ResourceNotFoundException(
+        'Recipe not found',
+        resourceType: 'recipe',
+        resourceId: recipeId,
+      );
+    }
+    
+    await validateOwnership(
+      currentUserId: currentUser,
+      resourceOwnerId: recipe.socialData?.ownerId ?? recipe.createdBy ?? '',
+      resourceType: 'recipe',
+      resourceId: recipeId,
+    );
+    
+    // Add member with editor permission
+    final currentMembers = recipe.socialData?.memberPermissions ?? {};
+    if (!currentMembers.containsKey(userId)) {
+      final updatedMembers = {...currentMembers, userId: ResourcePermission.editor};
+      
+      final updatedRecipe = recipe.copyWith(
+        socialData: recipe.socialData?.copyWith(
+          memberPermissions: updatedMembers,
+        ) ?? RecipeSocialData(
+          memberPermissions: updatedMembers,
+        ),
+      );
+      
+      await update(updatedRecipe);
+    }
+  }
+
+  /// Remove a collaborator from a recipe
+  Future<void> removeCollaborator(String recipeId, String userId) async {
+    final currentUser = requireCurrentUserId();
+    
+    // First verify current user owns the recipe
+    final recipe = await read(recipeId);
+    if (recipe == null) {
+      throw ResourceNotFoundException(
+        'Recipe not found',
+        resourceType: 'recipe',
+        resourceId: recipeId,
+      );
+    }
+    
+    await validateOwnership(
+      currentUserId: currentUser,
+      resourceOwnerId: recipe.socialData?.ownerId ?? recipe.createdBy ?? '',
+      resourceType: 'recipe',
+      resourceId: recipeId,
+    );
+    
+    // Remove member from the recipe
+    final currentMembers = recipe.socialData?.memberPermissions ?? {};
+    if (currentMembers.containsKey(userId)) {
+      final updatedMembers = Map<String, ResourcePermission>.from(currentMembers);
+      updatedMembers.remove(userId);
+      
+      final updatedRecipe = recipe.copyWith(
+        socialData: recipe.socialData?.copyWith(
+          memberPermissions: updatedMembers,
+        ),
+      );
+      
+      await update(updatedRecipe);
+    }
   }
 }

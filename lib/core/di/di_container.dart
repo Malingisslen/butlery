@@ -136,6 +136,7 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Comprehensive dependency injection container that orchestrates modular service management for the Butlery application.
 ///
@@ -206,7 +207,7 @@ class DIContainer {
     _modulesByType[module.runtimeType] = module;
     
     if (kDebugMode) {
-      print('📦 Registered module: ${module.name}');
+      AppLogger.debug('📦 Registered module: ${module.name}');
     }
   }
 
@@ -229,13 +230,13 @@ class DIContainer {
   Future<void> initialize() async {
     if (_isInitialized) {
       if (kDebugMode) {
-        print('⚠️ DIContainer already initialized, skipping');
+        AppLogger.warning('⚠️ DIContainer already initialized, skipping');
       }
       return;
     }
 
     if (kDebugMode) {
-      print('🚀 Initializing DIContainer with ${_modules.length} modules...');
+      AppLogger.info('🚀 Initializing DIContainer with ${_modules.length} modules...');
     }
 
     try {
@@ -243,7 +244,7 @@ class DIContainer {
       final sortedModules = _sortModulesByDependencies();
       
       if (kDebugMode) {
-        print('📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}');
+        AppLogger.debug('📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}');
       }
 
       // Step 2: Configure all modules (register services)
@@ -269,11 +270,11 @@ class DIContainer {
       _isInitialized = true;
       
       if (kDebugMode) {
-        print('✅ DIContainer initialization complete - ${healthReport.healthyCount} services healthy');
+        AppLogger.success('✅ DIContainer initialization complete - ${healthReport.healthyCount} services healthy');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ DIContainer initialization failed: $e');
+        AppLogger.error('❌ DIContainer initialization failed: $e');
       }
       rethrow;
     }
@@ -290,7 +291,7 @@ class DIContainer {
           serviceMap['${module.name}.${serviceType.toString()}'] = service;
         } catch (e) {
           if (kDebugMode) {
-            print('⚠️ Could not get service $serviceType from module ${module.name}: $e');
+            AppLogger.warning('⚠️ Could not get service $serviceType from module ${module.name}: $e');
           }
         }
       }
@@ -313,7 +314,7 @@ class DIContainer {
     _isInitialized = false;
     
     if (kDebugMode) {
-      print('🔄 DIContainer reset complete');
+      AppLogger.info('🔄 DIContainer reset complete');
     }
   }
 
@@ -321,13 +322,13 @@ class DIContainer {
   Future<void> _configureModule(DIModule module) async {
     try {
       if (kDebugMode) {
-        print('🔧 Configuring module: ${module.name}');
+        AppLogger.debug('🔧 Configuring module: ${module.name}');
       }
       
       await module.configure(_container);
       
       if (kDebugMode) {
-        print('✅ Module configured: ${module.name} (provides ${module.provides.length} services)');
+        AppLogger.success('✅ Module configured: ${module.name} (provides ${module.provides.length} services)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -343,7 +344,7 @@ class DIContainer {
   Future<void> _initializeModule(DIModule module) async {
     try {
       if (kDebugMode) {
-        print('⚡ Initializing module: ${module.name}');
+        AppLogger.info('⚡ Initializing module: ${module.name}');
       }
       
       await module.initialize();
@@ -359,7 +360,7 @@ class DIContainer {
       }
       
       if (kDebugMode) {
-        print('✅ Module initialized: ${module.name}');
+        AppLogger.success('✅ Module initialized: ${module.name}');
       }
     } catch (e) {
       throw DIModuleException(

@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -68,6 +67,8 @@ import 'package:butlery/services/unified/operations/modules/recipe_permission_he
 /// ```
 class SocialRecipeOperations {
   final dynamic _parent; // UnifiedRecipeService
+  final RatingsRepository _ratingsRepository;
+  final FirestoreRepository _firestoreRepository;
   late final NotificationService? _notificationService;
   
   // Focused modules for each responsibility area
@@ -78,7 +79,12 @@ class SocialRecipeOperations {
   late final RecipeSocialStats _socialStats;
   late final RecipePermissionHelper _permissionHelper;
 
-  SocialRecipeOperations(this._parent) {
+  SocialRecipeOperations(
+    this._parent, {
+    required RatingsRepository ratingsRepository,
+    required FirestoreRepository firestoreRepository,
+  }) : _ratingsRepository = ratingsRepository,
+       _firestoreRepository = firestoreRepository {
     // Initialize notification service if user is authenticated
     try {
       final currentUserId = _parent.currentUserId;
@@ -100,7 +106,7 @@ class SocialRecipeOperations {
     _memberManager = RecipeMemberManager(_parent, _notificationService);
     _commentsManager = RecipeCommentsManager(_parent, _notificationService);
     _discoveryService = RecipeDiscoveryService(_parent);
-    _socialStats = RecipeSocialStats(_parent, ServiceLocator.get<RatingsRepository>(), ServiceLocator.get<FirestoreRepository>(), _notificationService);
+    _socialStats = RecipeSocialStats(_parent, _ratingsRepository, _firestoreRepository, _notificationService);
     _permissionHelper = RecipePermissionHelper(_parent);
     
     AppLogger.info('✅ SocialRecipeOperations initialized with focused modules');

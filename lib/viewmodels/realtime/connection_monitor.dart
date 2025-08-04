@@ -180,11 +180,14 @@ class ConnectionMonitor {
     };
   }
 
-  void dispose() {
+  Future<void> dispose() async {
     AppLogger.info('🗑️ ConnectionMonitor disposing');
 
     _debounceTimer?.cancel();
-    _connectionSubscription?.cancel();
+    _debounceTimer = null;
+    
+    await _connectionSubscription?.cancel();
+    _connectionSubscription = null;
 
     AppLogger.debug('🗑️ ConnectionMonitor disposed');
   }

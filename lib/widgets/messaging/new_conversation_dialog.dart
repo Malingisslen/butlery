@@ -193,6 +193,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         final isSelected = _selectedFriendIds.contains(friend.uid);
 
         return CheckboxListTile(
+          key: ValueKey(friend.uid),
           title: Text(friend.displayName),
           subtitle: Text(friend.email),
           value: isSelected,

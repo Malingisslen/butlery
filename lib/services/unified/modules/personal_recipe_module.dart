@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
-import 'package:get_it/get_it.dart';
 
 /// Specialized personal recipe operations module providing focused CRUD functionality and local storage management.
 ///
@@ -67,19 +66,20 @@ class PersonalRecipeModule {
   final RecipeServiceAdapter _serviceAdapter;
 
   PersonalRecipeModule({
+    required RecipeRepository recipeRepository,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
-    RecipeServiceAdapter? serviceAdapter,
-  })  : _recipeRepository = GetIt.instance<RecipeRepository>(),
+    required RecipeServiceAdapter serviceAdapter,
+  })  : _recipeRepository = recipeRepository,
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,
         _notifyListeners = notifyListeners,
-        _serviceAdapter = serviceAdapter ?? RecipeServiceAdapter();
+        _serviceAdapter = serviceAdapter;
 
   // ===== PERSONAL RECIPE CRUD =====
 
