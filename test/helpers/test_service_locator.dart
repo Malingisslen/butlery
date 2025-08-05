@@ -25,6 +25,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/viewmodels/auth_viewmodel.dart';
 
 // Repositories
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -115,6 +116,9 @@ class MockNotificationsRepository extends Mock
 /// Mock FirestoreRepository for general Firestore operations
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
+/// Mock AuthViewModel for authentication view testing
+class MockAuthViewModel extends Mock implements AuthViewModel {}
+
 /// Mock DIContainer for dependency injection testing
 class MockDIContainer extends Mock implements DIContainer {}
 
@@ -137,6 +141,9 @@ class TestServiceLocator {
   // Services
   static late MockUnifiedRecipeService mockRecipeService;
   static late MockAuthService mockAuthService;
+  
+  // ViewModels
+  static late MockAuthViewModel mockAuthViewModel;
   static late MockMessagingService mockMessagingService;
   static late MockAnalyticsService mockAnalyticsService;
   static late MockUserService mockUserService;
@@ -187,6 +194,9 @@ class TestServiceLocator {
     mockStorageService = MockStorageService();
     mockShoppingService = MockUnifiedShoppingService();
     mockFriendsService = MockUnifiedFriendsService();
+    
+    // Initialize view models
+    mockAuthViewModel = MockAuthViewModel();
 
     // Initialize repository mocks
     mockAuthRepository = MockFirebaseAuthRepository();
@@ -210,6 +220,13 @@ class TestServiceLocator {
 
   /// Setup default mock behaviors for common operations.
   static void _setupDefaultBehaviors() {
+    // AuthViewModel defaults
+    when(() => mockAuthViewModel.isLoading).thenReturn(false);
+    when(() => mockAuthViewModel.isAuthenticated).thenReturn(false);
+    when(() => mockAuthViewModel.errorMessage).thenReturn(null);
+    when(() => mockAuthViewModel.isLoginMode).thenReturn(true);
+    when(() => mockAuthViewModel.isPasswordVisible).thenReturn(false);
+    
     // RecipeService defaults
     when(() => mockRecipeService.recipes).thenReturn([]);
     when(() => mockRecipeService.personalRecipes).thenReturn([]);
@@ -267,6 +284,8 @@ class TestServiceLocator {
         .thenReturn(mockNotificationsRepository);
     when(() => _mockContainer!.get<FirestoreRepository>())
         .thenReturn(mockFirestoreRepository);
+    when(() => _mockContainer!.get<AuthViewModel>())
+        .thenReturn(mockAuthViewModel);
 
     when(() => _mockContainer!.isRegistered<UnifiedRecipeService>())
         .thenReturn(true);

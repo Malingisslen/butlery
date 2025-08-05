@@ -1,20 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/menu_service.dart';
 // Menu repository not needed
 import '../../../helpers/mock_factories.dart';
-import '../../../helpers/test_service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 // MockMenuRepository not needed
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   late MenuService sut;
   // MockMenuRepository not needed
 
   setUpAll(() {
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
     registerFallbackValue(SharedMenuFactory.empty());
   });
 

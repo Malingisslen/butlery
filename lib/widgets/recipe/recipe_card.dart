@@ -365,6 +365,11 @@ class RecipeCard extends StatelessWidget {
         ),
         onPressed: onFavoriteToggle != null ? () => onFavoriteToggle!(recipe) : null,
         tooltip: 'Lägg till i favoriter',
+        // Ensure minimum touch target size for accessibility
+        constraints: const BoxConstraints(
+          minWidth: 48,
+          minHeight: 48,
+        ),
       ),
     );
   }
@@ -374,6 +379,11 @@ class RecipeCard extends StatelessWidget {
       icon: const Icon(
         Icons.more_vert,
         color: AppColors.textSecondary,
+      ),
+      // Ensure minimum touch target size for accessibility
+      constraints: const BoxConstraints(
+        minWidth: 48,
+        minHeight: 48,
       ),
       onSelected: (value) {
         // Handle context menu actions

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
-import '../golden_test_config.dart';
 import '../../helpers/mock_factories.dart';
+import '../../golden_test_configuration.dart';
+import '../golden_test_config.dart';
 
 void main() {
-  group('RecipeCard Golden Tests with Alchemist', () {
+  configureGoldenTests();
+  group('RecipeCard Golden Tests', () {
     // Create test recipes with different states
     final basicRecipe = RecipeFactory.build(
       title: 'Pasta Carbonara',

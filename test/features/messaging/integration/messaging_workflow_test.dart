@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -7,7 +8,6 @@ import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import '../../../helpers/test_service_locator.dart';
 import '../../../helpers/mock_factories.dart';
 
 // Mocks
@@ -16,6 +16,9 @@ class MockMessagingRepository extends Mock implements MessagingRepository {}
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late MockMessagingService mockMessagingService;
@@ -30,7 +33,7 @@ void main() {
 
   setUp(() {
     // Setup test environment
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
     
     // Create mocks
     mockMessagingService = MockMessagingService();
@@ -41,7 +44,7 @@ void main() {
   });
 
   tearDown(() {
-    TestServiceLocator.reset();
+    // Cleanup is handled by configureTests()
   });
 
   group('Messaging Workflow Integration Tests', () {

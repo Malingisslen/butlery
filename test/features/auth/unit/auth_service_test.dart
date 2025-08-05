@@ -5,6 +5,7 @@
 /// using MockFirebaseAuth and comprehensive test scenarios.
 
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,13 +23,16 @@ class MockUserCredential extends Mock implements UserCredential {
 }
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   group('AuthService', () {
     late AuthService sut; // System Under Test
     late MockFirebaseAuthRepository mockAuthRepository;
     late MockUser mockFirebaseUser;
 
     setUp(() {
-      TestServiceLocator.initialize();
+      // ServiceLocator is already initialized by configureTests()
       mockAuthRepository = TestServiceLocator.mockAuthRepository;
       mockFirebaseUser = TestServiceLocator.mockFirebaseUser;
 
@@ -41,7 +45,7 @@ void main() {
     });
 
     tearDown(() {
-      TestServiceLocator.reset();
+      // Cleanup is handled by configureTests()
     });
 
     group('initialization', () {

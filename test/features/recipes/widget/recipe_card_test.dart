@@ -11,13 +11,16 @@ import 'package:butlery/models/recipe_unified.dart';
 
 import '../../../helpers/test_service_locator.dart';
 import '../../../helpers/test_helpers.dart';
+import '../../../test_configuration.dart';
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+  
   group('RecipeCard Widget Tests', () {
     late Recipe testRecipe;
     setUp(() {
-      TestServiceLocator.initialize();
-
+      // ServiceLocator is already initialized by configureTests()
       testRecipe = TestServiceLocator.createTestRecipe(
         id: 'recipe_card_test',
         title: 'Test Recipe Card',
@@ -28,7 +31,7 @@ void main() {
     });
 
     tearDown(() {
-      TestServiceLocator.reset();
+      // Cleanup is handled by configureTests()
     });
 
     group('basic rendering', () {

@@ -3,13 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import '../helpers/mock_factories.dart';
+import '../golden_test_configuration.dart';
 
 /// Golden tests for responsive layouts across different screen sizes
 /// Ensures UI adapts correctly to various device dimensions
 void main() {
-  setUpAll(() async {
-    await loadAppFonts();
-  });
+  configureGoldenTests();
 
   group('Responsive Layout Golden Tests', () {
     // Define common device sizes

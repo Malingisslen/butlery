@@ -443,6 +443,21 @@ class TestLifecycleHelper {
 
     // Set up test defaults
     debugDisableShadows = true;
+    
+    // Register fallback values to prevent mocktail errors
+    _registerCommonFallbackValues();
+  }
+  
+  static void _registerCommonFallbackValues() {
+    // Register common types used in tests to prevent mocktail errors
+    try {
+      registerFallbackValue(Uri.parse('https://example.com'));
+      registerFallbackValue(DateTime.now());
+      registerFallbackValue(const Duration(seconds: 1));
+      registerFallbackValue(StackTrace.current);
+    } catch (e) {
+      // Fallback values might already be registered
+    }
   }
 
   static Future<void> tearDownTestEnvironment() async {

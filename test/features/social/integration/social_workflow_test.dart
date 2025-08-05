@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -10,7 +11,6 @@ import 'package:butlery/services/social/activity_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/user_service.dart';
-import '../../../helpers/test_service_locator.dart';
 import '../../../helpers/mock_factories.dart';
 
 // Mocks
@@ -25,6 +25,9 @@ class MockUserService extends Mock implements UserService {}
 class MockFriendsManagementOperations extends Mock implements FriendsManagementOperations {}
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late MockSocialRecipeService mockSocialRecipeService;
@@ -41,7 +44,7 @@ void main() {
 
   setUp(() async {
     // Setup test environment
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
 
     // Create mocks
     mockSocialRecipeService = MockSocialRecipeService();
@@ -57,7 +60,7 @@ void main() {
   });
 
   tearDown(() {
-    TestServiceLocator.reset();
+    // Cleanup is handled by configureTests()
   });
 
   group('Social Workflow Integration Tests', () {

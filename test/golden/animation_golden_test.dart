@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
+import '../golden_test_configuration.dart';
 
 /// Golden tests for animations
 /// Captures key frames of animations to ensure smooth transitions
 void main() {
-  setUpAll(() async {
-    await loadAppFonts();
-  });
+  configureGoldenTests();
 
   group('Animation Golden Tests', () {
     testGoldens('Page transition animation frames', (tester) async {

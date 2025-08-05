@@ -5,6 +5,7 @@
 /// using Mocktail and comprehensive test scenarios following Given-When-Then structure.
 
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
@@ -12,13 +13,16 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 import '../../../helpers/test_service_locator.dart';
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   group('RecipeFormViewModel', () {
     late RecipeFormViewModel sut; // System Under Test
     late MockUnifiedRecipeService mockRecipeService;
     late MockAnalyticsService mockAnalyticsService;
 
     setUp(() {
-      TestServiceLocator.initialize();
+      // ServiceLocator is already initialized by configureTests()
       mockRecipeService = TestServiceLocator.mockRecipeService;
       mockAnalyticsService = TestServiceLocator.mockAnalyticsService;
 
@@ -30,7 +34,7 @@ void main() {
 
     tearDown(() {
       sut.dispose();
-      TestServiceLocator.reset();
+      // Cleanup is handled by configureTests()
     });
 
     group('initialization', () {

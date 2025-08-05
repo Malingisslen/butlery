@@ -6,7 +6,7 @@ import 'package:butlery/main.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import '../helpers/test_helpers.dart';
-import '../helpers/test_service_locator.dart';
+import '../test_configuration.dart';
 import '../helpers/mock_factories.dart';
 
 /// Performance benchmark for app startup
@@ -52,6 +52,9 @@ class RecipeListRenderingBenchmark extends BenchmarkBase {
 
 /// Widget tests for performance monitoring
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   group('Performance Tests', () {
     testWidgets('app startup time should be under 3 seconds', (tester) async {
       final stopwatch = Stopwatch()..start();
@@ -210,7 +213,7 @@ void main() {
     });
 
     test('database query performance', () async {
-      TestServiceLocator.initialize();
+      // ServiceLocator is already initialized by configureTests()
 
       final recipeService = UnifiedRecipeService();
 
@@ -274,11 +277,11 @@ void main() {
       debugPrint(
           '[PERF] Pagination performance: ${paginationStopwatch.elapsedMilliseconds}ms');
 
-      TestServiceLocator.dispose();
+      // Disposal is handled by configureTests()
     });
 
     test('concurrent operations performance', () async {
-      TestServiceLocator.initialize();
+      // ServiceLocator is already initialized by configureTests()
 
       final recipeService = UnifiedRecipeService();
 
@@ -319,7 +322,7 @@ void main() {
       debugPrint(
           '[PERF] 100 concurrent reads: ${readStopwatch.elapsedMilliseconds}ms');
 
-      TestServiceLocator.dispose();
+      // Disposal is handled by configureTests()
     });
   });
 

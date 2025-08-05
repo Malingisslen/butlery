@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -6,7 +7,6 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 // Menu repository not needed - MenuService doesn't use a repository
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../helpers/test_service_locator.dart';
 import '../../../helpers/mock_factories.dart';
 
 // Mocks
@@ -16,6 +16,9 @@ class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 // MockMenuRepository not needed
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late MockMenuService mockMenuService;
@@ -29,7 +32,7 @@ void main() {
 
   setUp(() async {
     // Setup test environment
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
 
     // Create mocks
     mockMenuService = MockMenuService();
@@ -41,7 +44,7 @@ void main() {
   });
 
   tearDown(() {
-    TestServiceLocator.dispose();
+    // Disposal is handled by configureTests()
   });
 
   group('Meal Planning Workflow Integration Tests', () {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../golden_test_configuration.dart';
 
 /// Simple golden tests for basic screens
 void main() {
+  configureGoldenTests();
   group('Screen Golden Tests', () {
     testWidgets('Login screen golden test', (tester) async {
       await tester.pumpWidget(

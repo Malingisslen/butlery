@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -8,7 +9,6 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message_type.dart';
 import 'package:flutter/material.dart';
 import '../../../helpers/mock_factories.dart';
-import '../../../helpers/test_service_locator.dart';
 
 // Mocks
 class MockMessagingService extends Mock implements MessagingService {}
@@ -18,6 +18,9 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 class MockTextEditingController extends Mock implements TextEditingController {}
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   late ChatViewModel sut;
   late MockMessagingService mockMessagingService;
   late MockAuthRepository mockAuthRepository;
@@ -25,7 +28,7 @@ void main() {
   late Conversation testConversation;
 
   setUpAll(() async {
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
     registerFallbackValue(MessageFactory.empty());
     registerFallbackValue(MessageType.text);
   });

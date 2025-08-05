@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
+import '../golden_test_configuration.dart';
 
 /// Golden tests for platform-specific rendering
 /// Ensures UI components render correctly on iOS vs Android vs Web
 void main() {
-  setUpAll(() async {
-    await loadAppFonts();
-  });
+  configureGoldenTests();
 
   group('Platform-Specific Rendering Golden Tests', () {
     // Test iOS-style (Cupertino) widgets

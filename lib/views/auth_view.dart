@@ -344,9 +344,10 @@ class _AuthViewState extends State<AuthView> {
   /// Returns styled email input field widget for authentication form integration.
   Widget _buildEmailField(AuthViewModel viewModel) {
     return StyledInput.email(
+      key: const Key('email_field'),
       controller: _emailController,
       focusNode: _emailFocus,
-      label: 'Email',
+      label: 'E-post',
       hint: 'din.email@exempel.se',
       validator: FormValidators.authEmail(),
       onChanged: (_) {
@@ -373,6 +374,7 @@ class _AuthViewState extends State<AuthView> {
   /// Returns secure password input field widget for authentication form integration.
   Widget _buildPasswordField(AuthViewModel viewModel) {
     return StyledInput.password(
+      key: const Key('password_field'),
       controller: _passwordController,
       focusNode: _passwordFocus,
       label: 'Lösenord',
