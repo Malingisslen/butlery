@@ -5,6 +5,7 @@
 /// using FakeFirebaseFirestore and comprehensive test scenarios.
 
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
@@ -14,13 +15,16 @@ import 'package:butlery/core/exceptions/repository_exception.dart';
 import '../../../helpers/test_service_locator.dart';
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   group('FirebaseRecipeRepository', () {
     late FirebaseRecipeRepository sut; // System Under Test
     late FakeFirebaseFirestore fakeFirestore;
     late MockFirebaseAuthRepository mockAuthRepository;
 
     setUp(() {
-      TestServiceLocator.initialize();
+      // ServiceLocator is already initialized by configureTests()
       fakeFirestore = TestServiceLocator.fakeFirestore;
       mockAuthRepository = TestServiceLocator.mockAuthRepository;
 
@@ -34,7 +38,7 @@ void main() {
     });
 
     tearDown(() {
-      TestServiceLocator.reset();
+      // Cleanup is handled by configureTests()
     });
 
     group('create operations', () {

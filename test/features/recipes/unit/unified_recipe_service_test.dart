@@ -5,8 +5,10 @@
 /// error handling, and service coordination using Mocktail and comprehensive test scenarios.
 
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -14,18 +16,25 @@ import 'package:butlery/models/recipe_unified.dart';
 import '../../../helpers/test_service_locator.dart';
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   group('UnifiedRecipeService', () {
     late UnifiedRecipeService sut; // System Under Test
     late FakeFirebaseFirestore fakeFirestore;
     late MockFirebaseAuthRepository mockAuthRepository;
 
     setUp(() {
-      TestServiceLocator.initialize();
+      // ServiceLocator is already initialized by configureTests()
       fakeFirestore = TestServiceLocator.fakeFirestore;
       mockAuthRepository = TestServiceLocator.mockAuthRepository;
 
       // Setup auth repository defaults
       when(() => mockAuthRepository.currentUserId).thenReturn('test_user_123');
+      // Return null for currentUser to prevent sync from starting
+      when(() => mockAuthRepository.currentUser).thenReturn(null);
+      when(() => mockAuthRepository.authStateChanges())
+          .thenAnswer((_) => Stream<User?>.value(null));
 
       sut = UnifiedRecipeService(
         firestore: fakeFirestore,
@@ -39,7 +48,7 @@ void main() {
     });
 
     tearDown(() {
-      TestServiceLocator.reset();
+      // Cleanup is handled by configureTests()
     });
 
     group('initialization', () {
@@ -49,10 +58,19 @@ void main() {
         expect(sut.recipes, isEmpty);
 
         // When
-        await sut.initialize();
+        try {
+          await sut.initialize();
+        } catch (e, stack) {
+          // Log error for debugging
+          // ignore: avoid_print
+          print('Initialize error: $e');
+          // ignore: avoid_print
+          print('Stack: $stack');
+          rethrow;
+        }
 
         // Then
-        expect(sut.isInitialized, isTrue);
+        expect(sut.isInitialized, isTrue, reason: 'Error: ${sut.error}');
         expect(sut.error, isNull);
         expect(sut.hasError, isFalse);
       });

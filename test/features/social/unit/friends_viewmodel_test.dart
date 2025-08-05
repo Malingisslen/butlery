@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -7,7 +8,6 @@ import 'package:butlery/services/unified/operations/friends_categories_operation
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_request.dart';
 import '../../../helpers/mock_factories.dart';
-import '../../../helpers/test_service_locator.dart';
 
 // Mocks
 class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {}
@@ -19,6 +19,9 @@ class MockFriendsManagementOperations extends Mock implements FriendsManagementO
 class MockFriendsCategoriesOperations extends Mock implements FriendsCategoriesOperations {}
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   late FriendsViewModel sut;
   late MockUnifiedFriendsService mockFriendsService;
   late MockUserService mockUserService;
@@ -26,7 +29,7 @@ void main() {
   late MockFriendsCategoriesOperations mockCategoriesOps;
 
   setUpAll(() async {
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
     registerFallbackValue(FriendFactory.empty());
     registerFallbackValue(FriendRequestFactory.empty());
     registerFallbackValue(FriendCategoryFactory.build());

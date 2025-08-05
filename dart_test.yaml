@@ -1,0 +1,45 @@
+# Configuration for Dart & Flutter tests
+# https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md
+
+# Define test tags
+tags:
+  # Golden tests use visual regression testing
+  golden:
+    description: Visual regression tests using golden files
+    
+  # Integration tests that may take longer
+  integration:
+    description: Integration tests with external dependencies
+    timeout: 5m
+    
+  # Performance tests
+  performance:
+    description: Performance and benchmark tests
+    timeout: 10m
+    
+  # Tests that require network access
+  network:
+    description: Tests that make network requests
+    
+  # Tests that are currently broken
+  skip:
+    skip: true
+
+# Test timeout defaults
+timeout: 30s
+
+# Run tests in parallel
+concurrency: 4
+
+# Reporter configuration
+reporter: expanded
+
+# Platform configuration
+platforms:
+  - vm
+
+# Override settings for CI
+on_os:
+  windows:
+    # Longer timeouts on Windows CI
+    timeout: 1m

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../golden_test_configuration.dart';
 
 /// Golden tests for app theme variations
 void main() {
+  configureGoldenTests();
   group('Theme Golden Tests', () {
     testWidgets('Light theme components', (tester) async {
       await tester.pumpWidget(

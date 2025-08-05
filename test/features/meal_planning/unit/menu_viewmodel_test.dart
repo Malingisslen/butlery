@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import '../../../test_configuration.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/services/menu_service.dart';
@@ -17,6 +18,9 @@ class MockSocialMenuOperations extends Mock implements SocialMenuOperations {}
 class MockAuthService extends Mock implements AuthService {}
 
 void main() {
+  // Configure tests to ensure ServiceLocator is properly initialized
+  configureTests();
+
   late MenuViewModel sut;
   late MockMenuService mockMenuService;
   late MockUnifiedRecipeService mockRecipeService;
@@ -30,7 +34,7 @@ void main() {
 
   setUp(() {
     // Initialize test service locator
-    TestServiceLocator.initialize();
+    // ServiceLocator is already initialized by configureTests()
 
     mockMenuService = MockMenuService();
     mockRecipeService = MockUnifiedRecipeService();
@@ -56,7 +60,7 @@ void main() {
 
   tearDown(() {
     sut.dispose();
-    TestServiceLocator.dispose();
+    // Disposal is handled by configureTests()
   });
 
   group('MenuViewModel - Initialization', () {
