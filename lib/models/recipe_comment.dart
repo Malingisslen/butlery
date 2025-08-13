@@ -381,6 +381,33 @@ class RecipeComment {
   ///
   /// Returns a new [RecipeComment] instance with all data properly parsed and validated.
   factory RecipeComment.fromMap(String id, Map<String, dynamic> data) {
+    // Import Timestamp type if needed
+    final dynamic createdAtValue = data['createdAt'];
+    DateTime createdAt;
+    if (createdAtValue is DateTime) {
+      createdAt = createdAtValue;
+    } else if (createdAtValue is int) {
+      createdAt = DateTime.fromMillisecondsSinceEpoch(createdAtValue);
+    } else if (createdAtValue != null && createdAtValue.runtimeType.toString().contains('Timestamp')) {
+      // Handle Firestore Timestamp
+      createdAt = (createdAtValue as dynamic).toDate();
+    } else {
+      createdAt = DateTime.now();
+    }
+    
+    DateTime? editedAt;
+    if (data['editedAt'] != null) {
+      final dynamic editedAtValue = data['editedAt'];
+      if (editedAtValue is DateTime) {
+        editedAt = editedAtValue;
+      } else if (editedAtValue is int) {
+        editedAt = DateTime.fromMillisecondsSinceEpoch(editedAtValue);
+      } else if (editedAtValue.runtimeType.toString().contains('Timestamp')) {
+        // Handle Firestore Timestamp
+        editedAt = (editedAtValue as dynamic).toDate();
+      }
+    }
+    
     return RecipeComment(
       id: id,
       recipeId: data['recipeId'] as String,
@@ -388,14 +415,8 @@ class RecipeComment {
       authorDisplayName: data['authorDisplayName'] as String? ?? 'Användare',
       authorAvatarUrl: data['authorAvatarUrl'] as String?,
       text: data['text'] as String? ?? '',
-      createdAt: data['createdAt'] is DateTime 
-          ? data['createdAt'] as DateTime
-          : DateTime.fromMillisecondsSinceEpoch(data['createdAt'] as int),
-      editedAt: data['editedAt'] != null
-          ? (data['editedAt'] is DateTime 
-              ? data['editedAt'] as DateTime
-              : DateTime.fromMillisecondsSinceEpoch(data['editedAt'] as int))
-          : null,
+      createdAt: createdAt,
+      editedAt: editedAt,
       likedByUserIds: List<String>.from(data['likedByUserIds'] ?? []),
       parentCommentId: data['parentCommentId'] as String?,
       replyCount: data['replyCount'] as int? ?? 0,

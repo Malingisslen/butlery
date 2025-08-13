@@ -16,6 +16,14 @@ cmd.exe /c "flutter COMMAND"
 - **Dependency Injection**: Modular DI system with domain-driven modules (see below)
 - **Notifications**: Complete FCM system with development logging approach
 - **Social Features**: 90% infrastructure implemented (social views and services exist, need verification)
+- **Test Infrastructure**: ✅ 100% complete - 205 comprehensive mocks in 22 files
+  - All services, repositories, ViewModels, managers, and handlers mocked
+  - Use configuration methods (`setAuthState`, `setRecipeState`) for concrete mocks
+  - Only stub abstract methods with `when()`, not concrete getters
+  - Access mocks via `TestServiceLocator.mockAuthService`, etc.
+  - **Repository Tests**: ✅ 100% complete (24/24 repositories tested with 1289+ tests)
+  - **Service Tests**: 🔴 27.9% coverage (36/129 tested) - Critical gap
+  - **ViewModel Tests**: 🔴 9.3% coverage (5/54 tested) - Urgent attention needed
 - **Code Quality**: Single Responsibility Principle enforced
 - **Security**: Comprehensive permission validation system implemented:
   - PermissionValidationMixin for all Firebase repositories
@@ -63,7 +71,56 @@ await ApplicationBootstrap.initialize();
 - **Flutter Intelligence**: State management, widget optimization, lifecycle analysis
 - **Run Command**: `cmd.exe /c "dart tools/code_intelligence_platform.dart"`
 
+## Test System Guidelines
+**CRITICAL**: Read `/test/TEST_GUIDE.md` for complete test patterns
+
+### Test Infrastructure Status
+- **Mock System**: Configuration-based mocks with setter methods
+- **Service Locator**: Mirrors production `ServiceLocator.get<T>()` pattern  
+- **Base Classes**: Always use `BaseUnitTest.setupUnit()` in setUp
+- **AAA Pattern**: Use simple comment markers (// Arrange, // Act, // Assert)
+- **NO TestContext**: Removed for simplicity - use traditional AAA comments
+
+### Key Test Rules
+```dart
+// ✅ CORRECT - Configuration methods for mocks
+mockAuthRepository.setAuthState(userId: 'test_123');
+mockRecipeService.setRecipeState(recipes: []);
+
+// ❌ WRONG - Never stub concrete getters
+when(() => mockAuthRepository.currentUserId).thenReturn('test_123');
+
+// ✅ CORRECT - Only stub abstract Mock methods
+when(() => mockRepo.signIn(any(), any())).thenAnswer((_) async {});
+
+// ✅ CORRECT - Standard test structure
+setUp(() async {
+  await BaseUnitTest.setupUnit();  // NOT BaseTest.setup()
+  await TestServiceLocator.initialize();
+});
+```
+
+### Test Data Builders
+```dart
+// Use builder pattern with Swedish defaults
+final recipe = RecipeBuilder().asSwedishDinner().build();
+final user = UserBuilder().asSwedishUser().build();
+```
+
+### Current Test Status
+- **✅ All stubbing violations fixed** - Configuration methods implemented
+- **✅ All tests standardized** - Using BaseUnitTest.setupUnit()
+- **✅ 24 centralized mocks** - In production_mocks.dart
+- **📋 Next**: Add widget/integration tests, centralize remaining duplicate mocks
+
 ## Workflow Instructions
+
+### 🚀 Quick Start for Test Development
+**Just say:** "Continue work following WORK_INSTRUCTIONS.md"
+- This loads all test principles, patterns, and current priorities
+- See `/WORK_INSTRUCTIONS.md` for complete test development guide
+
+### 📋 General Development Workflow
 **Before starting:**
 1. Think through problem, read codebase and `/docs` documentation
 2. Write detailed plan to `tasks/todo.md` with checkable todo items

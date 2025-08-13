@@ -1,5 +1,7 @@
 // lib/services/unified/operations/realtime_recipe/realtime_editing_module.dart
 
+// ignore: unused_import
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';

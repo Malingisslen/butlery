@@ -624,6 +624,53 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
       rethrow;
     }
   }
+  // ===== BACKWARD COMPATIBILITY ALIASES =====
+  // These methods provide backward compatibility for code that uses the old method names
+  
+  /// Alias for markSharedRecipeAsViewed - marks a shared recipe as read/viewed
+  Future<bool> markRecipeAsRead(String recipeId) async {
+    final currentUserId = _permissionService.currentUserId;
+    if (currentUserId == null) return false;
+    return markSharedRecipeAsViewed(recipeId, currentUserId);
+  }
+  
+  /// Alias for markSharedMenuAsViewed - marks a shared menu as read/viewed
+  Future<bool> markMenuAsRead(String menuId) async {
+    final currentUserId = _permissionService.currentUserId;
+    if (currentUserId == null) return false;
+    return markSharedMenuAsViewed(menuId, currentUserId);
+  }
+  
+  /// Alias for importSharedRecipe - imports a shared recipe to user's collection
+  Future<bool> importRecipe(SharedRecipe sharedRecipe) async {
+    return importSharedRecipe(sharedRecipe.id);
+  }
+  
+  /// Alias for importSharedMenu - imports a shared menu to user's collection
+  Future<bool> importMenu(SharedMenu sharedMenu) async {
+    return importSharedMenu(sharedMenu.id);
+  }
+  
+  /// Alias for dismissSharedRecipe - dismisses/hides a shared recipe
+  Future<bool> dismissRecipe(String recipeId) async {
+    return dismissSharedRecipe(recipeId);
+  }
+  
+  /// Alias for dismissSharedMenu - dismisses/hides a shared menu
+  Future<bool> dismissMenu(String menuId) async {
+    return dismissSharedMenu(menuId);
+  }
+  
+  /// Alias for undismissSharedRecipe - restores a dismissed recipe
+  Future<bool> undismissRecipe(String recipeId) async {
+    return undismissSharedRecipe(recipeId);
+  }
+  
+  /// Alias for undismissSharedMenu - restores a dismissed menu
+  Future<bool> undismissMenu(String menuId) async {
+    return undismissSharedMenu(menuId);
+  }
+  
   @override
   void dispose() {
     // Cancel all timers

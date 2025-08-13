@@ -102,10 +102,14 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       operation: 'create recipe',
     );
     
-    // Validate required fields
+    // Validate required fields - extract core data for validation
+    final firestoreData = entity.toFirestore();
+    final coreData = firestoreData['core'] as Map<String, dynamic>? ?? {};
+    
+    // Check for required fields in core data
     validateRequiredFields(
-      data: entity.toFirestore(),
-      requiredFields: ['title', 'userId', 'createdAt', 'updatedAt'],
+      data: coreData,
+      requiredFields: ['title', 'createdBy', 'createdAt', 'updatedAt'],
       resourceType: 'recipe',
     );
     
@@ -167,7 +171,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Override to add ordering that was in original implementation
     try {
       final ref = getCollectionRef();
-      final snapshot = await ref.orderBy('updatedAt', descending: true).get();
+      // Order by the nested field path since data is stored in 'core' structure
+      final snapshot = await ref.orderBy('core.updatedAt', descending: true).get();
       return snapshot.docs.map(fromFirestore).toList();
     } catch (e) {
       // Fall back to safe version if no user
@@ -182,7 +187,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Use the mixin method to get user-specific collection
     // ✅ PERFORMANCE FIX: Added limit to prevent streaming large datasets
     return getCollectionForUser(userId)
-        .orderBy('updatedAt', descending: true)
+        .orderBy('core.updatedAt', descending: true)
         .limit(50) // Stream max 50 most recent recipes
         .snapshots()
         .map((snap) => snap.docs.map(fromFirestore).toList());
@@ -200,7 +205,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (userId == null) return [];
     
     final snap = await getCollectionForUser(userId)
-        .orderBy('updatedAt', descending: true)
+        .orderBy('core.updatedAt', descending: true)
         .limit(200) // Limit search scope to most recent 200 recipes
         .get();
     
@@ -223,7 +228,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     Function? onError,
   }) {
     return getCollectionForUser(userId)
-        .orderBy('updatedAt', descending: true)
+        .orderBy('core.updatedAt', descending: true)
         .snapshots()
         .listen((snapshot) {
       final changes = snapshot.docChanges.map((change) {
@@ -244,9 +249,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> fetchArchiveRecipes() async {
     // Archive recipes are stored in a global collection, not user-scoped
     // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
-    final snap = await FirebaseFirestore.instance
+    final snap = await firestore
         .collection('butlery_archive')
-        .orderBy('createdAt', descending: true)
+        .orderBy('core.createdAt', descending: true)
         .limit(100) // Load max 100 archive recipes
         .get();
     return snap.docs.map(fromFirestore).toList();
@@ -255,7 +260,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<Recipe> fetchArchiveRecipe(String id) async {
     // Archive recipes are stored in a global collection, not user-scoped
-    final doc = await FirebaseFirestore.instance
+    final doc = await firestore
         .collection('butlery_archive')
         .doc(id)
         .get();
@@ -270,7 +275,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Use the mixin method for user-specific collection
     // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
     final snap = await getCollectionForUser(userId)
-        .orderBy('updatedAt', descending: true)
+        .orderBy('core.updatedAt', descending: true)
         .limit(50) // Limit to 50 most recent recipes
         .get();
     return snap.docs.map(fromFirestore).toList();
@@ -284,8 +289,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (userId == null) return [];
     
     final snap = await getCollectionForUser(userId)
-        .where('mealType', isEqualTo: mealType)
-        .orderBy('updatedAt', descending: true)
+        .where('core.mealType', isEqualTo: mealType)
+        .orderBy('core.updatedAt', descending: true)
         .limit(100)
         .get();
     
@@ -300,7 +305,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Note: Firestore doesn't support array-contains with case-insensitive search
     // This is a basic implementation - for production, consider using Algolia or similar
     final snap = await getCollectionForUser(userId)
-        .orderBy('updatedAt', descending: true)
+        .orderBy('core.updatedAt', descending: true)
         .limit(200)
         .get();
     
@@ -319,7 +324,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     
     final lowerTitle = title.toLowerCase();
     final snap = await getCollectionForUser(userId)
-        .orderBy('updatedAt', descending: true)
+        .orderBy('core.updatedAt', descending: true)
         .limit(200)
         .get();
     

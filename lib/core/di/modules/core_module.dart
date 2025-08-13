@@ -20,6 +20,8 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 // Repositories and interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
@@ -50,6 +52,7 @@ class CoreModule implements DIModule {
     AuthService,
     FirestoreRepository,
     PersistenceService,
+    AnalyticsRepository,
     AnalyticsService,
   ];
 
@@ -106,8 +109,19 @@ class CoreModule implements DIModule {
         debugPrint('✅ [CoreModule] PersistenceService registered');
       }
 
+      // Analytics repository for analytics operations
+      container.registerSingleton<AnalyticsRepository>(
+        FirebaseAnalyticsRepository(),
+      );
+      
+      if (kDebugMode) {
+        debugPrint('✅ [CoreModule] AnalyticsRepository registered');
+      }
+
       // Analytics service for monitoring and tracking
-      container.registerSingleton<AnalyticsService>(AnalyticsService());
+      container.registerSingleton<AnalyticsService>(
+        AnalyticsService(repository: container<AnalyticsRepository>()),
+      );
       
       if (kDebugMode) {
         debugPrint('✅ [CoreModule] AnalyticsService registered');
@@ -180,6 +194,7 @@ class CoreModule implements DIModule {
         'AuthService': container<AuthService>(),
         'FirestoreRepository': container<FirestoreRepository>(),
         'PersistenceService': container<PersistenceService>(),
+        'AnalyticsRepository': container<AnalyticsRepository>(),
         'AnalyticsService': container<AnalyticsService>(),
       };
 

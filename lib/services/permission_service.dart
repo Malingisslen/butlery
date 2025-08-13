@@ -1,5 +1,7 @@
 /// Comprehensive permission management service providing centralized authorization and access control across the application.
-///
+
+import 'package:flutter/foundation.dart';
+
 /// This singleton service provides sophisticated permission management and access control functionality for
 /// collaborative features including recipes, shopping lists, groups, and user interactions. It implements
 /// a simplified mock-based permission system that can be easily extended to integrate with real authentication
@@ -84,6 +86,16 @@ class PermissionService {
   
   /// Private constructor for singleton pattern implementation.
   PermissionService._internal(this._authRepository);
+  
+  /// Reset singleton instance for testing purposes only.
+  /// 
+  /// WARNING: This method should ONLY be used in test environments to ensure
+  /// test isolation. Using this in production code will break the singleton
+  /// pattern and may cause unexpected behavior.
+  @visibleForTesting
+  static void resetForTesting() {
+    _instance = null;
+  }
 
   /// Current authenticated user ID for permission validation and ownership checks.
   /// 

@@ -14,12 +14,13 @@ This directory contains documentation for setting up and configuring the Butlery
 
 For new developers getting started:
 
-1. Read the main [README.md](../../README.md) for project overview
+1. Read the project documentation for overview
 2. Follow [ENV_SETUP.md](./ENV_SETUP.md) for environment configuration
-3. Check [CLAUDE.md](../../CLAUDE.md) for development workflow
+3. Check the development guide for workflow instructions
 
 ## Related Documentation
 
-- **Security**: See `/docs/security/` for Firebase security rules
-- **Architecture**: See `/docs/architecture/` for system design
-- **Development**: See [CLAUDE.md](../../CLAUDE.md) for coding standards
+- **Security**: See `../security/` for Firebase security rules
+- **Architecture**: See `../architecture/` for system design
+- **Development**: See `../development_guide.md` for coding standards
+- **Testing**: See `../testing/` for test infrastructure

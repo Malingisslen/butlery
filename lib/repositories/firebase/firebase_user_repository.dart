@@ -101,10 +101,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update profile',
     );
     
-    // Validate required fields
+    // Validate required fields (uid is not in toFirestore, it's the document ID)
     validateRequiredFields(
       data: profile.toFirestore(),
-      requiredFields: ['displayName', 'uid'],
+      requiredFields: ['displayName', 'email'],
       resourceType: 'user_profile',
     );
     

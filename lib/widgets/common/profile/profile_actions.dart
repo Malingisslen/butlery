@@ -1,12 +1,20 @@
 // lib/widgets/common/profile/profile_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/backup_service.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
 /// Profile action handlers and UI components
@@ -227,6 +235,39 @@ class ProfileActions {
     );
   }
 
+  /// Build account management section (GDPR compliance)
+  static Widget buildAccountManagementSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(
+            color: AppColors.divider,
+            height: AppDimensions.dividerHeight,
+          ),
+          const SizedBox(height: AppDimensions.spacingXl),
+          Text(
+            'Kontohantering',
+            style: AppTextStyles.headlineSmall.copyWith(
+              fontSize: AppTextStyles.displaySmall.fontSize,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildDataButton(
+            context: context,
+            icon: Icons.delete_forever,
+            title: 'Radera konto',
+            subtitle: 'Ta bort ditt konto och all data permanent',
+            onTap: () => _handleDeleteAccount(context),
+            color: AppColors.error,
+          ),
+        ],
+      ),
+    );
+  }
+
   // PRIVATE HELPERS
 
   /// Build data button
@@ -393,5 +434,221 @@ class ProfileActions {
         );
       }
     }
+  }
+
+  /// Handle delete account
+  static Future<void> _handleDeleteAccount(BuildContext context) async {
+    // Show initial confirmation dialog
+    final shouldDelete = await _showDeleteAccountDialog(context);
+    if (shouldDelete != true || !context.mounted) return;
+
+    // Show password re-authentication dialog
+    final password = await _showPasswordDialog(context);
+    if (password == null || !context.mounted) return;
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      // Re-authenticate user
+      final auth = FirebaseAuth.instance;
+      final user = auth.currentUser;
+      if (user == null) throw Exception('Ingen inloggad användare');
+
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // Create deletion service
+      final deletionService = AccountDeletionService(
+        auth: auth,
+        firestore: FirebaseFirestore.instance,
+        authService: ServiceLocator.get<AuthService>(),
+        userService: ServiceLocator.get<UserService>(),
+        recipeService: ServiceLocator.get<UnifiedRecipeService>(),
+        offlineService: ServiceLocator.get<OfflineService>(),
+        analyticsService: ServiceLocator.get<AnalyticsService>(),
+      );
+
+      // Perform deletion
+      final result = await deletionService.deleteUserAccount(
+        reason: 'User requested account deletion',
+        createAuditLog: true,
+      );
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading indicator
+
+        if (result['success'] == true) {
+          // Account deleted successfully
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ditt konto har raderats permanent'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          // Deletion failed
+          _showDeletionErrorDialog(context, result);
+        }
+      }
+    } catch (e) {
+      AppLogger.error('Account deletion failed', e);
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading indicator
+        _showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  /// Show delete account confirmation dialog
+  static Future<bool?> _showDeleteAccountDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Radera konto permanent'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'VARNING: Detta kommer att:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text('• Ta bort alla dina recept'),
+            Text('• Ta bort alla dina menyer'),
+            Text('• Ta bort alla dina shoppinglistor'),
+            Text('• Ta bort alla vänner och meddelanden'),
+            Text('• Ta bort all delad innehåll'),
+            SizedBox(height: 16),
+            Text(
+              'Denna åtgärd kan INTE ångras!',
+              style: TextStyle(
+                color: AppColors.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Avbryt'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
+            child: const Text('Jag förstår, radera mitt konto'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show password re-authentication dialog
+  static Future<String?> _showPasswordDialog(BuildContext context) {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bekräfta med lösenord'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ange ditt lösenord för att bekräfta raderingen:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Lösenord',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Avbryt'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
+            child: const Text('Bekräfta'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show deletion error dialog
+  static void _showDeletionErrorDialog(
+    BuildContext context,
+    Map<String, dynamic> result,
+  ) {
+    final failedCollections = result['failedCollections'] as List<dynamic>?;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Radering misslyckades delvis'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Följande data kunde inte raderas:'),
+            const SizedBox(height: 8),
+            if (failedCollections != null)
+              ...failedCollections.map((collection) => Text('• $collection')),
+            const SizedBox(height: 16),
+            const Text(
+              'Kontakta support för hjälp.',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show error dialog
+  static void _showErrorDialog(BuildContext context, String error) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Fel'),
+        content: Text('Kunde inte radera konto: $error'),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }

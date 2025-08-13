@@ -172,7 +172,7 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
       setError: _setError,
       notifyListeners: notifyListeners,
       getRecipe: (String id) async => getRecipeById(id),
-      saveRecipe: updateRecipe,
+      saveRecipe: _saveRecipeForSocialModule,
     );
 
     _realtimeModule = RealtimeRecipeModule(
@@ -186,6 +186,7 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     );
 
     _cacheModule = RecipeCacheModule(
+      firestore: _firestore,
       cacheHelper: cacheHelper,
       getCurrentUserId: () => currentUserId,
       setError: _setError,
@@ -346,6 +347,46 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     return await _personalModule.markRecipeAsCooked(recipeId);
   }
 
+  // ===== INTERNAL SAVE METHOD FOR SOCIAL MODULE =====
+  
+  /// Save a recipe from the social module (handles both create and update)
+  /// This method determines whether to create a new recipe or update an existing one
+  Future<bool> _saveRecipeForSocialModule(Recipe recipe) async {
+    try {
+      final serviceAdapter = _createServiceAdapter();
+      
+      // Check if this recipe already exists in our list
+      final existingRecipe = getRecipeById(recipe.id);
+      
+      if (existingRecipe != null) {
+        // Update existing recipe
+        final success = await serviceAdapter.updateRecipe(recipe);
+        if (success) {
+          // Update local cache
+          final index = _recipes.indexWhere((r) => r.id == recipe.id);
+          if (index != -1) {
+            _recipes[index] = recipe;
+            notifyListeners();
+          }
+        }
+        return success;
+      } else {
+        // Create new recipe
+        final createdId = await serviceAdapter.createRecipe(recipe);
+        if (createdId != null) {
+          // Add to local cache
+          _recipes.add(recipe);
+          notifyListeners();
+          return true;
+        }
+        return false;
+      }
+    } catch (e) {
+      AppLogger.error('❌ Failed to save recipe from social module: $e');
+      return false;
+    }
+  }
+
   // ===== COLLABORATIVE RECIPE OPERATIONS (DELEGATE TO SOCIAL MODULE) =====
 
   Future<String?> createCollaborativeRecipe({
@@ -377,14 +418,8 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
       tags: tags,
     );
 
-    if (recipeId != null) {
-      // Add to local list
-      final recipe = await _cacheModule.loadRecipeFromCache(recipeId);
-      if (recipe != null) {
-        _recipes.add(recipe);
-        notifyListeners();
-      }
-    }
+    // Note: Recipe is already added to _recipes in _saveRecipeForSocialModule
+    // No need to add it again here
 
     return recipeId;
   }

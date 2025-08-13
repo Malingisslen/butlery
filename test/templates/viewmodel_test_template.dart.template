@@ -1,0 +1,131 @@
+/// Template for ViewModel Tests
+/// 
+/// Use this template for tests that:
+/// - Test ViewModels with ChangeNotifier
+/// - Require production ServiceLocator setup
+/// - Need to test state changes and notifications
+/// 
+/// Examples: AuthViewModel, RecipeFormViewModel, any ViewModel tests
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+// Import your ViewModel
+// import 'package:butlery/viewmodels/your_viewmodel.dart';
+
+// Import test infrastructure
+import '../infrastructure/helpers/base_unit_test.dart';
+import '../infrastructure/di/test_service_locator.dart';
+import '../infrastructure/mocks/production_mocks.dart';
+
+// Import production ServiceLocator for ViewModel initialization
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+
+void main() {
+  group('YourViewModel', () {
+    late YourViewModel viewModel;
+    late MockService mockService;
+    late MockRepository mockRepository;
+    
+    setUpAll(() async {
+      // Initialize base test infrastructure
+      await BaseUnitTest.setupUnit();
+      
+      // Register fallback values if needed
+      registerFallbackValue(FakeModel());
+    });
+    
+    setUp(() async {
+      // Initialize TestServiceLocator
+      await TestServiceLocator.initialize();
+      
+      // Create mocks
+      mockService = TestServiceLocator.mockUnifiedRecipeService;
+      mockRepository = TestServiceLocator.mockAuthRepository;
+      
+      // Configure mock states
+      mockService.setServiceState(
+        isLoading: false,
+        recipes: [],
+      );
+      
+      mockRepository.setAuthState(
+        userId: 'test-user-123',
+        isAuthenticated: true,
+      );
+      
+      // Create ViewModel (may use production ServiceLocator internally)
+      viewModel = YourViewModel();
+      
+      // Or inject mocks directly if constructor allows
+      // viewModel = YourViewModel(
+      //   service: mockService,
+      //   repository: mockRepository,
+      // );
+    });
+    
+    tearDown(() {
+      // IMPORTANT: Dispose ViewModel to prevent memory leaks
+      viewModel.dispose();
+      
+      // Reset test infrastructure
+      TestServiceLocator.reset();
+      BaseUnitTest.resetMocks();
+    });
+    
+    tearDownAll(() async {
+      await BaseUnitTest.teardownUnit();
+    });
+    
+    group('State Management', () {
+      test('should initialize with default state', () {
+        // Assert
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.error, isNull);
+        expect(viewModel.items, isEmpty);
+      });
+      
+      test('should notify listeners on state change', () {
+        // Arrange
+        var notificationCount = 0;
+        viewModel.addListener(() => notificationCount++);
+        
+        // Act
+        viewModel.updateState();
+        
+        // Assert
+        expect(notificationCount, equals(1));
+      });
+      
+      test('should handle async operations', () async {
+        // Arrange
+        when(() => mockService.fetchData())
+            .thenAnswer((_) async => ['item1', 'item2']);
+        
+        // Act
+        await viewModel.loadData();
+        
+        // Assert
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.items, hasLength(2));
+        verify(() => mockService.fetchData()).called(1);
+      });
+    });
+    
+    group('Error Handling', () {
+      test('should handle errors gracefully', () async {
+        // Arrange
+        when(() => mockService.fetchData())
+            .thenThrow(Exception('Network error'));
+        
+        // Act
+        await viewModel.loadData();
+        
+        // Assert
+        expect(viewModel.error, contains('Network error'));
+        expect(viewModel.isLoading, isFalse);
+      });
+    });
+  });
+}

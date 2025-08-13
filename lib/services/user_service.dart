@@ -218,22 +218,18 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
     _clearError();
     
     try {
-      final result = await safeExecute(
-        () async {
-          final results = await _repository.searchProfiles(query);
+      final results = await _repository.searchProfiles(query);
 
-          for (final profile in results) {
-            _profileCache[profile.uid] = profile;
-            _cacheTimestamps[profile.uid] = DateTime.now();
-          }
+      for (final profile in results) {
+        _profileCache[profile.uid] = profile;
+        _cacheTimestamps[profile.uid] = DateTime.now();
+      }
 
-          return results;
-        },
-        operationName: 'Search users',
-        defaultValue: <UserProfile>[],
-      );
-      
-      return result ?? [];
+      return results;
+    } catch (e, stackTrace) {
+      AppLogger.error('Search users failed: $e', stackTrace);
+      _setError('Failed to search users. Please try again.');
+      return [];
     } finally {
       _setLoading(false);
     }

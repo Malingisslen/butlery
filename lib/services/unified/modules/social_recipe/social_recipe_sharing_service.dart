@@ -36,7 +36,10 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
        _setError = setError,
        _notifyListeners = notifyListeners,
        _getRecipe = getRecipe,
-       _saveRecipe = saveRecipe;
+       _saveRecipe = saveRecipe {
+    // Set the user ID provider for the mixin
+    setUserIdProvider(getCurrentUserId);
+  }
 
   /// Share a personal recipe with specific users
   Future<bool> shareRecipeWithUsers(

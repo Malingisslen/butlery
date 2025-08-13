@@ -58,6 +58,9 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     RecipeServiceAdapter? serviceAdapter,
   }) : _serviceAdapter = serviceAdapter ?? SocialRecipeCoordinator._createDefaultServiceAdapter() {
     
+    // Set the user ID provider for the mixin
+    setUserIdProvider(getCurrentUserId);
+    
     // Initialize focused services
     _creationService = SocialRecipeCreationService(
       getCurrentUserId: getCurrentUserId,

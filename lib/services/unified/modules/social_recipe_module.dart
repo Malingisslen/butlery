@@ -86,6 +86,9 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required Future<bool> Function(Recipe) saveRecipe,
     RecipeServiceAdapter? serviceAdapter,
   }) {
+    // Set the user ID provider for the mixin
+    setUserIdProvider(getCurrentUserId);
+    
     // Initialize the coordinator with all dependencies
     _coordinator = SocialRecipeCoordinator(
       cacheHelper: cacheHelper,

@@ -1,0 +1,583 @@
+/// Error Test Template - Comprehensive error testing patterns
+/// 
+/// This template provides standard patterns for testing error scenarios
+/// across services, repositories, and ViewModels. Copy and adapt these
+/// patterns for your specific test needs.
+/// 
+/// Replace placeholders:
+/// - [ServiceName] with your service class name
+/// - [MethodName] with the method being tested
+/// - [MockDependency] with your mock dependency
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../infrastructure/helpers/base_unit_test.dart';
+import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/constants/test_constants.dart';
+
+void main() {
+  group('[ServiceName] Error Cases', () {
+    late [ServiceName] service;
+    late [MockDependency] mockDependency;
+    
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+    });
+    
+    setUp(() async {
+      await TestServiceLocator.initialize();
+      mockDependency = TestServiceLocator.mock[Dependency];
+      service = [ServiceName](dependency: mockDependency);
+    });
+    
+    tearDown(() async {
+      BaseUnitTest.resetMocks();
+      await TestServiceLocator.reset();
+    });
+    
+    tearDownAll(() async {
+      await BaseUnitTest.teardownUnit();
+    });
+    
+    // ============================================================================
+    // Network Error Scenarios
+    // ============================================================================
+    
+    group('Network Errors', () {
+      test('should handle network timeout gracefully', () async {
+        // Arrange
+        when(() => mockDependency.[methodCall]())
+            .thenAnswer((_) async => Future.delayed(
+                const Duration(seconds: 30),
+                () => throw TimeoutException('Network timeout'),
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.[methodName](),
+          throwsA(isA<TimeoutException>()),
+        );
+        
+        // Verify
+        verify(() => mockDependency.[methodCall]()).called(1);
+      });
+      
+      test('should handle network unavailable error', () async {
+        // Arrange
+        when(() => mockDependency.[methodCall]())
+            .thenThrow(NetworkException('No internet connection'));
+        
+        // Act & Assert
+        expect(
+          () => service.[methodName](),
+          throwsA(
+            isA<NetworkException>()
+                .having((e) => e.message, 'message', contains('internet')),
+          ),
+        );
+      });
+      
+      test('should retry on transient network failure', () async {
+        // Arrange
+        var callCount = 0;
+        when(() => mockDependency.[methodCall]()).thenAnswer((_) async {
+          callCount++;
+          if (callCount < 3) {
+            throw NetworkException('Transient failure');
+          }
+          return expectedResult;
+        });
+        
+        // Act
+        final result = await service.[methodNameWithRetry]();
+        
+        // Assert
+        expect(result, equals(expectedResult));
+        verify(() => mockDependency.[methodCall]()).called(3);
+      });
+    });
+    
+    // ============================================================================
+    // Firebase Authentication Errors
+    // ============================================================================
+    
+    group('Firebase Auth Errors', () {
+      test('should handle user-not-found error', () async {
+        // Arrange
+        when(() => mockDependency.signIn(any(), any()))
+            .thenThrow(FirebaseAuthException(
+              code: TestErrorCodes.userNotFound,
+              message: 'No user found with this email',
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.login(TestConstants.testEmail, TestConstants.testPassword),
+          throwsA(
+            isA<FirebaseAuthException>()
+                .having((e) => e.code, 'code', TestErrorCodes.userNotFound),
+          ),
+        );
+      });
+      
+      test('should handle wrong-password error', () async {
+        // Arrange
+        when(() => mockDependency.signIn(any(), any()))
+            .thenThrow(FirebaseAuthException(
+              code: TestErrorCodes.wrongPassword,
+              message: 'Invalid password',
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.login(TestConstants.testEmail, 'wrong-password'),
+          throwsA(
+            isA<FirebaseAuthException>()
+                .having((e) => e.code, 'code', TestErrorCodes.wrongPassword),
+          ),
+        );
+      });
+      
+      test('should handle requires-recent-login error', () async {
+        // Arrange
+        when(() => mockDependency.deleteAccount())
+            .thenThrow(FirebaseAuthException(
+              code: TestErrorCodes.requiresRecentLogin,
+              message: 'Please re-authenticate',
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.deleteAccount(),
+          throwsA(
+            isA<FirebaseAuthException>()
+                .having((e) => e.code, 'code', TestErrorCodes.requiresRecentLogin),
+          ),
+        );
+      });
+    });
+    
+    // ============================================================================
+    // Firestore Permission Errors
+    // ============================================================================
+    
+    group('Firestore Permission Errors', () {
+      test('should handle permission-denied error', () async {
+        // Arrange
+        when(() => mockDependency.getDocument(any()))
+            .thenThrow(FirebaseException(
+              plugin: 'cloud_firestore',
+              code: TestErrorCodes.permissionDenied,
+              message: 'Missing or insufficient permissions',
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.fetchData('restricted-doc'),
+          throwsA(
+            isA<FirebaseException>()
+                .having((e) => e.code, 'code', TestErrorCodes.permissionDenied)
+                .having((e) => e.message, 'message', contains('permissions')),
+          ),
+        );
+      });
+      
+      test('should handle document-not-found error', () async {
+        // Arrange
+        when(() => mockDependency.getDocument(any()))
+            .thenThrow(FirebaseException(
+              plugin: 'cloud_firestore',
+              code: TestErrorCodes.notFound,
+              message: 'Document does not exist',
+            ));
+        
+        // Act
+        final result = await service.fetchDataOrNull('non-existent');
+        
+        // Assert - Service should handle gracefully
+        expect(result, isNull);
+        verify(() => mockDependency.getDocument('non-existent')).called(1);
+      });
+    });
+    
+    // ============================================================================
+    // Input Validation Errors
+    // ============================================================================
+    
+    group('Input Validation Errors', () {
+      test('should throw on null required parameter', () {
+        // Arrange
+        String? nullValue;
+        
+        // Act & Assert
+        expect(
+          () => service.processData(nullValue!),
+          throwsA(isA<TypeError>()),
+        );
+      });
+      
+      test('should throw on empty string when not allowed', () {
+        // Act & Assert
+        expect(
+          () => service.validateAndProcess(''),
+          throwsA(
+            isA<ArgumentError>()
+                .having((e) => e.message, 'message', contains('empty')),
+          ),
+        );
+      });
+      
+      test('should throw on invalid email format', () {
+        // Act & Assert
+        expect(
+          () => service.validateEmail(TestConstants.invalidEmail),
+          throwsA(
+            isA<FormatException>()
+                .having((e) => e.message, 'message', contains('email')),
+          ),
+        );
+      });
+      
+      test('should throw on negative values when not allowed', () {
+        // Act & Assert
+        expect(
+          () => service.setQuantity(-1),
+          throwsA(
+            isA<RangeError>()
+                .having((e) => e.message, 'message', contains('negative')),
+          ),
+        );
+      });
+    });
+    
+    // ============================================================================
+    // Concurrent Operation Errors
+    // ============================================================================
+    
+    group('Concurrent Operation Errors', () {
+      test('should handle concurrent modification error', () async {
+        // Arrange
+        when(() => mockDependency.updateDocument(any(), any()))
+            .thenThrow(StateError('Document was modified by another operation'));
+        
+        // Act & Assert
+        expect(
+          () => service.updateData('doc-1', {'field': 'value'}),
+          throwsA(
+            isA<StateError>()
+                .having((e) => e.message, 'message', contains('modified')),
+          ),
+        );
+      });
+      
+      test('should handle race condition with retry', () async {
+        // Arrange
+        var attempts = 0;
+        when(() => mockDependency.updateDocument(any(), any()))
+            .thenAnswer((_) async {
+              attempts++;
+              if (attempts < 3) {
+                throw StateError('Concurrent modification');
+              }
+              return true;
+            });
+        
+        // Act
+        final result = await service.updateWithRetry('doc-1', {'field': 'value'});
+        
+        // Assert
+        expect(result, isTrue);
+        expect(attempts, equals(3));
+      });
+    });
+    
+    // ============================================================================
+    // Rate Limiting Errors
+    // ============================================================================
+    
+    group('Rate Limiting Errors', () {
+      test('should handle rate limit exceeded error', () async {
+        // Arrange
+        when(() => mockDependency.sendRequest())
+            .thenThrow(RateLimitException(
+              'Rate limit exceeded. Try again in 60 seconds',
+              retryAfter: Duration(seconds: 60),
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.sendRequest(),
+          throwsA(
+            isA<RateLimitException>()
+                .having((e) => e.retryAfter, 'retryAfter', Duration(seconds: 60)),
+          ),
+        );
+      });
+      
+      test('should implement exponential backoff on rate limit', () async {
+        // Arrange
+        final attempts = <DateTime>[];
+        var callCount = 0;
+        
+        when(() => mockDependency.sendRequest()).thenAnswer((_) async {
+          attempts.add(DateTime.now());
+          callCount++;
+          if (callCount < 4) {
+            throw RateLimitException('Too many requests');
+          }
+          return 'success';
+        });
+        
+        // Act
+        final result = await service.sendRequestWithBackoff();
+        
+        // Assert
+        expect(result, equals('success'));
+        expect(attempts.length, equals(4));
+        
+        // Verify exponential delays
+        for (int i = 1; i < attempts.length; i++) {
+          final delay = attempts[i].difference(attempts[i - 1]);
+          expect(delay.inMilliseconds, greaterThan(0));
+        }
+      });
+    });
+    
+    // ============================================================================
+    // File System Errors
+    // ============================================================================
+    
+    group('File System Errors', () {
+      test('should handle file not found error', () async {
+        // Arrange
+        when(() => mockDependency.readFile(any()))
+            .thenThrow(FileSystemException('File not found', '/path/to/file'));
+        
+        // Act & Assert
+        expect(
+          () => service.loadFile('/path/to/file'),
+          throwsA(
+            isA<FileSystemException>()
+                .having((e) => e.path, 'path', '/path/to/file'),
+          ),
+        );
+      });
+      
+      test('should handle permission denied for file access', () async {
+        // Arrange
+        when(() => mockDependency.writeFile(any(), any()))
+            .thenThrow(FileSystemException(
+              'Permission denied',
+              '/restricted/path',
+              OSError('Permission denied', 13),
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.saveFile('/restricted/path', 'content'),
+          throwsA(
+            isA<FileSystemException>()
+                .having((e) => e.osError?.errorCode, 'errorCode', 13),
+          ),
+        );
+      });
+    });
+    
+    // ============================================================================
+    // JSON Parsing Errors
+    // ============================================================================
+    
+    group('JSON Parsing Errors', () {
+      test('should handle malformed JSON error', () {
+        // Arrange
+        const malformedJson = '{"key": "value"'; // Missing closing brace
+        
+        // Act & Assert
+        expect(
+          () => service.parseJson(malformedJson),
+          throwsA(isA<FormatException>()),
+        );
+      });
+      
+      test('should handle type mismatch in JSON parsing', () {
+        // Arrange
+        const json = '{"id": "not-a-number", "name": "Test"}';
+        
+        // Act & Assert
+        expect(
+          () => service.parseTypedJson(json),
+          throwsA(
+            isA<TypeError>()
+                .having((e) => e.toString(), 'message', contains('type')),
+          ),
+        );
+      });
+    });
+    
+    // ============================================================================
+    // Platform Channel Errors
+    // ============================================================================
+    
+    group('Platform Channel Errors', () {
+      test('should handle method not implemented error', () async {
+        // Arrange
+        when(() => mockDependency.invokePlatformMethod(any()))
+            .thenThrow(MissingPluginException('No implementation found'));
+        
+        // Act & Assert
+        expect(
+          () => service.callPlatformMethod('customMethod'),
+          throwsA(
+            isA<MissingPluginException>()
+                .having((e) => e.message, 'message', contains('implementation')),
+          ),
+        );
+      });
+      
+      test('should handle platform exception', () async {
+        // Arrange
+        when(() => mockDependency.invokePlatformMethod(any()))
+            .thenThrow(PlatformException(
+              code: 'UNAVAILABLE',
+              message: 'Service unavailable',
+              details: {'reason': 'Service is down'},
+            ));
+        
+        // Act & Assert
+        expect(
+          () => service.callPlatformMethod('method'),
+          throwsA(
+            isA<PlatformException>()
+                .having((e) => e.code, 'code', 'UNAVAILABLE')
+                .having((e) => e.details, 'details', isA<Map>()),
+          ),
+        );
+      });
+    });
+    
+    // ============================================================================
+    // Graceful Error Recovery
+    // ============================================================================
+    
+    group('Error Recovery', () {
+      test('should fall back to cache on network error', () async {
+        // Arrange
+        when(() => mockDependency.fetchFromNetwork())
+            .thenThrow(NetworkException('No connection'));
+        when(() => mockDependency.fetchFromCache())
+            .thenAnswer((_) async => cachedData);
+        
+        // Act
+        final result = await service.fetchDataWithFallback();
+        
+        // Assert
+        expect(result, equals(cachedData));
+        verify(() => mockDependency.fetchFromNetwork()).called(1);
+        verify(() => mockDependency.fetchFromCache()).called(1);
+      });
+      
+      test('should use default value on all errors', () async {
+        // Arrange
+        when(() => mockDependency.fetchValue())
+            .thenThrow(Exception('Unknown error'));
+        
+        // Act
+        final result = await service.fetchValueOrDefault(defaultValue: 42);
+        
+        // Assert
+        expect(result, equals(42));
+      });
+      
+      test('should log error and continue on non-critical failure', () async {
+        // Arrange
+        when(() => mockDependency.nonCriticalOperation())
+            .thenThrow(Exception('Non-critical error'));
+        when(() => mockDependency.logError(any(), any()))
+            .thenAnswer((_) async {});
+        
+        // Act
+        await service.performNonCriticalOperation();
+        
+        // Assert - Should not throw
+        verify(() => mockDependency.logError(any(), any())).called(1);
+      });
+    });
+    
+    // ============================================================================
+    // Error Message Verification
+    // ============================================================================
+    
+    group('Error Messages', () {
+      test('should provide user-friendly error message', () async {
+        // Arrange
+        when(() => mockDependency.operation())
+            .thenThrow(Exception('Technical error details'));
+        
+        // Act & Assert
+        try {
+          await service.performUserOperation();
+          fail('Should have thrown');
+        } catch (e) {
+          expect(e.toString(), contains('Something went wrong'));
+          expect(e.toString(), isNot(contains('Technical')));
+        }
+      });
+      
+      test('should include context in error message', () async {
+        // Arrange
+        const itemId = 'item-123';
+        when(() => mockDependency.fetchItem(itemId))
+            .thenThrow(NotFoundException('Item not found: $itemId'));
+        
+        // Act & Assert
+        expect(
+          () => service.getItem(itemId),
+          throwsA(
+            isA<NotFoundException>()
+                .having((e) => e.message, 'message', contains(itemId)),
+          ),
+        );
+      });
+    });
+  });
+}
+
+// ============================================================================
+// Custom Exception Classes for Testing
+// ============================================================================
+
+class NetworkException implements Exception {
+  final String message;
+  NetworkException(this.message);
+  
+  @override
+  String toString() => 'NetworkException: $message';
+}
+
+class RateLimitException implements Exception {
+  final String message;
+  final Duration? retryAfter;
+  
+  RateLimitException(this.message, {this.retryAfter});
+  
+  @override
+  String toString() => 'RateLimitException: $message';
+}
+
+class NotFoundException implements Exception {
+  final String message;
+  NotFoundException(this.message);
+  
+  @override
+  String toString() => 'NotFoundException: $message';
+}
+
+class TimeoutException implements Exception {
+  final String message;
+  TimeoutException(this.message);
+  
+  @override
+  String toString() => 'TimeoutException: $message';
+}

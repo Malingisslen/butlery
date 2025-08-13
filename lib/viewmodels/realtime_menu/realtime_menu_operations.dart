@@ -229,27 +229,6 @@ class RealtimeMenuOperations {
       'category regeneration based on user preferences and dietary needs.'
     );
 
-    // FUTURE IMPLEMENTATION OUTLINE:
-    // try {
-    //   // 1. Get user preferences and dietary restrictions
-    //   final userPrefs = await _getUserPreferences();
-    //   
-    //   // 2. Call AI service for recipe suggestions
-    //   final aiService = ServiceLocator.get<AIRecipeService>();
-    //   final newRecipes = await aiService.generateRecipesForCategory(
-    //     categoryName, 
-    //     preferences: userPrefs,
-    //   );
-    //   
-    //   // 3. Update menu via MenuService
-    //   final menuService = ServiceLocator.get<MenuService>();
-    //   await menuService.regenerateCategory(menuId, categoryName, newRecipes);
-    //   
-    //   AppLogger.success('✅ AI regenerated category: $categoryName');
-    // } catch (e) {
-    //   AppLogger.error('❌ Failed to regenerate category: $categoryName', e);
-    //   rethrow;
-    // }
   }
 
   // ===== BATCH OPERATIONS =====

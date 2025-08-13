@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/recipe_comments_manager.dart
 
 import 'dart:async';
+import 'package:collection/collection.dart';
 // Firebase imports removed - using repository pattern
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';

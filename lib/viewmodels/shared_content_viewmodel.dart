@@ -81,6 +81,8 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Comprehensive social content features utility providing advanced social functionality coordination.
 ///
@@ -305,8 +307,8 @@ class SharedContentViewModel extends ChangeNotifier {
   List<SharedRecipe> get filteredSharedRecipes {
     if (_searchQuery.isEmpty) return visibleSharedRecipes;
     return visibleSharedRecipes.where((recipe) =>
-        recipe.recipe.core.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        recipe.recipe.core.description.toLowerCase().contains(_searchQuery.toLowerCase())
+        recipe.recipeSnapshot.core.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        recipe.recipeSnapshot.core.description.toLowerCase().contains(_searchQuery.toLowerCase())
     ).toList();
   }
 
@@ -321,9 +323,9 @@ class SharedContentViewModel extends ChangeNotifier {
   int get totalSharedRecipes => visibleSharedRecipes.length;
   int get totalSharedMenus => visibleSharedMenus.length;
 
-  int get unreadRecipesCount => visibleSharedRecipes.where((recipe) => !recipe.read).length;
+  int get unreadRecipesCount => visibleSharedRecipes.where((recipe) => !isRecipeRead(recipe)).length;
 
-  int get unreadMenusCount => visibleSharedMenus.where((menu) => !menu.read).length;
+  int get unreadMenusCount => visibleSharedMenus.where((menu) => !isMenuRead(menu)).length;
 
   int get totalUnreadCount => unreadRecipesCount + unreadMenusCount;
 
@@ -403,29 +405,39 @@ class SharedContentViewModel extends ChangeNotifier {
   }
 
   // Read status management
-  bool isRecipeRead(SharedRecipe sharedRecipe) => sharedRecipe.read;
+  bool isRecipeRead(SharedRecipe sharedRecipe) {
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    return currentUserId != null && sharedRecipe.viewedByUserIds.contains(currentUserId);
+  }
 
-  bool isMenuRead(SharedMenu sharedMenu) => sharedMenu.read;
+  bool isMenuRead(SharedMenu sharedMenu) {
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    return currentUserId != null && sharedMenu.viewedByUserIds.contains(currentUserId);
+  }
 
   Future<void> markRecipeAsRead(SharedRecipe sharedRecipe) async {
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.markRecipeAsRead(sharedRecipe.id);
+      await _socialRecipeService.markRecipeAsRead(sharedRecipe.id);
+      // Note: Read status should be tracked separately in viewmodel state
       _updateVisibleContent();
       notifyListeners();
+      AppLogger.info('✅ Marked recipe as read: ${sharedRecipe.recipeSnapshot.core.title}');
     } catch (e) {
       AppLogger.error('Failed to mark recipe as read: $e');
+      _setError('Failed to mark recipe as read: $e');
     }
   }
 
   Future<void> markMenuAsRead(SharedMenu sharedMenu) async {
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.markMenuAsRead(sharedMenu.id);
+      await _socialRecipeService.markMenuAsRead(sharedMenu.id);
+      // Note: Read status should be tracked separately in viewmodel state
       _updateVisibleContent();
       notifyListeners();
+      AppLogger.info('✅ Marked menu as read: ${sharedMenu.menuTitle}');
     } catch (e) {
       AppLogger.error('Failed to mark menu as read: $e');
+      _setError('Failed to mark menu as read: $e');
     }
   }
 
@@ -437,12 +449,13 @@ class SharedContentViewModel extends ChangeNotifier {
   Future<bool> importSharedRecipe(SharedRecipe sharedRecipe) async {
     _setImporting(true);
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.importRecipe(sharedRecipe);
+      await _socialRecipeService.importRecipe(sharedRecipe);
       notifyListeners();
+      AppLogger.info('✅ Imported recipe: ${sharedRecipe.recipeSnapshot.core.title}');
       return true;
     } catch (e) {
       _setError('Failed to import recipe: $e');
+      AppLogger.error('Failed to import recipe: $e');
       return false;
     } finally {
       _setImporting(false);
@@ -452,12 +465,13 @@ class SharedContentViewModel extends ChangeNotifier {
   Future<bool> importSharedMenu(SharedMenu sharedMenu) async {
     _setImporting(true);
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.importMenu(sharedMenu);
+      await _socialRecipeService.importMenu(sharedMenu);
       notifyListeners();
+      AppLogger.info('✅ Imported menu: ${sharedMenu.menuTitle}');
       return true;
     } catch (e) {
       _setError('Failed to import menu: $e');
+      AppLogger.error('Failed to import menu: $e');
       return false;
     } finally {
       _setImporting(false);
@@ -467,60 +481,64 @@ class SharedContentViewModel extends ChangeNotifier {
   // Dismiss functionality
   Future<bool> dismissSharedRecipe(SharedRecipe sharedRecipe) async {
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.dismissRecipe(sharedRecipe.id);
+      await _socialRecipeService.dismissRecipe(sharedRecipe.id);
       _visibleSharedRecipes.remove(sharedRecipe);
       _updateVisibleContent();
       notifyListeners();
+      AppLogger.info('✅ Dismissed recipe: ${sharedRecipe.recipeSnapshot.core.title}');
       return true;
     } catch (e) {
       _setError('Failed to dismiss recipe: $e');
+      AppLogger.error('Failed to dismiss recipe: $e');
       return false;
     }
   }
 
   Future<bool> dismissSharedMenu(SharedMenu sharedMenu) async {
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.dismissMenu(sharedMenu.id);
+      await _socialRecipeService.dismissMenu(sharedMenu.id);
       _visibleSharedMenus.remove(sharedMenu);
       _updateVisibleContent();
       notifyListeners();
+      AppLogger.info('✅ Dismissed menu: ${sharedMenu.menuTitle}');
       return true;
     } catch (e) {
       _setError('Failed to dismiss menu: $e');
+      AppLogger.error('Failed to dismiss menu: $e');
       return false;
     }
   }
 
   Future<bool> undismissSharedRecipe(SharedRecipe sharedRecipe) async {
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.undismissRecipe(sharedRecipe.id);
+      await _socialRecipeService.undismissRecipe(sharedRecipe.id);
       if (!_visibleSharedRecipes.contains(sharedRecipe)) {
         _visibleSharedRecipes.add(sharedRecipe);
       }
       _updateVisibleContent();
       notifyListeners();
+      AppLogger.info('✅ Undismissed recipe: ${sharedRecipe.recipeSnapshot.core.title}');
       return true;
     } catch (e) {
       _setError('Failed to undismiss recipe: $e');
+      AppLogger.error('Failed to undismiss recipe: $e');
       return false;
     }
   }
 
   Future<bool> undismissSharedMenu(SharedMenu sharedMenu) async {
     try {
-      // Simplified implementation - would call service
-      // await _socialRecipeService.undismissMenu(sharedMenu.id);
+      await _socialRecipeService.undismissMenu(sharedMenu.id);
       if (!_visibleSharedMenus.contains(sharedMenu)) {
         _visibleSharedMenus.add(sharedMenu);
       }
       _updateVisibleContent();
       notifyListeners();
+      AppLogger.info('✅ Undismissed menu: ${sharedMenu.menuTitle}');
       return true;
     } catch (e) {
       _setError('Failed to undismiss menu: $e');
+      AppLogger.error('Failed to undismiss menu: $e');
       return false;
     }
   }

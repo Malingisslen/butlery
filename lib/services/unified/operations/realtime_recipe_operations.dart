@@ -16,6 +16,8 @@
 /// Used in phases: Phase 5 - Service Consolidation, Phase 9.5 - Large File SRP Refactoring
 
 import 'dart:async';
+// ignore: unused_import
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -218,9 +220,11 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
         if (success) {
           // Show presence and send notification
           await _presenceModule.showPresence(recipeId);
-          final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-          if (recipe != null) {
+          try {
+            final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
             await _notificationModule.sendCollaborationJoinedNotification(recipe);
+          } catch (e) {
+            // Recipe not found, skip notification
           }
         }
         
@@ -239,12 +243,13 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     return await LoggingUtils.loggedOperation(
       'Stop Realtime Editing',
       () async {
-        final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-        
         // Hide presence and send notification before stopping
         await _presenceModule.hidePresence(recipeId);
-        if (recipe != null) {
+        try {
+          final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
           await _notificationModule.sendCollaborationLeftNotification(recipe);
+        } catch (e) {
+          // Recipe not found, skip notification
         }
         
         return await _editingModule.stopRealtimeEditing(recipeId);
@@ -272,13 +277,15 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     
     if (success) {
       // Send notification about the edit
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe != null) {
+      try {
+        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
         await _notificationModule.sendRealtimeEditNotification(
           recipe,
           changes,
           editDescription,
         );
+      } catch (e) {
+        // Recipe not found, skip notification
       }
     }
     
@@ -299,13 +306,15 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     
     if (success) {
       // Send batch notification
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe != null) {
+      try {
+        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
         await _notificationModule.sendBatchEditNotification(
           recipe,
           changeList,
           batchDescription,
         );
+      } catch (e) {
+        // Recipe not found, skip notification
       }
     }
     
@@ -333,14 +342,16 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     
     if (success) {
       // Send conflict resolved notification
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe != null) {
+      try {
+        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
         final affectedUsers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
         await _notificationModule.sendConflictResolvedNotification(
           recipe,
           resolution,
           affectedUsers,
         );
+      } catch (e) {
+        // Recipe not found, skip notification
       }
     }
     
@@ -390,9 +401,11 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     
     if (success) {
       // Send notification to members
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe != null) {
+      try {
+        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
         await _notificationModule.sendCollaborationEnabledNotification(recipe, memberIds);
+      } catch (e) {
+        // Recipe not found, skip notification
       }
     }
     
@@ -401,11 +414,12 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Disable collaborative editing and convert back to personal recipe
   Future<bool> disableCollaborativeEditing(String recipeId) async {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    
     // Send notification before disabling
-    if (recipe != null) {
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
       await _notificationModule.sendCollaborationDisabledNotification(recipe);
+    } catch (e) {
+      // Recipe not found, skip notification
     }
     
     return await _collaborationModule.disableCollaborativeEditing(recipeId);
@@ -427,9 +441,11 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     
     if (success) {
       // Send notification about new members
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe != null) {
+      try {
+        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
         await _notificationModule.sendMembersAddedNotification(recipe, memberIds);
+      } catch (e) {
+        // Recipe not found, skip notification
       }
     }
     
@@ -438,11 +454,12 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Remove members from collaborative recipe
   Future<bool> removeCollaborators(String recipeId, List<String> memberIds) async {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    
     // Send notification before removing
-    if (recipe != null) {
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
       await _notificationModule.sendMembersRemovedNotification(recipe, memberIds);
+    } catch (e) {
+      // Recipe not found, skip notification
     }
     
     return await _collaborationModule.removeCollaborators(recipeId, memberIds);
@@ -597,8 +614,12 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Get active editors for recipe (legacy method)
   List<String> getActiveEditors(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null || !recipe.isCollaborative) return [];
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      if (!recipe.isCollaborative) return [];
+    } catch (e) {
+      return [];
+    }
 
     // Get active editors from presence module
     final currentUserId = _parent.currentUserId;

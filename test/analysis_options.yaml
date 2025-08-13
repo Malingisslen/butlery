@@ -13,6 +13,8 @@ analyzer:
     prefer_const_declarations: ignore
     
   exclude:
+    # Exclude legacy/archived test code
+    - legacy_archive/**
     # Exclude test tools from analysis
     - fix_test_initialization.dart
     - fix_unused_imports.dart

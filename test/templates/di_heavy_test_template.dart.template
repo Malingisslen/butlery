@@ -1,0 +1,86 @@
+/// Template for DI-Heavy Tests (Repositories & Complex Services)
+/// 
+/// Use this template for tests that require:
+/// - Full dependency injection setup
+/// - Multiple mocks from production_mocks.dart
+/// - TestServiceLocator initialization
+/// 
+/// Examples: Repository tests, complex service tests with many dependencies
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+// Import your test subject
+// import 'package:butlery/repositories/your_repository.dart';
+
+// Import test infrastructure
+import '../infrastructure/helpers/base_unit_test.dart';
+import '../infrastructure/di/test_service_locator.dart';
+import '../infrastructure/mocks/production_mocks.dart';
+
+// Import any test-specific sealed class mocks (if needed)
+// Note: Add // ignore_for_file: subtype_of_sealed_class if using sealed mocks
+
+void main() {
+  group('YourRepository/Service', () {
+    // Declare your test subject and mocks
+    late YourRepository repository;
+    late MockDependency1 mockDep1;
+    late MockDependency2 mockDep2;
+    
+    setUpAll(() async {
+      // Initialize base test infrastructure ONCE
+      await BaseUnitTest.setupUnit();
+      
+      // Register any fallback values for mocktail
+      registerFallbackValue(FakeSomeClass());
+    });
+    
+    setUp(() async {
+      // Initialize TestServiceLocator for EACH test
+      await TestServiceLocator.initialize();
+      
+      // Create mock instances
+      mockDep1 = MockDependency1();
+      mockDep2 = MockDependency2();
+      
+      // Configure mock states (use configuration methods, not stubbing)
+      mockDep1.setState(someValue: 'test');
+      
+      // Register mocks if needed
+      TestServiceLocator.registerMock<Dependency1>(mockDep1);
+      
+      // Create test subject with mocks
+      repository = YourRepository(
+        dependency1: mockDep1,
+        dependency2: mockDep2,
+      );
+    });
+    
+    tearDown(() async {
+      // Clean up after EACH test
+      await TestServiceLocator.reset();
+      BaseUnitTest.resetMocks();
+    });
+    
+    tearDownAll(() async {
+      // Final cleanup (only if absolutely necessary)
+      await BaseUnitTest.teardownUnit();
+    });
+    
+    group('Feature Group', () {
+      test('should do something', () async {
+        // Arrange
+        when(() => mockDep1.someMethod()).thenAnswer((_) async => 'result');
+        
+        // Act
+        final result = await repository.doSomething();
+        
+        // Assert
+        expect(result, equals('expected'));
+        verify(() => mockDep1.someMethod()).called(1);
+      });
+    });
+  });
+}

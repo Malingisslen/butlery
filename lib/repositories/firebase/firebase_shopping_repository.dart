@@ -106,7 +106,7 @@ class FirebaseShoppingRepository
   // ===== SHARED COLLECTIONS ACCESS =====
 
   CollectionReference<Map<String, dynamic>> get _sharedListsRef =>
-      FirebaseFirestore.instance.collection('unified_shared_shopping_lists');
+      firestore.collection('unified_shared_shopping_lists');
 
   // ===== ENHANCED BASE CLASS METHODS =====
 
@@ -300,7 +300,7 @@ class FirebaseShoppingRepository
   // ===== TEMPLATE OPERATIONS =====
 
   CollectionReference<Map<String, dynamic>> get _templatesRef =>
-      FirebaseFirestore.instance.collection('shoppingListTemplates');
+      firestore.collection('shoppingListTemplates');
 
   @override
   Future<String> saveAsTemplate({

@@ -97,6 +97,22 @@ class LaggTillReceptView extends StatelessWidget {
     Navigator.pushNamed(context, routeName);
   }
 
+  /// Handle file import for CSV/Excel files
+  Future<void> _handleFileImport(BuildContext context) async {
+    try {
+      // Navigate to file import view
+      Navigator.pushNamed(context, '/fileImport');
+    } catch (e) {
+      // Show error if navigation fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kunde inte öppna filimport: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
   /// Comprehensive recipe addition interface construction with theme-centralized components and exit protection.
   /// 
   /// [context] Build context for theme access and component construction coordination
@@ -149,24 +165,14 @@ class LaggTillReceptView extends StatelessWidget {
                 ),
               const SizedBox(height: AppDimensions.spacingL),
 
-              // 2x3 Grid using layout component
+              // Grid with import options
               LayoutComponents.squareButtonGrid(
                 context,
                 buttons: [
                   {
-                    'label': 'INSTAGRAM',
-                    'icon': Icons.camera_alt,
-                    'onPressed': () => _navigate(context, '/franSocialaMedier'),
-                  },
-                  {
-                    'label': 'FACEBOOK',
-                    'icon': Icons.facebook,
-                    'onPressed': () => _navigate(context, '/franSocialaMedier'),
-                  },
-                  {
-                    'label': 'TIKTOK',
-                    'icon': Icons.music_note,
-                    'onPressed': () => _navigate(context, '/franSocialaMedier'),
+                    'label': 'CSV/EXCEL',
+                    'icon': Icons.table_chart,
+                    'onPressed': () => _handleFileImport(context),
                   },
                   {
                     'label': 'FOTO',
@@ -177,6 +183,16 @@ class LaggTillReceptView extends StatelessWidget {
                     'label': 'LÄNK',
                     'icon': Icons.link,
                     'onPressed': () => _navigate(context, '/importViaUrl'),
+                  },
+                  {
+                    'label': 'INSTAGRAM',
+                    'icon': Icons.camera_alt,
+                    'onPressed': () => _navigate(context, '/franSocialaMedier'),
+                  },
+                  {
+                    'label': 'TIKTOK',
+                    'icon': Icons.music_note,
+                    'onPressed': () => _navigate(context, '/franSocialaMedier'),
                   },
                   {
                     'label': 'SKRIV SJÄLV',

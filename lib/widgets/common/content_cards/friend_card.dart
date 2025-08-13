@@ -218,23 +218,8 @@ class FriendCard extends StatelessWidget {
       metadata.add(user.email);
     }
     
-    // Note: UserProfile doesn't have createdAt field
-    // This section would need to be updated when user metadata is available
-    /*
-    if (user.createdAt != null) {
-      final joinDate = DateTime.fromMillisecondsSinceEpoch(user.createdAt!);
-      final now = DateTime.now();
-      final difference = now.difference(joinDate);
-      
-      if (difference.inDays < 30) {
-        metadata.add('Medlem i ${difference.inDays} dagar');
-      } else if (difference.inDays < 365) {
-        metadata.add('Medlem i ${(difference.inDays / 30).round()} månader');
-      } else {
-        metadata.add('Medlem i ${(difference.inDays / 365).round()} år');
-      }
-    }
-    */
+    // Display member duration using the UserProfile's memberSinceText getter
+    metadata.add(user.memberSinceText);
     
     if (metadata.isEmpty) {
       return const SizedBox.shrink();

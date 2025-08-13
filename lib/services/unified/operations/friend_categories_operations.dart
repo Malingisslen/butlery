@@ -15,6 +15,8 @@
 /// Connected to: UnifiedFriendsService, Group management ViewModels
 /// Used in phases: Phase 5 - Service Consolidation
 
+// ignore: unused_import
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/utils/logger.dart';

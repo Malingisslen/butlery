@@ -1,20 +1,36 @@
-/// Firebase Analytics service for tracking user interactions and app metrics
+/// Analytics service for tracking user interactions and app metrics
 
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+
+/// Analytics service that delegates to an AnalyticsRepository implementation.
+///
+/// This service now uses dependency injection for better testability while
+/// maintaining the singleton pattern and existing API. The repository pattern
+/// allows for easy mocking in tests and switching between different analytics
+/// providers if needed.
 class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsService> {
-  AnalyticsService._internal();
+  final AnalyticsRepository _repository;
   
-  factory AnalyticsService() => SingletonServiceMixin.createSingleton(() => AnalyticsService._internal());
+  AnalyticsService._internal(this._repository);
+  
+  /// Factory constructor with dependency injection support.
+  /// 
+  /// Accepts an optional [repository] parameter for testing.
+  /// In production, uses FirebaseAnalyticsRepository by default.
+  factory AnalyticsService({AnalyticsRepository? repository}) => 
+    SingletonServiceMixin.createSingletonWithDependencies(
+      () => AnalyticsService._internal(
+        repository ?? FirebaseAnalyticsRepository(),
+      ),
+      dependencies: repository != null ? [repository] : [],
+    );
   
   @override
   String get serviceName => 'AnalyticsService';
-
-  late final FirebaseAnalytics _analytics;
-  FirebaseAnalyticsObserver? _observer;
 
   @override
   Future<void> initialize() async {
@@ -22,14 +38,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     
     await executeServiceOperation(
       () async {
-        _analytics = FirebaseAnalytics.instance;
-        _observer = FirebaseAnalyticsObserver(analytics: _analytics);
-
-        await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
-
-        debugPrint(
-          '📊 Analytics initialiserad (samling ${!kDebugMode ? "aktiverad" : "inaktiverad"})',
-        );
+        await _repository.initialize();
       },
       operationName: 'Initialize analytics',
       requiresAuth: false,
@@ -37,8 +46,8 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     );
   }
 
-  FirebaseAnalyticsObserver? get observer => _observer;
-  FirebaseAnalytics get analytics => _analytics;
+  /// Get the analytics observer for navigation tracking
+  dynamic get observer => _repository.observer;
 
   /// Log import start event
   Future<void> logImportStarted({
@@ -47,13 +56,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   }) async {
     await executeServiceOperation(
       () async {
-        await _analytics.logEvent(
-          name: 'import_started',
-          parameters: {
-            'source': source,
-            if (platform != null) 'platform': platform,
-            'timestamp': DateTime.now().toIso8601String(),
-          },
+        await _repository.logImportStarted(
+          source: source,
+          platform: platform,
         );
       },
       operationName: 'Log import started',
@@ -68,19 +73,11 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     String? platform,
     int? recipeLength,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'import_success',
-        parameters: {
-          'source': source,
-          if (platform != null) 'platform': platform,
-          if (recipeLength != null) 'recipe_length': recipeLength,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logImportSuccess(
+      source: source,
+      platform: platform,
+      recipeLength: recipeLength,
+    );
   }
 
   /// Log extraction error
@@ -90,28 +87,12 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required String error,
     String? errorType,
   }) async {
-    try {
-      final String category = _categorizeError(error);
-
-      await _analytics.logEvent(
-        name: 'extraction_error',
-        parameters: {
-          'platform': platform.toString().split('.').last,
-          'error_category': category,
-          'error_type': errorType ?? 'unknown',
-          'error_message': error.substring(
-            0,
-            error.length > 100 ? 100 : error.length,
-          ),
-          'url_domain': Uri.tryParse(url)?.host ?? 'invalid_url',
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-
-      debugPrint('📊 Extraction error loggad: $platform - $category');
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logExtractionError(
+      url: url,
+      platform: platform.toString().split('.').last,
+      error: error,
+      errorType: errorType,
+    );
   }
 
   /// Log manual copy fallback usage
@@ -119,18 +100,10 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required SourcePlatform platform,
     String? reason,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'manual_copy_fallback',
-        parameters: {
-          'platform': platform.toString().split('.').last,
-          if (reason != null) 'reason': reason,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logManualCopyFallback(
+      platform: platform.toString().split('.').last,
+      reason: reason,
+    );
   }
 
   /// Log recipe creation
@@ -138,35 +111,19 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required String source,
     bool hasImage = false,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'recipe_created',
-        parameters: {
-          'source': source,
-          'has_image': hasImage,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logRecipeCreated(
+      source: source,
+      hasImage: hasImage,
+    );
   }
 
   /// Log recipe sharing
   Future<void> logRecipeShared({
     required String method,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'recipe_shared',
-        parameters: {
-          'method': method,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logRecipeShared(
+      method: method,
+    );
   }
 
   /// Log when recipe is marked as cooked
@@ -177,25 +134,13 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     bool isFirstTime = true,
     int? daysSinceLastCooked,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'recipe_cooked',
-        parameters: {
-          'recipe_id': recipeId,
-          'recipe_title': recipeTitle,
-          'meal_type': mealType,
-          'is_first_time':
-              isFirstTime ? 'true' : 'false',
-          if (daysSinceLastCooked != null)
-            'days_since_last': daysSinceLastCooked,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-
-      await setUserProperties(hasCooked: true);
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logRecipeCooked(
+      recipeId: recipeId,
+      recipeTitle: recipeTitle,
+      mealType: mealType,
+      isFirstTime: isFirstTime,
+      daysSinceLastCooked: daysSinceLastCooked,
+    );
   }
 
   /// Log menu generation
@@ -203,18 +148,10 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required int recipeCount,
     required String method,
   }) async {
-    try {
-      await _analytics.logEvent(
-        name: 'menu_generated',
-        parameters: {
-          'recipe_count': recipeCount,
-          'method': method,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logMenuGenerated(
+      recipeCount: recipeCount,
+      method: method,
+    );
   }
 
   /// Log recipe deletion
@@ -226,76 +163,42 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required DateTime createdAt,
     int? daysSinceCreated,
   }) async {
-    try {
-      final now = DateTime.now();
-      final actualDaysSinceCreated = daysSinceCreated ?? 
-        now.difference(createdAt).inDays;
-
-      await _analytics.logEvent(
-        name: 'recipe_deleted',
-        parameters: {
-          'recipe_id': recipeId,
-          'recipe_title': recipeTitle,
-          'meal_type': mealType,
-          'recipe_type': isPersonal ? 'personal' : 'collaborative',
-          'days_since_created': actualDaysSinceCreated,
-          'created_at': createdAt.toIso8601String(),
-          'timestamp': now.toIso8601String(),
-        },
-      );
-
-      debugPrint('📊 Recipe deletion loggad: $recipeTitle ($mealType)');
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logRecipeDeleted(
+      recipeId: recipeId,
+      recipeTitle: recipeTitle,
+      mealType: mealType,
+      isPersonal: isPersonal,
+      createdAt: createdAt,
+      daysSinceCreated: daysSinceCreated,
+    );
   }
 
   /// Log user login
   Future<void> logLogin({required String method}) async {
-    try {
-      await _analytics.logLogin(loginMethod: method);
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logLogin(loginMethod: method);
   }
 
   /// Log user sign up
   Future<void> logSignUp({required String method}) async {
-    try {
-      await _analytics.logSignUp(signUpMethod: method);
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logSignUp(signUpMethod: method);
   }
 
   /// Log user logout
   Future<void> logLogout() async {
-    try {
-      await _analytics.logEvent(name: 'logout');
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.logLogout();
   }
 
-  /// Categorize error for analytics
-  String _categorizeError(String error) {
-    final errorLower = error.toLowerCase();
 
-    if (errorLower.contains('timeout')) {
-      return 'timeout';
-    } else if (errorLower.contains('ingen text')) {
-      return 'no_content_found';
-    } else if (errorLower.contains('kunde inte ladda')) {
-      return 'page_load_error';
-    } else if (errorLower.contains('okänd plattform')) {
-      return 'unknown_platform';
-    } else if (errorLower.contains('tekniskt fel')) {
-      return 'technical_error';
-    } else if (errorLower.contains('cors') || errorLower.contains('webben')) {
-      return 'web_limitation';
-    } else {
-      return 'other';
-    }
+  /// Log account deletion event for GDPR compliance
+  Future<void> logAccountDeleted(Map<String, dynamic> parameters) async {
+    await executeServiceOperation(
+      () async {
+        await _repository.logAccountDeleted(parameters);
+      },
+      operationName: 'Log account deletion',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
   }
 
   /// Set user properties for segmentation
@@ -305,57 +208,12 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     bool? hasSharedRecipe,
     bool? hasCooked,
   }) async {
-    try {
-      if (recipeCount != null) {
-        String userType = 'new';
-        if (recipeCount > 50) {
-          userType = 'power_user';
-        } else if (recipeCount > 20) {
-          userType = 'active';
-        } else if (recipeCount > 5) {
-          userType = 'casual';
-        }
-
-        await _analytics.setUserProperty(name: 'user_type', value: userType);
-
-        await _analytics.setUserProperty(
-          name: 'recipe_count_range',
-          value: _getRecipeCountRange(recipeCount),
-        );
-      }
-
-      if (hasUsedImport != null) {
-        await _analytics.setUserProperty(
-          name: 'has_used_import',
-          value: hasUsedImport.toString(),
-        );
-      }
-
-      if (hasSharedRecipe != null) {
-        await _analytics.setUserProperty(
-          name: 'has_shared_recipe',
-          value: hasSharedRecipe.toString(),
-        );
-      }
-
-      if (hasCooked != null) {
-        await _analytics.setUserProperty(
-          name: 'has_marked_cooked',
-          value: hasCooked.toString(),
-        );
-      }
-    } catch (e) {
-      debugPrint('Analytics fel: $e');
-    }
+    await _repository.setUserProperties(
+      recipeCount: recipeCount,
+      hasUsedImport: hasUsedImport,
+      hasSharedRecipe: hasSharedRecipe,
+      hasCooked: hasCooked,
+    );
   }
 
-  /// Get recipe count range for analytics
-  String _getRecipeCountRange(int count) {
-    if (count == 0) return '0';
-    if (count <= 5) return '1-5';
-    if (count <= 10) return '6-10';
-    if (count <= 20) return '11-20';
-    if (count <= 50) return '21-50';
-    return '50+';
-  }
 }

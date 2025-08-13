@@ -15,6 +15,7 @@
 /// Connected to: UnifiedFriendsService, Invitation ViewModels, Contact integration
 /// Used in phases: Phase 5 - Service Consolidation
 
+import 'package:collection/collection.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';

@@ -28,6 +28,6 @@ This directory contains security-related documentation for the Butlery project.
 
 ## Related Documentation
 
-- **Setup**: See `/docs/setup/ENV_SETUP.md` for secure environment configuration
-- **Architecture**: See `/docs/architecture/` for system security design
-- **Main Project**: See [README.md](../../README.md) for security overview
+- **Setup**: See `../setup/ENV_SETUP.md` for secure environment configuration
+- **Architecture**: See `../architecture/` for system security design
+- **Testing**: See `../testing/` for test security patterns

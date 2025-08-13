@@ -63,6 +63,8 @@ dependencies:
   # ==================== PARSING & PROCESSING ====================
   html: ^0.15.4
   flutter_inappwebview: ^6.1.5
+  csv: ^6.0.0                 # For CSV file parsing
+  excel: ^4.0.6               # For Excel file parsing
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1
@@ -75,7 +77,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  build_runner: ^2.4.13
   hive_generator: ^2.0.1
   
   # ==================== CORE TESTING ====================
@@ -86,6 +87,7 @@ dev_dependencies:
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.4
+  build_runner: ^2.4.13
   
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^3.0.3
@@ -120,6 +122,7 @@ dev_dependencies:
   # ==================== ANALYZER FIX ====================
   analyzer: ^6.4.1  # Kompatibel med Flutter 3.24
   cli_util: ^0.4.0  # For CLI utilities
+  meta: ^1.11.0  # For annotations
 
 flutter:
   uses-material-design: true

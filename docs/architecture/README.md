@@ -42,7 +42,7 @@ This directory contains architectural documentation for the Butlery project.
 
 ## Related Documentation
 
-- **Setup**: See `/docs/setup/` for development environment
-- **Security**: See `/docs/security/` for security implementation
-- **Reports**: See `/reports/` for validation results
-- **Priority 2 Summary**: See `priority_2_completion_summary.md` for recent improvements
+- **Setup**: See `../setup/` for development environment
+- **Security**: See `../security/` for security implementation
+- **Testing**: See `../testing/` for test infrastructure documentation
+- **Development Guide**: See `../development_guide.md` for coding standards

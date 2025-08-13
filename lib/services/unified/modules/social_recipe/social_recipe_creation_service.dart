@@ -33,7 +33,10 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _setError = setError,
        _notifyListeners = notifyListeners,
-       _saveRecipe = saveRecipe;
+       _saveRecipe = saveRecipe {
+    // Set the user ID provider for the mixin
+    setUserIdProvider(getCurrentUserId);
+  }
 
   /// Creates a new collaborative recipe with initial sharing settings
   Future<String?> createCollaborativeRecipe({

@@ -269,9 +269,7 @@ class _ButleryAppState extends State<ButleryApp> {
 
       if (bootstrap.isInitialized) {
         final analyticsService = bootstrap.container.get<AnalyticsService>();
-        _analyticsObserver = FirebaseAnalyticsObserver(
-          analytics: analyticsService.analytics,
-        );
+        _analyticsObserver = analyticsService.observer as FirebaseAnalyticsObserver?;
         
         if (kDebugMode) {
           debugPrint('✅ Modular analytics observer setup');

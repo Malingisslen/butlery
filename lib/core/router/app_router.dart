@@ -19,6 +19,7 @@ import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/veckomeny_view.dart' as vecko;
 import 'package:butlery/views/importera_fran_arkiv_view.dart';
 import 'package:butlery/views/photo_import_view.dart';
+import 'package:butlery/views/file_import_view.dart';
 import 'package:butlery/views/import_via_url_view.dart';
 import 'package:butlery/views/receive_share_view.dart';
 
@@ -131,6 +132,9 @@ class AppRouter {
         
         case Routes.photoImport:
           return _buildRoute(const PhotoImportView(), settings, Routes.getAnimationType(routeName));
+        
+        case Routes.fileImport:
+          return _buildRoute(const FileImportView(), settings, Routes.getAnimationType(routeName));
         
         case Routes.skrivSjalv:
           // Handle arguments for template or initial recipe

@@ -56,6 +56,7 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
+import 'package:butlery/services/import/file_import_strategy.dart';
 
 /// Comprehensive import manager coordinating multiple import strategies with intelligent selection and batch processing.
 ///
@@ -75,10 +76,10 @@ class ImportManager {
     _strategies.addAll([
       ArchiveImportStrategy(),
       TextImportStrategy(),
+      FileImportStrategy(),
       // Add more strategies here as they are implemented:
       // UrlImportStrategy(),
       // PhotoImportStrategy(),
-      // FileImportStrategy(),
     ]);
   }
 

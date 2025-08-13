@@ -47,6 +47,7 @@ import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Base class for Firebase repositories that eliminates duplicate CRUD patterns.
 ///
@@ -116,7 +117,10 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
   String requireCurrentUserId() {
     final uid = _authRepository.currentUserId;
     if (uid == null) {
-      throw Exception('No authenticated user for ${T.toString()} operation');
+      throw AuthenticationException(
+        'No authenticated user for ${T.toString()} operation',
+        details: 'Authentication required for ${T.toString()} operations',
+      );
     }
     return uid;
   }

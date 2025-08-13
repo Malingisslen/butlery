@@ -71,6 +71,7 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
+    FirebaseFirestore? firestore,
   }) async {
     try {
       AppLogger.info('🔄 Starting Firebase sync for user: $currentUserId');
@@ -94,6 +95,7 @@ class FirebaseSyncManager {
         onRecipeUpdated: onRecipeUpdated,
         onRecipeRemoved: onRecipeRemoved,
         onSyncError: onSyncError,
+        firestore: firestore,
       );
       subscriptions['collaborative_recipes'] = collaborativeSub;
 
@@ -184,10 +186,14 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
+    FirebaseFirestore? firestore,
   }) {
     try {
+      // Use injected firestore or fallback to instance
+      final firestoreInstance = firestore ?? FirebaseFirestore.instance;
+      
       // Watch for collaborative recipes where user is a participant
-      final subscription = FirebaseFirestore.instance
+      final subscription = firestoreInstance
           .collection('realtime_recipes')
           .where('participants.$currentUserId', isNotEqualTo: null)
           .snapshots()
@@ -296,12 +302,14 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
+    FirebaseFirestore? firestore,
   }) {
     return _startCollaborativeRecipesSync(
       currentUserId: currentUserId,
       onRecipeUpdated: onRecipeUpdated,
       onRecipeRemoved: onRecipeRemoved,
       onSyncError: onSyncError,
+      firestore: firestore,
     );
   }
 
@@ -332,6 +340,7 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
+    FirebaseFirestore? firestore,
   }) async {
     try {
       final expectedSyncs = ['personal_recipes', 'collaborative_recipes'];
@@ -363,6 +372,7 @@ class FirebaseSyncManager {
               onRecipeUpdated: onRecipeUpdated,
               onRecipeRemoved: onRecipeRemoved,
               onSyncError: onSyncError,
+              firestore: firestore,
             );
             subscriptions[syncType] = sub;
           }
