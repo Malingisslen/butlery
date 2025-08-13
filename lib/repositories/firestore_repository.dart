@@ -56,7 +56,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// ```
 class FirestoreRepository {
   /// The underlying Firebase Firestore instance for all database operations.
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  /// Creates a new FirestoreRepository with optional dependency injection support.
+  /// 
+  /// Accepts an optional [firestore] instance for testing purposes. If not provided,
+  /// uses the default FirebaseFirestore.instance for production.
+  FirestoreRepository({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Provides direct access to the Firebase Firestore instance for advanced operations.
   ///

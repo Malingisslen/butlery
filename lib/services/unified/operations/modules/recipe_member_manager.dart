@@ -1,5 +1,7 @@
 // lib/services/unified/operations/modules/recipe_member_manager.dart
 
+// ignore: unused_import
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';

@@ -133,15 +133,20 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       );
     }
     
+    // Get the actual display name from the current user
+    final displayName = authRepository.currentUser?.displayName ?? 'Anonymous';
+    
     final commentData = {
       'recipeId': recipeId,
-      'userId': userId,
-      'content': content,
+      'authorId': userId,
+      'authorDisplayName': displayName,
+      'text': content,
       'parentCommentId': parentCommentId,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
-      'isEdited': false,
-      'likesCount': 0,
+      'isDeleted': false,
+      'likedByUserIds': [],
+      'replyCount': 0,
     };
 
     final docRef = await collection.add(commentData);
@@ -173,7 +178,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     final commentData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: commentData['userId'] ?? '',
+      resourceOwnerId: commentData['authorId'] ?? '',
       resourceType: 'recipe_comment',
       resourceId: commentId,
     );
@@ -186,9 +191,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     }
     
     await collection.doc(commentId).update({
-      'content': newContent,
+      'text': newContent,
       'updatedAt': FieldValue.serverTimestamp(),
-      'isEdited': true,
+      'editedAt': FieldValue.serverTimestamp(),
     });
     
     logPermissionCheck(
@@ -214,7 +219,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     final commentData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: commentData['userId'] ?? '',
+      resourceOwnerId: commentData['authorId'] ?? '',
       resourceType: 'recipe_comment',
       resourceId: commentId,
     );

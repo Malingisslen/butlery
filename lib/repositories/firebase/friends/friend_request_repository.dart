@@ -171,21 +171,31 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   Future<void> updateRequest(FriendRequest request) async {
     final currentUser = requireCurrentUserId();
     
-    // Only the recipient can update (accept/reject) a friend request
-    if (currentUser != request.toUserId) {
-      throw PermissionDeniedException(
-        'Only the recipient can update a friend request',
-        resource: 'friend_request',
-        operation: 'update',
-        userId: currentUser,
-      );
-    }
-    
-    // Validate status change is allowed
-    if (request.status != FriendRequestStatus.accepted && 
-        request.status != FriendRequestStatus.rejected) {
+    // Check permissions based on the status change
+    if (request.status == FriendRequestStatus.cancelled) {
+      // Only the sender can cancel their own request
+      if (currentUser != request.fromUserId) {
+        throw PermissionDeniedException(
+          'Only the sender can cancel a friend request',
+          resource: 'friend_request',
+          operation: 'cancel',
+          userId: currentUser,
+        );
+      }
+    } else if (request.status == FriendRequestStatus.accepted || 
+               request.status == FriendRequestStatus.rejected) {
+      // Only the recipient can accept/reject
+      if (currentUser != request.toUserId) {
+        throw PermissionDeniedException(
+          'Only the recipient can accept or reject a friend request',
+          resource: 'friend_request',
+          operation: 'update',
+          userId: currentUser,
+        );
+      }
+    } else {
       throw SecurityViolationException(
-        'Friend request can only be accepted or rejected',
+        'Invalid friend request status change',
         details: 'Status was: ${request.status}',
       );
     }

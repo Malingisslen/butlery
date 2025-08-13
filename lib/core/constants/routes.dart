@@ -26,6 +26,9 @@ class Routes {
   /// Archive import route
   static const String importFranArkiv = '/importFranArkiv';
   
+  /// File import route (CSV/Excel)
+  static const String fileImport = '/fileImport';
+  
   /// Recipe detail route
   static const String receptDetalj = '/receptDetalj';
   

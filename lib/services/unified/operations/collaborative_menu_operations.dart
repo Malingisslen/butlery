@@ -1,6 +1,7 @@
 // lib/services/unified/operations/collaborative_menu_operations.dart
 
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';

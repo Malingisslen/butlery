@@ -28,7 +28,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     RecipeServiceAdapter? serviceAdapter,
   }) : _cacheHelper = cacheHelper,
        _getCurrentUserId = getCurrentUserId,
-       _serviceAdapter = serviceAdapter ?? SocialRecipeQueryService._createDefaultServiceAdapter();
+       _serviceAdapter = serviceAdapter ?? SocialRecipeQueryService._createDefaultServiceAdapter() {
+    // Set the user ID provider for the mixin
+    setUserIdProvider(getCurrentUserId);
+  }
 
   // ===== COLLABORATIVE RECIPE QUERIES =====
 

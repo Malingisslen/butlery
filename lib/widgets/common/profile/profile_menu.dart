@@ -137,6 +137,10 @@ class _ProfileMenuState extends State<ProfileMenu> {
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],
 
+                  // Account Management section (GDPR compliance)
+                  ProfileActions.buildAccountManagementSection(context),
+                  const SizedBox(height: AppDimensions.spacingXl),
+
                   // Logout section
                   ProfileActions.buildLogoutSection(context),
                   const SizedBox(height: AppDimensions.spacingXl),

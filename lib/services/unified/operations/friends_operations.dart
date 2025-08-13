@@ -15,6 +15,7 @@
 /// Connected to: UnifiedFriendsService, Friends ViewModels
 /// Used in phases: Phase 5 - Service Consolidation
 
+import 'package:collection/collection.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/core/utils/logger.dart';

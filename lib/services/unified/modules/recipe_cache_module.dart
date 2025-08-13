@@ -1,7 +1,7 @@
 // lib/services/unified/modules/recipe_cache_module.dart
 
 import 'dart:async';
-// Firebase imports removed - using repository pattern
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -61,7 +61,8 @@ import 'package:butlery/services/unified/modules/cache_optimization.dart';
 /// final stats = await cacheModule.getCacheStatistics();
 /// ```
 class RecipeCacheModule {
-  // Firebase instance removed - using repository pattern instead
+  // Firebase instance for synchronization
+  final FirebaseFirestore? _firestore;
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final void Function(String) _setError;
@@ -82,11 +83,13 @@ class RecipeCacheModule {
   static const Duration _cacheCleanupInterval = Duration(hours: 24);
 
   RecipeCacheModule({
+    FirebaseFirestore? firestore,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     required void Function() notifyListeners,
-  })  : _cacheHelper = cacheHelper,
+  })  : _firestore = firestore,
+        _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _setError = setError,
         _notifyListeners = notifyListeners {
@@ -167,6 +170,7 @@ class RecipeCacheModule {
         onRecipeUpdated: _updateCachedRecipe,
         onRecipeRemoved: _removeCachedRecipe,
         onSyncError: _handleSyncError,
+        firestore: _firestore,
       );
 
       _syncSubscriptions.addAll(subscriptions);

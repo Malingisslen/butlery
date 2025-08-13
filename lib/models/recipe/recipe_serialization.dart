@@ -59,8 +59,11 @@ class RecipeSerialization {
 
   /// Deserialize recipe from repository data map (removes Firebase dependency)
   static Recipe fromMap(String id, Map<String, dynamic> data) {
+    // Handle both nested and flat structures for backward compatibility
+    final coreData = data['core'] as Map<String, dynamic>? ?? data;
+    
     return Recipe(
-      core: RecipeCore.fromMap(id, data),
+      core: RecipeCore.fromMap(id, coreData),
       type: RecipeType.values[data['type'] as int? ?? 0],
       socialData: data['socialData'] != null 
           ? RecipeSocialData.fromJson(data['socialData'] as Map<String, dynamic>)

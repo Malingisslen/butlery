@@ -28,6 +28,10 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
+// Storage repository
+import 'package:butlery/repositories/interfaces/storage_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
+
 // Content services
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -67,6 +71,7 @@ class ContentModule implements DIModule {
     MenuService,
     SearchService,
     ShareService,
+    StorageRepository,
     StorageService,
     ImagePickerService,
     OfflineService,
@@ -149,8 +154,19 @@ class ContentModule implements DIModule {
         debugPrint('✅ [ContentModule] ShareService registered');
       }
 
+      // Storage repository for storage operations
+      container.registerSingleton<StorageRepository>(
+        FirebaseStorageRepository(),
+      );
+      
+      if (kDebugMode) {
+        debugPrint('✅ [ContentModule] StorageRepository registered');
+      }
+
       // Storage service for file management
-      container.registerSingleton<StorageService>(StorageService());
+      container.registerSingleton<StorageService>(
+        StorageService(repository: container<StorageRepository>()),
+      );
       
       if (kDebugMode) {
         debugPrint('✅ [ContentModule] StorageService registered');

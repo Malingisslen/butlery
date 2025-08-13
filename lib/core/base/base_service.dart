@@ -392,12 +392,25 @@ abstract class BaseService with ErrorHandlingMixin {
 /// Eliminates duplicate user access patterns
 mixin UserContextMixin on BaseService {
   
+  /// Function to get the current user ID
+  /// This should be provided by the service using this mixin
+  String? Function()? _getUserIdProvider;
+  
+  /// Set the user ID provider function
+  void setUserIdProvider(String? Function() provider) {
+    _getUserIdProvider = provider;
+  }
+  
   /// Get current user ID with error handling
   Future<String?> getCurrentUserId() async {
-    return await safeExecute(
+    return await safeExecute<String?>(
       () async {
-        const userId = 'mock-user-id'; // Simplified user ID - consolidation removed detailed auth service
-        return userId;
+        if (_getUserIdProvider != null) {
+          return _getUserIdProvider!();
+        }
+        // Fallback to null if no provider is set
+        AppLogger.error('[$serviceName] No user ID provider configured');
+        return null;
       },
       operationName: 'Get current user ID',
     );

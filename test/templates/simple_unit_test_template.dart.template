@@ -1,0 +1,65 @@
+/// Template for Simple Unit Tests (Pure Logic)
+/// 
+/// Use this template for tests that:
+/// - Test pure functions or simple classes
+/// - Don't require dependency injection
+/// - Have minimal or no external dependencies
+/// 
+/// Examples: Utility classes, pure functions, simple models
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+
+// Import your test subject
+// import 'package:butlery/utils/your_utility.dart';
+
+void main() {
+  group('YourUtility/SimpleClass', () {
+    // Declare any simple test fixtures
+    late YourClass testSubject;
+    
+    setUp(() {
+      // Create simple test subject
+      testSubject = YourClass();
+      
+      // Initialize any simple test data
+    });
+    
+    tearDown(() {
+      // Clean up if needed (often not necessary for simple tests)
+      // Only add if you have resources to clean up
+    });
+    
+    group('Feature Group', () {
+      test('should calculate correctly', () {
+        // Arrange
+        const input = 'test input';
+        const expected = 'expected output';
+        
+        // Act
+        final result = testSubject.calculate(input);
+        
+        // Assert
+        expect(result, equals(expected));
+      });
+      
+      test('should handle edge cases', () {
+        // Arrange
+        const edgeCase = '';
+        
+        // Act & Assert
+        expect(
+          () => testSubject.process(edgeCase),
+          throwsArgumentError,
+        );
+      });
+    });
+    
+    group('Another Feature', () {
+      test('should format correctly', () {
+        // Test implementation
+        expect(testSubject.format('input'), equals('formatted'));
+      });
+    });
+  });
+}

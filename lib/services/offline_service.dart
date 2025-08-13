@@ -90,9 +90,12 @@ class OfflineService extends ChangeNotifier {
   static OfflineService? _instance;
   
   // Private constructor for singleton
-  OfflineService._internal() {
-    _firestoreRepository = FirestoreRepository();
-    _authRepository = FirebaseAuthRepository();
+  OfflineService._internal({
+    FirestoreRepository? firestoreRepository,
+    auth_repo.AuthRepository? authRepository,
+  }) {
+    _firestoreRepository = firestoreRepository ?? FirestoreRepository();
+    _authRepository = authRepository ?? FirebaseAuthRepository();
   }
   
   // Factory constructor with dependency injection
@@ -100,13 +103,22 @@ class OfflineService extends ChangeNotifier {
     FirestoreRepository? firestoreRepository,
     auth_repo.AuthRepository? authRepository,
   }) {
-    _instance ??= OfflineService._internal();
+    _instance ??= OfflineService._internal(
+      firestoreRepository: firestoreRepository,
+      authRepository: authRepository,
+    );
     
-    // Set dependencies if provided
+    // Update dependencies if provided on subsequent calls
     if (firestoreRepository != null) _instance!._firestoreRepository = firestoreRepository;
     if (authRepository != null) _instance!._authRepository = authRepository;
     
     return _instance!;
+  }
+  
+  /// Reset singleton for testing
+  @visibleForTesting
+  static void resetForTesting() {
+    _instance = null;
   }
 
   late FirestoreRepository _firestoreRepository;
@@ -278,12 +290,16 @@ class OfflineService extends ChangeNotifier {
   /// Clean up resources
   @override
   void dispose() {
-    _initialization.dispose();
+    if (_isInitializationReady) {
+      _initialization.dispose();
+    }
     super.dispose(); // Call ChangeNotifier dispose
   }
 
   /// Close Hive boxes
   Future<void> close() async {
-    await _initialization.close();
+    if (_isInitializationReady) {
+      await _initialization.close();
+    }
   }
 }

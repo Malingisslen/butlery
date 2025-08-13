@@ -118,9 +118,12 @@ class CollaborativeShoppingOperations {
 
   /// Get collaborative shopping list by ID
   UnifiedShoppingList? getListById(String id) {
-    return _parent.collaborativeLists
-        .where((list) => list.id == id)
-        .firstOrNull;
+    try {
+      return _parent.collaborativeLists
+          .firstWhere((list) => list.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Get collaborative lists where current user is owner
@@ -151,12 +154,18 @@ class CollaborativeShoppingOperations {
     required Map<String, String> memberDisplayNames,
     String? description,
   }) async {
-    final personalList = _parent.personalLists
-        .where((list) => list.id == personalListId)
-        .firstOrNull;
-    
-    if (personalList == null) {
+    UnifiedShoppingList? personalList;
+    try {
+      personalList = _parent.personalLists
+          .firstWhere((list) => list.id == personalListId);
+    } catch (e) {
       AppLogger.error('Cannot convert: Personal list not found');
+      return null;
+    }
+    
+    // Check if personalList was found
+    if (personalList == null) {
+      AppLogger.error('Cannot convert: Personal list is null');
       return null;
     }
     

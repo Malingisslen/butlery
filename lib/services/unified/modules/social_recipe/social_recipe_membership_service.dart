@@ -31,7 +31,10 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
   }) : _setError = setError,
        _notifyListeners = notifyListeners,
        _getRecipe = getRecipe,
-       _saveRecipe = saveRecipe;
+       _saveRecipe = saveRecipe {
+    // Set the user ID provider for the mixin
+    setUserIdProvider(getCurrentUserId);
+  }
 
   /// Add member to collaborative recipe with specified permission
   Future<bool> addMemberToRecipe(

@@ -266,17 +266,17 @@ class UserProfile with JsonSerializableMixin {
       friendsCount: data['friendsCount'] as int? ?? 0,
       joinedAt: data['joinedAt'] is DateTime 
           ? data['joinedAt'] as DateTime
-          : DateTime.fromMillisecondsSinceEpoch(data['joinedAt'] as int),
+          : AppTimestamp.fromFirestore(data['joinedAt']).dateTime,
       lastActiveAt: data['lastActiveAt'] is DateTime 
           ? data['lastActiveAt'] as DateTime
-          : DateTime.fromMillisecondsSinceEpoch(data['lastActiveAt'] as int),
+          : AppTimestamp.fromFirestore(data['lastActiveAt']).dateTime,
       isOnline: data['isOnline'] as bool? ?? false,
       // Notification fields
       fcmToken: data['fcmToken'] as String?,
       fcmTokenUpdatedAt: data['fcmTokenUpdatedAt'] != null
           ? (data['fcmTokenUpdatedAt'] is DateTime 
               ? data['fcmTokenUpdatedAt'] as DateTime
-              : DateTime.fromMillisecondsSinceEpoch(data['fcmTokenUpdatedAt'] as int))
+              : AppTimestamp.fromFirestore(data['fcmTokenUpdatedAt']).dateTime)
           : null,
       notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
     );

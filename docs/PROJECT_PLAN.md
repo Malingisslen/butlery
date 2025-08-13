@@ -251,7 +251,7 @@ Firestore Database:
 | Analytics | 🔄 40% | Events tracking implementerat |
 | Performance | 🔄 70% | Caching, optimization, batching |
 | Code Quality | 🔄 90% | MVVM, Clean architecture, 369 files |
-| Unit Tests | 🔄 30% | Infrastructure finns |
+| Unit Tests | 🔄 55.4% | Mock coverage 107/193 components - see test_infrastructure_audit.md |
 | Offline Support | ✅ 100% | Hive + sync |
 | Multi-device | ✅ 100% | Firebase sync |
 
@@ -653,4 +653,4 @@ Alla social views under `views/social/` plus integrationer i befintliga vyer.
 - Projektet flyttades till detta repositorium med komplett Flutter + Firebase setup.
 - Alla gamla src-filer lades under `lib/` och nya services introducerades.
 - CI för testkörningar lades till via `.github/workflows/test.yml`.
-- Se `docs/REPO_MIGRATION.md` för full historik.
+- Se `REPO_MIGRATION.md` för full historik (om den finns).

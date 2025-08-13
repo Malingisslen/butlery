@@ -1,6 +1,9 @@
 // lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart
 
 import 'dart:async';
+// ignore: unused_import
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -44,21 +47,21 @@ class PresenceTrackingModule {
       // Update local presence tracking
       _updateLocalPresence(recipeId, currentUserId, true);
       
-      // In a real implementation, this would update Firebase presence
+      // Update Firebase presence
       if (_realtimeSyncService != null) {
-        // await FirebaseFirestore.instance
-        //     .collection('recipePresence')
-        //     .doc(recipeId)
-        //     .collection('activeUsers')
-        //     .doc(currentUserId)
-        //     .set({
-        //   'userId': currentUserId,
-        //   'displayName': currentUser.displayName,
-        //   'avatarUrl': currentUser.avatarUrl,
-        //   'joinedAt': FieldValue.serverTimestamp(),
-        //   'lastSeen': FieldValue.serverTimestamp(),
-        //   'isActive': true,
-        // }, SetOptions(merge: true));
+        await FirebaseFirestore.instance
+            .collection('recipePresence')
+            .doc(recipeId)
+            .collection('activeUsers')
+            .doc(currentUserId)
+            .set({
+          'userId': currentUserId,
+          'displayName': currentUser.displayName,
+          'avatarUrl': currentUser.avatarUrl,
+          'joinedAt': FieldValue.serverTimestamp(),
+          'lastSeen': FieldValue.serverTimestamp(),
+          'isActive': true,
+        }, SetOptions(merge: true));
       }
 
       AppLogger.info('Showing presence for ${currentUser.displayName} in recipe: $recipeId');
@@ -83,17 +86,17 @@ class PresenceTrackingModule {
       // Update local presence tracking
       _updateLocalPresence(recipeId, currentUserId, false);
       
-      // In a real implementation, this would update Firebase presence
+      // Update Firebase presence
       if (_realtimeSyncService != null) {
-        // await FirebaseFirestore.instance
-        //     .collection('recipePresence')
-        //     .doc(recipeId)
-        //     .collection('activeUsers')
-        //     .doc(currentUserId)
-        //     .update({
-        //   'isActive': false,
-        //   'leftAt': FieldValue.serverTimestamp(),
-        // });
+        await FirebaseFirestore.instance
+            .collection('recipePresence')
+            .doc(recipeId)
+            .collection('activeUsers')
+            .doc(currentUserId)
+            .update({
+          'isActive': false,
+          'leftAt': FieldValue.serverTimestamp(),
+        });
       }
 
       AppLogger.info('Hiding presence for ${currentUser.displayName} in recipe: $recipeId');
@@ -116,16 +119,16 @@ class PresenceTrackingModule {
       // Update local timestamp
       _presenceTimestamps['${currentUserId}_$recipeId'] = DateTime.now();
       
-      // In a real implementation, this would update Firebase presence
+      // Update Firebase presence
       if (_realtimeSyncService != null) {
-        // await FirebaseFirestore.instance
-        //     .collection('recipePresence')
-        //     .doc(recipeId)
-        //     .collection('activeUsers')
-        //     .doc(currentUserId)
-        //     .update({
-        //   'lastSeen': FieldValue.serverTimestamp(),
-        // });
+        await FirebaseFirestore.instance
+            .collection('recipePresence')
+            .doc(recipeId)
+            .collection('activeUsers')
+            .doc(currentUserId)
+            .update({
+          'lastSeen': FieldValue.serverTimestamp(),
+        });
       }
 
       AppLogger.debug('Updated presence heartbeat for user: $currentUserId in recipe: $recipeId');

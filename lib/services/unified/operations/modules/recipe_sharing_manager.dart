@@ -1,5 +1,7 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
+// ignore: unused_import
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -38,11 +40,11 @@ class RecipeSharingManager {
       AppLogger.info('🔄 Starting recipe share process for recipe: $recipeId');
 
       // Find the personal recipe to share
-      final personalRecipe = _parent.recipes
-          .where((r) => r.id == recipeId && r.isPersonal)
-          .firstOrNull;
-      
-      if (personalRecipe == null) {
+      dynamic personalRecipe;
+      try {
+        personalRecipe = _parent.recipes
+            .firstWhere((r) => r.id == recipeId && r.isPersonal);
+      } catch (e) {
         AppLogger.error('❌ Cannot share recipe: Recipe not found or not personal');
         return null;
       }
@@ -104,11 +106,11 @@ class RecipeSharingManager {
       AppLogger.info('🔄 Converting collaborative recipe to personal: $collaborativeRecipeId');
 
       // Find the collaborative recipe
-      final collaborativeRecipe = _parent.recipes
-          .where((r) => r.id == collaborativeRecipeId && r.isCollaborative)
-          .firstOrNull;
-      
-      if (collaborativeRecipe == null) {
+      dynamic collaborativeRecipe;
+      try {
+        collaborativeRecipe = _parent.recipes
+            .firstWhere((r) => r.id == collaborativeRecipeId && r.isCollaborative);
+      } catch (e) {
         AppLogger.error('❌ Cannot convert recipe: Collaborative recipe not found');
         return null;
       }
@@ -278,11 +280,11 @@ class RecipeSharingManager {
     String? newTitle,
   }) async {
     try {
-      final originalRecipe = _parent.recipes
-          .where((r) => r.id == recipeId && r.isPersonal)
-          .firstOrNull;
-      
-      if (originalRecipe == null) {
+      dynamic originalRecipe;
+      try {
+        originalRecipe = _parent.recipes
+            .firstWhere((r) => r.id == recipeId && r.isPersonal);
+      } catch (e) {
         AppLogger.error('❌ Cannot duplicate: Recipe not found');
         return null;
       }

@@ -1,0 +1,205 @@
+/// Template for Model Tests
+/// 
+/// Use this template for tests that:
+/// - Test data models and their methods
+/// - Test serialization/deserialization
+/// - Test model validation and business logic
+/// 
+/// Examples: Recipe model, User model, any data model tests
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+
+// Import your model
+// import 'package:butlery/models/your_model.dart';
+
+// Import test infrastructure if needed for complex models
+import '../infrastructure/helpers/base_unit_test.dart';
+import '../infrastructure/di/test_service_locator.dart';
+
+void main() {
+  group('YourModel', () {
+    // Test data fixtures
+    late Map<String, dynamic> validJson;
+    late Map<String, dynamic> invalidJson;
+    late YourModel testModel;
+    
+    setUpAll(() async {
+      // Only needed if model tests require ServiceLocator
+      await TestServiceLocator.initialize();
+    });
+    
+    setUp(() {
+      // Setup test data
+      validJson = {
+        'id': 'test-123',
+        'name': 'Test Name',
+        'createdAt': '2024-01-01T00:00:00Z',
+        'items': ['item1', 'item2'],
+      };
+      
+      invalidJson = {
+        'id': null, // Invalid: required field is null
+        'name': 'Test',
+      };
+      
+      // Create test model
+      testModel = YourModel(
+        id: 'test-123',
+        name: 'Test Name',
+        createdAt: DateTime(2024, 1, 1),
+        items: ['item1', 'item2'],
+      );
+    });
+    
+    tearDown(() {
+      // Usually not needed for model tests
+      TestServiceLocator.reset();
+    });
+    
+    group('Construction', () {
+      test('should create model with all fields', () {
+        // Assert
+        expect(testModel.id, equals('test-123'));
+        expect(testModel.name, equals('Test Name'));
+        expect(testModel.items, hasLength(2));
+      });
+      
+      test('should use default values for optional fields', () {
+        // Arrange
+        final minimal = YourModel(
+          id: 'min-123',
+          name: 'Minimal',
+        );
+        
+        // Assert
+        expect(minimal.items, isEmpty);
+        expect(minimal.isActive, isTrue); // Assuming default
+      });
+    });
+    
+    group('Serialization', () {
+      test('should convert to JSON correctly', () {
+        // Act
+        final json = testModel.toJson();
+        
+        // Assert
+        expect(json['id'], equals('test-123'));
+        expect(json['name'], equals('Test Name'));
+        expect(json['items'], isA<List>());
+        expect(json['items'], hasLength(2));
+      });
+      
+      test('should convert to Firestore format', () {
+        // Act
+        final firestore = testModel.toFirestore();
+        
+        // Assert
+        expect(firestore['id'], equals('test-123'));
+        expect(firestore['createdAt'], isA<Timestamp>());
+        expect(firestore['updatedAt'], isA<FieldValue>());
+      });
+    });
+    
+    group('Deserialization', () {
+      test('should create from valid JSON', () {
+        // Act
+        final model = YourModel.fromJson(validJson);
+        
+        // Assert
+        expect(model.id, equals('test-123'));
+        expect(model.name, equals('Test Name'));
+        expect(model.items, equals(['item1', 'item2']));
+      });
+      
+      test('should throw on invalid JSON', () {
+        // Act & Assert
+        expect(
+          () => YourModel.fromJson(invalidJson),
+          throwsA(isA<FormatException>()),
+        );
+      });
+      
+      test('should create from Firestore document', () {
+        // Arrange
+        final firestoreData = {
+          'id': 'fs-123',
+          'name': 'Firestore Model',
+          'createdAt': Timestamp.now(),
+        };
+        
+        // Act
+        final model = YourModel.fromFirestore('fs-123', firestoreData);
+        
+        // Assert
+        expect(model.id, equals('fs-123'));
+        expect(model.name, equals('Firestore Model'));
+      });
+    });
+    
+    group('Business Logic', () {
+      test('should validate correctly', () {
+        // Assert valid model
+        expect(testModel.isValid, isTrue);
+        
+        // Create invalid model
+        final invalid = YourModel(
+          id: '',
+          name: '', // Empty name is invalid
+        );
+        
+        expect(invalid.isValid, isFalse);
+      });
+      
+      test('should calculate computed properties', () {
+        // Assuming model has computed properties
+        expect(testModel.displayName, equals('Test Name (2 items)'));
+        expect(testModel.summary, contains('Created on'));
+      });
+    });
+    
+    group('Equality', () {
+      test('should be equal when all fields match', () {
+        // Arrange
+        final other = YourModel(
+          id: 'test-123',
+          name: 'Test Name',
+          createdAt: DateTime(2024, 1, 1),
+          items: ['item1', 'item2'],
+        );
+        
+        // Assert
+        expect(testModel, equals(other));
+        expect(testModel.hashCode, equals(other.hashCode));
+      });
+      
+      test('should not be equal when fields differ', () {
+        // Arrange
+        final other = YourModel(
+          id: 'different-123',
+          name: 'Test Name',
+          createdAt: DateTime(2024, 1, 1),
+          items: ['item1', 'item2'],
+        );
+        
+        // Assert
+        expect(testModel, isNot(equals(other)));
+      });
+    });
+    
+    group('CopyWith', () {
+      test('should create copy with updated fields', () {
+        // Act
+        final updated = testModel.copyWith(
+          name: 'Updated Name',
+          items: ['new1', 'new2', 'new3'],
+        );
+        
+        // Assert
+        expect(updated.id, equals(testModel.id)); // Unchanged
+        expect(updated.name, equals('Updated Name')); // Changed
+        expect(updated.items, hasLength(3)); // Changed
+      });
+    });
+  });
+}

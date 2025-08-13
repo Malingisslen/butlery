@@ -368,6 +368,9 @@ class UnifiedShoppingList {
   int get boughtItems => items.where((item) => item.bought).length;
   int get unboughtItems => totalItems - boughtItems;
   int get memberCount => memberPermissions.length;
+  
+  /// Gets list of collaborator user IDs for test compatibility.
+  List<String> get collaborators => memberPermissions.keys.toList();
 
   bool get allItemsBought => totalItems > 0 && boughtItems == totalItems;
   double get completionPercentage =>

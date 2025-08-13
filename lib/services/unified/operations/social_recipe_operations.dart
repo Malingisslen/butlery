@@ -463,67 +463,94 @@ class SocialRecipeOperations {
   
   /// Check legacy permission compatibility
   bool checkLegacyPermission(String recipeId, String userId, String action) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.checkLegacyPermission(recipe, userId, action);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.checkLegacyPermission(recipe, userId, action);
+    } catch (e) {
+      return false;
+    }
   }
 
   // ===== PERMISSION HELPERS (Delegates to RecipePermissionHelper) =====
 
   /// Check if current user can view recipe
   bool canView(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.canViewRecipe(recipe);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.canViewRecipe(recipe);
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Check if current user can edit recipe
   bool canEdit(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.canEditRecipe(recipe);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.canEditRecipe(recipe);
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Check if current user can delete recipe
   bool canDelete(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.canDeleteRecipe(recipe);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.canDeleteRecipe(recipe);
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Check if current user can manage members
   bool canManageMembers(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.canManageMembers(recipe);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.canManageMembers(recipe);
+    } catch (e) {
+      return false;
+    }
   }
   
   /// Check if current user can comment on recipe
   bool canComment(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.canCommentOnRecipe(recipe);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.canCommentOnRecipe(recipe);
+    } catch (e) {
+      return false;
+    }
   }
   
   /// Check if current user can rate a recipe
   bool canRate(String recipeId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return false;
-    return _permissionHelper.canRateRecipe(recipe);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.canRateRecipe(recipe);
+    } catch (e) {
+      return false;
+    }
   }
   
   /// Get user's permission level for a recipe
   ResourcePermission getUserPermission(String recipeId, String userId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return ResourcePermission.read;
-    return _permissionHelper.getUserPermission(recipe, userId);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.getUserPermission(recipe, userId);
+    } catch (e) {
+      return ResourcePermission.read;
+    }
   }
   
   /// Get permission summary for debugging/admin purposes
   Map<String, dynamic> getPermissionSummary(String recipeId, String userId) {
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-    if (recipe == null) return {'error': 'Recipe not found'};
-    return _permissionHelper.getPermissionSummary(recipe, userId);
+    try {
+      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      return _permissionHelper.getPermissionSummary(recipe, userId);
+    } catch (e) {
+      return {'error': 'Recipe not found'};
+    }
   }
 
   // ===== ADDITIONAL FEATURES =====
