@@ -1,134 +1,389 @@
-import 'package:flutter/services.dart';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+// Production imports
 import 'package:butlery/services/image_picker_service.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import 'package:butlery/services/image_picker_provider.dart';
+
+// Test infrastructure
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
-// Note: MockImagePicker, MockXFile, and MockFile are now in production_mocks.dart
+// Mocks
+class MockImagePickerProvider extends Mock implements ImagePickerProvider {}
+class MockPermissionProvider extends Mock implements PermissionProvider {}
+class MockImageValidator extends Mock implements ImageValidator {}
+class MockXFile extends Mock implements XFile {}
+class MockFile extends Mock implements File {}
+
+// Fake for Permission
+class FakePermission extends Fake implements Permission {}
 
 void main() {
-  late ImagePickerService service;
-  
-  setUpAll(() async {
-    // Initialize base test infrastructure for consistency
-    await BaseUnitTest.setupUnit();
+  setUpAll(() {
+    // Register fallback values for mocktail
+    registerFallbackValue(ImageSource.camera);
+    registerFallbackValue(FakePermission());
   });
   
-  setUp(() {
-    service = ImagePickerService();
-  });
-  
-  tearDown(() async {
-    // Reset any mock state between tests
-    BaseUnitTest.resetMocks();
-    await TestServiceLocator.reset();
-  });
-  
-  tearDownAll(() async {
-    await BaseUnitTest.teardownUnit();
-  });
-  
-  group('ImagePickerService', () {
-    group('Initialization', () {
-      test('should create service instance', () {
-        // Assert
-        expect(service, isA<ImagePickerService>());
-      });
+  group('ImagePickerService Tests', () {
+    late ImagePickerService service;
+    late MockImagePickerProvider mockImagePickerProvider;
+    late MockPermissionProvider mockPermissionProvider;
+    late MockImageValidator mockImageValidator;
+    
+    setUp(() async {
+      await BaseUnitTest.setupUnit();
+      await TestServiceLocator.initialize();
       
-      test('should have image picker initialized', () {
-        // Assert - Service creates its own ImagePicker internally
-        expect(service, isNotNull);
-      });
+      mockImagePickerProvider = MockImagePickerProvider();
+      mockPermissionProvider = MockPermissionProvider();
+      mockImageValidator = MockImageValidator();
+      
+      service = ImagePickerService(
+        imagePickerProvider: mockImagePickerProvider,
+        permissionProvider: mockPermissionProvider,
+        imageValidator: mockImageValidator,
+      );
     });
     
-    group('pickImage - Single Image Selection', () {
-      test('should successfully pick image from camera', () async {
-        // Arrange - Since we can't easily mock the internal _picker and permissions,
-        // we'll test the public interface behavior
+    tearDown(() async {
+      await TestServiceLocator.reset();
+      BaseUnitTest.resetMocks();
+    });
+    
+    tearDownAll(() async {
+      await BaseUnitTest.teardownUnit();
+    });
+    
+    group('pickImage', () {
+      test('should successfully pick image from camera with granted permission', () async {
+        // Arrange
+        final mockXFile = MockXFile();
+        final mockFile = MockFile();
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 2400,
+          maxHeight: 2400,
+          imageQuality: 90,
+        )).thenAnswer((_) async => mockXFile);
+        
+        when(() => mockXFile.path).thenReturn('/path/to/image.jpg');
+        when(() => mockFile.path).thenReturn('/path/to/image.jpg');
+        when(() => mockFile.exists()).thenAnswer((_) async => true);
+        when(() => mockFile.length()).thenAnswer((_) async => 1024);
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(true);
         
         // Act
         final result = await service.pickImage(ImageSource.camera);
         
-        // Assert - Result will be null in test environment without actual permissions
+        // Assert
+        expect(result, isNotNull);
+        verify(() => mockPermissionProvider.checkPermission(Permission.camera)).called(1);
+        verify(() => mockImagePickerProvider.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 2400,
+          maxHeight: 2400,
+          imageQuality: 90,
+        )).called(1);
+      });
+      
+      test('should request camera permission when denied', () async {
+        // Arrange
+        final mockXFile = MockXFile();
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.denied);
+        
+        when(() => mockPermissionProvider.requestPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickImage(
+          source: any(named: 'source'),
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => mockXFile);
+        
+        when(() => mockXFile.path).thenReturn('/path/to/image.jpg');
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(true);
+        
+        // Act
+        await service.pickImage(ImageSource.camera);
+        
+        // Assert
+        verify(() => mockPermissionProvider.checkPermission(Permission.camera)).called(1);
+        verify(() => mockPermissionProvider.requestPermission(Permission.camera)).called(1);
+      });
+      
+      test('should return null when camera permission is denied', () async {
+        // Arrange
+        when(() => mockPermissionProvider.checkPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.denied);
+        
+        when(() => mockPermissionProvider.requestPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.permanentlyDenied);
+        
+        // Act
+        final result = await service.pickImage(ImageSource.camera);
+        
+        // Assert
+        expect(result, isNull);
+        verify(() => mockPermissionProvider.checkPermission(Permission.camera)).called(1);
+        verify(() => mockPermissionProvider.requestPermission(Permission.camera)).called(1);
+        verifyNever(() => mockImagePickerProvider.pickImage(
+          source: any(named: 'source'),
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        ));
+      });
+      
+      test('should return null when user cancels image selection', () async {
+        // Arrange
+        when(() => mockPermissionProvider.checkPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickImage(
+          source: any(named: 'source'),
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => null);
+        
+        // Act
+        final result = await service.pickImage(ImageSource.camera);
+        
+        // Assert
         expect(result, isNull);
       });
       
-      test('should successfully pick image from gallery', () async {
+      test('should handle gallery permission with limited access', () async {
+        // Arrange
+        final mockXFile = MockXFile();
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.limited);
+        
+        when(() => mockImagePickerProvider.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 2400,
+          maxHeight: 2400,
+          imageQuality: 90,
+        )).thenAnswer((_) async => mockXFile);
+        
+        when(() => mockXFile.path).thenReturn('/path/to/image.jpg');
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(true);
+        
         // Act
         final result = await service.pickImage(ImageSource.gallery);
         
-        // Assert - Result will be null in test environment without actual permissions
-        expect(result, isNull);
+        // Assert
+        expect(result, isNotNull);
+        verify(() => mockPermissionProvider.checkPermission(Permission.photos)).called(1);
       });
       
-      test('should handle user cancellation gracefully', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
+      test('should fallback to storage permission when photos permission is permanently denied', () async {
+        // Arrange
+        final mockXFile = MockXFile();
         
-        // Assert - When user cancels, should return null
-        expect(result, isNull);
-      });
-      
-      test('should handle permission denied for camera', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.permanentlyDenied);
         
-        // Assert - Without permissions in test environment, should return null
-        expect(result, isNull);
-      });
-      
-      test('should handle permission denied for gallery', () async {
+        when(() => mockPermissionProvider.checkPermission(Permission.storage))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickImage(
+          source: any(named: 'source'),
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => mockXFile);
+        
+        when(() => mockXFile.path).thenReturn('/path/to/image.jpg');
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(true);
+        
         // Act
         final result = await service.pickImage(ImageSource.gallery);
         
-        // Assert - Without permissions in test environment, should return null
-        expect(result, isNull);
+        // Assert
+        expect(result, isNotNull);
+        verify(() => mockPermissionProvider.checkPermission(Permission.photos)).called(1);
+        verify(() => mockPermissionProvider.checkPermission(Permission.storage)).called(1);
       });
       
-      test('should handle image picker exceptions', () async {
+      test('should return null when image file validation fails', () async {
+        // Arrange
+        final mockXFile = MockXFile();
+        
+        when(() => mockPermissionProvider.checkPermission(any()))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickImage(
+          source: any(named: 'source'),
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => mockXFile);
+        
+        when(() => mockXFile.path).thenReturn('/path/to/image.jpg');
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(false);
+        
         // Act
         final result = await service.pickImage(ImageSource.camera);
         
-        // Assert - Should handle exceptions gracefully and return null
+        // Assert
         expect(result, isNull);
+        verify(() => mockImageValidator.isValidImageFile(any())).called(1);
       });
       
-      test('should not throw when picking from camera', () async {
-        // Act & Assert
-        await expectLater(
-          service.pickImage(ImageSource.camera),
-          completes,
-        );
-      });
-      
-      test('should not throw when picking from gallery', () async {
-        // Act & Assert
-        await expectLater(
-          service.pickImage(ImageSource.gallery),
-          completes,
-        );
+      test('should handle exceptions gracefully', () async {
+        // Arrange
+        when(() => mockPermissionProvider.checkPermission(any()))
+            .thenThrow(Exception('Permission error'));
+        
+        // Act
+        final result = await service.pickImage(ImageSource.camera);
+        
+        // Assert
+        expect(result, isNull);
       });
     });
     
-    group('pickMultipleImages - Multiple Image Selection', () {
-      test('should handle multiple image selection', () async {
+    group('pickMultipleImages', () {
+      test('should successfully pick multiple images from gallery', () async {
+        // Arrange
+        final mockXFile1 = MockXFile();
+        final mockXFile2 = MockXFile();
+        final mockXFile3 = MockXFile();
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickMultiImage(
+          maxWidth: 2400,
+          maxHeight: 2400,
+          imageQuality: 90,
+        )).thenAnswer((_) async => [mockXFile1, mockXFile2, mockXFile3]);
+        
+        when(() => mockXFile1.path).thenReturn('/path/to/image1.jpg');
+        when(() => mockXFile2.path).thenReturn('/path/to/image2.jpg');
+        when(() => mockXFile3.path).thenReturn('/path/to/image3.jpg');
+        
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(true);
+        
+        // Act
+        final result = await service.pickMultipleImages(maxImages: 5);
+        
+        // Assert
+        expect(result, hasLength(3));
+        verify(() => mockImagePickerProvider.pickMultiImage(
+          maxWidth: 2400,
+          maxHeight: 2400,
+          imageQuality: 90,
+        )).called(1);
+      });
+      
+      test('should limit number of selected images to maxImages', () async {
+        // Arrange
+        final images = List.generate(10, (i) {
+          final mock = MockXFile();
+          when(() => mock.path).thenReturn('/path/to/image$i.jpg');
+          return mock;
+        });
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickMultiImage(
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => images);
+        
+        when(() => mockImageValidator.isValidImageFile(any())).thenReturn(true);
+        
+        // Act
+        final result = await service.pickMultipleImages(maxImages: 5);
+        
+        // Assert
+        expect(result, hasLength(5));
+      });
+      
+      test('should filter out invalid images', () async {
+        // Arrange
+        final mockXFile1 = MockXFile();
+        final mockXFile2 = MockXFile();
+        final mockXFile3 = MockXFile();
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickMultiImage(
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => [mockXFile1, mockXFile2, mockXFile3]);
+        
+        when(() => mockXFile1.path).thenReturn('/path/to/image1.jpg');
+        when(() => mockXFile2.path).thenReturn('/path/to/image2.jpg');
+        when(() => mockXFile3.path).thenReturn('/path/to/image3.jpg');
+        
+        // Only validate first and third images
+        var callCount = 0;
+        when(() => mockImageValidator.isValidImageFile(any())).thenAnswer((_) {
+          callCount++;
+          return callCount != 2; // Second image is invalid
+        });
+        
         // Act
         final result = await service.pickMultipleImages();
         
-        // Assert - Returns empty list when no permissions
-        expect(result, isEmpty);
+        // Assert
+        expect(result, hasLength(2));
       });
       
-      test('should respect max image limit', () async {
+      test('should return empty list when permission is denied', () async {
+        // Arrange
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.denied);
+        
+        when(() => mockPermissionProvider.requestPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.permanentlyDenied);
+        
+        when(() => mockPermissionProvider.checkPermission(Permission.storage))
+            .thenAnswer((_) async => PermissionStatus.permanentlyDenied);
+        
         // Act
-        final result = await service.pickMultipleImages(maxImages: 3);
+        final result = await service.pickMultipleImages();
         
         // Assert
         expect(result, isEmpty);
+        verifyNever(() => mockImagePickerProvider.pickMultiImage(
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        ));
       });
       
-      test('should handle zero images selected', () async {
+      test('should return empty list when user cancels selection', () async {
+        // Arrange
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        
+        when(() => mockImagePickerProvider.pickMultiImage(
+          maxWidth: any(named: 'maxWidth'),
+          maxHeight: any(named: 'maxHeight'),
+          imageQuality: any(named: 'imageQuality'),
+        )).thenAnswer((_) async => []);
+        
         // Act
         final result = await service.pickMultipleImages();
         
@@ -136,49 +391,13 @@ void main() {
         expect(result, isEmpty);
       });
       
-      test('should use default max images of 5', () async {
+      test('should handle exceptions gracefully', () async {
+        // Arrange
+        when(() => mockPermissionProvider.checkPermission(any()))
+            .thenThrow(Exception('Permission error'));
+        
         // Act
         final result = await service.pickMultipleImages();
-        
-        // Assert - Should not throw and return empty list
-        expect(result, isEmpty);
-      });
-      
-      test('should handle permission denied for gallery', () async {
-        // Act
-        final result = await service.pickMultipleImages();
-        
-        // Assert
-        expect(result, isEmpty);
-      });
-      
-      test('should not throw on multiple image selection', () async {
-        // Act & Assert
-        await expectLater(
-          service.pickMultipleImages(),
-          completes,
-        );
-      });
-      
-      test('should handle custom max image limits', () async {
-        // Act
-        final result = await service.pickMultipleImages(maxImages: 10);
-        
-        // Assert
-        expect(result, isEmpty);
-      });
-      
-      test('should handle max images of 1', () async {
-        // Act
-        final result = await service.pickMultipleImages(maxImages: 1);
-        
-        // Assert
-        expect(result, isEmpty);
-      });
-      
-      test('should handle large max image values', () async {
-        // Act
-        final result = await service.pickMultipleImages(maxImages: 100);
         
         // Assert
         expect(result, isEmpty);
@@ -186,246 +405,25 @@ void main() {
     });
     
     group('debugPermissions', () {
-      setUpAll(() {
-        TestWidgetsFlutterBinding.ensureInitialized();
-        
-        // Mock the permission handler channel
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(
-          const MethodChannel('flutter.baseflow.com/permissions/methods'),
-          (methodCall) async {
-            // Return granted status for all permission checks
-            if (methodCall.method == 'checkPermissionStatus') {
-              return 1; // PermissionStatus.granted
-            }
-            return null;
-          },
-        );
-      });
-      
-      tearDownAll(() {
-        // Clear the mock handler
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(
-          const MethodChannel('flutter.baseflow.com/permissions/methods'),
-          null,
-        );
-      });
-      
-      test('should check camera permission', () async {
-        // Act & Assert - Should not throw when checking permissions
-        await expectLater(
-          service.debugPermissions(),
-          completes,
-        );
-      });
-      
-      test('should check photos permission', () async {
-        // Act
-        await service.debugPermissions();
-        // Assert - Should complete without errors
-      });
-      
-      test('should check storage permission', () async {
-        // Act
-        await service.debugPermissions();
-        // Assert - Should complete without errors
-      });
-      
-      test('should check media library permission', () async {
-        // Act
-        await service.debugPermissions();
-        // Assert - Should complete without errors
-      });
-      
-      test('should handle permission check errors gracefully', () async {
-        // Act & Assert - Should not throw even if permission checks fail
-        await expectLater(
-          service.debugPermissions(),
-          completes,
-        );
-      });
-    });
-    
-    group('Error Handling', () {
-      test('should handle file not found errors', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert - Should return null on errors
-        expect(result, isNull);
-      });
-      
-      test('should handle invalid image formats', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle corrupted image files', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle platform exceptions', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle null picker responses', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle empty file paths', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-    });
-    
-    group('Permission Scenarios', () {
-      test('should handle permanently denied camera permission', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle permanently denied gallery permission', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle limited photo access on iOS', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert - Limited access should still work
-        expect(result, isNull); // null in test environment
-      });
-      
-      test('should handle restricted permissions', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should handle permission service unavailable', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert
-        expect(result, isNull);
-      });
-    });
-    
-    group('Image Validation', () {
-      test('should validate image file existence', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert - Validation happens internally
-        expect(result, isNull);
-      });
-      
-      test('should validate image file format', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should check file size', () async {
-        // Act
-        final result = await service.pickImage(ImageSource.gallery);
-        
-        // Assert
-        expect(result, isNull);
-      });
-      
-      test('should use StorageService for validation', () async {
-        // Arrange - StorageService.isValidImageFile is called internally
-        
-        // Act
-        final result = await service.pickImage(ImageSource.camera);
-        
-        // Assert
-        expect(result, isNull);
-      });
-    });
-    
-    group('Concurrent Operations', () {
-      test('should handle concurrent single image picks', () async {
-        // Act
-        final future1 = service.pickImage(ImageSource.camera);
-        final future2 = service.pickImage(ImageSource.gallery);
-        
-        final results = await Future.wait([future1, future2]);
-        
-        // Assert
-        expect(results, hasLength(2));
-        expect(results[0], isNull);
-        expect(results[1], isNull);
-      });
-      
-      test('should handle concurrent multiple image picks', () async {
-        // Act
-        final future1 = service.pickMultipleImages(maxImages: 3);
-        final future2 = service.pickMultipleImages(maxImages: 5);
-        
-        final results = await Future.wait([future1, future2]);
-        
-        // Assert
-        expect(results, hasLength(2));
-        expect(results[0], isEmpty);
-        expect(results[1], isEmpty);
-      });
-      
-      test('should handle mixed concurrent operations', () async {
+      test('should check all permission statuses', () async {
         // Arrange
-        TestWidgetsFlutterBinding.ensureInitialized();
-        
-        // Mock the permission handler channel
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(
-          const MethodChannel('flutter.baseflow.com/permissions/methods'),
-          (methodCall) async {
-            if (methodCall.method == 'checkPermissionStatus') {
-              return 1; // PermissionStatus.granted
-            }
-            return null;
-          },
-        );
+        when(() => mockPermissionProvider.checkPermission(Permission.camera))
+            .thenAnswer((_) async => PermissionStatus.granted);
+        when(() => mockPermissionProvider.checkPermission(Permission.photos))
+            .thenAnswer((_) async => PermissionStatus.limited);
+        when(() => mockPermissionProvider.checkPermission(Permission.storage))
+            .thenAnswer((_) async => PermissionStatus.denied);
+        when(() => mockPermissionProvider.checkPermission(Permission.mediaLibrary))
+            .thenAnswer((_) async => PermissionStatus.permanentlyDenied);
         
         // Act
-        final future1 = service.pickImage(ImageSource.camera);
-        final future2 = service.pickMultipleImages();
-        final future3 = service.debugPermissions();
+        await service.debugPermissions();
         
-        await Future.wait([future1, future2, future3]);
-        
-        // Assert - Should complete without errors
+        // Assert
+        verify(() => mockPermissionProvider.checkPermission(Permission.camera)).called(1);
+        verify(() => mockPermissionProvider.checkPermission(Permission.photos)).called(1);
+        verify(() => mockPermissionProvider.checkPermission(Permission.storage)).called(1);
+        verify(() => mockPermissionProvider.checkPermission(Permission.mediaLibrary)).called(1);
       });
     });
   });

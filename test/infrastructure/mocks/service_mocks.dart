@@ -30,10 +30,6 @@ class MockMenuService extends Mock with ChangeNotifier {
   // Menu service mock - will implement interface when available
 }
 
-class MockImportManager extends Mock {
-  // Import manager mock - will implement interface when available
-}
-
 class MockSearchService extends Mock with ChangeNotifier {
   // Search service mock - will implement interface when available
 }
@@ -42,9 +38,7 @@ class MockRecipeDiscoveryService extends Mock with ChangeNotifier {
   // Recipe discovery service mock - will implement interface when available
 }
 
-class MockAnalyticsService extends Mock with ChangeNotifier {
-  // Analytics service mock - will implement interface when available
-}
+// MockAnalyticsService moved to production_mocks.dart to avoid conflict
 
 class MockStorageService extends Mock {
   // Storage service mock - will implement interface when available

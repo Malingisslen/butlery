@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:butlery/repositories/hive/recipe_hive_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 

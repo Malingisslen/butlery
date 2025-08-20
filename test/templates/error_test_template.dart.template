@@ -8,37 +8,50 @@
 /// - [ServiceName] with your service class name
 /// - [MethodName] with the method being tested
 /// - [MockDependency] with your mock dependency
+library;
 
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../infrastructure/helpers/base_unit_test.dart';
+import 'package:flutter/services.dart';
+
+// Import test infrastructure (adjust path depth as needed)
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
-import '../../infrastructure/constants/test_constants.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('[ServiceName] Error Cases', () {
     late [ServiceName] service;
     late [MockDependency] mockDependency;
     
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
+    setUpAll(() {
+      // Register fallback values for mocktail
+      registerFallbackValue(DateTime.now());
+      // Add other fallback values as needed
     });
     
     setUp(() async {
+      // Initialize base test infrastructure
+      await BaseUnitTest.setupUnit();
+      
+      // Initialize TestServiceLocator
       await TestServiceLocator.initialize();
+      
+      // Get mocks from TestServiceLocator
       mockDependency = TestServiceLocator.mock[Dependency];
+      
+      // Create service with mock
       service = [ServiceName](dependency: mockDependency);
     });
     
     tearDown(() async {
-      BaseUnitTest.resetMocks();
+      // Clean up after each test
       await TestServiceLocator.reset();
-    });
-    
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
+      BaseUnitTest.resetMocks();
     });
     
     // ============================================================================

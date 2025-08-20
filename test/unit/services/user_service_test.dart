@@ -6,7 +6,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_profile.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -143,8 +143,8 @@ void main() {
           (_) => Stream.value(mockUser),
         );
         
-        when(() => mockUserRepository.fetchProfile('test_user_123')).thenThrow(
-          Exception('Failed to load profile'),
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => throw Exception('Failed to load profile'),
         );
         
         // Act
@@ -250,8 +250,8 @@ void main() {
       
       test('should handle search errors gracefully', () async {
         // Arrange
-        when(() => mockUserRepository.searchProfiles('error')).thenThrow(
-          Exception('Search failed'),
+        when(() => mockUserRepository.searchProfiles('error')).thenAnswer(
+          (_) async => throw Exception('Search failed'),
         );
         
         // Act

@@ -8,19 +8,27 @@
 /// Examples: Repository tests, complex service tests with many dependencies
 library;
 
+// Add this if using sealed class mocks
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Import your test subject
 // import 'package:butlery/repositories/your_repository.dart';
 
-// Import test infrastructure
-import '../infrastructure/helpers/base_unit_test.dart';
-import '../infrastructure/di/test_service_locator.dart';
-import '../infrastructure/mocks/production_mocks.dart';
+// Import test infrastructure (adjust path depth as needed)
+import '../../test_support/base_unit_test.dart';
+import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
-// Import any test-specific sealed class mocks (if needed)
-// Note: Add // ignore_for_file: subtype_of_sealed_class if using sealed mocks
+// Local mocks for sealed Firebase classes (if needed)
+// class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+// class MockCollectionReference<T> extends Mock implements CollectionReference<T> {}
+// class MockDocumentReference<T> extends Mock implements DocumentReference<T> {}
+
+// Fake classes for any() matching
+// class FakeYourModel extends Fake implements YourModel {}
 
 void main() {
   group('YourRepository/Service', () {
@@ -29,27 +37,32 @@ void main() {
     late MockDependency1 mockDep1;
     late MockDependency2 mockDep2;
     
-    setUpAll(() async {
-      // Initialize base test infrastructure ONCE
-      await BaseUnitTest.setupUnit();
-      
-      // Register any fallback values for mocktail
+    setUpAll(() {
+      // Register fallback values for mocktail ONLY
+      // Do NOT put BaseUnitTest.setupUnit() here
       registerFallbackValue(FakeSomeClass());
+      registerFallbackValue(DateTime.now());
     });
     
     setUp(() async {
+      // Initialize base test infrastructure for EACH test
+      await BaseUnitTest.setupUnit();
+      
       // Initialize TestServiceLocator for EACH test
       await TestServiceLocator.initialize();
       
-      // Create mock instances
-      mockDep1 = MockDependency1();
+      // Get mocks from TestServiceLocator or create new ones
+      mockDep1 = TestServiceLocator.mockAuthRepository;
       mockDep2 = MockDependency2();
       
       // Configure mock states (use configuration methods, not stubbing)
-      mockDep1.setState(someValue: 'test');
+      mockDep1.setAuthState(
+        userId: 'test-user-123',
+        isAuthenticated: true,
+      );
       
-      // Register mocks if needed
-      TestServiceLocator.registerMock<Dependency1>(mockDep1);
+      // Register additional mocks if needed
+      TestServiceLocator.registerMock<Dependency2>(mockDep2);
       
       // Create test subject with mocks
       repository = YourRepository(
@@ -64,22 +77,53 @@ void main() {
       BaseUnitTest.resetMocks();
     });
     
-    tearDownAll(() async {
-      // Final cleanup (only if absolutely necessary)
-      await BaseUnitTest.teardownUnit();
-    });
+    // tearDownAll is usually not needed
+    // Only add if you have global resources to clean up
     
-    group('Feature Group', () {
-      test('should do something', () async {
+    group('CRUD Operations', () {
+      test('should create item successfully', () async {
         // Arrange
-        when(() => mockDep1.someMethod()).thenAnswer((_) async => 'result');
+        final item = YourModel(id: '123', name: 'Test');
+        when(() => mockDep1.create(any())).thenAnswer((_) async => item);
         
         // Act
-        final result = await repository.doSomething();
+        final result = await repository.create(item);
         
         // Assert
-        expect(result, equals('expected'));
-        verify(() => mockDep1.someMethod()).called(1);
+        expect(result, equals(item));
+        verify(() => mockDep1.create(item)).called(1);
+      });
+      
+      test('should handle create error', () async {
+        // Arrange
+        final item = YourModel(id: '123', name: 'Test');
+        when(() => mockDep1.create(any())).thenThrow(
+          Exception('Network error'),
+        );
+        
+        // Act & Assert
+        expect(
+          () => repository.create(item),
+          throwsException,
+        );
+      });
+    });
+    
+    group('Query Operations', () {
+      test('should fetch items with filter', () async {
+        // Arrange
+        final items = [
+          YourModel(id: '1', name: 'Item 1'),
+          YourModel(id: '2', name: 'Item 2'),
+        ];
+        when(() => mockDep1.query(any())).thenAnswer((_) async => items);
+        
+        // Act
+        final result = await repository.fetchFiltered('filter');
+        
+        // Assert
+        expect(result, hasLength(2));
+        expect(result.first.id, equals('1'));
       });
     });
   });

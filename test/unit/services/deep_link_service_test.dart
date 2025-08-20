@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -34,12 +34,12 @@ void main() {
       defaultHasPermission: true,
       currentUserId: 'test-user-id',
     );
-    when(() => mockPermissionService.isAuthenticated).thenReturn(true);
+    // Note: isAuthenticated is properly configured via setPermissionState above
   });
 
-  tearDown(() {
-    TestServiceLocator.reset();
+  tearDown(() async {
     BaseUnitTest.resetMocks();
+    await TestServiceLocator.reset();
   });
   
   tearDownAll(() async {
@@ -468,7 +468,7 @@ void main() {
     group('Short URL Generation', () {
       test('should generate internal short URL when authenticated', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(true);
+        // Note: isAuthenticated is properly configured via setPermissionState above
         when(() => mockRepository.createShortUrl(any(), any()))
             .thenAnswer((_) async => 'abc123');
         
@@ -499,9 +499,9 @@ void main() {
 
       test('should handle repository errors gracefully', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(true);
+        // Note: isAuthenticated is properly configured via setPermissionState above
         when(() => mockRepository.createShortUrl(any(), any()))
-            .thenThrow(Exception('Database error'));
+            .thenAnswer((_) async => throw Exception('Database error'));
         final originalUrl = 'https://butlery.app/recipe?id=123';
         
         // Act
@@ -513,7 +513,7 @@ void main() {
 
       test('should include expiration metadata', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(true);
+        // Note: isAuthenticated is properly configured via setPermissionState above
         
         when(() => mockRepository.createShortUrl(any(), any()))
             .thenAnswer((invocation) async {
@@ -567,7 +567,7 @@ void main() {
       test('should handle resolution errors gracefully', () async {
         // Arrange
         when(() => mockRepository.getLongUrl('abc123'))
-            .thenThrow(Exception('Database error'));
+            .thenAnswer((_) async => throw Exception('Database error'));
         
         // Act
         final longUrl = await DeepLinkService.resolveShortUrl('abc123');
@@ -716,7 +716,7 @@ void main() {
       test('should handle analytics errors gracefully', () async {
         // Arrange
         when(() => mockRepository.getDeepLinkMetadata('abc123'))
-            .thenThrow(Exception('Database error'));
+            .thenAnswer((_) async => throw Exception('Database error'));
         
         // Act
         final analytics = await DeepLinkService.getShortUrlAnalytics('abc123');
@@ -900,7 +900,7 @@ void main() {
         test('should handle recipe ID not found', () async {
           // Arrange
           when(() => mockRepository.getLongUrl(any()))
-              .thenThrow(Exception('Recipe not found'));
+              .thenAnswer((_) async => throw Exception('Recipe not found'));
           
           // Act
           String? navigatedRoute;
@@ -929,7 +929,7 @@ void main() {
         test('should handle menu ID not found', () async {
           // Arrange
           when(() => mockRepository.getLongUrl(any()))
-              .thenThrow(Exception('Menu not found'));
+              .thenAnswer((_) async => throw Exception('Menu not found'));
           
           // Act
           String? navigatedRoute;
@@ -1196,7 +1196,7 @@ void main() {
         test('should handle Firebase Dynamic Links failure', () async {
           // Arrange
           when(() => mockRepository.createShortUrl(any(), any()))
-              .thenThrow(Exception('Firebase Dynamic Links service unavailable'));
+              .thenAnswer((_) async => throw Exception('Firebase Dynamic Links service unavailable'));
           
           // Act
           final shortUrl = await DeepLinkService.generateShortUrl(
@@ -1210,7 +1210,7 @@ void main() {
         test('should handle short link generation failure', () async {
           // Arrange
           when(() => mockRepository.createShortUrl(any(), any()))
-              .thenThrow(Exception('Failed to generate short link'));
+              .thenAnswer((_) async => throw Exception('Failed to generate short link'));
           
           // Act
           final shortUrl = await DeepLinkService.generateShortUrl(
@@ -1224,7 +1224,7 @@ void main() {
         test('should handle link analytics tracking error', () async {
           // Arrange
           when(() => mockRepository.trackUrlClick(any()))
-              .thenThrow(Exception('Analytics service error'));
+              .thenAnswer((_) async => throw Exception('Analytics service error'));
           when(() => mockRepository.getLongUrl('abc123'))
               .thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
           

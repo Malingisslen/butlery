@@ -406,7 +406,7 @@ class CreateGroupViewModel extends ChangeNotifier with StreamManagementMixin {
 
       final categoryId = await _friendsService.categories.createCategory(
         name: _name.trim(),
-        description: _description.trim().isEmpty ? null : _description.trim(),
+        description: _description.trim(),
         icon: _emoji,
         initialMemberIds: null, // Empty group for invitation-based membership
       );

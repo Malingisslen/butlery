@@ -17,10 +17,10 @@
 
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/operations/friends_operations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Comprehensive friend invitations operations providing advanced group invitation and bulk operation management systems.
 ///
@@ -52,7 +52,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final invitationsOps = FriendInvitationsOperations(parentService);
-/// 
+///
 /// // Group invitation management
 /// final result = await invitationsOps.sendGroupInvitation(
 ///   userIds: [user1, user2, user3],
@@ -60,14 +60,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 ///   categoryId: cookingGroupId,
 ///   customData: {'groupType': 'cooking', 'level': 'beginner'},
 /// );
-/// 
-/// // Bulk operations and tracking  
+///
+/// // Bulk operations and tracking
 /// final bulkResult = await invitationsOps.performBulkFriendOperation(
 ///   operation: BulkOperation.addToCategory,
 ///   userIds: selectedUsers,
 ///   targetCategoryId: familyGroupId,
 /// );
-/// 
+///
 /// // Social sharing integration
 /// await invitationsOps.shareInvitationLink(
 ///   invitationId: result.invitationId,
@@ -75,7 +75,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// );
 /// ```
 class FriendInvitationsOperations {
-  final dynamic _parent; // UnifiedFriendsService
+  final UnifiedFriendsService _parent;
 
   FriendInvitationsOperations(this._parent);
 
@@ -119,15 +119,15 @@ class FriendInvitationsOperations {
           continue;
         }
 
-        if (_parent.friends.isFriend(userId)) {
+        if (_parent.management.isFriend(userId)) {
           results[userId] = true; // Already friends
           successful.add(userId);
           continue;
         }
 
-        final success = await _parent.friends.sendRequest(userId);
+        final success = await _parent.management.sendFriendRequest(userId);
         results[userId] = success;
-        
+
         if (success) {
           successful.add(userId);
         } else {
@@ -216,9 +216,9 @@ class FriendInvitationsOperations {
       onProgress?.call(i + 1, userIds.length);
 
       try {
-        final success = await _parent.friends.sendRequest(userId);
+        final success = await _parent.management.sendFriendRequest(userId);
         results[userId] = success;
-        
+
         if (success) {
           successful.add(userId);
         } else {
@@ -262,9 +262,9 @@ class FriendInvitationsOperations {
       onProgress?.call(i + 1, requestIds.length);
 
       try {
-        final success = await _parent.friends.acceptRequest(requestId);
+        final success = await _parent.management.acceptFriendRequest(requestId);
         results[requestId] = success;
-        
+
         if (success) {
           successful.add(requestId);
         } else {
@@ -294,13 +294,13 @@ class FriendInvitationsOperations {
 
   /// Get invitation statistics
   Map<String, dynamic> getInvitationStats() {
-    final incomingRequests = _parent.friends.getIncomingRequests();
-    final outgoingRequests = _parent.friends.getOutgoingRequests();
+    final incomingRequests = _parent.incomingRequests;
+    final outgoingRequests = _parent.outgoingRequests;
 
     return {
       'incomingRequestsCount': incomingRequests.length,
       'outgoingRequestsCount': outgoingRequests.length,
-      'totalFriends': _parent.friends.getFriendsCount(),
+      'totalFriends': _parent.friends.length,
       'pendingInvitations': incomingRequests.length + outgoingRequests.length,
     };
   }
@@ -310,10 +310,12 @@ class FriendInvitationsOperations {
     if (searchQuery.trim().length < 2) return [];
 
     try {
-      final searchResults = await _parent.friends.searchUsers(searchQuery);
-      
+      final searchResults = await _parent.management.searchUsers(searchQuery);
+
       return searchResults.where((user) {
-        final status = _parent.friends.getRelationshipStatus(user.uid);
+        final status = _parent.management.isFriend(user.uid)
+            ? FriendshipStatus.friends
+            : FriendshipStatus.none;
         return status == FriendshipStatus.none;
       }).toList();
     } catch (e) {
@@ -334,8 +336,8 @@ class FriendInvitationsOperations {
       if (userId == null) return null;
 
       // Get user display name for better invitation experience
-      final currentUser = await _parent._authRepository.getCurrentUser();
-      final userName = currentUser?.displayName ?? 'A friend';
+      // Get display name from parent service
+      final userName = _parent.currentUserDisplayName ?? 'A friend';
 
       // Create deep link parameters
       final params = <String, String>{
@@ -355,14 +357,14 @@ class FriendInvitationsOperations {
       // ✅ FIXED: Enhanced deep link generation with app store fallbacks and universal link support
       // Generate universal deep link that works across platforms
       final universalLink = await _generateUniversalDeepLink(params, userId);
-      
+
       // Store invitation for tracking
       await _storeInvitationLink(
         userId: userId,
         linkData: params,
         generatedAt: DateTime.now(),
       );
-      
+
       AppLogger.success('Generated enhanced invitation link for user $userId');
       return universalLink;
     } catch (e) {
@@ -372,9 +374,10 @@ class FriendInvitationsOperations {
   }
 
   /// Generate universal deep link with smart app store fallbacks
-  /// 
+  ///
   /// ✅ FIXED: Enhanced deep link system supporting universal links, app store fallbacks, and web support
-  Future<String> _generateUniversalDeepLink(Map<String, String> params, String userId) async {
+  Future<String> _generateUniversalDeepLink(
+      Map<String, String> params, String userId) async {
     try {
       // Build query string for parameters
       final queryString = params.entries
@@ -383,15 +386,15 @@ class FriendInvitationsOperations {
 
       // Generate a unique invitation ID for tracking
       final invitationId = const Uuid().v4();
-      
+
       // Enhanced universal link structure that supports:
       // 1. Direct app opening if installed
       // 2. Web fallback with smart app store redirection
       // 3. Platform-specific app store links
-      
+
       const domain = 'butlery.app';
       const path = 'invite';
-      
+
       // Universal link with enhanced parameters
       final universalLink = 'https://$domain/$path?'
           'id=$invitationId&'
@@ -413,7 +416,7 @@ class FriendInvitationsOperations {
       return universalLink;
     } catch (e) {
       AppLogger.error('Error generating universal deep link: $e');
-      
+
       // Fallback to simple web link
       final queryString = params.entries
           .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
@@ -429,19 +432,19 @@ class FriendInvitationsOperations {
     required String userId,
   }) async {
     try {
-      await _parent._firestoreRepository.firestore
+      await _parent.firestore
           .collection('universal_links')
           .doc(invitationId)
           .set({
         'type': 'friend_invitation',
         'created_by': userId,
         'params': originalParams,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': DateTime.now(),
         'used': false,
         'clicks': 0,
         'last_accessed': null,
       });
-      
+
       AppLogger.debug('Stored universal link mapping for $invitationId');
     } catch (e) {
       AppLogger.warning('Failed to store universal link mapping: $e');
@@ -457,9 +460,7 @@ class FriendInvitationsOperations {
   }) async {
     try {
       // Store in Firestore for tracking invitation usage
-      await _parent._firestoreRepository.firestore
-          .collection('invitation_links')
-          .add({
+      await _parent.firestore.collection('invitation_links').add({
         'inviter_id': userId,
         'link_data': linkData,
         'generated_at': generatedAt,
@@ -467,7 +468,7 @@ class FriendInvitationsOperations {
         'used_at': null,
         'used_by': null,
       });
-      
+
       AppLogger.debug('Stored invitation link for tracking');
     } catch (e) {
       AppLogger.error('Error storing invitation link: $e');
@@ -488,9 +489,9 @@ class FriendInvitationsOperations {
 
       if (inviteLink == null) return false;
 
-      final message = customMessage ?? 
+      final message = customMessage ??
           'Join me on Butlery! We can share recipes and plan meals together.';
-      
+
       final shareText = '$message\n\nDownload: $inviteLink';
 
       // Use platform-specific sharing
@@ -499,7 +500,7 @@ class FriendInvitationsOperations {
           shareText,
           subject: 'Join me on Butlery!',
         );
-        
+
         if (result.status == ShareResultStatus.success) {
           AppLogger.success('Successfully shared invitation');
           return true;
@@ -589,7 +590,8 @@ class BulkOperationResult {
         failed = [],
         results = {};
 
-  double get successRate => totalOperations > 0 ? successful.length / totalOperations : 0.0;
+  double get successRate =>
+      totalOperations > 0 ? successful.length / totalOperations : 0.0;
   bool get hasFailures => failed.isNotEmpty;
   bool get allSuccessful => failed.isEmpty && totalOperations > 0;
 }

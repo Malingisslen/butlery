@@ -1,6 +1,7 @@
 // lib/services/notifications/modules/notification_offline_manager.dart
 
 import 'dart:async';
+import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -60,6 +61,8 @@ import 'package:butlery/core/utils/logger.dart';
 /// ```
 class NotificationOfflineManager {
   final String _userId;
+  final Clock _clock;
+  final Duration _retryDelay;
   
   // In-memory queue for offline notifications
   final List<PendingNotification> _offlineQueue = [];
@@ -77,7 +80,12 @@ class NotificationOfflineManager {
   NotificationOfflineManager({
     required String userId,
     Future<void> Function(PendingNotification)? sendNotificationCallback,
-  }) : _userId = userId, _sendNotificationCallback = sendNotificationCallback;
+    Clock? clock,
+    Duration? retryDelay,
+  }) : _userId = userId, 
+       _sendNotificationCallback = sendNotificationCallback,
+       _clock = clock ?? const Clock(),
+       _retryDelay = retryDelay ?? const Duration(minutes: 5);
 
   // ===== QUEUE MANAGEMENT =====
 
@@ -100,7 +108,7 @@ class NotificationOfflineManager {
         additionalData: additionalData,
         imageUrl: imageUrl,
         actions: actions,
-        queuedAt: DateTime.now(),
+        queuedAt: _clock.now(),
         retryCount: 0,
       );
 
@@ -164,8 +172,8 @@ class NotificationOfflineManager {
   /// Process offline notification queue
   /// 
   /// Attempts to send all queued notifications when back online
-  Future<void> processOfflineQueue() async {
-    if (_isProcessingQueue) {
+  Future<void> processOfflineQueue({bool force = false}) async {
+    if (_isProcessingQueue && !force) {
       AppLogger.debug('📋 Queue processing already in progress, skipping');
       return;
     }
@@ -241,7 +249,7 @@ class NotificationOfflineManager {
   /// Process queue manually (for testing or manual trigger)
   Future<void> forceProcessQueue() async {
     AppLogger.info('🔄 Manually forcing queue processing');
-    await processOfflineQueue();
+    await processOfflineQueue(force: true);
   }
 
   // ===== QUEUE MAINTENANCE =====
@@ -276,7 +284,7 @@ class NotificationOfflineManager {
   /// Get queue statistics
   Map<String, dynamic> getQueueStatistics() {
     final stats = <String, int>{};
-    final now = DateTime.now();
+    final now = _clock.now();
     
     for (final notification in _offlineQueue) {
       final category = notification.strategy.category.name;
@@ -318,7 +326,7 @@ class NotificationOfflineManager {
   /// Check if notification is expired (older than 24 hours)
   bool _isNotificationExpired(PendingNotification notification) {
     const maxAge = Duration(hours: 24);
-    return DateTime.now().difference(notification.queuedAt) > maxAge;
+    return _clock.now().difference(notification.queuedAt) > maxAge;
   }
 
   /// Schedule retry for failed notifications
@@ -326,7 +334,7 @@ class NotificationOfflineManager {
     _cancelRetryTimer();
     
     // Retry in 5 minutes
-    _retryTimer = Timer(const Duration(minutes: 5), () {
+    _retryTimer = Timer(_retryDelay, () {
       if (_isOnline && _offlineQueue.isNotEmpty) {
         AppLogger.info('🔄 Retrying failed notifications');
         processOfflineQueue();

@@ -10,7 +10,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -506,7 +506,7 @@ void main() {
         when(() => mockFirestoreRepo.realtimeResourceDoc('recipe_1'))
             .thenReturn(mockDocRef);
         when(() => mockFirestoreRepo.setDocument(mockDocRef, any()))
-            .thenThrow(Exception('Firebase error'));
+            .thenAnswer((_) async => throw Exception('Firebase error'));
 
         final recipe = TestRealtimeRecipe(
           id: 'recipe_1',
@@ -689,7 +689,7 @@ void main() {
         when(() => mockFirestoreRepo.realtimeResourceDoc('recipe_1'))
             .thenReturn(mockDocRef);
         when(() => mockFirestoreRepo.getDocument(mockDocRef))
-            .thenThrow(Exception('Document not found'));
+            .thenAnswer((_) async => throw Exception('Document not found'));
 
         // The service rethrows the original exception, not SyncError
         expect(

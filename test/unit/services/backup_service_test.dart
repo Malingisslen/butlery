@@ -9,7 +9,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
 // Local mocks only for classes not in production_mocks.dart
@@ -84,8 +84,8 @@ void main() {
     );
     mockRecipeService.setRecipeState(
       recipes: [],
+      personalOperations: mockPersonalOperations,
     );
-    when(() => mockRecipeService.personal).thenReturn(mockPersonalOperations);
     
     service = BackupService();
   });

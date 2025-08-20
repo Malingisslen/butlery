@@ -14,78 +14,87 @@ import 'package:mocktail/mocktail.dart';
 // Import your ViewModel
 // import 'package:butlery/viewmodels/your_viewmodel.dart';
 
-// Import test infrastructure
-import '../infrastructure/helpers/base_unit_test.dart';
-import '../infrastructure/di/test_service_locator.dart';
-import '../infrastructure/mocks/production_mocks.dart';
+// Import services your ViewModel depends on
+// import 'package:butlery/services/your_service.dart';
 
-// Import production ServiceLocator for ViewModel initialization
-import 'package:butlery/core/providers/application_provider.dart' as prod;
+// Import test infrastructure (adjust path depth as needed)
+import '../../test_support/base_unit_test.dart';
+import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/factories/mock_factory.dart';
 
 void main() {
   group('YourViewModel', () {
     late YourViewModel viewModel;
-    late MockService mockService;
-    late MockRepository mockRepository;
+    late MockAuthService mockAuthService;
+    late MockUnifiedRecipeService mockRecipeService;
     
-    setUpAll(() async {
+    setUp(() async {
       // Initialize base test infrastructure
       await BaseUnitTest.setupUnit();
       
-      // Register fallback values if needed
-      registerFallbackValue(FakeModel());
-    });
-    
-    setUp(() async {
       // Initialize TestServiceLocator
       await TestServiceLocator.initialize();
       
-      // Create mocks
-      mockService = TestServiceLocator.mockUnifiedRecipeService;
-      mockRepository = TestServiceLocator.mockAuthRepository;
+      // Create mocks using factory or get from TestServiceLocator
+      mockAuthService = MockFactory.createAuthService();
+      mockRecipeService = MockFactory.createUnifiedRecipeService();
       
       // Configure mock states
-      mockService.setServiceState(
-        isLoading: false,
-        recipes: [],
-      );
-      
-      mockRepository.setAuthState(
-        userId: 'test-user-123',
+      mockAuthService.setAuthState(
         isAuthenticated: true,
+        currentUser: FakeUser(uid: 'test-user-123'),
       );
       
-      // Create ViewModel (may use production ServiceLocator internally)
-      viewModel = YourViewModel();
+      mockRecipeService.setRecipeState(
+        recipes: [],
+        isLoading: false,
+      );
       
-      // Or inject mocks directly if constructor allows
-      // viewModel = YourViewModel(
-      //   service: mockService,
-      //   repository: mockRepository,
-      // );
+      // Register mocks in TestServiceLocator
+      TestServiceLocator.registerMock<AuthService>(mockAuthService);
+      TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
+      
+      // Create ViewModel (it will get dependencies from ServiceLocator)
+      viewModel = YourViewModel();
     });
     
-    tearDown(() {
-      // IMPORTANT: Dispose ViewModel to prevent memory leaks
-      viewModel.dispose();
+    tearDown(() async {
+      // Dispose ViewModel first (important!)
+      try {
+        viewModel.dispose();
+      } catch (e) {
+        // Already disposed in test
+      }
       
       // Reset test infrastructure
-      TestServiceLocator.reset();
+      await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
     });
     
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
-    });
-    
-    group('State Management', () {
+    group('Initialization', () {
       test('should initialize with default state', () {
         // Assert
         expect(viewModel.isLoading, isFalse);
         expect(viewModel.error, isNull);
-        expect(viewModel.items, isEmpty);
+        expect(viewModel.hasError, isFalse);
       });
       
+      test('should load initial data', () async {
+        // Arrange
+        when(() => mockRecipeService.initialize())
+            .thenAnswer((_) async {});
+        
+        // Act
+        await viewModel.initialize();
+        
+        // Assert
+        expect(viewModel.isInitialized, isTrue);
+        verify(() => mockRecipeService.initialize()).called(1);
+      });
+    });
+    
+    group('State Management', () {
       test('should notify listeners on state change', () {
         // Arrange
         var notificationCount = 0;
@@ -95,26 +104,54 @@ void main() {
         viewModel.updateState();
         
         // Assert
-        expect(notificationCount, equals(1));
+        expect(notificationCount, greaterThan(0));
       });
       
-      test('should handle async operations', () async {
+      test('should update loading state during async operations', () async {
         // Arrange
-        when(() => mockService.fetchData())
-            .thenAnswer((_) async => ['item1', 'item2']);
+        when(() => mockRecipeService.fetchRecipes())
+            .thenAnswer((_) async {
+          await Future.delayed(Duration(milliseconds: 100));
+          return [];
+        });
         
         // Act
-        await viewModel.loadData();
+        final future = viewModel.loadData();
+        
+        // Assert - loading should be true initially
+        expect(viewModel.isLoading, isTrue);
+        
+        await future;
+        
+        // Assert - loading should be false after completion
+        expect(viewModel.isLoading, isFalse);
+      });
+    });
+    
+    group('User Interactions', () {
+      test('should handle user action', () async {
+        // Arrange
+        final item = YourModel(id: '123', name: 'Test');
+        when(() => mockService.create(any()))
+            .thenAnswer((_) async => item);
+        
+        // Act
+        await viewModel.createItem('Test');
         
         // Assert
-        expect(viewModel.isLoading, isFalse);
-        expect(viewModel.items, hasLength(2));
-        verify(() => mockService.fetchData()).called(1);
+        expect(viewModel.items, contains(item));
+        verify(() => mockService.create(any())).called(1);
+      });
+      
+      test('should validate input', () {
+        // Act & Assert
+        expect(viewModel.validateEmail('invalid'), isFalse);
+        expect(viewModel.validateEmail('test@example.com'), isTrue);
       });
     });
     
     group('Error Handling', () {
-      test('should handle errors gracefully', () async {
+      test('should handle service errors', () async {
         // Arrange
         when(() => mockService.fetchData())
             .thenThrow(Exception('Network error'));
@@ -123,8 +160,39 @@ void main() {
         await viewModel.loadData();
         
         // Assert
+        expect(viewModel.hasError, isTrue);
         expect(viewModel.error, contains('Network error'));
         expect(viewModel.isLoading, isFalse);
+      });
+      
+      test('should clear error', () {
+        // Arrange
+        viewModel.setError('Test error');
+        expect(viewModel.hasError, isTrue);
+        
+        // Act
+        viewModel.clearError();
+        
+        // Assert
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.error, isNull);
+      });
+    });
+    
+    group('Lifecycle', () {
+      test('should clean up on dispose', () {
+        // Arrange
+        var listenerCalled = false;
+        viewModel.addListener(() => listenerCalled = true);
+        
+        // Act
+        viewModel.dispose();
+        
+        // Try to trigger notification (should not call listener)
+        expect(
+          () => viewModel.notifyListeners(),
+          throwsFlutterError,
+        );
       });
     });
   });

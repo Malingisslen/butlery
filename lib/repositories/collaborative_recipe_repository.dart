@@ -122,7 +122,7 @@ class CollaborativeRecipeRepository {
         .doc(recipeId)
         .collection('presence')
         .doc(userId)
-        .update(data);
+        .set(data, SetOptions(merge: true));
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchRealtimeRecipe(String id) {
@@ -178,10 +178,10 @@ class CollaborativeRecipeRepository {
         .doc(recipeId)
         .collection('presence')
         .doc(userId)
-        .update({
+        .set({
       'lastSeen': DateTime.now().millisecondsSinceEpoch,
       'isActive': true,
-    });
+    }, SetOptions(merge: true));
   }
 
   Future<void> clearUserPresence(String recipeId, String userId) {
@@ -190,7 +190,7 @@ class CollaborativeRecipeRepository {
         .doc(recipeId)
         .collection('presence')
         .doc(userId)
-        .update({'isActive': false});
+        .set({'isActive': false}, SetOptions(merge: true));
   }
 
   /// Remove user presence completely from recipe (needed by RealtimeEditorTracker)
@@ -214,14 +214,25 @@ class CollaborativeRecipeRepository {
     
     return snapshot.docs.map((doc) {
       final data = doc.data();
-      final lastSeen = data['lastSeen'] as int?;
+      
+      // Handle both int and Timestamp/DateTime for lastSeen
+      int? lastSeenMillis;
+      final lastSeenValue = data['lastSeen'];
+      if (lastSeenValue is int) {
+        lastSeenMillis = lastSeenValue;
+      } else if (lastSeenValue is Timestamp) {
+        lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
+      } else if (lastSeenValue is DateTime) {
+        lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
+      }
+      
       final now = DateTime.now().millisecondsSinceEpoch;
-      final isCurrentlyActive = lastSeen != null && (now - lastSeen) < 60000; // Within 1 minute
+      final isCurrentlyActive = lastSeenMillis != null && (now - lastSeenMillis) < 60000; // Within 1 minute
       
       return {
         'userId': doc.id,
         'displayName': data['displayName'] as String? ?? 'Unknown',
-        'lastSeen': lastSeen,
+        'lastSeen': lastSeenMillis,
         'isActive': data['isActive'] as bool? ?? false,
         'isCurrentlyActive': isCurrentlyActive,
       };
@@ -241,13 +252,23 @@ class CollaborativeRecipeRepository {
     
     final data = doc.data()!;
     final isActive = data['isActive'] as bool? ?? false;
-    final lastSeen = data['lastSeen'] as int?;
     
-    if (!isActive || lastSeen == null) return false;
+    // Handle both int and Timestamp/DateTime for lastSeen
+    int? lastSeenMillis;
+    final lastSeenValue = data['lastSeen'];
+    if (lastSeenValue is int) {
+      lastSeenMillis = lastSeenValue;
+    } else if (lastSeenValue is Timestamp) {
+      lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
+    } else if (lastSeenValue is DateTime) {
+      lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
+    }
+    
+    if (!isActive || lastSeenMillis == null) return false;
     
     // Consider user active if seen within last minute
     final now = DateTime.now().millisecondsSinceEpoch;
-    return (now - lastSeen) < 60000;
+    return (now - lastSeenMillis) < 60000;
   }
 
   /// Clean up inactive editors (older than 5 minutes)
@@ -266,10 +287,20 @@ class CollaborativeRecipeRepository {
     
     for (final doc in snapshot.docs) {
       final data = doc.data();
-      final lastSeen = data['lastSeen'] as int?;
+      
+      // Handle both int and Timestamp/DateTime for lastSeen
+      int? lastSeenMillis;
+      final lastSeenValue = data['lastSeen'];
+      if (lastSeenValue is int) {
+        lastSeenMillis = lastSeenValue;
+      } else if (lastSeenValue is Timestamp) {
+        lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
+      } else if (lastSeenValue is DateTime) {
+        lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
+      }
       
       // Mark as inactive if last seen more than 5 minutes ago
-      if (lastSeen != null && lastSeen < fiveMinutesAgo) {
+      if (lastSeenMillis != null && lastSeenMillis < fiveMinutesAgo) {
         batch.update(doc.reference, {'isActive': false});
       }
     }

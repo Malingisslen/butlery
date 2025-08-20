@@ -20,6 +20,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 
 /// Comprehensive collaborative shopping operations interface providing multi-user shopping list management and social shopping features.
 ///
@@ -51,7 +52,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final collaborativeOps = CollaborativeShoppingOperations(parentService);
-/// 
+///
 /// // Create collaborative shopping list
 /// final listId = await collaborativeOps.createList(
 ///   name: 'Familjehandling',
@@ -59,7 +60,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 ///   memberDisplayNames: {'partner': 'Anna', 'child1': 'Erik'},
 ///   allowGuestEditing: true,
 /// );
-/// 
+///
 /// // Member management
 /// await collaborativeOps.addMember(
 ///   listId: listId,
@@ -67,7 +68,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 ///   userDisplayName: 'Maria',
 ///   permission: SharedListPermission.edit,
 /// );
-/// 
+///
 /// // Collaborative item management
 /// await collaborativeOps.addItem(
 ///   listId: listId,
@@ -76,13 +77,13 @@ import 'package:butlery/core/providers/application_provider.dart';
 ///   unit: 'l',
 ///   category: 'Mejeri',
 /// );
-/// 
+///
 /// // Activity and statistics
 /// final stats = collaborativeOps.getListStats(listId);
 /// final activity = collaborativeOps.getRecentActivity(listId);
 /// ```
 class CollaborativeShoppingOperations {
-  final dynamic _parent; // UnifiedShoppingService
+  final UnifiedShoppingService _parent;
 
   CollaborativeShoppingOperations(this._parent);
 
@@ -119,8 +120,7 @@ class CollaborativeShoppingOperations {
   /// Get collaborative shopping list by ID
   UnifiedShoppingList? getListById(String id) {
     try {
-      return _parent.collaborativeLists
-          .firstWhere((list) => list.id == id);
+      return _parent.collaborativeLists.firstWhere((list) => list.id == id);
     } catch (e) {
       return null;
     }
@@ -130,7 +130,7 @@ class CollaborativeShoppingOperations {
   List<UnifiedShoppingList> getOwnedLists() {
     final permissionService = ServiceLocator.get<PermissionService>();
     if (!permissionService.isAuthenticated) return [];
-    
+
     return _parent.collaborativeLists
         .where((list) => permissionService.isShoppingListOwner(list.id))
         .toList();
@@ -140,10 +140,11 @@ class CollaborativeShoppingOperations {
   List<UnifiedShoppingList> getSharedWithMe() {
     final permissionService = ServiceLocator.get<PermissionService>();
     if (!permissionService.isAuthenticated) return [];
-    
+
     return _parent.collaborativeLists
-        .where((list) => !permissionService.isShoppingListOwner(list.id) && 
-                        permissionService.canViewShoppingList(list.id))
+        .where((list) =>
+            !permissionService.isShoppingListOwner(list.id) &&
+            permissionService.canViewShoppingList(list.id))
         .toList();
   }
 
@@ -156,19 +157,13 @@ class CollaborativeShoppingOperations {
   }) async {
     UnifiedShoppingList? personalList;
     try {
-      personalList = _parent.personalLists
-          .firstWhere((list) => list.id == personalListId);
+      personalList =
+          _parent.personalLists.firstWhere((list) => list.id == personalListId);
     } catch (e) {
       AppLogger.error('Cannot convert: Personal list not found');
       return null;
     }
-    
-    // Check if personalList was found
-    if (personalList == null) {
-      AppLogger.error('Cannot convert: Personal list is null');
-      return null;
-    }
-    
+
     // Create collaborative version
     final collaborativeId = await createList(
       name: personalList.name,
@@ -177,40 +172,42 @@ class CollaborativeShoppingOperations {
       memberDisplayNames: memberDisplayNames,
       items: personalList.items,
     );
-    
+
     // Delete personal version if collaborative creation succeeded
     if (collaborativeId != null) {
       await _parent.deleteList(personalListId);
     }
-    
+
     return collaborativeId;
   }
 
   /// Convert collaborative list to personal (owner only)
-  Future<String?> convertCollaborativeToPersonal(String collaborativeListId) async {
+  Future<String?> convertCollaborativeToPersonal(
+      String collaborativeListId) async {
     final collaborativeList = getListById(collaborativeListId);
     if (collaborativeList == null) {
       AppLogger.error('Cannot convert: Collaborative list not found');
       return null;
     }
-    
+
     // Check if current user is owner
-    if (!ServiceLocator.get<PermissionService>().isShoppingListOwner(collaborativeList.id)) {
+    if (!ServiceLocator.get<PermissionService>()
+        .isShoppingListOwner(collaborativeList.id)) {
       AppLogger.error('Cannot convert: Only owner can convert to personal');
       return null;
     }
-    
+
     // Create personal version
     final personalId = await _parent.createPersonalList(
       collaborativeList.name,
       items: collaborativeList.items,
     );
-    
+
     // Delete collaborative version if personal creation succeeded
     if (personalId != null) {
       await _parent.deleteList(collaborativeListId);
     }
-    
+
     return personalId;
   }
 
@@ -228,32 +225,32 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot add member: Collaborative list not found');
       return false;
     }
-    
+
     // Check if current user can manage members
     if (!canManageMembers(listId)) {
       AppLogger.error('Cannot add member: No permission to manage members');
       return false;
     }
-    
+
     // Check if user is already a member
     if (list.memberPermissions.containsKey(userId)) {
       AppLogger.warning('User is already a member of this list');
       return false;
     }
-    
+
     try {
       final updatedPermissions = {
         ...list.memberPermissions,
         userId: permission,
       };
-      
+
       final updatedList = list.copyWith(
         memberPermissions: updatedPermissions,
         updatedAt: DateTime.now(),
       );
-      
-      await _parent._updateList(updatedList);
-      
+
+      await _parent.updateList(updatedList);
+
       AppLogger.success('Added member $userDisplayName to ${list.name}');
       return true;
     } catch (e) {
@@ -272,30 +269,32 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot remove member: Collaborative list not found');
       return false;
     }
-    
+
     // Check if current user can manage members
     if (!canManageMembers(listId)) {
       AppLogger.error('Cannot remove member: No permission to manage members');
       return false;
     }
-    
+
     // Cannot remove owner
-    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) && ServiceLocator.get<PermissionService>().currentUserId == userId) {
+    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) &&
+        ServiceLocator.get<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot remove owner from list');
       return false;
     }
-    
+
     try {
-      final updatedPermissions = Map<String, SharedListPermission>.from(list.memberPermissions);
+      final updatedPermissions =
+          Map<String, SharedListPermission>.from(list.memberPermissions);
       updatedPermissions.remove(userId);
-      
+
       final updatedList = list.copyWith(
         memberPermissions: updatedPermissions,
         updatedAt: DateTime.now(),
       );
-      
-      await _parent._updateList(updatedList);
-      
+
+      await _parent.updateList(updatedList);
+
       AppLogger.success('Removed member from ${list.name}');
       return true;
     } catch (e) {
@@ -315,32 +314,34 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot update permission: Collaborative list not found');
       return false;
     }
-    
+
     // Check if current user can manage members
     if (!canManageMembers(listId)) {
-      AppLogger.error('Cannot update permission: No permission to manage members');
+      AppLogger.error(
+          'Cannot update permission: No permission to manage members');
       return false;
     }
-    
+
     // Cannot change owner permission
-    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) && ServiceLocator.get<PermissionService>().currentUserId == userId) {
+    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) &&
+        ServiceLocator.get<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot change owner permission');
       return false;
     }
-    
+
     try {
       final updatedPermissions = {
         ...list.memberPermissions,
         userId: permission,
       };
-      
+
       final updatedList = list.copyWith(
         memberPermissions: updatedPermissions,
         updatedAt: DateTime.now(),
       );
-      
-      await _parent._updateList(updatedList);
-      
+
+      await _parent.updateList(updatedList);
+
       AppLogger.success('Updated member permission in ${list.name}');
       return true;
     } catch (e) {
@@ -362,18 +363,19 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot leave: Collaborative list not found');
       return false;
     }
-    
+
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       AppLogger.error('Cannot leave: User not authenticated');
       return false;
     }
-    
+
     // Owner cannot leave, must transfer ownership or delete
     if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId)) {
-      AppLogger.error('Owner cannot leave list. Transfer ownership or delete list.');
+      AppLogger.error(
+          'Owner cannot leave list. Transfer ownership or delete list.');
       return false;
     }
-    
+
     return await removeMember(
       listId: listId,
       userId: _parent.currentUserId!,
@@ -398,13 +400,13 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot add item: Collaborative list not found');
       return false;
     }
-    
+
     // Check edit permission
     if (!canEdit(listId)) {
       AppLogger.error('Cannot add item: No edit permission');
       return false;
     }
-    
+
     try {
       final item = UnifiedShoppingItem.collaborative(
         name: name.trim(),
@@ -417,15 +419,15 @@ class CollaborativeShoppingOperations {
         estimatedPrice: estimatedPrice,
         priority: priority,
       );
-      
+
       final updatedList = list.addItem(
         item,
         userId: _parent.currentUserId,
         userDisplayName: _parent.currentUserDisplayName,
       );
-      
-      await _parent._updateList(updatedList);
-      
+
+      await _parent.updateList(updatedList);
+
       AppLogger.success('Added item "$name" to ${list.name}');
       return true;
     } catch (e) {
@@ -444,22 +446,22 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot toggle item: Collaborative list not found');
       return false;
     }
-    
+
     // Check edit permission
     if (!canEdit(listId)) {
       AppLogger.error('Cannot toggle item: No edit permission');
       return false;
     }
-    
+
     try {
       final updatedList = list.toggleItemBought(
         itemId,
         userId: _parent.currentUserId,
         userDisplayName: _parent.currentUserDisplayName,
       );
-      
-      await _parent._updateList(updatedList);
-      
+
+      await _parent.updateList(updatedList);
+
       AppLogger.success('Toggled item status in ${list.name}');
       return true;
     } catch (e) {
@@ -478,22 +480,22 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot remove item: Collaborative list not found');
       return false;
     }
-    
+
     // Check edit permission
     if (!canEdit(listId)) {
       AppLogger.error('Cannot remove item: No edit permission');
       return false;
     }
-    
+
     try {
       final updatedList = list.removeItem(
         itemId,
         userId: _parent.currentUserId,
         userDisplayName: _parent.currentUserDisplayName,
       );
-      
-      await _parent._updateList(updatedList);
-      
+
+      await _parent.updateList(updatedList);
+
       AppLogger.success('Removed item from ${list.name}');
       return true;
     } catch (e) {
@@ -508,7 +510,7 @@ class CollaborativeShoppingOperations {
   List<Map<String, dynamic>> getRecentActivity(String listId) {
     final list = getListById(listId);
     if (list == null) return [];
-    
+
     // This would be enhanced with proper activity tracking
     // For now, return basic activity info
     return [
@@ -526,26 +528,28 @@ class CollaborativeShoppingOperations {
   Map<String, dynamic> getListStats(String listId) {
     final list = getListById(listId);
     if (list == null) return {};
-    
+
     final totalItems = list.items.length;
     final boughtItems = list.items.where((item) => item.bought).length;
     final remainingItems = totalItems - boughtItems;
-    
+
     // Member activity
     final memberActivity = <String, int>{};
     for (final item in list.items) {
       if (item.addedByUserId != null) {
-        memberActivity[item.addedByUserId!] = (memberActivity[item.addedByUserId!] ?? 0) + 1;
+        memberActivity[item.addedByUserId!] =
+            (memberActivity[item.addedByUserId!] ?? 0) + 1;
       }
     }
-    
+
     return {
       'listId': listId,
       'listName': list.name,
       'totalItems': totalItems,
       'boughtItems': boughtItems,
       'remainingItems': remainingItems,
-      'completionPercentage': totalItems > 0 ? (boughtItems / totalItems * 100).round() : 0,
+      'completionPercentage':
+          totalItems > 0 ? (boughtItems / totalItems * 100).round() : 0,
       'memberCount': list.memberPermissions.length,
       'memberActivity': memberActivity,
       'lastActivity': list.updatedAt,
@@ -568,22 +572,27 @@ class CollaborativeShoppingOperations {
 
   /// Check if current user can manage members
   bool canManageMembers(String listId) {
-    return ServiceLocator.get<PermissionService>().canManageShoppingList(listId);
+    return ServiceLocator.get<PermissionService>()
+        .canManageShoppingList(listId);
   }
 
   /// Check if current user can delete list
   bool canDelete(String listId) {
-    return ServiceLocator.get<PermissionService>().canDeleteShoppingList(listId);
+    return ServiceLocator.get<PermissionService>()
+        .canDeleteShoppingList(listId);
   }
 
   /// Get current user's permission for list
   SharedListPermission? getUserPermission(String listId) {
     final list = getListById(listId);
-    if (list == null || !ServiceLocator.get<PermissionService>().isAuthenticated) return null;
-    
+    if (list == null ||
+        !ServiceLocator.get<PermissionService>().isAuthenticated) {
+      return null;
+    }
+
     // Use PermissionService to check permissions
     final permissionService = ServiceLocator.get<PermissionService>();
-    
+
     if (permissionService.canManageShoppingList(listId)) {
       return SharedListPermission.admin;
     } else if (permissionService.canEditShoppingList(listId)) {
@@ -591,7 +600,7 @@ class CollaborativeShoppingOperations {
     } else if (permissionService.canViewShoppingList(listId)) {
       return SharedListPermission.view;
     }
-    
+
     return null;
   }
 
@@ -602,7 +611,7 @@ class CollaborativeShoppingOperations {
     // This would be enhanced with proper notification tracking
     // For now, return count of lists with recent activity
     final recentThreshold = DateTime.now().subtract(const Duration(hours: 24));
-    
+
     return getAllLists()
         .where((list) => list.updatedAt.isAfter(recentThreshold))
         .length;

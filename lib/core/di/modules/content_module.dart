@@ -34,6 +34,7 @@ import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 
 // Content services
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/search_service.dart';
@@ -67,6 +68,7 @@ class ContentModule implements DIModule {
   List<Type> get provides => [
     RecipeRepository,
     UnifiedRecipeService,
+    UnifiedMenuService,
     ImportManager,
     MenuService,
     SearchService,
@@ -138,6 +140,15 @@ class ContentModule implements DIModule {
       
       if (kDebugMode) {
         debugPrint('✅ [ContentModule] MenuService registered');
+      }
+
+      // Unified menu service for collaborative menu planning
+      container.registerSingleton<UnifiedMenuService>(UnifiedMenuService(
+        firestore: container<FirestoreRepository>().firestore,
+      ));
+      
+      if (kDebugMode) {
+        debugPrint('✅ [ContentModule] UnifiedMenuService registered');
       }
 
       // Search service for content discovery
@@ -226,6 +237,14 @@ class ContentModule implements DIModule {
       
       if (kDebugMode) {
         debugPrint('✅ [ContentModule] UnifiedRecipeService initialized');
+      }
+
+      // Initialize UnifiedMenuService
+      final unifiedMenuService = container<UnifiedMenuService>();
+      await unifiedMenuService.initialize();
+      
+      if (kDebugMode) {
+        debugPrint('✅ [ContentModule] UnifiedMenuService initialized');
       }
 
       // Initialize OfflineService (Hive dependency)

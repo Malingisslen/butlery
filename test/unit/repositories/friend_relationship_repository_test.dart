@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/models/user_profile.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -52,9 +52,9 @@ void main() {
     
     setUpAll(() {
       registerFallbackValue(FakeFieldValue());
-      registerFallbackValue(FieldValue.serverTimestamp());
-      registerFallbackValue(FieldValue.increment(1));
-      registerFallbackValue(FieldValue.increment(-1));
+      registerFallbackValue(DateTime.now());
+      registerFallbackValue(1);
+      registerFallbackValue(-1);
       registerFallbackValue(FakeFieldPath());
       registerFallbackValue(FieldPath.documentId);
       registerFallbackValue(FakeTimestamp());
@@ -82,7 +82,7 @@ void main() {
         isAuthenticated: true,
       );
       
-      // Setup test data
+      // Setup test data with proper Timestamp objects
       userProfileData1 = {
         'uid': userId1,
         'displayName': 'Test User 1',
@@ -92,8 +92,8 @@ void main() {
         'allowEmailSearch': true,
         'publicRecipeCount': 5,
         'friendsCount': 10,
-        'joinedAt': {'seconds': 1234567890, 'nanoseconds': 0},
-        'lastActiveAt': {'seconds': 1234567890, 'nanoseconds': 0},
+        'joinedAt': Timestamp.fromMillisecondsSinceEpoch(1234567890000),
+        'lastActiveAt': Timestamp.fromMillisecondsSinceEpoch(1234567890000),
         'isOnline': false,
         'notificationsEnabled': true,
       };
@@ -107,8 +107,8 @@ void main() {
         'allowEmailSearch': false,
         'publicRecipeCount': 3,
         'friendsCount': 8,
-        'joinedAt': {'seconds': 1234567890, 'nanoseconds': 0},
-        'lastActiveAt': {'seconds': 1234567890, 'nanoseconds': 0},
+        'joinedAt': Timestamp.fromMillisecondsSinceEpoch(1234567890000),
+        'lastActiveAt': Timestamp.fromMillisecondsSinceEpoch(1234567890000),
         'isOnline': true,
         'notificationsEnabled': false,
       };
@@ -158,7 +158,10 @@ void main() {
       
       when(() => mockProfileDoc.get()).thenAnswer((_) async => MockDocumentSnapshot());
       
-      // WriteBatch methods return void
+      // WriteBatch methods - MUST stub all operations for chaining
+      when<dynamic>(() => mockBatch.set(any(), any(), any())).thenReturn(mockBatch);
+      when<dynamic>(() => mockBatch.update(any(), any())).thenReturn(mockBatch);
+      when<dynamic>(() => mockBatch.delete(any())).thenReturn(mockBatch);
       when(() => mockBatch.commit()).thenAnswer((_) async {});
       
       // Create repository
@@ -263,7 +266,7 @@ void main() {
       
       test('should return false on error', () async {
         // Arrange
-        when(() => mockBatch.commit()).thenThrow(Exception('Network error'));
+        when(() => mockBatch.commit()).thenAnswer((_) async => throw Exception('Network error'));
         
         // Act
         final result = await repository.removeFriend(userId2);

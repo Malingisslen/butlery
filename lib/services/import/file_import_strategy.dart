@@ -6,11 +6,17 @@ import 'package:file_picker/file_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/file_content_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// File import strategy for CSV and Excel files
 /// Supports importing recipes from structured spreadsheet formats
 class FileImportStrategy extends ImportStrategy {
+  final FileContentProvider _contentProvider;
+  
+  FileImportStrategy({
+    FileContentProvider? contentProvider,
+  }) : _contentProvider = contentProvider ?? DefaultFileContentProvider();
   @override
   String get strategyName => 'File Import (CSV/Excel)';
   
@@ -43,9 +49,9 @@ class FileImportStrategy extends ImportStrategy {
   
   @override
   Future<ImportResult> import(String input, {Map<String, dynamic>? options}) async {
-    // This method expects a file path or uses file picker
+    // This method uses file picker to select files
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await _contentProvider.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv', 'xlsx', 'xls'],
         withData: true,
@@ -60,13 +66,30 @@ class FileImportStrategy extends ImportStrategy {
         return ImportResult.failure('Could not read file');
       }
       
-      final extension = file.extension?.toLowerCase();
-      
+      return await importFromContent(
+        file.bytes!,
+        file.extension?.toLowerCase() ?? '',
+        options: options,
+      );
+    } catch (e) {
+      AppLogger.error('File import failed', e);
+      return ImportResult.failure('Import failed: ${e.toString()}');
+    }
+  }
+  
+  /// Import recipe from file content directly (for testing)
+  Future<ImportResult> importFromContent(
+    Uint8List content,
+    String extension, {
+    Map<String, dynamic>? options,
+  }) async {
+    try {
       Recipe? recipe;
+      
       if (extension == 'csv') {
-        recipe = await _importFromCsv(file.bytes!);
+        recipe = await _importFromCsv(content);
       } else if (extension == 'xlsx' || extension == 'xls') {
-        recipe = await _importFromExcel(file.bytes!);
+        recipe = await _importFromExcel(content);
       } else {
         return ImportResult.failure('Unsupported file format: $extension');
       }
@@ -77,7 +100,7 @@ class FileImportStrategy extends ImportStrategy {
         return ImportResult.failure('Failed to parse file');
       }
     } catch (e) {
-      AppLogger.error('File import failed', e);
+      AppLogger.error('Content import failed', e);
       return ImportResult.failure('Import failed: ${e.toString()}');
     }
   }
@@ -85,7 +108,7 @@ class FileImportStrategy extends ImportStrategy {
   /// Import multiple recipes from file
   Future<List<Recipe>> importMultiple({Map<String, dynamic>? options}) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await _contentProvider.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv', 'xlsx', 'xls'],
         withData: true,
@@ -100,25 +123,59 @@ class FileImportStrategy extends ImportStrategy {
         throw Exception('Could not read file');
       }
       
-      final extension = file.extension?.toLowerCase();
-      
-      if (extension == 'csv') {
-        return await _importMultipleFromCsv(file.bytes!);
-      } else if (extension == 'xlsx' || extension == 'xls') {
-        return await _importMultipleFromExcel(file.bytes!);
-      }
-      
-      throw Exception('Unsupported file format: $extension');
+      return await importMultipleFromContent(
+        file.bytes!,
+        file.extension?.toLowerCase() ?? '',
+        options: options,
+      );
     } catch (e) {
       AppLogger.error('File import failed', e);
       return [];
     }
   }
   
+  /// Import multiple recipes from content directly (for testing)
+  Future<List<Recipe>> importMultipleFromContent(
+    Uint8List content,
+    String extension, {
+    Map<String, dynamic>? options,
+  }) async {
+    try {
+      if (extension == 'csv') {
+        return await _importMultipleFromCsv(content);
+      } else if (extension == 'xlsx' || extension == 'xls') {
+        return await _importMultipleFromExcel(content);
+      }
+      
+      throw Exception('Unsupported file format: $extension');
+    } catch (e) {
+      AppLogger.error('Multiple content import failed', e);
+      return [];
+    }
+  }
+  
   Future<Recipe?> _importFromCsv(Uint8List bytes) async {
     try {
-      final csvString = utf8.decode(bytes);
-      final List<List<dynamic>> rows = const CsvToListConverter().convert(csvString);
+      // Decode bytes to string
+      var csvString = utf8.decode(bytes);
+      
+      // Remove BOM if present
+      if (csvString.startsWith('\uFEFF')) {
+        csvString = csvString.substring(1);
+      }
+      
+      // Detect line ending type and parse accordingly
+      List<List<dynamic>> rows;
+      if (csvString.contains('\r\n')) {
+        // Windows line endings
+        rows = const CsvToListConverter(eol: '\r\n').convert(csvString);
+      } else if (csvString.contains('\n')) {
+        // Unix line endings
+        rows = const CsvToListConverter(eol: '\n').convert(csvString);
+      } else {
+        // Try default parsing (single line or Mac classic \r)
+        rows = const CsvToListConverter().convert(csvString);
+      }
       
       if (rows.isEmpty) {
         throw Exception('CSV file is empty');
@@ -141,8 +198,26 @@ class FileImportStrategy extends ImportStrategy {
   
   Future<List<Recipe>> _importMultipleFromCsv(Uint8List bytes) async {
     try {
-      final csvString = utf8.decode(bytes);
-      final List<List<dynamic>> rows = const CsvToListConverter().convert(csvString);
+      // Decode bytes to string
+      var csvString = utf8.decode(bytes);
+      
+      // Remove BOM if present
+      if (csvString.startsWith('\uFEFF')) {
+        csvString = csvString.substring(1);
+      }
+      
+      // Detect line ending type and parse accordingly
+      List<List<dynamic>> rows;
+      if (csvString.contains('\r\n')) {
+        // Windows line endings
+        rows = const CsvToListConverter(eol: '\r\n').convert(csvString);
+      } else if (csvString.contains('\n')) {
+        // Unix line endings
+        rows = const CsvToListConverter(eol: '\n').convert(csvString);
+      } else {
+        // Try default parsing (single line or Mac classic \r)
+        rows = const CsvToListConverter().convert(csvString);
+      }
       
       if (rows.isEmpty) {
         throw Exception('CSV file is empty');
@@ -269,13 +344,22 @@ class FileImportStrategy extends ImportStrategy {
     final ingredients = _parseIngredients(data);
     final instructions = _parseInstructions(data);
     
+    // Ensure required fields have valid values
+    final description = data['description'] ?? 
+                       data['beskrivning'] ?? 
+                       'Imported from file';
+    
+    // Ensure we have at least empty lists, not null
+    final ingredientsList = ingredients.isNotEmpty ? ingredients : ['No ingredients specified'];
+    final instructionsList = instructions.isNotEmpty ? instructions : ['No instructions provided'];
+    
     return Recipe(
       core: RecipeCore(
         id: const Uuid().v4(),
         title: title,
-        description: data['description'] ?? data['beskrivning'] ?? '',
-        ingredients: ingredients,
-        instructions: instructions,
+        description: description,  // Now guaranteed non-empty
+        ingredients: ingredientsList,  // Now guaranteed non-empty
+        instructions: instructionsList,  // Now guaranteed non-empty
         mealType: data['mealtype'] ?? data['måltidstyp'] ?? 'Middag',
         portions: _parseServings(data),
         timeMinutes: _parseCookingTime(data),

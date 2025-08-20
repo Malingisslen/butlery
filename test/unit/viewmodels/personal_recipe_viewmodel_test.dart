@@ -5,7 +5,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -39,7 +39,9 @@ void main() {
       );
       
       // Setup remaining mock behaviors
-      when(() => mockRecipeService.personal).thenReturn(mockPersonalOps);
+      mockRecipeService.setRecipeState(
+        personalOperations: mockPersonalOps,
+      );
       
       // Mock personal operations
       when(() => mockPersonalOps.createRecipe(

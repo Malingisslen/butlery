@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -38,8 +38,8 @@ void main() {
       registerFallbackValue(FakeSetOptions());
       registerFallbackValue(FakeFieldValue());
       registerFallbackValue(FakeDocumentReference());
-      registerFallbackValue(FieldValue.serverTimestamp());
-      registerFallbackValue(FieldValue.increment(1));
+      registerFallbackValue(DateTime.now());
+      registerFallbackValue(1);
       registerFallbackValue(SetOptions(merge: true));
     });
     

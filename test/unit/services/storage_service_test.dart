@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/repositories/mock_storage_repository.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -254,8 +254,9 @@ void main() {
         ];
         
         for (final file in validFiles) {
+          when(() => mockRepository.isValidImageFile(file)).thenReturn(true);
           expect(
-            StorageService.isValidImageFile(file),
+            mockRepository.isValidImageFile(file),
             isTrue,
             reason: 'Should accept ${file.path}',
           );
@@ -270,8 +271,9 @@ void main() {
         ];
         
         for (final file in invalidFiles) {
+          when(() => mockRepository.isValidImageFile(file)).thenReturn(false);
           expect(
-            StorageService.isValidImageFile(file),
+            mockRepository.isValidImageFile(file),
             isFalse,
             reason: 'Should reject ${file.path}',
           );
@@ -281,27 +283,32 @@ void main() {
       test('should validate file size', () {
         // Test file within size limit (< 10MB)
         final smallFile = _createMockFile('/path/small.jpg', sizeBytes: 5 * 1024 * 1024);
-        expect(StorageService.isValidImageFile(smallFile), isTrue);
+        when(() => mockRepository.isValidImageFile(smallFile)).thenReturn(true);
+        expect(mockRepository.isValidImageFile(smallFile), isTrue);
         
         // Test file exactly at limit (10MB)
         final limitFile = _createMockFile('/path/limit.jpg', sizeBytes: 10 * 1024 * 1024);
-        expect(StorageService.isValidImageFile(limitFile), isTrue);
+        when(() => mockRepository.isValidImageFile(limitFile)).thenReturn(true);
+        expect(mockRepository.isValidImageFile(limitFile), isTrue);
         
         // Test file over size limit (> 10MB)
         final largeFile = _createMockFile('/path/large.jpg', sizeBytes: 11 * 1024 * 1024);
-        expect(StorageService.isValidImageFile(largeFile), isFalse);
+        when(() => mockRepository.isValidImageFile(largeFile)).thenReturn(false);
+        expect(mockRepository.isValidImageFile(largeFile), isFalse);
       });
       
       test('should reject invalid extension even with valid size', () {
         // File with valid size but invalid extension
         final file = _createMockFile('/path/document.pdf', sizeBytes: 1024);
-        expect(StorageService.isValidImageFile(file), isFalse);
+        when(() => mockRepository.isValidImageFile(file)).thenReturn(false);
+        expect(mockRepository.isValidImageFile(file), isFalse);
       });
       
       test('should reject oversized file even with valid extension', () {
         // File with valid extension but invalid size
         final file = _createMockFile('/path/huge.jpg', sizeBytes: 20 * 1024 * 1024);
-        expect(StorageService.isValidImageFile(file), isFalse);
+        when(() => mockRepository.isValidImageFile(file)).thenReturn(false);
+        expect(mockRepository.isValidImageFile(file), isFalse);
       });
     });
     

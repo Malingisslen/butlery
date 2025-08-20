@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -48,7 +48,7 @@ void main() {
     
     setUpAll(() {
       registerFallbackValue(FakeFieldValue());
-      registerFallbackValue(FieldValue.serverTimestamp());
+      registerFallbackValue(DateTime.now());
       registerFallbackValue(FakeDocumentReference());
       registerFallbackValue(FakeMap());
     });
@@ -170,7 +170,7 @@ void main() {
         final updateData = {
           'name': 'Updated Friends',
           'emoji': '👥',
-          'updatedAt': FieldValue.serverTimestamp(),
+          'updatedAt': DateTime.now(),
         };
         
         when(() => mockCategoryDoc.update(any())).thenAnswer((_) async {});

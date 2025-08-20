@@ -435,8 +435,8 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     if (shouldLeave == true && mounted) {
       final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
       final success = await categoriesService.categories.removeFriendFromCategory(
-        friendId: currentUserId!,
-        categoryId: group.id,
+        currentUserId!,
+        group.id,
       );
 
       if (success && mounted) {

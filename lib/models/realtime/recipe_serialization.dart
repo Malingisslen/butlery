@@ -28,6 +28,7 @@ class RecipeSerialization {
   static Map<String, dynamic> serializeRealtimeContent(Recipe recipe) {
     return {
       'recipe': serializeRecipe(recipe),
+      'activeEditors': [], // Initialize as empty array for realtime collaboration tracking
     };
   }
 
@@ -80,27 +81,30 @@ class RecipeSerialization {
 
   /// Deserialize recipe from Firestore data
   static Recipe deserializeRecipe(Map<String, dynamic> recipeData, String fallbackId) {
+    // Handle both nested core structure and flat structure
+    final coreData = recipeData['core'] as Map<String, dynamic>? ?? recipeData;
+    
     return Recipe(
       core: RecipeCore(
-        id: recipeData['id'] as String? ?? fallbackId,
-        title: recipeData['title'] as String? ?? '',
-        description: recipeData['description'] as String? ?? '',
-        portions: recipeData['portions'] as int?,
-        timeMinutes: recipeData['timeMinutes'] as int?,
-        ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-        instructions: List<String>.from(recipeData['instructions'] ?? []),
-        tags: recipeData['tags'] != null
-            ? List<String>.from(recipeData['tags'])
+        id: coreData['id'] as String? ?? fallbackId,
+        title: coreData['title'] as String? ?? '',
+        description: coreData['description'] as String? ?? '',
+        portions: coreData['portions'] as int?,
+        timeMinutes: coreData['timeMinutes'] as int?,
+        ingredients: List<String>.from(coreData['ingredients'] ?? []),
+        instructions: List<String>.from(coreData['instructions'] ?? []),
+        tags: coreData['tags'] != null
+            ? List<String>.from(coreData['tags'])
             : null,
-        rating: (recipeData['rating'] as num?)?.toDouble(),
-        imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-        mealType: recipeData['mealType'] as String? ?? 'Middag',
-        sourceUrl: recipeData['sourceUrl'] as String?,
-        createdAt: _parseTimestamp(recipeData['createdAt']) ?? DateTime.now(),
-        updatedAt: _parseTimestamp(recipeData['updatedAt']) ?? DateTime.now(),
-        createdBy: recipeData['createdBy'] as String?,
-        isPublic: recipeData['isPublic'] as bool? ?? false,
-        lastCookedAt: _parseTimestamp(recipeData['lastCookedAt']),
+        rating: (coreData['rating'] as num?)?.toDouble(),
+        imageUrls: List<String>.from(coreData['imageUrls'] ?? []),
+        mealType: coreData['mealType'] as String? ?? 'Middag',
+        sourceUrl: coreData['sourceUrl'] as String?,
+        createdAt: _parseTimestamp(coreData['createdAt']) ?? DateTime.now(),
+        updatedAt: _parseTimestamp(coreData['updatedAt']) ?? DateTime.now(),
+        createdBy: coreData['createdBy'] as String?,
+        isPublic: coreData['isPublic'] as bool? ?? false,
+        lastCookedAt: _parseTimestamp(coreData['lastCookedAt']),
       ),
       type: RecipeType.realtime,
       socialData: _deserializeSocialData(recipeData),

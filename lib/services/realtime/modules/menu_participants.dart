@@ -28,7 +28,7 @@ class MenuParticipants {
     if (userId.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: 'User ID cannot be empty',
+        message: 'Användar-ID kan inte vara tomt',
         resourceId: menu.id,
       );
     }
@@ -36,7 +36,7 @@ class MenuParticipants {
     if (userDisplayName.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: 'User display name cannot be empty',
+        message: 'Användarnamn kan inte vara tomt',
         resourceId: menu.id,
       );
     }
@@ -45,7 +45,7 @@ class MenuParticipants {
     if (isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: 'User is already a participant: $userDisplayName',
+        message: 'Användaren är redan deltagare: $userDisplayName',
         resourceId: menu.id,
       );
     }
@@ -63,7 +63,7 @@ class MenuParticipants {
     if (userId.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: 'User ID cannot be empty',
+        message: 'Användar-ID kan inte vara tomt',
         resourceId: menu.id,
       );
     }
@@ -72,7 +72,7 @@ class MenuParticipants {
     if (!isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: 'User is not a participant: $userId',
+        message: 'Användaren är inte deltagare: $userId',
         resourceId: menu.id,
       );
     }
@@ -81,7 +81,7 @@ class MenuParticipants {
     if (userId == menu.ownerId) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: 'Cannot remove the menu owner',
+        message: 'Kan inte ta bort menyägaren',
         resourceId: menu.id,
       );
     }
@@ -100,7 +100,7 @@ class MenuParticipants {
     if (userId.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'User ID cannot be empty',
+        message: 'Användar-ID kan inte vara tomt',
         resourceId: menu.id,
       );
     }
@@ -109,7 +109,7 @@ class MenuParticipants {
     if (!isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'User is not a participant: $userId',
+        message: 'Användaren är inte deltagare: $userId',
         resourceId: menu.id,
       );
     }
@@ -118,7 +118,16 @@ class MenuParticipants {
     if (userId == menu.ownerId) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'Cannot change owner\'s permission',
+        message: 'Kan inte ändra ägarens behörighet',
+        resourceId: menu.id,
+      );
+    }
+
+    // Cannot set anyone to owner permission (only one owner allowed)
+    if (newPermission == ResourcePermission.owner) {
+      throw MenuOperationError(
+        operation: MenuOperationType.updatePermissions,
+        message: 'Kan inte tilldela ägarbehörighet till annan användare',
         resourceId: menu.id,
       );
     }
@@ -148,6 +157,10 @@ class MenuParticipants {
 
   /// Get user's permission level
   static ResourcePermission? getUserPermission(RealtimeMenu menu, String userId) {
+    // Owner has highest permission, check first
+    if (menu.ownerId == userId) {
+      return ResourcePermission.owner;
+    }
     return menu.participants[userId];
   }
 
@@ -183,13 +196,12 @@ class MenuParticipants {
         .toList();
   }
 
-  /// Get editor user IDs (including owner)
+  /// Get editor user IDs (NOT including owner since owner is not in participants)
   static List<String> getEditorIds(RealtimeMenu menu) {
     return menu.participants.entries
         .where((entry) => entry.value == ResourcePermission.editor || 
                           entry.value == ResourcePermission.write ||
-                          entry.value == ResourcePermission.admin || 
-                          entry.value == ResourcePermission.owner)
+                          entry.value == ResourcePermission.admin)
         .map((entry) => entry.key)
         .toList();
   }

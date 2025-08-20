@@ -26,6 +26,8 @@ class RecipeBuilder {
   DateTime? lastCookedAt;
   RecipeType type = RecipeType.personal;
   String? createdBy = 'test_user_123';
+  RecipeOfflineData? offlineData;
+  RecipeSocialData? socialData;
   
   /// Creates a Swedish dinner recipe preset
   RecipeBuilder asSwedishDinner() {
@@ -144,6 +146,12 @@ class RecipeBuilder {
     return this;
   }
   
+  /// Set custom description
+  RecipeBuilder withDescription(String description) {
+    this.description = description;
+    return this;
+  }
+  
   /// Set custom creator ID
   RecipeBuilder withCreatedBy(String createdBy) {
     this.createdBy = createdBy;
@@ -222,6 +230,12 @@ class RecipeBuilder {
     return this;
   }
   
+  /// Set as personal recipe
+  RecipeBuilder asPersonal() {
+    type = RecipeType.personal;
+    return this;
+  }
+  
   /// Set image URLs
   RecipeBuilder withImageUrls(List<String> imageUrls) {
     this.imageUrls = imageUrls;
@@ -231,6 +245,45 @@ class RecipeBuilder {
   /// Set source URL
   RecipeBuilder withSourceUrl(String sourceUrl) {
     this.sourceUrl = sourceUrl;
+    return this;
+  }
+  
+  /// Set custom created date
+  RecipeBuilder withCreatedAt(DateTime createdAt) {
+    this.createdAt = createdAt;
+    return this;
+  }
+  
+  /// Set custom updated date
+  RecipeBuilder withUpdatedAt(DateTime updatedAt) {
+    this.updatedAt = updatedAt;
+    return this;
+  }
+  
+  /// Set custom last cooked date
+  RecipeBuilder withLastCookedAt(DateTime lastCookedAt) {
+    this.lastCookedAt = lastCookedAt;
+    return this;
+  }
+  
+  /// Set offline data for sync testing
+  RecipeBuilder withOfflineData(RecipeOfflineData data) {
+    offlineData = data;
+    return this;
+  }
+  
+  /// Mark recipe as needing sync
+  RecipeBuilder needsSync() {
+    offlineData = const RecipeOfflineData(
+      isModifiedOffline: true,
+      lastSyncedAt: null,
+    );
+    return this;
+  }
+  
+  /// Set social data for collaborative features
+  RecipeBuilder withSocialData(RecipeSocialData data) {
+    socialData = data;
     return this;
   }
   
@@ -256,6 +309,8 @@ class RecipeBuilder {
         createdBy: createdBy,
       ),
       type: type,
+      offlineData: offlineData,
+      socialData: socialData,
     );
   }
 }

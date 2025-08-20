@@ -224,8 +224,8 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
       // Använd UnifiedFriendsService för att lägga till användaren som medlem
       final success = await _friendsService.categories.assignFriendToCategory(
-        friendId: currentUserId,
-        categoryId: groupId,
+        currentUserId,
+        groupId,
       );
 
       if (success) {

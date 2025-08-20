@@ -9,7 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart' as auth_mocks;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
@@ -116,7 +116,7 @@ void main() {
         when(() => mockFirebaseAuth.createUserWithEmailAndPassword(
           email: any(named: 'email'),
           password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'email-already-in-use',
           message: 'Email already exists',
         ));
@@ -198,7 +198,7 @@ void main() {
         // Arrange
         when(() => mockFirebaseAuth.sendPasswordResetEmail(
           email: any(named: 'email'),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'user-not-found',
           message: 'User not found',
         ));
@@ -219,7 +219,7 @@ void main() {
           email: 'delete@example.com',
         );
         
-        when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
+        mockFirebaseAuth.setAuthState(currentUser: mockUser);
         
         // Act & Assert - should complete without error
         // Note: MockUser.delete() from firebase_auth_mocks handles deletion
@@ -231,7 +231,7 @@ void main() {
       
       test('should handle no user logged in', () async {
         // Arrange
-        when(() => mockFirebaseAuth.currentUser).thenReturn(null);
+        mockFirebaseAuth.setAuthState(currentUser: null);
         
         // Act & Assert - should complete without error (no-op)
         await expectLater(
@@ -247,8 +247,8 @@ void main() {
         
         when(() => mockUser.uid).thenReturn('test_user');
         when(() => mockUser.email).thenReturn('test@example.com');
-        when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
-        when(() => mockUser.delete()).thenThrow(FirebaseAuthException(
+        mockFirebaseAuth.setAuthState(currentUser: mockUser);
+        when(() => mockUser.delete()).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'requires-recent-login',
           message: 'Recent login required',
         ));
@@ -274,7 +274,7 @@ void main() {
           email: 'current@example.com',
         );
         
-        when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
+        mockFirebaseAuth.setAuthState(currentUser: mockUser);
         
         // Act
         final result = repository.currentUser;
@@ -285,7 +285,7 @@ void main() {
       
       test('should return null when not logged in', () {
         // Arrange
-        when(() => mockFirebaseAuth.currentUser).thenReturn(null);
+        mockFirebaseAuth.setAuthState(currentUser: null);
         
         // Act
         final result = repository.currentUser;
@@ -301,7 +301,7 @@ void main() {
           email: 'test@example.com',
         );
         
-        when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
+        mockFirebaseAuth.setAuthState(currentUser: mockUser);
         
         // Act & Assert
         expect(repository.getCurrentUser(), repository.currentUser);
@@ -314,7 +314,7 @@ void main() {
           email: 'test@example.com',
         );
         
-        when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
+        mockFirebaseAuth.setAuthState(currentUser: mockUser);
         
         // Act
         final result = repository.currentUserId;
@@ -325,7 +325,7 @@ void main() {
       
       test('currentUserId should return null when no user', () {
         // Arrange
-        when(() => mockFirebaseAuth.currentUser).thenReturn(null);
+        mockFirebaseAuth.setAuthState(currentUser: null);
         
         // Act
         final result = repository.currentUserId;

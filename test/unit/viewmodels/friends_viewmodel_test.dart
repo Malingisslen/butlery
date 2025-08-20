@@ -6,9 +6,9 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
-import 'package:butlery/services/unified/operations/friends_categories_operations.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/user_profile_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 

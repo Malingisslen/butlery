@@ -196,7 +196,7 @@ class FCMService {
       _currentToken = await _messaging.getToken();
       
       if (_currentToken != null) {
-        AppLogger.info('🔔 FCM token retrieved: ${_currentToken!.substring(0, 20)}...');
+        AppLogger.info('🔔 FCM token retrieved: ${_currentToken!.substring(0, _currentToken!.length.clamp(0, 20))}...');
       } else {
         AppLogger.warning('⚠️ Failed to retrieve FCM token');
       }
@@ -223,7 +223,7 @@ class FCMService {
   /// Handle FCM token refresh events
   static Future<void> _onTokenRefresh(String token) async {
     try {
-      AppLogger.info('🔔 FCM token refreshed: ${token.substring(0, 20)}...');
+      AppLogger.info('🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...');
       _currentToken = token;
       await _updateUserToken(token);
     } catch (e) {
@@ -236,7 +236,7 @@ class FCMService {
     try {
       // Note: This will need to be implemented when UserService is extended
       // For now, just log the token
-      AppLogger.info('🔔 Updating user profile with FCM token: ${token.substring(0, 20)}...');
+      AppLogger.info('🔔 Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
       
       // Update user profile with FCM token - implemented in our notification system
       final userService = ServiceLocator.get<UserService>();

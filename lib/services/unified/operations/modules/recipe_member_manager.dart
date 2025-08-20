@@ -7,6 +7,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 /// Focused module for collaborative recipe membership management
 /// 
@@ -19,7 +20,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// 
 /// ❌ DOES NOT CONTAIN: Recipe sharing, comments, discovery, ratings, general permissions
 class RecipeMemberManager {
-  final dynamic _parent; // UnifiedRecipeService
+  final UnifiedRecipeService _parent;
   final NotificationService? _notificationService;
 
   RecipeMemberManager(this._parent, this._notificationService);

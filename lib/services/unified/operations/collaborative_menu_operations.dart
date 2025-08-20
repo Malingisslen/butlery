@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 
 /// Comprehensive collaborative menu operations providing real-time menu sharing and social cooking collaboration features.
 ///
@@ -68,7 +69,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// ```
 class CollaborativeMenuOperations {
   final FirebaseFirestore _firestore;
-  final dynamic _parent; // UnifiedMenuService
+  final UnifiedMenuService _parent;
 
   // Real-time state for menu collaboration
   final Map<String, StreamSubscription> _menuListeners = {};
@@ -595,7 +596,7 @@ class CollaborativeMenuOperations {
       if (snapshot.exists) {
         AppLogger.debug('Menu $menuId updated in real-time');
         // Notify parent service of menu updates
-        _parent?.notifyListeners?.call();
+        _parent.triggerNotification();
       }
     });
   }

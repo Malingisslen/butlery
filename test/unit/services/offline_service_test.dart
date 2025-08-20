@@ -1,18 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
-// Local mock for Hive-specific type
-class MockBox<T> extends Mock implements Box<T> {}
+// Using MockBox<T> from production_mocks.dart
 
 // Fallback values
 class FakeRecipe extends Fake implements Recipe {}
@@ -337,6 +335,303 @@ void main() {
         
         // Assert
         expect(notificationCount, equals(1));
+      });
+    });
+    
+    group('Queue Operations', () {
+      test('should prioritize queue items by operation type', () {
+        // Arrange
+        final operations = <Map<String, dynamic>>[
+          {'type': 'delete', 'priority': 1, 'id': 'op1'},
+          {'type': 'create', 'priority': 3, 'id': 'op2'},
+          {'type': 'update', 'priority': 2, 'id': 'op3'},
+        ];
+        
+        // Act - Sort by priority (delete first, update second, create last)
+        operations.sort((a, b) => (a['priority'] as int).compareTo(b['priority'] as int));
+        
+        // Assert
+        expect(operations[0]['type'], equals('delete'));
+        expect(operations[1]['type'], equals('update'));
+        expect(operations[2]['type'], equals('create'));
+      });
+      
+      test('should merge similar queue operations', () {
+        // Arrange
+        final operations = <Map<String, dynamic>>[
+          {'type': 'update', 'recipeId': 'recipe_1', 'field': 'title', 'value': 'Title 1'},
+          {'type': 'update', 'recipeId': 'recipe_1', 'field': 'title', 'value': 'Title 2'},
+          {'type': 'update', 'recipeId': 'recipe_1', 'field': 'description', 'value': 'Desc'},
+        ];
+        
+        // Act - Merge updates for same recipe and field
+        final merged = <Map<String, dynamic>>[];
+        for (final op in operations) {
+          final existing = merged.firstWhere(
+            (m) => m['recipeId'] == op['recipeId'] && m['field'] == op['field'],
+            orElse: () => <String, dynamic>{},
+          );
+          if (existing.isEmpty) {
+            merged.add(op);
+          } else {
+            existing['value'] = op['value']; // Keep latest value
+          }
+        }
+        
+        // Assert
+        expect(merged.length, equals(2)); // Title and description
+        expect(merged.firstWhere((m) => m['field'] == 'title')['value'], equals('Title 2'));
+      });
+      
+      test('should cancel queued operation', () {
+        // Arrange
+        final queue = <Map<String, dynamic>>[
+          {'id': 'op1', 'type': 'create', 'recipeId': 'recipe_1'},
+          {'id': 'op2', 'type': 'update', 'recipeId': 'recipe_2'},
+          {'id': 'op3', 'type': 'delete', 'recipeId': 'recipe_3'},
+        ];
+        const cancelId = 'op2';
+        
+        // Act - Remove operation with cancelId
+        queue.removeWhere((op) => op['id'] == cancelId);
+        
+        // Assert
+        expect(queue.length, equals(2));
+        expect(queue.any((op) => op['id'] == cancelId), isFalse);
+        expect(queue[0]['id'], equals('op1'));
+        expect(queue[1]['id'], equals('op3'));
+      });
+      
+      test('should get detailed queue status', () {
+        // Arrange
+        final queue = <Map<String, dynamic>>[
+          {'type': 'create', 'status': 'pending', 'recipeId': 'r1'},
+          {'type': 'update', 'status': 'pending', 'recipeId': 'r2'},
+          {'type': 'update', 'status': 'failed', 'recipeId': 'r3', 'error': 'Network error'},
+          {'type': 'delete', 'status': 'pending', 'recipeId': 'r4'},
+        ];
+        
+        // Act - Calculate queue statistics
+        final stats = {
+          'total': queue.length,
+          'pending': queue.where((op) => op['status'] == 'pending').length,
+          'failed': queue.where((op) => op['status'] == 'failed').length,
+          'byType': <String, int>{},
+        };
+        
+        for (final op in queue) {
+          final type = op['type'] as String;
+          stats['byType'] = (stats['byType'] as Map<String, int>)
+            ..[type] = ((stats['byType'] as Map)[type] ?? 0) + 1;
+        }
+        
+        // Assert
+        expect(stats['total'], equals(4));
+        expect(stats['pending'], equals(3));
+        expect(stats['failed'], equals(1));
+        expect((stats['byType'] as Map)['update'], equals(2));
+        expect((stats['byType'] as Map)['create'], equals(1));
+        expect((stats['byType'] as Map)['delete'], equals(1));
+      });
+    });
+    
+    group('Sync Strategies', () {
+      test('should sync only on WiFi when configured', () {
+        // Arrange
+        final syncConfig = {
+          'wifiOnly': true,
+          'currentNetwork': 'cellular',
+        };
+        
+        // Act
+        final shouldSync = syncConfig['wifiOnly'] != true || 
+                          syncConfig['currentNetwork'] == 'wifi';
+        
+        // Assert
+        expect(shouldSync, isFalse); // Should not sync on cellular when WiFi only
+        
+        // Test with WiFi
+        syncConfig['currentNetwork'] = 'wifi';
+        final shouldSyncOnWifi = syncConfig['wifiOnly'] != true || 
+                                syncConfig['currentNetwork'] == 'wifi';
+        expect(shouldSyncOnWifi, isTrue);
+      });
+      
+      test('should batch sync operations efficiently', () {
+        // Arrange
+        final operations = List.generate(50, (i) => {
+          'id': 'op_$i',
+          'type': i % 3 == 0 ? 'create' : (i % 3 == 1 ? 'update' : 'delete'),
+          'recipeId': 'recipe_${i ~/ 3}', // Group by recipe
+        });
+        const batchSize = 10;
+        
+        // Act - Create batches
+        final batches = <List<Map<String, dynamic>>>[];
+        for (int i = 0; i < operations.length; i += batchSize) {
+          final end = (i + batchSize > operations.length) ? operations.length : i + batchSize;
+          batches.add(operations.sublist(i, end));
+        }
+        
+        // Assert
+        expect(batches.length, equals(5)); // 50 operations / 10 per batch
+        expect(batches[0].length, equals(10));
+        expect(batches.last.length, equals(10));
+        
+        // Verify each batch maintains operation order
+        expect(batches[0][0]['id'], equals('op_0'));
+        expect(batches.last.last['id'], equals('op_49'));
+      });
+      
+      test('should perform incremental sync with checkpoints', () {
+        // Arrange
+        final syncState = {
+          'lastSyncTime': DateTime.now().subtract(const Duration(hours: 1)),
+          'lastSyncedId': 'op_25',
+          'totalOperations': 100,
+          'syncedOperations': 25,
+        };
+        
+        final newOperations = List.generate(10, (i) => {
+          'id': 'op_${26 + i}',
+          'timestamp': DateTime.now().subtract(Duration(minutes: 30 - i)),
+        });
+        
+        // Act - Process incremental sync
+        for (final op in newOperations) {
+          syncState['syncedOperations'] = (syncState['syncedOperations'] as int) + 1;
+          syncState['lastSyncedId'] = op['id'] as String;
+        }
+        syncState['lastSyncTime'] = DateTime.now();
+        
+        // Assert
+        expect(syncState['syncedOperations'], equals(35));
+        expect(syncState['lastSyncedId'], equals('op_35'));
+        final progress = (syncState['syncedOperations'] as int) / 
+                        (syncState['totalOperations'] as int);
+        expect(progress, equals(0.35));
+      });
+    });
+    
+    group('Conflict Resolution', () {
+      test('should resolve version conflicts with newer-wins strategy', () {
+        // Arrange
+        final localVersion = {
+          'id': 'recipe_1',
+          'version': 5,
+          'title': 'Local Title',
+          'updatedAt': DateTime.now().subtract(const Duration(hours: 2)),
+        };
+        
+        final remoteVersion = {
+          'id': 'recipe_1',
+          'version': 6,
+          'title': 'Remote Title',
+          'updatedAt': DateTime.now().subtract(const Duration(hours: 1)),
+        };
+        
+        // Act - Compare versions and timestamps
+        final useRemote = (remoteVersion['version'] as int) > (localVersion['version'] as int) ||
+                          ((remoteVersion['updatedAt'] as DateTime).isAfter(localVersion['updatedAt'] as DateTime));
+        
+        // Assert
+        expect(useRemote, isTrue);
+        expect(remoteVersion['version'] as int, greaterThan(localVersion['version'] as int));
+      });
+      
+      test('should merge conflicting edits intelligently', () {
+        // Arrange
+        final localChanges = {
+          'id': 'recipe_1',
+          'title': 'Local Title',
+          'ingredients': ['flour', 'eggs', 'milk'],
+          'updatedFields': ['title', 'ingredients'],
+        };
+        
+        final remoteChanges = {
+          'id': 'recipe_1',
+          'description': 'Remote Description',
+          'cookingTime': 30,
+          'updatedFields': ['description', 'cookingTime'],
+        };
+        
+        // Act - Merge non-conflicting fields
+        final merged = <String, dynamic>{'id': 'recipe_1'};
+        
+        // Apply local changes
+        for (final field in localChanges['updatedFields'] as List) {
+          merged[field] = localChanges[field];
+        }
+        
+        // Apply remote changes (non-conflicting)
+        for (final field in remoteChanges['updatedFields'] as List) {
+          if (!merged.containsKey(field)) {
+            merged[field] = remoteChanges[field];
+          }
+        }
+        
+        // Assert
+        expect(merged['title'], equals('Local Title'));
+        expect(merged['ingredients'], equals(['flour', 'eggs', 'milk']));
+        expect(merged['description'], equals('Remote Description'));
+        expect(merged['cookingTime'], equals(30));
+        expect(merged.keys.length, equals(5)); // id + 4 fields
+      });
+      
+      test('should handle deletion of items modified while offline', () {
+        // Arrange
+        final offlineModification = {
+          'id': 'recipe_1',
+          'operation': 'update',
+          'timestamp': DateTime.now().subtract(const Duration(hours: 1)),
+          'changes': {'title': 'Modified Title'},
+        };
+        
+        final remoteDeletion = {
+          'id': 'recipe_1',
+          'operation': 'delete',
+          'timestamp': DateTime.now().subtract(const Duration(minutes: 30)),
+          'deletedBy': 'other_user',
+        };
+        
+        // Act - Determine resolution
+        final localIsOlder = (offlineModification['timestamp'] as DateTime)
+            .isBefore(remoteDeletion['timestamp'] as DateTime);
+        final shouldDelete = remoteDeletion['operation'] == 'delete' && localIsOlder;
+        
+        // Assert
+        expect(localIsOlder, isTrue);
+        expect(shouldDelete, isTrue);
+        expect(remoteDeletion['operation'], equals('delete'));
+      });
+    });
+    
+    group('Swedish Language Support', () {
+      test('should handle Swedish recipe data in offline queue', () {
+        // Arrange
+        final swedishRecipe = {
+          'id': 'recipe_1',
+          'title': 'Köttbullar med gräddsås',
+          'ingredients': [
+            '500g nötfärs',
+            '1 dl ströbröd',
+            '2 msk smör',
+            'Ägg och mjölk',
+          ],
+          'instructions': 'Blanda köttfärs med ströbröd. Tillägg kryddor.',
+        };
+        
+        // Act - Verify Swedish characters are preserved
+        final queuedOperation = {
+          'type': 'create',
+          'data': swedishRecipe,
+        };
+        
+        // Assert
+        expect(queuedOperation['data'], equals(swedishRecipe));
+        expect((swedishRecipe['title'] as String).contains('ö'), isTrue);
+        expect((swedishRecipe['title'] as String).contains('ä'), isTrue);
+        expect((swedishRecipe['title'] as String).contains('å'), isTrue);
       });
     });
   });

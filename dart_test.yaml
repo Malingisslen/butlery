@@ -28,8 +28,9 @@ tags:
 # Test timeout defaults
 timeout: 30s
 
-# Run tests in parallel
-concurrency: 4
+# Run tests in parallel - REDUCED to prevent memory crashes
+# Previous value of 4 was causing VS Code crashes due to memory exhaustion
+concurrency: 1
 
 # Reporter configuration
 reporter: expanded

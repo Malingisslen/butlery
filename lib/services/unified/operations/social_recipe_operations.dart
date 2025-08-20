@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -66,7 +67,7 @@ import 'package:butlery/services/unified/operations/modules/recipe_permission_he
 /// final stats = await socialOps.getRecipeStats(recipeId);
 /// ```
 class SocialRecipeOperations {
-  final dynamic _parent; // UnifiedRecipeService
+  final UnifiedRecipeService _parent;
   final RatingsRepository _ratingsRepository;
   final FirestoreRepository _firestoreRepository;
   late final NotificationService? _notificationService;

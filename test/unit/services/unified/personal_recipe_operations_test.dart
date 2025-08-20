@@ -3,20 +3,26 @@
 /// Tests the personal recipe operations facade that handles CRUD operations,
 /// content management, batch processing, and legacy compatibility for
 /// individual recipe management.
+
+// ignore_for_file: undefined_method
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart' as recipe_factory;
 
-import '../../../infrastructure/helpers/_base_unit_test.dart';
+import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 
 // Mock parent service that PersonalRecipeOperations delegates to
-class MockParentService extends Mock {
+class MockParentService extends Mock implements UnifiedRecipeService {
   // Configuration state only
   String? _currentUserId = 'test-user-123';
   List<Recipe> _recipes = [];
@@ -31,11 +37,46 @@ class MockParentService extends Mock {
   }
   
   // Getters return configured state
+  @override
   String? get currentUserId => _currentUserId;
+  @override
+  String? get currentUserDisplayName => 'Test User';
+  @override
   List<Recipe> get recipes => _recipes;
+  
+  @override
+  PersonalRecipeOperations get personal => throw UnimplementedError();
+  
+  @override
+  SocialRecipeOperations get social => throw UnimplementedError();
+  
+  @override
+  RealtimeRecipeOperations get realtime => throw UnimplementedError();
+  
+  @override
+  RecipeDiscoveryService get discovery => throw UnimplementedError();
+  
+  @override
+  Future<void> initialize() async {}
+  
+  @override
+  void dispose() {}
+  
+  @override
+  bool get isInitialized => true;
+  
+  @override
+  bool get isLoading => false;
+  
+  @override
+  String? get error => null;
+  
+  @override
+  bool get hasError => false;
   
   // Method declarations for Mock to handle - no implementations
   // These will be stubbed with when() in tests
+  @override
   Future<String?> createRecipe({
     required String title,
     required String description,
@@ -50,8 +91,11 @@ class MockParentService extends Mock {
     String? sourceUrl,
   });
   
+  @override
   Future<bool> updateRecipe(Recipe recipe);
+  @override
   Future<bool> deleteRecipe(String id);
+  @override
   Future<bool> updateRecipeContent({
     required String recipeId,
     String? title,
@@ -64,13 +108,21 @@ class MockParentService extends Mock {
     List<String>? instructions,
     List<String>? tags,
     String? sourceUrl,
+    List<String>? imageUrls,
   });
+  @override
   Future<bool> addIngredient(String recipeId, String ingredient);
+  @override
   Future<bool> updateIngredient(String recipeId, int index, String ingredient);
+  @override
   Future<bool> removeIngredient(String recipeId, int index);
+  @override
   Future<bool> addInstruction(String recipeId, String instruction);
+  @override
   Future<bool> updateInstruction(String recipeId, int index, String instruction);
+  @override
   Future<bool> removeInstruction(String recipeId, int index);
+  @override
   Future<bool> markAsCooked(String recipeId);
   Future<bool> updateRating(String recipeId, double rating);
   Future<bool> addTag(String recipeId, String tag);
@@ -488,6 +540,58 @@ void main() {
         // Assert
         expect(result, isTrue);
         verify(() => mockParent.markAsCooked('recipe-123')).called(1);
+      });
+    });
+    
+    group('Legacy Compatibility', () {
+      test('should handle addLegacyRecipe as alias for addUnifiedRecipe', () async {
+        // Arrange
+        when(() => mockParent.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          tags: any(named: 'tags'),
+          sourceUrl: any(named: 'sourceUrl'),
+        )).thenAnswer((_) async => 'legacy-id');
+        
+        // Act
+        final result = await operations.addLegacyRecipe(testRecipe);
+        
+        // Assert
+        expect(result.isSuccess, isTrue);
+        expect(result.message, equals('Recipe added successfully'));
+        verify(() => mockParent.createRecipe(
+          title: 'Köttbullar',
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          tags: any(named: 'tags'),
+          sourceUrl: any(named: 'sourceUrl'),
+        )).called(1);
+      });
+      
+      test('should handle updateLegacyRecipe as alias for updateUnifiedRecipe', () async {
+        // Arrange
+        when(() => mockParent.updateRecipe(any())).thenAnswer((_) async => true);
+        
+        // Act
+        final result = await operations.updateLegacyRecipe(testRecipe);
+        
+        // Assert
+        expect(result.isSuccess, isTrue);
+        expect(result.message, equals('Recipe updated successfully'));
+        verify(() => mockParent.updateRecipe(testRecipe)).called(1);
       });
     });
     

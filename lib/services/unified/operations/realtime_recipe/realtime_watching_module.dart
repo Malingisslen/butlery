@@ -4,21 +4,24 @@ import 'dart:async';
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Realtime recipe watching module
-/// 
+///
 /// This module handles ONLY real-time watching and stream management:
 /// - Watch single recipes for real-time updates
 /// - Watch multiple recipes simultaneously
 /// - Connection status monitoring
 /// - Fallback polling when realtime unavailable
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Editing, presence, notifications, collaboration management
 class RealtimeWatchingModule {
-  final dynamic _parent; // UnifiedRecipeService
-  final dynamic _realtimeSyncService; // RealtimeSyncService?
+  final UnifiedRecipeService _parent;
+  final RealtimeSyncService? _realtimeSyncService;
 
   RealtimeWatchingModule(this._parent, [this._realtimeSyncService]);
 
@@ -27,17 +30,21 @@ class RealtimeWatchingModule {
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
     if (_realtimeSyncService == null) {
-      AppLogger.warning('RealtimeSyncService not available, falling back to periodic updates');
+      AppLogger.warning(
+          'RealtimeSyncService not available, falling back to periodic updates');
       return _watchRecipeWithPolling(recipeId);
     }
 
     try {
-      return _realtimeSyncService!
-          .watchResource<dynamic>(recipeId)
-          .map((realtimeRecipe) => RealtimeRecipeUtils.convertToRecipe(realtimeRecipe))
+      return _realtimeSyncService
+          .watchResource<RealtimeRecipe>(recipeId)
+          .map((realtimeRecipe) =>
+              RealtimeRecipeUtils.convertToRecipe(realtimeRecipe))
           .handleError((error) {
-            AppLogger.error('Error watching recipe $recipeId', error);
-          });
+        AppLogger.error('Error watching recipe $recipeId', error);
+        // Rethrow the error so it can be handled by the caller
+        throw error;
+      });
     } catch (e) {
       AppLogger.error('Failed to start watching recipe $recipeId', e);
       return _watchRecipeWithPolling(recipeId);
@@ -45,32 +52,69 @@ class RealtimeWatchingModule {
   }
 
   /// Watch recipe with automatic retry on connection failure
-  Stream<Recipe> watchRecipeWithRetry(String recipeId, {
+  Stream<Recipe> watchRecipeWithRetry(
+    String recipeId, {
     int maxRetries = 3,
     Duration retryDelay = const Duration(seconds: 2),
   }) {
-    return _watchRecipeWithRetryLogic(recipeId, maxRetries, retryDelay, 0);
+    // Create a controller to manage the retry logic
+    StreamController<Recipe>? controller;
+    StreamSubscription<Recipe>? subscription;
+    bool hasEmittedValue = false;
+    bool isClosed = false;
+    int attemptCount = 0;  // Track attempts locally
+
+    void attemptWatch() {
+      subscription?.cancel();
+      
+      if (isClosed) return;  // Don't attempt if controller is closed
+      
+      attemptCount++;  // Increment attempt count before each try
+      
+      subscription = watchRecipe(recipeId).listen(
+        (recipe) {
+          hasEmittedValue = true;
+          if (!isClosed && controller != null && !controller.isClosed) {
+            controller.add(recipe);
+          }
+        },
+        onError: (error) {
+          if (!isClosed && !hasEmittedValue && attemptCount < maxRetries) {
+            AppLogger.warning(
+                'Watch attempt $attemptCount failed for recipe $recipeId, retrying...');
+            Future.delayed(retryDelay, attemptWatch);
+          } else if (!isClosed && attemptCount >= maxRetries) {
+            AppLogger.error('Max retries exceeded for watching recipe $recipeId after $attemptCount attempts');
+            if (controller != null && !controller.isClosed) {
+              controller.addError(error);
+            }
+          } else if (!isClosed) {
+            // If we've already emitted values, just pass the error through
+            if (controller != null && !controller.isClosed) {
+              controller.addError(error);
+            }
+          }
+        },
+        onDone: () {
+          if (!isClosed && controller != null && !controller.isClosed) {
+            isClosed = true;
+            controller.close();
+          }
+        },
+      );
+    }
+
+    controller = StreamController<Recipe>.broadcast(
+      onListen: attemptWatch,
+      onCancel: () {
+        isClosed = true;
+        subscription?.cancel();
+      },
+    );
+
+    return controller.stream;
   }
 
-  /// Internal retry logic for watching recipes
-  Stream<Recipe> _watchRecipeWithRetryLogic(
-    String recipeId, 
-    int maxRetries, 
-    Duration retryDelay, 
-    int currentAttempt
-  ) {
-    return watchRecipe(recipeId).handleError((error) {
-      if (currentAttempt < maxRetries) {
-        AppLogger.warning('Watch attempt ${currentAttempt + 1} failed for recipe $recipeId, retrying...');
-        return Future.delayed(retryDelay).then((_) =>
-          _watchRecipeWithRetryLogic(recipeId, maxRetries, retryDelay, currentAttempt + 1)
-        );
-      } else {
-        AppLogger.error('Max retries exceeded for watching recipe $recipeId');
-        throw error;
-      }
-    });
-  }
 
   // ===== MULTIPLE RECIPE WATCHING =====
 
@@ -81,13 +125,38 @@ class RealtimeWatchingModule {
     }
 
     try {
-      // Combine streams from multiple recipes
-      return Stream.fromIterable(recipeIds)
-          .asyncMap((recipeId) => watchRecipe(recipeId).first)
-          .fold<List<Recipe>>([], (previous, recipe) {
-            return [...previous, recipe];
-          })
-          .asStream();
+      // Create a StreamController to emit combined results
+      // ignore: close_sinks - Controller is closed via onCancel callback
+      final controller = StreamController<List<Recipe>>.broadcast();
+      final currentRecipes = <String, Recipe>{};
+      final subscriptions = <StreamSubscription>[];
+
+      // Subscribe to each recipe stream
+      for (final recipeId in recipeIds) {
+        final subscription = watchRecipe(recipeId).listen(
+          (recipe) {
+            currentRecipes[recipeId] = recipe;
+            // Emit the current list of all recipes whenever any updates
+            if (!controller.isClosed) {
+              controller.add(currentRecipes.values.toList());
+            }
+          },
+          onError: (error) {
+            AppLogger.error('Error watching recipe $recipeId', error);
+          },
+        );
+        subscriptions.add(subscription);
+      }
+
+      // Clean up subscriptions and close controller when the stream is closed
+      controller.onCancel = () async {
+        for (final subscription in subscriptions) {
+          await subscription.cancel();
+        }
+        await controller.close();
+      };
+
+      return controller.stream;
     } catch (e) {
       AppLogger.error('Failed to watch multiple recipes', e);
       return _watchMultipleRecipesWithPolling(recipeIds);
@@ -95,30 +164,51 @@ class RealtimeWatchingModule {
   }
 
   /// Watch multiple recipes with individual error handling
-  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(List<String> recipeIds) {
-    final controllers = <String, StreamController<Recipe>>{};
-    final resultController = StreamController<Map<String, Recipe?>>();
+  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(
+      List<String> recipeIds) {
+    // ignore: close_sinks - Controller is closed via onCancel callback
+    final resultController = StreamController<Map<String, Recipe?>>.broadcast();
     final currentRecipes = <String, Recipe?>{};
+    final subscriptions = <StreamSubscription>[];
 
     try {
-      // Initialize controllers for each recipe
+      // Initialize all recipes as null
       for (final recipeId in recipeIds) {
-        controllers[recipeId] = StreamController<Recipe>();
         currentRecipes[recipeId] = null;
+      }
 
-        // Start watching each recipe individually
-        watchRecipe(recipeId).listen(
+      // Start watching each recipe individually
+      for (final recipeId in recipeIds) {
+        final subscription = watchRecipe(recipeId).listen(
           (recipe) {
             currentRecipes[recipeId] = recipe;
-            resultController.add(Map.from(currentRecipes));
+            if (!resultController.isClosed) {
+              resultController.add(Map.from(currentRecipes));
+            }
           },
           onError: (error) {
             AppLogger.error('Error watching recipe $recipeId in batch', error);
             currentRecipes[recipeId] = null;
-            resultController.add(Map.from(currentRecipes));
+            if (!resultController.isClosed) {
+              resultController.add(Map.from(currentRecipes));
+            }
           },
         );
+        subscriptions.add(subscription);
       }
+      
+      // Emit initial state with all nulls
+      if (!resultController.isClosed) {
+        resultController.add(Map.from(currentRecipes));
+      }
+
+      // Clean up subscriptions when stream is closed
+      resultController.onCancel = () async {
+        for (final subscription in subscriptions) {
+          await subscription.cancel();
+        }
+        await resultController.close();
+      };
 
       return resultController.stream;
     } catch (e) {
@@ -134,11 +224,12 @@ class RealtimeWatchingModule {
   bool get isConnected => _realtimeSyncService?.isConnected ?? false;
 
   /// Get connection status stream
-  Stream<bool> get connectionStream => 
+  Stream<bool> get connectionStream =>
       _realtimeSyncService?.connectionStream ?? Stream.value(false);
 
   /// Wait for connection to be established
-  Future<bool> waitForConnection({Duration timeout = const Duration(seconds: 10)}) async {
+  Future<bool> waitForConnection(
+      {Duration timeout = const Duration(seconds: 10)}) async {
     if (isConnected) return true;
 
     try {
@@ -155,13 +246,53 @@ class RealtimeWatchingModule {
 
   /// Monitor connection status changes
   Stream<ConnectionStatus> monitorConnectionStatus() {
-    return connectionStream.map((connected) {
-      return ConnectionStatus(
-        isConnected: connected,
-        timestamp: DateTime.now(),
-        hasRealtimeService: _realtimeSyncService != null,
-      );
-    });
+    // Create initial status
+    final initialStatus = ConnectionStatus(
+      isConnected: isConnected,
+      timestamp: DateTime.now(),
+      hasRealtimeService: _realtimeSyncService != null,
+    );
+    
+    // If no realtime service, just return the initial status
+    if (_realtimeSyncService == null) {
+      return Stream.value(initialStatus);
+    }
+    
+    // Create a stream that emits initial value then follows connection changes
+    // ignore: close_sinks - Controller is closed via onCancel callback
+    late final StreamController<ConnectionStatus> controller;
+    StreamSubscription<bool>? subscription;
+    
+    controller = StreamController<ConnectionStatus>.broadcast(
+      onListen: () {
+        // Emit initial status when someone starts listening
+        controller.add(initialStatus);
+        
+        // Then start listening to connection changes
+        subscription = connectionStream.listen(
+          (connected) {
+            if (!controller.isClosed) {
+              controller.add(ConnectionStatus(
+                isConnected: connected,
+                timestamp: DateTime.now(),
+                hasRealtimeService: true,  // We know it's not null here
+              ));
+            }
+          },
+          onError: (error) {
+            if (!controller.isClosed) {
+              controller.addError(error);
+            }
+          },
+        );
+      },
+      onCancel: () async {
+        await subscription?.cancel();
+        await controller.close();
+      },
+    );
+    
+    return controller.stream;
   }
 
   // ===== FALLBACK POLLING =====
@@ -174,7 +305,8 @@ class RealtimeWatchingModule {
   }
 
   /// Fallback watching multiple recipes with polling
-  Stream<List<Recipe>> _watchMultipleRecipesWithPolling(List<String> recipeIds) {
+  Stream<List<Recipe>> _watchMultipleRecipesWithPolling(
+      List<String> recipeIds) {
     return Stream.periodic(const Duration(seconds: 2), (_) {
       return recipeIds
           .map((id) => _parent.recipes.where((r) => r.id == id).firstOrNull)
@@ -188,15 +320,17 @@ class RealtimeWatchingModule {
 
   /// Start watching recipe with callback
   StreamSubscription<Recipe> startWatchingRecipe(
-    String recipeId, 
+    String recipeId,
     void Function(Recipe) onRecipeUpdated, {
     void Function(dynamic)? onError,
   }) {
     return watchRecipe(recipeId).listen(
       onRecipeUpdated,
-      onError: onError ?? (error) {
-        AppLogger.error('Error in recipe watch callback for $recipeId', error);
-      },
+      onError: onError ??
+          (error) {
+            AppLogger.error(
+                'Error in recipe watch callback for $recipeId', error);
+          },
     );
   }
 
@@ -208,9 +342,10 @@ class RealtimeWatchingModule {
   }) {
     return watchMultipleRecipes(recipeIds).listen(
       onRecipesUpdated,
-      onError: onError ?? (error) {
-        AppLogger.error('Error in multiple recipes watch callback', error);
-      },
+      onError: onError ??
+          (error) {
+            AppLogger.error('Error in multiple recipes watch callback', error);
+          },
     );
   }
 

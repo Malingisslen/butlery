@@ -7,6 +7,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
@@ -24,7 +25,7 @@ import 'package:butlery/services/unified/operations/modules/comment_utilities.da
 ///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class RecipeCommentsManager {
-  final dynamic _parent; // UnifiedRecipeService
+  final UnifiedRecipeService _parent;
   final NotificationService? _notificationService;
   // Firebase instance removed - using repository pattern
   

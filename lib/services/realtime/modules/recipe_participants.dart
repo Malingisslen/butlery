@@ -28,7 +28,7 @@ class RecipeParticipants {
     if (userId.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'User ID cannot be empty',
+        message: 'Användar-ID kan inte vara tomt',
         resourceId: recipe.id,
       );
     }
@@ -36,7 +36,7 @@ class RecipeParticipants {
     if (userDisplayName.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'User display name cannot be empty',
+        message: 'Användarnamn kan inte vara tomt',
         resourceId: recipe.id,
       );
     }
@@ -45,7 +45,16 @@ class RecipeParticipants {
     if (isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'User is already a participant: $userDisplayName',
+        message: 'Användaren är redan deltagare: $userDisplayName',
+        resourceId: recipe.id,
+      );
+    }
+
+    // Check maximum participant limit (50 participants max)
+    if (recipe.participants.length >= 50) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.addParticipant,
+        message: 'Maxgräns för deltagare nådd (50)',
         resourceId: recipe.id,
       );
     }
@@ -63,7 +72,16 @@ class RecipeParticipants {
     if (userId.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant,
-        message: 'User ID cannot be empty',
+        message: 'Användar-ID kan inte vara tomt',
+        resourceId: recipe.id,
+      );
+    }
+
+    // Cannot remove the owner - check this FIRST
+    if (userId == recipe.ownerId) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.removeParticipant,
+        message: 'Kan inte ta bort receptägaren',
         resourceId: recipe.id,
       );
     }
@@ -72,16 +90,7 @@ class RecipeParticipants {
     if (!isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant,
-        message: 'User is not a participant: $userId',
-        resourceId: recipe.id,
-      );
-    }
-
-    // Cannot remove the owner
-    if (userId == recipe.ownerId) {
-      throw RecipeOperationError(
-        operation: RecipeOperationType.removeParticipant,
-        message: 'Cannot remove the recipe owner',
+        message: 'Användaren är inte deltagare: $userId',
         resourceId: recipe.id,
       );
     }
@@ -100,7 +109,7 @@ class RecipeParticipants {
     if (userId.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: 'User ID cannot be empty',
+        message: 'Användar-ID kan inte vara tomt',
         resourceId: recipe.id,
       );
     }
@@ -109,7 +118,7 @@ class RecipeParticipants {
     if (!isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: 'User is not a participant: $userId',
+        message: 'Användaren är inte deltagare: $userId',
         resourceId: recipe.id,
       );
     }
@@ -118,7 +127,7 @@ class RecipeParticipants {
     if (userId == recipe.ownerId) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: 'Cannot change owner\'s permission',
+        message: 'Kan inte ändra ägarens behörighet',
         resourceId: recipe.id,
       );
     }
@@ -148,6 +157,10 @@ class RecipeParticipants {
 
   /// Get user's permission level
   static ResourcePermission? getUserPermission(RealtimeRecipe recipe, String userId) {
+    // Owner has highest permission, check first
+    if (recipe.ownerId == userId) {
+      return ResourcePermission.owner;
+    }
     return recipe.participants[userId];
   }
 
@@ -185,11 +198,11 @@ class RecipeParticipants {
 
   /// Get editor user IDs (users who can edit content)
   static List<String> getEditorIds(RealtimeRecipe recipe) {
+    // Owner is not in participants map anymore
     return recipe.participants.entries
         .where((entry) => entry.value == ResourcePermission.editor || 
                           entry.value == ResourcePermission.write ||
-                          entry.value == ResourcePermission.admin || 
-                          entry.value == ResourcePermission.owner)
+                          entry.value == ResourcePermission.admin)
         .map((entry) => entry.key)
         .toList();
   }
@@ -226,17 +239,17 @@ class RecipeParticipants {
 
     // Check owner exists
     if (recipe.ownerId.trim().isEmpty) {
-      errors.add('Recipe has no owner');
+      errors.add('Recept saknar ägare');
     }
 
     if (recipe.ownerDisplayName.trim().isEmpty) {
-      errors.add('Recipe owner has no display name');
+      errors.add('Receptägare saknar visningsnamn');
     }
 
     // Check participants (Map<String, ResourcePermission>)
     for (final entry in recipe.participants.entries) {
       if (entry.key.trim().isEmpty) {
-        errors.add('Participant has empty user ID');
+        errors.add('Deltagare har tomt användar-ID');
       }
 
       // Note: Display names are not stored in participants map, 
@@ -265,6 +278,7 @@ class RecipeParticipants {
 
   /// Check if recipe has any participants (excluding owner)
   static bool hasParticipants(RealtimeRecipe recipe) {
+    // Since owner is not in participants map, empty means no participants
     return recipe.participants.isNotEmpty;
   }
 

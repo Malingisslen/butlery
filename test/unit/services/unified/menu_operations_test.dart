@@ -4,18 +4,21 @@
 /// menu sharing, collaboration, ratings, comments, templates, and social features.
 library;
 
+// ignore_for_file: undefined_method
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/operations/friends_categories_operations.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/models/user_profile.dart';
 
-import '../../../infrastructure/helpers/_base_unit_test.dart';
+import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -44,8 +47,56 @@ class MockWriteBatch extends Mock implements WriteBatch {}
 
 
 // Mock parent service for CollaborativeMenuOperations
-class MockParentService extends Mock {
-  Function? notifyListeners;
+class MockParentService extends Mock implements UnifiedMenuService {
+  @override
+  void notifyListeners() {
+    // Mock implementation - do nothing
+  }
+  
+  @override
+  CollaborativeMenuOperations get collaborative => throw UnimplementedError();
+  
+  @override
+  Future<Map<String, List<Recipe>>> generateMenuFromPrompt(String prompt, List<Recipe> availableRecipes) async => {};
+  
+  @override
+  Future<String?> createMenu({required String name, String? description, Map<String, List<Recipe>>? initialRecipes}) async => null;
+  
+  @override
+  Future<bool> updateMenu(SharedMenu menu) async => false;
+  
+  @override
+  Future<bool> deleteMenu(String menuId) async => false;
+  
+  @override
+  SharedMenu? getMenuById(String menuId) => null;
+  
+  @override
+  List<SharedMenu> get menus => [];
+  
+  @override
+  bool get isInitialized => true;
+  
+  @override
+  bool get isLoading => false;
+  
+  @override
+  String? get error => null;
+  
+  @override
+  bool get hasError => false;
+  
+  @override
+  Future<void> initialize() async {}
+  
+  @override
+  void dispose() {}
+  
+  @override
+  String? get currentUserId => 'test-user';
+  
+  @override
+  String? get currentUserDisplayName => 'Test User';
 }
 
 void main() {
@@ -71,23 +122,23 @@ void main() {
         menuTitle: 'Test',
         menuSnapshot: {},
       ));
-      registerFallbackValue(FieldValue.serverTimestamp());
+      registerFallbackValue(DateTime.now());
       registerFallbackValue(<String, dynamic>{});
     });
     
     setUp(() async {
       mockFirestore = MockFirebaseFirestore();
-      mockPermissionService = MockPermissionService();
       mockFriendsService = MockUnifiedFriendsService();
       mockParent = MockParentService();
       
       // Initialize TestServiceLocator
       await TestServiceLocator.initialize();
       
-      // Register the permission service mock
-      TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
+      // Get the existing permission service mock that was registered during initialization
+      // This ensures production code uses the same instance we're configuring
+      mockPermissionService = TestServiceLocator.get<PermissionService>() as MockPermissionService;
       
-      collaborativeOps = CollaborativeMenuOperations(mockParent, mockFirestore);
+      collaborativeOps = CollaborativeMenuOperations(mockParent as UnifiedMenuService, mockFirestore);
       socialOps = SocialMenuOperations(
         firestore: mockFirestore,
         friendsService: mockFriendsService,
@@ -123,12 +174,14 @@ void main() {
       
       // Configure mock permission service using state methods
       mockPermissionService.setPermissionState(
-        currentUserId: 'test-user',
+        currentUserId: testUser.uid,
+        userDisplayName: testUser.displayName,
         defaultHasPermission: true,
       );
-      when(() => mockPermissionService.currentUserDisplayName).thenReturn('Test User');
-      when(() => mockPermissionService.isAuthenticated).thenReturn(true);
-      when(() => mockPermissionService.currentUser).thenReturn(testUser);
+      
+      // Debug: Verify the mock is configured correctly
+      print('Mock userId: ${mockPermissionService.currentUserId}');
+      print('Mock displayName: ${mockPermissionService.currentUserDisplayName}');
       
       // Setup mock friends service
       mockFriendsService.setFriendsState(
@@ -151,10 +204,15 @@ void main() {
           // Arrange
           final mockCollection = MockCollectionReference();
           final mockDoc = MockDocumentReference();
+          final mockSnapshot = MockDocumentSnapshot();
           
           when(() => mockFirestore.collection('shared_menus')).thenReturn(mockCollection);
           when(() => mockCollection.doc(any())).thenReturn(mockDoc);
           when(() => mockDoc.update(any())).thenAnswer((_) async {});
+          
+          // Mock the snapshots() method that's called by _startMenuCollaborationListener
+          when(() => mockDoc.snapshots()).thenAnswer((_) => Stream.value(mockSnapshot));
+          when(() => mockSnapshot.exists).thenReturn(true);
           
           // Act
           final success = await collaborativeOps.enableMenuCollaboration(
@@ -366,7 +424,9 @@ void main() {
               .thenReturn(mockUserRatingsCollection);
           when(() => mockUserRatingsCollection.get()).thenAnswer((_) async => mockQuerySnapshot);
           when(() => mockQuerySnapshot.docs).thenReturn([mockQueryDoc1, mockQueryDoc2]);
+          when(() => mockQueryDoc1.id).thenReturn('user1');
           when(() => mockQueryDoc1.data()).thenReturn({'rating': 4.0});
+          when(() => mockQueryDoc2.id).thenReturn('user2');
           when(() => mockQueryDoc2.data()).thenReturn({'rating': 5.0});
           
           // Act
@@ -633,7 +693,11 @@ void main() {
         
         test('should fail if not authenticated', () async {
           // Arrange
-          when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+          // Configure as unauthenticated
+          mockPermissionService.setPermissionState(
+            currentUserId: null,
+            userDisplayName: null,
+          );
           
           // Act
           final success = await socialOps.shareMenuWithFriends(

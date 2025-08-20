@@ -28,6 +28,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
@@ -68,26 +69,28 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 /// ```dart
 /// final recipeService = UnifiedRecipeService(firestore, authRepository);
 /// await recipeService.initialize();
-/// 
+///
 /// // Personal recipe operations
 /// final personalRecipes = await recipeService.personal.getAllRecipes();
 /// await recipeService.personal.createRecipe(title: 'Köttbullar');
-/// 
+///
 /// // Social recipe sharing
 /// await recipeService.social.shareRecipeWithFriend(recipeId, friendId);
 /// final sharedRecipes = await recipeService.social.getSharedRecipes();
-/// 
+///
 /// // Real-time collaborative editing
 /// final realtimeRecipe = await recipeService.realtime.startCollaborativeSession(recipeId);
 /// recipeService.realtime.watchRecipeChanges(recipeId).listen(updateUI);
 /// ```
-class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin {
+class UnifiedRecipeService extends ChangeNotifier
+    with ErrorHandlingMixin, FirebaseServiceMixin
+    implements NotificationParent {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
   final RecipeRepository? _recipeRepository;
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
-  final NotificationsRepository? _notificationsRepository;  
+  final NotificationsRepository? _notificationsRepository;
   final FirestoreRepository? _firestoreRepository;
 
   // Focused modules
@@ -121,32 +124,36 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _authRepository = authRepository ?? FirebaseAuthRepository(),
         _recipeRepository = recipeRepository,
-        _commentsRepository = commentsRepository,  
+        _commentsRepository = commentsRepository,
         _ratingsRepository = ratingsRepository,
         _notificationsRepository = notificationsRepository,
         _firestoreRepository = firestoreRepository {
-    
     // Initialize both modules and legacy interfaces
     _initializeModules();
     _initializeLegacyInterfaces();
-    
-    AppLogger.info('✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
+
+    AppLogger.info(
+        '✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
   }
 
   // ===== DEPENDENCY HELPERS =====
-  
+
   /// Get recipe repository with fallback to service locator
   RecipeRepository _getRecipeRepository() {
     return _recipeRepository ?? ServiceLocator.get<RecipeRepository>();
   }
-  
+
   /// Create service adapter with all dependencies
   RecipeServiceAdapter _createServiceAdapter() {
     return RecipeServiceAdapter(
-      recipeRepository: _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
-      commentsRepository: _commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
-      ratingsRepository: _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-      notificationsRepository: _notificationsRepository ?? ServiceLocator.get<NotificationsRepository>(),
+      recipeRepository:
+          _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
+      commentsRepository:
+          _commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+      ratingsRepository:
+          _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+      notificationsRepository: _notificationsRepository ??
+          ServiceLocator.get<NotificationsRepository>(),
     );
   }
 
@@ -154,7 +161,7 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
 
   void _initializeModules() {
     final cacheHelper = JsonCacheFactory.recipeCache();
-    
+
     _personalModule = PersonalRecipeModule(
       recipeRepository: _getRecipeRepository(),
       cacheHelper: cacheHelper,
@@ -199,8 +206,10 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     personal = PersonalRecipeOperations(this);
     social = SocialRecipeOperations(
       this,
-      ratingsRepository: _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-      firestoreRepository: _firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+      ratingsRepository:
+          _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+      firestoreRepository:
+          _firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
     );
     realtime = RealtimeRecipeOperations(this);
   }
@@ -208,8 +217,10 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   // ===== GETTERS =====
 
   List<Recipe> get recipes => List.unmodifiable(_recipes);
-  List<Recipe> get personalRecipes => recipes.where((r) => r.isPersonal).toList();
-  List<Recipe> get collaborativeRecipes => recipes.where((r) => r.isCollaborative).toList();
+  List<Recipe> get personalRecipes =>
+      recipes.where((r) => r.isPersonal).toList();
+  List<Recipe> get collaborativeRecipes =>
+      recipes.where((r) => r.isCollaborative).toList();
 
   bool get hasRecipes => _recipes.isNotEmpty;
   bool get isInitialized => _isInitialized;
@@ -218,10 +229,13 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   bool get hasError => _error != null;
   String? get lastError => _error; // Legacy property
 
+  @override
   String? get currentUserId => _authRepository.currentUserId;
-  String? get currentUserDisplayName => _authRepository.currentUser?.displayName ?? 'Du';
+  @override
+  String? get currentUserDisplayName =>
+      _authRepository.currentUser?.displayName ?? 'Du';
   bool get isSyncing => _cacheModule.isSyncing;
-  
+
   /// Public getter for firestore instance (for legacy interfaces)
   @override
   FirebaseFirestore get firestore => _firestore;
@@ -318,7 +332,7 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
 
   Future<bool> updateRecipe(Recipe updatedRecipe) async {
     final success = await _personalModule.updatePersonalRecipe(updatedRecipe);
-    
+
     if (success) {
       // Update local list
       final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
@@ -333,7 +347,7 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
 
   Future<bool> deleteRecipe(String recipeId) async {
     final success = await _personalModule.deletePersonalRecipe(recipeId);
-    
+
     if (success) {
       // Remove from local list
       _recipes.removeWhere((r) => r.id == recipeId);
@@ -348,16 +362,16 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   }
 
   // ===== INTERNAL SAVE METHOD FOR SOCIAL MODULE =====
-  
+
   /// Save a recipe from the social module (handles both create and update)
   /// This method determines whether to create a new recipe or update an existing one
   Future<bool> _saveRecipeForSocialModule(Recipe recipe) async {
     try {
       final serviceAdapter = _createServiceAdapter();
-      
+
       // Check if this recipe already exists in our list
       final existingRecipe = getRecipeById(recipe.id);
-      
+
       if (existingRecipe != null) {
         // Update existing recipe
         final success = await serviceAdapter.updateRecipe(recipe);
@@ -424,7 +438,8 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     return recipeId;
   }
 
-  Future<bool> addMemberToRecipe(String recipeId, String userId, ResourcePermission permission) async {
+  Future<bool> addMemberToRecipe(
+      String recipeId, String userId, ResourcePermission permission) async {
     return await _socialModule.addMemberToRecipe(recipeId, userId, permission);
   }
 
@@ -432,8 +447,10 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     return await _socialModule.removeMemberFromRecipe(recipeId, userId);
   }
 
-  Future<bool> updateMemberPermission(String recipeId, String userId, ResourcePermission permission) async {
-    return await _socialModule.updateMemberPermission(recipeId, userId, permission);
+  Future<bool> updateMemberPermission(
+      String recipeId, String userId, ResourcePermission permission) async {
+    return await _socialModule.updateMemberPermission(
+        recipeId, userId, permission);
   }
 
   // ===== REAL-TIME EDITING OPERATIONS (DELEGATE TO REALTIME MODULE) =====
@@ -446,7 +463,8 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     return await _realtimeModule.stopRealtimeEditing(recipeId);
   }
 
-  Future<bool> makeRealtimeEdit(String recipeId, Map<String, dynamic> changes) async {
+  Future<bool> makeRealtimeEdit(
+      String recipeId, Map<String, dynamic> changes) async {
     return await _realtimeModule.makeRealtimeEdit(recipeId, changes);
   }
 
@@ -498,17 +516,21 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   // Ingredient operations
   Future<bool> addIngredient(String recipeId, String ingredient) async {
     if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.addIngredientRealtime(recipeId, ingredient, null);
+      return await _realtimeModule.addIngredientRealtime(
+          recipeId, ingredient, null);
     } else {
       return await _personalModule.addIngredient(recipeId, ingredient);
     }
   }
 
-  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
+  Future<bool> updateIngredient(
+      String recipeId, int index, String newIngredient) async {
     if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.updateIngredientRealtime(recipeId, index, newIngredient);
+      return await _realtimeModule.updateIngredientRealtime(
+          recipeId, index, newIngredient);
     } else {
-      return await _personalModule.updateIngredient(recipeId, index, newIngredient);
+      return await _personalModule.updateIngredient(
+          recipeId, index, newIngredient);
     }
   }
 
@@ -523,17 +545,21 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
   // Instruction operations
   Future<bool> addInstruction(String recipeId, String instruction) async {
     if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.addInstructionRealtime(recipeId, instruction, null);
+      return await _realtimeModule.addInstructionRealtime(
+          recipeId, instruction, null);
     } else {
       return await _personalModule.addInstruction(recipeId, instruction);
     }
   }
 
-  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
+  Future<bool> updateInstruction(
+      String recipeId, int index, String newInstruction) async {
     if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.updateInstructionRealtime(recipeId, index, newInstruction);
+      return await _realtimeModule.updateInstructionRealtime(
+          recipeId, index, newInstruction);
     } else {
-      return await _personalModule.updateInstruction(recipeId, index, newInstruction);
+      return await _personalModule.updateInstruction(
+          recipeId, index, newInstruction);
     }
   }
 
@@ -586,7 +612,8 @@ class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin, Fireb
     if (success) {
       return RecipeOperationResult.success();
     } else {
-      return RecipeOperationResult.failure(_error ?? 'Kunde inte ta bort recept');
+      return RecipeOperationResult.failure(
+          _error ?? 'Kunde inte ta bort recept');
     }
   }
 

@@ -244,6 +244,36 @@ class PermissionService {
     return permission == ResourcePermission.editor || permission == ResourcePermission.owner;
   }
 
+  /// Validates user permission to edit and modify a specific menu.
+  ///
+  /// This method determines whether the current user has edit permissions for the specified menu,
+  /// including modifying menu items, categories, notes, and metadata. Implements proper security
+  /// validation with authentication and input validation checks.
+  ///
+  /// [menuId] Unique identifier of the menu for edit permission validation
+  /// Returns `true` if user can edit the menu, `false` otherwise
+  ///
+  /// **Edit Permission Hierarchy:**
+  /// - Menu owners have full edit permissions
+  /// - Users with explicit editor role can modify menu content
+  /// - Collaborative menus may allow multiple editors
+  /// - Unauthenticated users cannot edit any menus
+  bool canEditMenu(String menuId) {
+    // Security: Must be authenticated to edit
+    if (currentUserId == null) return false;
+    
+    // Security: Validate menu ID
+    if (menuId.isEmpty) return false;
+    
+    // Check if user is the menu owner (similar to recipe owner check)
+    // Menus created by a user typically include their ID
+    if (menuId.contains(currentUserId!)) return true;
+    
+    // Check if user has editor permission
+    final permission = getUserPermission(menuId);
+    return permission == ResourcePermission.editor || permission == ResourcePermission.owner;
+  }
+
   /// Validates user permission to view and access a specific recipe.
   ///
   /// This method checks whether the current user has read access to the specified recipe,

@@ -3,85 +3,36 @@
 /// Tests the social recipe operations coordinator that handles sharing,
 /// collaboration, member management, comments, ratings, and social discovery
 /// through specialized modules.
+
+// ignore_for_file: undefined_method
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart'; // For firstOrNull
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 
-import '../../../infrastructure/helpers/_base_unit_test.dart';
+import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
-// Mock parent service that SocialRecipeOperations delegates to
-// Note: We're using a Mock without an interface, so we'll set up behavior directly
-class MockParentService extends Mock {
-  String? currentUserId = 'test-user-123';
-  List<Recipe> recipes = [];
-  
-  Recipe? recipeToReturn;
-  String? recipeIdToReturn;
-  bool updateRecipeResult = true;
-  
-  // Setup methods for configuring mock behavior
-  void setupGetRecipeById(Recipe? recipe) {
-    recipeToReturn = recipe;
-  }
-  
-  void setupCreateRecipe(String? id) {
-    recipeIdToReturn = id;
-  }
-  
-  void setupUpdateRecipe(bool result) {
-    updateRecipeResult = result;
-  }
-  
-  // Override noSuchMethod to handle undefined methods
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    final memberName = invocation.memberName.toString();
-    
-    if (memberName.contains('getRecipeById')) {
-      return Future.value(recipeToReturn);
-    }
-    
-    if (memberName.contains('createRecipe')) {
-      return Future.value(recipeIdToReturn);
-    }
-    
-    if (memberName.contains('updateRecipe')) {
-      return Future.value(updateRecipeResult);
-    }
-    
-    return super.noSuchMethod(invocation);
-  }
-}
-
-// Mock repositories
-class MockRatingsRepository extends Mock implements RatingsRepository {}
-class MockFirestoreRepository extends Mock implements FirestoreRepository {
-  final FakeFirebaseFirestore fakeFirestore = FakeFirebaseFirestore();
-  
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    // Check if the getter 'firestore' is being accessed
-    if (invocation.memberName == Symbol('firestore')) {
-      return fakeFirestore;
-    }
-    return super.noSuchMethod(invocation);
-  }
-}
+// Using MockRatingsRepository and MockFirestoreRepository from production_mocks.dart
+class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+// ignore: subtype_of_sealed_class
+class MockCollectionReference<T> extends Mock implements CollectionReference<T> {}
+// ignore: subtype_of_sealed_class
+class MockDocumentReference<T> extends Mock implements DocumentReference<T> {}
 
 void main() {
   group('SocialRecipeOperations', () {
     late SocialRecipeOperations operations;
-    late MockParentService mockParent;
+    late MockUnifiedRecipeService mockParent;
     late MockRatingsRepository mockRatingsRepo;
     late MockFirestoreRepository mockFirestoreRepo;
     late Recipe testRecipe;
@@ -89,20 +40,29 @@ void main() {
     
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
+      // Register fallback values for mocktail
+      registerFallbackValue(RecipeFactory.build(
+        id: 'fallback',
+        title: 'Fallback Recipe',
+        description: 'Fallback',
+      ));
+      registerFallbackValue(ResourcePermission.viewer);
+      registerFallbackValue(RecipeComment(
+        id: 'fallback',
+        recipeId: 'fallback',
+        authorId: 'fallback',
+        authorDisplayName: 'Fallback User',
+        text: 'fallback',
+      ));
     });
     
     setUp(() async {
-      // TestServiceLocator is already initialized in setUpAll via BaseUnitTest.setupUnit()
+      // Initialize TestServiceLocator for each test
+      await TestServiceLocator.initialize();
       
-      mockParent = MockParentService();
+      mockParent = MockUnifiedRecipeService();
       mockRatingsRepo = MockRatingsRepository();
       mockFirestoreRepo = MockFirestoreRepository();
-      
-      operations = SocialRecipeOperations(
-        mockParent,
-        ratingsRepository: mockRatingsRepo,
-        firestoreRepository: mockFirestoreRepo,
-      );
       
       testRecipe = RecipeFactory.build(
         id: 'test-recipe-1',
@@ -125,10 +85,32 @@ void main() {
         },
       );
       
-      mockParent.recipes = [testRecipe, collaborativeRecipe];
+      // Configure the mock with recipes
+      mockParent.setRecipeState(
+        recipes: [testRecipe, collaborativeRecipe],
+        currentUserId: 'test-user-123',
+        currentUserDisplayName: 'Test User',
+      );
       
-      // Comments stream stubbing is handled by MockFactory.createCommentsRepository()
-      // Firestore is handled by MockFirestoreRepository's FakeFirebaseFirestore
+      operations = SocialRecipeOperations(
+        mockParent,
+        ratingsRepository: mockRatingsRepo,
+        firestoreRepository: mockFirestoreRepo,
+      );
+      
+      // Setup mock firestore if needed
+      final mockFirestore = MockFirebaseFirestore();
+      when(() => mockFirestoreRepo.firestore).thenReturn(mockFirestore);
+      
+      // Setup collections and documents for Firestore operations
+      final mockCollectionRef = MockCollectionReference<Map<String, dynamic>>();
+      final mockDocRef = MockDocumentReference<Map<String, dynamic>>();
+      
+      when(() => mockFirestore.collection(any())).thenReturn(mockCollectionRef);
+      when(() => mockCollectionRef.doc(any())).thenReturn(mockDocRef);
+      when(() => mockDocRef.set(any())).thenAnswer((_) async {});
+      when(() => mockDocRef.update(any())).thenAnswer((_) async {});
+      when(() => mockDocRef.delete()).thenAnswer((_) async {});
     });
     
     tearDown(() async {
@@ -144,8 +126,28 @@ void main() {
     group('Recipe Sharing', () {
       test('should share personal recipe successfully', () async {
         // Arrange
-        mockParent.setupGetRecipeById(testRecipe);
-        mockParent.setupCreateRecipe('shared-recipe-id');
+        // Verify the mock has the personal recipe
+        expect(mockParent.recipes.any((r) => r.id == 'test-recipe-1' && r.isPersonal), isTrue);
+        
+        // The mockParent needs to have createCollaborativeRecipe stubbed
+        when(() => mockParent.createCollaborativeRecipe(
+          title: any(named: 'title'),
+          memberIds: any(named: 'memberIds'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          tags: any(named: 'tags'),
+          sourceUrl: any(named: 'sourceUrl'),
+          descriptionCollaborative: any(named: 'descriptionCollaborative'),
+          allowGuestViewing: any(named: 'allowGuestViewing'),
+          allowMemberInvites: any(named: 'allowMemberInvites'),
+          categoryIds: any(named: 'categoryIds'),
+        )).thenAnswer((_) async => 'shared-recipe-id');
         
         // Act
         final sharedId = await operations.shareRecipe(
@@ -164,8 +166,20 @@ void main() {
       
       test('should make collaborative recipe personal', () async {
         // Arrange
-        mockParent.setupGetRecipeById(collaborativeRecipe);
-        mockParent.setupCreateRecipe('personal-recipe-id');
+        // getRecipeById is already implemented in MockUnifiedRecipeService
+        when(() => mockParent.createPersonalRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          tags: any(named: 'tags'),
+          sourceUrl: any(named: 'sourceUrl'),
+        )).thenAnswer((_) async => 'personal-recipe-id');
         
         // Act
         final personalId = await operations.makeRecipePersonal(
@@ -180,8 +194,25 @@ void main() {
       
       test('should duplicate and share recipe', () async {
         // Arrange
-        mockParent.setupGetRecipeById(testRecipe);
-        mockParent.setupCreateRecipe('duplicated-recipe-id');
+        // getRecipeById is already implemented in MockUnifiedRecipeService
+        when(() => mockParent.createCollaborativeRecipe(
+          title: any(named: 'title'),
+          memberIds: any(named: 'memberIds'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          tags: any(named: 'tags'),
+          sourceUrl: any(named: 'sourceUrl'),
+          descriptionCollaborative: any(named: 'descriptionCollaborative'),
+          allowGuestViewing: any(named: 'allowGuestViewing'),
+          allowMemberInvites: any(named: 'allowMemberInvites'),
+          categoryIds: any(named: 'categoryIds'),
+        )).thenAnswer((_) async => 'duplicated-recipe-id');
         
         // Act
         final duplicatedId = await operations.duplicateAndShareRecipe(
@@ -198,10 +229,33 @@ void main() {
     });
     
     group('Member Management', () {
+      test('mock parent service works correctly', () {
+        // This test verifies the mock is set up correctly
+        expect(mockParent.recipes, hasLength(2));
+        expect(mockParent.recipes[0], equals(testRecipe));
+        expect(mockParent.recipes[1], equals(collaborativeRecipe));
+        expect(mockParent.recipes[1].isCollaborative, isTrue);
+        expect(mockParent.currentUserId, equals('test-user-123'));
+        
+        // Test dynamic access (which is what the operations modules use)
+        final dynamic dynamicParent = mockParent;
+        expect(dynamicParent.recipes, hasLength(2));
+        expect(dynamicParent.currentUserId, equals('test-user-123'));
+        
+        // Test that we can find recipes with dynamic access
+        final recipes = dynamicParent.recipes as List;
+        final foundPersonal = recipes
+            .where((r) => r.id == 'test-recipe-1' && r.isPersonal)
+            .firstOrNull;
+        expect(foundPersonal, isNotNull);
+        expect(foundPersonal?.title, equals('Köttbullar'));
+      });
+      
       test('should add member to collaborative recipe', () async {
         // Arrange
-        mockParent.setupGetRecipeById(collaborativeRecipe);
-        mockParent.setupUpdateRecipe(true);
+        // getRecipeById is already implemented in MockUnifiedRecipeService
+        when(() => mockParent.updateRecipe(any()))
+            .thenAnswer((_) async => true);
         
         // Act
         final success = await operations.addMember(
@@ -217,8 +271,9 @@ void main() {
       
       test('should remove member from recipe', () async {
         // Arrange
-        mockParent.setupGetRecipeById(collaborativeRecipe);
-        mockParent.setupUpdateRecipe(true);
+        // getRecipeById is already implemented in MockUnifiedRecipeService
+        when(() => mockParent.updateRecipe(any()))
+            .thenAnswer((_) async => true);
         
         // Act
         final success = await operations.removeMember(
@@ -232,8 +287,9 @@ void main() {
       
       test('should update member permission', () async {
         // Arrange
-        mockParent.setupGetRecipeById(collaborativeRecipe);
-        mockParent.setupUpdateRecipe(true);
+        // getRecipeById is already implemented in MockUnifiedRecipeService
+        when(() => mockParent.updateRecipe(any()))
+            .thenAnswer((_) async => true);
         
         // Act
         final success = await operations.updateMemberPermission(
@@ -248,21 +304,58 @@ void main() {
       
       test('should get recipe members', () async {
         // Arrange
-        mockParent.setupGetRecipeById(collaborativeRecipe);
+        // Create a collaborative recipe with a known ID
+        final testCollaborativeRecipe = Recipe.collaborative(
+          title: 'Test Collaborative Recipe',
+          description: 'A test recipe',
+          ingredients: ['ingredient 1'],
+          instructions: ['step 1'],
+          mealType: 'dinner',
+          ownerId: 'test-user-123',
+          ownerDisplayName: 'Test User',
+          memberPermissions: {
+            'member-1': ResourcePermission.editor,
+            'member-2': ResourcePermission.viewer,
+          },
+        );
+        
+        // Configure the mock with the test recipe
+        mockParent.setRecipeState(
+          recipes: [testRecipe, testCollaborativeRecipe],
+          currentUserId: 'test-user-123',
+          currentUserDisplayName: 'Test User',
+        );
+        
+        // Verify the mock configuration
+        expect(mockParent.recipes, hasLength(2));
+        expect(mockParent.getRecipeById(testCollaborativeRecipe.id), isNotNull);
+        expect(mockParent.getRecipeById(testCollaborativeRecipe.id)?.isCollaborative, isTrue);
         
         // Act
-        final members = await operations.getRecipeMembers(collaborativeRecipe.id);
+        final members = await operations.getRecipeMembers(testCollaborativeRecipe.id);
         
         // Assert
         expect(members, isNotEmpty);
+        // Should have the owner plus 2 members = 3 total
+        expect(members, hasLength(3));
+        // Should have the owner
+        expect(members.any((m) => m['userId'] == 'test-user-123' && m['isOwner'] == true), isTrue);
+        // Should have the members
+        expect(members.any((m) => m['userId'] == 'member-1' && m['permission'] == ResourcePermission.editor), isTrue);
+        expect(members.any((m) => m['userId'] == 'member-2' && m['permission'] == ResourcePermission.viewer), isTrue);
       });
       
       test('should check if user can invite members', () {
+        // Arrange
+        // Use the existing collaborativeRecipe that was set up in setUp
+        // Verify the mock has the recipe
+        expect(mockParent.recipes.any((r) => r.id == collaborativeRecipe.id), isTrue);
+        
         // Act
         final canInvite = operations.canInviteMembers(collaborativeRecipe.id);
         
         // Assert
-        expect(canInvite, isTrue);
+        expect(canInvite, isTrue); // Owner can always invite
       });
       
       test('should get member statistics', () {
@@ -278,7 +371,7 @@ void main() {
     group('Social Discovery', () {
       test('should get collaborative recipes', () async {
         // Arrange
-        mockParent.setupGetRecipeById(collaborativeRecipe);
+        // getRecipeById is already implemented in MockUnifiedRecipeService
         
         // Act
         final recipes = await operations.getCollaborativeRecipes(
@@ -351,7 +444,7 @@ void main() {
     group('Recipe Comments', () {
       test('should add comment to recipe', () async {
         // Arrange
-        mockParent.setupGetRecipeById(testRecipe);
+        // getRecipeById is already implemented in MockUnifiedRecipeService
         
         // Act
         final commentId = await operations.addComment(

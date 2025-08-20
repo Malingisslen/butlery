@@ -362,7 +362,7 @@ class PerformanceMonitoringService {
     return PerformanceReport(
       startTime: _sessionStartTime,
       endTime: now,
-      metrics: Map.from(_metrics),
+      metrics: _metrics.map((k, v) => MapEntry(k, v.toList())),
       summary: summary,
       warnings: List.from(_warnings),
     );
@@ -430,8 +430,13 @@ class PerformanceMonitoringService {
   void dispose() {
     _reportTimer?.cancel();
     
-    if (!kReleaseMode) {
-      SchedulerBinding.instance.removeTimingsCallback(_onFrameTimings);
+    // Only remove callback if monitoring was started
+    if (_isMonitoring && !kReleaseMode) {
+      try {
+        SchedulerBinding.instance.removeTimingsCallback(_onFrameTimings);
+      } catch (e) {
+        // Callback might not have been added, ignore
+      }
     }
     
     _isMonitoring = false;

@@ -84,7 +84,8 @@ class ShoppingListManagement {
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
   }) async => 'mock-collaborative-list-id';
-  Future<bool> updateList(String listId, Map<String, dynamic> updates) async => true;
+  Future<bool> updateList(UnifiedShoppingList list) async => true;
+  Future<bool> updateListData(String listId, Map<String, dynamic> updates) async => true;
   Future<bool> deleteList(String listId) async => true;
   Future<bool> renameList(String listId, String newName) async => true;
   Future<bool> setActiveList(String listId) async => true;
@@ -293,6 +294,10 @@ class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<Unifi
       allowGuestEditing: allowGuestEditing,
       autoRemoveCompleted: autoRemoveCompleted,
     );
+  }
+
+  Future<bool> updateList(UnifiedShoppingList list) async {
+    return await _listManagement.updateList(list);
   }
 
   Future<bool> renameList(String listId, String newName) async {

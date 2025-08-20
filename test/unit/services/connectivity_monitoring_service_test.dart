@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -41,7 +41,7 @@ void main() {
     );
   });
 
-  tearDown(() {
+  tearDown(() async {
     // Stop monitoring before disposing to clean up properly
     // Only dispose if not already disposed (some tests test disposal)
     try {
@@ -51,8 +51,8 @@ void main() {
       // Service already disposed in test
     }
     firebaseStreamController.close();
-    TestServiceLocator.reset();
     BaseUnitTest.resetMocks();
+    await TestServiceLocator.reset();
   });
   
   tearDownAll(() async {
@@ -259,7 +259,7 @@ void main() {
       test('should handle exceptions and return false', () async {
         // Arrange
         when(() => mockRepository.checkFirebaseConnection())
-            .thenThrow(Exception('Connection failed'));
+            .thenAnswer((_) async => throw Exception('Connection failed'));
         
         // Act
         final result = await service.testFirebaseConnectivity();
