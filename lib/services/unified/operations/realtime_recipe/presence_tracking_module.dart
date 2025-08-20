@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
@@ -19,8 +21,8 @@ import 'package:butlery/services/unified/operations/realtime_recipe/shared/realt
 /// 
 /// ❌ DOES NOT CONTAIN: Watching, editing, collaboration management, notifications
 class PresenceTrackingModule {
-  final dynamic _parent; // UnifiedRecipeService
-  final dynamic _realtimeSyncService; // RealtimeSyncService?
+  final UnifiedRecipeService _parent;
+  final RealtimeSyncService? _realtimeSyncService;
 
   // Local presence tracking
   final Map<String, Set<String>> _recipePresence = {}; // recipeId -> Set<userId>

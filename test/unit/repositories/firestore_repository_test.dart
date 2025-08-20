@@ -11,7 +11,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
 // Mock classes for Firestore components
@@ -257,7 +257,7 @@ void main() {
         // Arrange
         final mockDocRef = MockDocumentReference();
         
-        when(() => mockDocRef.get()).thenThrow(
+        when(() => mockDocRef.get()).thenAnswer((_) async => throw 
           FirebaseException(
             plugin: 'cloud_firestore',
             code: 'permission-denied',
@@ -276,7 +276,7 @@ void main() {
         // Arrange
         final mockDocRef = MockDocumentReference();
         
-        when(() => mockDocRef.delete()).thenThrow(
+        when(() => mockDocRef.delete()).thenAnswer((_) async => throw 
           FirebaseException(
             plugin: 'cloud_firestore',
             code: 'unavailable',

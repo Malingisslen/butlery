@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/recipe_change.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/factories/recipe_factory.dart';

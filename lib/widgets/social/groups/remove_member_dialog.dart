@@ -30,8 +30,8 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
     
     final success = await friendsService.categories.removeFriendFromCategory(
-      friendId: member.uid,
-      categoryId: group.id,
+      member.uid,
+      group.id,
     );
 
     if (!success) {

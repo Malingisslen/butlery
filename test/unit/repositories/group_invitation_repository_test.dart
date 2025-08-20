@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/friends/group_invitation_repository.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -50,7 +50,7 @@ void main() {
     setUpAll(() {
       // Register fallback values for any() matchers
       registerFallbackValue(GroupInvitationStatus.pending);
-      registerFallbackValue(FieldValue.serverTimestamp());
+      registerFallbackValue(DateTime.now());
       registerFallbackValue(<String, dynamic>{});
     });
     
@@ -228,7 +228,7 @@ void main() {
         
         final updateData = {
           'status': GroupInvitationStatus.accepted.name,
-          'respondedAt': FieldValue.serverTimestamp(),
+          'respondedAt': DateTime.now(),
         };
         
         // Act
@@ -375,7 +375,7 @@ void main() {
       test('should return false when update fails', () async {
         // Arrange
         mockAuthRepository.setAuthState(userId: toUserId, isAuthenticated: true);
-        when(() => mockDocRef.update(any())).thenThrow(Exception('Update failed'));
+        when(() => mockDocRef.update(any())).thenAnswer((_) async => throw Exception('Update failed'));
         
         // Act
         final result = await repository.acceptInvitation(invitationId);
@@ -434,7 +434,7 @@ void main() {
       
       test('should return empty list on error', () async {
         // Arrange
-        when(() => mockQuery.get()).thenThrow(Exception('Query failed'));
+        when(() => mockQuery.get()).thenAnswer((_) async => throw Exception('Query failed'));
         
         // Act
         final invitations = await repository.getReceivedInvitations();

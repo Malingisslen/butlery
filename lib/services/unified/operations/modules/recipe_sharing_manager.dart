@@ -5,6 +5,7 @@ import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynam
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 /// Focused module for recipe sharing and collaboration setup
 /// 
@@ -17,7 +18,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// 
 /// ❌ DOES NOT CONTAIN: Member management, comments, discovery, ratings, permissions
 class RecipeSharingManager {
-  final dynamic _parent; // UnifiedRecipeService
+  final UnifiedRecipeService _parent;
   final NotificationService? _notificationService;
 
   RecipeSharingManager(this._parent, this._notificationService);
@@ -55,7 +56,6 @@ class RecipeSharingManager {
       final collaborativeRecipeId = await _parent.createCollaborativeRecipe(
         title: personalRecipe.title,
         memberIds: memberIds,
-        memberDisplayNames: memberDisplayNames,
         description: personalRecipe.description,
         ingredients: personalRecipe.ingredients,
         instructions: personalRecipe.instructions,
@@ -362,12 +362,12 @@ class RecipeSharingManager {
   Map<String, dynamic> getSharingStats() {
     try {
       final userRecipes = _parent.recipes.where((r) => 
-          r.userId == _parent.currentUserId).toList();
+          r.createdBy == _parent.currentUserId).toList();
 
       final personalRecipes = userRecipes.where((r) => r.isPersonal).length;
       final collaborativeRecipes = userRecipes.where((r) => r.isCollaborative).length;
       final sharedRecipes = userRecipes.where((r) => 
-          r.isCollaborative && (r.memberIds?.isNotEmpty ?? false)).length;
+          r.isCollaborative && (r.socialData?.memberPermissions?.isNotEmpty ?? false)).length;
 
       return {
         'total_recipes': userRecipes.length,

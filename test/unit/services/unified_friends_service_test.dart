@@ -9,12 +9,12 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
-import 'package:butlery/services/unified/operations/friends_categories_operations.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -25,9 +25,7 @@ import '../../infrastructure/mocks/production_mocks.dart';
 // - MockPermissionService
 // - MockUserService
 
-// Local mock only for Firebase class
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
-
+// Local mocks only for operation classes not in production_mocks
 class MockFriendsManagementOperations extends Mock implements FriendsManagementOperations {}
 
 class MockFriendsCategoriesOperations extends Mock implements FriendsCategoriesOperations {}
@@ -619,6 +617,324 @@ void main() {
         
         // Assert
         expect(friendsService.hasError, isFalse);
+      });
+    });
+    
+    group('TODO Fix: syncBlockedUsers', () {
+      test('should sync blocked users to Firebase', () async {
+        // Arrange
+        friendsService.blockedUsers.add('blocked-user-1');
+        friendsService.blockedUsers.add('blocked-user-2');
+        
+        // Pre-create user document
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .set({'displayName': 'Test User'});
+        
+        // Act
+        await friendsService.syncBlockedUsers();
+        
+        // Assert
+        final userDoc = await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .get();
+        
+        expect(userDoc.exists, isTrue);
+        final data = userDoc.data()!;
+        expect(data['blockedUsers'], isA<List>());
+        expect(data['blockedUsers'], containsAll(['blocked-user-1', 'blocked-user-2']));
+      });
+      
+      test('should handle empty blocked users list', () async {
+        // Arrange
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .set({'displayName': 'Test User'});
+        
+        // Act
+        await friendsService.syncBlockedUsers();
+        
+        // Assert
+        final userDoc = await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .get();
+        
+        expect(userDoc.data()?['blockedUsers'], isEmpty);
+      });
+    });
+    
+    group('TODO Fix: getFriendsOfUser', () {
+      test('should return friends list for a user', () async {
+        // Arrange
+        const targetUserId = 'user-456';
+        final friendIds = ['friend-1', 'friend-2'];
+        
+        // Create user with friends
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(targetUserId)
+            .set({'displayName': 'Target User', 'friends': friendIds});
+        
+        // Create friend profiles
+        for (final friendId in friendIds) {
+          await mockFirestoreRepo.firestore
+              .collection('users')
+              .doc(friendId)
+              .set({
+            'displayName': 'Friend $friendId',
+            'email': '$friendId@example.com',
+            'joinedAt': Timestamp.now(),
+            'lastActiveAt': Timestamp.now(),
+          });
+        }
+        
+        // Act
+        final friends = await friendsService.getFriendsOfUser(targetUserId);
+        
+        // Assert
+        expect(friends.length, equals(2));
+        expect(friends.map((f) => f.uid), containsAll(friendIds));
+      });
+      
+      test('should return empty list when user has no friends', () async {
+        // Arrange
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('lonely-user')
+            .set({'displayName': 'Lonely User', 'friends': []});
+        
+        // Act
+        final friends = await friendsService.getFriendsOfUser('lonely-user');
+        
+        // Assert
+        expect(friends, isEmpty);
+      });
+    });
+    
+    group('TODO Fix: getRecentCollaborators', () {
+      test('should return recent recipe and menu collaborators', () async {
+        // Arrange
+        const collaborator1 = 'collab-1';
+        const collaborator2 = 'collab-2';
+        
+        // Create recipes with collaborators
+        await mockFirestoreRepo.firestore.collection('recipes').add({
+          'ownerId': collaborator1,
+          'sharedWith': ['test-user-id', collaborator2],
+          'lastModified': Timestamp.now(),
+        });
+        
+        await mockFirestoreRepo.firestore.collection('menus').add({
+          'ownerId': collaborator2,
+          'sharedWith': ['test-user-id'],
+          'lastModified': Timestamp.now(),
+        });
+        
+        // Create collaborator profiles
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(collaborator1)
+            .set({'displayName': 'Collaborator 1', 'email': 'c1@example.com'});
+        
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(collaborator2)
+            .set({'displayName': 'Collaborator 2', 'email': 'c2@example.com'});
+        
+        // Act
+        final collaborators = await friendsService.getRecentCollaborators();
+        
+        // Assert
+        expect(collaborators.length, equals(2));
+        expect(collaborators.map((c) => c.uid), containsAll([collaborator1, collaborator2]));
+      });
+      
+      test('should return empty list when no collaborators', () async {
+        // Act
+        final collaborators = await friendsService.getRecentCollaborators();
+        
+        // Assert
+        expect(collaborators, isEmpty);
+      });
+    });
+    
+    group('TODO Fix: getRecentShoppingCollaborators', () {
+      test('should return recent shopping list collaborators', () async {
+        // Arrange
+        const collaborator1 = 'shop-collab-1';
+        const collaborator2 = 'shop-collab-2';
+        
+        // Create shopping lists
+        await mockFirestoreRepo.firestore.collection('shopping_lists').add({
+          'ownerId': collaborator1,
+          'collaborators': ['test-user-id', collaborator2],
+          'lastModified': Timestamp.now(),
+        });
+        
+        // Create collaborator profiles
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(collaborator1)
+            .set({'displayName': 'Shopping Collab 1', 'email': 's1@example.com'});
+        
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(collaborator2)
+            .set({'displayName': 'Shopping Collab 2', 'email': 's2@example.com'});
+        
+        // Act
+        final collaborators = await friendsService.getRecentShoppingCollaborators();
+        
+        // Assert
+        expect(collaborators.length, equals(2));
+        expect(collaborators.map((c) => c.uid), containsAll([collaborator1, collaborator2]));
+      });
+    });
+    
+    group('TODO Fix: Friend Request Firebase Sync', () {
+      test('should sync friend request to Firebase', () async {
+        // Arrange
+        final request = FriendRequest(
+          id: 'req-123',
+          fromUserId: 'test-user-id',
+          toUserId: 'target-user',
+          message: 'Let\'s be friends!',
+          sentAt: DateTime.now(),
+          status: FriendRequestStatus.pending,
+        );
+        
+        // Act
+        await friendsService.syncFriendRequestToFirebase(request);
+        
+        // Assert
+        final requests = await mockFirestoreRepo.firestore
+            .collection('friend_requests')
+            .where('fromUserId', isEqualTo: 'test-user-id')
+            .get();
+        
+        expect(requests.docs.length, equals(1));
+        final data = requests.docs.first.data();
+        expect(data['toUserId'], equals('target-user'));
+        expect(data['message'], equals('Let\'s be friends!'));
+      });
+      
+      test('should update friend request status', () async {
+        // Arrange
+        final request = FriendRequest(
+          id: 'req-456',
+          fromUserId: 'sender',
+          toUserId: 'test-user-id',
+          sentAt: DateTime.now(),
+          status: FriendRequestStatus.pending,
+        );
+        
+        // Create request in Firebase
+        await mockFirestoreRepo.firestore.collection('friend_requests').add({
+          'fromUserId': request.fromUserId,
+          'toUserId': request.toUserId,
+          'status': 'pending',
+          'sentAt': request.sentAt,
+        });
+        
+        // Update status
+        final acceptedRequest = request.copyWith(
+          status: FriendRequestStatus.accepted,
+          respondedAt: DateTime.now(),
+        );
+        
+        // Act
+        await friendsService.updateFriendRequestStatus(acceptedRequest);
+        
+        // Assert
+        final requests = await mockFirestoreRepo.firestore
+            .collection('friend_requests')
+            .where('fromUserId', isEqualTo: 'sender')
+            .get();
+        
+        expect(requests.docs.first.data()['status'], equals('accepted'));
+      });
+    });
+    
+    group('TODO Fix: Friend Relationship Firebase Sync', () {
+      test('should sync friend to Firebase with mutual relationship', () async {
+        // Arrange
+        final friend = UserProfile(
+          uid: 'friend-789',
+          displayName: 'My Friend',
+          email: 'friend@example.com',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+        
+        // Act
+        await friendsService.syncFriendToFirebase(friend);
+        
+        // Assert - Check current user's friends
+        final userFriend = await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .collection('friends')
+            .doc('friend-789')
+            .get();
+        
+        expect(userFriend.exists, isTrue);
+        expect(userFriend.data()?['displayName'], equals('My Friend'));
+        
+        // Check reverse relationship
+        final reverseFriend = await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('friend-789')
+            .collection('friends')
+            .doc('test-user-id')
+            .get();
+        
+        expect(reverseFriend.exists, isTrue);
+      });
+      
+      test('should remove friend from Firebase', () async {
+        // Arrange
+        const friendId = 'friend-to-remove';
+        
+        // Create existing friendships
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .collection('friends')
+            .doc(friendId)
+            .set({'friendSince': Timestamp.now()});
+        
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(friendId)
+            .collection('friends')
+            .doc('test-user-id')
+            .set({'friendSince': Timestamp.now()});
+        
+        // Act
+        await friendsService.removeFriendFromFirebase(friendId);
+        
+        // Assert
+        final userFriend = await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .collection('friends')
+            .doc(friendId)
+            .get();
+        
+        expect(userFriend.exists, isFalse);
+        
+        final reverseFriend = await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc(friendId)
+            .collection('friends')
+            .doc('test-user-id')
+            .get();
+        
+        expect(reverseFriend.exists, isFalse);
       });
     });
   });

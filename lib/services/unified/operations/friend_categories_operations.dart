@@ -17,8 +17,10 @@
 
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
+import 'package:uuid/uuid.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -71,10 +73,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// final usage = categoriesOps.getCategoryUsageStats();
 /// final mostUsed = categoriesOps.getMostUsedCategories();
 /// ```
-class FriendCategoriesOperations {
-  final dynamic _parent; // UnifiedFriendsService
+class FriendsCategoriesOperations {
+  final UnifiedFriendsService _parent;
 
-  FriendCategoriesOperations(this._parent);
+  FriendsCategoriesOperations(this._parent);
 
   // ===== CATEGORY CRUD OPERATIONS =====
 
@@ -83,6 +85,7 @@ class FriendCategoriesOperations {
     required String name,
     String description = '',
     bool isPrivate = false,
+    String? icon,
     List<String>? initialMemberIds,
   }) async {
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
@@ -101,10 +104,21 @@ class FriendCategoriesOperations {
     }
 
     try {
-      final success = await _parent.createCategory(
-        name.trim(), 
-        description.trim(),
+      // Create category internally
+      final category = FriendCategory(
+        id: const Uuid().v4(),
+        name: name.trim(),
+        description: description.trim(),
+        ownerId: _parent.currentUserId!,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        emoji: icon,
+        friendUserIds: [],
       );
+      
+      _parent.addCategoryInternal(category);
+      await _parent.syncCategoryToFirebaseInternal(category);
+      const success = true;
 
       if (success) {
         // If initial members provided, add them
@@ -120,8 +134,6 @@ class FriendCategoriesOperations {
         AppLogger.success('✅ Category created: $name');
         return getCategoryByName(name.trim())?.id;
       }
-
-      return null;
     } catch (e) {
       AppLogger.error('Error creating category: $name', e);
       return null;
@@ -162,7 +174,8 @@ class FriendCategoriesOperations {
       );
 
       // Use the internal update method that handles caching and notifications
-      _parent._updateCategory(updatedCategory);
+      _parent.updateCategoryInternal(categoryId, updatedCategory);
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
       
       // Sync to Firebase
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
@@ -202,7 +215,7 @@ class FriendCategoriesOperations {
       await _parent.deleteCategoryFromFirebaseInternal(categoryId);
       
       // Use the internal remove method that handles caching and notifications
-      _parent._removeCategory(categoryId);
+      _parent.removeCategoryInternal(categoryId);
       
       AppLogger.success('✅ Category deleted: ${category.name}');
       return true;
@@ -222,7 +235,7 @@ class FriendCategoriesOperations {
       return false;
     }
 
-    if (!_parent.friends.isFriend(friendId)) {
+    if (!_parent.management.isFriend(friendId)) {
       AppLogger.warning('User is not a friend: $friendId');
       return false;
     }
@@ -237,7 +250,12 @@ class FriendCategoriesOperations {
       return false;
     }
 
-    return await _parent.addFriendToCategory(friendId, categoryId);
+    _parent.addFriendToCategoryInternal(friendId, categoryId);
+    final categoryToSync = getCategoryById(categoryId);
+    if (categoryToSync != null) {
+      await _parent.syncCategoryToFirebaseInternal(categoryToSync);
+    }
+    return true;
   }
 
   /// Remove friend from category
@@ -273,7 +291,8 @@ class FriendCategoriesOperations {
       );
       
       // Use the internal update method that handles caching and notifications
-      _parent._updateCategory(updatedCategory);
+      _parent.updateCategoryInternal(categoryId, updatedCategory);
+      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
       
       // Sync to Firebase
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
@@ -510,5 +529,20 @@ class FriendCategoriesOperations {
     //   AppLogger.error('❌ Failed to update category privacy', e);
     //   rethrow;
     // }
+  }
+  
+  // ===== VIEWMODEL COMPATIBILITY METHODS =====
+  
+  /// Get categories list (for ViewModels)
+  List<FriendCategory> get categoriesList => _parent.categoriesList;
+  
+  /// Assign friend to category (alternative name for addFriendToCategory)
+  Future<bool> assignFriendToCategory(String friendId, String categoryId) async {
+    return await addFriendToCategory(friendId, categoryId);
+  }
+  
+  /// Refresh categories data
+  Future<void> refresh() async {
+    await _parent.refresh();
   }
 }

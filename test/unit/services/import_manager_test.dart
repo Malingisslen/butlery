@@ -9,28 +9,24 @@ import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
-// ============= MOCKS =============
-
-class MockImportStrategy extends Mock implements import_strategy.ImportStrategy {}
-
-class MockTextImportStrategy extends Mock implements TextImportStrategy {}
-
-class MockArchiveImportStrategy extends Mock implements ArchiveImportStrategy {}
-
-class MockFileImportStrategy extends Mock implements FileImportStrategy {}
-
 // ============= TESTS =============
+// Using mocks from production_mocks.dart:
+// - MockImportStrategy
+// - MockTextImportStrategy
+// - MockArchiveImportStrategy
+// - MockFileImportStrategy
+// - MockPersonalRecipeOperations
 
 void main() {
   group('ImportManager', () {
     late ImportManager importManager;
     late MockPersonalRecipeOperations mockPersonalOperations;
-    late MockImportStrategy mockStrategy;
+    late MockImportStrategy mockStrategy;  // From production_mocks.dart
     late Recipe testRecipe;
     
     setUpAll(() async {
@@ -141,6 +137,10 @@ void main() {
       test('should fallback to other strategies if preferred fails', () async {
         // Arrange
         mockStrategy = MockImportStrategy();
+        mockStrategy.setStrategyState(
+          strategyName: 'failing_strategy',
+          canHandle: true,
+        );
         // Use input that built-in TextImportStrategy can handle
         const input = '''
         Köttbullar
@@ -149,7 +149,6 @@ void main() {
         ''';
         
         when(() => mockStrategy.canHandle(input)).thenReturn(true);
-        when(() => mockStrategy.strategyName).thenReturn('failing_strategy');
         when(() => mockStrategy.import(input, options: any(named: 'options')))
             .thenAnswer((_) async => import_strategy.ImportResult.failure('Strategy failed'));
         
@@ -188,7 +187,7 @@ void main() {
         when(() => mockStrategy.canHandle(input)).thenReturn(true);
         when(() => mockStrategy.strategyName).thenReturn('error_strategy');
         when(() => mockStrategy.import(input, options: any(named: 'options')))
-            .thenThrow(Exception('Import error'));
+            .thenAnswer((_) async => throw Exception('Import error'));
         
         // Act
         final result = await importManager.autoImport(
@@ -519,7 +518,7 @@ void main() {
       test('should handle save exception', () async {
         // Arrange
         when(() => mockPersonalOperations.addUnifiedRecipe(testRecipe))
-            .thenThrow(Exception('Database error'));
+            .thenAnswer((_) async => throw Exception('Database error'));
         
         // Act
         final result = await importManager.saveImportedRecipe(testRecipe);

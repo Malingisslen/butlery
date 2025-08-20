@@ -1,0 +1,68 @@
+{
+  // VS Code settings to prevent crashes when running Flutter tests
+  
+  // Dart & Flutter settings
+  "dart.maxLogLineLength": 200,
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  
+  // Reduce memory usage by excluding test files from analysis
+  "dart.analysisExcludedFolders": [
+    "test/integration/**",
+    "test/unit/repositories/**",
+    "test/unit/services/**"
+  ],
+  
+  // File watcher settings to reduce memory usage
+  "files.watcherExclude": {
+    "**/test/integration/**": true,
+    "**/test/unit/repositories/**": true,
+    "**/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/coverage/**": true
+  },
+  
+  // Terminal settings to prevent buffer overflow
+  "terminal.integrated.scrollback": 1000,
+  "terminal.integrated.enablePersistentSessions": false,
+  
+  // Search exclusions to improve performance
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/build": true,
+    "**/.dart_tool": true,
+    "**/coverage": true,
+    "**/.pub-cache": true
+  },
+  
+  // Editor settings for performance
+  "editor.suggestSelection": "first",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  
+  // Disable auto-save during tests to prevent file watcher triggers
+  "files.autoSave": "off",
+  
+  // Flutter test settings
+  "dart.flutterTestAdditionalArgs": [
+    "--concurrency=1",
+    "--no-pub"
+  ],
+  
+  // Disable some extensions during testing
+  "dart.showTodos": false,
+  
+  // Memory management
+  "files.maxMemoryForLargeFilesMB": 2048,
+  
+  // Recommended extensions
+  "recommendations": [
+    "Dart-Code.dart-code",
+    "Dart-Code.flutter"
+  ]
+}

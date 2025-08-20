@@ -4,7 +4,7 @@ import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 
 // Test setup
 void main() {
@@ -569,6 +569,72 @@ void main() {
         
         // Should still return reasonable number
         expect(recommendations.length, lessThan(100));
+      });
+    });
+    
+    group('Swedish Language Support', () {
+      test('should generate recommendations with Swedish titles', () async {
+        // Arrange
+        final swedishRecommendation = Recommendation(
+          id: 'rec-swedish-1',
+          contentId: 'recipe-köttbullar',
+          contentType: 'recipe',
+          title: 'Köttbullar med gräddsås',
+          description: 'Äkta svenska köttbullar från Småland',
+          reason: 'Baserat på dina preferenser för svensk mat',
+          type: RecommendationType.seasonal,
+          score: 0.92,
+          metadata: {'cuisine': 'Svenska', 'region': 'Småland'},
+        );
+        
+        // Assert Swedish characters are handled correctly
+        expect(swedishRecommendation.title, contains('ö'));
+        expect(swedishRecommendation.title, contains('ä'));
+        expect(swedishRecommendation.description, contains('å'));
+        expect(swedishRecommendation.metadata?['region'], equals('Småland'));
+      });
+      
+      test('should handle Swedish characters in feedback', () async {
+        // Arrange
+        final recommendation = Recommendation(
+          id: 'swedish-rec',
+          contentId: 'recipe-123',
+          contentType: 'recipe',
+          title: 'Räksmörgås',
+          description: 'Öppet smörgås med räkor',
+          reason: 'Din favorit från förra året',
+          type: RecommendationType.basedOnFriends,
+          score: 0.88,
+        );
+        
+        // Convert to map and back to ensure serialization works
+        final map = recommendation.toMap();
+        final restored = Recommendation.fromMap(map);
+        
+        // Assert
+        expect(restored.title, equals('Räksmörgås'));
+        expect(restored.description, equals('Öppet smörgås med räkor'));
+        expect(restored.reason, equals('Din favorit från förra året'));
+      });
+    });
+    
+    group('Performance', () {
+      test('should generate recommendations efficiently for large requests', () async {
+        // Arrange
+        final stopwatch = Stopwatch()..start();
+        
+        // Act - Generate many recommendations
+        final recommendations = await service.generateRecommendations(
+          userId: 'performance-test-user',
+          limit: 50,
+          types: RecommendationType.values,
+        );
+        
+        stopwatch.stop();
+        
+        // Assert
+        expect(recommendations, isNotEmpty);
+        expect(stopwatch.elapsedMilliseconds, lessThan(1000)); // Should be fast
       });
     });
   });

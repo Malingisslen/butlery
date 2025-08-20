@@ -6,7 +6,7 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
@@ -209,7 +209,7 @@ void main() {
 
       test('should handle generation failure', () async {
         // Arrange
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any())).thenThrow(
+        when(() => mockMenuService.generateMenuFromPrompt(any(), any())).thenAnswer((_) async => throw 
           Exception('Generation failed'),
         );
         
@@ -263,7 +263,7 @@ void main() {
         ]);
         await viewModel.generateMenu('Test menu');
         
-        when(() => mockMenuService.generateMenuFromPrompt('1 Middag', any())).thenThrow(
+        when(() => mockMenuService.generateMenuFromPrompt('1 Middag', any())).thenAnswer((_) async => throw 
           Exception('Regeneration failed'),
         );
         
@@ -433,7 +433,7 @@ void main() {
 
       test('should handle import failure', () async {
         // Arrange
-        when(() => mockSocialMenuOps.importSharedMenu(any())).thenThrow(
+        when(() => mockSocialMenuOps.importSharedMenu(any())).thenAnswer((_) async => throw 
           Exception('Import failed'),
         );
         

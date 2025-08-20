@@ -316,8 +316,7 @@ class RealtimeParticipants {
   }) {
     final participants = <String, ResourcePermission>{};
     
-    // Add owner
-    participants[ownerId] = ResourcePermission.owner;
+    // Owner is NOT added to participants map - tracked separately via ownerId field
     
     // Add editors
     if (editorIds != null) {

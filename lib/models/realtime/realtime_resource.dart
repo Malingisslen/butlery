@@ -117,6 +117,9 @@ abstract class RealtimeResource {
 
   /// Kontrollera om en användare har en specifik behörighet
   bool hasPermission(String userId, ResourcePermission requiredPermission) {
+    // Owner always has full permission (even if not in participants map)
+    if (isOwner(userId)) return true;
+    
     final userPermission = participants[userId];
     if (userPermission == null) return false;
 
@@ -142,21 +145,29 @@ abstract class RealtimeResource {
 
   /// Kontrollera om användare kan redigera innehåll
   bool canUserEdit(String userId) {
+    // Owner can always edit their own resource
+    if (isOwner(userId)) return true;
     return hasPermission(userId, ResourcePermission.editor);
   }
 
   /// Kontrollera om användare kan ta bort resursen
   bool canUserDelete(String userId) {
+    // Owner can always delete their own resource
+    if (isOwner(userId)) return true;
     return participants[userId] == ResourcePermission.owner;
   }
 
   /// Kontrollera om användare kan hantera behörigheter
   bool canUserManagePermissions(String userId) {
+    // Owner can always manage permissions
+    if (isOwner(userId)) return true;
     return participants[userId] == ResourcePermission.owner;
   }
 
   /// Kontrollera om användare kan bjuda in andra
   bool canUserInvite(String userId) {
+    // Owner can always invite
+    if (isOwner(userId)) return true;
     final permission = participants[userId];
     return permission != null &&
         (permission == ResourcePermission.admin || permission == ResourcePermission.owner);

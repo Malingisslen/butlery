@@ -620,6 +620,14 @@ class SharedMenu {
   /// [data] Raw document data from Firestore with all menu fields
   ///
   /// Returns a new [SharedMenu] instance with all data properly parsed and validated.
+  /// Factory constructor to create SharedMenu from Firestore document.
+  ///
+  /// This is a convenience method that delegates to fromMap for compatibility
+  /// with services expecting a fromFirestore method.
+  factory SharedMenu.fromFirestore(Map<String, dynamic> data, String id) {
+    return SharedMenu.fromMap(id, data);
+  }
+  
   factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
       debugPrint('🔍 Parsing SharedMenu från doc ID: $id');

@@ -9,7 +9,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -1003,7 +1003,7 @@ void main() {
       test('should handle quota exceeded errors', () async {
         // Arrange
         when(() => mockMessagingRepo.getUnreadMessageCount('test-user-id'))
-            .thenThrow(Exception('Quota exceeded: Too many read operations'));
+            .thenAnswer((_) async => throw Exception('Quota exceeded: Too many read operations'));
 
         // Act & Assert
         await expectLater(
@@ -1018,7 +1018,7 @@ void main() {
         when(() => mockMessagingRepo.markConversationAsRead(
           conversationId: conversationId,
           userId: 'test-user-id',
-        )).thenThrow(Exception('Transaction timeout after 5 seconds'));
+        )).thenAnswer((_) async => throw Exception('Transaction timeout after 5 seconds'));
 
         // Act & Assert
         await expectLater(
@@ -1034,7 +1034,7 @@ void main() {
         const conversationId = 'non-existent-conv';
         const content = 'Message to nowhere';
         when(() => mockMessagingRepo.sendMessage(any()))
-            .thenThrow(ResourceNotFoundException(
+            .thenAnswer((_) async => throw ResourceNotFoundException(
               'Conversation not found',
               resourceType: 'conversation',
               resourceId: conversationId,
@@ -1070,7 +1070,7 @@ void main() {
         const conversationId = 'conv-long';
         final content = 'a' * 10001; // Exceeds typical message limit
         when(() => mockMessagingRepo.sendMessage(any()))
-            .thenThrow(ValidationException('Message exceeds 10000 character limit'));
+            .thenAnswer((_) async => throw ValidationException('Message exceeds 10000 character limit'));
 
         // Act & Assert
         await expectLater(
@@ -1087,7 +1087,7 @@ void main() {
         const conversationId = 'conv-attachment';
         const attachmentPath = '/path/to/file.jpg';
         when(() => mockMessagingRepo.sendMessage(any()))
-            .thenThrow(Exception('Failed to upload attachment: Storage quota exceeded'));
+            .thenAnswer((_) async => throw Exception('Failed to upload attachment: Storage quota exceeded'));
 
         // Act & Assert
         // Note: sendImageMessage doesn't exist - using sendTextMessage with error simulation
@@ -1105,7 +1105,7 @@ void main() {
         const conversationId = 'conv-timeout';
         const content = 'Timeout message';
         when(() => mockMessagingRepo.sendMessage(any()))
-            .thenThrow(TimeoutException('Request timed out after 30 seconds'));
+            .thenAnswer((_) async => throw TimeoutException('Request timed out after 30 seconds'));
 
         // Act & Assert
         await expectLater(
@@ -1122,7 +1122,7 @@ void main() {
         const conversationId = 'conv-metadata';
         const recipeId = ''; // Empty recipe ID
         when(() => mockMessagingRepo.sendMessage(any()))
-            .thenThrow(ValidationException('Invalid recipe ID'));
+            .thenAnswer((_) async => throw ValidationException('Invalid recipe ID'));
 
         // Act & Assert
         await expectLater(
@@ -1146,7 +1146,7 @@ void main() {
           participantAvatarUrls: any(named: 'participantAvatarUrls'),
           title: any(named: 'title'),
           creatorId: any(named: 'creatorId'),
-        )).thenThrow(ValidationException('At least 2 participants required'));
+        )).thenAnswer((_) async => throw ValidationException('At least 2 participants required'));
 
         // Act & Assert
         await expectLater(
@@ -1169,7 +1169,7 @@ void main() {
         when(() => mockMessagingRepo.updateConversation(
           conversationId: conversationId,
           title: newTitle,
-        )).thenThrow(ResourceNotFoundException(
+        )).thenAnswer((_) async => throw ResourceNotFoundException(
           'Conversation not found',
           resourceType: 'conversation',
           resourceId: conversationId,
@@ -1192,7 +1192,7 @@ void main() {
         when(() => mockMessagingRepo.removeParticipant(
           conversationId: conversationId,
           participantId: userId,
-        )).thenThrow(PermissionDeniedException('Cannot leave: You are the only admin'));
+        )).thenAnswer((_) async => throw PermissionDeniedException('Cannot leave: You are the only admin'));
 
         // Act & Assert
         await expectLater(
@@ -1213,7 +1213,7 @@ void main() {
           participantIds: participantIds,
           participantDisplayNames: any(named: 'participantDisplayNames'),
           participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenThrow(ValidationException('Duplicate participant IDs'));
+        )).thenAnswer((_) async => throw ValidationException('Duplicate participant IDs'));
 
         // Act & Assert
         await expectLater(
@@ -1236,7 +1236,7 @@ void main() {
           participantAvatarUrls: any(named: 'participantAvatarUrls'),
           title: any(named: 'title'),
           creatorId: any(named: 'creatorId'),
-        )).thenThrow(ValidationException('Maximum 100 participants allowed'));
+        )).thenAnswer((_) async => throw ValidationException('Maximum 100 participants allowed'));
 
         // Act & Assert
         await expectLater(
@@ -1377,7 +1377,7 @@ void main() {
         when(() => mockMessagingRepo.markConversationAsRead(
           conversationId: conversationId,
           userId: 'test-user-id',
-        )).thenThrow(ResourceNotFoundException(
+        )).thenAnswer((_) async => throw ResourceNotFoundException(
           'Conversation not found',
           resourceType: 'conversation',
           resourceId: conversationId,

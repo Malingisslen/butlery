@@ -7,7 +7,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -165,8 +165,11 @@ void main() {
         currentUserId: 'current-user',
         defaultHasPermission: true,
       );
-      when(() => mockPermissionService.isAuthenticated).thenReturn(true);
-      when(() => mockRecipeService.personal).thenReturn(mockPersonalOps);
+      // Note: isAuthenticated is properly configured via setPermissionState above
+      // Configure personal operations on the recipe service
+      mockRecipeService.setRecipeState(
+        personalOperations: mockPersonalOps,
+      );
       
       // Setup repository stubs
       when(() => mockRepository.getSharedRecipes(any()))
@@ -208,7 +211,10 @@ void main() {
       
       test('should skip loading when not authenticated', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: null,  // Setting to null makes isAuthenticated return false
+          defaultHasPermission: true,
+        );
         
         // Act
         await socialRecipeService.initialize();
@@ -223,7 +229,7 @@ void main() {
       test('should handle repository errors gracefully', () async {
         // Arrange
         when(() => mockRepository.getSharedRecipes(any()))
-            .thenThrow(Exception('Repository error'));
+            .thenAnswer((_) async => throw Exception('Repository error'));
         
         // Act
         await socialRecipeService.initialize();
@@ -350,7 +356,7 @@ void main() {
         // Arrange
         await socialRecipeService.initialize();
         when(() => mockRepository.markSharedRecipeAsViewed(any(), any()))
-            .thenThrow(Exception('View tracking error'));
+            .thenAnswer((_) async => throw Exception('View tracking error'));
         
         // Act
         final result = await socialRecipeService.markSharedRecipeAsViewed(
@@ -440,7 +446,7 @@ void main() {
           timeMinutes: any(named: 'timeMinutes'),
           tags: any(named: 'tags'),
           rating: any(named: 'rating'),
-        )).thenThrow(Exception('Import error'));
+        )).thenAnswer((_) async => throw Exception('Import error'));
         
         // Act
         final result = await socialRecipeService.importSharedRecipe('shared-recipe-1');
@@ -563,7 +569,10 @@ void main() {
       
       test('should handle dismissal when not authenticated', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: null,  // Setting to null makes isAuthenticated return false
+          defaultHasPermission: true,
+        );
         
         // Act
         final result = await socialRecipeService.dismissSharedRecipe('shared-recipe-1');
@@ -603,7 +612,10 @@ void main() {
       
       test('should throw when sharing without authentication', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: null,  // Setting to null makes isAuthenticated return false
+          defaultHasPermission: true,
+        );
         
         // Act & Assert
         await expectLater(

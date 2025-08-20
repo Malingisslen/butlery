@@ -3,6 +3,8 @@
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
@@ -17,8 +19,8 @@ import 'package:butlery/services/unified/operations/realtime_recipe/shared/realt
 /// 
 /// ❌ DOES NOT CONTAIN: Watching, editing, presence, notifications
 class CollaborationManagementModule {
-  final dynamic _parent; // UnifiedRecipeService
-  final dynamic _realtimeSyncService; // RealtimeSyncService?
+  final UnifiedRecipeService _parent;
+  final RealtimeSyncService? _realtimeSyncService;
 
   CollaborationManagementModule(this._parent, [this._realtimeSyncService]);
 
@@ -52,7 +54,6 @@ class CollaborationManagementModule {
       final collaborativeRecipeId = await _parent.createCollaborativeRecipe(
         title: recipe.title,
         memberIds: memberIds,
-        memberDisplayNames: {}, // Would be populated from user service
         description: recipe.description,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,

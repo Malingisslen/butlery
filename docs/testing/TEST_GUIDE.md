@@ -203,6 +203,7 @@ Use the appropriate template from `/test/templates/`:
 2. **simple_unit_test_template.dart.template** - For simple service tests
 3. **viewmodel_test_template.dart.template** - For ViewModel tests
 4. **model_test_template.dart.template** - For model/entity tests
+5. **error_test_template.dart.template** - For comprehensive error testing
 
 Copy the template and replace placeholders with your specific test needs.
 
@@ -228,60 +229,128 @@ test/
 │   ├── di/            # Test service locator
 │   ├── factories/     # Mock and data factories
 │   └── mocks/         # Mock implementations
-│       ├── production_mocks.dart  # 26 centralized mocks
+│       ├── production_mocks.dart  # 46 centralized mocks
 │       └── fallback_values.dart   # Centralized fallback registrations
 ├── templates/         # Test templates (.dart.template files)
 │   ├── di_heavy_test_template.dart.template
 │   ├── simple_unit_test_template.dart.template
 │   ├── viewmodel_test_template.dart.template
-│   └── model_test_template.dart.template
+│   ├── model_test_template.dart.template
+│   └── error_test_template.dart.template
 ├── unit/              # Unit tests (target: 60%)
 ├── widget/            # Widget tests (target: 30%)
 ├── integration/       # Integration tests (target: 10%)
 └── fixtures/          # Test data files
 ```
 
-## Current Status (December 2024 - Phase 3: Firebase Testing Strategy)
-- **1524+ unit tests** passing ✅ (improved from 1289)
-- **157 Firebase-related tests** being refactored 🔄
-- **0 stubbing violations** (fixed all 46) ✅
-- **26 centralized mocks** in production_mocks.dart ✅
+## Current Status (January 2025 - Verified Test Metrics)
+- **Unit tests**: 2081 passing, 137 failing, 3 skipped (77 test files)
+- **Integration tests**: 1 passing, 55 failing (10 test files, Firebase connection issues)
+- **Widget tests**: 0 tests (empty directories exist)
+- **46 centralized mocks** in production_mocks.dart ✅
 - **Centralized fallback values** in fallback_values.dart ✅
 - **All tearDown patterns standardized** (resetMocks + reset) ✅
-- **4 test templates** created for different test types ✅
+- **5 test templates** created for different test types ✅
 - **Configuration pattern** fully implemented ✅
 - **0 duplicate mocks** (all centralized) ✅
-- **Repository tests**: 24/24 (100% coverage) ✅ COMPLETE!
+- **Repository tests**: 43/47 (91.5% coverage) ⚠️
 - **Service tests**: 36/129 (27.9% coverage) 🔴 Critical gap
 - **ViewModel tests**: 5/54 (9.3% coverage) 🔴 Urgent attention needed
-- **0 widget tests** (to be added)
-- **Integration tests**: Firebase emulator tests added 🆕
+- **Total test count**: 2,218 tests (2,082 pass, 192 fail, 3 skip)
 
 ## Firebase Testing Strategy 🔥
 
 ### Problem
-Firebase FieldValue operations (`serverTimestamp()`, `arrayUnion()`, `increment()`) are server-side constructs that cannot be properly mocked with FakeFirebaseFirestore, causing 157 test failures.
+Firebase FieldValue operations (`serverTimestamp()`, `arrayUnion()`, `increment()`) are server-side constructs that cannot be properly mocked with FakeFirebaseFirestore, causing 157+ test failures.
 
 ### Solution: Hybrid Testing Approach
 
 #### 1. Unit Tests (80%) - Mock at Repository Level
 ```dart
-// Don't test Firebase operations, test business logic
-when(() => mockRepository.markAsViewed(any()))
-    .thenAnswer((_) async {});
+// ✅ CORRECT - Mock at repository level for business logic
+class MockAccountDeletionRepository extends Mock {
+  Future<bool> deleteUserRecipes(String userId) async => true;
+  Future<String> createAuditLog(...) async => 'audit_123';
+}
+
+// Test business logic without Firebase
+test('should coordinate deletion across services', () async {
+  when(() => mockRepo.deleteUserRecipes('user123'))
+      .thenAnswer((_) async => true);
+  
+  final result = await service.deleteAccount('user123');
+  expect(result.success, isTrue);
+});
+
+// ❌ WRONG - Don't try to mock FieldValue
+when(() => FieldValue.serverTimestamp()).thenReturn(???); // Impossible!
 ```
 
 #### 2. Integration Tests (15%) - Firebase Emulator
 ```dart
 // Test actual Firebase operations with emulator
-@Tags(['integration'])
-test('FieldValue.serverTimestamp works', () async {
-  // Tests against real Firebase emulator
-});
+@Tags(['integration', 'firebase'])
+void main() {
+  setUpAll(() async {
+    await FirebaseTestHelper.connectToEmulators();
+  });
+  
+  setUp(() async {
+    await FirebaseTestHelper.clearFirestoreData();
+  });
+  
+  test('should handle FieldValue.serverTimestamp', () async {
+    final firestore = FirebaseFirestore.instance;
+    
+    // Create document with server timestamp
+    await firestore.collection('audit_logs').add({
+      'timestamp': FieldValue.serverTimestamp(),
+      'action': 'test',
+    });
+    
+    // Verify timestamp was set by server
+    final doc = await firestore.collection('audit_logs')
+        .where('action', isEqualTo: 'test')
+        .get();
+    
+    expect(doc.docs.first.data()['timestamp'], isA<Timestamp>());
+  });
+}
 ```
 
-#### 3. E2E Tests (5%) - Staging Environment
-For critical user journeys only.
+#### 3. E2E Tests (5%) - Critical User Journeys
+For authentication flows, data sync, and critical features only.
+
+### Decision Matrix: Unit vs Integration
+
+| Scenario | Test Type | Reason |
+|----------|-----------|---------|
+| Business logic | Unit | Fast, isolated, no Firebase needed |
+| Data transformations | Unit | Pure functions, deterministic |
+| Service coordination | Unit | Mock at repository boundary |
+| FieldValue operations | Integration | Server-side constructs |
+| Complex Firestore queries | Integration | Dynamic field paths like `memberPermissions.$uid` |
+| Batch operations | Integration | Transaction atomicity |
+| Security rules | Integration | Server-side validation |
+| Real-time listeners | Integration | Stream behavior |
+
+### Firebase Test Helper (`test/infrastructure/firebase/firebase_test_helper.dart`)
+```dart
+class FirebaseTestHelper {
+  static const _emulatorHost = 'localhost';
+  static const _firestorePort = 8080;
+  static const _authPort = 9099;
+  
+  static Future<void> connectToEmulators() async {
+    FirebaseFirestore.instance.useFirestoreEmulator(_emulatorHost, _firestorePort);
+    await FirebaseAuth.instance.useAuthEmulator(_emulatorHost, _authPort);
+  }
+  
+  static Future<void> clearFirestoreData() async {
+    // Clear all collections for clean test state
+  }
+}
+```
 
 ### Test Structure
 ```
@@ -289,30 +358,69 @@ test/
 ├── unit/           # Mock repositories (fast, no Firebase)
 ├── integration/    # Firebase emulator (real FieldValue ops)
 │   └── firebase/
-│       ├── field_values/
-│       ├── repositories/
-│       └── setup/
-└── widget/         # UI component tests
+│       ├── firebase_test_helper.dart
+│       ├── firebase_testing_patterns.dart
+│       └── account_deletion_integration_test.dart
+└── test_support/   # Base test classes
 ```
 
 ### Running Tests
 ```bash
-# Unit tests (fast, no Firebase)
+# Unit tests only (fast, no Firebase)
 cmd.exe /c "flutter test --exclude-tags integration"
 
-# Integration tests (with emulator)
-firebase emulators:exec --only firestore,auth "flutter test --tags integration"
+# Integration tests (requires emulator)
+# First start emulator: firebase emulators:start
+cmd.exe /c "flutter test --tags integration"
+
+# All tests
+cmd.exe /c "flutter test"
+```
+
+### Common Pitfalls & Solutions
+
+**Pitfall 1: Stubbing FieldValue operations**
+```dart
+// ❌ WRONG - Can't mock server-side constructs
+when(() => mockFirestore.serverTimestamp()).thenReturn(...);
+
+// ✅ CORRECT - Mock at repository level
+when(() => mockRepo.updateTimestamp()).thenAnswer((_) async => DateTime.now());
+```
+
+**Pitfall 2: Using FakeFirebaseFirestore for complex queries**
+```dart
+// ❌ WRONG - Dynamic field paths fail
+await fakeFirestore.collection('lists')
+    .where('memberPermissions.$uid', isEqualTo: 'admin')
+    .get(); // Fails!
+
+// ✅ CORRECT - Use integration test with emulator
+await FirebaseTestHelper.connectToEmulators();
+// Now the query works correctly
+```
+
+**Pitfall 3: Not cleaning up between tests**
+```dart
+// ✅ CORRECT - Always clear data in setUp
+setUp(() async {
+  await FirebaseTestHelper.clearFirestoreData();
+});
 ```
 
 ## Completed Work ✅
 
-### Phase 3: Firebase Testing Strategy (Current)
-1. ✅ Analyzed Firebase testing issue with deep thinking
+### Phase 3: Firebase Testing Strategy (Completed)
+1. ✅ Analyzed Firebase testing issue with deep thinking (Gemini analysis)
 2. ✅ Created hybrid testing strategy documentation
 3. ✅ Added integration test structure
-4. ✅ Created Firebase emulator setup helper
+4. ✅ Created Firebase emulator setup helper (firebase_test_helper.dart)
 5. ✅ Added FieldValue operations integration tests
-6. ✅ Started converting repository tests to use mocks
+6. ✅ Fixed NotificationAnalyticsManager tests (0% to 90% coverage)
+7. ✅ Fixed AccountDeletionService tests with proper batch operation testing
+8. ✅ Fixed ActivityService tests (26 tests all passing)
+9. ✅ Created firebase_testing_patterns.dart with comprehensive examples
+10. ✅ Updated firebase.json with emulator configuration
 
 ### Phase 1: Infrastructure Cleanup
 1. ✅ Removed TestContext from all base test helpers
@@ -321,10 +429,10 @@ firebase emulators:exec --only firestore,auth "flutter test --tags integration"
 
 ### Phase 2: Mock & Pattern Standardization
 1. ✅ Fixed 56 analyzer errors from sealed class mocking
-2. ✅ Centralized 26 commonly used mocks in production_mocks.dart
+2. ✅ Centralized 46 commonly used mocks in production_mocks.dart
 3. ✅ Created centralized fallback value registration (44 files simplified)
 4. ✅ Standardized tearDown pattern in 100+ test files
-5. ✅ Created 4 test templates for consistent patterns
+5. ✅ Created 5 test templates for consistent patterns
 6. ✅ Fixed all tearDownAll misuse (changed to tearDown)
 7. ✅ Added BaseUnitTest.resetMocks() to 27 files
 8. ✅ Added TestServiceLocator.reset() to 25 files
@@ -344,10 +452,10 @@ firebase emulators:exec --only firestore,auth "flutter test --tags integration"
     - group_invitation_repository_test.dart (31 tests)
     - base_hive_repository_test.dart (21 tests)
     - recipe_hive_repository_test.dart (31 tests)
-12. ✅ Achieved 100% repository layer coverage (24/24 repositories tested)
+12. ✅ Achieved 91.5% repository layer coverage (43/47 repositories tested)
 
 ## Next Priority (Following True Dependency Order)
-1. ✅ **COMPLETE: Repository Layer** - All 24 repositories tested (100% coverage)
+1. ⚠️ **Repository Layer** - 43/47 repositories tested (91.5% coverage, 4 missing)
 2. **🔴 URGENT: Service Layer** - Only 36/129 tested (93 missing!)
    - Focus on critical services first (auth, data management, sync)
 3. **🔴 CRITICAL: ViewModel Layer** - Only 5/54 tested (49 missing!)

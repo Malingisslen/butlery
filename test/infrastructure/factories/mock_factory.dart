@@ -293,8 +293,18 @@ class MockFactory {
   }
   
   /// Create mock permission service
-  static PermissionService createPermissionService() {
-    return MockPermissionService();
+  static PermissionService createPermissionService({
+    String? currentUserId = 'test-user-123',
+    String? userDisplayName = 'Test User',
+    bool defaultHasPermission = true,
+  }) {
+    final mock = MockPermissionService();
+    mock.setPermissionState(
+      currentUserId: currentUserId,
+      userDisplayName: userDisplayName,
+      defaultHasPermission: defaultHasPermission,
+    );
+    return mock;
   }
   
   /// Create mock unified recipe service with configuration

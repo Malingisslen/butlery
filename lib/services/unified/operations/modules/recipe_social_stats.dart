@@ -6,6 +6,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_rating_system.dart';
@@ -23,7 +24,7 @@ import 'package:butlery/services/unified/operations/modules/rating_notifications
 ///
 /// ❌ DOES NOT CONTAIN: Complex implementation details, direct Firebase operations
 class RecipeSocialStats {
-  final dynamic _parent; // UnifiedRecipeService
+  final UnifiedRecipeService _parent;
   final FirestoreRepository _firestoreRepository;
   final NotificationService? _notificationService;
   

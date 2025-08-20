@@ -349,11 +349,8 @@ class RealtimeRecipe extends RealtimeResource {
     return RealtimeParticipants.canView(participants, userId);
   }
 
-  /// Kontrollera om användare är ägare
-  @override
-  bool isOwner(String userId) {
-    return RealtimeParticipants.isOwner(participants, userId);
-  }
+  // isOwner is correctly implemented in the base class RealtimeResource
+  // It checks the ownerId field, not the participants map
 
   // ===== SERIALIZATION (DELEGATE TO RECIPE_SERIALIZATION) =====
 
@@ -504,7 +501,7 @@ class RealtimeRecipe extends RealtimeResource {
     return Recipe(
       core: RecipeCore(
         id: '', // Nytt ID genereras automatiskt  
-        title: recipe.title,
+        title: 'Kopia av ${recipe.title}',
         description: recipe.description,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,

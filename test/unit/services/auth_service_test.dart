@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/auth_service.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -118,7 +118,7 @@ void main() {
         when(() => mockAuthRepository.createUser(
           any(),
           any(),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'email-already-in-use',
           message: 'Email already exists',
         ));
@@ -167,7 +167,7 @@ void main() {
       test('should handle password reset errors', () async {
         // Arrange
         when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'user-not-found',
           message: 'User not found',
         ));
@@ -195,7 +195,7 @@ void main() {
           when(() => mockAuthRepository.signIn(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(FirebaseAuthException(code: code));
+          )).thenAnswer((_) async => throw FirebaseAuthException(code: code));
           
           await authService.signInWithEmail(
             email: 'test@example.com',
@@ -290,7 +290,7 @@ void main() {
         await Future.delayed(Duration(milliseconds: 10));
         
         when(() => mockAuthRepository.deleteCurrentUser())
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'requires-recent-login',
           message: 'Recent login required',
         ));
@@ -311,7 +311,7 @@ void main() {
         when(() => mockAuthRepository.signIn(
           email: any(named: 'email'),
           password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(code: 'invalid-email'));
+        )).thenAnswer((_) async => throw FirebaseAuthException(code: 'invalid-email'));
         
         await authService.signInWithEmail(
           email: 'bad-email',
@@ -361,7 +361,7 @@ void main() {
       test('should handle no internet connection during sign up', () async {
         // Arrange
         when(() => mockAuthRepository.createUser(any(), any()))
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'network-request-failed',
           message: 'No internet connection',
         ));
@@ -381,7 +381,7 @@ void main() {
       test('should handle network errors during password reset', () async {
         // Arrange
         when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'network-request-failed',
           message: 'Network unavailable',
         ));
@@ -401,7 +401,7 @@ void main() {
         when(() => mockAuthRepository.signIn(
           email: any(named: 'email'),
           password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'user-not-found',
           message: 'No user found',
         ));
@@ -422,7 +422,7 @@ void main() {
         when(() => mockAuthRepository.signIn(
           email: any(named: 'email'),
           password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'wrong-password',
           message: 'Incorrect password',
         ));
@@ -441,7 +441,7 @@ void main() {
       test('should handle email-already-in-use error', () async {
         // Arrange
         when(() => mockAuthRepository.createUser(any(), any()))
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'email-already-in-use',
           message: 'Email already registered',
         ));
@@ -462,7 +462,7 @@ void main() {
       test('should handle weak-password error', () async {
         // Arrange
         when(() => mockAuthRepository.createUser(any(), any()))
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'weak-password',
           message: 'Password too weak',
         ));
@@ -485,7 +485,7 @@ void main() {
         when(() => mockAuthRepository.signIn(
           email: any(named: 'email'),
           password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'invalid-email',
           message: 'Invalid email format',
         ));
@@ -506,7 +506,7 @@ void main() {
         when(() => mockAuthRepository.signIn(
           email: any(named: 'email'),
           password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(
+        )).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'too-many-requests',
           message: 'Too many failed attempts',
         ));
@@ -526,7 +526,7 @@ void main() {
       test('should handle operation-not-allowed error', () async {
         // Arrange
         when(() => mockAuthRepository.createUser(any(), any()))
-            .thenThrow(FirebaseAuthException(
+            .thenAnswer((_) async => throw FirebaseAuthException(
           code: 'operation-not-allowed',
           message: 'Email/password accounts are not enabled',
         ));

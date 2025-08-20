@@ -11,7 +11,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 
-import '../../../../infrastructure/helpers/_base_unit_test.dart';
+import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
@@ -415,7 +415,7 @@ void main() {
       test('should handle repository fetch errors', () async {
         // Arrange
         when(() => mockRepository.fetchUserRecipes(any()))
-            .thenThrow(Exception('Fetch error'));
+            .thenAnswer((_) async => throw Exception('Fetch error'));
         
         // Act
         final recipes = await module.getPersonalRecipesList();

@@ -64,9 +64,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       
       final categoryId = await friendsService.categories.createCategory(
         name: _nameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty 
-          ? null 
-          : _descriptionController.text.trim(),
+        description: _descriptionController.text.trim(),
         icon: _selectedEmoji,
         initialMemberIds: _selectedFriendIds.toList(),
       );

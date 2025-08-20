@@ -7,6 +7,13 @@ cmd.exe /c "flutter COMMAND"
 **Examples:**
 - Analysis: `cmd.exe /c "flutter analyze"`
 - Run: `cmd.exe /c "flutter run"`
+- **Tests**: `cmd.exe /c "flutter test test/unit/file_test.dart"` (ALWAYS use forward slashes!)
+
+**PATH RULES - CRITICAL TO PREVENT CRASHES:**
+- **NEVER** use backslashes in test paths: `test\unit\file_test.dart` ❌
+- **ALWAYS** use forward slashes: `test/unit/file_test.dart` ✅
+- **PREFERRED**: Use `./run_tests_safely.sh` script for batch testing
+- Flutter in WSL cannot handle Windows-style paths with backslashes
 
 **Why:** WSL line ending issues, project in Windows filesystem `/mnt/c/Butlery/butlery`
 
@@ -16,14 +23,17 @@ cmd.exe /c "flutter COMMAND"
 - **Dependency Injection**: Modular DI system with domain-driven modules (see below)
 - **Notifications**: Complete FCM system with development logging approach
 - **Social Features**: 90% infrastructure implemented (social views and services exist, need verification)
-- **Test Infrastructure**: ✅ 100% complete - 205 comprehensive mocks in 22 files
+- **Test Infrastructure**: ✅ Strong foundation - 46 comprehensive mocks in production_mocks.dart
   - All services, repositories, ViewModels, managers, and handlers mocked
   - Use configuration methods (`setAuthState`, `setRecipeState`) for concrete mocks
   - Only stub abstract methods with `when()`, not concrete getters
   - Access mocks via `TestServiceLocator.mockAuthService`, etc.
-  - **Repository Tests**: ✅ 100% complete (24/24 repositories tested with 1289+ tests)
-  - **Service Tests**: 🔴 27.9% coverage (36/129 tested) - Critical gap
-  - **ViewModel Tests**: 🔴 9.3% coverage (5/54 tested) - Urgent attention needed
+  - **Test Status** (January 2025 - Latest Audit):
+    - Total: 2,218 tests (2,082 pass, 192 fail, 3 skip)
+    - Repository Tests: 100% coverage (25/25 repositories tested including mixin pattern)
+    - Service Tests: 31.0% coverage (40/129 tested) - Critical gap
+    - ViewModel Tests: 9.6% coverage (5/52 tested) - Urgent attention needed
+    - 87 test files total (77 unit, 10 integration, 0 widget)
 - **Code Quality**: Single Responsibility Principle enforced
 - **Security**: Comprehensive permission validation system implemented:
   - PermissionValidationMixin for all Firebase repositories
@@ -110,8 +120,9 @@ final user = UserBuilder().asSwedishUser().build();
 ### Current Test Status
 - **✅ All stubbing violations fixed** - Configuration methods implemented
 - **✅ All tests standardized** - Using BaseUnitTest.setupUnit()
-- **✅ 24 centralized mocks** - In production_mocks.dart
-- **📋 Next**: Add widget/integration tests, centralize remaining duplicate mocks
+- **✅ 46 centralized mocks** - In production_mocks.dart
+- **✅ 5 test templates** - Updated to match architecture
+- **📋 Next**: Fix integration test Firebase connections, add widget tests
 
 ## Workflow Instructions
 

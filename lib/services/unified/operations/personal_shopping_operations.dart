@@ -1,6 +1,7 @@
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 
 /// Comprehensive personal shopping operations interface providing individual shopping list management and advanced features.
 ///
@@ -60,7 +61,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// final textExport = personalOps.exportListAsText(listId);
 /// ```
 class PersonalShoppingOperations {
-  final dynamic _parent; // UnifiedShoppingService
+  final UnifiedShoppingService _parent;
 
   PersonalShoppingOperations(this._parent);
 
@@ -240,7 +241,7 @@ class PersonalShoppingOperations {
         list.items.map((i) => i.id == itemId ? updatedItem : i).toList();
     final updatedList = list.copyWith(items: newItems);
 
-    return await _parent._updateList(updatedList);
+    return await _parent.updateList(updatedList);
   }
 
   /// Toggle item bought status
@@ -517,7 +518,7 @@ class PersonalShoppingOperations {
       }
 
       final updatedList = list.copyWith(items: newItems);
-      await _parent._updateList(updatedList);
+      await _parent.updateList(updatedList);
 
       AppLogger.success('Imported ${itemsToAdd.length} items to ${list.name}');
       return true;

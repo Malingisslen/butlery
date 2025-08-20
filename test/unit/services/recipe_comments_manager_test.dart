@@ -3,11 +3,16 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/unified/operations/modules/recipe_comments_manager.dart';
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart' show TestServiceLocator, ServiceLocator;
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -15,10 +20,43 @@ import '../../infrastructure/mocks/production_mocks.dart';
 // ============= LOCAL MOCKS =============
 // Only for test-specific mocks not in production_mocks.dart
 
-class MockParentService extends Mock {
+class MockParentService extends Mock implements UnifiedRecipeService {
+  @override
   String? currentUserId = 'test-user-id';
+  @override
   String? currentUserDisplayName = 'Test User';
+  @override
   List<Recipe> recipes = [];
+  
+  @override
+  PersonalRecipeOperations get personal => throw UnimplementedError();
+  
+  @override
+  SocialRecipeOperations get social => throw UnimplementedError();
+  
+  @override
+  RealtimeRecipeOperations get realtime => throw UnimplementedError();
+  
+  @override
+  RecipeDiscoveryService get discovery => throw UnimplementedError();
+  
+  @override
+  Future<void> initialize() async {}
+  
+  @override
+  void dispose() {}
+  
+  @override
+  bool get isInitialized => true;
+  
+  @override
+  bool get isLoading => false;
+  
+  @override
+  String? get error => null;
+  
+  @override
+  bool get hasError => false;
 }
 
 class MockCommentCrudOperations extends Mock implements CommentCrudOperations {}

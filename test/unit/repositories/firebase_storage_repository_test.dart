@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -396,7 +396,7 @@ void main() {
         final mockDeleteRef = MockReference();
         
         when(() => mockStorage.refFromURL(imageUrl)).thenReturn(mockDeleteRef);
-        when(() => mockDeleteRef.delete()).thenThrow(
+        when(() => mockDeleteRef.delete()).thenAnswer((_) async => throw 
           Exception('Delete failed'),
         );
         

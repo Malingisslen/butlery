@@ -9,7 +9,7 @@ import 'package:butlery/models/social/content_reaction.dart';
 import 'package:butlery/models/social/reaction_type.dart';
 import 'package:butlery/models/social/reaction_statistics.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';

@@ -48,8 +48,8 @@ class GroupDetailActions {
       try {
         final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
         final success = await categoriesService.categories.removeFriendFromCategory(
-          friendId: member.uid,
-          categoryId: group.id,
+          member.uid,
+          group.id,
         );
 
         if (success && context.mounted) {
@@ -234,8 +234,8 @@ class GroupDetailActions {
 
         if (currentUserId != null) {
           final success = await categoriesService.categories.removeFriendFromCategory(
-            friendId: currentUserId,
-            categoryId: group.id,
+            currentUserId,
+            group.id,
           );
 
           if (success && context.mounted) {

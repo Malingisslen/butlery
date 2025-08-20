@@ -4,7 +4,7 @@
 /// with proper AAA pattern, Swedish defaults, and comprehensive coverage.
 
 import 'package:flutter_test/flutter_test.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/test_data_builders.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 

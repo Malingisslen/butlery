@@ -29,6 +29,8 @@ import 'package:butlery/services/unified/operations/realtime_recipe/collaboratio
 import 'package:butlery/services/unified/operations/realtime_recipe/presence_tracking_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 
 /// Comprehensive realtime recipe operations providing advanced collaborative editing and real-time synchronization systems.
 ///
@@ -96,8 +98,8 @@ export 'realtime_recipe/realtime_watching_module.dart' show ConnectionStatus;
 class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   @override
   String get serviceName => 'RealtimeRecipeOperations';
-  final dynamic _parent; // UnifiedRecipeService
-  final dynamic _realtimeSyncService; // RealtimeSyncService?
+  final UnifiedRecipeService _parent;
+  final RealtimeSyncService? _realtimeSyncService;
 
   // Focused single-responsibility modules
   late final RealtimeWatchingModule _watchingModule;

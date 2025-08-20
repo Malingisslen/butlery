@@ -1,6 +1,7 @@
 // lib/services/notifications/modules/notification_batch_manager.dart
 
 import 'dart:async';
+import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -60,6 +61,7 @@ import 'package:butlery/core/utils/logger.dart';
 class NotificationBatchManager {
   final String _userId;
   final NotificationRepository _repository;
+  final Clock _clock;
   
   // Batch timers for different notification types
   final Map<String, Timer> _batchTimers = {};
@@ -77,9 +79,11 @@ class NotificationBatchManager {
     required String userId,
     required NotificationRepository repository,
     Future<void> Function(NotificationBatch)? sendBatchCallback,
+    Clock? clock,
   }) : _userId = userId, 
        _repository = repository,
-       _sendBatchCallback = sendBatchCallback;
+       _sendBatchCallback = sendBatchCallback,
+       _clock = clock ?? const Clock();
 
   // ===== BATCH CREATION AND MANAGEMENT =====
 
@@ -174,7 +178,7 @@ class NotificationBatchManager {
   /// Check if user has exceeded rate limit for category
   bool _isRateLimited(String userId, NotificationCategory category) {
     final key = '${userId}_${category.name}';
-    final now = DateTime.now();
+    final now = _clock.now();
     const window = Duration(minutes: 15); // 15-minute window
     
     // Get recent notifications for this user/category
@@ -222,7 +226,7 @@ class NotificationBatchManager {
   /// Track notification for rate limiting
   void _trackNotificationForRateLimit(String userId, NotificationCategory category) {
     final key = '${userId}_${category.name}';
-    final now = DateTime.now();
+    final now = _clock.now();
     
     _rateLimitingTracker.putIfAbsent(key, () => []).add(now);
     
@@ -439,7 +443,7 @@ class NotificationBatchManager {
 
   /// Generate batch key for grouping notifications
   String _generateBatchKey(String targetUserId, NotificationStrategy strategy) {
-    final now = DateTime.now();
+    final now = _clock.now();
     final batchWindow = strategy.batchWindow ?? const Duration(minutes: 5);
     
     // Create time-based grouping (e.g., 5-minute windows)
@@ -452,7 +456,7 @@ class NotificationBatchManager {
     );
     
     final windowKey = '${windowStart.millisecondsSinceEpoch ~/ 1000}';
-    return '${strategy.category.name}_${targetUserId}_$windowKey';
+    return '${strategy.category.name}_${strategy.type.name}_${targetUserId}_$windowKey';
   }
 
   /// Clean up batch timer
@@ -470,10 +474,10 @@ class NotificationBatchManager {
   }
 
   /// Clean up old rate limiting data
-  void cleanupRateLimitData() {
+  void cleanupRateLimitData([Duration? cleanupWindow]) {
     try {
-      final now = DateTime.now();
-      const window = Duration(minutes: 15);
+      final now = _clock.now();
+      final window = cleanupWindow ?? const Duration(minutes: 15);
       int removedEntries = 0;
 
       _rateLimitingTracker.forEach((key, timestamps) {

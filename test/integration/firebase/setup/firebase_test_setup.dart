@@ -3,6 +3,7 @@
 /// Configures Firebase to use local emulator for testing.
 library;
 
+import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,6 +14,9 @@ class FirebaseTestSetup {
   /// Initialize Firebase with emulator configuration
   static Future<void> initialize() async {
     if (_initialized) return;
+    
+    // Ensure Flutter bindings are initialized for Firebase
+    TestWidgetsFlutterBinding.ensureInitialized();
     
     // Initialize Firebase app
     await Firebase.initializeApp(

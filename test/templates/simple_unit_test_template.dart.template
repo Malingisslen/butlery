@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_support/base_unit_test.dart';
 
 // Import your test subject
 // import 'package:butlery/utils/your_utility.dart';
@@ -18,7 +19,10 @@ void main() {
     // Declare any simple test fixtures
     late YourClass testSubject;
     
-    setUp(() {
+    setUp(() async {
+      // Initialize base test infrastructure
+      await BaseUnitTest.setupUnit();
+      
       // Create simple test subject
       testSubject = YourClass();
       
@@ -26,8 +30,8 @@ void main() {
     });
     
     tearDown(() {
-      // Clean up if needed (often not necessary for simple tests)
-      // Only add if you have resources to clean up
+      // Reset mocks even for simple tests (for consistency)
+      BaseUnitTest.resetMocks();
     });
     
     group('Feature Group', () {
@@ -53,12 +57,30 @@ void main() {
           throwsArgumentError,
         );
       });
+      
+      test('should handle null values', () {
+        // Arrange
+        const input = null;
+        
+        // Act
+        final result = testSubject.processNullable(input);
+        
+        // Assert
+        expect(result, isNull);
+      });
     });
     
     group('Another Feature', () {
       test('should format correctly', () {
-        // Test implementation
-        expect(testSubject.format('input'), equals('formatted'));
+        // Arrange
+        const input = 'input';
+        const expected = 'formatted';
+        
+        // Act
+        final result = testSubject.format(input);
+        
+        // Assert
+        expect(result, equals(expected));
       });
     });
   });

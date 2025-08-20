@@ -21,6 +21,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Comprehensive friends operations providing core social relationship management and user discovery systems.
 ///
@@ -73,7 +74,7 @@ import 'package:butlery/services/permission_service.dart';
 /// final incomingRequests = friendsOps.getIncomingRequests();
 /// ```
 class FriendsOperations {
-  final dynamic _parent; // UnifiedFriendsService
+  final UnifiedFriendsService _parent;
 
   FriendsOperations(this._parent);
 
@@ -96,12 +97,12 @@ class FriendsOperations {
       return false;
     }
 
-    return await _parent.sendFriendRequest(userId);
+    return await _parent.management.sendFriendRequest(userId);
   }
 
   /// Accept incoming friend request
   Future<bool> acceptRequest(String requestId) async {
-    final request = _parent.friendRequests
+    final request = _parent.incomingRequests
         .where((r) => r.id == requestId)
         .firstOrNull;
 
@@ -115,12 +116,12 @@ class FriendsOperations {
       return false;
     }
 
-    return await _parent.acceptFriendRequest(requestId);
+    return await _parent.management.acceptFriendRequest(requestId);
   }
 
   /// Decline incoming friend request
   Future<bool> declineRequest(String requestId) async {
-    final request = _parent.friendRequests
+    final request = _parent.incomingRequests
         .where((r) => r.id == requestId)
         .firstOrNull;
 
@@ -134,12 +135,12 @@ class FriendsOperations {
       return false;
     }
 
-    return await _parent.declineFriendRequest(requestId);
+    return await _parent.management.rejectFriendRequest(requestId);
   }
 
   /// Cancel outgoing friend request
   Future<bool> cancelRequest(String requestId) async {
-    final request = _parent.friendRequests
+    final request = _parent.outgoingRequests
         .where((r) => r.id == requestId)
         .firstOrNull;
 
@@ -153,7 +154,7 @@ class FriendsOperations {
       return false;
     }
 
-    return await _parent.declineFriendRequest(requestId); // Same operation
+    return await _parent.management.cancelFriendRequest(requestId);
   }
 
   // ===== FRIEND MANAGEMENT =====
@@ -165,7 +166,7 @@ class FriendsOperations {
       return false;
     }
 
-    return await _parent.removeFriend(friendId);
+    return await _parent.management.removeFriend(friendId);
   }
 
   /// Block user (removes friendship and prevents new requests)
@@ -176,17 +177,8 @@ class FriendsOperations {
         await removeFriend(userId);
       }
 
-      // Add to blocked users set
-      _parent._blockedUsers.add(userId);
-      
-      // Remove any pending friend requests
-      await _parent._removeAllRequestsWithUser(userId);
-      
-      // Save to Firebase
-      await _parent._syncBlockedUsersToFirebase();
-      
-      // Notify listeners
-      _parent.notifyListeners();
+      // Use management operations to block user
+      await _parent.management.blockUser(userId);
       
       AppLogger.success('Successfully blocked user: $userId');
       return true;
@@ -200,7 +192,7 @@ class FriendsOperations {
   Future<bool> unblockUser(String userId) async {
     try {
       // Remove from blocked users set
-      final removed = _parent._blockedUsers.remove(userId);
+      final removed = _parent.blockedUsers.remove(userId);
       
       if (!removed) {
         AppLogger.warning('User was not blocked: $userId');
@@ -208,10 +200,10 @@ class FriendsOperations {
       }
       
       // Save to Firebase
-      await _parent._syncBlockedUsersToFirebase();
+      await _parent.syncBlockedUsers();
       
       // Notify listeners
-      _parent.notifyListeners();
+      _parent.notifyListenersInternal();
       
       AppLogger.success('Successfully unblocked user: $userId');
       return true;
@@ -280,7 +272,7 @@ class FriendsOperations {
       for (final suggestion in suggestions) {
         if (!uniqueSuggestions.containsKey(suggestion.uid) &&
             !isFriend(suggestion.uid) &&
-            !_parent._blockedUsers.contains(suggestion.uid) &&
+            !_parent.blockedUsers.contains(suggestion.uid) &&
             !hasPendingRequestTo(suggestion.uid) &&
             !hasPendingRequestFrom(suggestion.uid)) {
           uniqueSuggestions[suggestion.uid] = suggestion;
@@ -306,7 +298,7 @@ class FriendsOperations {
       for (final friend in myFriends) {
         try {
           // Get friend's friends (this would need to be implemented in the service)
-          final friendsFriends = await _parent._getFriendsOfUser(friend.uid);
+          final friendsFriends = await _parent.getFriendsOfUser(friend.uid);
           
           // Add their friends as potential suggestions
           for (final friendOfFriend in friendsFriends) {
@@ -333,11 +325,11 @@ class FriendsOperations {
       final suggestions = <UserProfile>[];
       
       // Get users from recent collaborative recipes
-      final recentCollaborators = await _parent._getRecentCollaborators(currentUserId);
+      final recentCollaborators = await _parent.getRecentCollaborators();
       suggestions.addAll(recentCollaborators);
       
       // Get users from recent shopping list collaborations
-      final recentShoppingCollaborators = await _parent._getRecentShoppingCollaborators(currentUserId);
+      final recentShoppingCollaborators = await _parent.getRecentShoppingCollaborators();
       suggestions.addAll(recentShoppingCollaborators);
       
       return suggestions;

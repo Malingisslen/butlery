@@ -1,6 +1,7 @@
 // lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/realtime/realtime_recipe.dart';
 
 /// Shared utilities for realtime recipe operations
 /// 
@@ -27,20 +28,32 @@ class RealtimeRecipeUtils {
 
   /// Convert RealtimeRecipe data to Recipe
   static Recipe convertToRecipe(dynamic realtimeRecipe) {
-    return Recipe(
-      core: RecipeCore(
-        id: realtimeRecipe['id'] ?? '',
-        title: realtimeRecipe['name'] ?? '',
-        description: realtimeRecipe['description'] ?? '',
-        ingredients: List<String>.from(realtimeRecipe['ingredients'] ?? []),
-        instructions: List<String>.from(realtimeRecipe['instructions'] ?? []),
-        imageUrls: List<String>.from(realtimeRecipe['imageUrls'] ?? []),
-        mealType: realtimeRecipe['mealType'] ?? 'Lunch',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      type: RecipeType.realtime,
-    );
+    // Check if it's already a RealtimeRecipe object
+    if (realtimeRecipe is RealtimeRecipe) {
+      // If it's a RealtimeRecipe object, return its recipe property
+      return realtimeRecipe.recipe;
+    }
+    
+    // Otherwise, treat it as a Map (for backward compatibility)
+    if (realtimeRecipe is Map<String, dynamic>) {
+      return Recipe(
+        core: RecipeCore(
+          id: realtimeRecipe['id'] ?? '',
+          title: realtimeRecipe['name'] ?? '',
+          description: realtimeRecipe['description'] ?? '',
+          ingredients: List<String>.from(realtimeRecipe['ingredients'] ?? []),
+          instructions: List<String>.from(realtimeRecipe['instructions'] ?? []),
+          imageUrls: List<String>.from(realtimeRecipe['imageUrls'] ?? []),
+          mealType: realtimeRecipe['mealType'] ?? 'Lunch',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        type: RecipeType.realtime,
+      );
+    }
+    
+    // If it's neither, throw an error
+    throw ArgumentError('Invalid realtimeRecipe type: ${realtimeRecipe.runtimeType}');
   }
 
   /// Apply changes to realtime recipe data structure

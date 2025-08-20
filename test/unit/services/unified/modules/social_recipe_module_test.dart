@@ -12,7 +12,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 
-import '../../../../infrastructure/helpers/_base_unit_test.dart';
+import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';

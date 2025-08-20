@@ -1,6 +1,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 /// Specialized personal recipe operations interface providing comprehensive CRUD functionality for individual recipe management.
 ///
@@ -48,7 +49,7 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 /// await personalOps.markAsCooked(recipeId);
 /// ```
 class PersonalRecipeOperations {
-  final dynamic _parent;
+  final UnifiedRecipeService _parent;
 
   PersonalRecipeOperations(this._parent);
 

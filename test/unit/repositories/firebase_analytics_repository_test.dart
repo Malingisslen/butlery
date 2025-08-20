@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
 // Test-specific mocks

@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/social/activity_service.dart';
 import 'package:butlery/models/social/activity_feed_item.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -657,7 +657,7 @@ void main() {
           limit: any(named: 'limit'),
           offset: any(named: 'offset'),
           friendCategories: any(named: 'friendCategories'),
-        )).thenThrow(Exception('Repository error'));
+        )).thenAnswer((_) async => throw Exception('Repository error'));
 
         // Act
         final result = await activityService.getFriendActivityFeed();

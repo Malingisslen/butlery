@@ -25,6 +25,7 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logging_utils.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/notification_service.dart' as notif;
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -82,7 +83,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 class FriendsManagementOperations extends BaseService {
   @override
   String get serviceName => 'FriendsManagementOperations';
-  final dynamic _parent; // UnifiedFriendsService
+  final UnifiedFriendsService _parent;
   late final user_svc.UserService _userService;
   late final notif.NotificationService? _notificationService;
 
@@ -157,11 +158,10 @@ class FriendsManagementOperations extends BaseService {
         );
 
         // Add to local state (optimistic update)
-        _parent._outgoingRequests.add(request);
-        _parent._notifyListeners();
+        _parent.addOutgoingRequestInternal(request);
 
         // Send to Firebase
-        await _parent._syncFriendRequestToFirebase(request);
+        await _parent.syncFriendRequestToFirebase(request);
 
         // Send notification to recipient
         final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
@@ -182,7 +182,7 @@ class FriendsManagementOperations extends BaseService {
     return await LoggingUtils.loggedUpdate(
       'Friend Request',
       () async {
-        final request = _parent._incomingRequests
+        final request = _parent.incomingRequests
             .where((r) => r.id == requestId)
             .firstOrNull;
 
@@ -208,13 +208,12 @@ class FriendsManagementOperations extends BaseService {
         );
 
         // Update local state
-        _parent._friends.add(friend);
-        _parent._incomingRequests.removeWhere((r) => r.id == requestId);
-        _parent._notifyListeners();
+        _parent.addFriendInternal(friend);
+        _parent.removeIncomingRequestInternal(requestId);
 
         // Sync to Firebase
-        await _parent._syncFriendToFirebase(friend);
-        await _parent._updateFriendRequestStatus(acceptedRequest);
+        await _parent.syncFriendToFirebase(friend);
+        await _parent.updateFriendRequestStatus(acceptedRequest);
 
         // Send notification to the original sender
         await _sendFriendRequestAcceptedNotification(request, _parent.currentUserDisplayName ?? 'Unknown User');
@@ -229,7 +228,7 @@ class FriendsManagementOperations extends BaseService {
   /// Reject an incoming friend request
   Future<bool> rejectFriendRequest(String requestId) async {
     try {
-      final request = _parent._incomingRequests
+      final request = _parent.incomingRequests
           .where((r) => r.id == requestId)
           .firstOrNull;
 
@@ -245,11 +244,10 @@ class FriendsManagementOperations extends BaseService {
       );
 
       // Remove from local state
-      _parent._incomingRequests.removeWhere((r) => r.id == requestId);
-      _parent._notifyListeners();
+      _parent.removeIncomingRequestInternal(requestId);
 
       // Update in Firebase
-      await _parent._updateFriendRequestStatus(rejectedRequest);
+      await _parent.updateFriendRequestStatus(rejectedRequest);
 
       AppLogger.success('Friend request rejected from ${request.fromUserId}');
       return true;
@@ -262,7 +260,7 @@ class FriendsManagementOperations extends BaseService {
   /// Cancel an outgoing friend request
   Future<bool> cancelFriendRequest(String requestId) async {
     try {
-      final request = _parent._outgoingRequests
+      final request = _parent.outgoingRequests
           .where((r) => r.id == requestId)
           .firstOrNull;
 
@@ -278,11 +276,10 @@ class FriendsManagementOperations extends BaseService {
       );
 
       // Remove from local state
-      _parent._outgoingRequests.removeWhere((r) => r.id == requestId);
-      _parent._notifyListeners();
+      _parent.removeOutgoingRequestInternal(requestId);
 
       // Update in Firebase
-      await _parent._updateFriendRequestStatus(cancelledRequest);
+      await _parent.updateFriendRequestStatus(cancelledRequest);
 
       AppLogger.success('Friend request cancelled to ${request.toUserId}');
       return true;
@@ -297,7 +294,7 @@ class FriendsManagementOperations extends BaseService {
   /// Remove a friend
   Future<bool> removeFriend(String friendId) async {
     try {
-      final friend = _parent._friends
+      final friend = _parent.friends
           .where((f) => f.uid == friendId)
           .firstOrNull;
 
@@ -307,11 +304,10 @@ class FriendsManagementOperations extends BaseService {
       }
 
       // Remove from local state
-      _parent._friends.removeWhere((f) => f.uid == friendId);
-      _parent._notifyListeners();
+      _parent.removeFriendInternal(friendId);
 
       // Remove from Firebase
-      await _parent._removeFriendFromFirebase(friendId);
+      await _parent.removeFriendFromFirebase(friendId);
 
       AppLogger.success('Removed friend: ${friend.displayName}');
       return true;
@@ -330,15 +326,14 @@ class FriendsManagementOperations extends BaseService {
       }
 
       // Remove any pending friend requests
-      _parent._incomingRequests.removeWhere((r) => r.fromUserId == userId);
-      _parent._outgoingRequests.removeWhere((r) => r.toUserId == userId);
+      _parent.incomingRequests.removeWhere((r) => r.fromUserId == userId);
+      _parent.outgoingRequests.removeWhere((r) => r.toUserId == userId);
 
       // Add to blocked users
-      _parent._blockedUsers.add(userId);
-      _parent._notifyListeners();
+      _parent.addBlockedUserInternal(userId);
 
       // Sync to Firebase
-      await _parent._syncBlockedUsersToFirebase();
+      await _parent.syncBlockedUsers();
 
       AppLogger.success('User blocked');
       return true;
@@ -352,11 +347,10 @@ class FriendsManagementOperations extends BaseService {
   Future<bool> unblockUser(String userId) async {
     try {
       // Remove from blocked users
-      _parent._blockedUsers.remove(userId);
-      _parent._notifyListeners();
+      _parent.removeBlockedUserInternal(userId);
 
       // Sync to Firebase
-      await _parent._syncBlockedUsersToFirebase();
+      await _parent.syncBlockedUsers();
 
       AppLogger.success('User unblocked');
       return true;
@@ -370,35 +364,35 @@ class FriendsManagementOperations extends BaseService {
 
   /// Get all friends
   List<model.UserProfile> getAllFriends() {
-    return List.unmodifiable(_parent._friends);
+    return List.unmodifiable(_parent.friends);
   }
 
   /// Get friend by ID
   model.UserProfile? getFriendById(String friendId) {
-    return _parent._friends.where((f) => f.uid == friendId).firstOrNull;
+    return _parent.friends.where((f) => f.uid == friendId).firstOrNull;
   }
 
   /// Check if user is a friend
   bool isFriend(String userId) {
-    return _parent._friends.any((f) => f.uid == userId);
+    return _parent.friends.any((f) => f.uid == userId);
   }
 
   /// Get online friends
   List<model.UserProfile> getOnlineFriends() {
     // model.UserProfile doesn't have isOnline property, so return all friends for now
-    return _parent._friends.toList();
+    return _parent.friends.toList();
   }
 
   /// Get friends by category
   List<model.UserProfile> getFriendsByCategory(String category) {
     // This would need to be implemented with category relationships
-    return _parent._friends.toList();
+    return _parent.friends.toList();
   }
 
   /// Search friends by name
   List<model.UserProfile> searchFriends(String query) {
     final searchTerm = query.toLowerCase();
-    return _parent._friends
+    return _parent.friends
         .where((f) => f.displayName.toLowerCase().contains(searchTerm))
         .toList();
   }
@@ -435,46 +429,46 @@ class FriendsManagementOperations extends BaseService {
 
   /// Get incoming friend requests
   List<FriendRequest> getIncomingRequests() {
-    return List.unmodifiable(_parent._incomingRequests);
+    return List.unmodifiable(_parent.incomingRequests);
   }
 
   /// Get outgoing friend requests
   List<FriendRequest> getOutgoingRequests() {
-    return List.unmodifiable(_parent._outgoingRequests);
+    return List.unmodifiable(_parent.outgoingRequests);
   }
 
   /// Check if there's an outgoing request to user
   bool hasOutgoingRequest(String userId) {
-    return _parent._outgoingRequests.any((r) => 
+    return _parent.outgoingRequests.any((r) => 
         r.toUserId == userId && r.status == FriendRequestStatus.pending);
   }
 
   /// Check if there's an incoming request from user
   bool hasIncomingRequest(String userId) {
-    return _parent._incomingRequests.any((r) => 
+    return _parent.incomingRequests.any((r) => 
         r.fromUserId == userId && r.status == FriendRequestStatus.pending);
   }
 
   /// Get friend request count
   int getIncomingRequestCount() {
-    return _parent._incomingRequests.length;
+    return _parent.incomingRequests.length;
   }
 
   /// Check if user is blocked
   bool isBlocked(String userId) {
-    return _parent._blockedUsers.contains(userId);
+    return _parent.blockedUsers.contains(userId);
   }
 
   /// Get blocked users
   List<String> getBlockedUsers() {
-    return List.unmodifiable(_parent._blockedUsers);
+    return List.unmodifiable(_parent.blockedUsers);
   }
 
   // ===== FRIEND STATISTICS =====
 
   /// Get friend statistics
   Map<String, dynamic> getFriendStats() {
-    final totalFriends = _parent._friends.length;
+    final totalFriends = _parent.friends.length;
     const onlineFriends = 0; // model.UserProfile doesn't have isOnline property
     final categoryCounts = <String, int>{};
 
@@ -482,9 +476,9 @@ class FriendsManagementOperations extends BaseService {
       'totalFriends': totalFriends,
       'onlineFriends': onlineFriends,
       'offlineFriends': totalFriends - onlineFriends,
-      'incomingRequests': _parent._incomingRequests.length,
-      'outgoingRequests': _parent._outgoingRequests.length,
-      'blockedUsers': _parent._blockedUsers.length,
+      'incomingRequests': _parent.incomingRequests.length,
+      'outgoingRequests': _parent.outgoingRequests.length,
+      'blockedUsers': _parent.blockedUsers.length,
       'categoryCounts': categoryCounts,
     };
   }
@@ -503,7 +497,7 @@ class FriendsManagementOperations extends BaseService {
       }
 
       // Get current user's friends
-      final currentUserFriends = _parent._friends.map((f) => f.uid).toSet();
+      final currentUserFriends = _parent.friends.map((f) => f.uid).toSet();
       
       if (currentUserFriends.isEmpty) {
         AppLogger.debug('No friends to compare for mutual friends');
@@ -536,7 +530,7 @@ class FriendsManagementOperations extends BaseService {
       // Get model.UserProfile objects for mutual friends
       final mutualFriends = <model.UserProfile>[];
       for (final friendId in mutualFriendIds) {
-        final friend = _parent._friends
+        final friend = _parent.friends
             .where((f) => f.uid == friendId)
             .firstOrNull;
         if (friend != null) {

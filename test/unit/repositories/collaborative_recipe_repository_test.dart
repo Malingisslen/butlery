@@ -4,38 +4,81 @@
 /// presence management, editor tracking, and synchronization operations.
 library;
 
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
+
+// Local mocks for sealed Firebase classes
+class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+class MockCollectionReference<T> extends Mock implements CollectionReference<T> {}
+class MockDocumentReference<T> extends Mock implements DocumentReference<T> {}
+class MockDocumentSnapshot<T> extends Mock implements DocumentSnapshot<T> {}
+class MockQuery<T> extends Mock implements Query<T> {}
+class MockQuerySnapshot<T> extends Mock implements QuerySnapshot<T> {}
+class MockQueryDocumentSnapshot<T> extends Mock implements QueryDocumentSnapshot<T> {}
+class MockWriteBatch extends Mock implements WriteBatch {}
 
 void main() {
   group('CollaborativeRecipeRepository', () {
     late CollaborativeRecipeRepository repository;
-    late FakeFirebaseFirestore fakeFirestore;
+    late MockFirebaseFirestore mockFirestore;
+    late MockCollectionReference<Map<String, dynamic>> mockRealtimeCollection;
+    late MockCollectionReference<Map<String, dynamic>> mockPresenceCollection;
+    late MockDocumentReference<Map<String, dynamic>> mockDocRef;
+    late MockDocumentSnapshot<Map<String, dynamic>> mockDocSnapshot;
+    late MockQuery<Map<String, dynamic>> mockQuery;
+    late MockQuerySnapshot<Map<String, dynamic>> mockQuerySnapshot;
+    late MockWriteBatch mockBatch;
     
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
     });
 
-    setUp(() {
-      // Create fake Firestore instance
-      fakeFirestore = FakeFirebaseFirestore();
+    setUp(() async {
+      await TestServiceLocator.initialize();
       
-      // Create repository with fake Firestore
-      repository = CollaborativeRecipeRepository(firestore: fakeFirestore);
-    });
-
-    tearDown(() async {
-      BaseUnitTest.resetMocks();
-      await TestServiceLocator.reset();
+      // Initialize mocks
+      mockFirestore = MockFirebaseFirestore();
+      mockRealtimeCollection = MockCollectionReference<Map<String, dynamic>>();
+      mockPresenceCollection = MockCollectionReference<Map<String, dynamic>>();
+      mockDocRef = MockDocumentReference<Map<String, dynamic>>();
+      mockDocSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
+      mockQuery = MockQuery<Map<String, dynamic>>();
+      mockQuerySnapshot = MockQuerySnapshot<Map<String, dynamic>>();
+      mockBatch = MockWriteBatch();
+      
+      // Setup Firestore mock structure
+      when(() => mockFirestore.collection('realtime_recipes')).thenReturn(mockRealtimeCollection);
+      when(() => mockFirestore.collection('presence')).thenReturn(mockPresenceCollection);
+      when(() => mockRealtimeCollection.doc(any())).thenReturn(mockDocRef);
+      when(() => mockPresenceCollection.doc(any())).thenReturn(mockDocRef);
+      
+      // Setup batch operations - WriteBatch methods return self for chaining
+      when(() => mockFirestore.batch()).thenReturn(mockBatch);
+      when<dynamic>(() => mockBatch.set(any(), any(), any())).thenReturn(mockBatch);
+      when<dynamic>(() => mockBatch.update(any(), any())).thenReturn(mockBatch);
+      when<dynamic>(() => mockBatch.delete(any())).thenReturn(mockBatch);
+      when(() => mockBatch.commit()).thenAnswer((_) async {});
+      
+      // Setup default doc operations
+      when(() => mockDocRef.set(any(), any())).thenAnswer((_) async {});
+      when(() => mockDocRef.set(any())).thenAnswer((_) async {});
+      when(() => mockDocRef.update(any())).thenAnswer((_) async {});
+      when(() => mockDocRef.delete()).thenAnswer((_) async {});
+      when(() => mockDocRef.get()).thenAnswer((_) async => mockDocSnapshot);
+      
+      // Create repository with mocked Firestore
+      repository = CollaborativeRecipeRepository(firestore: mockFirestore);
     });
 
     tearDown(() async {
@@ -61,14 +104,10 @@ void main() {
         await repository.createRealtimeRecipe(realtimeRecipe);
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .get();
-        
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['ownerId'], equals('user-123'));
-        expect(doc.data()?['ownerDisplayName'], equals('Test User'));
+        verify(() => mockDocRef.set(any(), any())).called(1);
+        final captured = verify(() => mockDocRef.set(captureAny(), any())).captured.single;
+        expect(captured['ownerId'], equals('user-123'));
+        expect(captured['ownerDisplayName'], equals('Test User'));
       });
 
       test('should update realtime recipe', () async {
@@ -84,10 +123,9 @@ void main() {
           ownerDisplayName: 'Test User',
         );
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .set(realtimeRecipe.toFirestore());
+        // Setup existing recipe
+        when(() => mockDocSnapshot.exists).thenReturn(true);
+        when(() => mockDocSnapshot.data()).thenReturn(realtimeRecipe.toFirestore());
         
         final updatedRecipe = realtimeRecipe.copyWith(
           recipe: baseRecipe.copyWith(title: 'Updated Recipe'),
@@ -98,13 +136,10 @@ void main() {
         await repository.updateRealtimeRecipe(updatedRecipe);
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .get();
-        
-        expect(doc.data()?['editCount'], equals(1));
-        expect(doc.data()?['recipe']?['core']?['title'], equals('Updated Recipe'));
+        verify(() => mockDocRef.update(any())).called(1);
+        final captured = verify(() => mockDocRef.update(captureAny())).captured.single;
+        expect(captured['editCount'], equals(1));
+        expect(captured['recipe']['core']['title'], equals('Updated Recipe'));
       });
 
       test('should watch realtime recipe changes', () async {
@@ -120,10 +155,11 @@ void main() {
           ownerDisplayName: 'Test User',
         );
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .set(realtimeRecipe.toFirestore());
+        // Setup stream response
+        when(() => mockDocRef.snapshots()).thenAnswer((_) => Stream.value(mockDocSnapshot));
+        when(() => mockDocSnapshot.exists).thenReturn(true);
+        when(() => mockDocSnapshot.id).thenReturn('recipe-1');
+        when(() => mockDocSnapshot.data()).thenReturn(realtimeRecipe.toFirestore());
         
         // Act
         final stream = repository.watchRealtimeRecipe('recipe-1');
@@ -148,10 +184,9 @@ void main() {
           ownerDisplayName: 'Test User',
         );
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .set(realtimeRecipe.toFirestore());
+        // Setup get response
+        when(() => mockDocSnapshot.exists).thenReturn(true);
+        when(() => mockDocSnapshot.data()).thenReturn(realtimeRecipe.toFirestore());
         
         // Act
         final snapshot = await repository.fetchRealtimeRecipe('recipe-1');
@@ -174,10 +209,11 @@ void main() {
           ownerDisplayName: 'Test User',
         );
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .set(realtimeRecipe.toFirestore());
+        // Setup stream response
+        when(() => mockDocRef.snapshots()).thenAnswer((_) => Stream.value(mockDocSnapshot));
+        when(() => mockDocSnapshot.exists).thenReturn(true);
+        when(() => mockDocSnapshot.id).thenReturn('recipe-1');
+        when(() => mockDocSnapshot.data()).thenReturn(realtimeRecipe.toFirestore());
         
         // Act
         final stream = repository.getRealtimeRecipeStream('recipe-1');
@@ -200,201 +236,145 @@ void main() {
           'isActive': true,
         };
         
+        // Setup presence collection
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.set(any(), any())).thenAnswer((_) async {});
+        when(() => mockPresenceDocRef.set(any())).thenAnswer((_) async {});
+        
         // Act
         await repository.setPresence('recipe-1', 'user-123', presenceData);
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .get();
-        
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['displayName'], equals('Test User'));
-        expect(doc.data()?['isActive'], isTrue);
+        verify(() => mockPresenceDocRef.set(any(), any())).called(1);
+        final captured = verify(() => mockPresenceDocRef.set(captureAny(), any())).captured.single;
+        expect(captured['displayName'], equals('Test User'));
+        expect(captured['isActive'], isTrue);
       });
 
       test('should update user presence', () async {
         // Arrange
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
-          'userId': 'user-123',
-          'displayName': 'Test User',
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-          'isActive': true,
-          'currentField': null,
-        });
-        
         final updateData = {
           'currentField': 'ingredients',
           'lastSeen': DateTime.now().millisecondsSinceEpoch,
         };
         
+        // Setup presence collection
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.update(any())).thenAnswer((_) async {});
+        
         // Act
         await repository.updatePresence('recipe-1', 'user-123', updateData);
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .get();
-        
-        expect(doc.data()?['currentField'], equals('ingredients'));
+        verify(() => mockPresenceDocRef.update(any())).called(1);
+        final captured = verify(() => mockPresenceDocRef.update(captureAny())).captured.single;
+        expect(captured['currentField'], equals('ingredients'));
       });
 
       test('should update presence with convenience method', () async {
         // Arrange
-        // No setup needed
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.set(any(), any())).thenAnswer((_) async {});
+        when(() => mockPresenceDocRef.set(any())).thenAnswer((_) async {});
         
         // Act
         await repository.updateUserPresence('recipe-1', 'user-123', 'Test User');
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .get();
-        
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['userId'], equals('user-123'));
-        expect(doc.data()?['displayName'], equals('Test User'));
-        expect(doc.data()?['isActive'], isTrue);
-        expect(doc.data()?['lastSeen'], isNotNull);
+        verify(() => mockPresenceDocRef.set(any(), any())).called(1);
+        final captured = verify(() => mockPresenceDocRef.set(captureAny(), any())).captured.single;
+        expect(captured['userId'], equals('user-123'));
+        expect(captured['displayName'], equals('Test User'));
+        expect(captured['isActive'], isTrue);
+        expect(captured['lastSeen'], isNotNull);
       });
 
       test('should update presence heartbeat', () async {
         // Arrange
         final initialTime = DateTime.now().millisecondsSinceEpoch - 60000; // 1 minute ago
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
-          'userId': 'user-123',
-          'displayName': 'Test User',
-          'lastSeen': initialTime,
-          'isActive': true,
-        });
+        
+        // Setup presence collection
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.update(any())).thenAnswer((_) async {});
         
         // Act
         await repository.updatePresenceHeartbeat('recipe-1', 'user-123');
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .get();
-        
-        expect(doc.data()?['lastSeen'], greaterThan(initialTime));
-        expect(doc.data()?['isActive'], isTrue);
+        verify(() => mockPresenceDocRef.update(any())).called(1);
+        final captured = verify(() => mockPresenceDocRef.update(captureAny())).captured.single;
+        expect(captured['lastSeen'], greaterThan(initialTime));
+        expect(captured['isActive'], isTrue);
       });
 
       test('should clear user presence', () async {
         // Arrange
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
-          'userId': 'user-123',
-          'displayName': 'Test User',
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-          'isActive': true,
-        });
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.update(any())).thenAnswer((_) async {});
         
         // Act
         await repository.clearUserPresence('recipe-1', 'user-123');
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .get();
-        
-        expect(doc.data()?['isActive'], isFalse);
+        verify(() => mockPresenceDocRef.update(any())).called(1);
+        final captured = verify(() => mockPresenceDocRef.update(captureAny())).captured.single;
+        expect(captured['isActive'], isFalse);
       });
 
       test('should remove presence completely', () async {
         // Arrange
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
-          'userId': 'user-123',
-          'displayName': 'Test User',
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-          'isActive': true,
-        });
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.delete()).thenAnswer((_) async {});
         
         // Act
         await repository.removePresence('recipe-1', 'user-123');
         
         // Assert
-        final doc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .get();
-        
-        expect(doc.exists, isFalse);
+        verify(() => mockPresenceDocRef.delete()).called(1);
       });
 
       test('should watch active presence', () async {
         // Arrange
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
+        final mockDoc1 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        final mockDoc2 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        
+        when(() => mockDoc1.id).thenReturn('user-123');
+        when(() => mockDoc1.data()).thenReturn({
           'userId': 'user-123',
           'displayName': 'User 1',
           'isActive': true,
           'lastSeen': DateTime.now().millisecondsSinceEpoch,
         });
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-456')
-            .set({
+        when(() => mockDoc2.id).thenReturn('user-456');
+        when(() => mockDoc2.data()).thenReturn({
           'userId': 'user-456',
           'displayName': 'User 2',
           'isActive': true,
           'lastSeen': DateTime.now().millisecondsSinceEpoch,
         });
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-789')
-            .set({
-          'userId': 'user-789',
-          'displayName': 'User 3',
-          'isActive': false, // Inactive
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-        });
+        // Note: user-789 is filtered out by the query (isActive: false)
+        when(() => mockQuerySnapshot.docs).thenReturn([mockDoc1, mockDoc2]);
+        
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.where('isActive', isEqualTo: true))
+            .thenReturn(mockQuery);
+        when(() => mockQuery.orderBy(any(), descending: any(named: 'descending')))
+            .thenReturn(mockQuery);
+        when(() => mockQuery.snapshots()).thenAnswer((_) => Stream.value(mockQuerySnapshot));
         
         // Act
         final stream = repository.watchActivePresence('recipe-1');
@@ -406,29 +386,30 @@ void main() {
 
       test('should get participants stream', () async {
         // Arrange
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
+        final mockDoc1 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        final mockDoc2 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        
+        when(() => mockDoc1.id).thenReturn('user-123');
+        when(() => mockDoc1.data()).thenReturn({
           'userId': 'user-123',
           'displayName': 'User 1',
           'isActive': true,
           'lastSeen': DateTime.now().millisecondsSinceEpoch,
         });
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-456')
-            .set({
+        when(() => mockDoc2.id).thenReturn('user-456');
+        when(() => mockDoc2.data()).thenReturn({
           'userId': 'user-456',
           'displayName': 'User 2',
           'isActive': true,
           'lastSeen': DateTime.now().millisecondsSinceEpoch,
         });
+        
+        when(() => mockQuerySnapshot.docs).thenReturn([mockDoc1, mockDoc2]);
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.where(any(), isEqualTo: any(named: 'isEqualTo')))
+            .thenReturn(mockQuery);
+        when(() => mockQuery.snapshots()).thenAnswer((_) => Stream.value(mockQuerySnapshot));
         
         // Act
         final stream = repository.getParticipantsStream('recipe-1');
@@ -447,27 +428,28 @@ void main() {
         // Arrange
         final now = DateTime.now().millisecondsSinceEpoch;
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
+        final mockDoc1 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        final mockDoc2 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        
+        when(() => mockDoc1.id).thenReturn('user-123');
+        when(() => mockDoc1.data()).thenReturn({
           'displayName': 'Active User',
           'isActive': true,
           'lastSeen': now, // Recent
         });
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-456')
-            .set({
+        when(() => mockDoc2.id).thenReturn('user-456');
+        when(() => mockDoc2.data()).thenReturn({
           'displayName': 'Old User',
           'isActive': true,
           'lastSeen': now - 120000, // 2 minutes ago (inactive)
         });
+        
+        when(() => mockQuerySnapshot.docs).thenReturn([mockDoc1, mockDoc2]);
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.where(any(), isEqualTo: any(named: 'isEqualTo')))
+            .thenReturn(mockQuery);
+        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         
         // Act
         final editors = await repository.getActiveEditors('recipe-1');
@@ -484,12 +466,13 @@ void main() {
         // Arrange
         final now = DateTime.now().millisecondsSinceEpoch;
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        final mockPresenceSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.get()).thenAnswer((_) async => mockPresenceSnapshot);
+        when(() => mockPresenceSnapshot.exists).thenReturn(true);
+        when(() => mockPresenceSnapshot.data()).thenReturn({
           'isActive': true,
           'lastSeen': now,
         });
@@ -505,12 +488,13 @@ void main() {
         // Arrange
         final oldTime = DateTime.now().millisecondsSinceEpoch - 120000; // 2 minutes ago
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-123')
-            .set({
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        final mockPresenceSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('user-123')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.get()).thenAnswer((_) async => mockPresenceSnapshot);
+        when(() => mockPresenceSnapshot.exists).thenReturn(true);
+        when(() => mockPresenceSnapshot.data()).thenReturn({
           'isActive': true,
           'lastSeen': oldTime,
         });
@@ -524,7 +508,12 @@ void main() {
 
       test('should return false for non-existent user', () async {
         // Arrange
-        // No setup needed - user doesn't exist
+        final mockPresenceDocRef = MockDocumentReference<Map<String, dynamic>>();
+        final mockPresenceSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.doc('non-existent')).thenReturn(mockPresenceDocRef);
+        when(() => mockPresenceDocRef.get()).thenAnswer((_) async => mockPresenceSnapshot);
+        when(() => mockPresenceSnapshot.exists).thenReturn(false);
         
         // Act
         final isActive = await repository.isUserActivelyEditing('recipe-1', 'non-existent');
@@ -540,51 +529,43 @@ void main() {
         final now = DateTime.now().millisecondsSinceEpoch;
         final oldTime = now - (6 * 60 * 1000); // 6 minutes ago
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-active')
-            .set({
+        final mockDoc1 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        final mockDoc2 = MockQueryDocumentSnapshot<Map<String, dynamic>>();
+        
+        when(() => mockDoc1.id).thenReturn('user-active');
+        when(() => mockDoc1.data()).thenReturn({
           'isActive': true,
           'lastSeen': now,
         });
         
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-old')
-            .set({
+        when(() => mockDoc2.id).thenReturn('user-old');
+        when(() => mockDoc2.data()).thenReturn({
           'isActive': true,
           'lastSeen': oldTime,
         });
+        
+        final mockOldDocRef = MockDocumentReference<Map<String, dynamic>>();
+        when(() => mockPresenceCollection.doc('user-old')).thenReturn(mockOldDocRef);
+        when(() => mockOldDocRef.update(any())).thenAnswer((_) async {});
+        
+        when(() => mockQuerySnapshot.docs).thenReturn([mockDoc1, mockDoc2]);
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.get()).thenAnswer((_) async => mockQuerySnapshot);
         
         // Act
         await repository.cleanupInactiveEditors('recipe-1');
         
         // Assert
-        final activeDoc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-active')
-            .get();
-        
-        final oldDoc = await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .collection('presence')
-            .doc('user-old')
-            .get();
-        
-        expect(activeDoc.data()?['isActive'], isTrue);
-        expect(oldDoc.data()?['isActive'], isFalse);
+        verify(() => mockOldDocRef.update(any())).called(1);
+        final captured = verify(() => mockOldDocRef.update(captureAny())).captured.single;
+        expect(captured['isActive'], isFalse);
       });
 
       test('should handle empty presence collection during cleanup', () async {
         // Arrange
-        // Empty collection - no setup needed
+        when(() => mockQuerySnapshot.docs).thenReturn([]);
+        when(() => mockDocRef.collection('presence')).thenReturn(mockPresenceCollection);
+        when(() => mockPresenceCollection.get()).thenAnswer((_) async => mockQuerySnapshot);
         
         // Act
         await repository.cleanupInactiveEditors('recipe-1');
@@ -597,10 +578,15 @@ void main() {
     group('User Document', () {
       test('should get user document', () async {
         // Arrange
-        await fakeFirestore
-            .collection('users')
-            .doc('user-123')
-            .set({
+        final mockUsersCollection = MockCollectionReference<Map<String, dynamic>>();
+        final mockUserDoc = MockDocumentReference<Map<String, dynamic>>();
+        final mockUserSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
+        
+        when(() => mockFirestore.collection('users')).thenReturn(mockUsersCollection);
+        when(() => mockUsersCollection.doc('user-123')).thenReturn(mockUserDoc);
+        when(() => mockUserDoc.get()).thenAnswer((_) async => mockUserSnapshot);
+        when(() => mockUserSnapshot.exists).thenReturn(true);
+        when(() => mockUserSnapshot.data()).thenReturn({
           'uid': 'user-123',
           'displayName': 'Test User',
           'email': 'test@example.com',

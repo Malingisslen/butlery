@@ -59,6 +59,7 @@ import 'package:get_it/get_it.dart';
 class FCMTokenManager {
   final NotificationRepository _repository;
   final String _userId;
+  final FirebaseMessaging _messaging;
   
   // Token state tracking
   String? _currentToken;
@@ -77,8 +78,10 @@ class FCMTokenManager {
   FCMTokenManager({
     required String userId,
     NotificationRepository? repository,
+    FirebaseMessaging? messaging,
   }) : _repository = repository ?? GetIt.instance<NotificationRepository>(),
-       _userId = userId;
+       _userId = userId,
+       _messaging = messaging ?? FirebaseMessaging.instance;
 
   // ===== INITIALIZATION AND TOKEN REGISTRATION =====
 
@@ -89,11 +92,8 @@ class FCMTokenManager {
     try {
       AppLogger.info('🔔 Initializing FCM token management for user: $_userId');
 
-      // Check if FCM is available
-      final messaging = FirebaseMessaging.instance;
-      
       // Request permission for notifications
-      final permission = await messaging.requestPermission(
+      final permission = await _messaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -158,8 +158,7 @@ class FCMTokenManager {
     try {
       AppLogger.debug('🔔 Refreshing FCM token');
 
-      final messaging = FirebaseMessaging.instance;
-      final newToken = await messaging.getToken();
+      final newToken = await _messaging.getToken();
 
       if (newToken == null) {
         AppLogger.warning('⚠️ Failed to get FCM token - may not be supported on this platform');
@@ -172,7 +171,7 @@ class FCMTokenManager {
 
       // Only update if token actually changed
       if (oldToken != newToken) {
-        AppLogger.info('🔑 FCM token updated: ${newToken.substring(0, 20)}...');
+        AppLogger.info('🔑 FCM token updated: ${newToken.substring(0, newToken.length.clamp(0, 20))}...');
         
         // Save to Firestore
         await _saveTokenToFirestore(newToken);
@@ -202,9 +201,7 @@ class FCMTokenManager {
   /// Set up listener for automatic token refresh
   void _setupTokenRefreshListener() {
     try {
-      final messaging = FirebaseMessaging.instance;
-      
-      _tokenRefreshSubscription = messaging.onTokenRefresh.listen(
+      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
         (newToken) async {
           AppLogger.info('🔄 FCM token refreshed automatically');
           _currentToken = newToken;
@@ -239,45 +236,43 @@ class FCMTokenManager {
     try {
       AppLogger.info('🔔 Updating FCM topic subscriptions based on preferences');
 
-      final messaging = FirebaseMessaging.instance;
-      
       // User-specific topic (always subscribed when logged in)
-      await messaging.subscribeToTopic('user_$_userId');
+      await _messaging.subscribeToTopic('user_$_userId');
       AppLogger.debug('✅ Subscribed to user-specific topic');
 
       // System updates - based on system notification preferences
       if (preferences.isEnabled(NotificationCategory.system, NotificationType.digest)) {
-        await messaging.subscribeToTopic('system_updates');
+        await _messaging.subscribeToTopic('system_updates');
         AppLogger.debug('✅ Subscribed to system_updates topic');
       } else {
-        await messaging.unsubscribeFromTopic('system_updates');
+        await _messaging.unsubscribeFromTopic('system_updates');
         AppLogger.debug('📋 Unsubscribed from system_updates topic');
       }
 
       // Social digest - based on social notification preferences
       if (preferences.isEnabled(NotificationCategory.social, NotificationType.digest)) {
-        await messaging.subscribeToTopic('social_digest');
+        await _messaging.subscribeToTopic('social_digest');
         AppLogger.debug('✅ Subscribed to social_digest topic');
       } else {
-        await messaging.unsubscribeFromTopic('social_digest');
+        await _messaging.unsubscribeFromTopic('social_digest');
         AppLogger.debug('📋 Unsubscribed from social_digest topic');
       }
 
       // Recipe recommendations - based on recipe preferences
       if (preferences.isEnabled(NotificationCategory.recipes, NotificationType.digest)) {
-        await messaging.subscribeToTopic('recipe_recommendations');
+        await _messaging.subscribeToTopic('recipe_recommendations');
         AppLogger.debug('✅ Subscribed to recipe_recommendations topic');
       } else {
-        await messaging.unsubscribeFromTopic('recipe_recommendations');
+        await _messaging.unsubscribeFromTopic('recipe_recommendations');
         AppLogger.debug('📋 Unsubscribed from recipe_recommendations topic');
       }
 
       // Friend activity digest - based on friend preferences
       if (preferences.isEnabled(NotificationCategory.friends, NotificationType.digest)) {
-        await messaging.subscribeToTopic('friend_activity');
+        await _messaging.subscribeToTopic('friend_activity');
         AppLogger.debug('✅ Subscribed to friend_activity topic');
       } else {
-        await messaging.unsubscribeFromTopic('friend_activity');
+        await _messaging.unsubscribeFromTopic('friend_activity');
         AppLogger.debug('📋 Unsubscribed from friend_activity topic');
       }
 
@@ -292,8 +287,6 @@ class FCMTokenManager {
     try {
       AppLogger.info('🔔 Unsubscribing from all FCM topics');
 
-      final messaging = FirebaseMessaging.instance;
-      
       // Unsubscribe from all known topics
       final topics = [
         'user_$_userId',
@@ -305,7 +298,7 @@ class FCMTokenManager {
 
       for (final topic in topics) {
         try {
-          await messaging.unsubscribeFromTopic(topic);
+          await _messaging.unsubscribeFromTopic(topic);
           AppLogger.debug('📋 Unsubscribed from $topic');
         } catch (e) {
           AppLogger.warning('⚠️ Failed to unsubscribe from $topic: $e');

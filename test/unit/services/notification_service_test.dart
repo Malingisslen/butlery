@@ -12,18 +12,19 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
 
-import '../../infrastructure/helpers/_base_unit_test.dart';
+import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
 // ============= LOCAL MOCKS =============
-// Only for Firebase-specific and legacy types
+// Only for Firebase-specific types that aren't in production_mocks.dart
+// Note: Using MockNotificationsRepository and MockRemoteMessage from production_mocks
 
-class MockNotificationRepository extends Mock implements legacy.NotificationRepository {}
-
-class MockRemoteMessage extends Mock implements RemoteMessage {}
-
+// Keep this local as it's Firebase-specific and not widely used
 class MockRemoteNotification extends Mock implements RemoteNotification {}
+
+// Local mock for legacy NotificationRepository interface
+class MockLegacyNotificationRepository extends Mock implements legacy.NotificationRepository {}
 
 class FakeNotificationPreferences extends Fake implements legacy.NotificationPreferences {
   @override
@@ -101,7 +102,7 @@ void main() {
   group('NotificationService', () {
     late NotificationService notificationService;
     late MockNotificationsRepository mockNotificationsRepo;
-    late MockNotificationRepository mockLegacyRepo;
+    late MockLegacyNotificationRepository mockLegacyRepo;
     late FakeFirebaseFirestore fakeFirestore;
     const testUserId = 'test-user-123';
 
@@ -114,7 +115,6 @@ void main() {
       registerFallbackValue(FakeNotificationAction(id: 'test', title: 'Test'));
       registerFallbackValue(NotificationCategory.social);
       registerFallbackValue(NotificationType.immediate);
-      registerFallbackValue(NotificationPreferences());
       registerFallbackValue(FakeNotificationPreferences());
       registerFallbackValue(DateTime.now());
     });
@@ -122,7 +122,7 @@ void main() {
     setUp(() {
       mockNotificationsRepo = MockNotificationsRepository();
       fakeFirestore = FakeFirebaseFirestore();
-      mockLegacyRepo = MockNotificationRepository();
+      mockLegacyRepo = MockLegacyNotificationRepository();
       
       // Register mocks with TestServiceLocator
       TestServiceLocator.registerMock<NotificationsRepository>(mockNotificationsRepo);
@@ -518,7 +518,7 @@ void main() {
         test('should handle permission denied for notifications', () async {
           // Arrange
           when(() => mockNotificationsRepo.getNotificationPreferences(any()))
-              .thenThrow(Exception('Permission denied'));
+              .thenAnswer((_) async => throw Exception('Permission denied'));
           
           final targetUserIds = ['user-no-permission'];
           final strategy = FakeNotificationStrategy();
@@ -846,9 +846,9 @@ void main() {
         test('should handle user preferences fetch failure', () async {
           // Arrange
           when(() => mockLegacyRepo.getPreferences())
-              .thenThrow(Exception('Failed to fetch preferences'));
+              .thenAnswer((_) async => throw Exception('Failed to fetch preferences'));
           when(() => mockNotificationsRepo.getNotificationPreferences(any()))
-              .thenThrow(Exception('Database error'));
+              .thenAnswer((_) async => throw Exception('Database error'));
 
           // Act & Assert - Should use defaults
           final preferences = await notificationService.getPreferences();

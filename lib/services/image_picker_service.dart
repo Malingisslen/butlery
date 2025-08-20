@@ -32,6 +32,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/services/image_picker_provider.dart';
 
 /// Image selection service providing comprehensive camera and gallery access with advanced permission management.
 ///
@@ -66,7 +67,17 @@ import 'package:butlery/services/storage_service.dart';
 /// await imageService.debugPermissions();
 /// ```
 class ImagePickerService {
-  final ImagePicker _picker = ImagePicker();
+  final ImagePickerProvider _imagePickerProvider;
+  final PermissionProvider _permissionProvider;
+  final ImageValidator _imageValidator;
+  
+  ImagePickerService({
+    ImagePickerProvider? imagePickerProvider,
+    PermissionProvider? permissionProvider,
+    ImageValidator? imageValidator,
+  }) : _imagePickerProvider = imagePickerProvider ?? DefaultImagePickerProvider(),
+       _permissionProvider = permissionProvider ?? DefaultPermissionProvider(),
+       _imageValidator = imageValidator ?? DefaultImageValidator();
 
   /// Selects a single image from camera or gallery with comprehensive validation and optimization.
   ///
@@ -108,7 +119,7 @@ class ImagePickerService {
       }
 
       AppLogger.info('📱 Anropar image picker...');
-      final XFile? pickedFile = await _picker.pickImage(
+      final XFile? pickedFile = await _imagePickerProvider.pickImage(
         source: source,
         maxWidth: 2400,
         maxHeight: 2400,
@@ -138,7 +149,7 @@ class ImagePickerService {
       AppLogger.info('📊 Filstorlek: $size bytes (${_formatBytes(size)})');
 
       // Validera filen
-      final isValid = StorageService.isValidImageFile(file);
+      final isValid = _imageValidator.isValidImageFile(file);
       AppLogger.info('✅ Fil är giltig: $isValid');
 
       if (!isValid) {
@@ -199,7 +210,7 @@ class ImagePickerService {
 
       AppLogger.info('📱 Anropar multiple image picker...');
 
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(
+      final List<XFile> pickedFiles = await _imagePickerProvider.pickMultiImage(
         maxWidth: 2400,
         maxHeight: 2400,
         imageQuality: 90,
@@ -240,7 +251,7 @@ class ImagePickerService {
         final size = await file.length();
         AppLogger.info('📊 Bild ${i + 1} storlek: ${_formatBytes(size)}');
 
-        if (StorageService.isValidImageFile(file)) {
+        if (_imageValidator.isValidImageFile(file)) {
           files.add(file);
           AppLogger.info('✅ Bild ${i + 1} godkänd');
         } else {
@@ -262,12 +273,12 @@ class ImagePickerService {
     try {
       if (source == ImageSource.camera) {
         AppLogger.info('🔍 Kontrollerar kamera-permission...');
-        final status = await Permission.camera.status;
+        final status = await _permissionProvider.checkPermission(Permission.camera);
         AppLogger.info('📷 Kamera permission status: ${status.name}');
 
         if (status.isDenied) {
           AppLogger.info('🔑 Begär kamera-permission...');
-          final result = await Permission.camera.request();
+          final result = await _permissionProvider.requestPermission(Permission.camera);
           AppLogger.info('📷 Kamera permission resultat: ${result.name}');
           return result.isGranted;
         }
@@ -275,7 +286,7 @@ class ImagePickerService {
       } else {
         // För galleri - hantera både photos och storage permissions smart
         AppLogger.info('🔍 Kontrollerar galleri-permission...');
-        final status = await Permission.photos.status;
+        final status = await _permissionProvider.checkPermission(Permission.photos);
         AppLogger.info('🖼️ Galleri permission status: ${status.name}');
 
         // LIMITED är OK för galleri - användaren har valt vissa bilder
@@ -285,7 +296,7 @@ class ImagePickerService {
 
         if (status.isDenied) {
           AppLogger.info('🔑 Begär galleri-permission...');
-          final result = await Permission.photos.request();
+          final result = await _permissionProvider.requestPermission(Permission.photos);
           AppLogger.info('🖼️ Galleri permission resultat: ${result.name}');
 
           // LIMITED är också OK
@@ -296,10 +307,10 @@ class ImagePickerService {
 
         // Om photos permission är permanently denied, testa storage (äldre Android)
         if (status.isPermanentlyDenied) {
-          final storageStatus = await Permission.storage.status;
+          final storageStatus = await _permissionProvider.checkPermission(Permission.storage);
 
           if (storageStatus.isDenied) {
-            final storageResult = await Permission.storage.request();
+            final storageResult = await _permissionProvider.requestPermission(Permission.storage);
             return storageResult.isGranted;
           }
           return storageStatus.isGranted;
@@ -325,19 +336,19 @@ class ImagePickerService {
     AppLogger.info('🔍 DEBUG: Kontrollerar alla permissions...');
 
     // Kamera
-    final cameraStatus = await Permission.camera.status;
+    final cameraStatus = await _permissionProvider.checkPermission(Permission.camera);
     AppLogger.info('📷 Kamera: ${cameraStatus.name}');
 
     // Photos
-    final photosStatus = await Permission.photos.status;
+    final photosStatus = await _permissionProvider.checkPermission(Permission.photos);
     AppLogger.info('🖼️ Photos: ${photosStatus.name}');
 
     // Storage (äldre Android)
-    final storageStatus = await Permission.storage.status;
+    final storageStatus = await _permissionProvider.checkPermission(Permission.storage);
     AppLogger.info('💾 Storage: ${storageStatus.name}');
 
     // Media (nyare Android)
-    final mediaStatus = await Permission.mediaLibrary.status;
+    final mediaStatus = await _permissionProvider.checkPermission(Permission.mediaLibrary);
     AppLogger.info('📱 Media: ${mediaStatus.name}');
   }
 }

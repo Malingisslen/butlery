@@ -6,20 +6,27 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
+/// Interface for notification module parent
+abstract class NotificationParent {
+  String? get currentUserId;
+  String? get currentUserDisplayName;
+}
+
 /// Realtime notification module
-/// 
+///
 /// This module handles ONLY collaboration notification operations:
 /// - Send collaboration joined/left notifications
 /// - Send real-time edit notifications
 /// - Send collaboration enabled/disabled notifications
 /// - Manage notification preferences and delivery
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Watching, editing, presence, collaboration management
 class RealtimeNotificationModule {
-  final dynamic _parent; // UnifiedRecipeService
+  final NotificationParent _parent;
   final NotificationService? _notificationService;
 
-  RealtimeNotificationModule(this._parent) : _notificationService = _initializeNotificationService(_parent);
+  RealtimeNotificationModule(this._parent)
+      : _notificationService = _initializeNotificationService(_parent);
 
   /// Initialize notification service
   static NotificationService? _initializeNotificationService(dynamic parent) {
@@ -44,19 +51,26 @@ class RealtimeNotificationModule {
   /// Send notification when user joins collaborative editing session
   Future<void> sendCollaborationJoinedNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {
-      AppLogger.debug('Notification service not available or recipe not collaborative - skipping collaboration joined notification');
+      AppLogger.debug(
+          'Notification service not available or recipe not collaborative - skipping collaboration joined notification');
       return;
     }
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
+    if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
+      return;
+    }
 
     try {
       // Notify all other members that someone joined the collaboration
-      for (final memberId in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
-        if (memberId == currentUserId) continue; // Don't notify the user joining
+      for (final memberId
+          in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
+        if (memberId == currentUserId) {
+          continue; // Don't notify the user joining
+        }
 
         await _notificationService.sendSilentNotification(
           targetUserIds: [memberId],
@@ -71,28 +85,37 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Collaboration joined notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Collaboration joined notifications sent for recipe: ${recipe.title}');
     } catch (e) {
-      AppLogger.warning('Failed to send collaboration joined notifications: $e');
+      AppLogger.warning(
+          'Failed to send collaboration joined notifications: $e');
     }
   }
 
   /// Send notification when user leaves collaborative editing session
   Future<void> sendCollaborationLeftNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {
-      AppLogger.debug('Notification service not available or recipe not collaborative - skipping collaboration left notification');
+      AppLogger.debug(
+          'Notification service not available or recipe not collaborative - skipping collaboration left notification');
       return;
     }
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
+    if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
+      return;
+    }
 
     try {
       // Notify all other members that someone left the collaboration
-      for (final memberId in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
-        if (memberId == currentUserId) continue; // Don't notify the user leaving
+      for (final memberId
+          in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
+        if (memberId == currentUserId) {
+          continue; // Don't notify the user leaving
+        }
 
         await _notificationService.sendSilentNotification(
           targetUserIds: [memberId],
@@ -107,7 +130,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Collaboration left notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Collaboration left notifications sent for recipe: ${recipe.title}');
     } catch (e) {
       AppLogger.warning('Failed to send collaboration left notifications: $e');
     }
@@ -122,21 +146,27 @@ class RealtimeNotificationModule {
     String? editDescription,
   ) async {
     if (_notificationService == null || !recipe.isCollaborative) {
-      AppLogger.debug('Notification service not available or recipe not collaborative - skipping realtime edit notification');
+      AppLogger.debug(
+          'Notification service not available or recipe not collaborative - skipping realtime edit notification');
       return;
     }
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
+    if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
+      return;
+    }
 
     try {
       // Determine what was changed for the notification
-      final changeDescription = RealtimeRecipeUtils.getChangeDescription(changes);
+      final changeDescription =
+          RealtimeRecipeUtils.getChangeDescription(changes);
 
       // Notify all other members about the real-time edit
-      for (final memberId in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
+      for (final memberId
+          in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
         if (memberId == currentUserId) continue; // Don't notify the editor
 
         await _notificationService.sendSilentNotification(
@@ -155,7 +185,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Realtime edit notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Realtime edit notifications sent for recipe: ${recipe.title}');
     } catch (e) {
       AppLogger.warning('Failed to send realtime edit notifications: $e');
     }
@@ -170,9 +201,12 @@ class RealtimeNotificationModule {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
+    if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
+      return;
+    }
 
     try {
       // Combine all changes for description
@@ -181,10 +215,12 @@ class RealtimeNotificationModule {
         allChanges.addAll(changes);
       }
 
-      final changeDescription = RealtimeRecipeUtils.getChangeDescription(allChanges);
+      final changeDescription =
+          RealtimeRecipeUtils.getChangeDescription(allChanges);
 
       // Notify all other members about the batch edit
-      for (final memberId in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
+      for (final memberId
+          in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
         if (memberId == currentUserId) continue; // Don't notify the editor
 
         await _notificationService.sendSilentNotification(
@@ -203,7 +239,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Batch edit notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Batch edit notifications sent for recipe: ${recipe.title}');
     } catch (e) {
       AppLogger.warning('Failed to send batch edit notifications: $e');
     }
@@ -212,14 +249,17 @@ class RealtimeNotificationModule {
   // ===== COLLABORATION LIFECYCLE NOTIFICATIONS =====
 
   /// Send notification when collaborative editing is enabled for a recipe
-  Future<void> sendCollaborationEnabledNotification(Recipe recipe, List<String> memberIds) async {
+  Future<void> sendCollaborationEnabledNotification(
+      Recipe recipe, List<String> memberIds) async {
     if (_notificationService == null) {
-      AppLogger.debug('Notification service not available - skipping collaboration enabled notification');
+      AppLogger.debug(
+          'Notification service not available - skipping collaboration enabled notification');
       return;
     }
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
     if (currentUserId == null) return;
 
@@ -243,9 +283,11 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Collaboration enabled notifications sent to ${memberIds.length} members');
+      AppLogger.success(
+          'Collaboration enabled notifications sent to ${memberIds.length} members');
     } catch (e) {
-      AppLogger.warning('Failed to send collaboration enabled notifications: $e');
+      AppLogger.warning(
+          'Failed to send collaboration enabled notifications: $e');
     }
   }
 
@@ -254,18 +296,23 @@ class RealtimeNotificationModule {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
-    if (currentUserId == null || recipe.socialData?.memberPermissions == null) return;
+    if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
+      return;
+    }
 
     try {
       // Notify all members that collaborative editing has been disabled
-      for (final memberId in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
+      for (final memberId
+          in recipe.socialData?.memberPermissions?.keys ?? <String>[]) {
         if (memberId == currentUserId) continue; // Don't notify the owner
 
         await _notificationService.sendImmediateNotification(
           targetUserIds: [memberId],
-          strategy: NotificationStrategy.collaborationEnabled, // Placeholder - would be collaborationDisabled
+          strategy: NotificationStrategy
+              .collaborationEnabled, // Placeholder - would be collaborationDisabled
           variables: {
             'disablerName': currentUserDisplayName,
             'recipeTitle': recipe.title,
@@ -278,9 +325,11 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Collaboration disabled notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Collaboration disabled notifications sent for recipe: ${recipe.title}');
     } catch (e) {
-      AppLogger.warning('Failed to send collaboration disabled notifications: $e');
+      AppLogger.warning(
+          'Failed to send collaboration disabled notifications: $e');
     }
   }
 
@@ -295,7 +344,8 @@ class RealtimeNotificationModule {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
     if (currentUserId == null) return;
 
@@ -316,7 +366,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Conflict notifications sent to ${affectedUserIds.length} users');
+      AppLogger.success(
+          'Conflict notifications sent to ${affectedUserIds.length} users');
     } catch (e) {
       AppLogger.warning('Failed to send conflict notifications: $e');
     }
@@ -331,7 +382,8 @@ class RealtimeNotificationModule {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
     if (currentUserId == null) return;
 
@@ -352,7 +404,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Conflict resolved notifications sent to ${affectedUserIds.length} users');
+      AppLogger.success(
+          'Conflict resolved notifications sent to ${affectedUserIds.length} users');
     } catch (e) {
       AppLogger.warning('Failed to send conflict resolved notifications: $e');
     }
@@ -368,15 +421,19 @@ class RealtimeNotificationModule {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
     if (currentUserId == null) return;
 
     try {
       // Notify existing members about new additions
-      final existingMembers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+      final existingMembers =
+          recipe.socialData?.memberPermissions?.keys.toList() ?? [];
       for (final memberId in existingMembers) {
-        if (memberId == currentUserId || addedMemberIds.contains(memberId)) continue;
+        if (memberId == currentUserId || addedMemberIds.contains(memberId)) {
+          continue;
+        }
 
         await _notificationService.sendSilentNotification(
           targetUserIds: [memberId],
@@ -396,7 +453,8 @@ class RealtimeNotificationModule {
       for (final memberId in addedMemberIds) {
         await _notificationService.sendImmediateNotification(
           targetUserIds: [memberId],
-          strategy: NotificationStrategy.collaborationEnabled, // Placeholder - would be addedToCollaboration
+          strategy: NotificationStrategy
+              .collaborationEnabled, // Placeholder - would be addedToCollaboration
           variables: {
             'adderName': currentUserDisplayName,
             'recipeTitle': recipe.title,
@@ -409,7 +467,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Members added notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Members added notifications sent for recipe: ${recipe.title}');
     } catch (e) {
       AppLogger.warning('Failed to send members added notifications: $e');
     }
@@ -423,16 +482,18 @@ class RealtimeNotificationModule {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
     final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown User';
+    final currentUserDisplayName =
+        _parent.currentUserDisplayName ?? 'Unknown User';
 
     if (currentUserId == null) return;
 
     try {
       // Notify remaining members about removals
       final remainingMembers = recipe.socialData?.memberPermissions?.keys
-          .where((id) => !removedMemberIds.contains(id))
-          .toList() ?? [];
-          
+              .where((id) => !removedMemberIds.contains(id))
+              .toList() ??
+          [];
+
       for (final memberId in remainingMembers) {
         if (memberId == currentUserId) continue;
 
@@ -454,7 +515,8 @@ class RealtimeNotificationModule {
       for (final memberId in removedMemberIds) {
         await _notificationService.sendImmediateNotification(
           targetUserIds: [memberId],
-          strategy: NotificationStrategy.collaborationEnabled, // Placeholder - would be removedFromCollaboration
+          strategy: NotificationStrategy
+              .collaborationEnabled, // Placeholder - would be removedFromCollaboration
           variables: {
             'removerName': currentUserDisplayName,
             'recipeTitle': recipe.title,
@@ -467,7 +529,8 @@ class RealtimeNotificationModule {
         );
       }
 
-      AppLogger.success('Members removed notifications sent for recipe: ${recipe.title}');
+      AppLogger.success(
+          'Members removed notifications sent for recipe: ${recipe.title}');
     } catch (e) {
       AppLogger.warning('Failed to send members removed notifications: $e');
     }
@@ -488,8 +551,9 @@ class RealtimeNotificationModule {
     if (currentUserId == null) return;
 
     try {
-      final members = targetMemberIds ?? 
-          recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+      final members = targetMemberIds ??
+          recipe.socialData?.memberPermissions?.keys.toList() ??
+          [];
 
       for (final memberId in members) {
         if (memberId == currentUserId) continue; // Don't notify sender
@@ -543,10 +607,12 @@ class RealtimeNotificationModule {
   }
 
   /// Update notification preferences (placeholder for future implementation)
-  Future<bool> updateNotificationPreferences(Map<String, bool> preferences) async {
+  Future<bool> updateNotificationPreferences(
+      Map<String, bool> preferences) async {
     try {
       // This would update user notification preferences in Firebase
-      AppLogger.info('Updated notification preferences: ${preferences.length} settings');
+      AppLogger.info(
+          'Updated notification preferences: ${preferences.length} settings');
       return true;
     } catch (e) {
       AppLogger.error('Failed to update notification preferences', e);

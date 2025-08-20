@@ -51,7 +51,7 @@ class UserBuilder {
   }
   
   /// Set avatar URL
-  UserBuilder withPhotoUrl(String avatarUrl) {
+  UserBuilder withAvatarUrl(String avatarUrl) {
     _avatarUrl = avatarUrl;
     return this;
   }

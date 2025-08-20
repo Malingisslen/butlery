@@ -67,6 +67,24 @@ class RecipeContentOperations {
     required String editedBy,
     required String editedByDisplayName,
   }) {
+    // Validate title
+    if (title != null && title.trim().isEmpty) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.updateBasicInfo,
+        message: 'Recepttitel kan inte vara tom',
+        resourceId: recipe.id,
+      );
+    }
+    
+    // Validate cooking time
+    if (timeMinutes != null && timeMinutes < 0) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.updateBasicInfo,
+        message: 'Tillagningstid kan inte vara negativ',
+        resourceId: recipe.id,
+      );
+    }
+    
     AppLogger.info('📝 Updating basic info for recipe: ${recipe.title}');
     
     return recipe.updateBasicInfo(
@@ -258,6 +276,25 @@ class RecipeContentOperations {
         resourceId: recipe.id,
       );
     }
+    
+    // Validate URL format
+    final uri = Uri.tryParse(imageUrl.trim());
+    if (uri == null || !uri.hasAbsolutePath) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.addImage,
+        message: 'Ogiltig bild-URL format',
+        resourceId: recipe.id,
+      );
+    }
+    
+    // Check image limit (max 5 images)
+    if (recipe.imagesCount >= 5) {
+      throw RecipeOperationError(
+        operation: RecipeOperationType.addImage,
+        message: 'Maximalt 5 bilder tillåtna',
+        resourceId: recipe.id,
+      );
+    }
 
     AppLogger.info('🖼️ Adding image: "${imageUrl.trim()}"');
 
@@ -322,11 +359,11 @@ class RecipeContentOperations {
 
     // Check basic requirements
     if (recipe.title.trim().isEmpty) {
-      errors.add('Recipe title is empty');
+      errors.add('Recepttitel saknas');
     }
 
     if (recipe.ingredientsCount == 0) {
-      errors.add('Recipe has no ingredients');
+      errors.add('Recept har inga ingredienser');
     }
 
     if (recipe.instructionsCount == 0) {
@@ -420,7 +457,7 @@ class RecipeContentOperations {
     parts.add('${recipe.instructionsCount} steg');
     
     if (recipe.timeMinutes != null) {
-      parts.add('${recipe.timeMinutes} min');
+      parts.add('${recipe.timeMinutes} minuter');
     }
     
     if (recipe.portions != null) {
