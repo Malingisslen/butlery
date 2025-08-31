@@ -129,7 +129,7 @@ class TrendingContentSection {
                         recipe.imageUrls.first,
                         width: double.infinity,
                         height: 100,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
                       ),
                     )

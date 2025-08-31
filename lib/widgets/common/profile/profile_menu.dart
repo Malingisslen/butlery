@@ -25,6 +25,7 @@ class ProfileMenu extends StatefulWidget {
   final VoidCallback? onViewNotifications;
   final bool showBackupOptions;
   final bool showSocialOptions;
+  final BuildContext? rootContext;
 
   const ProfileMenu({
     super.key,
@@ -37,6 +38,7 @@ class ProfileMenu extends StatefulWidget {
     this.onViewNotifications,
     this.showBackupOptions = true,
     this.showSocialOptions = true,
+    this.rootContext,
   });
 
   @override
@@ -133,7 +135,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
                   // Data & Backup section
                   if (widget.showBackupOptions) ...[
-                    ProfileActions.buildDataBackupSection(context),
+                    ProfileActions.buildDataBackupSection(context, rootContext: widget.rootContext),
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],
 
@@ -229,7 +231,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 widget.userImageUrl!,
                 width: avatarSize,
                 height: avatarSize,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildInitialsAvatar(context, avatarSize),
               ),

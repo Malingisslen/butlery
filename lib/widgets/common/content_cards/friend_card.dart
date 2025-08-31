@@ -107,7 +107,8 @@ class FriendCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            if (trailing != null) 
+              Flexible(child: trailing!),
           ],
         ),
       ],

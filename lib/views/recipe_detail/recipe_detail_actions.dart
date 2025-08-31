@@ -74,7 +74,7 @@ class RecipeDetailActions {
     final viewModel = context.read<RecipeDetailViewModel>();
     final confirmed = await CommonDialogActions.showRecipeDeleteConfirmation(
       context: context,
-      recipeName: viewModel.recipe.core.title,
+      recipeName: viewModel.recipe.title,
     );
 
     if (confirmed == true) {

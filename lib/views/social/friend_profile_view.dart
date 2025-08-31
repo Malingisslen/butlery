@@ -7,7 +7,7 @@
 ///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles friend profile UI presentation concerns through comprehensive profile architecture:
-/// - **Profile Display Excellence**: Advanced profile presentation with avatar, bio, and comprehensive information display
+/// - **Profile Display Excellence**: Advanced profile presentation with avatar and comprehensive information display
 /// - **Social Statistics Intelligence**: Sophisticated statistics display with friend counts, recipe metrics, and activity tracking
 /// - **Interaction Management System**: Complete social interactions with messaging, recipe sharing, and relationship management
 /// - **Activity Timeline Coordination**: Advanced activity display with membership information and engagement tracking
@@ -20,7 +20,7 @@
 /// - Profile data synchronization and updates (handled by user profile services and data management)
 ///
 /// **Friend Profile View Architecture:**
-/// - **Comprehensive Profile Display**: Advanced profile presentation with avatar, bio, and detailed information coordination
+/// - **Comprehensive Profile Display**: Advanced profile presentation with avatar and detailed information coordination
 /// - **Social Statistics Dashboard**: Sophisticated metrics display with friend counts, recipe statistics, and activity insights
 /// - **Interactive Action System**: Complete social actions with messaging, recipe sharing, and friendship management
 /// - **Activity and Membership Tracking**: Advanced timeline display with activity history and membership information
@@ -38,7 +38,7 @@
 /// );
 /// 
 /// // The view provides comprehensive friend profile functionality:
-/// // - Complete profile display with avatar, bio, and detailed friend information
+/// // - Complete profile display with avatar and detailed friend information
 /// // - Social statistics dashboard with friend counts, recipe metrics, and activity insights
 /// // - Interactive social actions including messaging, recipe sharing, and relationship management
 /// // - Activity timeline with membership information and engagement tracking
@@ -74,7 +74,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// and business logic through FriendsViewModel integration and specialized component architecture.
 ///
 /// **Core Responsibilities:**
-/// - Advanced profile display with avatar presentation, bio information, and comprehensive friend details
+/// - Advanced profile display with avatar presentation and comprehensive friend details
 /// - Social statistics coordination with friend counts, recipe metrics, activity tracking, and engagement insights
 /// - Interaction management with messaging integration, recipe sharing workflow, and social action coordination
 /// - Activity timeline handling with membership information, engagement tracking, and comprehensive activity display
@@ -127,16 +127,6 @@ class FriendProfileView extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  if (friend.bio?.isNotEmpty == true) ...[
-                    const SizedBox(height: AppDimensions.spacingS),
-                    Text(
-                      friend.bio!,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.textMedium,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
                 ],
               ),
             ),

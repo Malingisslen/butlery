@@ -87,17 +87,20 @@ class AuthViewModel extends ChangeNotifier {
 
   // ===== SERVICE STATE INTEGRATION =====
 
+  /// Local validation error message for form validation feedback
+  String? _validationError;
+
   /// Loading state inherited from AuthService indicating active authentication operations.
   /// 
   /// Automatically reflects AuthService loading state for seamless UI loading indicator
   /// coordination and user interaction management during authentication operations.
   bool get isLoading => _authService.isLoading;
 
-  /// Error message inherited from AuthService for comprehensive error handling and user feedback.
+  /// Error message combining validation and service errors for comprehensive user feedback.
   /// 
   /// Provides localized error messages from authentication operations, validation failures,
   /// and service errors for direct display to users in authentication UI components.
-  String? get errorMessage => _authService.errorMessage;
+  String? get errorMessage => _validationError ?? _authService.errorMessage;
 
   /// Authentication state indicating current user authentication status from AuthService.
   /// 
@@ -125,6 +128,9 @@ class AuthViewModel extends ChangeNotifier {
   /// for authentication status, loading indicators, and error messages to maintain reactive UI updates
   /// and consistent user experience across all authentication operations.
   AuthViewModel() {
+    // Clear any existing errors on initialization
+    _validationError = null;
+    _authService.clearError();
     // Listen for changes from AuthService to maintain reactive state
     _authService.addListener(_onAuthServiceChanged);
   }
@@ -136,7 +142,8 @@ class AuthViewModel extends ChangeNotifier {
   /// Essential for dual-mode authentication UI with seamless mode switching.
   void toggleAuthMode() {
     _isLoginMode = !_isLoginMode;
-    _authService.clearError(); // Clear previous error messages
+    // Clear any validation or service errors when switching modes
+    clearError();
     notifyListeners();
   }
 
@@ -356,10 +363,11 @@ class AuthViewModel extends ChangeNotifier {
   /// 
   /// [message] Error message for user display and validation feedback
   /// 
-  /// Handles validation error state management while maintaining consistency with AuthService
-  /// error handling patterns for seamless error display and user feedback coordination.
+  /// Handles validation error state management locally in the ViewModel layer,
+  /// keeping validation errors separate from service-level authentication errors.
   void _setError(String message) {
-    // Notify listeners of validation errors for immediate UI feedback
+    // Keep validation errors local to the ViewModel
+    _validationError = message;
     notifyListeners();
   }
 
@@ -374,11 +382,13 @@ class AuthViewModel extends ChangeNotifier {
 
   /// Clears existing error messages with service coordination and clean state management.
   /// 
-  /// Provides comprehensive error state cleanup by delegating to AuthService for
-  /// consistent error state management across the entire authentication system
-  /// and ensuring clean user experience during authentication flow transitions.
+  /// Provides comprehensive error state cleanup by clearing both local validation errors
+  /// and service-level authentication errors for consistent state management across
+  /// the entire authentication system and clean user experience during flow transitions.
   void clearError() {
+    _validationError = null;
     _authService.clearError();
+    notifyListeners();
   }
 
   /// Performs comprehensive ViewModel disposal with listener cleanup and memory management.

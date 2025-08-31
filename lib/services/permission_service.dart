@@ -53,6 +53,10 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 /// Permission management service providing centralized authorization and access control for collaborative features.
 ///
 /// This singleton service implements a comprehensive permission system with mock authentication for development
@@ -75,17 +79,33 @@ class PermissionService {
   /// Repository handling all Firebase Auth communication and operations.
   final AuthRepository _authRepository;
   
+  /// Repository handling recipe data operations.
+  final RecipeRepository? _recipeRepository;
+  
+  /// Unified recipe service for accessing cached recipe data.
+  late final UnifiedRecipeService _recipeService;
+  
+  /// Recipe permission helper for actual permission validation.
+  late final RecipePermissionHelper _permissionHelper;
+  
   /// Private singleton instance for thread-safe singleton implementation.
   static PermissionService? _instance;
   
   /// Factory constructor providing singleton access to the permission service.
-  factory PermissionService({AuthRepository? authRepository}) {
-    _instance ??= PermissionService._internal(authRepository ?? FirebaseAuthRepository());
+  factory PermissionService({AuthRepository? authRepository, RecipeRepository? recipeRepository}) {
+    _instance ??= PermissionService._internal(
+      authRepository ?? FirebaseAuthRepository(),
+      recipeRepository,
+    );
     return _instance!;
   }
   
   /// Private constructor for singleton pattern implementation.
-  PermissionService._internal(this._authRepository);
+  PermissionService._internal(this._authRepository, this._recipeRepository) {
+    // CRITICAL FIX: Initialize actual permission validation components
+    _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+    _permissionHelper = RecipePermissionHelper(_recipeService);
+  }
   
   /// Reset singleton instance for testing purposes only.
   /// 
@@ -95,6 +115,35 @@ class PermissionService {
   @visibleForTesting
   static void resetForTesting() {
     _instance = null;
+  }
+  
+  /// Asynchronously check if the current user owns a recipe.
+  /// 
+  /// This method queries the recipe repository to verify ownership,
+  /// providing accurate ownership validation based on actual recipe data.
+  /// Use this method when async operations are acceptable.
+  Future<bool> isRecipeOwnerAsync(String recipeId) async {
+    // Security: Must be authenticated to own recipes
+    if (currentUserId == null) return false;
+    
+    // Security: Validate recipe ID
+    if (recipeId.isEmpty) return false;
+    
+    // If no repository is available, fall back to authenticated user check
+    if (_recipeRepository == null) return true;
+    
+    try {
+      // Query the recipe from repository
+      final recipe = await _recipeRepository.read(recipeId);
+      if (recipe == null) return false;
+      
+      // Check ownership
+      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      return ownerId == currentUserId;
+    } catch (e) {
+      // If we can't verify, default to safe (deny)
+      return false;
+    }
   }
 
   /// Current authenticated user ID for permission validation and ownership checks.
@@ -328,13 +377,22 @@ class PermissionService {
     // Security: Validate resource ID
     if (resourceId.isEmpty) return null;
     
-    // NOTE: In a full implementation, this would:
-    // 1. Query the resource (recipe/shopping list/group) from the appropriate repository
-    // 2. Check the resource's socialData.memberPermissions map for the current user
-    // 3. Return the appropriate permission level
-    
-    // For now, return viewer permission for authenticated users
-    return ResourcePermission.viewer;
+    // CRITICAL FIX: Use actual permission validation instead of mock bypass
+    try {
+      // Get recipe from cached data in UnifiedRecipeService
+      final recipe = _recipeService.getRecipeById(resourceId);
+      if (recipe == null) {
+        // Recipe not found or not accessible - no permissions
+        return null;
+      }
+      
+      // Use RecipePermissionHelper for actual permission validation
+      return _permissionHelper.getUserPermission(recipe, currentUserId!);
+      
+    } catch (e) {
+      // If validation fails, default to safe (no permissions)
+      return null;
+    }
   }
 
   /// Validates whether the current user has at least the specified permission level for a resource.
@@ -577,12 +635,23 @@ class PermissionService {
     // Security: Validate recipe ID
     if (recipeId.isEmpty) return false;
     
-    // Check recipe ownership
-    // In a full implementation, this would query the recipe from Firebase
-    // and check if recipe.userId == currentUserId
-    // For now, check if the recipe ID pattern suggests ownership
-    // Personal recipes often include the user ID in their ID
-    return recipeId.contains(currentUserId!);
+    // CRITICAL FIX: Use actual permission validation instead of mock bypass
+    try {
+      // Get recipe from cached data in UnifiedRecipeService
+      final recipe = _recipeService.getRecipeById(recipeId);
+      if (recipe == null) {
+        // Recipe not found or not accessible
+        return false;
+      }
+      
+      // Use RecipePermissionHelper for actual ownership validation
+      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      return ownerId == currentUserId;
+      
+    } catch (e) {
+      // If validation fails, default to safe (deny access)
+      return false;
+    }
   }
 
   /// Validates user permission to invite others to join a specific group.

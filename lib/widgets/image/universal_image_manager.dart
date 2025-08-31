@@ -9,6 +9,8 @@ import 'package:butlery/widgets/image/editable_image_widget.dart';
 import 'package:butlery/widgets/image/image_picker_widget.dart';
 import 'package:butlery/widgets/image/image_gallery_widget.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Universal Image Manager - Refactored with focused widgets
 ///
@@ -24,12 +26,23 @@ class UniversalImageManager extends StatefulWidget {
   final Function(String)? onImageRemoved;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+  final VoidCallback? onPickImage;
   final String? displayName;
   final String? email;
   final bool isOnline;
   final int primaryIndex;
   final bool isLoading;
   final String? heroTag;
+  // Enhanced Upload Progress Parameters
+  final Map<String, ImageUploadStatus>? uploadStatuses;
+  final Function(String)? onRetryUpload;
+  final Function(String)? onCancelUpload;
+  final String? uploadQueueStatus;
+  // Bulk Upload Management Parameters
+  final Map<String, dynamic>? uploadManagementSummary;
+  final VoidCallback? onRetryAllFailed;
+  final VoidCallback? onCancelAllActive;
+  final VoidCallback? onClearAllFailed;
 
   const UniversalImageManager({
     super.key,
@@ -42,12 +55,23 @@ class UniversalImageManager extends StatefulWidget {
     this.onImageRemoved,
     this.onTap,
     this.onLongPress,
+    this.onPickImage,
     this.displayName,
     this.email,
     this.isOnline = false,
     this.primaryIndex = 0,
     this.isLoading = false,
     this.heroTag,
+    // Enhanced Upload Progress Parameters
+    this.uploadStatuses,
+    this.onRetryUpload,
+    this.onCancelUpload,
+    this.uploadQueueStatus,
+    // Bulk Upload Management Parameters
+    this.uploadManagementSummary,
+    this.onRetryAllFailed,
+    this.onCancelAllActive,
+    this.onClearAllFailed,
   });
 
   /// Avatar constructor
@@ -149,6 +173,16 @@ class UniversalImageManager extends StatefulWidget {
     Function(int)? onImageTap,
     int primaryIndex = 0,
     bool isLoading = false,
+    // Enhanced Upload Progress Parameters
+    Map<String, ImageUploadStatus>? uploadStatuses,
+    Function(String)? onRetryUpload,
+    Function(String)? onCancelUpload,
+    String? uploadQueueStatus,
+    // Bulk Upload Management Parameters
+    Map<String, dynamic>? uploadManagementSummary,
+    VoidCallback? onRetryAllFailed,
+    VoidCallback? onCancelAllActive,
+    VoidCallback? onClearAllFailed,
     // Legacy API compatibility
     String? userId,
     Function(String)? onAddImage,
@@ -160,17 +194,42 @@ class UniversalImageManager extends StatefulWidget {
     Function(List<String>)? finalOnImagesChanged = onImagesChanged;
     Function(int)? finalOnPrimaryImageChanged = onPrimaryImageChanged;
     
-    if (onAddImage != null || onRemoveImage != null) {
+    // Enhanced legacy API conversion for proper callback handling
+    if (onRemoveImage != null) {
       finalOnImagesChanged = (List<String> newImages) {
-        // Legacy support - this is a simplified conversion
+        // Call the new API callback first
         onImagesChanged?.call(newImages);
+        
+        // For legacy onRemoveImage, we need to determine which index was removed
+        // This is called when an image is removed from the new grid system
+        if (newImages.length < imageUrls.length) {
+          // Find the index of the removed image
+          for (int i = 0; i < imageUrls.length; i++) {
+            if (i >= newImages.length || 
+                (i < newImages.length && imageUrls[i] != newImages[i])) {
+              // Call the legacy callback with the removed index
+              onRemoveImage(i);
+              break;
+            }
+          }
+        }
+      };
+    } else if (onAddImage != null) {
+      // Handle onAddImage if provided (though this is less common)
+      finalOnImagesChanged = (List<String> newImages) {
+        onImagesChanged?.call(newImages);
+        // Note: onAddImage expects a string, but we only have the full list here
+        // This is a limitation of the legacy API conversion
       };
     }
     
+    // Enhanced legacy API conversion for primary image selection
     if (onSetPrimary != null) {
       finalOnPrimaryImageChanged = (int index) {
-        onSetPrimary(index);
+        AppLogger.debug('🌟 UNIVERSAL: Primary image changed to index $index');
+        // Call both new and legacy callbacks
         onPrimaryImageChanged?.call(index);
+        onSetPrimary(index);
       };
     }
 
@@ -186,8 +245,19 @@ class UniversalImageManager extends StatefulWidget {
       onImagesChanged: finalOnImagesChanged,
       onPrimaryImageChanged: finalOnPrimaryImageChanged,
       onImageTap: onImageTap,
+      onPickImage: onPickImage,
       primaryIndex: primaryIndex,
       isLoading: isLoading,
+      // Enhanced Upload Progress Parameters
+      uploadStatuses: uploadStatuses,
+      onRetryUpload: onRetryUpload,
+      onCancelUpload: onCancelUpload,
+      uploadQueueStatus: uploadQueueStatus,
+      // Bulk Upload Management Parameters
+      uploadManagementSummary: uploadManagementSummary,
+      onRetryAllFailed: onRetryAllFailed,
+      onCancelAllActive: onCancelAllActive,
+      onClearAllFailed: onClearAllFailed,
     );
   }
 
@@ -429,8 +499,19 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       onImagesChanged: widget.onImagesChanged,
       onPrimaryImageChanged: widget.onPrimaryImageChanged,
       onImageTap: widget.onImageTap,
+      onPickImage: widget.onPickImage,
       primaryIndex: widget.primaryIndex,
       isLoading: widget.isLoading,
+      // Enhanced Upload Progress Parameters
+      uploadStatuses: widget.uploadStatuses,
+      onRetryUpload: widget.onRetryUpload,
+      onCancelUpload: widget.onCancelUpload,
+      uploadQueueStatus: widget.uploadQueueStatus,
+      // Bulk Upload Management Parameters
+      uploadManagementSummary: widget.uploadManagementSummary,
+      onRetryAllFailed: widget.onRetryAllFailed,
+      onCancelAllActive: widget.onCancelAllActive,
+      onClearAllFailed: widget.onClearAllFailed,
     );
   }
 

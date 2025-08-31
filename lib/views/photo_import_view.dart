@@ -238,7 +238,7 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Importera från foto')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -300,12 +300,7 @@ class _PhotoImportViewContent extends StatelessWidget {
             if (viewModel.hasOcrResult) ...[
               const Text('Tolkad text:', style: AppTextStyles.headlineSmall),
               const SizedBox(height: AppDimensions.spacingM),
-              Expanded(
-                flex: 2,
-                child: TextDisplayCard(
-                  text: viewModel.ocrText,
-                ),
-              ),
+              TextDisplayCard(text: viewModel.ocrText),
               const SizedBox(height: AppDimensions.spacingXl),
               // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
               UtilityComponents.primaryButton(
@@ -315,6 +310,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                 onPressed: () => _navigateToTextImport(context, viewModel),
                 isExpanded: true,
               ),
+              // Add bottom padding for safe scrolling
+              const SizedBox(height: AppDimensions.spacingXl),
             ],
           ],
         ),
@@ -351,15 +348,19 @@ class _PhotoImportViewContent extends StatelessWidget {
     }
 
     if (viewModel.hasImage) {
+      // Calculate adaptive height based on screen size (max 40% of screen height, min 200px)
+      final screenHeight = MediaQuery.of(context).size.height;
+      final adaptiveHeight = (screenHeight * 0.4).clamp(200.0, 400.0);
+      
       return ImagePreviewCard.loading(
-        height: 300,
+        height: adaptiveHeight,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           child: Stack(
             children: [
               Image.memory(
                 viewModel.imageBytes!,
-                height: 300,
+                height: adaptiveHeight,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
@@ -367,7 +368,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                 top: AppDimensions.spacingS,
                 right: AppDimensions.spacingS,
                 child: OverlayButton.remove(
-                  onPressed: viewModel.clearAll,
+                  onPressed: viewModel.clearPhoto,
                   tooltip: 'Ta bort bild',
                 ),
               ),

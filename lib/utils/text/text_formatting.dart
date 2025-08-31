@@ -84,13 +84,28 @@ class TextFormatting {
       RegExp(r'[\u{1D400}-\u{1D7FF}]', unicode: true),
       (m) {
         final original = m[0]!;
-        final code = original.codeUnitAt(0);
-        final normalizedCode = code - 0x1D400 + 0x41;
-        // Validate code point range to prevent invalid character generation
-        if (normalizedCode < 0 || normalizedCode > 0x10FFFF) {
-          return '';
+        // Get the actual Unicode code point, not the UTF-16 code unit
+        final code = original.runes.first;
+        
+        // Map mathematical bold/italic/etc letters to standard ASCII
+        // Mathematical Bold Capital A (U+1D400) -> A (U+0041)
+        // Mathematical Bold Capital B (U+1D401) -> B (U+0042), etc.
+        
+        // Mathematical Bold Capital Letters: U+1D400-U+1D419 -> A-Z
+        if (code >= 0x1D400 && code <= 0x1D419) {
+          return String.fromCharCode(code - 0x1D400 + 0x41); // A-Z
         }
-        return String.fromCharCode(normalizedCode);
+        // Mathematical Bold Small Letters: U+1D41A-U+1D433 -> a-z
+        if (code >= 0x1D41A && code <= 0x1D433) {
+          return String.fromCharCode(code - 0x1D41A + 0x61); // a-z
+        }
+        // Mathematical Bold Digits: U+1D7CE-U+1D7D7 -> 0-9
+        if (code >= 0x1D7CE && code <= 0x1D7D7) {
+          return String.fromCharCode(code - 0x1D7CE + 0x30); // 0-9
+        }
+        
+        // For other mathematical symbols in this range, remove them
+        return '';
       },
     );
 
@@ -199,7 +214,12 @@ class TextFormatting {
     final normalized = number.trim().replaceAll(',', '.');
 
     try {
-      return double.parse(normalized);
+      final result = double.parse(normalized);
+      // Check for NaN or Infinity and return default
+      if (result.isNaN || result.isInfinite) {
+        return 1.0;
+      }
+      return result;
     } catch (e) {
       // Return cooking-friendly default (1.0) for invalid input
       return 1.0;
@@ -232,31 +252,41 @@ class TextFormatting {
   /// toSwedishHalfFraction(1.33);  // Returns "1,33" (fallback)
   /// ```
   static String toSwedishHalfFraction(double value) {
-    final integerPart = value.truncate();
-    final fracPart = value - integerPart;
+    // Handle special values
+    if (value.isNaN) return 'NaN';
+    if (value.isInfinite) {
+      return value.isNegative ? '-∞' : '∞';
+    }
+    
+    // Handle negative values
+    final isNegative = value < 0;
+    final absValue = value.abs();
+    
+    final integerPart = absValue.truncate();
+    final fracPart = absValue - integerPart;
 
     // Check for half fraction with floating-point tolerance
     if ((fracPart - 0.5).abs() < 0.001) {
       if (integerPart == 0) {
-        return '½';
+        return isNegative ? '-½' : '½';
       }
-      return '$integerPart ½';
+      return isNegative ? '-$integerPart ½' : '$integerPart ½';
     }
 
     // Check for quarter fraction with floating-point tolerance
     if ((fracPart - 0.25).abs() < 0.001) {
       if (integerPart == 0) {
-        return '¼';
+        return isNegative ? '-¼' : '¼';
       }
-      return '$integerPart ¼';
+      return isNegative ? '-$integerPart ¼' : '$integerPart ¼';
     }
 
     // Check for three-quarter fraction with floating-point tolerance
     if ((fracPart - 0.75).abs() < 0.001) {
       if (integerPart == 0) {
-        return '¾';
+        return isNegative ? '-¾' : '¾';
       }
-      return '$integerPart ¾';
+      return isNegative ? '-$integerPart ¾' : '$integerPart ¾';
     }
 
     // Fallback to Swedish decimal formatting for non-fraction values

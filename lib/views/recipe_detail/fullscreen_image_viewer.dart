@@ -1,8 +1,7 @@
 // lib/views/recipe_detail/fullscreen_image_viewer.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
+import 'package:flutter/services.dart';
 
 /// Fullscreen image viewer for recipe images
 ///
@@ -28,28 +27,54 @@ class FullscreenImageViewer extends StatefulWidget {
 class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   late PageController _pageController;
   late int _currentIndex;
+  bool _showAppBar = true;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+
+    // Keep navigation bar visible for back gesture
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    );
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+
+    // Restore system UI when leaving fullscreen
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    );
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: _showAppBar
+            ? Colors.black.withValues(alpha: 0.7)
+            : Colors.transparent,
         elevation: 0,
-        title: Text('${_currentIndex + 1} / ${widget.imageUrls.length}'),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        title: _showAppBar
+            ? Text(
+                '${_currentIndex + 1} / ${widget.imageUrls.length}',
+                style: const TextStyle(color: Colors.white),
+              )
+            : null,
+        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: PageView.builder(
         controller: _pageController,
@@ -62,13 +87,46 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         },
         itemCount: widget.imageUrls.length,
         itemBuilder: (context, index) {
-          return InteractiveViewer(
-            minScale: 0.5,
-            maxScale: 4.0,
-            child: Center(
-              child: img.UniversalImageManager.carousel(
-                imageUrls: [widget.imageUrls[index]],
-                height: MediaQuery.of(context).size.height,
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _showAppBar = !_showAppBar;
+              });
+            },
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.black,
+                child: Center(
+                  child: Image.network(
+                    widget.imageUrls[index],
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          value: progress.expectedTotalBytes != null
+                              ? progress.cumulativeBytesLoaded /
+                                  progress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           );

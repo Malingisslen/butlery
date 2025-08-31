@@ -270,13 +270,14 @@ class CollaborativeShoppingOperations {
       return false;
     }
 
-    // Check if current user can manage members
-    if (!canManageMembers(listId)) {
+    // Check if current user can manage members OR is removing themselves
+    final isRemovingSelf = _parent.currentUserId == userId;
+    if (!isRemovingSelf && !canManageMembers(listId)) {
       AppLogger.error('Cannot remove member: No permission to manage members');
       return false;
     }
 
-    // Cannot remove owner
+    // Cannot remove owner (even if removing self)
     if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) &&
         ServiceLocator.get<PermissionService>().currentUserId == userId) {
       AppLogger.error('Cannot remove owner from list');
@@ -375,10 +376,16 @@ class CollaborativeShoppingOperations {
           'Owner cannot leave list. Transfer ownership or delete list.');
       return false;
     }
+    
+    final currentUserId = _parent.currentUserId;
+    if (currentUserId == null) {
+      AppLogger.error('Cannot leave list: User not authenticated');
+      return false;
+    }
 
     return await removeMember(
       listId: listId,
-      userId: _parent.currentUserId!,
+      userId: currentUserId,
     );
   }
 
@@ -406,6 +413,13 @@ class CollaborativeShoppingOperations {
       AppLogger.error('Cannot add item: No edit permission');
       return false;
     }
+    
+    final currentUserId = _parent.currentUserId;
+    final currentUserDisplayName = _parent.currentUserDisplayName;
+    if (currentUserId == null || currentUserDisplayName == null) {
+      AppLogger.error('Cannot add item: User information incomplete');
+      return false;
+    }
 
     try {
       final item = UnifiedShoppingItem.collaborative(
@@ -413,8 +427,8 @@ class CollaborativeShoppingOperations {
         amount: amount,
         unit: unit,
         category: category,
-        addedByUserId: _parent.currentUserId!,
-        addedByDisplayName: _parent.currentUserDisplayName!,
+        addedByUserId: currentUserId,
+        addedByDisplayName: currentUserDisplayName,
         note: note?.trim(),
         estimatedPrice: estimatedPrice,
         priority: priority,

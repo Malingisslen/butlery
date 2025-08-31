@@ -32,6 +32,9 @@ import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 
+// Social repositories (for UnifiedRecipeService dependencies)
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+
 // Content services
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
@@ -43,6 +46,7 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/services/backup_service.dart';
 
 // Import core module for dependencies
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -79,6 +83,7 @@ class ContentModule implements DIModule {
     OfflineService,
     CollaborativeRecipeRepository,
     RecommendationService,
+    BackupService,
   ];
 
   @override
@@ -97,98 +102,62 @@ class ContentModule implements DIModule {
       container.registerSingleton<RecipeRepository>(
         FirebaseRecipeRepository(authRepository: container<AuthRepository>()),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] RecipeRepository registered');
-      }
 
       // Collaborative recipe repository
       container.registerSingleton<CollaborativeRecipeRepository>(
         CollaborativeRecipeRepository(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] CollaborativeRecipeRepository registered');
-      }
 
       // ==================== UNIFIED RECIPE SYSTEM ====================
       
       // UnifiedRecipeService - core recipe management
-      container.registerSingleton<UnifiedRecipeService>(UnifiedRecipeService(
+      // Note: We use lazy singleton to ensure social dependencies are available
+      container.registerLazySingleton<UnifiedRecipeService>(() => UnifiedRecipeService(
         // Using FirestoreRepository for standardized Firestore access
         firestore: container<FirestoreRepository>().firestore,
         authRepository: container<AuthRepository>() as FirebaseAuthRepository,
+        // Include social dependencies if available (from SocialModule)
+        ratingsRepository: container.isRegistered<RatingsRepository>() 
+            ? container<RatingsRepository>() 
+            : null,
+        firestoreRepository: container.isRegistered<FirestoreRepository>()
+            ? container<FirestoreRepository>()
+            : null,
       ));
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] UnifiedRecipeService registered');
-      }
 
       // Import manager for various content import methods
       container.registerLazySingleton<ImportManager>(
         () => ImportManager(container<UnifiedRecipeService>().personal),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] ImportManager registered');
-      }
 
       // ==================== CONTENT SERVICES ====================
 
       // Menu service for meal planning
       container.registerSingleton<MenuService>(MenuService());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] MenuService registered');
-      }
 
       // Unified menu service for collaborative menu planning
       container.registerSingleton<UnifiedMenuService>(UnifiedMenuService(
         firestore: container<FirestoreRepository>().firestore,
       ));
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] UnifiedMenuService registered');
-      }
 
       // Search service for content discovery
       container.registerSingleton<SearchService>(SearchService());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] SearchService registered');
-      }
 
       // Share service for content sharing
       container.registerSingleton<ShareService>(ShareService());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] ShareService registered');
-      }
 
       // Storage repository for storage operations
       container.registerSingleton<StorageRepository>(
         FirebaseStorageRepository(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] StorageRepository registered');
-      }
 
       // Storage service for file management
       container.registerSingleton<StorageService>(
         StorageService(repository: container<StorageRepository>()),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] StorageService registered');
-      }
 
       // Image picker service for photo handling
       container.registerSingleton<ImagePickerService>(ImagePickerService());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] ImagePickerService registered');
-      }
 
       // Offline service for content synchronization
       container.registerSingleton<OfflineService>(
@@ -197,20 +166,15 @@ class ContentModule implements DIModule {
           authRepository: container<AuthRepository>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] OfflineService registered');
-      }
 
       // Recommendation service for AI-powered content recommendations
       container.registerSingleton<RecommendationService>(RecommendationService());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] RecommendationService registered');
-      }
+
+      // Backup service for recipe data export and import
+      container.registerSingleton<BackupService>(BackupService());
 
       if (kDebugMode) {
-        debugPrint('✅ [ContentModule] All content services configured');
+        debugPrint('✅ [ContentModule] Configured 13 services (Recipes, Menus, Import, Storage, Offline, Backup)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -224,36 +188,20 @@ class ContentModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint('⚡ [ContentModule] Initializing content services...');
-    }
-
     try {
       final container = GetIt.instance;
 
       // Initialize UnifiedRecipeService
       final unifiedRecipeService = container<UnifiedRecipeService>();
       await unifiedRecipeService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] UnifiedRecipeService initialized');
-      }
 
       // Initialize UnifiedMenuService
       final unifiedMenuService = container<UnifiedMenuService>();
       await unifiedMenuService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] UnifiedMenuService initialized');
-      }
 
       // Initialize OfflineService (Hive dependency)
       final offlineService = container<OfflineService>();
       await offlineService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] OfflineService initialized');
-      }
 
       // Validate other services are accessible (no explicit initialization needed)
       final services = [
@@ -262,6 +210,7 @@ class ContentModule implements DIModule {
         container<ShareService>(),
         container<StorageService>(),
         container<ImagePickerService>(),
+        container<BackupService>(),
       ];
 
       for (final service in services) {
@@ -269,13 +218,6 @@ class ContentModule implements DIModule {
         service.toString();
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] All content services validated');
-      }
-
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] All content services initialized');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -304,6 +246,7 @@ class ContentModule implements DIModule {
         'OfflineService': container<OfflineService>(),
         'CollaborativeRecipeRepository': container<CollaborativeRecipeRepository>(),
         'RecommendationService': container<RecommendationService>(),
+        'BackupService': container<BackupService>(),
       };
 
       // Perform health checks on services that support it
@@ -329,9 +272,6 @@ class ContentModule implements DIModule {
         }
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [ContentModule] Health check passed for all services');
-      }
       
       return true;
     } catch (e) {

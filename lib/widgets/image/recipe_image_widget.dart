@@ -101,7 +101,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
 
     return Container(
       width: dimensions.width == double.infinity ? null : dimensions.width,
-      height: dimensions.height,
+      height: dimensions.height == double.infinity ? null : dimensions.height,
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         color: AppColors.cardWhite,
@@ -158,14 +158,17 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildRecipeDetail() {
-
     return Stack(
       children: [
-        ClipRRect(
-          borderRadius: widget.config.effectiveBorderRadius,
-          child: widget.imageUrls.length == 1
-              ? _buildSingleImage(widget.imageUrls.first)
-              : _buildImageCarousel(),
+        // AspectRatio wrapper prevents distortion while maintaining responsiveness
+        AspectRatio(
+          aspectRatio: widget.config.getAspectRatio(),
+          child: ClipRRect(
+            borderRadius: widget.config.effectiveBorderRadius,
+            child: widget.imageUrls.length == 1
+                ? _buildSingleImage(widget.imageUrls.first)
+                : _buildImageCarousel(),
+          ),
         ),
 
         if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
@@ -187,10 +190,14 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildSingleImage(String imageUrl) {
-    Widget image = OptimizedImageLoader.recipeDetail(
-      imageUrl: imageUrl,
-      config: widget.config,
-      onTap: null,
+    Widget image = RepaintBoundary(
+      key: ValueKey('single_image_$imageUrl'),
+      child: OptimizedImageLoader.recipeDetail(
+        key: ValueKey('optimized_single_$imageUrl'),
+        imageUrl: imageUrl,
+        config: widget.config,
+        onTap: null,
+      ),
     );
 
     if (widget.heroTag != null) {
@@ -217,32 +224,39 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildImageCarousel() {
-    return PageView.builder(
-      controller: _pageController,
-      onPageChanged: (index) {
-        if (mounted) {
-          setState(() {
-            _currentIndex = index;
-          });
-        }
-      },
-      itemCount: widget.imageUrls.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            if (widget.config.enableHapticFeedback) {
-              HapticFeedback.lightImpact();
-            }
-            widget.onTap?.call();
-            widget.onImageTap?.call(index);
-          },
-          child: OptimizedImageLoader.recipeDetail(
-            imageUrl: widget.imageUrls[index],
-            config: widget.config,
-            onTap: null,
-          ),
-        );
-      },
+    return RepaintBoundary(
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          if (mounted) {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
+        },
+        itemCount: widget.imageUrls.length,
+        itemBuilder: (context, index) {
+          final imageUrl = widget.imageUrls[index];
+          return RepaintBoundary(
+            key: ValueKey('recipe_image_$imageUrl'),
+            child: GestureDetector(
+              onTap: () {
+                if (widget.config.enableHapticFeedback) {
+                  HapticFeedback.lightImpact();
+                }
+                widget.onTap?.call();
+                widget.onImageTap?.call(index);
+              },
+              child: OptimizedImageLoader.recipeDetail(
+                key: ValueKey('optimized_loader_$imageUrl'),
+                imageUrl: imageUrl,
+                config: widget.config,
+                onTap: null,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -319,7 +333,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
 
     return SizedBox(
       width: dimensions.width == double.infinity ? null : dimensions.width,
-      height: dimensions.height,
+      height: dimensions.height == double.infinity ? null : dimensions.height,
       child: Stack(
         children: [
             ClipRRect(

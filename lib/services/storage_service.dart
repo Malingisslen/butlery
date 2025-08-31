@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/permission_service.dart' as permission;
 
 // Re-export StorageInfo from repository interface
 export 'package:butlery/repositories/interfaces/storage_repository.dart' show StorageInfo;
@@ -72,6 +75,38 @@ class StorageService extends BaseService
     );
   }
 
+  /// Upload image from bytes (for web platform)
+  Future<String?> uploadImageBytes(
+    Uint8List imageBytes,
+    String userId,
+    String fileName, {
+    Function(double)? onProgress,
+  }) async {
+    return await executeServiceOperation<String?>(
+      () async {
+        // Generate unique filename if not provided
+        final uniqueFileName = _repository.generateFileName(
+          originalPath: fileName,
+          prefix: 'avatar',
+        );
+        final path = 'users/$userId/avatars/$uniqueFileName';
+        
+        final url = await _repository.uploadImageData(
+          imageData: imageBytes,
+          userId: userId,
+          path: path,
+          onProgress: onProgress,
+        );
+        
+        return url;
+      },
+      operationName: 'Upload image bytes',
+      requiresAuth: true,
+      requiresNetwork: true,
+      defaultValue: null,
+    );
+  }
+
   /// Upload multiple images
   Future<List<String>> uploadMultipleImages(
     List<File> imageFiles,
@@ -133,8 +168,16 @@ class StorageService extends BaseService
     String recipeId, {
     Function(double)? onProgress,
   }) async {
-    // Use current user ID or fallback logic
-    const userId = 'current_user'; // This should be replaced with actual user ID logic
+    // Get authenticated user ID from permission service
+    final permissionService = ServiceLocator.get<permission.PermissionService>();
+    final userId = permissionService.currentUserId;
+    
+    if (userId == null) {
+      AppLogger.error('🚫 STORAGE_SERVICE: No authenticated user for image upload');
+      return null;
+    }
+    
+    AppLogger.info('🎯 STORAGE_SERVICE: Uploading recipe image for user: $userId');
     return await uploadImageFile(imageFile, userId, onProgress: onProgress);
   }
 

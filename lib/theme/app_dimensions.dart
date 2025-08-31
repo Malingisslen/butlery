@@ -333,6 +333,17 @@ class AppDimensions {
   /// Extra large buttons width
   static const double buttonWidthXLarge = 280.0; // Extra large buttons
 
+  // ===== GRID BUTTON LAYOUT CONSTANTS =====
+
+  /// Optimal button size for mobile recipe grid (prevents text wrapping)
+  static const double gridButtonSize = 160.0;
+  
+  /// Spacing between grid buttons
+  static const double gridButtonSpacing = 24.0;
+  
+  /// Spacing between grid rows
+  static const double gridRowSpacing = 20.0;
+
 
 
   // ===== SHADOWS (FROM ORIGINAL APPTHEME) =====

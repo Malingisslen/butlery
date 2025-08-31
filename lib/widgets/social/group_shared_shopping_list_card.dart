@@ -645,20 +645,23 @@ class GroupSharedShoppingListCard {
             children: [
               const Text('Varför vill du rapportera denna inköpslista?'),
               const SizedBox(height: 16),
-              ...[
-                'Olämpligt innehåll',
-                'Spam eller reklam',
-                'Felaktig information',
-                'Upphovsrättsintrång',
-                'Annat'
-              ].map((reason) => RadioListTile<String>(
-                title: Text(reason),
-                value: reason,
-                groupValue: selectedReason,
+              RadioGroup<String>(
                 onChanged: (value) {
                   setState(() => selectedReason = value);
                 },
-              )),
+                child: Column(
+                  children: [
+                    'Olämpligt innehåll',
+                    'Spam eller reklam',
+                    'Felaktig information',
+                    'Upphovsrättsintrång',
+                    'Annat'
+                  ].map((reason) => RadioListTile<String>(
+                    title: Text(reason),
+                    value: reason,
+                  )).toList(),
+                ),
+              ),
             ],
           ),
           actions: [

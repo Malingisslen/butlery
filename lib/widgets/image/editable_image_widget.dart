@@ -10,16 +10,29 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 
-/// Editable image widget for recipe editing
+/// Editable image widget with individual progress tracking for recipe editing
 class EditableImageWidget extends StatefulWidget {
   final List<String> imageUrls;
   final ImageConfig config;
   final Function(List<String>)? onImagesChanged;
   final Function(int)? onPrimaryImageChanged;
   final Function(int)? onImageTap;
+  final VoidCallback? onPickImage;
   final int primaryIndex;
   final bool isLoading;
+
+  // Enhanced Upload Progress Support
+  final Map<String, ImageUploadStatus>? uploadStatuses;
+  final Function(String)? onRetryUpload;
+  final Function(String)? onCancelUpload;
+  final String? uploadQueueStatus; // Overall upload queue summary text
+  // Bulk Upload Management
+  final Map<String, dynamic>? uploadManagementSummary;
+  final VoidCallback? onRetryAllFailed;
+  final VoidCallback? onCancelAllActive;
+  final VoidCallback? onClearAllFailed;
 
   const EditableImageWidget({
     super.key,
@@ -28,11 +41,20 @@ class EditableImageWidget extends StatefulWidget {
     this.onImagesChanged,
     this.onPrimaryImageChanged,
     this.onImageTap,
+    this.onPickImage,
     this.primaryIndex = 0,
     this.isLoading = false,
+    this.uploadStatuses,
+    this.onRetryUpload,
+    this.onCancelUpload,
+    this.uploadQueueStatus,
+    this.uploadManagementSummary,
+    this.onRetryAllFailed,
+    this.onCancelAllActive,
+    this.onClearAllFailed,
   });
 
-  /// Factory constructor for recipe editing
+  /// Factory constructor for recipe editing with upload progress support
   factory EditableImageWidget.recipeEdit({
     Key? key,
     required List<String> imageUrls,
@@ -43,8 +65,19 @@ class EditableImageWidget extends StatefulWidget {
     Function(List<String>)? onImagesChanged,
     Function(int)? onPrimaryImageChanged,
     Function(int)? onImageTap,
+    VoidCallback? onPickImage,
     int primaryIndex = 0,
     bool isLoading = false,
+    // Enhanced Upload Progress Parameters
+    Map<String, ImageUploadStatus>? uploadStatuses,
+    Function(String)? onRetryUpload,
+    Function(String)? onCancelUpload,
+    String? uploadQueueStatus,
+    // Bulk Upload Management Parameters
+    Map<String, dynamic>? uploadManagementSummary,
+    VoidCallback? onRetryAllFailed,
+    VoidCallback? onCancelAllActive,
+    VoidCallback? onClearAllFailed,
   }) {
     return EditableImageWidget(
       key: key,
@@ -58,8 +91,17 @@ class EditableImageWidget extends StatefulWidget {
       onImagesChanged: onImagesChanged,
       onPrimaryImageChanged: onPrimaryImageChanged,
       onImageTap: onImageTap,
+      onPickImage: onPickImage,
       primaryIndex: primaryIndex,
       isLoading: isLoading,
+      uploadStatuses: uploadStatuses,
+      onRetryUpload: onRetryUpload,
+      onCancelUpload: onCancelUpload,
+      uploadQueueStatus: uploadQueueStatus,
+      uploadManagementSummary: uploadManagementSummary,
+      onRetryAllFailed: onRetryAllFailed,
+      onCancelAllActive: onCancelAllActive,
+      onClearAllFailed: onClearAllFailed,
     );
   }
 
@@ -80,6 +122,25 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
   }
 
   @override
+  void didUpdateWidget(EditableImageWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Reset internal loading state when external loading starts
+    // This provides seamless transition from widget loading to external loading
+    if (!oldWidget.isLoading && widget.isLoading && _isAddingImage) {
+      setState(() {
+        _isAddingImage = false;
+      });
+    }
+
+    // Update page controller if primary index changed
+    if (oldWidget.primaryIndex != widget.primaryIndex) {
+      _currentIndex = widget.primaryIndex;
+      _pageController = PageController(initialPage: widget.primaryIndex);
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -87,15 +148,264 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Remove unused theme variable
-    final dimensions = widget.config.getDimensions();
+    Widget mainContent;
 
-    return SizedBox(
-      width: dimensions.width == double.infinity ? null : dimensions.width,
-      height: dimensions.height,
-      child: widget.imageUrls.isEmpty
-          ? _buildEmptyEditState()
-          : _buildEditCarousel(),
+    // Determine main content based on image count
+    if (widget.imageUrls.isEmpty) {
+      // ULTRATHINK FIX: Use compact picker configuration for empty state to prevent oversized empty picker
+      final pickerConfig =
+          ImageConfig.picker(maxImages: widget.config.maxImages);
+      final pickerDimensions = pickerConfig.getDimensions();
+      mainContent = SizedBox(
+        width: pickerDimensions.width == double.infinity
+            ? null
+            : pickerDimensions.width,
+        height: pickerDimensions.height == double.infinity
+            ? null
+            : pickerDimensions.height,
+        child: _buildEmptyEditState(),
+      );
+    } else if (widget.imageUrls.length == 1) {
+      // Single image: use original config dimensions for proper image display
+      final dimensions = widget.config.getDimensions();
+      mainContent = SizedBox(
+        width: dimensions.width == double.infinity ? null : dimensions.width,
+        height: dimensions.height == double.infinity ? null : dimensions.height,
+        child: _buildEditCarousel(),
+      );
+    } else {
+      // Multiple images: use adaptive grid layout that expands with content
+      final dimensions = widget.config.getDimensions();
+      mainContent = SizedBox(
+        width: dimensions.width == double.infinity ? null : dimensions.width,
+        // Remove fixed height for multiple images to allow vertical expansion
+        child: _buildMultiImageGrid(),
+      );
+    }
+
+    // Wrap with upload status if needed
+    if (widget.uploadQueueStatus != null &&
+        widget.uploadQueueStatus!.isNotEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildUploadQueueStatusBanner(),
+          const SizedBox(height: AppDimensions.spacingSm),
+          mainContent,
+        ],
+      );
+    }
+
+    return mainContent;
+  }
+
+  /// Build enhanced upload queue status banner with bulk management controls
+  Widget _buildUploadQueueStatusBanner() {
+    if (widget.uploadQueueStatus == null || widget.uploadQueueStatus!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final managementSummary = widget.uploadManagementSummary;
+    final showBulkControls = managementSummary != null &&
+        ((managementSummary['canBulkRetry'] as bool? ?? false) ||
+            (managementSummary['canBulkCancel'] as bool? ?? false) ||
+            (managementSummary['hasRetryableFailures'] as bool? ?? false));
+
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Status row with progress indicator and enhanced details
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryBlue),
+                      value: managementSummary != null
+                          ? (managementSummary['overallProgress'] as double?)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: Text(
+                      widget.uploadQueueStatus!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Enhanced progress details
+              if (managementSummary != null) ...[
+                const SizedBox(height: AppDimensions.spacingXs),
+                _buildProgressDetails(managementSummary),
+              ],
+            ],
+          ),
+
+          // Bulk management controls
+          if (showBulkControls) ...[
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildBulkManagementControls(managementSummary),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Build bulk management control buttons
+  Widget _buildBulkManagementControls(Map<String, dynamic>? summary) {
+    if (summary == null) return const SizedBox.shrink();
+    final canBulkRetry = summary['canBulkRetry'] as bool? ?? false;
+    final canBulkCancel = summary['canBulkCancel'] as bool? ?? false;
+    final hasRetryableFailures =
+        summary['hasRetryableFailures'] as bool? ?? false;
+    final failed = summary['failed'] as int? ?? 0;
+    final active = summary['active'] as int? ?? 0;
+
+    final controls = <Widget>[];
+
+    // Retry all failed button
+    if (canBulkRetry && widget.onRetryAllFailed != null) {
+      controls.add(
+        _buildBulkActionButton(
+          icon: Icons.refresh,
+          label: 'Försök alla ($failed)',
+          onTap: widget.onRetryAllFailed!,
+          color: AppColors.primaryBlue,
+        ),
+      );
+    }
+
+    // Cancel all active button
+    if (canBulkCancel && widget.onCancelAllActive != null) {
+      controls.add(
+        _buildBulkActionButton(
+          icon: Icons.stop,
+          label: 'Stoppa alla ($active)',
+          onTap: widget.onCancelAllActive!,
+          color: Colors.orange.shade600,
+        ),
+      );
+    }
+
+    // Clear failed button
+    if (hasRetryableFailures && widget.onClearAllFailed != null) {
+      controls.add(
+        _buildBulkActionButton(
+          icon: Icons.clear_all,
+          label: 'Rensa misslyckade',
+          onTap: widget.onClearAllFailed!,
+          color: Colors.red.shade600,
+        ),
+      );
+    }
+
+    if (controls.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: AppDimensions.spacingSm,
+      runSpacing: AppDimensions.spacingSm,
+      children: controls,
+    );
+  }
+
+  /// Build bulk action button
+  Widget _buildBulkActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Material(
+      color: color.withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.paddingS,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeS,
+                color: Colors.white,
+              ),
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(
+                label,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build enhanced progress details with analytics
+  Widget _buildProgressDetails(Map<String, dynamic> summary) {
+    final progressText = summary['progressText'] as String?;
+    final speedText = summary['speedText'] as String?;
+    final summaryText = summary['summaryText'] as String?;
+
+    final details = <String>[];
+
+    if (progressText != null && progressText.isNotEmpty) {
+      details.add(progressText);
+    }
+    if (speedText != null && speedText.isNotEmpty) {
+      details.add(speedText);
+    }
+    if (summaryText != null &&
+        summaryText.isNotEmpty &&
+        summaryText != progressText) {
+      details.add(summaryText);
+    }
+
+    if (details.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: details
+          .map((detail) => Padding(
+                padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+                child: Text(
+                  detail,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.8),
+                    fontSize: 11, // Slightly smaller for secondary details
+                  ),
+                ),
+              ))
+          .toList(),
     );
   }
 
@@ -115,14 +425,14 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _isAddingImage ? null : _addImage,
+          onTap: (_isAddingImage || widget.isLoading) ? null : _addImage,
           borderRadius: widget.config.effectiveBorderRadius,
           child: Center(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_isAddingImage) ...[
+                  if (_isAddingImage || widget.isLoading) ...[
                     const SizedBox(
                       width: AppDimensions.iconSizeXl,
                       height: AppDimensions.iconSizeXl,
@@ -158,7 +468,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     const SizedBox(
                         height: AppDimensions.spacingSm), // Reduced from 12
                     Text(
-                      'Add images',
+                      'Lägg till bilder',
                       style: AppTextStyles.bodyMedium.copyWith(
                         // Changed from bodyLarge
                         color: AppColors.textPrimary,
@@ -168,7 +478,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     const SizedBox(
                         height: AppDimensions.spacingXxs), // Reduced from 4
                     Text(
-                      'Tap to add up to ${widget.config.maxImages} images',
+                      'Tryck för att lägga till upp till ${widget.config.maxImages} bilder',
                       style: AppTextStyles.bodySmall.copyWith(
                         // Changed from bodyMedium
                         color: AppColors.textPrimary.withValues(alpha: 0.7),
@@ -192,13 +502,19 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         // Image carousel
         ClipRRect(
           borderRadius: widget.config.effectiveBorderRadius,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            itemCount: widget.imageUrls.length,
-            itemBuilder: (context, index) {
-              return _buildEditCarouselImage(index);
-            },
+          child: RepaintBoundary(
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              itemCount: widget.imageUrls.length,
+              itemBuilder: (context, index) {
+                final imageUrl = widget.imageUrls[index];
+                return RepaintBoundary(
+                  key: ValueKey('edit_image_$imageUrl'),
+                  child: _buildEditCarouselImage(index),
+                );
+              },
+            ),
           ),
         ),
 
@@ -241,24 +557,26 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     );
   }
 
-  /// Build individual image in carousel
+  /// Build individual image in carousel with upload progress indicators
   Widget _buildEditCarouselImage(int index) {
     final imageUrl = widget.imageUrls[index];
     final isPrimary = index == widget.primaryIndex;
-    // Remove unused theme variable
+    final uploadStatus = widget.uploadStatuses?[imageUrl];
+    final hasUploadStatus = uploadStatus != null;
 
     return Stack(
       children: [
-        // Main image
+        // Main image with stable key
         GestureDetector(
+          key: ValueKey('gesture_$imageUrl'),
           onTap: () {
             if (widget.config.enableHapticFeedback) {
               HapticFeedback.lightImpact();
             }
             widget.onImageTap?.call(index);
           },
-          child: ImageComponents.buildOptimizedCachedImage(
-            imageUrl: imageUrl,
+          child: ImageComponents.buildAdaptiveImage(
+            pathOrUrl: imageUrl, // Now handles both file paths and URLs
             config: widget.config,
             fit: BoxFit.cover,
             placeholder: ImageComponents.buildLoadingPlaceholder(
@@ -270,7 +588,11 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           ),
         ),
 
-        // Primary image indicator
+        // Upload Progress Overlay
+        if (hasUploadStatus && uploadStatus.state != ImageUploadState.completed)
+          _buildUploadProgressOverlay(uploadStatus, imageUrl),
+
+        // Primary image indicator (shown above upload overlay)
         if (isPrimary)
           Positioned(
             top: AppDimensions.paddingM,
@@ -304,6 +626,232 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Build upload progress overlay for individual images
+  Widget _buildUploadProgressOverlay(
+      ImageUploadStatus status, String imageUrl) {
+    return Positioned.fill(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: widget.config.effectiveBorderRadius,
+          color: Colors.black.withValues(alpha: 0.6),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Progress Circle/Icon based on state
+            _buildProgressIndicator(status),
+
+            const SizedBox(height: AppDimensions.spacingSm),
+
+            // Status text
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.paddingS,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    status.statusDescription,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  // Additional info for active uploads
+                  if (status.isActive &&
+                      status.formattedTimeRemaining != null) ...[
+                    const SizedBox(height: AppDimensions.spacingXxs),
+                    Text(
+                      '${status.formattedTimeRemaining} kvar',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+
+                  // File size info
+                  if (status.fileSizeMB != null) ...[
+                    const SizedBox(height: AppDimensions.spacingXxs),
+                    Text(
+                      '${status.fileSizeMB!.toStringAsFixed(1)} MB',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Action buttons for failed/cancelled uploads
+            if (status.state == ImageUploadState.failed ||
+                status.state == ImageUploadState.cancelled) ...[
+              const SizedBox(height: AppDimensions.spacingSm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Retry button
+                  if (status.canRetry && widget.onRetryUpload != null)
+                    _buildUploadActionButton(
+                      icon: Icons.refresh,
+                      label: 'Försök igen',
+                      onTap: () => widget.onRetryUpload!(imageUrl),
+                      color: AppColors.primaryBlue,
+                    ),
+
+                  if (status.canRetry &&
+                      widget.onRetryUpload != null &&
+                      widget.onCancelUpload != null)
+                    const SizedBox(width: AppDimensions.spacingSm),
+
+                  // Cancel/Remove button
+                  if (widget.onCancelUpload != null)
+                    _buildUploadActionButton(
+                      icon: Icons.close,
+                      label: 'Ta bort',
+                      onTap: () => widget.onCancelUpload!(imageUrl),
+                      color: Colors.red.shade400,
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build progress indicator based on upload state
+  Widget _buildProgressIndicator(ImageUploadStatus status) {
+    switch (status.state) {
+      case ImageUploadState.pending:
+        return Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          child: const Icon(
+            Icons.schedule,
+            color: Colors.white,
+            size: 30,
+          ),
+        );
+
+      case ImageUploadState.uploading:
+      case ImageUploadState.retrying:
+        return SizedBox(
+          width: 60,
+          height: 60,
+          child: CircularProgressIndicator(
+            value: status.progress > 0 ? status.progress : null,
+            strokeWidth: 4,
+            backgroundColor: Colors.white.withValues(alpha: 0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              status.state == ImageUploadState.retrying
+                  ? Colors.orange
+                  : AppColors.primaryBlue,
+            ),
+          ),
+        );
+
+      case ImageUploadState.completed:
+        return Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.green.withValues(alpha: 0.9),
+          ),
+          child: const Icon(
+            Icons.check,
+            color: Colors.white,
+            size: 30,
+          ),
+        );
+
+      case ImageUploadState.failed:
+        return Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.red.withValues(alpha: 0.9),
+          ),
+          child: const Icon(
+            Icons.error,
+            color: Colors.white,
+            size: 30,
+          ),
+        );
+
+      case ImageUploadState.cancelled:
+        return Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey.withValues(alpha: 0.9),
+          ),
+          child: const Icon(
+            Icons.cancel,
+            color: Colors.white,
+            size: 30,
+          ),
+        );
+    }
+  }
+
+  /// Build action button for upload overlay
+  Widget _buildUploadActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingS,
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: AppDimensions.iconSizeS,
+            ),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -417,6 +965,18 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         HapticFeedback.lightImpact();
       }
 
+      // Use custom onPickImage callback if provided, otherwise use default behavior
+      if (widget.onPickImage != null) {
+        AppLogger.info(
+            '🎯 EDITABLE_IMAGE_WIDGET: Using custom onPickImage callback');
+        widget.onPickImage!();
+        // Don't reset loading state immediately - let callback handle it
+        // The callback will manage its own loading states
+        return; // Let the callback handle the image selection
+      }
+
+      AppLogger.info(
+          '🎯 EDITABLE_IMAGE_WIDGET: Using default image picker behavior');
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
       final result = await imagePickerService.pickMultipleImages();
 
@@ -476,5 +1036,277 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
     widget.onPrimaryImageChanged?.call(_currentIndex);
     AppLogger.debug('Set primary image to index $_currentIndex');
+  }
+
+  /// Build adaptive grid layout for multiple images (prevents horizontal scrolling)
+  Widget _buildMultiImageGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Images in a responsive grid
+        GridView.builder(
+          shrinkWrap: true, // Allow grid to size itself based on content
+          physics:
+              const NeverScrollableScrollPhysics(), // Disable scrolling since parent handles it
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // 2 images per row
+            crossAxisSpacing: AppDimensions.spacingSm,
+            mainAxisSpacing: AppDimensions.spacingSm,
+            childAspectRatio:
+                1.2, // Slightly wider than square for recipe images
+          ),
+          itemCount: widget.imageUrls.length,
+          itemBuilder: (context, index) {
+            return _buildGridImageItem(index);
+          },
+        ),
+
+        // Add image button if under limit
+        if (widget.imageUrls.length < widget.config.maxImages) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          _buildAddImageButton(),
+        ],
+      ],
+    );
+  }
+
+  /// Build individual image item for grid layout
+  Widget _buildGridImageItem(int index) {
+    final imageUrl = widget.imageUrls[index];
+    final isPrimary = index == widget.primaryIndex;
+
+    return GestureDetector(
+      // Move GestureDetector to the outermost level for better touch detection
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        AppLogger.debug('👆 TOUCH: Image $index tapped! isPrimary: $isPrimary');
+
+        if (widget.config.enableHapticFeedback) {
+          HapticFeedback.lightImpact();
+        }
+
+        // Primary selection: Tap image to make it primary
+        if (!isPrimary) {
+          AppLogger.debug(
+              '🌟 GRID: Setting primary at index $index (callback: ${widget.onPrimaryImageChanged != null})');
+          if (widget.onPrimaryImageChanged != null) {
+            widget.onPrimaryImageChanged!(index);
+          } else {
+            AppLogger.warning(
+                '⚠️ GRID: onPrimaryImageChanged callback is null!');
+          }
+        } else {
+          AppLogger.debug('🌟 GRID: Primary image tapped - calling onImageTap');
+          widget.onImageTap?.call(index);
+        }
+      },
+      child: Stack(
+        children: [
+          // Main image display with border that actually surrounds the image
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: widget.config.effectiveBorderRadius,
+                border: Border.all(
+                  color: Theme.of(context).primaryColor,
+                  width: isPrimary
+                      ? AppDimensions.borderWidthThick *
+                          2 // PRIMARY: Extra thick border (4px)
+                      : AppDimensions
+                          .borderWidthStandard, // NON-PRIMARY: Standard border (1px)
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: widget.config.effectiveBorderRadius,
+                child: ImageComponents.buildAdaptiveImage(
+                  pathOrUrl: imageUrl,
+                  config: widget.config,
+                  fit: BoxFit.cover,
+                  placeholder: ImageComponents.buildLoadingPlaceholder(
+                    config: widget.config,
+                  ),
+                  errorWidget: ImageComponents.buildErrorPlaceholder(
+                    config: widget.config,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Primary indicator (doesn't block touches)
+          Positioned(
+            top: AppDimensions.spacingXs,
+            left: AppDimensions.spacingXs,
+            child: IgnorePointer(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingXs,
+                  vertical: AppDimensions.spacingXxs,
+                ),
+                decoration: BoxDecoration(
+                  color: isPrimary
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isPrimary ? Icons.star : Icons.star_outline,
+                      size: AppDimensions.iconSizeXs,
+                      color: Colors.white,
+                    ),
+                    if (isPrimary) ...[
+                      const SizedBox(width: AppDimensions.spacingXxs),
+                      Text(
+                        'Primär',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Delete button with separate gesture detector to prevent conflicts
+          if (widget.config.showEditControls)
+            Positioned(
+              bottom: AppDimensions.spacingXs,
+              right: AppDimensions.spacingXs,
+              child: GestureDetector(
+                onTap: () {
+                  AppLogger.debug(
+                      '🗑️ DELETE: Delete button tapped for image $index');
+                  _removeImageAtIndex(index);
+                },
+                child: _buildGridActionButton(
+                  icon: Icons.close,
+                  onTap: () {}, // Empty since we handle tap above
+                  tooltip: 'Ta bort bild',
+                  isDestructive: true,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Build action button for grid layout
+  Widget _buildGridActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required String tooltip,
+    bool isDestructive = false,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        width: AppDimensions.iconSizeAction,
+        height: AppDimensions.iconSizeAction,
+        decoration: BoxDecoration(
+          color: isDestructive ? AppColors.error : AppColors.cardColor,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: AppDimensions.spacingXs,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          size: AppDimensions.iconSizeS,
+          color: isDestructive ? Colors.white : AppColors.textPrimary,
+        ),
+      ),
+    );
+  }
+
+  /// Build add image button for grid layout
+  Widget _buildAddImageButton() {
+    return GestureDetector(
+      onTap: (_isAddingImage || widget.isLoading) ? null : _addImage,
+      child: Container(
+        height: AppDimensions.buttonHeight,
+        decoration: BoxDecoration(
+          borderRadius: widget.config.effectiveBorderRadius,
+          border: Border.all(
+            color: AppColors.primaryBlue.withValues(alpha: 0.3),
+            width: AppDimensions.borderWidthThin,
+          ),
+          color: AppColors.primaryBlue.withValues(alpha: 0.05),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isAddingImage || widget.isLoading) ...[
+              const SizedBox(
+                width: AppDimensions.iconSizeM,
+                height: AppDimensions.iconSizeM,
+                child: CircularProgressIndicator(
+                  strokeWidth: AppDimensions.borderWidthThin,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Flexible(
+                child: Text(
+                  'Lägger till...',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.primaryBlue,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ] else ...[
+              const Icon(
+                Icons.add_photo_alternate_outlined,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeM,
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Flexible(
+                child: Text(
+                  'Lägg till (${widget.config.maxImages - widget.imageUrls.length})',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Remove image at specific index (for grid layout)
+  void _removeImageAtIndex(int index) {
+    if (index < 0 || index >= widget.imageUrls.length) return;
+
+    if (widget.config.enableHapticFeedback) {
+      HapticFeedback.lightImpact();
+    }
+
+    final newUrls = List<String>.from(widget.imageUrls);
+    newUrls.removeAt(index);
+
+    widget.onImagesChanged?.call(newUrls);
+
+    AppLogger.debug('Removed image at index $index from grid layout');
   }
 }

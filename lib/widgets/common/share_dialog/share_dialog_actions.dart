@@ -124,11 +124,13 @@ class ShareDialogActions {
               color: AppColors.warning,
             ),
             const SizedBox(width: AppDimensions.spacingM),
-            Text(
-              'Välj minst en vän för att dela $contentTypeName',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.warning,
-                fontWeight: FontWeight.w500,
+            Expanded(
+              child: Text(
+                'Välj minst en vän för att dela $contentTypeName',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -156,11 +158,13 @@ class ShareDialogActions {
             color: AppColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingM),
-          Text(
-            '$selectedCount vän${selectedCount > 1 ? 'ner' : ''} valda',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.success,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              '$selectedCount vän${selectedCount > 1 ? 'ner' : ''} valda',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.success,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

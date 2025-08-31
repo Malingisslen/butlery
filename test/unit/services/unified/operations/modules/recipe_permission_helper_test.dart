@@ -3,13 +3,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 // RecipeSocialData is part of recipe_unified.dart, already imported
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/builders/recipe_builder.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('RecipePermissionHelper', () {
@@ -95,7 +95,7 @@ void main() {
     group('View Permissions', () {
       test('should allow owner to view their personal recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canView = helper.canViewRecipe(testPersonalRecipe);
@@ -106,7 +106,7 @@ void main() {
       
       test('should not allow others to view personal recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canView = helper.canViewRecipe(testPersonalRecipe);
@@ -117,7 +117,7 @@ void main() {
       
       test('should allow members to view collaborative recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canView = helper.canViewRecipe(testCollaborativeRecipe);
@@ -128,7 +128,7 @@ void main() {
       
       test('should not allow non-members to view collaborative recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_999');
+        mockParentService.setRecipeState(currentUserId: 'user_999');
         
         // Act
         final canView = helper.canViewRecipe(testCollaborativeRecipe);
@@ -139,7 +139,7 @@ void main() {
       
       test('should return false when user is not authenticated', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn(null);
+        mockParentService.setRecipeState(currentUserId: null);
         
         // Act
         final canView = helper.canViewRecipe(testCollaborativeRecipe);
@@ -152,7 +152,7 @@ void main() {
     group('Edit Permissions', () {
       test('should allow owner to edit their recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canEdit = helper.canEditRecipe(testCollaborativeRecipe);
@@ -163,7 +163,7 @@ void main() {
       
       test('should allow editor to edit collaborative recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canEdit = helper.canEditRecipe(testCollaborativeRecipe);
@@ -174,7 +174,7 @@ void main() {
       
       test('should allow admin to edit collaborative recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_admin');
+        mockParentService.setRecipeState(currentUserId: 'user_admin');
         
         // Act
         final canEdit = helper.canEditRecipe(testCollaborativeRecipe);
@@ -185,7 +185,7 @@ void main() {
       
       test('should not allow viewer to edit collaborative recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_789');
+        mockParentService.setRecipeState(currentUserId: 'user_789');
         
         // Act
         final canEdit = helper.canEditRecipe(testCollaborativeRecipe);
@@ -198,7 +198,7 @@ void main() {
     group('Delete Permissions', () {
       test('should only allow owner to delete recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canDelete = helper.canDeleteRecipe(testCollaborativeRecipe);
@@ -209,7 +209,7 @@ void main() {
       
       test('should not allow admin to delete recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_admin');
+        mockParentService.setRecipeState(currentUserId: 'user_admin');
         
         // Act
         final canDelete = helper.canDeleteRecipe(testCollaborativeRecipe);
@@ -222,7 +222,7 @@ void main() {
     group('Member Management Permissions', () {
       test('should allow owner to manage members', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canManage = helper.canManageMembers(testCollaborativeRecipe);
@@ -233,7 +233,7 @@ void main() {
       
       test('should allow admin to manage members', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_admin');
+        mockParentService.setRecipeState(currentUserId: 'user_admin');
         
         // Act
         final canManage = helper.canManageMembers(testCollaborativeRecipe);
@@ -244,7 +244,7 @@ void main() {
       
       test('should not allow editor to manage members', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canManage = helper.canManageMembers(testCollaborativeRecipe);
@@ -255,7 +255,7 @@ void main() {
       
       test('should return false for personal recipes', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canManage = helper.canManageMembers(testPersonalRecipe);
@@ -268,7 +268,7 @@ void main() {
     group('Invitation Permissions', () {
       test('should allow owner to invite members', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canInvite = helper.canInviteMembers(testCollaborativeRecipe);
@@ -279,7 +279,7 @@ void main() {
       
       test('should allow editor to invite members when allowed', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canInvite = helper.canInviteMembers(testCollaborativeRecipe);
@@ -290,7 +290,7 @@ void main() {
       
       test('should not allow invites when disabled', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         final restrictedRecipe = Recipe(
           core: RecipeCore(
             id: 'restricted_recipe',
@@ -322,7 +322,7 @@ void main() {
     group('Comment and Rating Permissions', () {
       test('should allow members to comment on collaborative recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canComment = helper.canCommentOnRecipe(testCollaborativeRecipe);
@@ -333,7 +333,7 @@ void main() {
       
       test('should only allow owner to comment on personal recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canComment = helper.canCommentOnRecipe(testPersonalRecipe);
@@ -344,7 +344,7 @@ void main() {
       
       test('should allow members to rate but not owner', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final canRate = helper.canRateRecipe(testCollaborativeRecipe);
@@ -355,7 +355,7 @@ void main() {
       
       test('should not allow owner to rate their own recipe', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_123');
+        mockParentService.setRecipeState(currentUserId: 'user_123');
         
         // Act
         final canRate = helper.canRateRecipe(testCollaborativeRecipe);
@@ -412,7 +412,7 @@ void main() {
     group('Legacy Compatibility', () {
       test('should map legacy actions correctly', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act & Assert
         expect(helper.checkLegacyPermission(testCollaborativeRecipe, 'user_456', 'view'), isTrue);
@@ -444,7 +444,7 @@ void main() {
       
       test('should get available actions for user', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final actions = helper.getAvailableActions(testCollaborativeRecipe, 'user_456');
@@ -469,7 +469,7 @@ void main() {
       
       test('should generate permission summary', () {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456');
+        mockParentService.setRecipeState(currentUserId: 'user_456');
         
         // Act
         final summary = helper.getPermissionSummary(testCollaborativeRecipe, 'user_456');
@@ -547,5 +547,3 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}

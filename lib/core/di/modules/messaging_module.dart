@@ -75,20 +75,12 @@ class MessagingModule implements DIModule {
       container.registerSingleton<MessagingRepository>(
         FirebaseMessagingRepository(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] MessagingRepository registered');
-      }
 
       // Notifications repository (if not already registered by Social Module)
       if (!container.isRegistered<NotificationsRepository>()) {
         container.registerSingleton<NotificationsRepository>(
           FirebaseNotificationsRepository(authRepository: container<AuthRepository>()),
         );
-        
-        if (kDebugMode) {
-          debugPrint('✅ [MessagingModule] NotificationsRepository registered');
-        }
       }
 
       // ==================== MESSAGING SERVICES ====================
@@ -98,13 +90,9 @@ class MessagingModule implements DIModule {
         messagingRepository: container<MessagingRepository>(),
         authRepository: container<AuthRepository>(),
       ));
-      
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] MessagingService registered');
-      }
 
       if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] All messaging services configured');
+        debugPrint('✅ [MessagingModule] Configured messaging and notifications services');
       }
     } catch (e) {
       throw DIModuleException(
@@ -118,10 +106,6 @@ class MessagingModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint('⚡ [MessagingModule] Initializing messaging services...');
-    }
-
     try {
       final container = GetIt.instance;
 
@@ -129,22 +113,11 @@ class MessagingModule implements DIModule {
       // but we validate it's accessible and functional
       final messagingService = container<MessagingService>();
       messagingService.toString(); // Basic validation
-      
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] MessagingService validated');
-      }
 
       // Validate messaging repository
       final messagingRepository = container<MessagingRepository>();
       messagingRepository.toString(); // Basic validation
-      
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] MessagingRepository validated');
-      }
 
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] All messaging services initialized');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -194,9 +167,6 @@ class MessagingModule implements DIModule {
         }
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] Health check passed for all services');
-      }
       
       return true;
     } catch (e) {

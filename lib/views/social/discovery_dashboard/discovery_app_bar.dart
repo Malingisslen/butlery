@@ -11,7 +11,7 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 /// Discovery App Bar - Styled app bar for discovery dashboard
 class DiscoveryAppBar {
   static Widget build(
-    BuildContext context, 
+    BuildContext context,
     DiscoveryDashboardViewModel viewModel,
   ) {
     return SliverAppBar(
@@ -125,7 +125,7 @@ class DiscoveryAppBar {
   static Widget _buildDiscoveryStats(DiscoveryDashboardViewModel viewModel) {
     final stats = viewModel.discoveryStats;
     final totalContent = stats['totalDiscoverableContent'] as int;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
@@ -255,8 +255,8 @@ class DiscoveryAppBar {
                       return CheckboxListTile(
                         title: Text(category['name']),
                         subtitle: Text('${category['count']} objekt'),
-                        value: viewModel.selectedCategory == category['id'] || 
-                               viewModel.selectedCategory == 'all',
+                        value: viewModel.selectedCategory == category['id'] ||
+                            viewModel.selectedCategory == 'all',
                         onChanged: (value) {
                           viewModel.setSelectedCategory(category['id']);
                           Navigator.pop(context);
@@ -302,7 +302,7 @@ class DiscoveryAppBar {
       ],
     );
   }
-  
+
   static Widget _buildSettingsContent(DiscoveryDashboardViewModel viewModel) {
     return StatefulBuilder(
       builder: (context, setState) => SingleChildScrollView(
@@ -315,7 +315,6 @@ class DiscoveryAppBar {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 16),
-            
             SwitchListTile(
               title: const Text('Visa trender'),
               subtitle: const Text('Visa populärt innehåll från communityn'),
@@ -323,9 +322,8 @@ class DiscoveryAppBar {
               onChanged: (value) {
                 setState(() => viewModel.setShowTrendingContent(value));
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
-            
             SwitchListTile(
               title: const Text('Visa vänaktivitet'),
               subtitle: const Text('Visa vad dina vänner gör'),
@@ -333,9 +331,8 @@ class DiscoveryAppBar {
               onChanged: (value) {
                 setState(() => viewModel.setShowFriendActivity(value));
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
-            
             SwitchListTile(
               title: const Text('Visa rekommendationer'),
               subtitle: const Text('Visa personliga rekommendationer'),
@@ -343,19 +340,16 @@ class DiscoveryAppBar {
               onChanged: (value) {
                 setState(() => viewModel.setShowRecommendations(value));
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
-            
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            
             const Text(
               'Aviseringar',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            
             SwitchListTile(
               title: const Text('Push-aviseringar'),
               subtitle: const Text('Få aviseringar om nytt innehåll'),
@@ -363,7 +357,7 @@ class DiscoveryAppBar {
               onChanged: (value) {
                 setState(() => viewModel.setEnablePushNotifications(value));
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
           ],
         ),
@@ -377,19 +371,19 @@ class DiscoveryAppBar {
       title: 'Skicka feedback',
       hint: 'Hjälp oss att förbättra Butlery! Beskriv din feedback här...',
     );
-    
+
     if (feedback != null && feedback.trim().isNotEmpty && context.mounted) {
       _submitFeedback(context, feedback.trim());
     }
   }
-  
+
   static void _submitFeedback(BuildContext context, String feedback) {
     // Log feedback using AppLogger for production tracking
     AppLogger.info('Discovery Dashboard Feedback submitted: $feedback');
-    
+
     // In a full implementation, this would send to a feedback service
     // For now, we log it properly for monitoring and future integration
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Tack för din feedback! Vi kommer att granska den.'),

@@ -46,10 +46,6 @@ class SocialStage implements BootstrapStage {
 
   @override
   Future<void> execute() async {
-    if (kDebugMode) {
-      debugPrint('🚀 [SocialStage] Starting social platform initialization...');
-    }
-
     try {
       // Social module initialization is handled by the DI container
       // This stage can perform any additional social-specific setup
@@ -58,7 +54,7 @@ class SocialStage implements BootstrapStage {
       await Future.delayed(const Duration(milliseconds: 300));
       
       if (kDebugMode) {
-        debugPrint('✅ [SocialStage] Social platform initialization complete');
+        debugPrint('✅ [SocialStage] Social services ready');
       }
     } catch (e) {
       if (isOptional) {
@@ -82,10 +78,6 @@ class SocialStage implements BootstrapStage {
     try {
       // Validation is primarily handled by the DI container's health checks
       // This stage confirms social services are ready
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialStage] Validation passed');
-      }
       
       return true;
     } catch (e) {

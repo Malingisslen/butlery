@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target selection widgets
@@ -33,13 +32,74 @@ class InvitationSelectors {
     Widget? emptyWidget,
     ScrollPhysics? physics,
   }) {
-    return SocialFacade.targetSelector(
-      availableTargets: availableTargets,
-      selectedTargetIds: selectedTargets?.map((t) => t.targetId).toSet() ?? {},
-      onTargetToggled: (target) {
-        // Handle target toggle logic here
-      },
-      searchHint: searchHint,
+    // ULTRATHINK FIX: Implement concrete widget instead of circular delegation
+    // Use existing components from this class to build the complete selector
+    
+    if (availableTargets.isEmpty) {
+      return emptyWidget ?? 
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(AppDimensions.spacingLg),
+            child: Text(
+              'Inga målgrupper tillgängliga',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        );
+    }
+
+    return Column(
+      children: [
+        // Search field if enabled
+        if (showSearch)
+          targetSearchField(
+            hint: searchHint,
+            onSearchChanged: (query) {
+              // Filter logic would be handled by parent widget
+              // For now, just show the field
+            },
+          ),
+        
+        if (showSearch)
+          const SizedBox(height: AppDimensions.spacingSm),
+
+        // Type filters if enabled  
+        if (showTypeFilters) ...[
+          targetTypeFilters(
+            availableTypes: availableTargets.map((t) => t.type.name).toSet().toList(),
+            onTypesChanged: (types) {
+              // Filter logic would be handled by parent widget
+            },
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+        ],
+
+        // Target list - use appropriate selector based on allowMultiSelect
+        Expanded(
+          child: allowMultiSelect 
+            ? checkableTargetList(
+                targets: availableTargets,
+                selectedTargets: selectedTargets,
+                onSelectionChanged: onSelectionChanged,
+                physics: physics,
+              )
+            : radioTargetSelector(
+                targets: availableTargets,
+                selectedTarget: selectedTargets?.isNotEmpty == true ? selectedTargets!.first : null,
+                onSelectionChanged: (target) {
+                  onSelectionChanged?.call(target != null ? [target] : []);
+                },
+                physics: physics,
+              ),
+        ),
+
+        // Selection summary if targets are selected
+        if (selectedTargets?.isNotEmpty == true)
+          targetSelectionSummary(
+            selectedTargets: selectedTargets!,
+            compact: true,
+          ),
+      ],
     );
   }
 
@@ -88,23 +148,16 @@ class InvitationSelectors {
   static Widget radioTargetSelector({
     required List<InvitationTarget> targets,
     InvitationTarget? selectedTarget,
-    Function(InvitationTarget?)? onSelectionChanged,
+    ValueChanged<InvitationTarget?>? onSelectionChanged,
     ScrollPhysics? physics,
     EdgeInsets? padding,
   }) {
-    return ListView.builder(
+    return _RadioTargetSelector(
+      targets: targets,
+      selectedTarget: selectedTarget,
+      onSelectionChanged: onSelectionChanged,
       physics: physics,
       padding: padding,
-      itemCount: targets.length,
-      itemBuilder: (context, index) {
-        final target = targets[index];
-        return RadioListTile<InvitationTarget>(
-          title: Text(target.displayName),
-          value: target,
-          groupValue: selectedTarget,
-          onChanged: onSelectionChanged,
-        );
-      },
     );
   }
 
@@ -318,6 +371,90 @@ class InvitationSelectors {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Private widget for radio target selection without deprecated parameters
+class _RadioTargetSelector extends StatefulWidget {
+  final List<InvitationTarget> targets;
+  final InvitationTarget? selectedTarget;
+  final ValueChanged<InvitationTarget?>? onSelectionChanged;
+  final ScrollPhysics? physics;
+  final EdgeInsets? padding;
+
+  const _RadioTargetSelector({
+    required this.targets,
+    this.selectedTarget,
+    this.onSelectionChanged,
+    this.physics,
+    this.padding,
+  });
+
+  @override
+  State<_RadioTargetSelector> createState() => _RadioTargetSelectorState();
+}
+
+class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
+  InvitationTarget? _selectedTarget;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTarget = widget.selectedTarget;
+  }
+
+  @override
+  void didUpdateWidget(_RadioTargetSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedTarget != oldWidget.selectedTarget) {
+      _selectedTarget = widget.selectedTarget;
+    }
+  }
+
+  void _handleSelection(InvitationTarget? target) {
+    if (mounted) {
+      setState(() {
+        _selectedTarget = target;
+      });
+      widget.onSelectionChanged?.call(target);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      physics: widget.physics,
+      padding: widget.padding,
+      itemCount: widget.targets.length,
+      itemBuilder: (context, index) {
+        final target = widget.targets[index];
+        final isSelected = _selectedTarget == target;
+        
+        return ListTile(
+          leading: Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+                width: 2,
+              ),
+              color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+            ),
+            child: isSelected 
+              ? const Icon(
+                  Icons.check,
+                  size: 14,
+                  color: Colors.white,
+                )
+              : null,
+          ),
+          title: Text(target.displayName),
+          onTap: () => _handleSelection(target),
+        );
+      },
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,27 +5,17 @@ import 'package:permission_handler/permission_handler.dart';
 
 // Production imports
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/services/image_picker_provider.dart';
 
 // Test infrastructure
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
-// Mocks
-class MockImagePickerProvider extends Mock implements ImagePickerProvider {}
-class MockPermissionProvider extends Mock implements PermissionProvider {}
-class MockImageValidator extends Mock implements ImageValidator {}
-class MockXFile extends Mock implements XFile {}
-class MockFile extends Mock implements File {}
-
-// Fake for Permission
-class FakePermission extends Fake implements Permission {}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
 void main() {
   setUpAll(() {
-    // Register fallback values for mocktail
-    registerFallbackValue(ImageSource.camera);
-    registerFallbackValue(FakePermission());
+    // Centralized fallback values already registered via TestServiceLocator
   });
   
   group('ImagePickerService Tests', () {
@@ -39,6 +28,7 @@ void main() {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       
+      // Initialize mocks using centralized infrastructure
       mockImagePickerProvider = MockImagePickerProvider();
       mockPermissionProvider = MockPermissionProvider();
       mockImageValidator = MockImageValidator();

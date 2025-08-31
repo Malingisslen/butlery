@@ -48,21 +48,41 @@ class DeepLinkHandler {
     }
 
     try {
-      // Get initial deep link from app launch
-      final receivedIntent = await receive_intent.ReceiveIntent.getInitialIntent();
-      
-      if (receivedIntent != null && receivedIntent.data != null) {
+      // Check if platform supports deep links via receive_intent
+      // Web platform doesn't support this plugin
+      if (kIsWeb) {
         if (kDebugMode) {
-          debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
+          debugPrint('🌐 Web platform detected - deep links via receive_intent not supported');
+          debugPrint('💡 Web deep links should be handled via URL parameters in the browser');
+        }
+        _isInitialized = true;
+        return;
+      }
+
+      // Only attempt to use receive_intent on mobile platforms
+      // We can't check Platform.isAndroid/iOS on web, so we rely on kIsWeb check above
+      // and assume non-web means mobile for now (desktop support can be added later)
+      if (!kIsWeb) {
+        // Get initial deep link from app launch
+        final receivedIntent = await receive_intent.ReceiveIntent.getInitialIntent();
+        
+        if (receivedIntent != null && receivedIntent.data != null) {
+          if (kDebugMode) {
+            debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
+          }
+          
+          // Store the deep link for processing when context is available
+          _pendingDeepLink = receivedIntent.data;
         }
         
-        // Store the deep link for processing when context is available
-        _pendingDeepLink = receivedIntent.data;
+        // Note: receive_intent package doesn't support streaming
+        // Deep links while app is running would typically be handled by
+        // the operating system's intent system automatically
+        
+        if (kDebugMode) {
+          debugPrint('📱 Mobile platform - deep link handling enabled');
+        }
       }
-      
-      // Note: receive_intent package doesn't support streaming
-      // Deep links while app is running would typically be handled by
-      // the operating system's intent system automatically
       
       _isInitialized = true;
       
@@ -74,6 +94,7 @@ class DeepLinkHandler {
         debugPrint('⚠️ Deep link initialization failed: $e');
       }
       // Don't rethrow - app should continue even if deep links fail
+      _isInitialized = true;
     }
   }
 

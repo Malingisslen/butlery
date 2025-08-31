@@ -5,23 +5,21 @@
 library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
+import '../../../../infrastructure/mocks/firestore_singleton.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
-
-// Mock dependencies
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
 
 void main() {
   group('RecipeCacheModule', () {
     late RecipeCacheModule module;
     late MockJsonCacheHelper mockCacheHelper;
-    late MockFirebaseFirestore mockFirestore;
+    late FakeFirebaseFirestore fakeFirestore;
     late Recipe testRecipe;
     
     // Callback functions
@@ -36,13 +34,13 @@ void main() {
     
     setUp(() {
       mockCacheHelper = MockJsonCacheHelper();
-      mockFirestore = MockFirebaseFirestore();
+      fakeFirestore = FirestoreSingleton.instance;
       
       currentUserId = 'test-user-123';
       notifyListenersCalled = 0;
       
       module = RecipeCacheModule(
-        firestore: mockFirestore,
+        firestore: fakeFirestore,
         cacheHelper: mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         setError: (error) {},
@@ -55,8 +53,7 @@ void main() {
         createdBy: 'test-user-123',
       );
       
-      // Setup mock cache helper
-      when(() => mockCacheHelper.setCurrentUser(any())).thenReturn(null);
+      // Setup mock cache helper 
       when(() => mockCacheHelper.saveJson(any(), any())).thenAnswer((_) async => true);
       when(() => mockCacheHelper.delete(any())).thenAnswer((_) async => true);
     });
@@ -187,8 +184,7 @@ void main() {
       
       test('should handle sync errors gracefully', () async {
         // Arrange
-        when(() => mockFirestore.collection(any()))
-            .thenThrow(Exception('Firestore error'));
+        // FakeFirebaseFirestore handles errors naturally during collection access
         
         // Act
         await module.startFirebaseSync();

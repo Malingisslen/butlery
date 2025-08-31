@@ -241,7 +241,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
                       activity.targetImageUrl!,
                       width: 40,
                       height: 40,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => _buildContentIcon(),
                     ),
                   )

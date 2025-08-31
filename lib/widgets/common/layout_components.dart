@@ -221,6 +221,7 @@ class LayoutComponents {
     VoidCallback? onViewNotifications,
     bool showBackupOptions = true,
     bool showSocialOptions = true,
+    BuildContext? rootContext,
   }) {
     return ProfileMenu(
       userImageUrl: userImageUrl,
@@ -232,6 +233,7 @@ class LayoutComponents {
       onViewNotifications: onViewNotifications,
       showBackupOptions: showBackupOptions,
       showSocialOptions: showSocialOptions,
+      rootContext: rootContext,
     );
   }
 
@@ -248,11 +250,14 @@ class LayoutComponents {
     bool showBackupOptions = true,
     bool showSocialOptions = true,
   }) {
+    // Store the root context to use for notifications
+    final rootContext = context;
+    
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => LayoutComponents.profileMenu(
+      builder: (modalContext) => LayoutComponents.profileMenu(
         userImageUrl: userImageUrl,
         displayName: displayName,
         email: email,
@@ -262,6 +267,7 @@ class LayoutComponents {
         onViewNotifications: onViewNotifications,
         showBackupOptions: showBackupOptions,
         showSocialOptions: showSocialOptions,
+        rootContext: rootContext, // Pass the original context for notifications
       ),
     );
   }
@@ -321,109 +327,111 @@ class LayoutComponents {
 
   // ===== GRID LAYOUTS =====
 
-  /// 2x3 Grid layout for square buttons (recipe upload view)
-  static Widget squareButtonGrid(
+  /// Optimized button grid with ARKIV row (2-2-2-1 layout) for recipe upload view
+  static Widget recipeUploadButtonGrid(
     BuildContext context, {
     required List<Map<String, dynamic>> buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
+    required Map<String, dynamic> archiveButton, // Archive button config
   }) {
     if (buttons.length != 6) {
-      throw ArgumentError('squareButtonGrid requires exactly 6 buttons');
+      throw ArgumentError('recipeUploadButtonGrid requires exactly 6 main buttons');
     }
 
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
-        child: Column(
-          children: [
-            // Row 1
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingS),
-                      child: UtilityComponents.squareButton(
-                        context,
-                        label: buttons[0]['label'],
-                        icon: buttons[0]['icon'],
-                        onPressed: buttons[0]['onPressed'],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingS),
-                      child: UtilityComponents.squareButton(
-                        context,
-                        label: buttons[1]['label'],
-                        icon: buttons[1]['icon'],
-                        onPressed: buttons[1]['onPressed'],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate responsive button size that fits the available space
+          const minButtonSize = 80.0; // Minimum usable size
+          const maxButtonSize = AppDimensions.gridButtonSize; // Optimal size
+          const buttonSpacing = AppDimensions.gridButtonSpacing;  
+          const rowSpacing = AppDimensions.gridRowSpacing;
+          
+          // Leave some margin for the layout
+          final availableWidth = constraints.maxWidth * 0.9;
+          final availableHeight = constraints.maxHeight * 0.9;
+          
+          // Calculate maximum button size that fits
+          final maxWidthForTwoButtons = (availableWidth - buttonSpacing) / 2;
+          final maxHeightForFourRows = (availableHeight - (rowSpacing * 3)) / 4;
+          
+          // Use the smallest constraint to ensure everything fits
+          final buttonSize = [maxWidthForTwoButtons, maxHeightForFourRows, maxButtonSize]
+              .reduce((a, b) => a < b ? a : b)
+              .clamp(minButtonSize, maxButtonSize);
+          
+          // Calculate actual layout dimensions
+          final layoutWidth = (buttonSize * 2) + buttonSpacing;
+          final layoutHeight = (buttonSize * 4) + (rowSpacing * 3);
+          
+          // Center the layout
+          final horizontalPadding = ((constraints.maxWidth - layoutWidth) / 2).clamp(0.0, double.infinity);
+          final topPadding = ((constraints.maxHeight - layoutHeight) / 2).clamp(0.0, double.infinity);
+          
+          return Padding(
+            padding: EdgeInsets.only(
+              left: horizontalPadding,
+              right: horizontalPadding,
+              top: topPadding,
             ),
-            // Row 2
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingS),
-                      child: UtilityComponents.squareButton(
-                        context,
-                        label: buttons[2]['label'],
-                        icon: buttons[2]['icon'],
-                        onPressed: buttons[2]['onPressed'],
-                      ),
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Row 1 - First two buttons
+                _buildButtonRow(context, [buttons[0], buttons[1]], buttonSize, layoutWidth, buttonSpacing),
+                const SizedBox(height: rowSpacing),
+                
+                // Row 2 - Second two buttons  
+                _buildButtonRow(context, [buttons[2], buttons[3]], buttonSize, layoutWidth, buttonSpacing),
+                const SizedBox(height: rowSpacing),
+                
+                // Row 3 - Third two buttons
+                _buildButtonRow(context, [buttons[4], buttons[5]], buttonSize, layoutWidth, buttonSpacing),
+                const SizedBox(height: rowSpacing),
+                
+                // Row 4 - Archive button (full width)
+                SizedBox(
+                  height: buttonSize,
+                  width: layoutWidth,
+                  child: UtilityComponents.largeButton(
+                    context,
+                    label: archiveButton['label'],
+                    icon: archiveButton['icon'],
+                    onPressed: archiveButton['onPressed'],
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingS),
-                      child: UtilityComponents.squareButton(
-                        context,
-                        label: buttons[3]['label'],
-                        icon: buttons[3]['icon'],
-                        onPressed: buttons[3]['onPressed'],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // Row 3
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingS),
-                      child: UtilityComponents.squareButton(
-                        context,
-                        label: buttons[4]['label'],
-                        icon: buttons[4]['icon'],
-                        onPressed: buttons[4]['onPressed'],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingS),
-                      child: UtilityComponents.squareButton(
-                        context,
-                        label: buttons[5]['label'],
-                        icon: buttons[5]['icon'],
-                        onPressed: buttons[5]['onPressed'],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Helper to build a row with two buttons
+  static Widget _buildButtonRow(
+    BuildContext context,
+    List<Map<String, dynamic>> buttonConfigs,
+    double buttonSize,
+    double layoutWidth,
+    double buttonSpacing,
+  ) {
+    return SizedBox(
+      height: buttonSize,
+      width: layoutWidth,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: buttonConfigs.map((config) => 
+          SizedBox(
+            width: buttonSize,
+            height: buttonSize,
+            child: UtilityComponents.squareButton(
+              context,
+              label: config['label'],
+              icon: config['icon'],
+              onPressed: config['onPressed'],
             ),
-          ],
-        ),
+          ),
+        ).toList(),
       ),
     );
   }

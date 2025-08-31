@@ -43,11 +43,13 @@ class CategoryHeader extends StatelessWidget {
             color: textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const Spacer(),

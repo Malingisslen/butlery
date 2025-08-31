@@ -22,10 +22,10 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
 /// Common form field factory that eliminates duplicate form field patterns.
-/// 
+///
 /// Consolidates form field patterns found across:
 /// - create_group_dialog.dart (name field)
-/// - edit_group_dialog.dart (name field)  
+/// - edit_group_dialog.dart (name field)
 /// - shopping_item_dialog.dart (name/amount fields)
 /// - menu_save_dialog.dart (name field)
 /// - dialog_factory.dart (text input)
@@ -63,24 +63,26 @@ class DialogFormFields {
         enabled: enabled,
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
-        validator: customValidator ?? (value) {
-          // Use centralized validation from FormValidators
-          if (required) {
-            final requiredResult = FormValidators.required(labelText)(value);
-            if (requiredResult != null) return requiredResult;
-          }
-          
-          if (value != null && value.isNotEmpty) {
-            if (value.trim().length < minLength) {
-              return AppStrings.fieldTooShort(labelText, minLength);
-            }
-            if (value.trim().length > maxLengthLimit) {
-              return AppStrings.fieldTooLong(labelText, maxLengthLimit);
-            }
-          }
-          
-          return null;
-        },
+        validator: customValidator ??
+            (value) {
+              // Use centralized validation from FormValidators
+              if (required) {
+                final requiredResult =
+                    FormValidators.required(labelText)(value);
+                if (requiredResult != null) return requiredResult;
+              }
+
+              if (value != null && value.isNotEmpty) {
+                if (value.trim().length < minLength) {
+                  return AppStrings.fieldTooShort(labelText, minLength);
+                }
+                if (value.trim().length > maxLengthLimit) {
+                  return AppStrings.fieldTooLong(labelText, maxLengthLimit);
+                }
+              }
+
+              return null;
+            },
       ),
     );
   }
@@ -154,20 +156,20 @@ class DialogFormFields {
         if (value == null || value.trim().isEmpty) {
           return AppStrings.fieldRequired('Antal');
         }
-        
+
         final amount = double.tryParse(value.trim());
         if (amount == null) {
           return AppStrings.invalidAmount;
         }
-        
+
         if (amount < minValue) {
           return 'Minst $minValue krävs';
         }
-        
+
         if (amount > maxValue) {
           return 'Max $maxValue tillåtet';
         }
-        
+
         return null;
       },
     );
@@ -212,22 +214,21 @@ class DialogFormFields {
         if (!required && (value == null || value.trim().isEmpty)) {
           return null; // Optional field
         }
-        
+
         if (required) {
           final requiredResult = FormValidators.required(labelText)(value);
           if (requiredResult != null) return requiredResult;
         }
-        
+
         if (value != null && value.trim().isNotEmpty) {
           // Basic URL validation
           final urlPattern = RegExp(
-            r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$'
-          );
+              r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$');
           if (!urlPattern.hasMatch(value.trim())) {
             return AppStrings.invalidUrl;
           }
         }
-        
+
         return null;
       },
       maxLengthLimit: 500,
@@ -297,12 +298,12 @@ class DialogFormFields {
         if (!required && (value == null || value.trim().isEmpty)) {
           return null;
         }
-        
+
         if (required) {
           final requiredResult = FormValidators.required(labelText)(value);
           if (requiredResult != null) return requiredResult;
         }
-        
+
         if (value != null && value.trim().isNotEmpty) {
           // Basic phone validation - at least 10 digits
           final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
@@ -310,7 +311,7 @@ class DialogFormFields {
             return 'Ogiltigt telefonnummer';
           }
         }
-        
+
         return null;
       },
       maxLengthLimit: 20,
@@ -332,7 +333,7 @@ class DialogFormFields {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: DropdownButtonFormField<T>(
-        value: value,
+        initialValue: value,
         items: items,
         onChanged: enabled ? onChanged : null,
         decoration: InputDecoration(
@@ -341,9 +342,10 @@ class DialogFormFields {
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
           border: const OutlineInputBorder(),
         ),
-        validator: validator ?? (required 
-          ? (value) => value == null ? '$labelText krävs' : null
-          : null),
+        validator: validator ??
+            (required
+                ? (value) => value == null ? '$labelText krävs' : null
+                : null),
       ),
     );
   }

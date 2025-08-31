@@ -4,30 +4,31 @@
 /// with configuration methods instead of stubbing for concrete implementations.
 library;
 
+import 'dart:typed_data';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart' as firebase_mocks;
 import 'package:mocktail/mocktail.dart';
-
-// Import our properly typed mocks
-import '../mocks/production_mocks.dart';
-import '../mocks/repositories/mock_analytics_repository.dart';
-import '../mocks/service_mocks.dart';
+// Import our properly typed mocks with aliases to avoid conflicts
+import '../mocks/production_mocks.dart' as production;
+import '../mocks/service_mocks.dart' as service;
+import '../mocks/widget_mocks.dart' as widget;
 
 // Import models for stubbing
 import 'package:butlery/models/recipe_comment.dart';
 
 // Import interfaces that factory methods return
-import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 
 // Import models
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -44,12 +45,12 @@ class MockFactory {
   // ============= REPOSITORIES =============
   
   /// Create mock auth repository with proper typing
-  static MockAuthRepository createAuthRepository({
+  static production.MockAuthRepository createAuthRepository({
     bool isAuthenticated = false,
     String? userId,
     User? user,
   }) {
-    final mock = MockAuthRepository();
+    final mock = production.MockAuthRepository();
     mock.setAuthState(
       isAuthenticated: isAuthenticated,
       userId: userId,
@@ -59,7 +60,7 @@ class MockFactory {
   }
   
   /// Create mock recipe repository with proper typing
-  static MockRecipeRepository createRecipeRepository({
+  static production.MockRecipeRepository createRecipeRepository({
     String? currentUserId,
     Map<String, List<Recipe>>? recipesByUser,
     List<Recipe>? archiveRecipes,
@@ -67,7 +68,7 @@ class MockFactory {
     Map<String, Recipe>? recipesById,
     List<Recipe>? recipes, // For backward compatibility
   }) {
-    final mock = MockRecipeRepository();
+    final mock = production.MockRecipeRepository();
     
     // If simple recipes list provided, use convenience method
     if (recipes != null && recipesByUser == null) {
@@ -87,7 +88,7 @@ class MockFactory {
   }
   
   /// Create mock user repository
-  static MockUserRepository createUserRepository({
+  static production.MockUserRepository createUserRepository({
     String? currentUserId,
     Map<String, UserProfile>? profiles,
     Map<String, bool>? onlineStatus,
@@ -95,7 +96,7 @@ class MockFactory {
     Map<String, bool>? notificationSettings,
     Set<String>? availableDisplayNames,
   }) {
-    final mock = MockUserRepository();
+    final mock = production.MockUserRepository();
     mock.setUserRepositoryState(
       currentUserId: currentUserId,
       profiles: profiles,
@@ -108,18 +109,18 @@ class MockFactory {
   }
   
   /// Create mock shopping repository
-  static MockShoppingRepository createShoppingRepository() {
-    return MockShoppingRepository();
+  static production.MockShoppingRepository createShoppingRepository() {
+    return production.MockShoppingRepository();
   }
   
   /// Create mock collaborative recipe repository
-  static MockCollaborativeRecipeRepository createCollaborativeRecipeRepository({
+  static production.MockCollaborativeRecipeRepository createCollaborativeRecipeRepository({
     Map<String, RealtimeRecipe>? realtimeRecipes,
     Map<String, Map<String, Map<String, dynamic>>>? presenceData,
     Map<String, List<LiveEditor>>? participants,
     Map<String, Map<String, dynamic>>? userDocuments,
   }) {
-    final mock = MockCollaborativeRecipeRepository();
+    final mock = production.MockCollaborativeRecipeRepository();
     mock.setCollaborativeState(
       realtimeRecipes: realtimeRecipes,
       presenceData: presenceData,
@@ -130,14 +131,14 @@ class MockFactory {
   }
   
   /// Create mock messaging repository
-  static MockMessagingRepository createMessagingRepository({
+  static production.MockMessagingRepository createMessagingRepository({
     String? currentUserId,
     Map<String, Conversation>? conversations,
     Map<String, List<Message>>? messagesByConversation,
     Map<String, Set<String>>? readMessagesByUser,
     Map<String, Map<String, MessageStatus>>? messageStatuses,
   }) {
-    final mock = MockMessagingRepository();
+    final mock = production.MockMessagingRepository();
     mock.setMessagingState(
       currentUserId: currentUserId,
       conversations: conversations,
@@ -149,20 +150,20 @@ class MockFactory {
   }
   
   /// Create mock firestore repository
-  static MockFirestoreRepository createFirestoreRepository() {
-    final mock = MockFirestoreRepository();
+  static production.MockFirestoreRepository createFirestoreRepository() {
+    final mock = production.MockFirestoreRepository();
     // Mock will provide FakeFirebaseFirestore via its implementation
     return mock;
   }
   
   /// Create mock comments repository
-  static MockCommentsRepository createCommentsRepository({
+  static production.MockCommentsRepository createCommentsRepository({
     String? currentUserId,
     Map<String, List<RecipeComment>>? commentsByRecipe,
     Map<String, Set<String>>? likesByComment,
     Map<String, int>? replyCounts,
   }) {
-    final mock = MockCommentsRepository();
+    final mock = production.MockCommentsRepository();
     mock.setCommentsState(
       currentUserId: currentUserId,
       commentsByRecipe: commentsByRecipe,
@@ -176,19 +177,19 @@ class MockFactory {
   }
   
   /// Create mock ratings repository
-  static MockRatingsRepository createRatingsRepository() {
-    return MockRatingsRepository();
+  static production.MockRatingsRepository createRatingsRepository() {
+    return production.MockRatingsRepository();
   }
   
   /// Create mock notifications repository
-  static MockNotificationsRepository createNotificationsRepository({
+  static production.MockNotificationsRepository createNotificationsRepository({
     String? currentUserId,
     List<UserNotification>? notifications,
     Map<String, NotificationPreferences>? userPreferences,
     Map<String, String>? fcmTokens,
     int? unreadCount,
   }) {
-    final mock = MockNotificationsRepository();
+    final mock = production.MockNotificationsRepository();
     mock.setNotificationsState(
       currentUserId: currentUserId,
       notifications: notifications,
@@ -200,14 +201,14 @@ class MockFactory {
   }
   
   /// Create mock messaging repository
-  static MockMessagingRepository createMessagesRepository({
+  static production.MockMessagingRepository createMessagesRepository({
     String? currentUserId,
     Map<String, Conversation>? conversations,
     Map<String, List<Message>>? messagesByConversation,
     Map<String, Set<String>>? readMessagesByUser,
     Map<String, Map<String, MessageStatus>>? messageStatuses,
   }) {
-    final mock = MockMessagingRepository();
+    final mock = production.MockMessagingRepository();
     mock.setMessagingState(
       currentUserId: currentUserId,
       conversations: conversations,
@@ -219,7 +220,7 @@ class MockFactory {
   }
   
   /// Create mock friends repository
-  static MockFriendsRepository createFriendsRepository({
+  static production.MockFriendsRepository createFriendsRepository({
     String? currentUserId,
     List<FriendRequest>? incomingRequests,
     List<FriendRequest>? sentRequests,
@@ -228,7 +229,7 @@ class MockFactory {
     Map<String, FriendCategory>? categories,
     List<GroupInvitation>? groupInvitations,
   }) {
-    final mock = MockFriendsRepository();
+    final mock = production.MockFriendsRepository();
     mock.setFriendsState(
       currentUserId: currentUserId,
       incomingRequests: incomingRequests,
@@ -242,17 +243,17 @@ class MockFactory {
   }
   
   /// Create mock groups repository
-  static MockGroupsRepository createGroupsRepository() {
-    return MockGroupsRepository();
+  static production.MockGroupsRepository createGroupsRepository() {
+    return production.MockGroupsRepository();
   }
   
   /// Create mock social recipe repository
-  static MockSocialRecipeRepository createSocialRecipeRepository({
+  static production.MockSocialRecipeRepository createSocialRecipeRepository({
     User? currentUser,
     List<SharedRecipe>? sharedRecipes,
     List<SharedMenu>? sharedMenus,
   }) {
-    final mock = MockSocialRecipeRepository();
+    final mock = production.MockSocialRecipeRepository();
     mock.setSocialRecipeState(
       currentUser: currentUser,
       sharedRecipes: sharedRecipes,
@@ -262,22 +263,22 @@ class MockFactory {
   }
   
   /// Create mock analytics repository  
-  static AnalyticsRepository createAnalyticsRepository() {
-    // Using the separate mock file
-    return MockAnalyticsRepository();
+  static production.MockAnalyticsRepository createAnalyticsRepository() {
+    // Using the mock from production_mocks.dart
+    return production.MockAnalyticsRepository();
   }
   
   // ============= SERVICES =============
   
   /// Create mock auth service with proper typing
-  static MockAuthService createAuthService({
+  static production.MockAuthService createAuthService({
     bool isAuthenticated = false,
     String? userId,
     User? currentUser,
     String? error,
     bool isLoading = false,
   }) {
-    final mock = MockAuthService();
+    final mock = production.MockAuthService();
     mock.setAuthState(
       isAuthenticated: isAuthenticated,
       currentUser: currentUser ?? (userId != null ? createMockUser(uid: userId) : null),
@@ -289,7 +290,7 @@ class MockFactory {
   
   /// Create mock user service
   static UserService createUserService() {
-    return MockUserService();
+    return production.MockUserService();
   }
   
   /// Create mock permission service
@@ -298,7 +299,7 @@ class MockFactory {
     String? userDisplayName = 'Test User',
     bool defaultHasPermission = true,
   }) {
-    final mock = MockPermissionService();
+    final mock = production.MockPermissionService();
     mock.setPermissionState(
       currentUserId: currentUserId,
       userDisplayName: userDisplayName,
@@ -308,7 +309,7 @@ class MockFactory {
   }
   
   /// Create mock unified recipe service with configuration
-  static MockUnifiedRecipeService createUnifiedRecipeService({
+  static production.MockUnifiedRecipeService createUnifiedRecipeService({
     List<Recipe>? recipes,
     bool isInitialized = false,
     bool isLoading = false,
@@ -317,7 +318,7 @@ class MockFactory {
     String? currentUserDisplayName,
     bool isSyncing = false,
   }) {
-    final mock = MockUnifiedRecipeService();
+    final mock = production.MockUnifiedRecipeService();
     mock.setRecipeState(
       recipes: recipes ?? [],
       isInitialized: isInitialized,
@@ -331,141 +332,348 @@ class MockFactory {
   }
   
   /// Create mock unified shopping service
-  static MockUnifiedShoppingService createUnifiedShoppingService() {
-    return MockUnifiedShoppingService();
+  static production.MockUnifiedShoppingService createUnifiedShoppingService() {
+    return production.MockUnifiedShoppingService();
   }
   
   /// Create mock unified friends service
-  static MockUnifiedFriendsService createUnifiedFriendsService() {
-    return MockUnifiedFriendsService();
+  static production.MockUnifiedFriendsService createUnifiedFriendsService() {
+    return production.MockUnifiedFriendsService();
   }
   
   /// Create mock messaging service
-  static MockMessagingService createMessagingService() {
-    return MockMessagingService();
+  static service.MockMessagingService createMessagingService() {
+    return service.MockMessagingService();
   }
   
   /// Create mock notification service
-  static MockNotificationService createNotificationService() {
-    return MockNotificationService();
+  static production.MockNotificationService createNotificationService() {
+    return production.MockNotificationService();
   }
   
   /// Create mock menu service
-  static MockMenuService createMenuService() {
-    return MockMenuService();
+  static service.MockMenuService createMenuService() {
+    return service.MockMenuService();
   }
   
   /// Create mock import manager
-  static MockImportManager createImportManager() {
-    return MockImportManager();
+  static production.MockImportManager createImportManager() {
+    return production.MockImportManager();
   }
   
   /// Create mock search service
-  static MockSearchService createSearchService() {
-    return MockSearchService();
+  static service.MockSearchService createSearchService() {
+    return service.MockSearchService();
   }
   
   /// Create mock recipe discovery service
-  static MockRecipeDiscoveryService createRecipeDiscoveryService() {
-    return MockRecipeDiscoveryService();
+  static service.MockRecipeDiscoveryService createRecipeDiscoveryService() {
+    return service.MockRecipeDiscoveryService();
   }
   
   /// Create mock analytics service
-  static MockAnalyticsService createAnalyticsService() {
-    return MockAnalyticsService();
+  static production.MockAnalyticsService createAnalyticsService() {
+    return production.MockAnalyticsService();
   }
   
   /// Create mock storage service
-  static MockStorageService createStorageService() {
-    return MockStorageService();
+  static service.MockStorageService createStorageService() {
+    return service.MockStorageService();
   }
   
   /// Create mock dialog service
-  static MockDialogService createDialogService() {
-    return MockDialogService();
+  static service.MockDialogService createDialogService() {
+    return service.MockDialogService();
   }
   
   /// Create mock connectivity service
-  static MockConnectivityService createConnectivityService() {
-    return MockConnectivityService();
+  static service.MockConnectivityService createConnectivityService() {
+    return service.MockConnectivityService();
+  }
+  
+  /// Create mock connectivity monitoring service
+  static production.MockConnectivityMonitoringService createConnectivityMonitoringService() {
+    return production.MockConnectivityMonitoringService();
+  }
+  
+  /// Create mock image picker service
+  static production.MockImagePickerService createImagePickerService() {
+    return production.MockImagePickerService();
+  }
+  
+  /// Create fake XFile for image picker testing
+  static production.FakeXFile createXFile(String path, {String? name, int? length}) {
+    return production.FakeXFile(name: name ?? 'test.jpg', path: path);
+  }
+  
+  /// Create mock realtime menu service
+  static production.MockRealtimeMenuService createRealtimeMenuService({
+    bool isProcessing = false,
+    List<String>? categoryNames,
+  }) {
+    final mock = production.MockRealtimeMenuService();
+    mock.setMenuServiceState(
+      isProcessing: isProcessing,
+      categoryNames: categoryNames,
+    );
+    return mock;
+  }
+  
+  /// Create mock realtime sync service
+  static production.MockRealtimeSyncService createRealtimeSyncService({
+    bool isConnected = true,
+  }) {
+    final mock = production.MockRealtimeSyncService();
+    mock.setConnectionState(isConnected);
+    return mock;
+  }
+  
+  /// Create mock social recipe service
+  static production.MockSocialRecipeService createSocialRecipeService({
+    List<SharedRecipe>? sharedRecipes,
+    List<SharedMenu>? sharedMenus,
+    bool isLoading = false,
+    String? error,
+  }) {
+    final mock = production.MockSocialRecipeService();
+    mock.setSocialState(
+      sharedRecipes: sharedRecipes,
+      sharedMenus: sharedMenus,
+      isLoading: isLoading,
+      error: error,
+    );
+    return mock;
+  }
+  
+  /// Create mock optimistic update manager
+  static production.MockOptimisticUpdateManager createOptimisticUpdateManager({
+    Map<String, List<Recipe>>? optimisticChanges,
+    bool hasOptimisticChanges = false,
+  }) {
+    final mock = production.MockOptimisticUpdateManager();
+    mock.setOptimisticState(
+      optimisticChanges: optimisticChanges,
+      hasOptimisticChanges: hasOptimisticChanges,
+    );
+    return mock;
   }
   
   // ============= VIEWMODELS =============
   
   /// Create mock auth viewmodel with proper typing
-  static MockAuthViewModel createAuthViewModel({
+  static widget.MockAuthViewModel createAuthViewModel({
     bool isLoginMode = true,
     bool isPasswordVisible = false,
     bool isLoading = false,
     String? errorMessage,
     bool isAuthenticated = false,
   }) {
-    final mock = MockAuthViewModel();
-    mock.setAuthViewModelState(
-      isLoginMode: isLoginMode,
-      isPasswordVisible: isPasswordVisible,
-      isLoading: isLoading,
-      errorMessage: errorMessage,
+    final mock = widget.MockAuthViewModel();
+    mock.setAuthState(
       isAuthenticated: isAuthenticated,
+      userId: isAuthenticated ? 'test_user_123' : null,
+      email: isAuthenticated ? 'test@example.com' : null,
+    );
+    return mock;
+  }
+
+  /// Create mock URL import viewmodel
+  static production.MockUrlImportViewModel createUrlImportViewModel({
+    bool isLoading = false,
+    String? error,
+    String url = '',
+    String extractedText = '',
+    bool hasExtractedText = false,
+    bool canFetch = false,
+    String sourceUrl = '',
+  }) {
+    final mock = production.MockUrlImportViewModel();
+    mock.setUrlImportState(
+      isLoading: isLoading,
+      error: error,
+      url: url,
+      extractedText: extractedText,
+      hasExtractedText: hasExtractedText,
+      canFetch: canFetch,
+      sourceUrl: sourceUrl,
+    );
+    return mock;
+  }
+
+  /// Create mock photo import viewmodel
+  static PhotoImportViewModel createPhotoImportViewModel({
+    bool isLoading = false,
+    String? error,
+    Uint8List? imageBytes,
+    String ocrText = '',
+    bool hasImage = false,
+    bool hasOcrResult = false,
+    bool canImport = false,
+    bool isProcessing = false,
+  }) {
+    final mock = production.MockPhotoImportViewModel();
+    mock.setPhotoImportState(
+      isLoading: isLoading,
+      error: error,
+      imageBytes: imageBytes,
+      ocrText: ocrText,
+      hasImage: hasImage,
+      hasOcrResult: hasOcrResult,
+      canImport: canImport,
+      isProcessing: isProcessing,
+    );
+    return mock;
+  }
+  
+  /// Create mock shared content viewmodel
+  static production.MockSharedContentViewModel createSharedContentViewModel({
+    bool isLoading = false,
+    String? error,
+    List? sharedContent,
+    int activeTab = 0,
+    String searchQuery = '',
+    bool hasSharedContent = true,
+    bool hasFilteredContent = true,
+  }) {
+    final mock = production.MockSharedContentViewModel();
+    
+    // Use non-empty content if hasSharedContent is true
+    final contentList = hasSharedContent ? (sharedContent ?? ['test-content']) : <dynamic>[];
+    
+    mock.setSharedContentState(
+      isLoading: isLoading,
+      error: error,
+      sharedContent: contentList,
+      activeTab: activeTab,
+      searchQuery: searchQuery,
+    );
+    return mock;
+  }
+  
+  /// Create mock group content viewmodel
+  static widget.MockGroupContentViewModel createGroupContentViewModel({
+    bool isLoading = false,
+    String? error,
+    bool hasGroupContent = true,
+    bool hasFilteredContent = true,
+    String searchQuery = '',
+    int currentTabIndex = 0,
+    List<Map<String, dynamic>>? groupActivityFeed,
+  }) {
+    final mock = widget.MockGroupContentViewModel();
+    mock.setGroupContentState(
+      isLoading: isLoading,
+      error: error,
+      hasGroupContent: hasGroupContent,
+      hasFilteredContent: hasFilteredContent,
+      searchQuery: searchQuery,
+      currentTabIndex: currentTabIndex,
+      groupActivityFeed: groupActivityFeed ?? [],
+    );
+    return mock;
+  }
+  
+  /// Create mock activity service
+  static production.MockActivityService createActivityService({
+    bool isLoading = false,
+    String? error,
+    List? activities,
+    bool hasMore = true,
+  }) {
+    final mock = production.MockActivityService();
+    mock.setActivityState(
+      isLoading: isLoading,
+      error: error,
+      activities: activities ?? [],
+      hasMore: hasMore,
     );
     return mock;
   }
   
   /// Create mock recipe form viewmodel
-  static MockRecipeFormViewModel createRecipeFormViewModel() {
-    return MockRecipeFormViewModel();
+  static widget.MockRecipeFormViewModel createRecipeFormViewModel() {
+    return widget.MockRecipeFormViewModel();
   }
   
   /// Create mock recipe list viewmodel
-  static MockRecipeListViewModel createRecipeListViewModel() {
-    return MockRecipeListViewModel();
+  static widget.MockRecipeListViewModel createRecipeListViewModel() {
+    return widget.MockRecipeListViewModel();
   }
   
   /// Create mock shopping viewmodel
-  static MockShoppingViewModel createShoppingViewModel() {
-    return MockShoppingViewModel();
+  static service.MockShoppingViewModel createShoppingViewModel() {
+    return service.MockShoppingViewModel();
   }
   
   /// Create mock menu viewmodel
-  static MockMenuViewModel createMenuViewModel() {
-    return MockMenuViewModel();
+  static widget.MockMenuViewModel createMenuViewModel() {
+    return widget.MockMenuViewModel();
   }
   
   /// Create mock friends viewmodel
-  static MockFriendsViewModel createFriendsViewModel() {
-    return MockFriendsViewModel();
+  static widget.MockFriendsViewModel createFriendsViewModel() {
+    return widget.MockFriendsViewModel();
   }
   
   /// Create mock profile viewmodel
-  static MockProfileViewModel createProfileViewModel() {
-    return MockProfileViewModel();
+  static service.MockProfileViewModel createProfileViewModel() {
+    return service.MockProfileViewModel();
+  }
+  
+  /// Create mock user profile viewmodel
+  static widget.MockUserProfileViewModel createUserProfileViewModel({
+    bool isLoading = false,
+    String? error,
+    String displayName = 'Test Användare',
+    String? avatarUrl,
+    bool isSearchable = true,
+    bool allowEmailSearch = false,
+    bool hasUnsavedChanges = false,
+    String? displayNameError,
+    bool hasProfile = true,
+    bool isFormValid = true,
+  }) {
+    final mock = widget.MockUserProfileViewModel();
+    mock.setUserProfileState(
+      isLoading: isLoading,
+      error: error,
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+      isSearchable: isSearchable,
+      allowEmailSearch: allowEmailSearch,
+      hasUnsavedChanges: hasUnsavedChanges,
+      displayNameError: displayNameError,
+      hasProfile: hasProfile,
+      isFormValid: isFormValid,
+    );
+    return mock;
   }
   
   /// Create mock settings viewmodel
-  static MockSettingsViewModel createSettingsViewModel() {
-    return MockSettingsViewModel();
+  static service.MockSettingsViewModel createSettingsViewModel() {
+    return service.MockSettingsViewModel();
   }
   
   // ============= UTILITIES =============
   
   /// Create mock logger
-  static MockLogger createLogger() {
-    return MockLogger();
+  static service.MockLogger createLogger() {
+    return service.MockLogger();
   }
   
   /// Create mock error handler
-  static MockErrorHandler createErrorHandler() {
-    return MockErrorHandler();
+  static service.MockErrorHandler createErrorHandler() {
+    return service.MockErrorHandler();
   }
   
   /// Create mock cache manager
-  static MockCacheManager createCacheManager() {
-    return MockCacheManager();
+  static service.MockCacheManager createCacheManager() {
+    return service.MockCacheManager();
   }
   
   /// Create mock network manager
-  static MockNetworkManager createNetworkManager() {
-    return MockNetworkManager();
+  static service.MockNetworkManager createNetworkManager() {
+    return service.MockNetworkManager();
   }
   
   // ============= TEST DATA =============
@@ -510,6 +718,20 @@ class MockFactory {
       joinedAt: DateTime.now(),
       lastActiveAt: DateTime.now(),
     );
+  }
+  
+  /// Create mock participant tracker
+  static production.MockParticipantTracker createParticipantTracker({
+    int activeCount = 0,
+    List<ParticipantActivity>? allActivities,
+    List<String>? onlineParticipants,
+  }) {
+    final mock = production.MockParticipantTracker();
+    // Configure with standard mocktail stubbing
+    when(() => mock.activeCount).thenReturn(activeCount);
+    when(() => mock.allActivities).thenReturn(allActivities ?? <ParticipantActivity>[]);
+    when(() => mock.onlineParticipants).thenReturn(onlineParticipants ?? <String>[]);
+    return mock;
   }
   
   /// Create fake Firestore instance

@@ -222,11 +222,39 @@ Gör så här:
     
     if (lines.isEmpty) return null;
 
-    // Extract recipe name (usually first meaningful line)
+    // Extract recipe name from first lines before processing sections
     String recipeName = 'Importerat recept';
     String description = '';
     final List<String> ingredients = [];
     final List<String> instructions = [];
+    
+    // Try to extract title from first few lines
+    for (int i = 0; i < lines.length && i < 3; i++) {
+      final line = lines[i].trim();
+      final lowerLine = line.toLowerCase();
+      
+      // Skip empty lines
+      if (line.isEmpty) continue;
+      
+      // If this line looks like a section header, stop looking for title
+      if (_isIngredientHeader(lowerLine) || _isInstructionHeader(lowerLine)) {
+        break;
+      }
+      
+      // If this line looks like an ingredient (has measurements), skip it
+      if (_looksLikeIngredient(line)) {
+        break;
+      }
+      
+      // If this looks like a good title (not too long, not too short, no measurements)
+      if (recipeName == 'Importerat recept' && 
+          line.length > 2 && 
+          line.length < 100 && 
+          !line.contains(RegExp(r'\d+\s*(dl|cl|ml|kg|g|msk|tsk|st|krm)'))) {
+        recipeName = line;
+        break;
+      }
+    }
     
     bool inIngredients = false;
     bool inInstructions = false;
@@ -238,6 +266,9 @@ Gör så här:
       // Skip empty lines
       if (line.isEmpty) continue;
       
+      // Skip the line if it's already been used as the title
+      if (line == recipeName) continue;
+      
       // Check for section headers
       if (_isIngredientHeader(lowerLine)) {
         inIngredients = true;
@@ -248,15 +279,6 @@ Gör så här:
       if (_isInstructionHeader(lowerLine)) {
         inIngredients = false;
         inInstructions = true;
-        continue;
-      }
-      
-      // Extract recipe name from first non-header line
-      if (recipeName == 'Importerat recept' && 
-          !_isHeader(lowerLine) && 
-          line.length > 2 && 
-          line.length < 100) {
-        recipeName = line;
         continue;
       }
       
@@ -317,7 +339,7 @@ Gör så här:
 
   bool _isIngredientHeader(String line) {
     final headers = [
-      'ingrediens', 'råvaror', 'du behöver', 'behöver är',
+      'ingrediens', 'ingredienser', 'råvaror', 'du behöver', 'behöver är',
       'ingredients', 'what you need'
     ];
     return headers.any((header) => line.contains(header));
@@ -331,9 +353,6 @@ Gör så här:
     return headers.any((header) => line.contains(header));
   }
 
-  bool _isHeader(String line) {
-    return _isIngredientHeader(line) || _isInstructionHeader(line);
-  }
 
   bool _looksLikeIngredient(String line) {
     // Has common Swedish measurements

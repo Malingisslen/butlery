@@ -25,9 +25,10 @@ class RealtimeParticipantManager {
   RealtimeParticipantManager({
     required RealtimeMenuService menuService,
     required ParticipantTracker participantTracker,
+    PermissionService? permissionService,
   }) : _menuService = menuService,
        _participantTracker = participantTracker,
-       _permissionService = ServiceLocator.get<PermissionService>();
+       _permissionService = permissionService ?? ServiceLocator.get<PermissionService>();
 
   // ===== PERMISSION GETTERS =====
 

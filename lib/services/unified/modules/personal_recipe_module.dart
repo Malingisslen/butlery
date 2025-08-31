@@ -63,7 +63,7 @@ class PersonalRecipeModule {
   final String? Function() _getCurrentUserDisplayName;
   final void Function(String) _setError;
   final void Function() _notifyListeners;
-  final RecipeServiceAdapter _serviceAdapter;
+  final RecipeServiceAdapter Function() _getServiceAdapter;
 
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
@@ -72,14 +72,14 @@ class PersonalRecipeModule {
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
-    required RecipeServiceAdapter serviceAdapter,
+    required RecipeServiceAdapter Function() getServiceAdapter,
   })  : _recipeRepository = recipeRepository,
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,
         _notifyListeners = notifyListeners,
-        _serviceAdapter = serviceAdapter;
+        _getServiceAdapter = getServiceAdapter;
 
   // ===== PERSONAL RECIPE CRUD =====
 
@@ -124,20 +124,14 @@ class PersonalRecipeModule {
         imageUrls: imageUrls,
       );
 
-      // Save to cache first (optimistic update)
+      // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
       await _saveToCache(newRecipe);
-
-      // Create recipe using repository pattern
-      final createdId = await _serviceAdapter.createRecipe(newRecipe);
-      if (createdId != null) {
-        AppLogger.success('✅ Personal recipe "$title" created');
-        return createdId;
-      } else {
-        // Remove from cache if creation failed
-        await _removeFromCache(newRecipe.id);
-        _setError('Kunde inte spara recept till servern');
-        return null;
-      }
+      
+      // Start background database sync without waiting
+      _startBackgroundRecipeSync(newRecipe, 'create');
+      
+      AppLogger.success('✅ Personal recipe "$title" created (syncing in background)');
+      return newRecipe.id;
     } catch (e) {
       AppLogger.error('❌ Could not create personal recipe: $e');
       _setError('Kunde inte skapa recept: $e');
@@ -164,17 +158,13 @@ class PersonalRecipeModule {
         lastEditedByDisplayName: _getCurrentUserDisplayName(),
       );
 
-      // Save to cache (optimistic update)
+      // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
       await _saveToCache(editedRecipe);
-
-      // Update recipe using repository pattern
-      final updateSuccess = await _serviceAdapter.updateRecipe(editedRecipe);
-      if (updateSuccess) {
-        AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated');
-      } else {
-        _setError('Kunde inte uppdatera recept på servern');
-        return false;
-      }
+      
+      // Start background database sync without waiting
+      _startBackgroundRecipeSync(editedRecipe, 'update');
+      
+      AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update personal recipe: $e');
@@ -196,7 +186,7 @@ class PersonalRecipeModule {
       await _removeFromCache(recipeId);
 
       // Delete from Firebase using repository pattern
-      final deleteSuccess = await _serviceAdapter.deleteRecipe(recipeId);
+      final deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
       if (deleteSuccess) {
         AppLogger.success('✅ Personal recipe deleted');
       } else {
@@ -479,7 +469,7 @@ class PersonalRecipeModule {
           );
 
           await _saveToCache(personalRecipe);
-          await _serviceAdapter.createRecipe(personalRecipe);
+          await _getServiceAdapter().createRecipe(personalRecipe);
           
           importedIds.add(personalRecipe.id);
           AppLogger.info('Imported recipe: ${personalRecipe.title}');
@@ -531,5 +521,45 @@ class PersonalRecipeModule {
   /// Clear any existing errors
   void clearError() {
     // This would be handled by the parent service
+  }
+
+  // ===== BACKGROUND SYNC METHODS =====
+
+  /// Start background database sync for optimistic updates
+  void _startBackgroundRecipeSync(Recipe recipe, String operation) {
+    // Use Future.microtask to ensure this runs asynchronously without blocking
+    Future.microtask(() async {
+      try {
+        AppLogger.info('🔄 Starting background $operation for recipe: ${recipe.title}');
+        
+        bool success = false;
+        if (operation == 'create') {
+          final createdId = await _getServiceAdapter().createRecipe(recipe);
+          success = createdId != null;
+        } else if (operation == 'update') {
+          success = await _getServiceAdapter().updateRecipe(recipe);
+        }
+        
+        if (success) {
+          AppLogger.success('✅ Background $operation completed for: ${recipe.title}');
+        } else {
+          AppLogger.error('❌ Background $operation failed for: ${recipe.title}');
+          // Recipe is still in cache for retry later
+          _scheduleRetrySync(recipe, operation);
+        }
+      } catch (e) {
+        AppLogger.error('❌ Background $operation error for ${recipe.title}: $e');
+        _scheduleRetrySync(recipe, operation);
+      }
+    });
+  }
+
+  /// Schedule retry sync for failed background operations
+  void _scheduleRetrySync(Recipe recipe, String operation) {
+    // Retry after 5 seconds with exponential backoff
+    Future.delayed(const Duration(seconds: 5), () {
+      AppLogger.info('🔄 Retrying background $operation for: ${recipe.title}');
+      _startBackgroundRecipeSync(recipe, operation);
+    });
   }
 }

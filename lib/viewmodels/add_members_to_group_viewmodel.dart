@@ -269,6 +269,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
   /// Indicates whether search is active for UI conditional display
   /// and search state management throughout friend filtering operations.
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
+  
 
   // ===== MEMBER SELECTION ACCESSORS =====
 
@@ -467,8 +468,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
     } else {
       _filteredFriends = _availableFriends
           .where((friend) =>
-              friend.displayName.toLowerCase().contains(_searchQuery) ||
-              (friend.bio?.toLowerCase().contains(_searchQuery) ?? false))
+              friend.displayName.toLowerCase().contains(_searchQuery))
           .toList();
     }
     debugPrint(

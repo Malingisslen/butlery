@@ -46,20 +46,26 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             const PopupMenuItem(
               value: 'info',
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.info_outline),
                   SizedBox(width: 12),
-                  Text('Konversationsinfo'),
+                  Flexible(
+                    child: Text('Konversationsinfo'),
+                  ),
                 ],
               ),
             ),
             const PopupMenuItem(
               value: 'mute',
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.notifications_off_outlined),
                   SizedBox(width: 12),
-                  Text('Tysta'),
+                  Flexible(
+                    child: Text('Tysta'),
+                  ),
                 ],
               ),
             ),
@@ -67,10 +73,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             const PopupMenuItem(
               value: 'leave',
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.exit_to_app, color: AppColors.error),
                   SizedBox(width: 12),
-                  Text('Lämna konversation'),
+                  Flexible(
+                    child: Text('Lämna konversation'),
+                  ),
                 ],
               ),
             ),

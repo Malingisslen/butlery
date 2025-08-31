@@ -131,7 +131,7 @@ class FriendActivitySection {
                           imageUrl,
                           width: 60,
                           height: 60,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) => _buildContentPlaceholder(type),
                         ),
                       )

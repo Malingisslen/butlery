@@ -145,6 +145,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Comprehensive bootstrap orchestrator that manages the complete application initialization process for the Butlery application.
 ///
@@ -213,6 +214,13 @@ class ApplicationBootstrap {
   /// Register a bootstrap stage.
   void registerStage(BootstrapStage stage) {
     if (_isInitialized || _initializationInProgress) {
+      // During hot restart, skip re-registration if stage already exists
+      if (_stagesByType.containsKey(stage.runtimeType)) {
+        if (kDebugMode) {
+          AppLogger.debug('🔄 Stage ${stage.name} already registered (hot restart detected)');
+        }
+        return;
+      }
       throw BootstrapException(
         stage.name,
         'registration',
@@ -249,6 +257,15 @@ class ApplicationBootstrap {
     List<BootstrapStage>? stages,
   }) async {
     final bootstrap = ApplicationBootstrap();
+    
+    // Reset state for hot restart
+    if (bootstrap._isInitialized || bootstrap._initializationInProgress) {
+      if (kDebugMode) {
+        AppLogger.info('🔄 Hot restart detected, resetting bootstrap state');
+      }
+      await bootstrap.reset();
+    }
+    
     await bootstrap._performInitialization(modules, stages);
   }
 
@@ -272,14 +289,12 @@ class ApplicationBootstrap {
       );
     }
 
-    _initializationInProgress = true;
-
     if (kDebugMode) {
-      AppLogger.info('🚀 Starting application bootstrap...');
+      AppLogger.info('🚀 Starting Butlery with modular system');
     }
 
     try {
-      // Step 1: Register modules and stages if provided
+      // Step 1: Register modules and stages if provided (before setting in progress flag)
       if (modules != null) {
         registerModules(modules);
       }
@@ -287,7 +302,15 @@ class ApplicationBootstrap {
         registerStages(stages);
       }
 
-      // Step 2: Initialize DI container
+      // Now set the initialization in progress flag after registration
+      _initializationInProgress = true;
+
+      // Step 1.5: Initialize ServiceLocator with the DI container BEFORE initializing modules
+      // This allows modules to use ServiceLocator during their configuration
+      ServiceLocator.initialize(_diContainer);
+      // ServiceLocator initialized - silent in production
+
+      // Step 2: Initialize DI container (which configures modules)
       await _initializeDependencyInjection();
 
       // Step 3: Execute bootstrap stages
@@ -300,7 +323,7 @@ class ApplicationBootstrap {
       _initializationInProgress = false;
 
       if (kDebugMode) {
-        AppLogger.success('✅ Application bootstrap complete!');
+        AppLogger.info('✅ Modular system initialized successfully');
       }
     } catch (e) {
       _initializationInProgress = false;
@@ -316,15 +339,13 @@ class ApplicationBootstrap {
   /// Initialize the dependency injection container.
   Future<void> _initializeDependencyInjection() async {
     if (kDebugMode) {
-      AppLogger.info('🔧 Initializing dependency injection...');
+      AppLogger.info('🔧 Initializing modular DI system...');
     }
 
     try {
       await _diContainer.initialize();
       
-      if (kDebugMode) {
-        AppLogger.success('✅ Dependency injection initialized');
-      }
+      // DI system initialized - silent in production
     } catch (e) {
       throw BootstrapException(
         'DependencyInjection',
@@ -344,32 +365,24 @@ class ApplicationBootstrap {
       return;
     }
 
-    if (kDebugMode) {
-      AppLogger.info('🚀 Executing ${_stages.length} bootstrap stages...');
-    }
+    // Bootstrap stages executing - silent in production
 
     // Sort stages by priority
     final sortedStages = List<BootstrapStage>.from(_stages)
       ..sort((a, b) => a.priority.compareTo(b.priority));
 
-    if (kDebugMode) {
-      AppLogger.debug('📋 Stage execution order: ${sortedStages.map((s) => s.name).join(' → ')}');
-    }
+    // Stage order determined - silent in production
 
     for (final stage in sortedStages) {
       await _executeStage(stage);
     }
 
-    if (kDebugMode) {
-      AppLogger.success('✅ All bootstrap stages completed');
-    }
+    // All stages completed - silent in production
   }
 
   /// Execute a single bootstrap stage.
   Future<void> _executeStage(BootstrapStage stage) async {
-    if (kDebugMode) {
-      AppLogger.info('🚀 Executing stage: ${stage.name}');
-    }
+    // Executing stage - silent in production
 
     try {
       // Validate required modules are available
@@ -394,9 +407,7 @@ class ApplicationBootstrap {
         }
       }
 
-      if (kDebugMode) {
-        AppLogger.success('✅ Stage completed: ${stage.name}');
-      }
+      // Stage completed - silent in production
     } catch (e) {
       if (stage.isOptional) {
         if (kDebugMode) {

@@ -41,6 +41,8 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/permission_service.dart' as permission;
 
 /// Abstract base class for all services in the Butlery application.
 ///
@@ -344,7 +346,9 @@ abstract class BaseService with ErrorHandlingMixin {
   /// Check if user is authenticated
   Future<bool> _isAuthenticated() async {
     try {
-      return true; // Simplified auth check - consolidation removed detailed auth service
+      // Use actual permission service for authentication validation
+      final permissionService = ServiceLocator.get<permission.PermissionService>();
+      return permissionService.isAuthenticated;
     } catch (e) {
       AppLogger.error('Auth check failed: $e');
       return false;

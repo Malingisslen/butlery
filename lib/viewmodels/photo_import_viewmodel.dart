@@ -71,12 +71,10 @@
 
 // lib/viewmodels/photo_import_viewmodel.dart
 
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
+import 'package:butlery/services/ocr_extraction_service.dart';
 
 /// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
 ///
@@ -115,10 +113,22 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// 
   /// **Initialization Process:**
   /// - ImportManager integration for photo import strategy execution
-  /// - OCR processing system preparation with API configuration
+  /// - Universal OCR service preparation with multi-provider support
   /// - Image handling setup with camera and gallery integration
   /// - Recipe parsing coordination for OCR text processing
-  PhotoImportViewModel({required super.importManager});
+  PhotoImportViewModel({required super.importManager}) {
+    _initializeOCRService();
+  }
+
+  /// Initialize OCR service for universal device compatibility
+  Future<void> _initializeOCRService() async {
+    try {
+      await OCRExtractionService.instance.initialize();
+      debugPrint('✅ [PhotoImport] OCR service initialized successfully');
+    } catch (e) {
+      debugPrint('❌ [PhotoImport] Failed to initialize OCR service: $e');
+    }
+  }
 
   // ===== STATE ACCESSORS =====
 
@@ -161,6 +171,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   @override
   bool get canImport => hasOcrResult;
 
+
   /// Photo import type identifier for analytics tracking and logging coordination.
   /// 
   /// Provides import type classification for analytics tracking, logging coordination,
@@ -170,19 +181,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   @override
   String get importType => 'photo';
 
-  // ===== OCR API CONFIGURATION =====
-  
-  /// OCR API key from environment configuration for authenticated OCR service access.
-  /// 
-  /// Retrieves OCR API key from environment variables enabling secure
-  /// OCR service authentication and API access throughout photo processing.
-  String get _ocrApiKey => dotenv.env['OCR_API_KEY'] ?? '';
-  
-  /// OCR API endpoint URL from environment configuration with fallback default.
-  /// 
-  /// Retrieves OCR service endpoint from environment variables with fallback
-  /// to OCR.space API enabling flexible OCR service configuration.
-  String get _ocrApiUrl => dotenv.env['OCR_API_URL'] ?? 'https://api.ocr.space/parse/image';
+  // ===== OCR SERVICE INTEGRATION =====
 
   // ===== PUBLIC OPERATIONS =====
 
@@ -256,7 +255,25 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     _imageBytes = null;
     _ocrText = '';
     clearImportData();
+    
+    // Also clear OCR cache for testing
+    OCRExtractionService.instance.clearCache();
   }
+
+  /// Alias for clearPhoto() to provide consistent API naming conventions.
+  /// 
+  /// This method provides alternative naming for clearing all photo import data
+  /// maintaining backward compatibility and consistent API patterns across ViewModels.
+  /// Delegates to clearPhoto() for actual implementation.
+  /// 
+  /// **Override Implementation**: Overrides ImportBaseViewModel clearAll() with photo-specific cleanup.
+  /// 
+  /// **Usage Example:**
+  /// ```dart
+  /// photoImportViewModel.clearAll(); // Alternative to clearPhoto()
+  /// ```
+  @override
+  void clearAll() => clearPhoto();
 
   /// Performs manual import operation with OCR text parsing and recipe generation.
   /// 
@@ -291,6 +308,8 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     setParsedRecipe(recipe);
   }
 
+
+
   // ===== PRIVATE OPERATIONS =====
 
   /// Performs unified image selection and OCR processing with comprehensive workflow coordination.
@@ -298,12 +317,13 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// [source] Image source for capture or selection (camera or gallery)
   /// 
   /// Executes complete image selection and OCR workflow including image capture,
-  /// bytes processing, OCR execution, and automatic recipe parsing with comprehensive
-  /// error handling and state coordination.
+  /// bytes processing, validation, OCR execution, and automatic recipe parsing 
+  /// with comprehensive error handling and state coordination.
   /// 
   /// **Unified Processing Workflow:**
   /// - Import data cleanup and state preparation
   /// - Image selection through ImagePicker with source-specific handling
+  /// - Image validation (size, format) before processing
   /// - Image bytes reading and state update
   /// - OCR processing with multi-engine support
   /// - Automatic recipe parsing from extracted text
@@ -315,14 +335,41 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       () async {
         // Pick image
         final picker = ImagePicker();
-        final XFile? picked = await picker.pickImage(source: source);
+        final XFile? picked = await picker.pickImage(
+          source: source,
+          maxWidth: 2048,  // Limit width to reduce file size
+          maxHeight: 2048, // Limit height to reduce file size
+          imageQuality: 85, // Compress image to reduce file size while maintaining OCR quality
+        );
 
         if (picked == null) {
           throw Exception('Ingen bild vald');
         }
 
+        // Validate image format
+        final fileName = picked.name.toLowerCase();
+        if (!fileName.endsWith('.jpg') && 
+            !fileName.endsWith('.jpeg') && 
+            !fileName.endsWith('.png')) {
+          throw Exception(
+            'Bildformatet stöds inte. Använd JPEG eller PNG-format.',
+          );
+        }
+
         // Read image bytes
         final bytes = await picked.readAsBytes();
+        
+        // Validate image size (max 15MB after compression)
+        final sizeInMB = bytes.length / (1024 * 1024);
+        if (sizeInMB > 15) {
+          throw Exception(
+            'Bilden är för stor (${sizeInMB.toStringAsFixed(1)} MB). '
+            'Använd en mindre bild eller komprimera den.',
+          );
+        }
+
+        debugPrint('🔍 [PhotoImport] Image validated: ${sizeInMB.toStringAsFixed(2)} MB, format: ${fileName.split('.').last}');
+        
         _imageBytes = bytes;
         notifyListeners();
 
@@ -333,69 +380,80 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     );
   }
 
-  /// Performs comprehensive OCR processing with multi-engine support and intelligent fallback strategies.
+  /// Performs comprehensive OCR processing using universal multi-provider OCR service.
   /// 
   /// [imageBytes] Raw image data for OCR processing and text extraction
   /// 
-  /// Executes sophisticated OCR processing using multiple engines with fallback strategies,
-  /// orientation detection, and automatic recipe parsing coordination ensuring optimal
-  /// text extraction results from recipe images.
+  /// Executes sophisticated OCR processing using the universal OCR service with
+  /// multi-provider fallback strategy, image quality assessment, and automatic
+  /// recipe parsing coordination ensuring optimal text extraction on all devices.
   /// 
-  /// **OCR Processing Strategy:**
-  /// 1. Primary processing with OCR Engine 2 (optimized for recipe text)
-  /// 2. Fallback to OCR Engine 1 with orientation detection if primary fails
-  /// 3. Text validation and quality assessment
-  /// 4. Automatic recipe parsing from extracted text
-  /// 5. State update and UI notification coordination
+  /// **Universal OCR Processing Strategy:**
+  /// 1. Image quality assessment and preprocessing
+  /// 2. Multi-provider OCR processing (OCR.space → Google Vision → Tesseract)
+  /// 3. Circuit breaker patterns for service resilience
+  /// 4. Swedish language optimization and confidence scoring
+  /// 5. Automatic recipe parsing from extracted text
+  /// 6. Comprehensive error handling with user guidance
   /// 
   /// **Throws**: Exception if no text can be extracted from image.
   Future<void> _performOcr(Uint8List imageBytes) async {
-    final base64Image = base64Encode(imageBytes);
-    
-    // Try OCR engine 2 first (usually better for recipe text)
-    String text = await _callOcrApi(base64Image, engine: '2');
+    final imageSizeKB = imageBytes.length / 1024;
+    debugPrint('🔍 [PhotoImport] Starting universal OCR processing: ${imageSizeKB.toStringAsFixed(1)} KB');
 
-    // If engine 2 fails, try engine 1 with orientation detection
-    if (text.isEmpty) {
-      text = await _callOcrApi(
-        base64Image,
-        engine: '1',
-        extras: {'detectOrientation': 'true'},
-      );
+    try {
+      // Use the new universal OCR service
+      final ocrResult = await OCRExtractionService.instance.extractText(imageBytes);
+      
+      debugPrint('🔍 [PhotoImport] OCR completed - Method: ${ocrResult.processingMethod}, Confidence: ${ocrResult.confidence.toStringAsFixed(2)}');
+      
+      if (ocrResult.isSuccessful && ocrResult.text.isNotEmpty) {
+        debugPrint('✅ [PhotoImport] OCR succeeded, extracted ${ocrResult.text.length} characters');
+        
+        _ocrText = ocrResult.text;
+        notifyListeners();
+
+        // Auto-parse the OCR text into a recipe
+        await _autoParseOcrText(ocrResult.text);
+      } else {
+        // Handle OCR failure with user-friendly message
+        final errorMessage = ocrResult.errorMessage ?? 
+          'Ingen text kunde extraheras från bilden. Kontrollera att:\n'
+          '• Bilden innehåller tydlig, läsbar text\n'
+          '• Texten är i god kontrast mot bakgrunden\n'
+          '• Bilden inte är för suddig eller mörk';
+        
+        debugPrint('❌ [PhotoImport] OCR failed: $errorMessage');
+        throw Exception(errorMessage);
+      }
+      
+    } catch (e) {
+      debugPrint('❌ [PhotoImport] OCR processing error: $e');
+      rethrow;
     }
-
-    if (text.isEmpty) {
-      throw Exception(
-        'Ingen text kunde extraheras. Se till att bilden innehåller tydlig, läsbar text.',
-      );
-    }
-
-    _ocrText = text;
-    notifyListeners();
-
-    // Auto-parse the OCR text into a recipe
-    await _autoParseOcrText(text);
   }
 
-  /// Performs automatic recipe parsing from OCR text with intelligent structure recognition.
+  /// Performs automatic recipe parsing from OCR text WITHOUT saving to storage.
   /// 
   /// [text] Extracted OCR text for automatic recipe parsing and structure analysis
   /// 
-  /// Attempts automatic recipe parsing from OCR text using ImportManager auto-import functionality
-  /// with intelligent structure recognition and recipe pattern detection. Fails gracefully
-  /// allowing manual parsing if automatic parsing is unsuccessful.
+  /// Attempts automatic recipe parsing from OCR text using ImportManager parse-only functionality
+  /// with intelligent structure recognition and recipe pattern detection. Creates recipe objects
+  /// in memory only without persisting to storage, preventing unwanted auto-saving.
   /// 
-  /// **Auto-Parsing Process:**
-  /// - OCR text analysis through ImportManager auto-import
+  /// **Parse-Only Process:**
+  /// - OCR text analysis through ImportManager autoParseOnly
   /// - Recipe structure recognition and pattern detection
-  /// - Automatic recipe object generation and validation
+  /// - Automatic recipe object generation in memory only
   /// - Graceful failure handling with manual parsing fallback
   /// - State update with parsed recipe if successful
+  /// - NO SAVING TO STORAGE - recipe exists in memory only
   /// 
   /// **Note**: Failures are handled gracefully - users can still manually parse OCR text.
+  /// Recipes are NOT saved automatically and require explicit user action to save.
   Future<void> _autoParseOcrText(String text) async {
     try {
-      final importResult = await importManager.autoImport(text);
+      final importResult = await importManager.autoParseOnly(text);
       if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
         setParsedRecipe(importResult.importedRecipes.first);
       }
@@ -406,70 +464,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     }
   }
 
-  /// Performs OCR API call with comprehensive configuration and error handling.
-  /// 
-  /// [base64Image] Base64 encoded image data for OCR processing
-  /// [engine] OCR engine identifier for processing optimization
-  /// [extras] Optional additional parameters for OCR configuration
-  /// 
-  /// Returns extracted text string from OCR processing or empty string if no text found.
-  /// Executes OCR API request with comprehensive configuration, authentication,
-  /// error handling, and response processing ensuring reliable text extraction.
-  /// 
-  /// **OCR API Integration:**
-  /// - API authentication with environment-configured key
-  /// - Engine-specific processing optimization
-  /// - Multipart request construction with proper headers
-  /// - Comprehensive error handling and response validation
-  /// - Swedish localized error messages for user feedback
-  /// 
-  /// **Throws**: Exception if API key missing, API error occurs, or processing fails.
-  Future<String> _callOcrApi(
-    String base64Image, {
-    required String engine,
-    Map<String, String>? extras,
-  }) async {
-    if (_ocrApiKey.isEmpty) {
-      throw Exception('OCR API-nyckel inte konfigurerad');
-    }
-
-    final request = http.MultipartRequest('POST', Uri.parse(_ocrApiUrl));
-    
-    // Add API key
-    request.fields['apikey'] = _ocrApiKey;
-    
-    // Add OCR engine
-    request.fields['OCREngine'] = engine;
-    
-    // Add base64 image
-    request.fields['base64Image'] = 'data:image/jpeg;base64,$base64Image';
-    
-    // Add extra parameters
-    if (extras != null) {
-      request.fields.addAll(extras);
-    }
-
-    final response = await request.send();
-    final responseBody = await response.stream.bytesToString();
-
-    if (response.statusCode != 200) {
-      throw Exception('OCR API-fel: ${response.statusCode}');
-    }
-
-    final json = jsonDecode(responseBody);
-    
-    if (json['IsErroredOnProcessing'] == true) {
-      final errorMessage = json['ErrorMessage']?.join(', ') ?? 'Okänt OCR-fel';
-      throw Exception('OCR-bearbetningsfel: $errorMessage');
-    }
-
-    final parsedResults = json['ParsedResults'] as List?;
-    if (parsedResults == null || parsedResults.isEmpty) {
-      return '';
-    }
-
-    return parsedResults.first['ParsedText'] as String? ?? '';
-  }
 
   // ===== DEBUGGING SUPPORT =====
 
@@ -493,6 +487,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     'ocrTextLength': _ocrText.length,
     'isProcessing': isProcessing,
     'imageBytesSize': _imageBytes?.length ?? 0,
+    'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
   };
 
   /// Disposes photo import ViewModel with comprehensive cleanup and memory management.

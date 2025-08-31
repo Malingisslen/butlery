@@ -30,13 +30,14 @@
 /// }
 /// ```
 
-/// Enum for supported social media platforms
+/// Enum for supported social media platforms and recipe sites
 enum SourcePlatform {
   instagram,
   facebook,
   tiktok,
   youtube,
   pinterest,
+  recipesite, // Generic recipe sites (ICA, Arla, etc.)
   unknown,
 }
 
@@ -48,11 +49,33 @@ class PlatformDetector {
 
   /// Detect platform from URL
   SourcePlatform detectPlatform(String url) {
-    if (url.contains('instagram.com')) return SourcePlatform.instagram;
-    if (url.contains('facebook.com')) return SourcePlatform.facebook;
-    if (url.contains('tiktok.com')) return SourcePlatform.tiktok;
-    if (url.contains('youtube.com') || url.contains('youtu.be')) return SourcePlatform.youtube;
-    if (url.contains('pinterest.com')) return SourcePlatform.pinterest;
+    final lowerUrl = url.toLowerCase();
+    
+    // Social media platforms
+    if (lowerUrl.contains('instagram.com')) return SourcePlatform.instagram;
+    if (lowerUrl.contains('facebook.com')) return SourcePlatform.facebook;
+    if (lowerUrl.contains('tiktok.com')) return SourcePlatform.tiktok;
+    if (lowerUrl.contains('youtube.com') || lowerUrl.contains('youtu.be')) return SourcePlatform.youtube;
+    if (lowerUrl.contains('pinterest.com')) return SourcePlatform.pinterest;
+    
+    // Swedish recipe sites
+    if (lowerUrl.contains('ica.se')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('arla.se')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('koket.se')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('recepten.se')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('tasteline.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('mittkok.expressen.se')) return SourcePlatform.recipesite;
+    
+    // International recipe sites
+    if (lowerUrl.contains('allrecipes.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('food.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('epicurious.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('foodnetwork.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('delish.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('tasty.co')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('recipetineats.com')) return SourcePlatform.recipesite;
+    if (lowerUrl.contains('simplyrecipes.com')) return SourcePlatform.recipesite;
+    
     return SourcePlatform.unknown;
   }
 

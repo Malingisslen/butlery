@@ -93,7 +93,7 @@ class RecipeDetailMetadata extends StatelessWidget {
               
               // Cooking time
               if ((recipe.timeMinutes ?? 0) > 0) ...[
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -106,7 +106,7 @@ class RecipeDetailMetadata extends StatelessWidget {
               
               // Rating
               if ((recipe.rating ?? 0) > 0) ...[
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -195,6 +195,9 @@ class RecipeDetailMetadata extends StatelessWidget {
               color: isHighlighted ? AppColors.primaryBlue : AppColors.textMedium,
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
             ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
@@ -204,6 +207,8 @@ class RecipeDetailMetadata extends StatelessWidget {
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

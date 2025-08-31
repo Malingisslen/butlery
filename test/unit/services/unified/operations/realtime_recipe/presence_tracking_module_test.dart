@@ -3,8 +3,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/presence_tracking_module.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -52,25 +50,25 @@ void main() {
       );
 
       testRecipe = RecipeBuilder()
-        .withId('recipe_1')
-        .withTitle('Test Recipe')
-        .asCollaborative()
-        .withSocialData(
-          RecipeSocialData(
-            memberPermissions: {
-              'user_123': ResourcePermission.editor,
-              'user_456': ResourcePermission.viewer,
-            },
-          ),
-        )
-        .build();
+          .withId('recipe_1')
+          .withTitle('Test Recipe')
+          .asCollaborative()
+          .withSocialData(
+            RecipeSocialData(
+              memberPermissions: {
+                'user_123': ResourcePermission.editor,
+                'user_456': ResourcePermission.viewer,
+              },
+            ),
+          )
+          .build();
 
       // Create mocks
       mockParentService = MockUnifiedRecipeService();
       mockRealtimeSyncService = MockRealtimeSyncService();
 
-      // Configure parent service
-      mockParentService.setServiceState(
+      // Configure parent service using centralized mock method
+      mockParentService.setRecipeState(
         recipes: [testRecipe],
         currentUserId: 'user_123',
       );
@@ -90,9 +88,8 @@ void main() {
       app_provider.ServiceLocator.initialize(MockDIContainer());
 
       // Configure mock services
-      mockRealtimeSyncService.setServiceState(
-        isConnected: true,
-      );
+      // Configure realtime sync service using centralized mock method
+      mockRealtimeSyncService.setConnectionState(true);
 
       // Create presence module instance
       presenceModule =
@@ -117,7 +114,8 @@ void main() {
         // Assert
         // Note: Returns false because FirebaseFirestore.instance isn't initialized in unit tests
         // Local presence should still be tracked
-        expect(result, isFalse); // Expected due to Firebase not being initialized
+        expect(
+            result, isFalse); // Expected due to Firebase not being initialized
         expect(presenceModule.isUserPresent('recipe_1', 'user_123'), isTrue);
       });
 
@@ -131,7 +129,8 @@ void main() {
 
         // Assert
         // Note: Returns false because FirebaseFirestore.instance isn't initialized in unit tests
-        expect(result, isFalse); // Expected due to Firebase not being initialized
+        expect(
+            result, isFalse); // Expected due to Firebase not being initialized
         expect(presenceModule.isUserPresent('recipe_1', 'user_123'), isFalse);
       });
 
@@ -160,11 +159,13 @@ void main() {
 
         // Assert
         // Note: Returns false because FirebaseFirestore.instance isn't initialized in unit tests
-        expect(result, isFalse); // Expected due to Firebase not being initialized
+        expect(
+            result, isFalse); // Expected due to Firebase not being initialized
         expect(presenceModule.isUserPresent('recipe_1', 'user_123'), isTrue);
       });
 
-      test('should handle presence update for non-authenticated user', () async {
+      test('should handle presence update for non-authenticated user',
+          () async {
         // Arrange
         mockPermissionService.setPermissionState(
           isAuthenticated: false,
@@ -224,7 +225,7 @@ void main() {
       test('should track multiple users simultaneously', () async {
         // Arrange - simulate multiple users
         await presenceModule.showPresence('recipe_1');
-        
+
         // Change to second user
         final user2 = UserProfile(
           uid: 'user_456',
@@ -249,21 +250,21 @@ void main() {
       test('should handle users in different recipes', () async {
         // Arrange
         await presenceModule.showPresence('recipe_1');
-        
+
         // Add second recipe
         final recipe2 = RecipeBuilder()
-          .withId('recipe_2')
-          .asCollaborative()
-          .withSocialData(
-            RecipeSocialData(
-              memberPermissions: {
-                'user_123': ResourcePermission.editor,
-              },
-            ),
-          )
-          .build();
-        mockParentService.setServiceState(recipes: [testRecipe, recipe2]);
-        
+            .withId('recipe_2')
+            .asCollaborative()
+            .withSocialData(
+              RecipeSocialData(
+                memberPermissions: {
+                  'user_123': ResourcePermission.editor,
+                },
+              ),
+            )
+            .build();
+        mockParentService.setRecipeState(recipes: [testRecipe, recipe2]);
+
         // Act
         await presenceModule.showPresence('recipe_2');
 
@@ -279,19 +280,19 @@ void main() {
       test('should get presence for multiple recipes', () async {
         // Arrange
         await presenceModule.showPresence('recipe_1');
-        
+
         final recipe2 = RecipeBuilder()
-          .withId('recipe_2')
-          .asCollaborative()
-          .withSocialData(
-            RecipeSocialData(
-              memberPermissions: {
-                'user_123': ResourcePermission.viewer,
-              },
-            ),
-          )
-          .build();
-        mockParentService.setServiceState(recipes: [testRecipe, recipe2]);
+            .withId('recipe_2')
+            .asCollaborative()
+            .withSocialData(
+              RecipeSocialData(
+                memberPermissions: {
+                  'user_123': ResourcePermission.viewer,
+                },
+              ),
+            )
+            .build();
+        mockParentService.setRecipeState(recipes: [testRecipe, recipe2]);
         await presenceModule.showPresence('recipe_2');
 
         // Act
@@ -308,17 +309,17 @@ void main() {
       test('should update multiple recipe presence', () async {
         // Arrange
         final recipe2 = RecipeBuilder()
-          .withId('recipe_2')
-          .asCollaborative()
-          .withSocialData(
-            RecipeSocialData(
-              memberPermissions: {
-                'user_123': ResourcePermission.editor,
-              },
-            ),
-          )
-          .build();
-        mockParentService.setServiceState(recipes: [testRecipe, recipe2]);
+            .withId('recipe_2')
+            .asCollaborative()
+            .withSocialData(
+              RecipeSocialData(
+                memberPermissions: {
+                  'user_123': ResourcePermission.editor,
+                },
+              ),
+            )
+            .build();
+        mockParentService.setRecipeState(recipes: [testRecipe, recipe2]);
 
         // Act
         await presenceModule.updateMultipleRecipePresence({
@@ -345,21 +346,21 @@ void main() {
       test('should clear all presence for current user', () async {
         // Arrange
         await presenceModule.showPresence('recipe_1');
-        
+
         final recipe2 = RecipeBuilder()
-          .withId('recipe_2')
-          .asCollaborative()
-          .withSocialData(
-            RecipeSocialData(
-              memberPermissions: {
-                'user_123': ResourcePermission.editor,
-              },
-            ),
-          )
-          .build();
-        mockParentService.setServiceState(recipes: [testRecipe, recipe2]);
+            .withId('recipe_2')
+            .asCollaborative()
+            .withSocialData(
+              RecipeSocialData(
+                memberPermissions: {
+                  'user_123': ResourcePermission.editor,
+                },
+              ),
+            )
+            .build();
+        mockParentService.setRecipeState(recipes: [testRecipe, recipe2]);
         await presenceModule.showPresence('recipe_2');
-        
+
         expect(presenceModule.isUserPresent('recipe_1', 'user_123'), isTrue);
         expect(presenceModule.isUserPresent('recipe_2', 'user_123'), isTrue);
 
@@ -391,7 +392,7 @@ void main() {
         // Assert
         // Stream may receive empty lists since Firebase isn't initialized
         expect(results.isNotEmpty, isTrue);
-        
+
         // Cleanup
         await subscription.cancel();
       });
@@ -409,7 +410,7 @@ void main() {
         // Assert
         // Count may be 0 since Firebase operations fail
         expect(counts.isNotEmpty, isTrue);
-        
+
         // Cleanup
         await subscription.cancel();
       });
@@ -429,7 +430,7 @@ void main() {
         // Assert
         // Stream should receive updates even if presence lists are empty
         expect(results.isNotEmpty, isTrue);
-        
+
         // Cleanup
         await subscription.cancel();
       });
@@ -439,7 +440,7 @@ void main() {
       test('should start automatic heartbeat updates', () async {
         // Arrange
         await presenceModule.showPresence('recipe_1');
-        
+
         // Act
         final subscription = presenceModule.startAutomaticPresenceTracking(
           'recipe_1',
@@ -451,7 +452,7 @@ void main() {
 
         // Assert
         expect(presenceModule.isUserPresent('recipe_1', 'user_123'), isTrue);
-        
+
         // Cleanup
         await subscription?.cancel();
       });
@@ -461,7 +462,7 @@ void main() {
       test('should get presence statistics', () async {
         // Arrange
         await presenceModule.showPresence('recipe_1');
-        
+
         // Act
         final stats = presenceModule.getPresenceStatistics();
 
@@ -478,7 +479,7 @@ void main() {
         await presenceModule.showPresence('recipe_1');
         await Future.delayed(Duration(milliseconds: 10));
         await presenceModule.showPresence('recipe_2');
-        
+
         // Act
         final history = presenceModule.getUserPresenceHistory('user_123');
 
@@ -505,7 +506,7 @@ void main() {
     group('Error Handling', () {
       test('should handle showPresence errors gracefully', () async {
         // Arrange - simulate error by using invalid/empty recipe list
-        mockParentService.setServiceState(recipes: []);
+        mockParentService.setRecipeState(recipes: []);
 
         // Act
         final result = await presenceModule.showPresence('recipe_1');
@@ -516,7 +517,7 @@ void main() {
 
       test('should handle hidePresence errors gracefully', () async {
         // Arrange - simulate error by using invalid/empty recipe list
-        mockParentService.setServiceState(recipes: []);
+        mockParentService.setRecipeState(recipes: []);
 
         // Act
         final result = await presenceModule.hidePresence('recipe_1');
@@ -527,7 +528,7 @@ void main() {
 
       test('should handle getRecipePresence errors gracefully', () async {
         // Arrange - simulate error by using invalid/empty recipe list
-        mockParentService.setServiceState(recipes: []);
+        mockParentService.setRecipeState(recipes: []);
 
         // Act
         final result = await presenceModule.getRecipePresence('recipe_1');
@@ -541,10 +542,10 @@ void main() {
       test('should handle non-collaborative recipe', () async {
         // Arrange
         final nonCollabRecipe = RecipeBuilder()
-          .withId('recipe_solo')
-          .withTitle('Solo Recipe')
-          .build(); // Not collaborative
-        mockParentService.setServiceState(recipes: [nonCollabRecipe]);
+            .withId('recipe_solo')
+            .withTitle('Solo Recipe')
+            .build(); // Not collaborative
+        mockParentService.setRecipeState(recipes: [nonCollabRecipe]);
 
         // Act
         final presence = await presenceModule.getRecipePresence('recipe_solo');
@@ -591,35 +592,5 @@ void main() {
   });
 }
 
-// Mock classes
-class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {
-  List<Recipe> _recipes = [];
-  String? _currentUserId = 'user_123';
-
-  void setServiceState({
-    List<Recipe>? recipes,
-    String? currentUserId,
-  }) {
-    if (recipes != null) _recipes = recipes;
-    if (currentUserId != null) _currentUserId = currentUserId;
-  }
-
-  @override
-  List<Recipe> get recipes => _recipes;
-
-  @override
-  String? get currentUserId => _currentUserId;
-}
-
-class MockRealtimeSyncService extends Mock implements RealtimeSyncService {
-  bool _isConnected = true;
-
-  void setServiceState({
-    bool? isConnected,
-  }) {
-    if (isConnected != null) _isConnected = isConnected;
-  }
-
-  @override
-  bool get isConnected => _isConnected;
-}
+// Using centralized mocks from production_mocks.dart:
+// MockUnifiedRecipeService, MockRealtimeSyncService, MockPermissionService

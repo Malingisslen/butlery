@@ -33,6 +33,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
 /// Firebase authentication service with comprehensive state management and error handling.
 ///
 /// This service provides complete authentication functionality using Firebase Auth with sophisticated
@@ -94,10 +95,16 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   AuthService({auth_repo.AuthRepository? authRepository})
       : _authRepository = authRepository ?? FirebaseAuthRepository() {
     // Listen to authentication state changes and update UI accordingly
-    _authRepository.authStateChanges().listen((User? user) {
-      _currentUser = user;
-      notifyListeners(); // Notify UI of state changes
-    });
+    _authRepository.authStateChanges().listen(
+      (User? user) {
+        _currentUser = user;
+        notifyListeners(); // Notify UI of state changes
+      },
+      onError: (error) {
+        // Only log errors, don't show them to user unless it's a real auth error
+        AppLogger.debug('Auth state stream error (non-blocking): $error');
+      },
+    );
   }
 
   /// Registrera ny användare med email och lösenord
@@ -109,24 +116,37 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
     required String password,
     required String displayName,
   }) async {
-    return await executeAsync(() async {
+    try {
+      // Clear any previous errors
+      clearError();
+      setLoading(true);
+      
       final UserCredential credential =
           await _authRepository.createUser(email, password);
 
       if (credential.user != null) {
         await _authRepository.updateDisplayName(credential.user!, displayName);
         _currentUser = _authRepository.currentUser;
+        setLoading(false);
+        return true;
       }
-
-      return true;
-    }).catchError((e) {
-      if (e is FirebaseAuthException) {
-        _handleAuthError(e);
-      } else {
+      
+      setLoading(false);
+      return false;
+    } on FirebaseAuthException catch (e) {
+      setLoading(false);
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      setLoading(false);
+      // Only set error if it's not the Google Play Services warning
+      if (!e.toString().contains('com.google.android.gms')) {
         setError('Ett oväntat fel uppstod: ${e.toString()}');
       }
-      return false;
-    });
+      // Check if user was actually created despite the error
+      _currentUser = _authRepository.currentUser;
+      return _currentUser != null;
+    }
   }
 
   /// Logga in med email och lösenord
@@ -134,17 +154,46 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
     required String email,
     required String password,
   }) async {
-    return await executeAsync(() async {
+    try {
+      // Clear any previous errors
+      clearError();
+      setLoading(true);
+      
+      AppLogger.debug('Attempting login for email: ${email.substring(0, 3)}...');
+      
       await _authRepository.signIn(email: email, password: password);
+      
+      // Verify login was successful
+      _currentUser = _authRepository.currentUser;
+      AppLogger.debug('Login result - User: ${_currentUser?.email ?? "null"}');
+      
+      setLoading(false);
+      
+      if (_currentUser == null) {
+        AppLogger.error('Login appeared successful but no user returned');
+        setError('Inloggning misslyckades. Försök igen.');
+        return false;
+      }
+      
       return true;
-    }).catchError((e) {
-      if (e is FirebaseAuthException) {
-        _handleAuthError(e);
-      } else {
+    } on FirebaseAuthException catch (e) {
+      setLoading(false);
+      AppLogger.error('🔥 Firebase Auth Error Code: ${e.code}');
+      AppLogger.error('🔥 Firebase Auth Error Message: ${e.message}');
+      AppLogger.error('Firebase Auth Error: ${e.code} - ${e.message}');
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      setLoading(false);
+      AppLogger.error('Unexpected login error: $e');
+      // Only set error if it's not the Google Play Services warning
+      if (!e.toString().contains('com.google.android.gms')) {
         setError('Ett oväntat fel uppstod: ${e.toString()}');
       }
-      return false;
-    });
+      // Check if user is actually logged in despite the error
+      _currentUser = _authRepository.currentUser;
+      return _currentUser != null;
+    }
   }
 
   /// Logga ut användare
@@ -152,9 +201,22 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
     await executeAsync(() async {
       await _authRepository.signOut();
       _currentUser = null;
+      AppLogger.info('User signed out successfully');
     }).catchError((e) {
       setError('Kunde inte logga ut: ${e.toString()}');
     });
+  }
+  
+  /// Force sign out (clears all cached credentials)
+  Future<void> forceSignOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      _currentUser = null;
+      clearError();
+      AppLogger.info('Force sign out completed');
+    } catch (e) {
+      AppLogger.error('Force sign out error: $e');
+    }
   }
 
   /// Skicka lösenordsåterställning via email
@@ -202,6 +264,7 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   /// Privat metod för att hantera Firebase Auth-fel
   void _handleAuthError(FirebaseAuthException e) {
     String errorMessage;
+    AppLogger.error('Firebase Auth Error Code: ${e.code}');
     switch (e.code) {
       case 'weak-password':
         errorMessage = 'Lösenordet är för svagt. Använd minst 6 tecken.';
@@ -217,6 +280,9 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
         break;
       case 'wrong-password':
         errorMessage = 'Fel lösenord.';
+        break;
+      case 'invalid-credential':
+        errorMessage = 'Fel email eller lösenord. Kontrollera dina uppgifter.';
         break;
       case 'user-disabled':
         errorMessage = 'Detta konto har inaktiverats.';
@@ -236,7 +302,8 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   /// Publik metod för att rensa fel från UI
   @override
   void clearError() {
-    setError('');
+    // Use the mixin's clearError method to properly clear error state
+    super.clearError();
   }
   
   @override

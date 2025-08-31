@@ -121,7 +121,8 @@ class _AddUnifiedShoppingItemDialogState
                   labelText: 'Artikel',
                   labelStyle: AppTextStyles.labelLarge,
                   hintText: 'T.ex. Mjölk',
-                  hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+                  hintStyle: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textMedium),
                   prefixIcon: const Icon(
                     Icons.shopping_basket,
                     color: AppColors.primaryBlue,
@@ -148,14 +149,16 @@ class _AddUnifiedShoppingItemDialogState
                         labelText: 'Antal',
                         labelStyle: AppTextStyles.labelLarge,
                         hintText: '1',
-                        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+                        hintStyle: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textMedium),
                         prefixIcon: const Icon(
                           Icons.numbers,
                           color: AppColors.primaryBlue,
                           size: AppDimensions.iconSizeAction,
                         ),
                         border: const OutlineInputBorder(),
-                        contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
+                        contentPadding:
+                            const EdgeInsets.all(AppDimensions.paddingM),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -169,7 +172,7 @@ class _AddUnifiedShoppingItemDialogState
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
-                      value: _selectedUnit,
+                      initialValue: _selectedUnit,
                       style: AppTextStyles.bodyLarge,
                       decoration: const InputDecoration(
                         labelText: 'Enhet',
@@ -211,7 +214,7 @@ class _AddUnifiedShoppingItemDialogState
 
               // Category dropdown
               DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 style: AppTextStyles.bodyLarge,
                 decoration: const InputDecoration(
                   labelText: 'Kategori',

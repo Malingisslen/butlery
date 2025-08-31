@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 
 /// Bottom navigation bar for edit recipe view with permissions-based actions
 class EditRecipeBottomBar {
@@ -20,8 +20,7 @@ class EditRecipeBottomBar {
       builder: (context, viewModel, child) {
         // Show basic save button if no edit mode defined
         if (viewModel.editMode == null) {
-          return Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+          return BottomActionContainer(
             child: UtilityComponents.primaryButton(
               context,
               label: 'Spara ändringar',
@@ -37,8 +36,7 @@ class EditRecipeBottomBar {
         }
 
         // Show permissions-based action buttons
-        return Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+        return BottomActionContainer(
           child: UtilityComponents.permissionsActionButtons(
             context: context,
             editMode: viewModel.editModeEnum ?? EditMode.noAccess,

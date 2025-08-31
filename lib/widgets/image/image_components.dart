@@ -1,18 +1,123 @@
 // lib/widgets/image/image_components.dart
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Shared image components and utilities
 class ImageComponents {
+  /// Build adaptive image that handles both file paths and URLs
+  static Widget buildAdaptiveImage({
+    required String pathOrUrl,
+    required ImageConfig config,
+    BoxFit fit = BoxFit.cover,
+    VoidCallback? onTap,
+    Widget? placeholder,
+    Widget? errorWidget,
+  }) {
+    // Detect if it's a file path or URL
+    if (_isFilePath(pathOrUrl)) {
+      AppLogger.debug('📁 ADAPTIVE_IMAGE: Displaying file: $pathOrUrl');
+      return _buildFileImage(
+        filePath: pathOrUrl,
+        config: config,
+        fit: fit,
+        onTap: onTap,
+        placeholder: placeholder,
+        errorWidget: errorWidget,
+      );
+    } else {
+      AppLogger.debug('🌍 ADAPTIVE_IMAGE: Displaying URL: $pathOrUrl');
+      return buildOptimizedCachedImage(
+        imageUrl: pathOrUrl,
+        config: config,
+        fit: fit,
+        onTap: onTap,
+        placeholder: placeholder,
+        errorWidget: errorWidget,
+      );
+    }
+  }
+  
+  /// Check if string is a file path (vs URL)
+  static bool _isFilePath(String pathOrUrl) {
+    // File paths start with '/' or contain file system patterns
+    return pathOrUrl.startsWith('/') || 
+           pathOrUrl.contains('\\') || 
+           (!pathOrUrl.startsWith('http') && !pathOrUrl.startsWith('gs://'));
+  }
+  
+  /// Build image from local file
+  static Widget _buildFileImage({
+    required String filePath,
+    required ImageConfig config,
+    BoxFit fit = BoxFit.contain,
+    VoidCallback? onTap,
+    Widget? placeholder,
+    Widget? errorWidget,
+  }) {
+    final dimensions = config.getDimensions();
+    final file = File(filePath);
+
+    Widget image = FutureBuilder<bool>(
+      future: file.exists(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return placeholder ?? buildLoadingPlaceholder(config: config);
+        }
+        
+        if (snapshot.data == true) {
+          return Image.file(
+            file,
+            fit: fit,
+            width: dimensions.width == double.infinity ? null : dimensions.width,
+            height: dimensions.height,
+            // Add memory cache for performance
+            cacheWidth: dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
+            cacheHeight: dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
+            errorBuilder: (context, error, stackTrace) {
+              AppLogger.error('File image load error: $error');
+              return errorWidget ?? buildErrorPlaceholder(config: config);
+            },
+          );
+        } else {
+          AppLogger.info('File no longer exists, showing placeholder: $filePath');
+          // Show placeholder instead of error for missing files (graceful degradation)
+          return placeholder ?? buildPlaceholder(
+            config: config,
+            child: const Icon(
+              Icons.image_outlined,
+              size: 32,
+              color: AppColors.textTertiary,
+            ),
+          );
+        }
+      },
+    );
+
+    if (config.borderRadius != null) {
+      image = ClipRRect(
+        borderRadius: config.effectiveBorderRadius,
+        child: image,
+      );
+    }
+
+    if (onTap != null) {
+      image = _wrapWithTapHandler(image, onTap);
+    }
+
+    return image;
+  }
+
   /// Build optimized cached image with memory management
   static Widget buildOptimizedCachedImage({
     required String imageUrl,
     required ImageConfig config,
-    BoxFit fit = BoxFit.cover,
+    BoxFit fit = BoxFit.contain,
     VoidCallback? onTap,
     Widget? placeholder,
     Widget? errorWidget,
@@ -25,8 +130,8 @@ class ImageComponents {
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height,
       memCacheWidth:
-          dimensions.width == double.infinity ? 800 : dimensions.width.toInt(),
-      memCacheHeight: dimensions.height.toInt(),
+          dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
+      memCacheHeight: dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
       placeholder: placeholder != null ? (_, __) => placeholder : null,
       errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : null,
     );
@@ -55,7 +160,7 @@ class ImageComponents {
 
     return Container(
       width: dimensions.width == double.infinity ? null : dimensions.width,
-      height: dimensions.height,
+      height: dimensions.height == double.infinity ? null : dimensions.height,
       decoration: BoxDecoration(
         color:
             backgroundColor ?? AppColors.backgroundTint, // Lighter background
@@ -99,57 +204,23 @@ class ImageComponents {
     );
   }
 
-  /// Build error placeholder with retry option
+  /// Build error placeholder with graceful fallback (shows elegant placeholder instead of red error)
   static Widget buildErrorPlaceholder({
     required ImageConfig config,
     VoidCallback? onRetry,
     Color? backgroundColor,
     String? errorMessage,
   }) {
-    final dimensions = config.getDimensions();
-
-    final Widget content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.error_outline,
-          size:
-              dimensions.width == double.infinity ? 32 : dimensions.width * 0.3,
-          color: AppColors.error,
-        ),
-        if (errorMessage != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            errorMessage,
-            style: const TextStyle(
-              color: AppColors.error,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-        if (onRetry != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
-          TextButton(
-            onPressed: onRetry,
-            child: const Text(
-              'Retry',
-              style: TextStyle(
-                color: AppColors.primaryBlue,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-
+    // Show graceful placeholder instead of intimidating red error icon
+    // This provides better user experience with elegant degradation
     return buildPlaceholder(
       config: config,
       backgroundColor: backgroundColor,
-      child: Center(child: content),
+      child: const Icon(
+        Icons.image_outlined,
+        size: 32,
+        color: AppColors.textTertiary,
+      ),
     );
   }
 
@@ -279,7 +350,10 @@ class ImageComponents {
     if (!config.showStatusIndicator) return const SizedBox.shrink();
 
     final dimensions = config.getDimensions();
-    final indicatorSize = dimensions.width * 0.25;
+    // Handle infinite dimensions gracefully - use reasonable default size
+    final indicatorSize = dimensions.width == double.infinity 
+        ? 20.0  // Default indicator size for infinite/large avatars
+        : dimensions.width * 0.25;
 
     return Positioned(
       bottom: 0,

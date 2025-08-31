@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -11,8 +9,7 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
-// Mock classes
-class MockSharePlatform extends Mock implements Share {}
+// No local mocks needed - using real ShareService implementation
 
 void main() {
   group('ShareService', () {

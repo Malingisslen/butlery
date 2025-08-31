@@ -55,31 +55,19 @@ class PerformanceModule implements DIModule {
       container.registerLazySingleton<IntelligentCacheManager>(
         () => IntelligentCacheManager(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] IntelligentCacheManager registered');
-      }
 
       // Startup optimization manager (singleton - used early in app lifecycle)
       container.registerSingleton<StartupOptimizationManager>(
         StartupOptimizationManager(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] StartupOptimizationManager registered');
-      }
 
       // Performance monitoring service (singleton)
       container.registerSingleton<PerformanceMonitoringService>(
         PerformanceMonitoringService(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] PerformanceMonitoringService registered');
-      }
 
       if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] All performance services configured');
+        debugPrint('✅ [PerformanceModule] Configured 3 performance services (Cache, Startup, Monitoring)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -93,27 +81,16 @@ class PerformanceModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint('⚡ [PerformanceModule] Initializing performance services...');
-    }
-
     try {
       final container = GetIt.instance;
 
       // Initialize performance monitoring first
       final performanceMonitoring = container<PerformanceMonitoringService>();
       performanceMonitoring.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] PerformanceMonitoringService initialized');
-      }
 
       // Note: IntelligentCacheManager is lazy and will initialize on first use
       // StartupOptimizationManager is initialized early in main.dart
 
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] All performance services initialized');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -136,16 +113,6 @@ class PerformanceModule implements DIModule {
         'PerformanceMonitoringService': container<PerformanceMonitoringService>(),
       };
 
-      // Get performance metrics
-      final performanceMonitoring = container<PerformanceMonitoringService>();
-      final metrics = performanceMonitoring.getCurrentSummary();
-      
-      if (kDebugMode) {
-        debugPrint('📊 [PerformanceModule] Current metrics:');
-        debugPrint('  Frame rate: ${metrics['frameRate']} FPS');
-        debugPrint('  Cache hit rate: ${metrics['cacheHitRate']}%');
-        debugPrint('  Network requests: ${metrics['networkRequests']}');
-      }
 
       // Basic validation - services are not null
       for (final entry in services.entries) {
@@ -157,9 +124,6 @@ class PerformanceModule implements DIModule {
         }
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] Health check passed');
-      }
       
       return true;
     } catch (e) {

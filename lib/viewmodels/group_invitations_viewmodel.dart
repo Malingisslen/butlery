@@ -165,30 +165,14 @@ class GroupInvitationsViewModel extends ChangeNotifier {
     try {
       AppLogger.info('🔄 Laddar mottagna gruppinbjudningar...');
 
-      // ✅ DEBUG: Kontrollera current user
-      final currentUserId = _currentUserId;
-      debugPrint(
-          '🔍 DEBUG: Loading received invitations för userId: $currentUserId');
-
       // Hämta inbjudningar från UnifiedFriendsService
       _receivedInvitations = _friendsService.invitations.getSentInvitations();
 
-      // ✅ DEBUG: Detaljerad output
-      debugPrint(
-          '🔍 DEBUG: UnifiedFriendsService.invitations count: ${_friendsService.invitations.getSentInvitations().length}');
-      debugPrint(
-          '🔍 DEBUG: All received invitations: ${_friendsService.invitations.getSentInvitations().map((inv) => "ID: ${inv.id}, toUserId: ${inv.toUserId}, status: ${inv.status}").toList()}');
-
-      final pendingInvitations =
-          _receivedInvitations.where((inv) => inv.status == GroupInvitationStatus.pending).toList();
-      debugPrint(
-          '🔍 DEBUG: Pending invitations: ${pendingInvitations.map((inv) => "ID: ${inv.id}, senderName: ${inv.fromUserName}").toList()}');
 
       AppLogger.info(
         '📨 ${_receivedInvitations.length} mottagna inbjudningar (${receivedInvitations.length} väntande)',
       );
     } catch (e) {
-      debugPrint('🔍 DEBUG: Error loading received invitations: $e');
       AppLogger.error('❌ Kunde inte ladda mottagna inbjudningar', e);
       // Inte kritiskt fel - fortsätt med tomma inbjudningar
       _receivedInvitations = [];

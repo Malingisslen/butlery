@@ -7,18 +7,14 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
-import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 
-// Mock dependencies
-class MockRecipeRepository extends Mock implements RecipeRepository {}
-class MockRecipeServiceAdapter extends Mock implements RecipeServiceAdapter {}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
 void main() {
   group('PersonalRecipeModule', () {
@@ -34,13 +30,15 @@ void main() {
     String? lastError;
     int notifyListenersCalled = 0;
     
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-      registerFallbackValue(RecipeFactory.build());
-      registerFallbackValue(<String, dynamic>{});
+    setUpAll(() {
+      // Centralized fallback values already registered via TestServiceLocator
     });
     
-    setUp(() {
+    setUp(() async {
+      await BaseUnitTest.setupUnit();
+      await TestServiceLocator.initialize();
+      
+      // Initialize mocks using centralized infrastructure
       mockRepository = MockRecipeRepository();
       mockCacheHelper = MockJsonCacheHelper();
       mockServiceAdapter = MockRecipeServiceAdapter();
@@ -57,7 +55,7 @@ void main() {
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (error) => lastError = error,
         notifyListeners: () => notifyListenersCalled++,
-        serviceAdapter: mockServiceAdapter,
+        getServiceAdapter: () => mockServiceAdapter,
       );
       
       testRecipe = RecipeFactory.build(

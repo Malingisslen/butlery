@@ -3,12 +3,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_member_manager.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 
 void main() {
@@ -437,6 +436,3 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
-class MockNotificationService extends Mock implements NotificationService {}

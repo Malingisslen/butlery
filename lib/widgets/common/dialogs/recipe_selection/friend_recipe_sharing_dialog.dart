@@ -258,7 +258,7 @@ class FriendRecipeListItem extends StatelessWidget {
                 recipe.imageUrls.first,
                 width: AppDimensions.iconSizeXl,
                 height: AppDimensions.iconSizeXl,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildPlaceholder(),
               )

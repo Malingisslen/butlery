@@ -70,26 +70,14 @@ class CoreModule implements DIModule {
       // SharedPreferences must be registered first as many services depend on it
       final sharedPreferences = await SharedPreferences.getInstance();
       container.registerSingleton<SharedPreferences>(sharedPreferences);
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] SharedPreferences registered');
-      }
 
       // ==================== CORE REPOSITORIES ====================
       // Core repositories form the foundation of the data access layer
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AuthRepository registered');
-      }
 
       // ==================== DATABASE REPOSITORIES ====================
       // FirestoreRepository provides centralized Firestore access
       container.registerSingleton<FirestoreRepository>(FirestoreRepository());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] FirestoreRepository registered');
-      }
 
       // ==================== CORE SERVICES ====================
       
@@ -97,38 +85,22 @@ class CoreModule implements DIModule {
       container.registerSingleton<AuthService>(
         AuthService(authRepository: container<AuthRepository>()),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AuthService registered');
-      }
 
       // Persistence service for local data storage and caching
       container.registerSingleton<PersistenceService>(PersistenceService());
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] PersistenceService registered');
-      }
 
       // Analytics repository for analytics operations
       container.registerSingleton<AnalyticsRepository>(
         FirebaseAnalyticsRepository(),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AnalyticsRepository registered');
-      }
 
       // Analytics service for monitoring and tracking
       container.registerSingleton<AnalyticsService>(
         AnalyticsService(repository: container<AnalyticsRepository>()),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AnalyticsService registered');
-      }
 
       if (kDebugMode) {
-        debugPrint('✅ [CoreModule] All core services configured');
+        debugPrint('✅ [CoreModule] Configured 7 core services (Auth, Storage, Analytics, Persistence)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -142,10 +114,6 @@ class CoreModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint('⚡ [CoreModule] Initializing core services...');
-    }
-
     try {
       // Get services from container
       final persistenceService = GetIt.instance<PersistenceService>();
@@ -155,23 +123,12 @@ class CoreModule implements DIModule {
       // Note: PersistenceService may not have explicit initialize method
       // Validate it's accessible instead
       persistenceService.toString(); // Basic validation
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] PersistenceService initialized');
-      }
 
       // Initialize AnalyticsService
       // Note: AnalyticsService might not need explicit initialization
       // but we validate it's accessible
       analyticsService.toString(); // Basic validation
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AnalyticsService validated');
-      }
 
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] All core services initialized');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -221,9 +178,6 @@ class CoreModule implements DIModule {
         }
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] Health check passed for all services');
-      }
       
       return true;
     } catch (e) {

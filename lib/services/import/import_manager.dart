@@ -86,6 +86,71 @@ class ImportManager {
   /// Get all available import strategies
   List<ImportStrategy> get availableStrategies => List.unmodifiable(_strategies);
 
+  /// Automatically detects optimal import strategy and parses recipe WITHOUT saving to storage.
+  ///
+  /// This method provides parsing-only functionality that creates Recipe objects in memory
+  /// without persisting them to storage. Ideal for preview, validation, or manual save workflows.
+  ///
+  /// [input] Recipe content in any supported format (text, URL, ID, etc.)
+  /// [preferredStrategy] Optional strategy to attempt first before auto-detection
+  /// [options] Optional configuration parameters for strategy-specific behavior
+  /// Returns [ImportManagerResult] with success status and parsed recipe (NOT saved to storage)
+  ///
+  /// **Parse-Only Benefits:**
+  /// - Creates Recipe objects without unwanted auto-saving
+  /// - Enables user review and editing before saving
+  /// - Prevents accidental recipe creation from OCR or auto-parsing
+  /// - Maintains separation between parsing and persistence
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Parse OCR text without saving
+  /// final result = await importManager.autoParseOnly(ocrText);
+  /// if (result.isSuccess) {
+  ///   showRecipePreview(result.recipe!); // Recipe in memory only
+  /// }
+  /// 
+  /// // Manual save after user approval
+  /// if (userApprovesRecipe) {
+  ///   await importManager.saveImportedRecipe(result.recipe!);
+  /// }
+  /// ```
+  Future<ImportManagerResult> autoParseOnly(String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+  }) async {
+    try {
+      // Try preferred strategy first if provided
+      if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
+        final result = await _parseWithStrategy(preferredStrategy, input, options);
+        if (result.isSuccess) {
+          return result;
+        }
+      }
+
+      // Try all compatible strategies
+      for (final strategy in _strategies) {
+        if (strategy.canHandle(input)) {
+          final result = await _parseWithStrategy(strategy, input, options);
+          if (result.isSuccess) {
+            return result;
+          }
+        }
+      }
+
+      // No strategy could handle the input
+      return ImportManagerResult.failure(
+        'No import strategy could handle the provided input',
+        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+      );
+    } catch (e) {
+      return ImportManagerResult.failure(
+        'Import manager error: $e',
+        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+      );
+    }
+  }
+
   /// Automatically detects optimal import strategy and imports recipe with intelligent fallback mechanisms.
   ///
   /// This method implements intelligent strategy selection by analyzing input characteristics and attempting
@@ -393,6 +458,46 @@ class ImportManager {
     } catch (e) {
       return ImportManagerResult.failure(
         'Strategy execution error: $e',
+        strategy: strategy.strategyName,
+      );
+    }
+  }
+
+  /// Parse with strategy without saving - returns recipe in memory only
+  Future<ImportManagerResult> _parseWithStrategy(
+    ImportStrategy strategy,
+    String input,
+    Map<String, dynamic>? options,
+  ) async {
+    try {
+      // Execute import strategy to parse recipe
+      final importResult = await strategy.import(input, options: options);
+
+      if (!importResult.isSuccess) {
+        return ImportManagerResult.failure(
+          importResult.errorMessage ?? 'Parse failed',
+          strategy: strategy.strategyName,
+          warnings: importResult.warnings,
+        );
+      }
+
+      if (importResult.recipe == null) {
+        return ImportManagerResult.failure(
+          'Parse successful but no recipe returned',
+          strategy: strategy.strategyName,
+        );
+      }
+
+      // Return parsed recipe WITHOUT saving to storage
+      return ImportManagerResult.success(
+        importResult.recipe!,
+        strategy: strategy.strategyName,
+        warnings: importResult.warnings,
+        metadata: importResult.metadata,
+      );
+    } catch (e) {
+      return ImportManagerResult.failure(
+        'Parse execution error: $e',
         strategy: strategy.strategyName,
       );
     }

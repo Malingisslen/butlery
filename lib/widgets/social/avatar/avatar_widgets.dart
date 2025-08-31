@@ -128,7 +128,7 @@ class AvatarWidgets {
     final effectiveDisplayName =
         user?.displayName ?? displayName ?? 'Okänd användare';
     final effectiveEmail = user?.email ?? email;
-    final effectiveSubtitle = user?.bio ?? subtitle;
+    final effectiveSubtitle = subtitle;
     final effectiveIsOnline = user?.isOnline ?? false;
 
     return UserDisplayWidgets.userRow(
@@ -168,7 +168,7 @@ class AvatarWidgets {
     final effectiveDisplayName =
         user?.displayName ?? displayName ?? 'Okänd användare';
     final effectiveEmail = user?.email ?? email;
-    final effectiveSubtitle = user?.bio ?? subtitle;
+    final effectiveSubtitle = subtitle;
     final effectiveDescription = description;
     final effectiveIsOnline = user?.isOnline ?? isOnline;
 
@@ -207,7 +207,7 @@ class AvatarWidgets {
     final effectiveDisplayName =
         user?.displayName ?? displayName ?? 'Okänd användare';
     final effectiveEmail = user?.email ?? email;
-    final effectiveSubtitle = user?.bio ?? subtitle;
+    final effectiveSubtitle = subtitle;
     final effectiveIsOnline = user?.isOnline ?? isOnline;
 
     return UserDisplayWidgets.userRow(

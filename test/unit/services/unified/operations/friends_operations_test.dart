@@ -1,9 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/friends_operations.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/unified/operations/friends_management_operations.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app_provider;
@@ -12,55 +9,6 @@ import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/builders/user_builder.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
-
-// Mock classes
-class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {
-  String? _currentUserId = 'test-user-123';
-  List<UserProfile> _friendsList = [];
-  List<FriendRequest> _friendRequests = [];
-  Set<String> _blockedUsers = {};
-  
-  void setServiceState({
-    String? userId,
-    List<UserProfile>? friends,
-    List<FriendRequest>? requests,
-    Set<String>? blockedUsers,
-  }) {
-    if (userId != null) _currentUserId = userId;
-    if (friends != null) _friendsList = friends;
-    if (requests != null) _friendRequests = requests;
-    if (blockedUsers != null) _blockedUsers = blockedUsers;
-  }
-  
-  @override
-  String? get currentUserId => _currentUserId;
-  
-  @override
-  List<UserProfile> get friendsList => _friendsList;
-  
-  @override
-  List<FriendRequest> get friendRequests => _friendRequests;
-  
-  @override
-  List<FriendRequest> get incomingRequests => _friendRequests
-      .where((r) => r.toUserId == _currentUserId && r.status == FriendRequestStatus.pending)
-      .toList();
-  
-  @override
-  List<FriendRequest> get outgoingRequests => _friendRequests
-      .where((r) => r.fromUserId == _currentUserId && r.status == FriendRequestStatus.pending)
-      .toList();
-  
-  @override
-  Set<String> get blockedUsers => _blockedUsers;
-  
-  @override
-  void notifyListenersInternal() {
-    // Mock implementation
-  }
-}
-
-class MockFriendsManagementOperations extends Mock implements FriendsManagementOperations {}
 
 void main() {
   group('FriendsOperations', () {
@@ -125,7 +73,7 @@ void main() {
     group('Friend Requests', () {
       test('should send friend request successfully', () async {
         // Arrange
-        mockParent.setServiceState(userId: 'sender-123');
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = await operations.sendRequest('recipient-123');
@@ -137,7 +85,7 @@ void main() {
       
       test('should not send request to self', () async {
         // Arrange
-        mockParent.setServiceState(userId: 'user-123');
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = await operations.sendRequest('user-123');
@@ -165,8 +113,7 @@ void main() {
       test('should not send request to existing friend', () async {
         // Arrange
         final friend = UserBuilder().withId('friend-123').build();
-        mockParent.setServiceState(
-          userId: 'user-123',
+        mockParent.setFriendsState(
           friends: [friend],
         );
         
@@ -187,9 +134,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [request],
+        mockParent.setFriendsState(
+          incomingRequests: [request],
         );
         
         // Act
@@ -209,9 +155,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [request],
+        mockParent.setFriendsState(
+          incomingRequests: [request],
         );
         
         // Act
@@ -231,9 +176,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [request],
+        mockParent.setFriendsState(
+          incomingRequests: [request],
         );
         
         // Act
@@ -253,9 +197,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [request],
+        mockParent.setFriendsState(
+          incomingRequests: [request],
         );
         
         // Act
@@ -271,7 +214,7 @@ void main() {
       test('should remove friend successfully', () async {
         // Arrange
         final friend = UserBuilder().withId('friend-123').build();
-        mockParent.setServiceState(friends: [friend]);
+        mockParent.setFriendsState(friends: [friend]);
         
         // Act
         final result = await operations.removeFriend('friend-123');
@@ -283,7 +226,7 @@ void main() {
       
       test('should not remove non-friend', () async {
         // Arrange
-        mockParent.setServiceState(friends: []);
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = await operations.removeFriend('not-friend-123');
@@ -295,7 +238,7 @@ void main() {
       
       test('should block user successfully', () async {
         // Arrange
-        mockParent.setServiceState(blockedUsers: {});
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = await operations.blockUser('user-to-block');
@@ -308,7 +251,7 @@ void main() {
       test('should remove friend before blocking', () async {
         // Arrange
         final friend = UserBuilder().withId('friend-to-block').build();
-        mockParent.setServiceState(friends: [friend]);
+        mockParent.setFriendsState(friends: [friend]);
         
         // Act
         final result = await operations.blockUser('friend-to-block');
@@ -321,7 +264,7 @@ void main() {
       
       test('should unblock user successfully', () async {
         // Arrange
-        mockParent.setServiceState(blockedUsers: {'blocked-user'});
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = await operations.unblockUser('blocked-user');
@@ -334,7 +277,7 @@ void main() {
       
       test('should not unblock non-blocked user', () async {
         // Arrange
-        mockParent.setServiceState(blockedUsers: {});
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = await operations.unblockUser('not-blocked');
@@ -353,7 +296,7 @@ void main() {
           UserBuilder().withId('user-2').withName('Anna B').build(),
         ];
         when(() => mockParent.searchUsers('Anna')).thenAnswer((_) async => users);
-        mockParent.setServiceState(userId: 'current-user');
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final results = await operations.searchUsers('Anna');
@@ -371,7 +314,7 @@ void main() {
           UserBuilder().withId('other-user').withName('Other').build(),
         ];
         when(() => mockParent.searchUsers('search')).thenAnswer((_) async => users);
-        mockParent.setServiceState(userId: 'current-user');
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final results = await operations.searchUsers('search');
@@ -389,7 +332,7 @@ void main() {
           UserBuilder().withId('not-friend').withName('Stranger').build(),
         ];
         when(() => mockParent.searchUsers('search')).thenAnswer((_) async => searchResults);
-        mockParent.setServiceState(friends: [friend]);
+        mockParent.setFriendsState(friends: [friend]);
         
         // Act
         final results = await operations.searchUsers('search');
@@ -444,8 +387,7 @@ void main() {
         when(() => mockParent.getRecentCollaborators())
             .thenAnswer((_) async => [collaborator]);
         
-        mockParent.setServiceState(
-          userId: 'current-user',
+        mockParent.setFriendsState(
           friends: [UserBuilder().withId('friend-1').build()],
         );
         
@@ -462,7 +404,7 @@ void main() {
       test('should check if user is friend', () {
         // Arrange
         final friend = UserBuilder().withId('friend-123').build();
-        mockParent.setServiceState(friends: [friend]);
+        mockParent.setFriendsState(friends: [friend]);
         
         // Act & Assert
         expect(operations.isFriend('friend-123'), isTrue);
@@ -478,9 +420,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [request],
+        mockParent.setFriendsState(
+          incomingRequests: [request],
         );
         
         // Act & Assert
@@ -497,9 +438,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [request],
+        mockParent.setFriendsState(
+          incomingRequests: [request],
         );
         
         // Act & Assert
@@ -525,10 +465,10 @@ void main() {
           sentAt: DateTime.now(),
         );
         
-        mockParent.setServiceState(
-          userId: 'test-user-123',
+        mockParent.setFriendsState(
           friends: [friend],
-          requests: [requestSent, requestReceived],
+          outgoingRequests: [requestSent],
+          incomingRequests: [requestReceived],
         );
         
         // Act & Assert
@@ -544,7 +484,7 @@ void main() {
       test('should get friend by ID', () {
         // Arrange
         final friend = UserBuilder().withId('friend-123').withName('Anna').build();
-        mockParent.setServiceState(friends: [friend]);
+        mockParent.setFriendsState(friends: [friend]);
         
         // Act
         final result = operations.getFriendById('friend-123');
@@ -556,7 +496,7 @@ void main() {
       
       test('should return null for non-friend ID', () {
         // Arrange
-        mockParent.setServiceState(friends: []);
+        mockParent.setFriendsState(friends: []);
         
         // Act
         final result = operations.getFriendById('not-friend');
@@ -571,7 +511,7 @@ void main() {
           UserBuilder().withId('friend-1').build(),
           UserBuilder().withId('friend-2').build(),
         ];
-        mockParent.setServiceState(friends: friends);
+        mockParent.setFriendsState(friends: friends);
         
         // Act
         final result = operations.getAllFriends();
@@ -597,9 +537,9 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [incoming, outgoing],
+        mockParent.setFriendsState(
+          incomingRequests: [incoming],
+          outgoingRequests: [outgoing],
         );
         
         // Act
@@ -619,9 +559,8 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: [outgoing],
+        mockParent.setFriendsState(
+          outgoingRequests: [outgoing],
         );
         
         // Act
@@ -639,7 +578,7 @@ void main() {
           UserBuilder().withId('friend-2').build(),
           UserBuilder().withId('friend-3').build(),
         ];
-        mockParent.setServiceState(friends: friends);
+        mockParent.setFriendsState(friends: friends);
         
         // Act
         final count = operations.getFriendsCount();
@@ -666,9 +605,8 @@ void main() {
             sentAt: DateTime.now(),
           ),
         ];
-        mockParent.setServiceState(
-          userId: 'test-user-123',
-          requests: requests,
+        mockParent.setFriendsState(
+          incomingRequests: requests,
         );
         
         // Act

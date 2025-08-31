@@ -419,7 +419,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           children: [
             SocialComponents.avatar(
               user: userService.currentUserProfile,
-              size: ImageSize.extraLarge,
+              size: ImageSize.medium,
               showOnlineStatus: true,
               onTap: () => LayoutComponents.showProfileMenu(
                 context,
@@ -710,28 +710,44 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           }
         }
       },
-      child: ListView.builder(
-        padding: EdgeInsets.zero, // Remove all ListView padding
-        itemCount: recipes.length,
-        itemBuilder: (context, index) {
-          final recipe = recipes[index];
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero, // Remove all ListView padding
+              itemCount: recipes.length,
+              cacheExtent: 500, // PERFORMANCE FIX: Limit cached items for better memory usage
+              itemBuilder: (context, index) {
+                final recipe = recipes[index];
 
-          return ContentCard(
-            key: ValueKey(recipe.id),
-            item: recipe,
-            type: ContentCardType.recipe,
-            onTap: () async {
-              // Navigera till detaljer
-              await Navigator.pushNamed(
-                context,
-                '/receptDetalj',
-                arguments: recipe,
-              );
+                return ContentCard(
+                  key: ValueKey(recipe.id),
+                  item: recipe,
+                  type: ContentCardType.recipe,
+                  onTap: () async {
+                    // Navigera till detaljer
+                    await Navigator.pushNamed(
+                      context,
+                      '/receptDetalj',
+                      arguments: recipe,
+                    );
 
-              // Ingen refresh behövs - ViewModel lyssnar på RecipeService
-            },
-          );
-        },
+                    // Ingen refresh behövs - ViewModel lyssnar på RecipeService
+                  },
+                );
+              },
+            ),
+          ),
+          // PERFORMANCE FIX: Load More button for pagination
+          if (viewModel.canLoadMore)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () => viewModel.loadMore(),
+                child: const Text('Visa fler recept'),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -748,14 +764,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     return PopupMenuItem(
       value: criteria,
       child: Row(
+        mainAxisSize: MainAxisSize.min, // ✅ FIX: Prevent infinite width expansion
         children: [
           Icon(
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          Text(label),
-          const Spacer(),
+          Flexible( // ✅ FIX: Allow text to shrink on small screens
+            child: Text(label),
+          ),
+          const SizedBox(width: AppDimensions.spacingM), // ✅ FIX: Replace Spacer with fixed spacing
           if (isSelected)
             Icon(
               sortAscending ? Icons.arrow_upward : Icons.arrow_downward,

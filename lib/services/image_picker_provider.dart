@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Abstraction for image picking functionality to enable dependency injection and testing
 abstract class ImagePickerProvider {
@@ -43,12 +44,21 @@ class DefaultImagePickerProvider implements ImagePickerProvider {
     double? maxHeight,
     int? imageQuality,
   }) async {
-    return await _picker.pickImage(
-      source: source,
-      maxWidth: maxWidth,
-      maxHeight: maxHeight,
-      imageQuality: imageQuality,
-    );
+    try {
+      AppLogger.debug('🎯 PICKER_PROVIDER: Calling ImagePicker.pickImage with source: ${source.name}');
+      final result = await _picker.pickImage(
+        source: source,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        imageQuality: imageQuality,
+      );
+      AppLogger.debug('🎯 PICKER_PROVIDER: ImagePicker returned: ${result?.path ?? "null"}');
+      return result;
+    } catch (e, stackTrace) {
+      AppLogger.error('💥 PICKER_PROVIDER ERROR: Exception in pickImage: $e');
+      AppLogger.error('💥 PICKER_PROVIDER ERROR: Stack trace: $stackTrace');
+      return null;
+    }
   }
   
   @override

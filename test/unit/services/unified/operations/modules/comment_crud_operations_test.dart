@@ -9,6 +9,7 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('CommentCrudOperations', () {
@@ -446,5 +447,3 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockCommentsRepository extends Mock implements CommentsRepository {}

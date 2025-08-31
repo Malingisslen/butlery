@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/text_display_container.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -34,6 +33,7 @@ class _ImportViaUrlViewContent extends StatefulWidget {
 
 class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   final TextEditingController _urlController = TextEditingController();
+  final TextEditingController _extractedTextController = TextEditingController();
 
   @override
   void initState() {
@@ -45,6 +45,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   void dispose() {
     _urlController.removeListener(_onUrlChanged);
     _urlController.dispose();
+    _extractedTextController.dispose();
     super.dispose();
   }
 
@@ -61,15 +62,18 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   void _navigateToTextImport() {
     final viewModel = context.read<UrlImportViewModel>();
     if (viewModel.hasExtractedText) {
-      // NY! Skicka med både text OCH sourceUrl som en Map
-      Navigator.pushNamed(
-        context,
-        '/franSocialaMedier',
-        arguments: {
-          'text': viewModel.extractedText,
-          'sourceUrl': viewModel.sourceUrl,
-        },
-      );
+      // Use edited text from controller instead of original extracted text
+      final editedText = _extractedTextController.text.trim();
+      if (editedText.isNotEmpty) {
+        Navigator.pushNamed(
+          context,
+          '/franSocialaMedier',
+          arguments: {
+            'text': editedText,
+            'sourceUrl': viewModel.sourceUrl,
+          },
+        );
+      }
     }
   }
 
@@ -79,10 +83,16 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Import via URL')),
-      body: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          children: [
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppDimensions.paddingL,
+            AppDimensions.paddingL, 
+            AppDimensions.paddingL,
+            AppDimensions.paddingL + MediaQuery.of(context).viewPadding.bottom,
+          ),
+          child: Column(
+            children: [
             // URL input
             TextFormField(
               controller: _urlController,
@@ -126,13 +136,25 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               ),
             ],
 
-            // Extraherad text
+            // Extraherad text (editable)
             if (viewModel.hasExtractedText) ...[
               const SizedBox(height: AppDimensions.spacingXl),
               const Text('Extraherad text:', style: AppTextStyles.headlineSmall),
-              TextDisplayContainer(
-                text: viewModel.extractedText,
-                expanded: true,
+              const SizedBox(height: AppDimensions.spacingS),
+              Expanded(
+                child: TextFormField(
+                  controller: _extractedTextController..text = viewModel.extractedText,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: const InputDecoration(
+                    labelText: 'Redigera text innan import',
+                    hintText: 'Du kan redigera den extraherade texten här...',
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               ElevatedButton(
@@ -141,7 +163,8 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                 child: const Text('Gå vidare till klistra-in'),
               ),
             ],
-          ],
+            ],
+          ),
         ),
       ),
     );

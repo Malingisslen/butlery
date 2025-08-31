@@ -34,6 +34,7 @@ import 'package:butlery/core/di/modules/social_module.dart';
 import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
+import 'package:butlery/core/di/modules/ui_module.dart';
 
 // Application provider
 import 'package:butlery/core/providers/application_provider.dart';
@@ -41,10 +42,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 // Deep link handling
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 
-// Performance optimization
-import 'package:butlery/services/performance/startup_optimization_manager.dart';
-import 'package:butlery/services/performance/performance_monitoring_service.dart';
-import 'package:butlery/services/performance/intelligent_cache_manager.dart';
+// Performance optimization - handled by modular system
 
 // All services accessed through DI system - no direct imports needed
 
@@ -59,43 +57,76 @@ import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 
 // Firebase
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:butlery/firebase_options_real.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Application entry point with clean modular architecture.
 ///
 /// Uses the new modular dependency injection system exclusively.
 /// Provides comprehensive error handling and graceful failure modes.
 Future<void> main() async {
+  // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
+  WidgetsFlutterBinding.ensureInitialized();
+  
   try {
     if (kDebugMode) {
       debugPrint('🚀 Starting Butlery with modular system');
     }
 
-    // Initialize startup optimization
-    final startupManager = StartupOptimizationManager();
-    startupManager.registerStandardServices();
+    // Load environment variables first - required for Firebase configuration
+    await dotenv.load(fileName: '.env');
     
-    // Start optimized initialization
-    await startupManager.startOptimizedInitialization();
+    if (kDebugMode) {
+      debugPrint('✅ Environment variables loaded');
+    }
 
-    // Initialize modular system
-    await _initializeModularSystem();
+    // Initialize Firebase with real configuration
+    await Firebase.initializeApp(
+      options: RealFirebaseOptions.currentPlatform,
+    );
     
-    // Wait for critical services
-    await startupManager.waitForCriticalServices();
+    if (kDebugMode) {
+      debugPrint('✅ Firebase initialized successfully');
+    }
+
+    // Initialize Firebase App Check
+    // Skip App Check in debug mode to avoid rate limiting during development
+    if (!kDebugMode) {
+      await FirebaseAppCheck.instance.activate(
+        webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+        androidProvider: AndroidProvider.playIntegrity,
+        appleProvider: AppleProvider.appAttest,
+      );
+      
+      debugPrint('✅ Firebase App Check activated for production');
+    } else {
+      // In debug mode, optionally use debug provider with proper token
+      // For now, skip to avoid "Too many attempts" errors
+      debugPrint('⚠️ Firebase App Check skipped in debug mode to avoid rate limiting');
+    }
+
+    // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
+    await _initializeModularSystem();
+
+    // Skip startup optimization manager - it conflicts with the modular bootstrap system
+    // The modular system already handles all initialization properly
 
     // Start the application
     runApp(const ButleryApp());
-  } catch (e) {
+  } catch (e, stackTrace) {
     if (kDebugMode) {
       debugPrint('❌ Application startup failed: $e');
+      debugPrint('Stack trace: $stackTrace');
     }
 
-    // Show error app
-    runApp(_ErrorApp('Application failed to initialize: $e'));
+    // Show error app with more details
+    runApp(_ErrorApp('Application failed to initialize: $e\n\nStack trace:\n$stackTrace'));
   }
 }
 
@@ -113,6 +144,7 @@ Future<void> _initializeModularSystem() async {
     MessagingModule(),
     CollaborationModule(),
     PerformanceModule(),
+    UIModule(), // ViewModels and UI services
   ];
 
   // Create bootstrap stages
@@ -125,30 +157,14 @@ Future<void> _initializeModularSystem() async {
   ];
 
   // Initialize with modules and stages
+  // This also initializes the ServiceLocator internally
   await ApplicationBootstrap.initialize(
     modules: modules,
     stages: stages,
   );
-
-  // Initialize global service locator
-  ServiceLocator.initialize(ApplicationBootstrap().container);
   
-  // Initialize performance services
-  try {
-    final perfMonitoring = ServiceLocator.get<PerformanceMonitoringService>();
-    perfMonitoring.initialize();
-    
-    final cacheManager = ServiceLocator.get<IntelligentCacheManager>();
-    await cacheManager.initialize();
-    
-    if (kDebugMode) {
-      debugPrint('✅ Performance services initialized');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      debugPrint('⚠️ Performance services initialization failed: $e');
-    }
-  }
+  // ServiceLocator is now initialized by ApplicationBootstrap
+  // Performance services are handled by the PerformanceModule if registered
 
   if (kDebugMode) {
     debugPrint('✅ Modular system initialized successfully');
@@ -170,38 +186,46 @@ class _ErrorApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       home: Scaffold(
         backgroundColor: AppColors.backgroundBeige,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: AppColors.error,
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
-              const Text(
-                'Application Error',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppColors.error,
                 ),
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-              Text(
-                message,
-                style: const TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
-              ElevatedButton(
-                onPressed: () {
-                  // Restart the application
-                  main();
-                },
-                child: const Text('Restart App'),
-              ),
-            ],
+                const SizedBox(height: AppDimensions.spacingXl),
+                const Text(
+                  'Application Error',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 400),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      message,
+                      style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
+                ElevatedButton(
+                  onPressed: () {
+                    // Restart the application
+                    main();
+                  },
+                  child: const Text('Restart App'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -233,7 +257,7 @@ class _ButleryAppState extends State<ButleryApp> {
   /// Initialize UI-specific components.
   Future<void> _initializeUI() async {
     try {
-      // Initialize deep link handling
+      // Initialize deep link handling (platform-aware)
       await DeepLinkHandler().initialize();
 
       // Setup analytics observer
@@ -244,7 +268,8 @@ class _ButleryAppState extends State<ButleryApp> {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ UI initialization failed: $e');
+        debugPrint('⚠️ UI initialization error (non-critical): $e');
+        debugPrint('💡 Note: Deep links may not work on all platforms (e.g., web)');
       }
     }
   }
@@ -394,7 +419,7 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuthRepository().authStateChanges(),
+      stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingScreen('Checking authentication...');
@@ -404,10 +429,14 @@ class AuthWrapper extends StatelessWidget {
           return _buildErrorScreen('Authentication error', snapshot.error.toString());
         }
 
-        if (snapshot.hasData && snapshot.data != null) {
-          return const MinaReceptView();
+        final user = snapshot.data;
+        if (user != null) {
+          AppLogger.debug('AuthWrapper: User logged in - ${user.email}');
+          // Use key to force widget rebuild when user changes
+          return MinaReceptView(key: ValueKey(user.uid));
         }
 
+        AppLogger.debug('AuthWrapper: No user logged in, showing auth view');
         return const AuthView();
       },
     );

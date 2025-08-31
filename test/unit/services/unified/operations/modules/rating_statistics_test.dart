@@ -7,7 +7,10 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/operations/modules/rating_statistics.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/builders/recipe_builder.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/core/providers/application_provider.dart' as app_provider;
 
 void main() {
   group('RatingStatistics', () {
@@ -16,9 +19,14 @@ void main() {
     
     setUp(() async {
       await BaseUnitTest.setupUnit();
+      await TestServiceLocator.initialize();
       
       // Create fake Firestore instance
       fakeFirestore = FakeFirebaseFirestore();
+      
+      // Initialize production ServiceLocator with MockDIContainer
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(MockDIContainer());
       
       // Create test data
       testRecipe = RecipeBuilder()
@@ -30,6 +38,7 @@ void main() {
     
     tearDown(() async {
       BaseUnitTest.resetMocks();
+      await TestServiceLocator.reset();
     });
 
     tearDownAll(() async {
@@ -407,5 +416,5 @@ void main() {
   });
 }
 
-// Mock classes
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+// Using centralized mocks from production_mocks.dart:
+// MockFirebaseFirestore

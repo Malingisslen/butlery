@@ -7,16 +7,19 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Recipe save and fork actions for edit recipe view
+/// 
+/// ARCHITECTURAL FIX: Removed form validation from actions class to fix encapsulation violation.
+/// Form validation should be handled by the view that owns the form, not by external utility classes.
+/// This class now focuses purely on business logic after validation has been confirmed.
 class EditRecipeActions {
   
   /// Save recipe with collaborative cache invalidation
+  /// 
+  /// FIXED: No longer takes form key - validation must be done by caller
   static Future<void> saveRecipe(
     BuildContext context,
-    GlobalKey<FormState> formKey,
     String recipeId,
   ) async {
-    if (!formKey.currentState!.validate()) return;
-
     final viewModel = context.read<RecipeFormViewModel>();
     final savedRecipe = await viewModel.saveRecipe();
 
@@ -37,12 +40,9 @@ class EditRecipeActions {
   }
 
   /// Fork recipe functionality for collaborative editing
-  static Future<void> forkRecipe(
-    BuildContext context,
-    GlobalKey<FormState> formKey,
-  ) async {
-    if (!formKey.currentState!.validate()) return;
-
+  /// 
+  /// FIXED: No longer takes form key - validation must be done by caller
+  static Future<void> forkRecipe(BuildContext context) async {
     final viewModel = context.read<RecipeFormViewModel>();
     final forkedRecipe = await viewModel.saveFork();
 

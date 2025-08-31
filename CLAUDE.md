@@ -7,6 +7,7 @@ cmd.exe /c "flutter COMMAND"
 **Examples:**
 - Analysis: `cmd.exe /c "flutter analyze"`
 - Run: `cmd.exe /c "flutter run"`
+- **Clean Run**: `./flutter_run_clean.sh` or `flutter_run_clean.bat` (filters system noise)
 - **Tests**: `cmd.exe /c "flutter test test/unit/file_test.dart"` (ALWAYS use forward slashes!)
 
 **PATH RULES - CRITICAL TO PREVENT CRASHES:**
@@ -23,17 +24,8 @@ cmd.exe /c "flutter COMMAND"
 - **Dependency Injection**: Modular DI system with domain-driven modules (see below)
 - **Notifications**: Complete FCM system with development logging approach
 - **Social Features**: 90% infrastructure implemented (social views and services exist, need verification)
-- **Test Infrastructure**: ✅ Strong foundation - 46 comprehensive mocks in production_mocks.dart
-  - All services, repositories, ViewModels, managers, and handlers mocked
-  - Use configuration methods (`setAuthState`, `setRecipeState`) for concrete mocks
-  - Only stub abstract methods with `when()`, not concrete getters
-  - Access mocks via `TestServiceLocator.mockAuthService`, etc.
-  - **Test Status** (January 2025 - Latest Audit):
-    - Total: 2,218 tests (2,082 pass, 192 fail, 3 skip)
-    - Repository Tests: 100% coverage (25/25 repositories tested including mixin pattern)
-    - Service Tests: 31.0% coverage (40/129 tested) - Critical gap
-    - ViewModel Tests: 9.6% coverage (5/52 tested) - Urgent attention needed
-    - 87 test files total (77 unit, 10 integration, 0 widget)
+- **Test Infrastructure**: See `/docs/testing/TESTING_DASHBOARD.md` for current status
+- **Test Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md` for essential patterns
 - **Code Quality**: Single Responsibility Principle enforced
 - **Security**: Comprehensive permission validation system implemented:
   - PermissionValidationMixin for all Firebase repositories
@@ -42,6 +34,10 @@ cmd.exe /c "flutter COMMAND"
   - Ownership validation and role-based access control
 - **Type Safety**: Map-based data access replaced with proper model usage
 - **Flutter Color Syntax**: Use `withValues(alpha: 0.8)` instead of deprecated `withOpacity(0.8)`
+- **Data Source Architecture**: CRITICAL - ViewModels must connect to correct services:
+  - Use `UserService.currentUserProfile` for complete user data (settings, avatar, social features)
+  - Use `PermissionService.currentUser` only for basic auth/permission checks
+  - **Never mix data sources** - leads to settings not persisting and UI inconsistencies
 
 ### Dependency Injection System
 **Architecture**: Clean modular DI with GetIt service locator
@@ -82,54 +78,14 @@ await ApplicationBootstrap.initialize();
 - **Run Command**: `cmd.exe /c "dart tools/code_intelligence_platform.dart"`
 
 ## Test System Guidelines
-**CRITICAL**: Read `/test/TEST_GUIDE.md` for complete test patterns
-
-### Test Infrastructure Status
-- **Mock System**: Configuration-based mocks with setter methods
-- **Service Locator**: Mirrors production `ServiceLocator.get<T>()` pattern  
-- **Base Classes**: Always use `BaseUnitTest.setupUnit()` in setUp
-- **AAA Pattern**: Use simple comment markers (// Arrange, // Act, // Assert)
-- **NO TestContext**: Removed for simplicity - use traditional AAA comments
-
-### Key Test Rules
-```dart
-// ✅ CORRECT - Configuration methods for mocks
-mockAuthRepository.setAuthState(userId: 'test_123');
-mockRecipeService.setRecipeState(recipes: []);
-
-// ❌ WRONG - Never stub concrete getters
-when(() => mockAuthRepository.currentUserId).thenReturn('test_123');
-
-// ✅ CORRECT - Only stub abstract Mock methods
-when(() => mockRepo.signIn(any(), any())).thenAnswer((_) async {});
-
-// ✅ CORRECT - Standard test structure
-setUp(() async {
-  await BaseUnitTest.setupUnit();  // NOT BaseTest.setup()
-  await TestServiceLocator.initialize();
-});
-```
-
-### Test Data Builders
-```dart
-// Use builder pattern with Swedish defaults
-final recipe = RecipeBuilder().asSwedishDinner().build();
-final user = UserBuilder().asSwedishUser().build();
-```
-
-### Current Test Status
-- **✅ All stubbing violations fixed** - Configuration methods implemented
-- **✅ All tests standardized** - Using BaseUnitTest.setupUnit()
-- **✅ 46 centralized mocks** - In production_mocks.dart
-- **✅ 5 test templates** - Updated to match architecture
-- **📋 Next**: Fix integration test Firebase connections, add widget tests
+- **Complete Guide**: See `/docs/testing/TEST_GUIDE.md`
+- **Quick Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md`
+- **Current Status**: See `/docs/testing/TESTING_DASHBOARD.md`
+- **Templates**: Use `/test/templates/` for consistent test creation
 
 ## Workflow Instructions
 
-### 🚀 Quick Start for Test Development
-**Just say:** "Continue work following WORK_INSTRUCTIONS.md"
-- This loads all test principles, patterns, and current priorities
-- See `/WORK_INSTRUCTIONS.md` for complete test development guide
+### Assume multiple Claude Code sessions running in parallel
 
 ### 📋 General Development Workflow
 **Before starting:**
@@ -142,7 +98,18 @@ final user = UserBuilder().asSwedishUser().build();
 2. Give high-level explanations understandable for vibecoder
 3. **DO NOT BE LAZY** - find root causes, no temporary fixes
 4. Make simplest possible changes, minimal code impact
-5. Ask questions before deviating from todos
+5. **CRITICAL: Always update corresponding tests when changing production code**
+   - When modifying services: Update service tests in `test/unit/services/`
+   - When modifying viewmodels: Update viewmodel tests in `test/unit/viewmodels/`
+   - When modifying models: Update model tests in `test/unit/models/`
+   - When modifying repositories: Update repository tests in `test/unit/repositories/`
+   - Run `cmd.exe /c "flutter test"` before completing any production code changes
+6. **DEBUGGING METHODOLOGY**: Use systematic approach for production issues:
+   - Step 1: Add comprehensive logging to trace data flow (repositories → services → viewmodels)
+   - Step 2: Test with multiple users to verify data persistence vs caching issues
+   - Step 3: Map all sources of truth and verify correct service connections
+   - **Always check ViewModels are connected to correct services** - common cause of UI inconsistencies
+7. Ask questions before deviating from todos
 
 **When finished:**
 1. Add review section to `todo.md` with summary of changes

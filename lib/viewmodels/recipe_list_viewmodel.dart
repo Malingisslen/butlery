@@ -67,6 +67,7 @@
 
 // lib/viewmodels/recipe_list_viewmodel.dart
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -87,11 +88,25 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Current search query for real-time recipe filtering and search functionality.
   String _searchQuery = '';
 
+  /// Debounce timer for search input to prevent excessive filtering operations
+  Timer? _searchDebounceTimer;
+
   /// Active sorting criteria for recipe list organization and user preference management.
   SortCriteria _sortCriteria = SortCriteria.title;
 
   /// Sorting direction for ascending/descending toggle functionality and user control.
   bool _sortAscending = true;
+
+  // ===== PAGINATION STATE =====
+
+  /// Number of recipes to show initially for performance optimization
+  static const int _initialPageSize = 50;
+  
+  /// Current display limit for progressive loading
+  int _displayLimit = _initialPageSize;
+  
+  /// Whether more recipes are available to load
+  bool get canLoadMore => _displayLimit < (_cachedFilteredRecipes?.length ?? 0);
 
   // ===== MULTI-CRITERIA FILTER STATE =====
 
@@ -223,18 +238,23 @@ class RecipeListViewModel extends ChangeNotifier {
 
   // ===== RECIPE LIST MANAGEMENT ACTIONS =====
 
-  /// Updates search query with intelligent caching and real-time filtering coordination.
+  /// Updates search query with intelligent caching and debounced filtering coordination.
   /// 
   /// [query] New search query for recipe filtering and search functionality
   /// 
-  /// Performs search query update with automatic cache invalidation and UI notification
-  /// for real-time search functionality and optimal user experience. Only triggers
-  /// updates when query actually changes for performance optimization.
+  /// Performs search query update with debouncing (300ms delay) to prevent excessive 
+  /// filtering operations on every keystroke. Provides optimal user experience while
+  /// maintaining performance during rapid typing. Only triggers updates when query changes.
   void updateSearch(String query) {
     if (_searchQuery != query) {
       _searchQuery = query;
-      _invalidateCache();
-      notifyListeners();
+      
+      // PERFORMANCE FIX: Cancel previous timer and start new one for debouncing
+      _searchDebounceTimer?.cancel();
+      _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+        _invalidateCache();
+        notifyListeners();
+      });
     }
   }
 
@@ -354,6 +374,17 @@ class RecipeListViewModel extends ChangeNotifier {
     _recipeService.clearError();
   }
 
+  /// Loads more recipes for pagination with performance optimization.
+  /// 
+  /// Increases display limit to show more recipes progressively,
+  /// preventing initial performance issues while allowing access to all recipes.
+  void loadMore() {
+    if (canLoadMore) {
+      _displayLimit += _initialPageSize;
+      notifyListeners();
+    }
+  }
+
   // ===== ADVANCED FILTERING AND CACHING IMPLEMENTATION =====
 
   /// Retrieves filtered and sorted recipe collection with intelligent caching and comprehensive optimization.
@@ -411,7 +442,8 @@ class RecipeListViewModel extends ChangeNotifier {
     _lastMealTypeFilters = Set.from(_activeMealTypeFilters);
     _lastRatingFilters = Set.from(_activeRatingFilters);
 
-    return sorted;
+    // PERFORMANCE FIX: Apply pagination limit to prevent UI performance issues
+    return sorted.take(_displayLimit).toList();
   }
 
   /// Applies time-based filters with intelligent OR logic and comprehensive range management.
@@ -518,6 +550,8 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Essential for maintaining data consistency when filter or sort criteria change.
   void _invalidateCache() {
     _cachedFilteredRecipes = null;
+    // PERFORMANCE FIX: Reset pagination when filters change
+    _displayLimit = _initialPageSize;
   }
 
   /// Handles reactive updates from recipe service changes with automatic cache management.
@@ -537,6 +571,7 @@ class RecipeListViewModel extends ChangeNotifier {
   /// in dynamic recipe list scenarios with ViewModel creation and disposal.
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
     _recipeService.removeListener(_onRecipesChanged);
     super.dispose();
   }

@@ -32,6 +32,8 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
@@ -81,10 +83,6 @@ class SocialModule implements DIModule {
           authRepository: container<AuthRepository>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] User services registered');
-      }
 
       container.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: container<AuthRepository>()),
@@ -96,10 +94,6 @@ class SocialModule implements DIModule {
           authRepository: container<AuthRepository>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Friends services registered');
-      }
 
       container.registerSingleton<CommentsRepository>(
         FirebaseCommentsRepository(authRepository: container<AuthRepository>()),
@@ -108,10 +102,6 @@ class SocialModule implements DIModule {
       container.registerSingleton<RatingsRepository>(
         FirebaseRatingsRepository(authRepository: container<AuthRepository>()),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Interaction repositories registered');
-      }
 
       // ==================== SOCIAL RECIPE SYSTEM ====================
       
@@ -120,9 +110,16 @@ class SocialModule implements DIModule {
         FirebaseSocialRecipeRepository(authRepository: container<AuthRepository>()),
       );
       
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Social recipe repository registered');
-      }
+      // Note: SocialRecipeService registration is deferred to lazy singleton
+      // because it depends on services from other modules that may not be available yet
+      container.registerLazySingleton<SocialRecipeService>(
+        () => SocialRecipeService(
+          repository: container<SocialRecipeRepository>(),
+          userService: container<UserService>(),
+          recipeService: container<UnifiedRecipeService>(),
+          permissionService: container<PermissionService>(),
+        ),
+      );
 
       // ==================== SHARING AND CONNECTIVITY ====================
       
@@ -150,10 +147,6 @@ class SocialModule implements DIModule {
       container.registerSingleton<SocialSharingRepository>(
         FirebaseSocialSharingRepository(authRepository: container<AuthRepository>()),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Sharing and connectivity services registered');
-      }
 
       // ==================== SOCIAL OPERATIONS ====================
       
@@ -165,13 +158,9 @@ class SocialModule implements DIModule {
           friendsService: container<UnifiedFriendsService>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Social operations registered');
-      }
 
       if (kDebugMode) {
-        debugPrint('✅ [SocialModule] All social services configured');
+        debugPrint('✅ [SocialModule] Configured 12 services (Users, Friends, Social recipes, Comments, Ratings)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -185,28 +174,16 @@ class SocialModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint('⚡ [SocialModule] Initializing social services...');
-    }
-
     try {
       final container = GetIt.instance;
 
       // Initialize UserService
       final userService = container<UserService>();
       await userService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] UserService initialized');
-      }
 
       // Initialize Enhanced UnifiedFriendsService
       final friendsService = container<UnifiedFriendsService>();
       await friendsService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] UnifiedFriendsService initialized');
-      }
 
       // Validate other services are accessible
       final services = [
@@ -219,13 +196,6 @@ class SocialModule implements DIModule {
         service.toString();
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] All social services validated');
-      }
-
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] All social services initialized');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -280,9 +250,6 @@ class SocialModule implements DIModule {
         }
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Health check passed for all services');
-      }
       
       return true;
     } catch (e) {

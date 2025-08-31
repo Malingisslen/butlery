@@ -47,7 +47,7 @@ class RecipeSelectionBuilders {
               recipe.imageUrls.first,
               width: width ?? AppDimensions.iconSizeXxl,
               height: height ?? AppDimensions.iconSizeXxl,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) =>
                   recipeImagePlaceholder(
                 isShared: isShared,

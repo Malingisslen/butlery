@@ -22,52 +22,33 @@ import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
-// Mock classes for dependencies
-// Using MockSharedPreferences and MockFirebaseMessaging from production_mocks.dart
-class MockNotificationRepository extends Mock implements NotificationRepository {}
-// Note: MockFirebaseFirestore is kept local as it conflicts with the one in production_mocks
-class MockLocalFirebaseFirestore extends Mock implements FirebaseFirestore {}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
-// Mock class for NotificationSettings with configurable auth status
-class MockNotificationSettings extends Mock implements NotificationSettings {
-  AuthorizationStatus _status = AuthorizationStatus.authorized;
-  
-  void setAuthorizationStatus(AuthorizationStatus status) {
-    _status = status;
-  }
-  
-  @override
-  AuthorizationStatus get authorizationStatus => _status;
-}
-
-// Fake classes for fallback values
-class FakeFieldValue extends Fake implements FieldValue {}
+// Mock for the concrete NotificationRepository class (FCM token operations)
+class MockNotificationRepositoryForFCM extends Mock implements NotificationRepository {}
 
 void main() {
-  // Register fallback values for mocktail
   setUpAll(() {
-    registerFallbackValue(NotificationCategory.system);
-    registerFallbackValue(NotificationType.immediate);
-    registerFallbackValue(FakeFieldValue());
+    // Centralized fallback values already registered via TestServiceLocator
   });
 
   group('FCMTokenManager', () {
     late FCMTokenManager tokenManager;
-    late MockNotificationRepository mockRepository;
+    late NotificationRepository mockRepository;
     late MockFirebaseMessaging mockMessaging;
     late MockSharedPreferences mockPreferences;
-    late MockLocalFirebaseFirestore mockFirestore;
+    late MockFirebaseFirestore mockFirestore;
     
     setUp(() async {
       // Initialize test infrastructure
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       
-      // Create mocks
-      mockRepository = MockNotificationRepository();
+      // Initialize mocks using centralized infrastructure
+      mockRepository = MockNotificationRepositoryForFCM();
       mockMessaging = MockFirebaseMessaging();
       mockPreferences = MockSharedPreferences();
-      mockFirestore = MockLocalFirebaseFirestore();
+      mockFirestore = MockFirebaseFirestore();
       
       // Register mocks in GetIt for dependency injection
       GetIt.instance.registerSingleton<NotificationRepository>(mockRepository);

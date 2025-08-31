@@ -56,7 +56,6 @@
 /// ```dart
 /// class SocialFormValidation {
 ///   final displayNameValidator = FormValidators.requiredDisplayName();
-///   final bioValidator = FormValidators.bio(); // Optional field
 ///   final commentValidator = FormValidators.requiredComment();
 ///   final shareMessageValidator = FormValidators.shareMessage(); // Optional
 /// }
@@ -283,25 +282,6 @@ class FormValidators {
     };
   }
 
-  /// Bio validator - för profil beskrivning
-  static FormFieldValidator<String> bio() {
-    return (value) {
-      if (value == null || value.isEmpty) {
-        return null; // Bio är valfritt
-      }
-
-      if (value.length > 150) {
-        return 'Beskrivning får vara max 150 tecken';
-      }
-
-      // Kolla för bara whitespace
-      if (value.trim().isEmpty) {
-        return 'Beskrivning får inte bara innehålla mellanslag';
-      }
-
-      return null;
-    };
-  }
 
   /// Comment validator - för kommentarer på recept
   static FormFieldValidator<String> comment() {

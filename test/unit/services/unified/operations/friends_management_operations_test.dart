@@ -44,14 +44,6 @@ void main() {
         isInitialized: true,
       );
       
-      // Stub methods that aren't implemented in the mock
-      when(() => mockParentService.currentUserId).thenReturn('current_user');
-      when(() => mockParentService.currentUserDisplayName).thenReturn('Current User');
-      when(() => mockParentService.friendsList).thenReturn([]);
-      when(() => mockParentService.friendRequests).thenReturn([]);
-      when(() => mockParentService.blockedUsers).thenReturn({});
-      when(() => mockParentService.notifyListenersInternal()).thenReturn(null);
-      
       // Create operations instance
       managementOperations = FriendsManagementOperations(mockParentService);
     });
@@ -73,7 +65,11 @@ void main() {
       
       test('should check if user is blocked', () {
         // Arrange
-        when(() => mockParentService.blockedUsers).thenReturn({'blocked_user_123'});
+        mockParentService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [],
+        );
         
         // Act & Assert
         expect(managementOperations.isBlocked('blocked_user_123'), isTrue);
@@ -105,17 +101,18 @@ void main() {
           sentAt: DateTime.now(),
         );
         
-        when(() => mockParentService.friendsList).thenReturn([friend1, friend2]);
-        when(() => mockParentService.incomingRequests).thenReturn([pendingRequest]);
-        when(() => mockParentService.outgoingRequests).thenReturn([]);
-        when(() => mockParentService.blockedUsers).thenReturn({'blocked_1', 'blocked_2', 'blocked_3'});
+        mockParentService.setFriendsState(
+          friends: [friend1, friend2],
+          incomingRequests: [pendingRequest],
+          outgoingRequests: [],
+        );
         
         // Act
         final stats = managementOperations.getFriendStats();
         
         // Assert
         expect(stats['totalFriends'], equals(2));
-        expect(stats['pendingRequests'], equals(1));
+        expect(stats['incomingRequests'], equals(1));
         expect(stats['outgoingRequests'], equals(0));
         expect(stats['blockedUsers'], equals(3));
       });
@@ -132,7 +129,9 @@ void main() {
           lastActiveAt: DateTime.now(),
         );
         
-        when(() => mockParentService.friendsList).thenReturn([friend]);
+        mockParentService.setFriendsState(
+          friends: [friend],
+        );
         when(() => mockParentService.removeFriendInternal('friend_123'))
             .thenReturn(null);
         when(() => mockParentService.removeFriendFromFirebase('friend_123'))
@@ -149,7 +148,9 @@ void main() {
       
       test('should not remove non-existent friend', () async {
         // Arrange
-        when(() => mockParentService.friendsList).thenReturn([]);
+        mockParentService.setFriendsState(
+          friends: [],
+        );
         
         // Act
         final success = await managementOperations.removeFriend('not_a_friend');
@@ -164,8 +165,11 @@ void main() {
     group('User Blocking', () {
       test('should block user successfully', () async {
         // Arrange
-        when(() => mockParentService.friendsList).thenReturn([]);
-        when(() => mockParentService.outgoingRequests).thenReturn([]);
+        mockParentService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [],
+        );
         when(() => mockParentService.addBlockedUserInternal('user_to_block'))
             .thenReturn(null);
         when(() => mockParentService.syncBlockedUsers())
@@ -182,7 +186,9 @@ void main() {
       
       test('should unblock user successfully', () async {
         // Arrange
-        when(() => mockParentService.blockedUsers).thenReturn({'blocked_user'});
+        mockParentService.setFriendsState(
+          friends: [],
+        );
         when(() => mockParentService.removeBlockedUserInternal('blocked_user'))
             .thenReturn(null);
         when(() => mockParentService.syncBlockedUsers())

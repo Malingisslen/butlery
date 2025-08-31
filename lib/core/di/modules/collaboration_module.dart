@@ -24,6 +24,11 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 
 // Dependencies from other modules (imported but not used directly in registration)
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+
+// Menu collaboration repository
+import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 
 // Collaboration services
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -61,6 +66,7 @@ class CollaborationModule implements DIModule {
     RealtimeMenuService,
     UnifiedShoppingService,
     PermissionService,
+    MenuCollaborationRepository,
   ];
 
   @override
@@ -82,10 +88,15 @@ class CollaborationModule implements DIModule {
           authRepository: container<AuthRepository>(),
         ),
       );
+
+      // ==================== MENU COLLABORATION REPOSITORY ====================
       
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] RealtimeSyncService registered');
-      }
+      // MenuCollaborationRepository - Firebase implementation for collaborative menus
+      container.registerLazySingleton<MenuCollaborationRepository>(
+        () => FirebaseMenuCollaborationRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
 
       // ==================== COLLABORATIVE SERVICES ====================
       
@@ -96,10 +107,6 @@ class CollaborationModule implements DIModule {
           authService: container<AuthService>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] RealtimeMenuService registered');
-      }
 
       // ==================== UNIFIED SHOPPING SYSTEM ====================
       
@@ -110,22 +117,17 @@ class CollaborationModule implements DIModule {
           authRepository: container<AuthRepository>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] UnifiedShoppingService registered');
-      }
 
       // ==================== PERMISSION SYSTEM ====================
       
       // PermissionService - comprehensive authorization system
-      // Note: This is a stateless service with no constructor dependencies
+      // Now includes RecipeRepository for proper ownership validation
       container.registerLazySingleton<PermissionService>(
-        () => PermissionService(),
+        () => PermissionService(
+          authRepository: container<AuthRepository>(),
+          recipeRepository: container<RecipeRepository>(),
+        ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] PermissionService registered');
-      }
 
       // ==================== REALTIME RECIPE SERVICE ====================
       
@@ -137,13 +139,9 @@ class CollaborationModule implements DIModule {
           permissionService: container<PermissionService>(),
         ),
       );
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] RealtimeRecipeService registered');
-      }
 
       if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] All collaboration services configured');
+        debugPrint('✅ [CollaborationModule] Configured 5 services (Realtime sync, Shopping, Permissions)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -157,36 +155,20 @@ class CollaborationModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint('⚡ [CollaborationModule] Initializing collaboration services...');
-    }
-
     try {
       final container = GetIt.instance;
 
       // Initialize RealtimeSyncService
       final realtimeSyncService = container<RealtimeSyncService>();
       await realtimeSyncService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] RealtimeSyncService initialized');
-      }
 
       // Initialize UnifiedShoppingService
       final shoppingService = container<UnifiedShoppingService>();
       await shoppingService.initialize();
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] UnifiedShoppingService initialized');
-      }
 
       // Validate other services are accessible (lazy singletons will be created on first access)
       final permissionService = container<PermissionService>();
       permissionService.toString(); // Basic validation - this creates the lazy singleton
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] PermissionService validated');
-      }
 
       // Validate realtime services
       final realtimeMenuService = container<RealtimeMenuService>();
@@ -194,14 +176,7 @@ class CollaborationModule implements DIModule {
       
       final realtimeRecipeService = container<RealtimeRecipeService>();
       realtimeRecipeService.toString(); // Basic validation
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] Realtime services validated');
-      }
 
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] All collaboration services initialized');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -257,9 +232,6 @@ class CollaborationModule implements DIModule {
         }
       }
 
-      if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] Health check passed for all services');
-      }
       
       return true;
     } catch (e) {

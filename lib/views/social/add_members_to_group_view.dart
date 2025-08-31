@@ -271,14 +271,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           friend.displayName,
           style: AppTextStyles.titleMedium,
         ),
-        subtitle: friend.bio?.isNotEmpty == true
-            ? Text(
-                friend.bio!,
-                style: AppTextStyles.titleMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
+        subtitle: null,
         trailing: _buildFriendTileTrailing(
             friend, viewModel, isSelected, hasInvitation, invitationStatus),
       ),

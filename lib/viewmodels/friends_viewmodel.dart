@@ -203,6 +203,14 @@ class FriendsViewModel extends ChangeNotifier {
     _friendsService.addListener(_onFriendsServiceChanged);
     _userService.addListener(_onUserServiceChanged);
     AppLogger.success('✅ All Friends ViewModel listeners registered successfully');
+    
+    // Load initial user profiles for existing friend requests
+    AppLogger.info('🔄 Loading initial user profiles for friend requests...');
+    Future.delayed(Duration.zero, () {
+      if (!_isDisposed) {
+        loadUserProfilesForRequests();
+      }
+    });
   }
 
   // ===== SOCIAL RELATIONSHIP STATE ACCESSORS =====
@@ -702,15 +710,15 @@ class FriendsViewModel extends ChangeNotifier {
     AppLogger.info('🗑️ Cache för användaruppgifter rensad');
   }
 
-  /// Hämta displayName för en användare (med fallback)
+  /// Get display name for a user with improved fallback handling
   String getDisplayNameForUser(String userId) {
     final profile = getUserProfile(userId);
     if (profile != null) {
       return profile.displayName;
     }
 
-    // Fallback under laddning
-    return 'Användare ${userId.substring(0, 6)}...';
+    // Improved fallback - show "Loading..." instead of user ID fragment
+    return 'Laddar...';
   }
 
   /// Hämta avatar URL för en användare

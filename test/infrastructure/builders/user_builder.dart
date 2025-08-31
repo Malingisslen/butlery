@@ -11,7 +11,6 @@ class UserBuilder {
   String _uid = 'user_${DateTime.now().millisecondsSinceEpoch}';
   String _displayName = 'Test User';
   String _email = 'test@example.com';
-  String? _bio;
   String? _avatarUrl;
   bool _isSearchable = true;
   bool _allowEmailSearch = false;
@@ -44,11 +43,6 @@ class UserBuilder {
     return this;
   }
   
-  /// Set bio
-  UserBuilder withBio(String bio) {
-    _bio = bio;
-    return this;
-  }
   
   /// Set avatar URL
   UserBuilder withAvatarUrl(String avatarUrl) {
@@ -78,7 +72,6 @@ class UserBuilder {
   UserBuilder asSwedishUser() {
     _displayName = 'Sven Svensson';
     _email = 'sven@example.se';
-    _bio = 'Matentusiast från Stockholm som älskar att laga mat';
     _metadata = {
       'country': 'Sweden',
       'language': 'sv',
@@ -98,7 +91,6 @@ class UserBuilder {
   /// Configure as chef user
   UserBuilder asChef() {
     _displayName = 'Chef Anders';
-    _bio = 'Professionell kock med 15 års erfarenhet inom svensk och internationell mat';
     _publicRecipesCount = 50;
     _metadata['isVerifiedChef'] = true;
     return this;
@@ -110,7 +102,6 @@ class UserBuilder {
       uid: _uid,
       displayName: _displayName,
       email: _email,
-      bio: _bio,
       avatarUrl: _avatarUrl,
       isSearchable: _isSearchable,
       allowEmailSearch: _allowEmailSearch,

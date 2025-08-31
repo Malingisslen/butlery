@@ -126,14 +126,14 @@ class UserAvatarWidgets {
               onTap: onEditTap,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
               child: Container(
-                width: AppDimensions.iconSizeS,
-                height: AppDimensions.iconSizeS,
+                width: AppDimensions.iconSizeXl,
+                height: AppDimensions.iconSizeXl,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primaryBlue,
                   border: Border.all(
                     color: AppColors.cardWhite,
-                    width: AppDimensions.borderWidthThin,
+                    width: AppDimensions.borderWidthThick,
                   ),
                 ),
                 child: const Icon(
@@ -201,14 +201,14 @@ class UserAvatarWidgets {
   /// Optimerad avatar size calculation
   static double _getAvatarSize(ImageSize size) {
     return switch (size) {
-      ImageSize.small => AppDimensions.iconSizeS, // 32px
-      ImageSize.medium => AppDimensions.iconSizeM, // 48px
-      ImageSize.large => AppDimensions.imageSizeLarge, // 80px
-      ImageSize.extraLarge => AppDimensions.iconSizeXl * 1.875, // 120px
-      ImageSize.card => AppDimensions.imageSizeCard, // 70px
-      ImageSize.hero => AppDimensions.imageSizeHero, // 200px
-      ImageSize.thumbnail => AppDimensions.imageSizeThumbnail, // 60px
-      ImageSize.custom => AppDimensions.iconSizeM, // fallback
+      ImageSize.small => AppDimensions.iconSizeS, // 16px
+      ImageSize.medium => AppDimensions.iconSizeXxl, // 48px - good for app bars
+      ImageSize.large => AppDimensions.imageSizeThumbnail, // 80px
+      ImageSize.extraLarge => AppDimensions.thumbnailLargeSize, // 120px
+      ImageSize.card => AppDimensions.imageSizeCard, // 150px
+      ImageSize.hero => AppDimensions.imageSizeHero, // 400px
+      ImageSize.thumbnail => AppDimensions.imageSizeThumbnail, // 80px
+      ImageSize.custom => AppDimensions.iconSizeM, // fallback 20px
     };
   }
 

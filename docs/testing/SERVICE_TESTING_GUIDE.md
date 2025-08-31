@@ -1,8 +1,7 @@
 # 🔧 Service Layer Testing Guide
 
-## Critical Status: 34.1% Coverage (44/129 tested) ✅
-**Priority: URGENT** - Services are the business logic core
-**Latest Update**: Priority 2 Services completed (January 2025)
+> **📊 For current coverage: [TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md)**  
+> **⚡ For general patterns: [TEST_PATTERNS_QUICK_REFERENCE.md](./TEST_PATTERNS_QUICK_REFERENCE.md)**
 
 ## Service Testing Philosophy
 
@@ -181,36 +180,13 @@ group('State Management', () {
 });
 ```
 
-## Priority Services to Test (Critical Path)
+## Service-Specific Testing Focus
 
-### Phase 1: Core Business Logic (15 services)
-1. **unified_recipe_service.dart** - Central recipe management
-2. **unified_shopping_service.dart** - Shopping list core
-3. **unified_friends_service.dart** - Social features
-4. **collaborative_shopping_operations.dart** - Real-time shopping
-5. **personal_recipe_operations.dart** - User recipes
-6. **social_recipe_operations.dart** - Recipe sharing
-7. **recipe_comments_manager.dart** - Comments system
-8. **menu_operations.dart** - Menu planning
-9. **extraction_manager.dart** - Recipe import
-10. **sync_manager.dart** - Offline sync
-11. **cache_service.dart** - Performance critical
-12. **fcm_service.dart** - Push notifications
-13. **realtime_sync_service.dart** - Real-time updates
-14. **account_deletion_service.dart** - User data management
-15. **performance_monitoring_service.dart** - App health
-
-### Phase 2: Unified Architecture (60 services)
-Focus on the `/services/unified/` directory which contains:
-- **modules/** - Core business modules
-- **operations/** - Business operations
-- **managers/** - State and lifecycle management
-
-### Phase 3: Supporting Services (33 services)
-- Import strategies
-- Notification managers
-- Performance optimizers
-- Offline handlers
+Services require special attention to:
+- **Business Logic**: Complex calculations and transformations
+- **State Management**: Caching and synchronization
+- **Error Recovery**: Retry logic and fallbacks
+- **Coordination**: Multiple repository interactions
 
 ## Common Service Testing Pitfalls
 
@@ -419,7 +395,4 @@ expect(updateData['field'], equals(expectedValue));
 ```
 
 ---
-*Created: January 2025*
-*Current Coverage: 32.6% (42/129) - IMPROVING*
-*Target: 90% coverage with comprehensive business logic testing*
-*Phase 5 Completed: CollaborativeMenuOperations, SocialMenuOperations*
+*For current coverage and priorities, see [TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md)*

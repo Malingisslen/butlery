@@ -67,6 +67,7 @@ import 'package:butlery/views/edit_recipe/edit_recipe_app_bar.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_banners.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_bottom_bar.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_form_fields.dart';
+import 'package:butlery/core/utils/logger.dart';
 /// Comprehensive recipe editing view serving as facade for focused component architecture and collaborative editing.
 ///
 /// This view has been refactored to use the focused components pattern for enhanced maintainability and clean separation:
@@ -220,15 +221,29 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (!didPop) {
+          if (viewModel.hasUnsavedChanges) {
+            final shouldPop = await _showUnsavedChangesDialog(context) ?? false;
+            if (shouldPop && context.mounted) {
+              Navigator.of(context).pop();
+            }
+          } else {
+            Navigator.of(context).pop();
+          }
+        }
+      },
+      child: Scaffold(
       // AppBar with collaborative status
       appBar: EditRecipeAppBar.build(context, widget.recipe),
 
       // Permissions-based bottom navigation bar
       bottomNavigationBar: EditRecipeBottomBar.build(
         context,
-        () => EditRecipeActions.saveRecipe(context, _formKey, widget.recipe.id),
-        () => EditRecipeActions.forkRecipe(context, _formKey),
+        () => _saveRecipe(context),
+        () => _forkRecipe(context),
       ),
 
       body: Stack(
@@ -242,7 +257,12 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               // Form content
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppDimensions.paddingL,
+                    AppDimensions.spacingXl, // More top padding for dropdown label
+                    AppDimensions.paddingL,
+                    AppDimensions.paddingL,
+                  ),
                   child: Form(
                     key: _formKey,
                     child: ListView(
@@ -266,13 +286,68 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ),
         ],
       ),
+    ),
+    );
+  }
+
+  /// ARCHITECTURAL FIX: Form validation moved inside view to fix encapsulation violation
+  /// Save recipe with form validation handled internally
+  Future<void> _saveRecipe(BuildContext context) async {
+    // Perform form validation within the view that owns the form
+    final currentState = _formKey.currentState;
+    if (currentState == null || !currentState.validate()) {
+      AppLogger.warning('Form validation failed for recipe save');
+      return;
+    }
+
+    AppLogger.info('Form validation passed, proceeding with recipe save');
+    // Only call action after validation passes - no form key needed
+    await EditRecipeActions.saveRecipe(context, widget.recipe.id);
+  }
+
+  /// ARCHITECTURAL FIX: Form validation moved inside view to fix encapsulation violation  
+  /// Fork recipe with form validation handled internally
+  Future<void> _forkRecipe(BuildContext context) async {
+    // Perform form validation within the view that owns the form
+    final currentState = _formKey.currentState;
+    if (currentState == null || !currentState.validate()) {
+      AppLogger.warning('Form validation failed for recipe fork');
+      return;
+    }
+
+    AppLogger.info('Form validation passed, proceeding with recipe fork');
+    // Only call action after validation passes - no form key needed
+    await EditRecipeActions.forkRecipe(context);
+  }
+
+  /// Shows confirmation dialog for unsaved changes
+  Future<bool?> _showUnsavedChangesDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Osparade ändringar'),
+        content: const Text('Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Fortsätt redigera'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Lämna utan att spara'),
+          ),
+        ],
+      ),
     );
   }
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
+    // HIGH PRIORITY FIX: Proper resource disposal to prevent memory leaks
+    // No specific resources to dispose in this stateful widget as it only manages UI state
+    // The ViewModels are disposed automatically by their respective ChangeNotifierProviders
+    // Form key doesn't need disposal as it's automatically cleaned up
+    AppLogger.debug('EditRecipeView disposed');
     super.dispose();
   }
 }

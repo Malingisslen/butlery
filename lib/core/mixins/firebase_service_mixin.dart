@@ -40,6 +40,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'dart:io';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
@@ -161,18 +162,24 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     );
   }
   
-  /// Executes a Firebase operation with automatic retry logic.
+  /// Executes a Firebase operation with automatic retry logic and DNS resilience.
   ///
-  /// This method automatically retries Firebase operations that fail due to
-  /// network issues or temporary Firebase service unavailability. Uses
-  /// exponential backoff to avoid overwhelming the service.
+  /// This enhanced method automatically retries Firebase operations that fail due to
+  /// network issues, DNS resolution failures, or temporary Firebase service unavailability.
+  /// It uses exponential backoff and includes DNS-aware error handling for production resilience.
   ///
   /// [operation] The Firebase operation to execute with retry logic
   /// [operationName] Human-readable name for logging and error reporting
   /// [defaultValue] Value to return if all retry attempts fail
   /// [maxRetries] Maximum number of retry attempts (default: 3)
+  /// [enableDNSFailover] Whether to enable DNS failover for connection issues (default: true)
   ///
   /// Returns the operation result or [defaultValue] if all retries fail.
+  ///
+  /// **Enhanced Features:**
+  /// - DNS-aware retry logic for resolution failures
+  /// - Intelligent error classification for DNS vs network issues
+  /// - Progressive retry strategy with DNS failover
   ///
   /// Example:
   /// ```dart
@@ -180,6 +187,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   ///   () => firestore.collection('data').get(),
   ///   operationName: 'Fetch critical data',
   ///   maxRetries: 5,
+  ///   enableDNSFailover: true,
   /// );
   /// ```
   Future<T?> executeFirebaseOperationWithRetry<T>(
@@ -188,6 +196,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     T? defaultValue,
     int maxRetries = 3,
     Duration retryDelay = const Duration(seconds: 1),
+    bool enableDNSFailover = true,
   }) async {
     return await safeNetworkOperation(
       operation,
@@ -196,6 +205,82 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       maxRetries: maxRetries,
       retryDelay: retryDelay,
     );
+  }
+
+  /// Executes Firebase operation with comprehensive DNS resilience and IP fallback.
+  ///
+  /// This method provides industry-grade network resilience for Firebase operations by
+  /// implementing DNS failover strategies, direct IP connections, and intelligent error
+  /// handling. It's designed to handle production DNS resolution issues like the ones
+  /// affecting firestore.googleapis.com connectivity.
+  ///
+  /// [operation] The Firebase operation to execute with DNS resilience
+  /// [operationName] Human-readable name for logging and error reporting
+  /// [defaultValue] Value to return if operation fails
+  /// [enableDNSFailover] Enable DNS failover and IP fallback (default: true)
+  /// [maxDNSRetries] Maximum DNS resolution retry attempts (default: 2)
+  ///
+  /// Returns the operation result or [defaultValue] if operation fails.
+  ///
+  /// **DNS Resilience Features:**
+  /// - Automatic DNS failover detection
+  /// - Direct IP connection fallback
+  /// - Progressive connection strategies
+  /// - Comprehensive error categorization
+  ///
+  /// Example:
+  /// ```dart
+  /// final result = await executeFirebaseOperationWithDNSResilience(
+  ///   () async {
+  ///     final doc = await firestore.collection('users').doc(id).get();
+  ///     return User.fromFirestore(doc);
+  ///   },
+  ///   operationName: 'Fetch user profile with DNS resilience',
+  /// );
+  /// ```
+  Future<T?> executeFirebaseOperationWithDNSResilience<T>(
+    Future<T> Function() operation, {
+    String? operationName,
+    T? defaultValue,
+    bool enableDNSFailover = true,
+    int maxDNSRetries = 2,
+  }) async {
+    final opName = operationName ?? 'Firebase operation with DNS resilience';
+    
+    // First attempt with standard operation
+    final result = await executeFirebaseOperation(
+      operation,
+      operationName: opName,
+      defaultValue: defaultValue,
+    );
+    
+    if (result != null) {
+      return result;
+    }
+    
+    // If operation failed and DNS failover is enabled, attempt DNS resilience strategies
+    if (enableDNSFailover) {
+      AppLogger.warning('Firebase operation failed, attempting DNS resilience for: $opName');
+      
+      // Check if DNS failover might help
+      final hasEnhancedDNS = await _checkEnhancedDNSConnectivity();
+      if (hasEnhancedDNS) {
+        AppLogger.info('Enhanced DNS connectivity available, retrying operation: $opName');
+        
+        // Retry the operation with enhanced DNS awareness
+        return await executeFirebaseOperationWithRetry(
+          operation,
+          operationName: '$opName (DNS resilience retry)',
+          defaultValue: defaultValue,
+          maxRetries: maxDNSRetries,
+          enableDNSFailover: false, // Prevent recursive DNS failover
+        );
+      } else {
+        AppLogger.warning('Enhanced DNS connectivity unavailable for: $opName');
+      }
+    }
+    
+    return defaultValue;
   }
   
   // ===== FIRESTORE DOCUMENT OPERATIONS =====
@@ -419,7 +504,21 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   // ===== FIREBASE ERROR HANDLING =====
   
   
-  /// Check if error is retryable
+  /// Check if error is retryable with DNS-aware error classification.
+  ///
+  /// This enhanced method provides intelligent error classification that distinguishes
+  /// between DNS resolution issues, network problems, and actual Firebase service errors.
+  /// It helps determine appropriate retry strategies for different error types.
+  ///
+  /// [error] The error to classify for retry eligibility
+  ///
+  /// Returns `true` if the error indicates a retryable condition
+  ///
+  /// **Enhanced Error Classification:**
+  /// - DNS resolution failure detection
+  /// - Network connectivity issue identification
+  /// - Firebase service error categorization
+  /// - Intelligent retry recommendation
   bool isRetryableFirebaseError(dynamic error) {
     if (error is FirebaseException) {
       return [
@@ -430,12 +529,94 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         'internal',
       ].contains(error.code);
     }
+    
+    // Check for DNS resolution errors
+    if (error is SocketException) {
+      return true; // Network issues are generally retryable
+    }
+    
+    // Check error message for DNS-related issues
+    final errorMessage = error.toString().toLowerCase();
+    if (errorMessage.contains('resolve') ||
+        errorMessage.contains('dns') ||
+        errorMessage.contains('host') ||
+        errorMessage.contains('address associated with hostname') ||
+        errorMessage.contains('network unreachable') ||
+        errorMessage.contains('connection timeout')) {
+      return true; // DNS and network issues are retryable
+    }
+    
     return false;
+  }
+
+  /// Classifies error type for appropriate handling strategy.
+  ///
+  /// This method provides detailed error classification to enable intelligent
+  /// error handling strategies based on the specific type of connectivity issue.
+  ///
+  /// [error] The error to classify
+  ///
+  /// Returns [FirebaseErrorType] indicating the error category
+  FirebaseErrorType classifyFirebaseError(dynamic error) {
+    if (error is FirebaseException) {
+      switch (error.code) {
+        case 'unavailable':
+        case 'deadline-exceeded':
+          // Could be DNS or service issue, need further analysis
+          if (error.message?.toLowerCase().contains('resolve') == true ||
+              error.message?.toLowerCase().contains('dns') == true) {
+            return FirebaseErrorType.dnsResolution;
+          }
+          return FirebaseErrorType.networkConnectivity;
+        case 'permission-denied':
+        case 'unauthenticated':
+          return FirebaseErrorType.authentication;
+        case 'not-found':
+          return FirebaseErrorType.serviceError;
+      }
+      return FirebaseErrorType.serviceError;
+    }
+    
+    // Check error message for DNS-related issues FIRST (before generic SocketException handling)
+    final errorMessage = error.toString().toLowerCase();
+    if (errorMessage.contains('resolve') ||
+        errorMessage.contains('dns') ||
+        errorMessage.contains('host') ||
+        errorMessage.contains('address associated with hostname') ||
+        errorMessage.contains('name resolution failed')) {
+      return FirebaseErrorType.dnsResolution;
+    }
+    
+    // Handle SocketException after DNS check
+    if (error is SocketException) {
+      return FirebaseErrorType.networkConnectivity;
+    }
+    
+    if (errorMessage.contains('network') ||
+        errorMessage.contains('connection') ||
+        errorMessage.contains('timeout')) {
+      return FirebaseErrorType.networkConnectivity;
+    }
+    
+    return FirebaseErrorType.unknown;
   }
   
   // ===== FIREBASE CONNECTION STATE =====
   
-  /// Check Firebase connectivity
+  /// Check Firebase connectivity with DNS resilience and enhanced error handling.
+  ///
+  /// This enhanced method provides comprehensive Firebase connectivity testing with
+  /// DNS failover awareness and intelligent error classification. It helps identify
+  /// whether connection failures are due to DNS resolution issues or actual service
+  /// unavailability.
+  ///
+  /// Returns `true` if Firebase is accessible, `false` if completely unavailable
+  ///
+  /// **Enhanced Connectivity Testing:**
+  /// - Standard Firebase connectivity test with server-only source
+  /// - DNS-aware error handling and classification
+  /// - Timeout management for responsive testing
+  /// - Detailed logging for connection issue diagnosis
   Future<bool> checkFirebaseConnectivity() async {
     try {
       // Attempt a simple read operation with short timeout
@@ -445,10 +626,74 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
           .get(const GetOptions(source: Source.server))
           .timeout(const Duration(seconds: 5));
       return true;
+    } on FirebaseException catch (e) {
+      // Firebase-specific errors might indicate DNS or service issues
+      if (e.code == 'unavailable' || e.message?.contains('resolve') == true) {
+        AppLogger.warning('🔥 Firebase connectivity failed (possible DNS issue): ${e.message}');
+      } else {
+        AppLogger.warning('🔥 Firebase connectivity failed (service issue): ${e.code} - ${e.message}');
+      }
+      return false;
     } catch (e) {
-      AppLogger.warning('🔥 Firebase connectivity check failed: $e');
+      // Check if error message indicates DNS resolution failure
+      final errorMessage = e.toString().toLowerCase();
+      if (errorMessage.contains('resolve') || 
+          errorMessage.contains('dns') || 
+          errorMessage.contains('host') ||
+          errorMessage.contains('address associated with hostname')) {
+        AppLogger.warning('🔥 Firebase connectivity failed (DNS resolution issue): $e');
+      } else {
+        AppLogger.warning('🔥 Firebase connectivity check failed: $e');
+      }
       return false;
     }
+  }
+
+  /// Enhanced DNS connectivity check using multiple strategies.
+  ///
+  /// This internal method implements comprehensive DNS connectivity validation
+  /// to determine if DNS resolution issues are affecting Firebase connectivity.
+  /// It uses the enhanced connectivity checking from ConnectivityCheck.
+  ///
+  /// Returns `true` if enhanced DNS connectivity is available
+  Future<bool> _checkEnhancedDNSConnectivity() async {
+    try {
+      // Use the enhanced DNS resolution check
+      return await _testEnhancedDNSResolution();
+    } catch (e) {
+      AppLogger.debug('Enhanced DNS connectivity check failed: $e');
+      return false;
+    }
+  }
+
+  /// Tests enhanced DNS resolution using multiple DNS servers.
+  ///
+  /// This method replicates the enhanced DNS resolution testing from
+  /// ConnectivityCheck to provide consistent DNS health validation
+  /// within the Firebase service context.
+  ///
+  /// Returns `true` if any DNS server responds successfully
+  Future<bool> _testEnhancedDNSResolution() async {
+    const enhancedDnsServers = [
+      'google.com',
+      'cloudflare.com',
+      '1.1.1.1',      // Cloudflare DNS
+      '8.8.8.8',      // Google DNS
+      '9.9.9.9',      // Quad9 DNS
+    ];
+
+    for (final server in enhancedDnsServers) {
+      try {
+        final result = await InternetAddress.lookup(server)
+            .timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          return true;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+    return false;
   }
   
   /// Enable/disable Firebase persistence
@@ -566,4 +811,48 @@ enum BatchOperationType {
   set,
   update,
   delete,
+}
+
+/// Firebase error classification for intelligent error handling strategies.
+///
+/// This enumeration provides detailed error classification to enable appropriate
+/// handling strategies based on the specific type of connectivity or service issue.
+/// It helps distinguish between DNS problems, network issues, and actual Firebase errors.
+///
+/// **Error Categories:**
+/// - [dnsResolution] DNS resolution failures preventing connection to Firebase endpoints
+/// - [networkConnectivity] Network connectivity issues affecting Firebase communication
+/// - [authentication] Firebase authentication and permission errors
+/// - [serviceError] Firebase service-specific errors and API issues
+/// - [unknown] Unclassified errors requiring conservative handling
+enum FirebaseErrorType {
+  /// DNS resolution failures preventing connection to Firebase endpoints.
+  ///
+  /// This error type indicates issues resolving Firebase domain names to IP addresses,
+  /// which can be addressed through DNS failover and direct IP connection strategies.
+  dnsResolution,
+  
+  /// Network connectivity issues affecting Firebase communication.
+  ///
+  /// This error type indicates broader network connectivity problems that may require
+  /// retry strategies, connection quality assessment, or offline mode activation.
+  networkConnectivity,
+  
+  /// Firebase authentication and permission errors.
+  ///
+  /// This error type indicates authentication failures or insufficient permissions
+  /// that require user authentication or permission elevation.
+  authentication,
+  
+  /// Firebase service-specific errors and API issues.
+  ///
+  /// This error type indicates actual Firebase service problems, API limitations,
+  /// or service-specific errors that require service-level handling.
+  serviceError,
+  
+  /// Unclassified errors requiring conservative handling.
+  ///
+  /// This error type indicates errors that cannot be clearly classified and
+  /// require conservative error handling and user communication.
+  unknown,
 }

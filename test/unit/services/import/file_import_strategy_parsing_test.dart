@@ -7,20 +7,13 @@ import 'package:excel/excel.dart';
 
 // Production imports
 import 'package:butlery/services/import/file_import_strategy.dart';
-import 'package:butlery/services/import/file_content_provider.dart';
 
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
-// Mock for FileContentProvider
-class MockFileContentProvider extends Mock implements FileContentProvider {}
-
-// Mock for FilePickerResult
-class MockFilePickerResult extends Mock implements FilePickerResult {}
-
-// Mock for PlatformFile
-class MockPlatformFile extends Mock implements PlatformFile {}
+// Using centralized MockFileContentProvider, MockFilePickerResult, and MockPlatformFile from production_mocks.dart
 
 void main() {
   setUpAll(() {

@@ -34,21 +34,21 @@
 ///   storageService,
 ///   imagePickerService,
 /// );
-/// 
+///
 /// // Update profile information with validation
 /// profileViewModel.updateDisplayName('Erik Svensson');
-/// profileViewModel.updateBio('Passionerad matlagare från Stockholm');
-/// 
+/// profileViewModel.updateDisplayName('Anna Andersson');
+///
 /// // Upload avatar with progress tracking
 /// final avatarUploaded = await profileViewModel.uploadAvatar();
 /// if (avatarUploaded) {
 ///   // Show success message
 /// }
-/// 
+///
 /// // Configure privacy settings
 /// profileViewModel.updateIsSearchable(true);
 /// profileViewModel.updateAllowEmailSearch(false);
-/// 
+///
 /// // Save profile with validation
 /// final saved = await profileViewModel.saveProfile();
 /// if (saved) {
@@ -56,10 +56,10 @@
 /// } else {
 ///   // Display validation errors
 /// }
-/// 
+///
 /// // Check display name availability
 /// final isAvailable = await profileViewModel.checkDisplayNameAvailability();
-/// 
+///
 /// // Form state monitoring
 /// if (profileViewModel.hasUnsavedChanges) {
 ///   // Show save prompt
@@ -94,9 +94,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// User's display name for profile identification and social features.
   String _displayName = '';
 
-  /// User's biographical description for profile personalization and social discovery.
-  String _bio = '';
-
   /// User's avatar image URL for profile visual representation and social features.
   String? _avatarUrl;
 
@@ -119,8 +116,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Display name validation error for real-time user feedback and form validation.
   String? _displayNameError;
 
-  /// Bio validation error for character limit enforcement and user guidance.
-  String? _bioError;
+  /// General operation error for upload and other operations.
+  String? _operationError;
 
   UserProfileViewModel(
     this._userService,
@@ -134,31 +131,25 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== PROFILE FORM ACCESSORS =====
 
   /// Current display name value for UI binding and form coordination.
-  /// 
+  ///
   /// Provides real-time access to display name input for UI synchronization
   /// and form validation during user profile editing operations.
   String get displayName => _displayName;
 
-  /// Current bio value for UI binding and profile description management.
-  /// 
-  /// Provides access to biographical description for UI display and form management
-  /// during user profile customization and social profile creation.
-  String get bio => _bio;
-
   /// Current avatar URL for image display and profile visual representation.
-  /// 
+  ///
   /// Provides access to avatar image URL for profile image display and avatar management
   /// during profile editing and visual profile customization.
   String? get avatarUrl => _avatarUrl;
 
   /// Current searchability preference for privacy control and profile discovery.
-  /// 
+  ///
   /// Controls whether user profile can be discovered by other users through search functionality
   /// and social features, providing comprehensive privacy preference management.
   bool get isSearchable => _isSearchable;
 
   /// Current email search preference for privacy control and discoverability management.
-  /// 
+  ///
   /// Controls whether user profile can be discovered through email lookup functionality,
   /// providing granular privacy control over email-based profile discovery.
   bool get allowEmailSearch => _allowEmailSearch;
@@ -166,19 +157,19 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== UI STATE ACCESSORS =====
 
   /// Loading state indicator for UI progress display and interaction control.
-  /// 
+  ///
   /// Indicates active operations requiring loading indicators and user interaction disabling
   /// during profile operations like avatar upload and profile saving.
   bool get isLoading => _isUploadingAvatar;
 
   /// Avatar upload state for specific upload progress indication and UI coordination.
-  /// 
+  ///
   /// Provides specific avatar upload progress state for targeted UI feedback
   /// and upload operation tracking during image selection and processing.
   bool get isUploadingAvatar => _isUploadingAvatar;
 
   /// Form change detection state for unsaved changes prompting and navigation control.
-  /// 
+  ///
   /// Indicates whether profile form has unsaved changes requiring user confirmation
   /// before navigation or form reset to prevent data loss.
   bool get hasUnsavedChanges => _hasUnsavedChanges;
@@ -186,39 +177,34 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== VALIDATION STATE ACCESSORS =====
 
   /// Display name validation error for UI error display and form validation feedback.
-  /// 
+  ///
   /// Provides localized validation error message for display name field
   /// enabling real-time validation feedback and user guidance.
   String? get displayNameError => _displayNameError;
 
-  /// Bio validation error for UI error display and character limit feedback.
-  /// 
-  /// Provides localized validation error message for bio field
-  /// enabling character limit enforcement and user validation guidance.
-  String? get bioError => _bioError;
-
   /// Combined validation error for general error display and form validation status.
-  /// 
+  ///
   /// Provides first available validation error for general error display
   /// and comprehensive form validation status checking.
-  String? get error => _displayNameError ?? _bioError;
+  String? get error => _operationError ?? _displayNameError;
 
   /// Combined error state for form validation and UI error state management.
-  /// 
+  ///
   /// Indicates presence of any validation errors for form submission control
   /// and error state UI rendering decisions.
-  bool get hasError => _displayNameError != null || _bioError != null;
+  bool get hasError => _operationError != null || _displayNameError != null;
 
   // ===== PROFILE STATE ACCESSORS =====
 
   /// Current user profile from service layer for form initialization and comparison.
-  /// 
+  ///
   /// Provides access to current user profile data for form population
   /// and change detection during profile editing operations.
-  UserProfile? get currentProfile => ServiceLocator.get<PermissionService>().currentUser;
+  UserProfile? get currentProfile =>
+      ServiceLocator.get<UserService>().currentUserProfile;
 
   /// Profile existence check for UI conditional rendering and flow control.
-  /// 
+  ///
   /// Indicates whether user has existing profile for UI conditional display
   /// and profile creation versus editing flow determination.
   bool get hasProfile => currentProfile != null;
@@ -226,18 +212,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== FORM VALIDATION STATE =====
 
   /// Complete form validation state for submission control and UI enabling.
-  /// 
+  ///
   /// Combines all validation requirements including error state and required field completion
   /// for form submission enabling and comprehensive validation status.
-  bool get isFormValid =>
-      _displayNameError == null && _bioError == null && _displayName.isNotEmpty;
+  bool get isFormValid => _displayNameError == null && _displayName.isNotEmpty;
 
   // ===== PROFILE FORM ACTIONS =====
 
   /// Updates display name with comprehensive validation and change tracking.
-  /// 
+  ///
   /// [value] New display name value for profile identification
-  /// 
+  ///
   /// Performs automatic trimming, validation, change detection, and UI notification
   /// for seamless display name management with real-time feedback and form coordination.
   void updateDisplayName(String value) {
@@ -247,23 +232,10 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     notifyListeners();
   }
 
-  /// Updates biographical description with validation and change tracking.
-  /// 
-  /// [value] New biographical description for profile personalization
-  /// 
-  /// Performs automatic trimming, character limit validation, change detection, and UI notification
-  /// for comprehensive bio management with real-time validation feedback.
-  void updateBio(String value) {
-    _bio = value.trim();
-    _validateBio();
-    _checkForChanges();
-    notifyListeners();
-  }
-
   /// Updates searchability privacy preference with change tracking and state coordination.
-  /// 
+  ///
   /// [value] New searchability preference for profile discovery control
-  /// 
+  ///
   /// Controls whether user profile can be discovered by other users through search functionality,
   /// providing comprehensive privacy preference management with automatic change detection.
   void updateIsSearchable(bool value) {
@@ -273,9 +245,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Updates email search privacy preference with comprehensive privacy control.
-  /// 
+  ///
   /// [value] New email search preference for email-based profile discovery control
-  /// 
+  ///
   /// Controls whether user profile can be discovered through email lookup functionality,
   /// providing granular privacy control with automatic change detection and state management.
   void updateAllowEmailSearch(bool value) {
@@ -287,17 +259,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== AVATAR MANAGEMENT OPERATIONS =====
 
   /// Uploads new avatar image with comprehensive progress tracking and service coordination.
-  /// 
+  ///
   /// Returns true if avatar upload succeeds, false if operation fails or user cancels.
   /// Manages complete avatar upload flow including image selection, processing, upload progress,
   /// and URL management with automatic change detection and comprehensive error handling.
-  /// 
+  ///
   /// **Upload Process:**
   /// - Image selection from device gallery through ImagePickerService
   /// - Secure upload to cloud storage with user-specific path structure
   /// - URL retrieval and local state update with change tracking
   /// - Progress indication and error handling with user feedback
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// final avatarUploaded = await profileViewModel.uploadAvatar();
@@ -308,45 +280,77 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// }
   /// ```
   Future<bool> uploadAvatar() async {
+    AppLogger.debug('🖼️ VIEWMODEL: uploadAvatar called');
     _isUploadingAvatar = true;
+    _operationError = null; // Clear any previous errors
     notifyListeners();
-    
+
     try {
-      final result = await safeExecute(
-        () async {
-          // Pick image från gallery
-          final imageFile =
-              await _imagePickerService.pickImage(ImageSource.gallery);
+      AppLogger.debug('🖼️ VIEWMODEL: Starting avatar upload');
 
-          if (imageFile == null) {
-            return false;
-          }
+      // Pick image från gallery - do NOT use safeExecute here as it swallows errors
+      AppLogger.debug('🖼️ VIEWMODEL: Calling image picker service');
+      final imageFile =
+          await _imagePickerService.pickImage(ImageSource.gallery);
 
-          // Get current user ID
-          final userId = ServiceLocator.get<PermissionService>().currentUserId;
-          if (userId == null) {
-            throw Exception('Ingen användare inloggad');
-          }
+      if (imageFile == null) {
+        AppLogger.info('🖼️ VIEWMODEL: No image selected (user cancelled)');
+        // User cancelled - not an error
+        return false;
+      }
+      AppLogger.info('🖼️ VIEWMODEL: Image selected: ${imageFile.path}');
 
-          // Upload med path som inkluderar userId för säkerhet
-          final uploadUrl = await _storageService.uploadImageFile(
-            imageFile,
+      // Get current user ID
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      if (userId == null) {
+        _operationError = 'Ingen användare inloggad';
+        throw Exception(_operationError);
+      }
+
+      // For web platform, we need to handle the upload differently
+      String? uploadUrl;
+      if (imageFile.path.startsWith('blob:')) {
+        AppLogger.debug('🖼️ VIEWMODEL: Web platform detected - handling blob upload');
+        // This is a web blob URL, we need to get the XFile and read its bytes
+        final xFile = _imagePickerService.lastPickedXFile;
+        if (xFile != null) {
+          AppLogger.debug('🖼️ VIEWMODEL: Reading bytes from XFile');
+          final bytes = await xFile.readAsBytes();
+          AppLogger.debug('🖼️ VIEWMODEL: Read ${bytes.length} bytes');
+
+          // Use the new uploadImageBytes method for web
+          uploadUrl = await _storageService.uploadImageBytes(
+            bytes,
             userId,
+            xFile.name,
           );
+          AppLogger.info('🖼️ VIEWMODEL: Web upload result: $uploadUrl');
+        } else {
+          _operationError = 'Kunde inte läsa bildfilen';
+          return false;
+        }
+      } else {
+        // Mobile platform - normal file upload
+        uploadUrl = await _storageService.uploadImageFile(
+          imageFile,
+          userId,
+        );
+      }
 
-          if (uploadUrl != null) {
-            _avatarUrl = uploadUrl;
-            _checkForChanges();
-            AppLogger.success('✅ Avatar uploaded');
-            return true;
-          } else {
-            throw Exception('Kunde inte ladda upp avatar');
-          }
-        },
-        operationName: 'Upload avatar',
-      );
-      
-      return result ?? false;
+      if (uploadUrl != null) {
+        _avatarUrl = uploadUrl;
+        _checkForChanges();
+        AppLogger.success('✅ Avatar uploaded');
+        return true;
+      } else {
+        _operationError = 'Kunde inte ladda upp avatar';
+        throw Exception(_operationError);
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('🖼️ VIEWMODEL ERROR: Exception in uploadAvatar: $e');
+      AppLogger.error('🖼️ VIEWMODEL ERROR: Stack trace: $stackTrace');
+      _operationError ??= 'Kunde inte ladda upp avatar: ${e.toString()}';
+      return false;
     } finally {
       _isUploadingAvatar = false;
       notifyListeners();
@@ -354,7 +358,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Removes current avatar with immediate state update and change tracking.
-  /// 
+  ///
   /// Clears avatar URL from profile state and triggers change detection for unsaved changes management.
   /// Provides immediate avatar removal for user profile customization with automatic UI synchronization.
   void removeAvatar() {
@@ -366,17 +370,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== PROFILE PERSISTENCE OPERATIONS =====
 
   /// Saves profile changes with comprehensive validation and service coordination.
-  /// 
+  ///
   /// Returns true if profile save succeeds, false if validation fails or save operation errors.
   /// Performs complete profile save flow including validation, availability checking, service coordination,
   /// and state management with comprehensive error handling and user feedback.
-  /// 
+  ///
   /// **Save Process:**
   /// - Form validation including required fields and format checking
   /// - Display name availability verification for changed names
   /// - Service coordination for profile creation or update
   /// - State cleanup and change tracking reset upon success
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// final saved = await profileViewModel.saveProfile();
@@ -404,27 +408,32 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
 
     return await safeExecute(() async {
-      final updatedProfile = await _userService.createOrUpdateProfile(
-        displayName: _displayName,
-        bio: _bio.isEmpty ? null : _bio,
-        avatarUrl: _avatarUrl,
-        isSearchable: _isSearchable,
-        allowEmailSearch: _allowEmailSearch,
-      );
+          final updatedProfile = await _userService.createOrUpdateProfile(
+            displayName: _displayName,
+            avatarUrl: _avatarUrl,
+            isSearchable: _isSearchable,
+            allowEmailSearch: _allowEmailSearch,
+          );
 
-      if (updatedProfile != null) {
-        _hasUnsavedChanges = false;
-        AppLogger.success('✅ Profil sparad');
-        notifyListeners();
-        return true;
-      } else {
-        throw Exception(_userService.error ?? 'Kunde inte spara profil');
-      }
-    }, operationName: 'Save profile') ?? false;
+          if (updatedProfile != null) {
+            // CRITICAL: Update local state with fresh profile data to prevent stale comparisons
+            _displayName = updatedProfile.displayName;
+            _avatarUrl = updatedProfile.avatarUrl;
+            _isSearchable = updatedProfile.isSearchable;
+            _allowEmailSearch = updatedProfile.allowEmailSearch;
+            _hasUnsavedChanges = false;
+            AppLogger.success('✅ Profil sparad - Settings: isSearchable=${updatedProfile.isSearchable}, allowEmailSearch=${updatedProfile.allowEmailSearch}');
+            notifyListeners();
+            return true;
+          } else {
+            throw Exception(_userService.error ?? 'Kunde inte spara profil');
+          }
+        }, operationName: 'Save profile') ??
+        false;
   }
 
   /// Resets form to current profile values with comprehensive state cleanup.
-  /// 
+  ///
   /// Reloads profile data from current user profile, clears unsaved changes flag,
   /// removes all validation errors, and synchronizes UI state for clean form reset.
   /// Essential for form cancellation and state restoration operations.
@@ -437,11 +446,11 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Checks display name availability with real-time validation feedback.
-  /// 
+  ///
   /// Returns true if display name is available, false if taken or validation fails.
   /// Performs real-time availability checking through UserService with automatic
   /// validation error management and immediate UI feedback for display name uniqueness.
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// final isAvailable = await profileViewModel.checkDisplayNameAvailability();
@@ -453,38 +462,40 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (_displayName.isEmpty) return false;
 
     return await safeExecute(
-      () async {
-        final isAvailable =
-            await _userService.isDisplayNameAvailable(_displayName);
+          () async {
+            final isAvailable =
+                await _userService.isDisplayNameAvailable(_displayName);
 
-        if (!isAvailable) {
-          _displayNameError = 'Detta namn är redan taget';
-        } else {
-          _displayNameError = null;
-        }
+            if (!isAvailable) {
+              _displayNameError = 'Detta namn är redan taget';
+            } else {
+              _displayNameError = null;
+            }
 
-        notifyListeners();
-        return isAvailable;
-      },
-      operationName: 'Check display name availability',
-    ) ?? false;
+            notifyListeners();
+            return isAvailable;
+          },
+          operationName: 'Check display name availability',
+        ) ??
+        false;
   }
 
   /// Clears all validation errors with comprehensive state cleanup and UI synchronization.
-  /// 
+  ///
   /// Removes all field-specific validation errors and notifies UI components
   /// for clean error state management and user experience improvement.
   void clearError() {
     _clearValidationErrors();
+    _operationError = null;
     notifyListeners();
   }
-  
+
   // ===== ERROR HANDLING =====
 
   /// Handles user error messages with logging and potential UI feedback coordination.
-  /// 
+  ///
   /// [message] Error message for user notification and logging
-  /// 
+  ///
   /// Provides centralized user error handling with logging capability,
   /// designed for extension with UI notification systems for comprehensive user feedback.
   void _handleUserError(String message) {
@@ -495,26 +506,26 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== PRIVATE PROFILE MANAGEMENT METHODS =====
 
   /// Loads current profile data into form state with comprehensive default handling.
-  /// 
+  ///
   /// Initializes form fields from existing user profile or sets appropriate defaults
   /// for new profile creation, ensuring consistent form state initialization
   /// and proper change tracking setup for profile management operations.
   void _loadCurrentProfile() {
     final profile = currentProfile;
+    
     if (profile != null) {
       _displayName = profile.displayName;
-      _bio = profile.bio ?? '';
       _avatarUrl = profile.avatarUrl;
       _isSearchable = profile.isSearchable;
       _allowEmailSearch = profile.allowEmailSearch;
       _hasUnsavedChanges = false;
     } else {
-      // Set defaults for new profile
-      _displayName = '';
-      _bio = '';
-      _avatarUrl = null;
-      _isSearchable = true;
-      _allowEmailSearch = false;
+      // Set defaults for new profile - but preserve existing values if we have them
+      // This prevents avatar loss during initialization race conditions
+      if (_displayName.isEmpty) _displayName = '';
+      // Don't reset avatarUrl to null if we already have one
+      _isSearchable = _isSearchable; // Keep current value
+      _allowEmailSearch = _allowEmailSearch; // Keep current value
       _hasUnsavedChanges = false;
     }
   }
@@ -522,7 +533,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== ADVANCED VALIDATION METHODS =====
 
   /// Validates display name format and requirements with comprehensive Swedish localized feedback.
-  /// 
+  ///
   /// Performs complete display name validation including emptiness check, length requirements,
   /// and character format validation with Unicode support for international names.
   /// Provides immediate Swedish localized error feedback for optimal user experience.
@@ -533,40 +544,28 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _displayNameError = 'Namnet måste vara minst 2 tecken';
     } else if (_displayName.length > 50) {
       _displayNameError = 'Namnet får vara max 50 tecken';
-    } else if (!RegExp(r'^[\p{L}\p{N}\s\-_.]+$', unicode: true).hasMatch(_displayName)) {
+    } else if (!RegExp(r'^[\p{L}\p{N}\s\-_.]+$', unicode: true)
+        .hasMatch(_displayName)) {
       _displayNameError = 'Namnet innehåller ogiltiga tecken';
     } else {
       _displayNameError = null;
     }
   }
 
-  /// Validates bio length requirements with character limit enforcement and Swedish feedback.
-  /// 
-  /// Enforces bio character limit with Swedish localized error messages
-  /// for optimal user guidance and profile description management.
-  void _validateBio() {
-    if (_bio.length > 150) {
-      _bioError = 'Beskrivningen får vara max 150 tecken';
-    } else {
-      _bioError = null;
-    }
-  }
-
   // ===== CHANGE DETECTION AND STATE MANAGEMENT =====
 
   /// Detects form changes by comparing current form state with saved profile data.
-  /// 
+  ///
   /// Performs comprehensive comparison between form fields and existing profile data
   /// to accurately track unsaved changes for user prompting and navigation control.
   /// Handles both new profile creation and existing profile editing scenarios.
   void _checkForChanges() {
     final profile = currentProfile;
+    
     if (profile == null) {
-      _hasUnsavedChanges =
-          _displayName.isNotEmpty || _bio.isNotEmpty || _avatarUrl != null;
+      _hasUnsavedChanges = _displayName.isNotEmpty || _avatarUrl != null;
     } else {
       _hasUnsavedChanges = _displayName != profile.displayName ||
-          _bio != (profile.bio ?? '') ||
           _avatarUrl != profile.avatarUrl ||
           _isSearchable != profile.isSearchable ||
           _allowEmailSearch != profile.allowEmailSearch;
@@ -574,7 +573,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Checks if display name has changed from saved profile for availability validation.
-  /// 
+  ///
   /// Returns true if display name differs from saved profile, false otherwise.
   /// Used to determine when display name availability checking is required
   /// to avoid unnecessary validation calls during profile updates.
@@ -584,25 +583,29 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Handles reactive updates from UserService state changes with automatic UI synchronization.
-  /// 
+  ///
   /// Provides seamless state synchronization between UserService and ViewModel ensuring
   /// all profile state changes are immediately reflected in UI components
   /// for consistent user experience and real-time profile status updates.
   void _onUserServiceChanged() {
+    // Only reload profile data if there are no unsaved changes
+    // This prevents overriding user's form input while preserving backend updates
+    if (!_hasUnsavedChanges) {
+      _loadCurrentProfile();
+    }
     notifyListeners();
   }
 
   /// Clears all field validation errors for clean validation state management.
-  /// 
+  ///
   /// Resets all validation error states to null for clean form validation state
   /// and proper error state cleanup during form operations and state transitions.
   void _clearValidationErrors() {
     _displayNameError = null;
-    _bioError = null;
   }
 
   /// Performs comprehensive ViewModel disposal with service listener cleanup and memory management.
-  /// 
+  ///
   /// Removes UserService listener connections and performs complete resource cleanup
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic profile editing scenarios with ViewModel creation and disposal.

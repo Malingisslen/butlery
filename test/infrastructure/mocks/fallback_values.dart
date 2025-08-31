@@ -21,6 +21,8 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/shared_content.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/social/activity_feed_item.dart';
 import 'package:butlery/models/social/reaction_type.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -39,6 +41,9 @@ import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import '../factories/recipe_factory.dart';
 import '../factories/user_profile_factory.dart';
 import '../factories/shopping_list_factory.dart';
+
+// Test mocks
+import 'production_mocks.dart';
 
 // ============= FAKE CLASSES FOR FALLBACK VALUES =============
 
@@ -177,6 +182,12 @@ class FakeSharedContent extends Fake implements SharedContent {
   Map<String, dynamic> get metadata => {};
 }
 
+/// Fake SharedRecipe for social sharing
+class FakeSharedRecipe extends Fake implements SharedRecipe {}
+
+/// Fake SharedMenu for menu sharing
+class FakeSharedMenu extends Fake implements SharedMenu {}
+
 /// Fake Conversation for messaging
 class FakeConversation extends Fake implements Conversation {
   @override
@@ -288,6 +299,8 @@ void registerAllFallbackValues() {
   registerFallbackValue(FakeSetOptions());
   registerFallbackValue(SetOptions(merge: true));
   registerFallbackValue(FakeTimestamp());
+  registerFallbackValue(FakeFieldPath());
+  registerFallbackValue(FieldPath.documentId);
   
   // ===== Firebase Auth Types =====
   registerFallbackValue(firebase_mocks.MockUser());
@@ -295,6 +308,7 @@ void registerAllFallbackValues() {
   // ===== File System Types =====
   registerFallbackValue(FakeFile());
   registerFallbackValue(File(''));
+  registerFallbackValue(FakeXFile(name: 'test.jpg', path: '/test/path'));
   registerFallbackValue(Uint8List(0));
   
   // ===== Model Types - Using Factories =====
@@ -307,6 +321,8 @@ void registerAllFallbackValues() {
   registerFallbackValue(FakeFriendRequest());
   registerFallbackValue(FakeFriendCategory());
   registerFallbackValue(FakeSharedContent());
+  registerFallbackValue(FakeSharedRecipe());
+  registerFallbackValue(FakeSharedMenu());
   registerFallbackValue(FakeConversation());
   registerFallbackValue(FakeMessage());
   registerFallbackValue(FakeRecipe());

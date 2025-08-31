@@ -104,7 +104,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
     return Container(
       width: double.infinity,
-      height: dimensions.height,
+      constraints: BoxConstraints(minHeight: dimensions.height),
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
