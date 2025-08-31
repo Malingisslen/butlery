@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Image picker functionality for edit recipe view
 class EditRecipeImagePicker {
@@ -51,15 +50,6 @@ class EditRecipeImagePicker {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: Icon(
-                Icons.link,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              title: const Text('Lägg till från URL'),
-              subtitle: const Text('För bilder från webben'),
-              onTap: () => Navigator.pop(context, 'url'),
-            ),
-            ListTile(
               leading: const Icon(Icons.close),
               title: const Text('Avbryt'),
               onTap: () => Navigator.pop(context),
@@ -73,62 +63,15 @@ class EditRecipeImagePicker {
 
     switch (choice) {
       case 'camera':
-        await viewModel.pickAndUploadImage(context);
+        await viewModel.pickImageFromCamera(context);
         break;
       case 'gallery':
         if (viewModel.canAddMoreImages && viewModel.imageUrls.length < 4) {
-          await viewModel.pickMultipleImages(context);
+          await viewModel.pickMultipleImagesFromGallery(context);
         } else {
-          await viewModel.pickAndUploadImage(context);
+          await viewModel.pickImageFromGallery(context);
         }
         break;
-      case 'url':
-        await _showUrlDialog(context, viewModel);
-        break;
-    }
-  }
-
-  /// Show URL input dialog for adding images from web
-  static Future<void> _showUrlDialog(
-    BuildContext context,
-    RecipeFormViewModel viewModel,
-  ) async {
-    final controller = TextEditingController();
-    final url = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lägg till bild från URL'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Bild-URL',
-            hintText: 'https://exempel.com/bild.jpg',
-          ),
-          keyboardType: TextInputType.url,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Lägg till'),
-          ),
-        ],
-      ),
-    );
-
-    if (url != null && url.isNotEmpty) {
-      if (Uri.tryParse(url) != null &&
-          (url.startsWith('http://') || url.startsWith('https://'))) {
-        viewModel.addImageUrl(url);
-      } else {
-        if (context.mounted) {
-          UtilityComponents.showErrorSnackbar(context, 'Ogiltig URL');
-        }
-      }
     }
   }
 }

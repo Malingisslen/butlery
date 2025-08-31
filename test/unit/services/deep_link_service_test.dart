@@ -486,7 +486,11 @@ void main() {
 
       test('should fallback to original URL when not authenticated', () async {
         // Arrange
-        when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+        mockPermissionService.setPermissionState(
+          defaultHasPermission: true,
+          currentUserId: null,
+          isAuthenticated: false,
+        );
         final originalUrl = 'https://butlery.app/recipe?id=123';
         
         // Act
@@ -1173,7 +1177,11 @@ void main() {
             defaultHasPermission: false,
             currentUserId: null, // Not authenticated
           );
-          when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+          mockPermissionService.setPermissionState(
+          defaultHasPermission: true,
+          currentUserId: null,
+          isAuthenticated: false,
+        );
           
           // Act
           String? navigatedRoute;
@@ -1267,7 +1275,11 @@ void main() {
       group('App State Errors', () {
         test('should handle deep link while unauthenticated', () async {
           // Arrange
-          when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+          mockPermissionService.setPermissionState(
+          defaultHasPermission: true,
+          currentUserId: null,
+          isAuthenticated: false,
+        );
           
           // Act
           String? navigatedRoute;

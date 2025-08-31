@@ -92,6 +92,12 @@ class FriendsCategoriesOperations {
       AppLogger.warning('Cannot create category: User not logged in');
       return null;
     }
+    
+    final currentUserId = _parent.currentUserId;
+    if (currentUserId == null) {
+      AppLogger.warning('Cannot create category: User ID not available');
+      return null;
+    }
 
     if (name.trim().isEmpty) {
       AppLogger.warning('Category name cannot be empty');
@@ -109,7 +115,7 @@ class FriendsCategoriesOperations {
         id: const Uuid().v4(),
         name: name.trim(),
         description: description.trim(),
-        ownerId: _parent.currentUserId!,
+        ownerId: currentUserId,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         emoji: icon,

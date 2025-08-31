@@ -210,7 +210,10 @@ class RecipeCard extends StatelessWidget {
             ? SimpleImageWidget(
                 imageUrl: imageUrls.first,
                 fit: BoxFit.cover,
-                config: ImageConfig.recipeCard(),
+                // PERFORMANCE FIX: Use thumbnail config optimized for 80x80 display
+                config: ImageConfig.thumbnail(
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                ),
               )
             : Icon(
                 Icons.restaurant,

@@ -58,15 +58,21 @@ class RecipeCommentsManager {
     String? parentCommentId,
     List<String>? mentions,
   }) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('❌ User must be logged in to add comments');
+      return null;
+    }
+
     final commentId = await _crudOperations.createComment(
       recipeId: recipeId,
       content: content,
-      authorId: currentUserId!,
+      authorId: userId,
       authorDisplayName: currentUserDisplayName,
       parentCommentId: parentCommentId,
       canCommentValidator: (recipe) => CommentUtilities.canCommentOnRecipe(
         recipe: recipe,
-        currentUserId: currentUserId,
+        currentUserId: userId,
       ),
       recipeGetter: _getRecipe,
     );
@@ -160,10 +166,16 @@ class RecipeCommentsManager {
     required String commentId,
     required String newContent,
   }) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('❌ User must be logged in to edit comments');
+      return false;
+    }
+
     final result = await _crudOperations.editComment(
       commentId: commentId,
       newContent: newContent,
-      currentUserId: currentUserId!,
+      currentUserId: userId,
     );
 
     if (result) {
@@ -182,6 +194,12 @@ class RecipeCommentsManager {
 
   /// Delete comment
   Future<bool> deleteComment(String commentId) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('❌ User must be logged in to delete comments');
+      return false;
+    }
+
     // Get comment before deletion
     final comment = await _crudOperations.getCommentById(
       commentId: commentId,
@@ -191,13 +209,13 @@ class RecipeCommentsManager {
 
     final result = await _crudOperations.deleteComment(
       commentId: commentId,
-      currentUserId: currentUserId!,
+      currentUserId: userId,
       canDeleteValidator: (recipeId) {
         final recipe = _getRecipe(recipeId);
         if (recipe == null) return false;
         return CommentUtilities.isRecipeOwnerOrAdmin(
           recipe: recipe,
-          currentUserId: currentUserId,
+          currentUserId: userId,
         );
       },
     );

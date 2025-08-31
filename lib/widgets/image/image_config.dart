@@ -35,6 +35,7 @@ enum ImageSize {
   card,
   hero,
   thumbnail,
+  picker,
   custom,
 }
 
@@ -206,7 +207,7 @@ class ImageConfig {
   }
 
   factory ImageConfig.picker({
-    ImageSize size = ImageSize.medium,
+    ImageSize size = ImageSize.picker,
     int maxImages = 5,
   }) {
     return ImageConfig(
@@ -306,7 +307,8 @@ class ImageConfig {
       case ImageSize.medium:
         return const Size(80, 80);
       case ImageSize.large:
-        return const Size(120, 120);
+        // RESTORED: Fully responsive sizing - both width and height flexible for aspect ratio preservation
+        return const Size(double.infinity, double.infinity);
       case ImageSize.extraLarge:
         return const Size(160, 160);
       case ImageSize.card:
@@ -315,6 +317,9 @@ class ImageConfig {
         return const Size(double.infinity, 300);
       case ImageSize.thumbnail:
         return const Size(60, 60);
+      case ImageSize.picker:
+        // Compact size specifically for empty image picker - prevents oversized empty state
+        return const Size(double.infinity, 120);
       case ImageSize.custom:
         return Size(customWidth ?? 80, customHeight ?? 80);
     }
@@ -324,7 +329,7 @@ class ImageConfig {
   double getAspectRatio() {
     final dimensions = getDimensions();
     if (dimensions.width == double.infinity) {
-      return 16 / 9; // Default aspect ratio for hero images
+      return 16 / 9; // Default aspect ratio for responsive images
     }
     return dimensions.width / dimensions.height;
   }

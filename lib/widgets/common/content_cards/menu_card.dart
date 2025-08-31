@@ -182,9 +182,9 @@ class MenuCard extends StatelessWidget {
   }
 
   Widget _buildMenuPreview(BuildContext context) {
-    final recipes = _getMenuRecipes();
+    final allRecipes = _getMenuRecipes();
     
-    if (recipes.isEmpty) {
+    if (allRecipes.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
@@ -208,6 +208,8 @@ class MenuCard extends StatelessWidget {
       );
     }
 
+    final recipesToShow = allRecipes.take(3).toList();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -216,7 +218,7 @@ class MenuCard extends StatelessWidget {
           style: AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        ...recipes.take(3).map((recipe) => Padding(
+        ...recipesToShow.map((recipe) => Padding(
           padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           child: Row(
             children: [
@@ -240,11 +242,11 @@ class MenuCard extends StatelessWidget {
             ],
           ),
         )),
-        if (recipes.length > 3)
+        if (allRecipes.length > 3)
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
-              '+ ${recipes.length - 3} fler recept',
+              '+ ${allRecipes.length - 3} fler recept',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             ),
           ),
@@ -318,9 +320,11 @@ class MenuCard extends StatelessWidget {
   
   String _getMenuTitle() {
     if (menu is SharedMenu) {
-      return menu.menuTitle;
+      final sharedMenu = menu as SharedMenu;
+      return sharedMenu.menuTitle;
     } else if (menu is RealtimeMenu) {
-      return menu.menuTitle;
+      final realtimeMenu = menu as RealtimeMenu;
+      return realtimeMenu.menuTitle;
     } else if (menu is Map<String, List<Recipe>>) {
       return 'Generated Menu';
     }
@@ -329,31 +333,39 @@ class MenuCard extends StatelessWidget {
 
   int _getRecipeCount() {
     if (menu is SharedMenu) {
-      return menu.totalRecipeCount;
+      final sharedMenu = menu as SharedMenu;
+      return sharedMenu.totalRecipeCount;
     } else if (menu is RealtimeMenu) {
-      return menu.menuSnapshot.values.fold(0, (total, recipes) => total + recipes.length);
+      final realtimeMenu = menu as RealtimeMenu;
+      return realtimeMenu.menuSnapshot.values.fold(0, (total, recipes) => total + recipes.length);
     } else if (menu is Map<String, List<Recipe>>) {
-      return menu.values.fold(0, (total, recipes) => total + recipes.length);
+      final menuMap = menu as Map<String, List<Recipe>>;
+      return menuMap.values.fold(0, (total, recipes) => total + recipes.length);
     }
     return 0;
   }
 
   String? _getMenuDuration() {
     if (menu is SharedMenu) {
-      return menu.timeAgoText;
+      final sharedMenu = menu as SharedMenu;
+      return sharedMenu.timeAgoText;
     } else if (menu is RealtimeMenu) {
-      return menu.lastEditedTimeAgo;
+      final realtimeMenu = menu as RealtimeMenu;
+      return realtimeMenu.lastEditedTimeAgo;
     }
     return null;
   }
 
   List<Recipe> _getMenuRecipes() {
     if (menu is SharedMenu) {
-      return menu.menuSnapshot.values.expand((recipes) => recipes).take(3).toList();
+      final sharedMenu = menu as SharedMenu;
+      return sharedMenu.menuSnapshot.values.expand((recipes) => recipes).toList();
     } else if (menu is RealtimeMenu) {
-      return menu.allUniqueRecipes.take(3).toList();
+      final realtimeMenu = menu as RealtimeMenu;
+      return realtimeMenu.allUniqueRecipes;
     } else if (menu is Map<String, List<Recipe>>) {
-      return menu.values.expand((recipes) => recipes).take(3).toList();
+      final menuMap = menu as Map<String, List<Recipe>>;
+      return menuMap.values.expand((recipes) => recipes).toList();
     }
     return [];
   }
@@ -366,16 +378,19 @@ class MenuCard extends StatelessWidget {
     if (menu is SharedMenu) {
       return true; // SharedMenu is always shared
     } else if (menu is RealtimeMenu) {
-      return menu.participantCount > 1;
+      final realtimeMenu = menu as RealtimeMenu;
+      return realtimeMenu.participantCount > 1;
     }
     return false;
   }
 
   int _getMenuMemberCount() {
     if (menu is SharedMenu) {
-      return menu.sharedToUserIds.length;
+      final sharedMenu = menu as SharedMenu;
+      return sharedMenu.sharedToUserIds.length;
     } else if (menu is RealtimeMenu) {
-      return menu.participantCount;
+      final realtimeMenu = menu as RealtimeMenu;
+      return realtimeMenu.participantCount;
     }
     return 0;
   }

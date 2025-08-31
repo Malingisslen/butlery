@@ -1,118 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
-
-// Mock for UnifiedFriendsService
-class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {
-  final List<GroupInvitation> _sentInvitations = [];
-  final List<GroupInvitation> _receivedInvitations = [];
-  String? _currentUserId;
-  String? _currentUserDisplayName;
-  
-  @override
-  String? get currentUserId => _currentUserId;
-  
-  @override
-  String? get currentUserDisplayName => _currentUserDisplayName;
-  
-  List<GroupInvitation> get sentInvitationsList => _sentInvitations;
-  
-  List<GroupInvitation> get receivedInvitationsList => _receivedInvitations;
-  
-  void setServiceState({
-    String? currentUserId,
-    String? currentUserDisplayName,
-    List<GroupInvitation>? sentInvitations,
-    List<GroupInvitation>? receivedInvitations,
-  }) {
-    if (currentUserId != null) _currentUserId = currentUserId;
-    if (currentUserDisplayName != null) _currentUserDisplayName = currentUserDisplayName;
-    if (sentInvitations != null) {
-      _sentInvitations.clear();
-      _sentInvitations.addAll(sentInvitations);
-    }
-    if (receivedInvitations != null) {
-      _receivedInvitations.clear();
-      _receivedInvitations.addAll(receivedInvitations);
-    }
-  }
-  
-  @override
-  void addSentInvitationInternal(GroupInvitation invitation) {
-    _sentInvitations.add(invitation);
-  }
-  
-  @override
-  void updateSentInvitationInternal(String invitationId, GroupInvitation updatedInvitation) {
-    final index = _sentInvitations.indexWhere((inv) => inv.id == invitationId);
-    if (index != -1) {
-      _sentInvitations[index] = updatedInvitation;
-    }
-  }
-  
-  @override
-  GroupInvitation? getSentInvitationByIdInternal(String invitationId) {
-    return _sentInvitations.firstWhere(
-      (inv) => inv.id == invitationId,
-      orElse: () => GroupInvitation(
-        id: '',
-        groupId: '',
-        groupName: '',
-        groupEmoji: '👥',
-        fromUserId: '',
-        fromUserName: '',
-        toUserId: '',
-        sentAt: DateTime.now(),
-      ),
-    );
-  }
-  
-  @override
-  void notifyListenersInternal() {
-    // Mock implementation - no-op
-  }
-  
-  @override
-  Future<bool> sendEmailInvitationInternal({
-    required String email,
-    required GroupInvitation invitation,
-  }) async {
-    // Mock implementation - return true for valid emails
-    return email.contains('@');
-  }
-  
-  @override
-  Future<bool> sendSMSInvitationInternal({
-    required String phoneNumber,
-    required GroupInvitation invitation,
-  }) async {
-    // Mock implementation - return true for valid phone numbers
-    return phoneNumber.startsWith('+');
-  }
-  
-  @override
-  String createInvitationLinkInternal(String invitationId) {
-    return 'https://butlery.app/invite/$invitationId';
-  }
-  
-  @override
-  Future<void> updateInvitationStatusInternal(String invitationId, GroupInvitationStatus status) async {
-    // Mock implementation - just update local state
-    final invitation = getSentInvitationByIdInternal(invitationId);
-    if (invitation != null && invitation.id.isNotEmpty) {
-      final updatedInvitation = invitation.copyWith(status: status);
-      updateSentInvitationInternal(invitationId, updatedInvitation);
-    }
-  }
-  
-  @override
-  List<GroupInvitation> getAllSentInvitationsInternal() => _sentInvitations;
-}
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('FriendsInvitationsOperations', () {
@@ -139,11 +32,10 @@ void main() {
       
       // Create mock parent service
       mockParentService = MockUnifiedFriendsService();
-      mockParentService.setServiceState(
-        currentUserId: 'test-user-123',
-        currentUserDisplayName: 'Test User',
-        sentInvitations: [],
-        receivedInvitations: [],
+      mockParentService.setFriendsState(
+        friends: [],
+        incomingRequests: [],
+        outgoingRequests: [],
       );
       
       // Create operations instance
@@ -495,31 +387,8 @@ void main() {
     group('Invitation Queries', () {
       test('should get pending invitations', () {
         // Arrange
-        mockParentService.setServiceState(
-          sentInvitations: [
-            GroupInvitation(
-              id: '1',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user1',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.pending,
-            ),
-            GroupInvitation(
-              id: '2',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user2',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.accepted,
-            ),
-          ],
+        mockParentService.setFriendsState(
+          friends: [],
         );
         
         // Act
@@ -532,31 +401,8 @@ void main() {
       
       test('should get invitations by status', () {
         // Arrange
-        mockParentService.setServiceState(
-          sentInvitations: [
-            GroupInvitation(
-              id: '1',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user1',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.pending,
-            ),
-            GroupInvitation(
-              id: '2',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user2',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.accepted,
-            ),
-          ],
+        mockParentService.setFriendsState(
+          friends: [],
         );
         
         // Act
@@ -569,19 +415,8 @@ void main() {
       
       test('should check if invitation exists', () {
         // Arrange
-        mockParentService.setServiceState(
-          sentInvitations: [
-            GroupInvitation(
-              id: '1',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'test@example.com',
-              sentAt: DateTime.now(),
-            ),
-          ],
+        mockParentService.setFriendsState(
+          friends: [],
         );
         
         // Act & Assert
@@ -591,42 +426,8 @@ void main() {
       
       test('should get invitation statistics', () {
         // Arrange
-        mockParentService.setServiceState(
-          sentInvitations: [
-            GroupInvitation(
-              id: '1',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user1',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.pending,
-            ),
-            GroupInvitation(
-              id: '2',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user2',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.accepted,
-            ),
-            GroupInvitation(
-              id: '3',
-              groupId: '',
-              groupName: '',
-          groupEmoji: '👥',
-              fromUserId: 'test-user-123',
-              fromUserName: 'Test',
-              toUserId: 'user3',
-              sentAt: DateTime.now(),
-              status: GroupInvitationStatus.rejected,
-            ),
-          ],
+        mockParentService.setFriendsState(
+          friends: [],
         );
         
         // Act

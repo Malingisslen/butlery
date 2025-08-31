@@ -6,7 +6,10 @@ import 'package:butlery/services/unified/operations/realtime_recipe/realtime_not
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/builders/recipe_builder.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/core/providers/application_provider.dart' as app_provider;
 
 void main() {
   group('RealtimeNotificationModule', () {
@@ -36,9 +39,14 @@ void main() {
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
+      await TestServiceLocator.initialize();
 
       // Create mocks
       mockParent = MockNotificationParent();
+      
+      // Initialize production ServiceLocator with MockDIContainer
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(MockDIContainer());
 
       // Create test data
       testRecipe = RecipeBuilder()
@@ -71,10 +79,10 @@ void main() {
         offlineData: collaborativeRecipe.offlineData,
       );
 
-      // Configure mock parent
-      mockParent.setParentState(
-        userId: 'user_123',
-        displayName: 'Test User',
+      // Configure mock parent using centralized mock method
+      mockParent.setNotificationParentState(
+        currentUserId: 'user_123',
+        currentUserDisplayName: 'Test User',
       );
 
       // Create notification module instance
@@ -83,6 +91,7 @@ void main() {
 
     tearDown(() async {
       BaseUnitTest.resetMocks();
+      await TestServiceLocator.reset();
     });
 
     tearDownAll(() async {
@@ -261,7 +270,7 @@ void main() {
     group('Notification Module State', () {
       test('should handle null parent user ID gracefully', () async {
         // Arrange
-        mockParent.setParentState(userId: null);
+        mockParent.setNotificationParentState(currentUserId: null);
 
         // Act & Assert (should handle gracefully)
         await expectLater(
@@ -273,7 +282,7 @@ void main() {
 
       test('should handle null parent display name', () async {
         // Arrange
-        mockParent.setParentState(displayName: null);
+        mockParent.setNotificationParentState(currentUserDisplayName: null);
 
         // Act & Assert (should use fallback name)
         await expectLater(
@@ -301,24 +310,5 @@ void main() {
   });
 }
 
-// Mock classes
-class MockNotificationParent extends Mock implements NotificationParent {
-  String? _currentUserId = 'user_123';
-  String? _currentUserDisplayName = 'Test User';
-
-  void setParentState({
-    String? userId,
-    String? displayName,
-  }) {
-    if (userId != null || userId == null) _currentUserId = userId;
-    if (displayName != null || displayName == null) {
-      _currentUserDisplayName = displayName;
-    }
-  }
-
-  @override
-  String? get currentUserId => _currentUserId;
-
-  @override
-  String? get currentUserDisplayName => _currentUserDisplayName;
-}
+// Using centralized mocks from production_mocks.dart:
+// MockNotificationParent

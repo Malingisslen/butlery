@@ -235,7 +235,7 @@ class MenuRecipeListItem extends StatelessWidget {
                 recipe.imageUrls.first,
                 width: AppDimensions.iconSizeDisplay,
                 height: AppDimensions.iconSizeDisplay,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildPlaceholder(),
               )

@@ -8,92 +8,17 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
-
-// Mock parent service that PersonalShoppingOperations delegates to
-class MockParentService extends Mock implements UnifiedShoppingService {
-  // Configuration state
-  String? _activeListId = 'test-list-1';
-  final List<UnifiedShoppingList> _personalLists = [];
-  
-  // Configuration methods
-  void setActiveListId(String? id) {
-    _activeListId = id;
-  }
-  
-  void setPersonalLists(List<UnifiedShoppingList> lists) {
-    _personalLists.clear();
-    _personalLists.addAll(lists);
-  }
-  
-  // Getters return configured state
-  @override
-  String? get activeListId => _activeListId;
-  
-  @override
-  List<UnifiedShoppingList> get personalLists => _personalLists;
-  
-  @override
-  UnifiedShoppingList? get activeList {
-    if (_activeListId == null) return null;
-    try {
-      return _personalLists.firstWhere((list) => list.id == _activeListId);
-    } catch (_) {
-      return null;
-    }
-  }
-  
-  // Abstract methods to be stubbed with when()
-  @override
-  Future<String?> createPersonalList(String name, {List<UnifiedShoppingItem>? items});
-  
-  @override
-  Future<bool> renameList(String listId, String newName);
-  
-  @override
-  Future<bool> deleteList(String listId);
-  
-  @override
-  Future<bool> setActiveList(String listId);
-  
-  @override
-  Future<bool> addItemToActiveList({
-    required String name,
-    double? amount,
-    String? unit,
-    String? category,
-    String? note,
-    double? estimatedPrice,
-    int? priority,
-    String? recipeId,
-    String? recipeName,
-  });
-  
-  @override
-  Future<bool> updateList(UnifiedShoppingList list);
-  
-  @override
-  Future<bool> toggleItemBought(String itemId);
-  
-  @override
-  Future<bool> removeItemFromActiveList(String itemId);
-  
-  @override
-  Future<bool> clearBoughtItems();
-  
-  @override
-  Future<bool> uncheckAllItems();
-}
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('PersonalShoppingOperations', () {
     late PersonalShoppingOperations operations;
-    late MockParentService mockParent;
+    late MockUnifiedShoppingService mockParent;
     late UnifiedShoppingList testList;
     late UnifiedShoppingItem testItem;
     
@@ -110,7 +35,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
       
-      mockParent = MockParentService();
+      mockParent = MockUnifiedShoppingService();
       
       // Create test data
       testItem = UnifiedShoppingItem(
@@ -136,8 +61,11 @@ void main() {
       );
       
       // Configure mock parent
-      mockParent.setActiveListId('test-list-1');
-      mockParent.setPersonalLists([testList]);
+      mockParent.setShoppingState(
+        activeListId: 'test-list-1',
+        personalLists: [testList],
+        lists: [testList],
+      );
       
       operations = PersonalShoppingOperations(mockParent);
     });
@@ -199,7 +127,11 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        mockParent.setPersonalLists([testList, secondList]);
+        mockParent.setShoppingState(
+          personalLists: [testList, secondList],
+          lists: [testList, secondList],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final lists = operations.getAllLists();
@@ -273,7 +205,11 @@ void main() {
           createdAt: testList.createdAt,
           updatedAt: testList.updatedAt,
         );
-        mockParent.setPersonalLists([collaborativeList]);
+        mockParent.setShoppingState(
+          personalLists: [collaborativeList],
+          lists: [collaborativeList],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final result = await operations.deleteList('test-list-1');
@@ -316,7 +252,11 @@ void main() {
           createdAt: testList.createdAt,
           updatedAt: testList.updatedAt,
         );
-        mockParent.setPersonalLists([collaborativeList]);
+        mockParent.setShoppingState(
+          personalLists: [collaborativeList],
+          lists: [collaborativeList],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final activeList = operations.getActiveList();
@@ -525,7 +465,11 @@ void main() {
         ];
         
         final listWithItems = testList.copyWith(items: items);
-        mockParent.setPersonalLists([listWithItems]);
+        mockParent.setShoppingState(
+          personalLists: [listWithItems],
+          lists: [listWithItems],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final stats = operations.getListStats('test-list-1');
@@ -582,7 +526,11 @@ void main() {
         ];
         
         final listWithItems = testList.copyWith(items: items);
-        mockParent.setPersonalLists([listWithItems]);
+        mockParent.setShoppingState(
+          personalLists: [listWithItems],
+          lists: [listWithItems],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final categoryMap = operations.getItemsByCategory('test-list-1');
@@ -621,7 +569,11 @@ void main() {
         ];
         
         final listWithItems = testList.copyWith(items: items);
-        mockParent.setPersonalLists([listWithItems]);
+        mockParent.setShoppingState(
+          personalLists: [listWithItems],
+          lists: [listWithItems],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final text = operations.exportListAsText('test-list-1');
@@ -782,7 +734,11 @@ void main() {
     group('Edge Cases', () {
       test('should handle empty personal lists', () {
         // Arrange
-        mockParent.setPersonalLists([]);
+        mockParent.setShoppingState(
+          personalLists: [],
+          lists: [],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final lists = operations.getAllLists();
@@ -793,7 +749,11 @@ void main() {
       
       test('should handle null active list', () {
         // Arrange
-        mockParent.setActiveListId(null);
+        mockParent.setShoppingState(
+          activeListId: null,
+          personalLists: mockParent.personalLists,
+          lists: mockParent.lists,
+        );
         
         // Act
         final activeList = operations.getActiveList();
@@ -805,7 +765,11 @@ void main() {
       test('should handle list with no items', () {
         // Arrange
         final emptyList = testList.copyWith(items: []);
-        mockParent.setPersonalLists([emptyList]);
+        mockParent.setShoppingState(
+          personalLists: [emptyList],
+          lists: [emptyList],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final stats = operations.getListStats('test-list-1');
@@ -852,7 +816,11 @@ void main() {
         ];
         
         final listWithItems = testList.copyWith(items: items);
-        mockParent.setPersonalLists([listWithItems]);
+        mockParent.setShoppingState(
+          personalLists: [listWithItems],
+          lists: [listWithItems],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final categoryMap = operations.getItemsByCategory('test-list-1');
@@ -868,7 +836,11 @@ void main() {
         // Arrange
         when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
         when(() => mockParent.setActiveList(any())).thenAnswer((invocation) async {
-          mockParent.setActiveListId(invocation.positionalArguments[0] as String);
+          mockParent.setShoppingState(
+            activeListId: invocation.positionalArguments[0] as String,
+            personalLists: mockParent.personalLists,
+            lists: mockParent.lists,
+          );
           return true;
         });
         when(() => mockParent.addItemToActiveList(
@@ -933,7 +905,11 @@ void main() {
         );
         
         final listWithPrioritizedItems = testList.copyWith(items: prioritizedItems);
-        mockParent.setPersonalLists([listWithPrioritizedItems]);
+        mockParent.setShoppingState(
+          personalLists: [listWithPrioritizedItems],
+          lists: [listWithPrioritizedItems],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final items = operations.getListById('test-list-1')?.items ?? [];
@@ -949,7 +925,11 @@ void main() {
         // Arrange
         when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
         when(() => mockParent.setActiveList(any())).thenAnswer((invocation) async {
-          mockParent.setActiveListId(invocation.positionalArguments[0] as String);
+          mockParent.setShoppingState(
+            activeListId: invocation.positionalArguments[0] as String,
+            personalLists: mockParent.personalLists,
+            lists: mockParent.lists,
+          );
           return true;
         });
         when(() => mockParent.addItemToActiveList(
@@ -1045,7 +1025,11 @@ void main() {
         ];
         
         final listWithSwedishItems = testList.copyWith(items: swedishItems);
-        mockParent.setPersonalLists([listWithSwedishItems]);
+        mockParent.setShoppingState(
+          personalLists: [listWithSwedishItems],
+          lists: [listWithSwedishItems],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final categoryMap = operations.getItemsByCategory('test-list-1');
@@ -1084,7 +1068,11 @@ void main() {
         );
         
         final largeList = testList.copyWith(items: largeItemList);
-        mockParent.setPersonalLists([largeList]);
+        mockParent.setShoppingState(
+          personalLists: [largeList],
+          lists: [largeList],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final stopwatch = Stopwatch()..start();
@@ -1108,7 +1096,11 @@ void main() {
           return true;
         });
         when(() => mockParent.setActiveList(any())).thenAnswer((invocation) async {
-          mockParent.setActiveListId(invocation.positionalArguments[0] as String);
+          mockParent.setShoppingState(
+            activeListId: invocation.positionalArguments[0] as String,
+            personalLists: mockParent.personalLists,
+            lists: mockParent.lists,
+          );
           return true;
         });
         when(() => mockParent.addItemToActiveList(
@@ -1194,7 +1186,11 @@ void main() {
         ];
         
         final listToSave = testList.copyWith(items: currentItems);
-        mockParent.setPersonalLists([listToSave]);
+        mockParent.setShoppingState(
+          personalLists: [listToSave],
+          lists: [listToSave],
+          activeListId: 'test-list-1',
+        );
         
         // Act - Export as template (without bought status)
         final templateData = operations.exportListAsData('test-list-1');
@@ -1263,7 +1259,11 @@ void main() {
         ];
         
         final listWithHistory = testList.copyWith(items: historicalItems);
-        mockParent.setPersonalLists([listWithHistory]);
+        mockParent.setShoppingState(
+          personalLists: [listWithHistory],
+          lists: [listWithHistory],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final stats = operations.getListStats('test-list-1');
@@ -1290,7 +1290,11 @@ void main() {
         ];
         
         final listWithFrequent = testList.copyWith(items: frequentItems);
-        mockParent.setPersonalLists([listWithFrequent]);
+        mockParent.setShoppingState(
+          personalLists: [listWithFrequent],
+          lists: [listWithFrequent],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final categoryMap = operations.getItemsByCategory('test-list-1');
@@ -1327,7 +1331,11 @@ void main() {
         ];
         
         final listWithPrices = testList.copyWith(items: pricedItems);
-        mockParent.setPersonalLists([listWithPrices]);
+        mockParent.setShoppingState(
+          personalLists: [listWithPrices],
+          lists: [listWithPrices],
+          activeListId: 'test-list-1',
+        );
         
         // Act
         final stats = operations.getListStats('test-list-1');

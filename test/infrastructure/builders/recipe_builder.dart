@@ -16,10 +16,10 @@ class RecipeBuilder {
   List<String> instructions = ['Step 1', 'Step 2'];
   List<String> imageUrls = [];
   String mealType = 'Middag';
-  int portions = 4;
-  int timeMinutes = 30;
-  double rating = 4.5;
-  List<String> tags = ['test'];
+  int? portions = 4;
+  int? timeMinutes = 30;
+  double? rating = 4.5;
+  List<String>? tags = ['test'];
   String? sourceUrl;
   DateTime createdAt = DateTime.now();
   DateTime updatedAt = DateTime.now();
@@ -183,25 +183,25 @@ class RecipeBuilder {
   }
   
   /// Set custom portions
-  RecipeBuilder withPortions(int portions) {
+  RecipeBuilder withPortions(int? portions) {
     this.portions = portions;
     return this;
   }
   
   /// Set custom time in minutes
-  RecipeBuilder withTimeMinutes(int timeMinutes) {
+  RecipeBuilder withTimeMinutes(int? timeMinutes) {
     this.timeMinutes = timeMinutes;
     return this;
   }
   
   /// Set custom rating
-  RecipeBuilder withRating(double rating) {
+  RecipeBuilder withRating(double? rating) {
     this.rating = rating;
     return this;
   }
   
   /// Set custom tags
-  RecipeBuilder withTags(List<String> tags) {
+  RecipeBuilder withTags(List<String>? tags) {
     this.tags = tags;
     return this;
   }

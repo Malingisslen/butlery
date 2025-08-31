@@ -36,26 +36,14 @@ class PlatformStage implements BootstrapStage {
 
   @override
   Future<void> execute() async {
-    if (kDebugMode) {
-      debugPrint('🚀 [PlatformStage] Starting platform initialization...');
-    }
-
     try {
       // Ensure Flutter bindings are initialized
       WidgetsFlutterBinding.ensureInitialized();
       
+      // Basic environment validation - modular DI system enabled
+      
       if (kDebugMode) {
-        debugPrint('✅ [PlatformStage] Flutter bindings initialized');
-      }
-
-      // Basic environment validation
-      if (kDebugMode) {
-        debugPrint('🔍 [PlatformStage] Environment: ${kDebugMode ? 'DEBUG' : 'RELEASE'}');
-        debugPrint('🔍 [PlatformStage] Using modular DI: true (legacy system removed)');
-      }
-
-      if (kDebugMode) {
-        debugPrint('✅ [PlatformStage] Platform initialization complete');
+        debugPrint('✅ [PlatformStage] Platform services ready');
       }
     } catch (e) {
       throw BootstrapException(
@@ -78,10 +66,6 @@ class PlatformStage implements BootstrapStage {
 
       // Basic validation - modular system is always enabled now
       // No feature flag validation needed since legacy system is removed
-
-      if (kDebugMode) {
-        debugPrint('✅ [PlatformStage] Validation passed');
-      }
       
       return true;
     } catch (e) {

@@ -33,11 +33,12 @@ void main() {
     late List<String> removedRecipeIds;
     late Map<String, dynamic> syncErrors;
     
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
+    setUpAll(() {
+      // Centralized fallback values already registered via TestServiceLocator
     });
     
     setUp(() async {
+      await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       
       // Create mock dependencies
@@ -1221,11 +1222,4 @@ void main() {
   });
 }
 
-// Mock StreamSubscription for testing
-class MockStreamSubscription extends Mock implements StreamSubscription {
-  @override
-  Future<void> cancel() async {
-    // Mock implementation
-    return Future.value();
-  }
-}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks

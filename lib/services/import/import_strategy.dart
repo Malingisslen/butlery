@@ -87,9 +87,9 @@ mixin ImportValidationMixin {
   /// Clean and normalize text input
   String normalizeText(String input) {
     return input
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim()
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '');
+        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '') // Remove emojis first
+        .replaceAll(RegExp(r'\s+'), ' ') // Then normalize whitespace
+        .trim();
   }
   
   /// Extract numeric value from text (for portions, time, etc.)

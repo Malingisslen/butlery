@@ -1,6 +1,7 @@
 // lib/widgets/recipe/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -15,12 +16,14 @@ class RecipeDetailComments extends StatefulWidget {
   final SocialRecipeViewModel socialViewModel;
   final String recipeId;
   final VoidCallback? onCommentPosted;
+  final bool showDebugSection;
 
   const RecipeDetailComments({
     super.key,
     required this.socialViewModel,
     required this.recipeId,
     this.onCommentPosted,
+    this.showDebugSection = true,
   });
 
   @override
@@ -180,61 +183,62 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
                   const SizedBox(height: AppDimensions.spacingXl),
 
-                  // DEBUG INFO + CREATE PROFILE
-                  Builder(
-                    builder: (context) {
-                      final userService = ServiceLocator.get<UserService>();
-                      final authUser = FirebaseAuthRepository().currentUser;
+                  // DEBUG INFO + CREATE PROFILE (only in debug mode)
+                  if (kDebugMode && widget.showDebugSection)
+                    Builder(
+                      builder: (context) {
+                        final userService = ServiceLocator.get<UserService>();
+                        final authUser = FirebaseAuthRepository().currentUser;
 
-                      return Container(
-                        padding: const EdgeInsets.all(AppDimensions.spacingS),
-                        color: AppColors.warning.withValues(alpha: 0.1),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('🔍 DEBUG INFO:',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text(
-                                'SocialViewModel.currentUser: ${widget.socialViewModel.currentUser?.displayName ?? "NULL"}'),
-                            Text(
-                                'UserService.currentUserProfile: ${userService.currentUserProfile?.displayName ?? "NULL"}'),
-                            Text(
-                                'FirebaseAuth.currentUser: ${authUser?.email ?? "NULL"}'),
-                            Text(
-                                'UserService loading: ${userService.isLoading}'),
-                            Text(
-                                'UserService error: ${userService.error ?? "none"}'),
+                        return Container(
+                          padding: const EdgeInsets.all(AppDimensions.spacingS),
+                          color: AppColors.warning.withValues(alpha: 0.1),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('🔍 DEBUG INFO:',
+                                  style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text(
+                                  'SocialViewModel.currentUser: ${widget.socialViewModel.currentUser?.displayName ?? "NULL"}'),
+                              Text(
+                                  'UserService.currentUserProfile: ${userService.currentUserProfile?.displayName ?? "NULL"}'),
+                              Text(
+                                  'FirebaseAuth.currentUser: ${authUser?.email ?? "NULL"}'),
+                              Text(
+                                  'UserService loading: ${userService.isLoading}'),
+                              Text(
+                                  'UserService error: ${userService.error ?? "none"}'),
 
-                            const SizedBox(height: AppDimensions.spacingM),
+                              const SizedBox(height: AppDimensions.spacingM),
 
-                            // Create profile button
-                            if (authUser != null &&
-                                userService.currentUserProfile == null)
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final displayName = authUser.displayName ??
-                                      authUser.email!.split('@')[0];
+                              // Create profile button
+                              if (authUser != null &&
+                                  userService.currentUserProfile == null)
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final displayName = authUser.displayName ??
+                                        authUser.email!.split('@')[0];
 
-                                  final profile =
-                                      await userService.createOrUpdateProfile(
-                                    displayName: displayName,
-                                    isSearchable: true,
-                                    allowEmailSearch: false,
-                                  );
+                                    final profile =
+                                        await userService.createOrUpdateProfile(
+                                      displayName: displayName,
+                                      isSearchable: true,
+                                      allowEmailSearch: false,
+                                    );
 
-                                  if (profile != null) {
-                                    _showSnackBarSafely(
-                                        'Profil skapad! Starta om appen.');
-                                  }
-                                },
-                                child: const Text('Skapa Profil'),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                                    if (profile != null) {
+                                      _showSnackBarSafely(
+                                          'Profil skapad! Starta om appen.');
+                                    }
+                                  },
+                                  child: const Text('Skapa Profil'),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  if (kDebugMode && widget.showDebugSection) const SizedBox(height: AppDimensions.spacingM),
 
                   // Comment form (for all logged-in users)
                   if (widget.socialViewModel.currentUser != null)
@@ -404,8 +408,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SocialComponents.avatar(
-                displayName: socialViewModel.getAuthorDisplayName(comment),
-                imageUrl: socialViewModel.getAuthorAvatarUrl(comment),
+                displayName: socialViewModel.getAuthorDisplayName(comment.authorId),
+                imageUrl: socialViewModel.getAuthorAvatarUrl(comment.authorId),
                 size: ImageSize.small,
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -416,7 +420,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     Row(
                       children: [
                         Text(
-                          socialViewModel.getAuthorDisplayName(comment),
+                          socialViewModel.getAuthorDisplayName(comment.authorId),
                           style:
                               Theme.of(context).textTheme.labelMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
@@ -450,12 +454,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  socialViewModel.hasLikedComment(comment)
+                                  socialViewModel.hasLikedComment(comment.id)
                                       ? Icons.favorite
                                       : Icons.favorite_border,
                                   size: AppDimensions.iconSizeM,
                                   color:
-                                      socialViewModel.hasLikedComment(comment)
+                                      socialViewModel.hasLikedComment(comment.id)
                                           ? AppColors.error
                                           : Theme.of(context)
                                               .colorScheme

@@ -538,5 +538,3 @@ void main() {
   });
 }
 
-// Mock classes
-class MockRatingsRepository extends Mock implements RatingsRepository {}

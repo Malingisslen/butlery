@@ -2,26 +2,28 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
-// Test-specific mocks
-class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
-class MockFirebaseAnalyticsObserver extends Mock implements FirebaseAnalyticsObserver {}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
 void main() {
   group('FirebaseAnalyticsRepository', () {
     late FirebaseAnalyticsRepository repository;
     late MockFirebaseAnalytics mockAnalytics;
     
+    setUpAll(() {
+      // Centralized fallback values already registered via TestServiceLocator
+    });
+    
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       
-      // Initialize mocks
+      // Initialize mocks using centralized infrastructure
       mockAnalytics = MockFirebaseAnalytics();
       
       // Setup default stubs

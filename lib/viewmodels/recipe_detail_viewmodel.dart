@@ -287,6 +287,9 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
   Future<bool> markAsCooked() async {
     return await safeExecute(
       () async {
+        // Check if this is the first time cooking BEFORE updating
+        final isFirstTime = _recipe.lastCookedAt == null;
+        
         // Uppdatera receptet med ny lastCookedAt
         final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
 
@@ -301,7 +304,7 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
             recipeId: _recipe.id,
             recipeTitle: _recipe.title,
             mealType: _recipe.mealType,
-            isFirstTime: _recipe.lastCookedAt == null,
+            isFirstTime: isFirstTime,
           );
 
           return true;

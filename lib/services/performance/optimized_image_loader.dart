@@ -14,6 +14,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/image/image_components.dart';
 
 /// Image size optimization parameters
 class ImageOptimizationParams {
@@ -43,8 +44,8 @@ class ImageOptimizationParams {
     // Check if URL supports transformation (e.g., Firebase Storage, Cloudinary)
     if (_supportsTransformation(originalUrl)) {
       final params = <String, String>{
-        'w': targetSize.width.round().toString(),
-        'h': targetSize.height.round().toString(),
+        'w': targetSize.width.isFinite ? targetSize.width.round().toString() : '800',
+        'h': targetSize.height.isFinite ? targetSize.height.round().toString() : '600',
         'q': quality.toString(),
         'f': format,
       };
@@ -200,6 +201,7 @@ class OptimizedImageLoader extends StatefulWidget {
         dimensions.width == double.infinity ? 800 : dimensions.width,
         dimensions.height,
       ),
+      fit: BoxFit.contain, // Show full image without cropping
       onTap: onTap,
       enableProgressive: true,
       enableThumbnail: false,
@@ -264,6 +266,22 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   
   @override
   Widget build(BuildContext context) {
+    // Check if this is a local file path or network URL
+    final isFilePath = _isFilePath(widget.imageUrl);
+    
+    if (isFilePath) {
+      // For local files, use adaptive image handling
+      return ImageComponents.buildAdaptiveImage(
+        pathOrUrl: widget.imageUrl,
+        config: widget.config,
+        fit: widget.fit,
+        onTap: widget.onTap,
+        placeholder: widget.placeholder,
+        errorWidget: widget.errorWidget,
+      );
+    }
+    
+    // For network URLs, use optimized loading
     final optParams = ImageOptimizationParams(
       targetSize: widget.targetSize,
       quality: 85,
@@ -358,12 +376,17 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
     return CachedNetworkImage(
       imageUrl: optimizedUrl,
       fit: widget.fit,
-      memCacheWidth: cacheSize.width.toInt(),
-      memCacheHeight: cacheSize.height.toInt(),
+      memCacheWidth: cacheSize.width == double.infinity ? 800 : cacheSize.width.toInt(),
+      memCacheHeight: cacheSize.height == double.infinity ? 600 : cacheSize.height.toInt(),
       fadeInDuration: Duration.zero, // We handle fade ourselves
       progressIndicatorBuilder: (context, url, progress) {
         if (!_isLoadingFull) {
-          setState(() => _isLoadingFull = true);
+          // Defer setState to avoid calling it during build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => _isLoadingFull = true);
+            }
+          });
         }
         
         // Record cache miss
@@ -374,8 +397,13 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
       imageBuilder: (context, imageProvider) {
         // Start fade animation when image is ready
         if (_isLoadingFull) {
-          setState(() => _isLoadingFull = false);
-          _fadeController.forward();
+          // Defer setState to avoid calling it during build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => _isLoadingFull = false);
+              _fadeController.forward();
+            }
+          });
         }
         
         // Record cache hit
@@ -388,9 +416,15 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
       },
       errorWidget: (context, url, error) {
         AppLogger.error('Failed to load image: $url - $error');
-        setState(() {
-          _hasError = true;
-          _isLoadingFull = false;
+        
+        // Defer setState to avoid calling it during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _hasError = true;
+              _isLoadingFull = false;
+            });
+          }
         });
         
         return widget.errorWidget ?? _buildDefaultErrorWidget();
@@ -415,7 +449,18 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   /// Estimate image size in bytes
   int _estimateImageSize(Size size) {
     // Rough estimate: width * height * 4 bytes per pixel
-    return (size.width * size.height * 4).toInt();
+    // Handle infinity/NaN dimensions safely
+    final width = size.width.isFinite ? size.width : 800.0;
+    final height = size.height.isFinite ? size.height : 600.0;
+    return (width * height * 4).toInt();
+  }
+  
+  /// Check if string is a file path (vs URL)
+  bool _isFilePath(String pathOrUrl) {
+    // File paths start with '/' or contain file system patterns
+    return pathOrUrl.startsWith('/') || 
+           pathOrUrl.contains('\\') || 
+           (!pathOrUrl.startsWith('http') && !pathOrUrl.startsWith('gs://'));
   }
 }
 

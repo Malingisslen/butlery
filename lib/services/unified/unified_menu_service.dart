@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -67,7 +68,12 @@ class UnifiedMenuService extends ChangeNotifier
   late final MenuService _menuService;
   
   // Operations modules
-  late final CollaborativeMenuOperations collaborative;
+  CollaborativeMenuOperations? _collaborative;
+  
+  /// Get collaborative operations with lazy initialization
+  CollaborativeMenuOperations get collaborative {
+    return _collaborative ??= _initializeCollaborativeOperations();
+  }
 
   // State
   final List<SharedMenu> _menus = [];
@@ -78,23 +84,21 @@ class UnifiedMenuService extends ChangeNotifier
   UnifiedMenuService({
     FirebaseFirestore? firestore,
   })  : _firestore = firestore ?? FirebaseFirestore.instance {
-    // Initialize modules and operations
-    _initializeModules();
+    // Initialize core menu service immediately
+    _menuService = MenuService();
     
     AppLogger.info(
-        '✅ UnifiedMenuService initialized with focused modules and operations');
+        '✅ UnifiedMenuService created - collaborative operations will initialize on first use');
   }
 
   // ===== INITIALIZATION =====
 
-  void _initializeModules() {
-    // Initialize core menu service
-    _menuService = MenuService();
-    
-    // Initialize operations modules
-    collaborative = CollaborativeMenuOperations(this, _firestore);
-    
-    AppLogger.debug('Menu service modules initialized');
+  CollaborativeMenuOperations _initializeCollaborativeOperations() {
+    AppLogger.debug('Initializing collaborative menu operations');
+    return CollaborativeMenuOperations(
+      this, 
+      ServiceLocator.get<MenuCollaborationRepository>()
+    );
   }
 
   // ===== PUBLIC API =====

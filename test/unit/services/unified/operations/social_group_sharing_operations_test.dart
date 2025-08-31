@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -11,81 +10,7 @@ import 'package:get_it/get_it.dart';
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/builders/user_builder.dart';
-
-// Mock for UnifiedFriendsService
-class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {
-  final List<FriendCategory> _categories = [];
-  final List<UserProfile> _friends = [];
-  String? _currentUserId;
-  String? _currentUserDisplayName;
-
-  @override
-  String? get currentUserId => _currentUserId;
-
-  @override
-  String? get currentUserDisplayName => _currentUserDisplayName;
-
-  @override
-  List<UserProfile> get friendsInternal => _friends;
-
-  void setServiceState({
-    String? currentUserId,
-    String? currentUserDisplayName,
-    List<FriendCategory>? categories,
-    List<UserProfile>? friends,
-  }) {
-    if (currentUserId != null) _currentUserId = currentUserId;
-    if (currentUserDisplayName != null) {
-      _currentUserDisplayName = currentUserDisplayName;
-    }
-    if (categories != null) {
-      _categories.clear();
-      _categories.addAll(categories);
-    }
-    if (friends != null) {
-      _friends.clear();
-      _friends.addAll(friends);
-    }
-  }
-
-  @override
-  FriendCategory? getCategoryByIdInternal(String categoryId) {
-    try {
-      return _categories.firstWhere((c) => c.id == categoryId);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  @override
-  List<FriendCategory> getAllCategoriesInternal() => _categories;
-}
-
-// Mock for SocialSharingRepository
-class MockSocialSharingRepository extends Mock
-    implements SocialSharingRepository {
-  final List<Map<String, dynamic>> _sharedContent = [];
-
-  void setRepositoryState({
-    List<Map<String, dynamic>>? sharedContent,
-  }) {
-    if (sharedContent != null) {
-      _sharedContent.clear();
-      _sharedContent.addAll(sharedContent);
-    }
-  }
-
-  @override
-  Future<void> shareToGroup(String groupId, SharedContent content) async {
-    _sharedContent.add({
-      'groupId': groupId,
-      'content': content,
-      'timestamp': DateTime.now(),
-    });
-  }
-
-  List<Map<String, dynamic>> get sharedContent => _sharedContent;
-}
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('SocialGroupSharingOperations', () {
@@ -179,10 +104,10 @@ void main() {
 
       // Create mock parent service
       mockParentService = MockUnifiedFriendsService();
-      mockParentService.setServiceState(
+      mockParentService.setFriendsState(
         currentUserId: 'test-user-123',
         currentUserDisplayName: 'Test User',
-        categories: testCategories,
+        categoriesList: testCategories,
         friends: testFriends,
       );
 
@@ -510,7 +435,7 @@ void main() {
       test('should filter groups based on membership', () {
         // Arrange - Add current user as member to only one group
         testCategories[0].friendUserIds.add('test-user-123');
-        mockParentService.setServiceState(categories: testCategories);
+        mockParentService.setFriendsState(categoriesList: testCategories);
 
         // Act
         final groups = operations.getAvailableGroupsForSharing();

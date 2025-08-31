@@ -14,44 +14,52 @@ class EditRecipeDynamicList {
     required Function(int, String) onUpdate,
     required VoidCallback onAdd,
     required Function(int) onRemove,
+    required BuildContext context,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.labelLarge),
         const SizedBox(height: AppDimensions.spacingM),
-        ...controllers.asMap().entries.map((entry) {
-          final index = entry.key;
-          final controller = entry.value;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: '$label ${index + 1}',
+        for (int index = 0; index < controllers.length; index++)
+          Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: controllers[index],
+                      decoration: InputDecoration(
+                        hintText: '$label ${index + 1}',
+                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      onChanged: (value) {
+                        onUpdate(index, value);
+                        // Add new field when typing in the last field and it becomes non-empty
+                        if (index == controllers.length - 1 && 
+                            value.trim().isNotEmpty && 
+                            value.length == 1) { // Only on first character to prevent duplicates
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            onAdd();
+                          });
+                        }
+                      },
                     ),
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    onChanged: (value) => onUpdate(index, value),
                   ),
-                ),
-                if (controllers.length > 1)
-                  Builder(
-                    builder: (context) => IconButton(
+                  if (controllers.length > 1)
+                    IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => onRemove(index),
                     ),
-                  ),
-              ],
-            ),
-          );
-        }),
-        if (controllers.isEmpty ||
-            (controllers.isNotEmpty && controllers.last.text.isNotEmpty))
+                ],
+              ),
+              const SizedBox(height: AppDimensions.spacingS),
+            ],
+          ),
+        if (controllers.isEmpty)
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: Text('Lägg till $label'),

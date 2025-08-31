@@ -117,7 +117,7 @@ class SimpleImageWidget extends StatelessWidget {
 
     Widget image = SizedBox(
       width: dimensions.width == double.infinity ? null : dimensions.width,
-      height: dimensions.height,
+      height: dimensions.height == double.infinity ? null : dimensions.height,
       child: ClipRRect(
         borderRadius: config.effectiveBorderRadius,
         child: ImageComponents.buildOptimizedCachedImage(

@@ -17,10 +17,10 @@ class FirebaseStorageRepository implements StorageRepository {
   final FirebaseStorage _storage;
   final Uuid _uuid;
   
-  // Image compression constants
-  static const int _defaultMaxWidth = 1920;
-  static const int _defaultMaxHeight = 1080;
-  static const int _defaultQuality = 85;
+  // Image compression constants - optimized for mobile with aspect ratio preservation
+  static const int _defaultMaxWidth = 1200;   // Max width while preserving aspect ratio
+  static const int _defaultMaxHeight = 1200;  // Max height while preserving aspect ratio  
+  static const int _defaultQuality = 85;      // Higher quality for recipe photos (vs 75)
   static const int _defaultThumbnailSize = 300;
   static const int _defaultThumbnailQuality = 70;
   
@@ -120,11 +120,13 @@ class FirebaseStorageRepository implements StorageRepository {
     required String basePath,
     Function(int completed, int total)? onProgress,
   }) async {
-    final results = <String>[];
     final total = imageFiles.length;
+    int completed = 0;
     
-    for (int i = 0; i < total; i++) {
-      final file = imageFiles[i];
+    AppLogger.info('🚀 Starting parallel upload of $total images');
+    
+    // Create upload futures for parallel processing
+    final uploadFutures = imageFiles.map((file) async {
       final fileName = generateFileName(originalPath: file.path);
       final fullPath = '$basePath/$fileName';
       
@@ -134,16 +136,23 @@ class FirebaseStorageRepository implements StorageRepository {
         path: fullPath,
       );
       
-      if (url != null) {
-        results.add(url);
+      // Update progress atomically
+      if (onProgress != null) {
+        completed++;
+        onProgress(completed, total);
       }
       
-      if (onProgress != null) {
-        onProgress(i + 1, total);
-      }
-    }
+      return url;
+    }).toList();
     
-    return results;
+    // Wait for all uploads to complete in parallel
+    final results = await Future.wait(uploadFutures);
+    
+    // Filter out null results
+    final successfulUploads = results.where((url) => url != null).cast<String>().toList();
+    
+    AppLogger.info('✅ Parallel upload completed: ${successfulUploads.length}/$total successful');
+    return successfulUploads;
   }
   
   @override
@@ -222,24 +231,48 @@ class FirebaseStorageRepository implements StorageRepository {
     try {
       // Read original image
       final bytes = await imageFile.readAsBytes();
+      final originalSize = bytes.length;
       
-      // Compress with flutter_image_compress
-      final compressed = await FlutterImageCompress.compressWithList(
+      // Skip compression for small images (under 500KB) to save processing time
+      const maxSizeWithoutCompression = 500 * 1024; // 500KB
+      if (originalSize < maxSizeWithoutCompression) {
+        AppLogger.info('⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB');
+        return bytes;
+      }
+      
+      AppLogger.info('🔄 Compressing image with aspect ratio preservation: ${(originalSize / 1024).toStringAsFixed(1)}KB');
+      
+      // Compress with aspect-ratio preservation using quality-based approach
+      var compressed = await FlutterImageCompress.compressWithList(
         bytes,
-        minWidth: maxWidth,
-        minHeight: maxHeight,
         quality: quality,
         format: CompressFormat.jpeg,
-        autoCorrectionAngle: true, // Automatic EXIF rotation
+        autoCorrectionAngle: true,  // Automatic EXIF rotation
+        keepExif: false,           // Remove EXIF data for smaller file size
+        // Let flutter_image_compress handle dimensions automatically to preserve aspect ratio
       );
       
-      final originalSize = bytes.length;
+      // If result is still too large, apply additional compression passes
+      int currentQuality = quality;
+      while (compressed.length > 1024 * 1024 && currentQuality > 50) {
+        currentQuality -= 10;
+        AppLogger.info('🔄 Image still large (${formatBytes(compressed.length)}), reducing quality to $currentQuality');
+        
+        compressed = await FlutterImageCompress.compressWithList(
+          bytes,
+          quality: currentQuality,
+          format: CompressFormat.jpeg,
+          autoCorrectionAngle: true,
+          keepExif: false,
+        );
+      }
+      
       final compressedSize = compressed.length;
       final reduction = ((1 - (compressedSize / originalSize)) * 100)
           .toStringAsFixed(1);
       
       AppLogger.info(
-        'Image compressed: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)} ($reduction% reduction)',
+        '✅ Image compressed with aspect ratio preserved: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)} ($reduction% reduction)',
       );
       
       return compressed;

@@ -1,5 +1,6 @@
 // lib/views/skriv_sjalv_recept_view.dart
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -14,6 +15,12 @@ import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
+
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
   final bool isTemplate;
@@ -49,28 +56,221 @@ class _SkrivSjalvReceptViewContent extends StatefulWidget {
 class _SkrivSjalvReceptViewContentState
     extends State<_SkrivSjalvReceptViewContent> {
   final _formKey = GlobalKey<FormState>();
+  
+  // CRITICAL FIX: Track save operation to prevent navigation race conditions
+  bool _isSaving = false;
+  
+  // Enhanced upload notification system
+  StreamSubscription<UploadNotificationEvent>? _uploadNotificationSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupUploadNotifications();
+    
+    // Check for draft recovery after widget build
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkAndShowDraftRecovery();
+    });
+  }
+  
+  /// Setup upload notification listener for background events
+  void _setupUploadNotifications() {
+    _uploadNotificationSubscription = RecipeFormViewModel.uploadNotificationStream.listen(
+      (event) {
+        if (!mounted) return;
+        
+        _handleUploadNotification(event);
+      },
+      onError: (error) {
+        AppLogger.error('🔔 NOTIFICATION: Error in upload notification stream: $error');
+      },
+    );
+  }
+  
+  /// Handle upload notification events with appropriate UI feedback
+  void _handleUploadNotification(UploadNotificationEvent event) {
+    AppLogger.info('🔔 NOTIFICATION: Received ${event.trigger.name}: ${event.message}');
+    
+    // Show snackbar notification based on priority
+    switch (event.priority) {
+      case NotificationPriority.critical:
+      case NotificationPriority.high:
+        UtilityComponents.showErrorSnackbar(context, event.message);
+        break;
+      case NotificationPriority.medium:
+        UtilityComponents.showSuccessSnackbar(context, event.message);
+        break;
+      case NotificationPriority.low:
+        // For low priority, only show if it's a completion or success event
+        if (event.trigger == UploadNotificationTrigger.allCompleted ||
+            event.trigger == UploadNotificationTrigger.retrySuccess) {
+          UtilityComponents.showSuccessSnackbar(context, event.message);
+        }
+        break;
+    }
+  }
+  
+  /// Check for available drafts and show recovery dialog if needed
+  Future<void> _checkAndShowDraftRecovery() async {
+    if (!mounted) return;
+    
+    final viewModel = context.read<RecipeFormViewModel>();
+    
+    // Only check for drafts when creating new recipes (not editing existing ones)
+    if (viewModel.isEditMode) {
+      AppLogger.debug('🔄 DRAFT_RECOVERY: Skipping draft check - editing existing recipe');
+      return;
+    }
+    
+    try {
+      final availableDrafts = await viewModel.getAvailableDrafts();
+      
+      if (availableDrafts.isEmpty) {
+        AppLogger.debug('🔄 DRAFT_RECOVERY: No drafts available');
+        return;
+      }
+      
+      AppLogger.info('🔄 DRAFT_RECOVERY: Found ${availableDrafts.length} available drafts');
+      
+      if (mounted) {
+        final selectedDraftId = await context.showDraftRecovery(availableDrafts);
+        
+        if (selectedDraftId != null && mounted) {
+          await _restoreDraft(selectedDraftId);
+        } else {
+          AppLogger.info('🔄 DRAFT_RECOVERY: User chose to start fresh');
+        }
+      }
+    } catch (e) {
+      AppLogger.error('🔄 DRAFT_RECOVERY: Error checking for drafts: $e');
+      // Don't show error to user - draft recovery is optional functionality
+    }
+  }
+  
+  /// Restore draft with user feedback
+  Future<void> _restoreDraft(String draftId) async {
+    if (!mounted) return;
+    
+    try {
+      // Show loading state
+      SnackBarUtils.showLoading(context, AppStrings.restoringDraft);
+      
+      final viewModel = context.read<RecipeFormViewModel>();
+      final success = await viewModel.loadFromDraft(draftId);
+      if (mounted) {
+        if (success) {
+          // Show success feedback with field count
+          final formData = viewModel.serializeCurrentFormData();
+          final fieldCount = _countRestoredFields(formData);
+          
+          UtilityComponents.showSuccessSnackbar(
+            context,
+            AppStrings.draftRestoredWithCount(fieldCount),
+          );
+          
+          AppLogger.info('🔄 DRAFT_RECOVERY: Draft restored successfully - $fieldCount fields loaded');
+        } else {
+          UtilityComponents.showErrorSnackbar(
+            context,
+            AppStrings.couldNotRestoreDraft,
+          );
+          
+          AppLogger.error('🔄 DRAFT_RECOVERY: Failed to restore draft: $draftId');
+        }
+      }
+    } catch (e) {
+      AppLogger.error('🔄 DRAFT_RECOVERY: Error restoring draft: $e');
+      
+      if (mounted) {
+        UtilityComponents.showErrorSnackbar(
+          context,
+          AppStrings.couldNotRestoreDraft,
+        );
+      }
+    }
+  }
+  
+  /// Count non-empty fields in restored form data for user feedback
+  int _countRestoredFields(Map<String, dynamic> formData) {
+    int count = 0;
+    
+    // Core fields
+    if (_isNotEmpty(formData['title'])) count++;
+    if (_isNotEmpty(formData['description'])) count++;
+    if (formData['portions'] != null && formData['portions'] > 0) count++;
+    if (formData['timeMinutes'] != null && formData['timeMinutes'] > 0) count++;
+    if (_isNotEmpty(formData['sourceUrl'])) count++;
+    
+    // Dynamic lists
+    final ingredients = formData['ingredients'] as List<String>? ?? [];
+    count += ingredients.where((i) => i.trim().isNotEmpty).length;
+    
+    final instructions = formData['instructions'] as List<String>? ?? [];
+    count += instructions.where((i) => i.trim().isNotEmpty).length;
+    
+    final tags = formData['tags'] as List<String>? ?? [];
+    count += tags.where((t) => t.trim().isNotEmpty).length;
+    
+    // Images
+    final imageUrls = formData['imageUrls'] as List<String>? ?? [];
+    count += imageUrls.length;
+    
+    return count;
+  }
+  
+  /// Helper method for checking non-empty values
+  bool _isNotEmpty(dynamic value) {
+    return value != null && value.toString().trim().isNotEmpty;
+  }
 
   Future<void> _saveRecipe() async {
-    if (!_formKey.currentState!.validate()) return;
+    // CRITICAL FIX: Prevent multiple simultaneous save operations
+    if (_isSaving) {
+      AppLogger.warning('Save already in progress, ignoring duplicate request');
+      return;
+    }
+    
+    // CRITICAL FIX: Safe form validation to prevent null pointer crashes
+    final currentState = _formKey.currentState;
+    if (currentState == null || !currentState.validate()) return;
 
-    final viewModel = context.read<RecipeFormViewModel>();
-    final savedRecipe = await viewModel.saveRecipe();
+    // CRITICAL FIX: Set saving state to prevent navigation race conditions
+    setState(() {
+      _isSaving = true;
+    });
 
-    if (mounted) {
-      if (savedRecipe != null) {
-        // ✅ MIGRERAD: Använd UtilityComponents.showSuccessSnackbar
-        UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
-        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
-      } else {
-        // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
-        UtilityComponents.showErrorSnackbar(
-            context, viewModel.error ?? 'Kunde inte spara recept');
+    try {
+      final viewModel = context.read<RecipeFormViewModel>();
+      final savedRecipe = await viewModel.saveRecipe();
+
+      if (mounted) {
+        if (savedRecipe != null) {
+          // ✅ MIGRERAD: Använd UtilityComponents.showSuccessSnackbar
+          UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
+          // MEDIUM PRIORITY FIX: Better navigation that preserves user context
+          // Navigate to recipe detail or back to recipes list instead of clearing entire stack
+          Navigator.of(context).pop(savedRecipe); // Return to previous screen with saved recipe
+        } else {
+          // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
+          UtilityComponents.showErrorSnackbar(
+              context, viewModel.error ?? 'Kunde inte spara recept');
+        }
+      }
+    } finally {
+      // CRITICAL FIX: Always clear saving state, even on error
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }
 
   // FÖRENKLAD SMART BILDVÄLJARE
   Future<void> _pickImage(RecipeFormViewModel viewModel) async {
+    AppLogger.info('🎯 BUTTON_TAP: _pickImage called');
+    
     final choice = await showModalBottomSheet<String>(
       context: context,
       builder: (context) => SafeArea(
@@ -102,21 +302,14 @@ class _SkrivSjalvReceptViewContentState
               title: const Text(AppStrings.fromGallery),
               subtitle: Text(
                 viewModel.canAddMoreImages
-                    ? AppStrings.selectUpToImages(RecipeFormViewModel.maxImages - viewModel.imageUrls.length)
+                    ? AppStrings.selectUpToImages(
+                        RecipeFormViewModel.maxImages -
+                            viewModel.imageUrls.length)
                     : AppStrings.selectFromGallery,
               ),
               onTap: () => Navigator.pop(context, 'gallery'),
             ),
             const Divider(height: 1),
-            ListTile(
-              leading: Icon(
-                Icons.link,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              title: const Text('Lägg till från URL'),
-              subtitle: const Text('För bilder från webben'),
-              onTap: () => Navigator.pop(context, 'url'),
-            ),
             ListTile(
               leading: const Icon(Icons.close),
               title: const Text('Avbryt'),
@@ -127,112 +320,213 @@ class _SkrivSjalvReceptViewContentState
       ),
     );
 
-    if (choice == null || !mounted) return;
-
-    switch (choice) {
-      case 'camera':
-        await viewModel.pickAndUploadImage(context);
-        break;
-      case 'gallery':
-        if (viewModel.canAddMoreImages && viewModel.imageUrls.length < 4) {
-          await viewModel.pickMultipleImages(context);
-        } else {
-          await viewModel.pickAndUploadImage(context);
-        }
-        break;
-      case 'url':
-        final controller = TextEditingController();
-        final url = await showDialog<String>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Lägg till bild från URL'),
-            content: TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Bild-URL',
-                hintText: 'https://exempel.com/bild.jpg',
-              ),
-              keyboardType: TextInputType.url,
-              autofocus: true,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, controller.text),
-                child: const Text('Lägg till'),
-              ),
-            ],
-          ),
-        );
-
-        if (url != null && url.isNotEmpty) {
-          if (Uri.tryParse(url) != null &&
-              (url.startsWith('http://') || url.startsWith('https://'))) {
-            viewModel.addImageUrl(url);
-          } else {
-            if (mounted) {
-              UtilityComponents.showErrorSnackbar(context,
-                  'Ogiltig URL. Använd en fullständig URL som börjar med http:// eller https://');
-            }
-          }
-        }
-        break;
+    AppLogger.info('🎯 BUTTON_TAP: User choice: $choice');
+    
+    if (choice == null || !mounted) {
+      AppLogger.info('🎯 BUTTON_TAP: Choice was null or not mounted, returning');
+      return;
     }
+
+    // MEDIUM PRIORITY FIX: Enhanced error handling for image operations
+    try {
+      switch (choice) {
+        case 'camera':
+          AppLogger.info('🎯 BUTTON_TAP: Calling viewModel.pickImageFromCamera (direct)');
+          await viewModel.pickImageFromCamera(context);
+          break;
+        case 'gallery':
+          // HIGH PRIORITY FIX: Use canAddMoreImages and proper limit checking instead of hardcoded 4
+          if (viewModel.canAddMoreImages && (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
+            AppLogger.info('🎯 BUTTON_TAP: Calling viewModel.pickMultipleImagesFromGallery (direct)');
+            await viewModel.pickMultipleImagesFromGallery(context);
+          } else {
+            AppLogger.info('🎯 BUTTON_TAP: Calling viewModel.pickImageFromGallery (direct single)');
+            await viewModel.pickImageFromGallery(context);
+          }
+          break;
+      }
+    } catch (e) {
+      AppLogger.error('🎯 BUTTON_TAP: Error during image selection: $e');
+      if (mounted) {
+        UtilityComponents.showErrorSnackbar(
+          context, 
+          'Kunde inte välja bild. Kontrollera att appen har behörighet att använda kamera/galleri.'
+        );
+      }
+    }
+  }
+
+  // Helper method to check if there are unsaved changes
+  bool _hasUnsavedChanges(RecipeFormViewModel viewModel) {
+    // Consider form as having unsaved changes if any field has content
+    // IMMEDIATE FIX: Safe null checking to prevent crashes
+    return viewModel.title.isNotEmpty ||
+           viewModel.description.isNotEmpty ||
+           viewModel.ingredients.any((ingredient) => ingredient.trim().isNotEmpty) ||
+           viewModel.instructions.any((instruction) => instruction.trim().isNotEmpty) ||
+           viewModel.tags.any((tag) => tag.trim().isNotEmpty) ||
+           viewModel.imageUrls.isNotEmpty ||
+           (viewModel.portions ?? 0) > 0 ||
+           (viewModel.timeMinutes ?? 0) > 0 ||
+           (viewModel.rating ?? 0) > 0 ||
+           (viewModel.sourceUrl?.isNotEmpty ?? false);
+  }
+
+  // Show confirmation dialog for unsaved changes
+  Future<bool?> _showUnsavedChangesDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Osparade ändringar'),
+        content: const Text('Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Fortsätt skriva'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Lämna utan att spara'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_isSaving && !viewModel.isSaving, // CRITICAL FIX: Prevent navigation during save operations (check both states)
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (!didPop) {
+          // CRITICAL FIX: Block navigation if save is in progress (check both states)
+          if (_isSaving || viewModel.isSaving) {
+            if (context.mounted) {
+              UtilityComponents.showWarningSnackbar(
+                context, 
+                'Vänta medan receptet sparas...'
+              );
+            }
+            return;
+          }
+          
+          if (_hasUnsavedChanges(viewModel)) {
+            final shouldPop = await _showUnsavedChangesDialog(context) ?? false;
+            
+            // CRITICAL FIX: Re-check save state after dialog to prevent race conditions
+            if (shouldPop && context.mounted && !_isSaving && !viewModel.isSaving) {
+              Navigator.of(context).pop();
+            } else if (shouldPop && (_isSaving || viewModel.isSaving)) {
+              // Show warning if save started during dialog
+              if (context.mounted) {
+                UtilityComponents.showWarningSnackbar(
+                  context, 
+                  'En sparning påbörjades under valet. Vänta medan receptet sparas...'
+                );
+              }
+            }
+          } else {
+            Navigator.of(context).pop();
+          }
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           viewModel.isEditMode ? 'Redigera recept' : 'Skriv nytt recept',
+        ),
+        backgroundColor: AppColors.backgroundBeige,
+        foregroundColor: AppColors.textDark,
+        iconTheme: const IconThemeData(
+          color: AppColors.primaryBlue,
+          size: AppDimensions.iconSizeL,
+        ),
+        actionsIconTheme: const IconThemeData(
+          color: AppColors.primaryBlue,
+          size: AppDimensions.iconSizeL,
         ),
       ),
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.fromLTRB(
+              AppDimensions.paddingL,
+              AppDimensions.spacingXl, // More top padding for dropdown label
+              AppDimensions.paddingL,
+              AppDimensions.paddingL,
+            ),
             child: Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.only(
-                  bottom: AppDimensions.spacingXxl + AppDimensions.spacingL,
-                ),
                 children: [
-                  // Måltidstyp
-                  DropdownButtonFormField<String>(
-                    value: viewModel.mealType,
-                    decoration: const InputDecoration(labelText: 'Måltidstyp'),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    items: RecipeFormViewModel.mealTypes
-                        .map(
-                          (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) viewModel.setMealType(value);
-                    },
+                  // Måltidstyp - Custom layout to fix text cutoff
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Måltidstyp',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 4.0), // Minimal gap between label and dropdown
+                      DropdownButtonFormField<String>(
+                        initialValue: viewModel.mealType,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingL,
+                            vertical: AppDimensions.paddingM,
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        items: RecipeFormViewModel.mealTypes
+                            .map(
+                              (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) viewModel.setMealType(value);
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Bildhantering med UniversalImageManager
                   UniversalImageManager.recipeEdit(
                     imageUrls: viewModel.imageUrls,
-                    onAddImage: viewModel.addImageUrl,
                     onRemoveImage: viewModel.removeImageAt,
                     onSetPrimary: (index) {
+                      AppLogger.debug('🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}');
                       if (index < viewModel.imageUrls.length) {
-                        viewModel.setPrimaryImage(viewModel.imageUrls[index]);
+                        final imageUrl = viewModel.imageUrls[index];
+                        AppLogger.debug('🌟 RECIPE_VIEW: Setting primary image to: $imageUrl');
+                        viewModel.setPrimaryImage(imageUrl);
+                      } else {
+                        AppLogger.warning('⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})');
                       }
                     },
-                    userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
+                    userId:
+                        ServiceLocator.get<PermissionService>().currentUserId ??
+                            '',
                     onPickImage: () => _pickImage(viewModel),
                     maxImages: 5,
+                    isLoading: viewModel.isUploadingImage, // Add loading indicator
+                    // Enhanced Upload Progress Parameters
+                    uploadStatuses: viewModel.imageUploadStatuses,
+                    onRetryUpload: viewModel.retryImageUpload,
+                    onCancelUpload: viewModel.cancelImageUpload,
+                    uploadQueueStatus: viewModel.uploadQueueStatusText,
+                    // Bulk Upload Management Parameters
+                    uploadManagementSummary: viewModel.uploadManagementSummary,
+                    onRetryAllFailed: viewModel.retryAllFailedUploads,
+                    onCancelAllActive: viewModel.cancelAllActiveUploads,
+                    onClearAllFailed: viewModel.clearAllFailedUploads,
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
 
@@ -269,7 +563,8 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
-                    onChanged: (value) => viewModel.setPortions(int.tryParse(value)),
+                    onChanged: (value) =>
+                        viewModel.setPortions(int.tryParse(value)),
                     validator: FormValidators.portions(),
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
@@ -281,7 +576,8 @@ class _SkrivSjalvReceptViewContentState
                     style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
-                    onChanged: (value) => viewModel.setTimeMinutes(int.tryParse(value)),
+                    onChanged: (value) =>
+                        viewModel.setTimeMinutes(int.tryParse(value)),
                     validator: FormValidators.cookingTime(),
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
@@ -328,7 +624,8 @@ class _SkrivSjalvReceptViewContentState
                       decimal: true,
                     ),
                     textInputAction: TextInputAction.next,
-                    onChanged: (value) => viewModel.setRating(double.tryParse(value)),
+                    onChanged: (value) =>
+                        viewModel.setRating(double.tryParse(value)),
                     validator: FormValidators.rating(),
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
@@ -352,13 +649,14 @@ class _SkrivSjalvReceptViewContentState
                     onChanged: viewModel.setSourceUrl,
                     validator: FormValidators.recipeSourceUrl(),
                   ),
+                  const SizedBox(height: AppDimensions.spacingXl),
                 ],
               ),
             ),
           ),
 
-          // Loading overlay med StateWidget
-          if (viewModel.isSaving)
+          // CRITICAL FIX: Loading overlay for both local and ViewModel saving states
+          if (_isSaving || viewModel.isSaving)
             ColoredBox(
               color: AppColors.backgroundBeige.withValues(alpha: 0.8),
               child: Center(
@@ -370,20 +668,18 @@ class _SkrivSjalvReceptViewContentState
         ],
       ),
 
-      // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+      bottomNavigationBar: BottomActionContainer(
         child: UtilityComponents.primaryButton(
           context,
           label: 'Spara recept',
           icon: Icons.save,
-          onPressed:
-              viewModel.isSaving || !viewModel.isValid ? null : _saveRecipe,
-          isLoading: viewModel.isSaving,
+          onPressed: (_isSaving || viewModel.isSaving || !viewModel.isValid) ? null : _saveRecipe,
+          isLoading: _isSaving || viewModel.isSaving,
           loadingText: 'Sparar...',
           isExpanded: true,
         ),
       ),
+    ),
     );
   }
 
@@ -417,7 +713,10 @@ class _SkrivSjalvReceptViewContentState
                       keyboardType: TextInputType.multiline,
                       onChanged: (value) {
                         onUpdate(index, value);
-                        if (index == controllers.length - 1 && value.isNotEmpty) {
+                        // Add new field when typing in the last field and it becomes non-empty
+                        if (index == controllers.length - 1 && 
+                            value.trim().isNotEmpty && 
+                            value.length == 1) { // Only on first character to prevent duplicates
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             onAdd();
                           });
@@ -444,11 +743,13 @@ class _SkrivSjalvReceptViewContentState
       ],
     );
   }
+
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
+    // HIGH PRIORITY FIX: Proper resource disposal to prevent memory leaks
+    // Cancel upload notification subscription to prevent memory leaks
+    _uploadNotificationSubscription?.cancel();
+    AppLogger.debug('SkrivSjalvReceptView disposed - notification subscription cancelled');
     super.dispose();
   }
 }

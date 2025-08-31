@@ -3,11 +3,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/rating_notifications.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../../infrastructure/builders/recipe_builder.dart';
 
 void main() {
@@ -497,5 +497,3 @@ void main() {
   });
 }
 
-// Mock classes
-class MockNotificationService extends Mock implements NotificationService {}

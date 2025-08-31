@@ -6,6 +6,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase Firestore implementation for user profile management and social discovery.
 ///
@@ -215,7 +216,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     final seen = <String>{};
     final uid = currentUserId;
 
+    // Try optimized indexed search first
+    bool usedFallback = false;
     try {
+      AppLogger.debug('searchProfiles: Attempting indexed search for query: $normalizedQuery');
+      
       final nameQuery = await collection
           .where('isSearchable', isEqualTo: true)
           .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
@@ -231,42 +236,91 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           seen.add(profile.uid);
         }
       }
-    } catch (_) {
-      // If indexed search fails, fall back to a slower name search
-      final slowQuery = await collection
-          .where('isSearchable', isEqualTo: true)
-          .orderBy('displayName')
-          .limit(100)
-          .get();
-      for (final doc in slowQuery.docs) {
-        if (doc.id == uid) continue;
-        final profile = fromFirestore(doc);
-        if (profile.displayName.toLowerCase().contains(normalizedQuery) &&
-            !seen.contains(profile.uid)) {
-          results.add(profile);
-          seen.add(profile.uid);
-          if (results.length >= limit) break;
+      
+      AppLogger.info('searchProfiles: Indexed search successful: found ${results.length} results');
+    } catch (e) {
+      // If indexed search fails (likely missing composite index), use fallback
+      usedFallback = true;
+      AppLogger.warning('searchProfiles: Indexed search failed, using fallback: $e');
+      
+      try {
+        final slowQuery = await collection
+            .where('isSearchable', isEqualTo: true)
+            .limit(100)
+            .get();
+            
+        for (final doc in slowQuery.docs) {
+          if (doc.id == uid) continue;
+          final profile = fromFirestore(doc);
+          if (profile.displayName.toLowerCase().contains(normalizedQuery) &&
+              !seen.contains(profile.uid)) {
+            results.add(profile);
+            seen.add(profile.uid);
+            if (results.length >= limit) break;
+          }
+        }
+        
+        AppLogger.info('searchProfiles: Fallback search successful: found ${results.length} results');
+      } catch (fallbackError) {
+        AppLogger.error('searchProfiles: Fallback search also failed: $fallbackError');
+        
+        // If both indexed and fallback fail, try most basic query
+        try {
+          final basicQuery = await collection
+              .limit(50)
+              .get();
+              
+          for (final doc in basicQuery.docs) {
+            if (doc.id == uid) continue;
+            try {
+              final profile = fromFirestore(doc);
+              // Check if profile is searchable and matches query
+              if (profile.isSearchable &&
+                  profile.displayName.toLowerCase().contains(normalizedQuery) &&
+                  !seen.contains(profile.uid)) {
+                results.add(profile);
+                seen.add(profile.uid);
+                if (results.length >= limit) break;
+              }
+            } catch (docError) {
+              // Skip malformed documents
+              AppLogger.warning('searchProfiles: Skipping malformed document ${doc.id}: $docError');
+            }
+          }
+          
+          AppLogger.info('searchProfiles: Basic search completed: found ${results.length} results');
+        } catch (basicError) {
+          AppLogger.error('searchProfiles: All search methods failed: $basicError');
         }
       }
     }
 
-    // Optional email search
+    // Optional email search (only if not too many results already)
     if (normalizedQuery.contains('@') && results.length < 5) {
-      final emailQuery = await collection
-          .where('allowEmailSearch', isEqualTo: true)
-          .where('email', isEqualTo: normalizedQuery)
-          .limit(5)
-          .get();
-      for (final doc in emailQuery.docs) {
-        if (doc.id == uid) continue;
-        final profile = fromFirestore(doc);
-        if (!seen.contains(profile.uid)) {
-          results.add(profile);
-          seen.add(profile.uid);
+      try {
+        final emailQuery = await collection
+            .where('allowEmailSearch', isEqualTo: true)
+            .where('email', isEqualTo: normalizedQuery)
+            .limit(5)
+            .get();
+        for (final doc in emailQuery.docs) {
+          if (doc.id == uid) continue;
+          try {
+            final profile = fromFirestore(doc);
+            if (!seen.contains(profile.uid)) {
+              results.add(profile);
+              seen.add(profile.uid);
+            }
+          } catch (docError) {
+            AppLogger.warning('searchProfiles: Skipping malformed email search document ${doc.id}: $docError');
+          }
         }
+      } catch (emailError) {
+        AppLogger.warning('searchProfiles: Email search failed: $emailError');
       }
     }
 
+    // Sort results with exact matches first
     results.sort((a, b) {
       final aExact = a.displayName.toLowerCase() == normalizedQuery;
       final bExact = b.displayName.toLowerCase() == normalizedQuery;
@@ -274,6 +328,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       if (!aExact && bExact) return 1;
       return a.displayName.compareTo(b.displayName);
     });
+    
+    AppLogger.info('searchProfiles: Search completed: ${results.length} total results, used fallback: $usedFallback');
+    
     return results;
   }
 

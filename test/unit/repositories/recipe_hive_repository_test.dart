@@ -8,9 +8,9 @@ import 'package:butlery/models/recipe_unified.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
-// Mock Box implementation for Map<String, dynamic>
-class MockBox extends Mock implements Box<Map<String, dynamic>> {}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
 // Test implementation that allows box injection
 class TestableRecipeHiveRepository extends RecipeHiveRepository {
@@ -43,7 +43,7 @@ class TestableRecipeHiveRepository extends RecipeHiveRepository {
 void main() {
   group('RecipeHiveRepository', () {
     late TestableRecipeHiveRepository repository;
-    late MockBox mockBox;
+    late MockBox<Map<String, dynamic>> mockBox;
     
     // Test data
     const userId = 'test-user-123';
@@ -54,12 +54,16 @@ void main() {
     late Map<String, dynamic> recipeJson2;
     late Map<String, dynamic> recipeJson3;
     
+    setUpAll(() {
+      // Centralized fallback values already registered via TestServiceLocator
+    });
+    
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       
-      // Initialize mocks
-      mockBox = MockBox();
+      // Initialize mocks using centralized infrastructure
+      mockBox = MockBox<Map<String, dynamic>>();
       
       // Setup test recipes using builder
       testRecipe1 = RecipeBuilder()

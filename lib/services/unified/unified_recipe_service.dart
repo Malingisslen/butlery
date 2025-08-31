@@ -9,6 +9,7 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -105,7 +106,11 @@ class UnifiedRecipeService extends ChangeNotifier
   late final RealtimeRecipeOperations realtime;
 
   // Discovery service accessor
-  RecipeDiscoveryService get discovery => social.discoveryService;
+  RecipeDiscoveryService get discovery {
+    // Ensure social operations are initialized before accessing
+    _initializeSocialOperations();
+    return social.discoveryService;
+  }
 
   // State
   final List<Recipe> _recipes = [];
@@ -128,9 +133,13 @@ class UnifiedRecipeService extends ChangeNotifier
         _ratingsRepository = ratingsRepository,
         _notificationsRepository = notificationsRepository,
         _firestoreRepository = firestoreRepository {
-    // Initialize both modules and legacy interfaces
-    _initializeModules();
+    // Initialize legacy interfaces immediately for backward compatibility
     _initializeLegacyInterfaces();
+    
+    // Delay module initialization to avoid circular dependencies
+    Future.microtask(() {
+      _initializeModules();
+    });
 
     AppLogger.info(
         '✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
@@ -144,17 +153,21 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   /// Create service adapter with all dependencies
-  RecipeServiceAdapter _createServiceAdapter() {
-    return RecipeServiceAdapter(
+  /// Made lazy to avoid circular dependency issues during initialization
+  RecipeServiceAdapter? _serviceAdapter;
+  RecipeServiceAdapter _getServiceAdapter() {
+    // Lazy initialization to avoid circular dependencies
+    _serviceAdapter ??= RecipeServiceAdapter(
       recipeRepository:
           _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
       commentsRepository:
-          _commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+          _commentsRepository ?? ServiceLocator.tryGet<CommentsRepository>(),
       ratingsRepository:
-          _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-      notificationsRepository: _notificationsRepository ??
-          ServiceLocator.get<NotificationsRepository>(),
+          _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>(),
+      notificationsRepository:
+          _notificationsRepository ?? ServiceLocator.tryGet<NotificationsRepository>(),
     );
+    return _serviceAdapter!;
   }
 
   // ===== MODULE INITIALIZATION =====
@@ -169,7 +182,7 @@ class UnifiedRecipeService extends ChangeNotifier
       getCurrentUserDisplayName: () => currentUserDisplayName,
       setError: _setError,
       notifyListeners: notifyListeners,
-      serviceAdapter: _createServiceAdapter(),
+      getServiceAdapter: () => _getServiceAdapter(),
     );
 
     _socialModule = SocialRecipeModule(
@@ -203,15 +216,125 @@ class UnifiedRecipeService extends ChangeNotifier
 
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
+    // PersonalRecipeOperations doesn't need external dependencies
     personal = PersonalRecipeOperations(this);
-    social = SocialRecipeOperations(
-      this,
-      ratingsRepository:
-          _ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-      firestoreRepository:
-          _firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-    );
+    
+    // RealtimeRecipeOperations doesn't need external dependencies  
     realtime = RealtimeRecipeOperations(this);
+    
+    // SocialRecipeOperations needs repositories, defer if not available
+    if (_ratingsRepository != null && _firestoreRepository != null) {
+      social = SocialRecipeOperations(
+        this,
+        ratingsRepository: _ratingsRepository,
+        firestoreRepository: _firestoreRepository,
+      );
+    } else {
+      // Create a temporary placeholder that will be replaced when repositories are available
+      // This allows the service to be constructed even if repositories aren't ready yet
+      Future.microtask(() => _initializeSocialOperations());
+    }
+  }
+  
+  void _initializeSocialOperations() {
+    // Try to initialize social operations if not already done
+    try {
+      // Check if social is already initialized (using a try-catch to handle late field)
+      // ignore: unnecessary_statements
+      social;
+      return; // Already initialized
+    } catch (_) {
+      // Not initialized yet, proceed
+    }
+    
+    try {
+      final ratingsRepo = _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>();
+      final firestoreRepo = _firestoreRepository ?? ServiceLocator.tryGet<FirestoreRepository>();
+      
+      if (ratingsRepo != null && firestoreRepo != null) {
+        social = SocialRecipeOperations(
+          this,
+          ratingsRepository: ratingsRepo,
+          firestoreRepository: firestoreRepo,
+        );
+        AppLogger.info('✅ SocialRecipeOperations initialized with repositories from ServiceLocator');
+      } else {
+        // Create a stub/fallback social operations instance that provides basic functionality
+        // This prevents null errors while the actual repositories are being loaded
+        AppLogger.warning('⚠️ Creating fallback SocialRecipeOperations - repositories not yet available');
+        
+        // Get or create fallback repositories  
+        final fallbackRatingsRepo = ratingsRepo ?? _createFallbackRatingsRepository();
+        final fallbackFirestoreRepo = firestoreRepo ?? _createFallbackFirestoreRepository();
+        
+        social = SocialRecipeOperations(
+          this,
+          ratingsRepository: fallbackRatingsRepo,
+          firestoreRepository: fallbackFirestoreRepo,
+        );
+        
+        // Still schedule retry to get real repositories later
+        Future.delayed(const Duration(milliseconds: 500), () => _reinitializeSocialWithRealRepositories());
+      }
+    } catch (e) {
+      AppLogger.error('❌ Failed to initialize SocialRecipeOperations: $e');
+      // Create fallback to prevent crashes
+      social = SocialRecipeOperations(
+        this,
+        ratingsRepository: _createFallbackRatingsRepository(),
+        firestoreRepository: _createFallbackFirestoreRepository(),
+      );
+    }
+  }
+  
+  void _reinitializeSocialWithRealRepositories() {
+    try {
+      final ratingsRepo = ServiceLocator.tryGet<RatingsRepository>();
+      final firestoreRepo = ServiceLocator.tryGet<FirestoreRepository>();
+      
+      if (ratingsRepo != null && firestoreRepo != null) {
+        // Reinitialize with real repositories
+        social = SocialRecipeOperations(
+          this,
+          ratingsRepository: ratingsRepo,
+          firestoreRepository: firestoreRepo,
+        );
+        AppLogger.info('✅ SocialRecipeOperations re-initialized with real repositories');
+      } else {
+        // Retry again later
+        Future.delayed(const Duration(seconds: 1), () => _reinitializeSocialWithRealRepositories());
+      }
+    } catch (e) {
+      AppLogger.error('❌ Failed to reinitialize SocialRecipeOperations: $e');
+    }
+  }
+  
+  RatingsRepository _createFallbackRatingsRepository() {
+    // Return the existing repository if available, otherwise create a stub
+    return _ratingsRepository ?? FirebaseRatingsRepository(authRepository: _authRepository);
+  }
+  
+  FirestoreRepository _createFallbackFirestoreRepository() {
+    // Return the existing repository if available, otherwise create a stub
+    return _firestoreRepository ?? FirestoreRepository();
+  }
+
+  // Helper to check if modules are initialized
+  bool _areModulesInitialized() {
+    try {
+      // Access the modules to check if they're initialized
+      // ignore: unnecessary_statements
+      _personalModule;
+      // ignore: unnecessary_statements
+      _socialModule;
+      // ignore: unnecessary_statements
+      _realtimeModule;
+      // ignore: unnecessary_statements
+      _cacheModule;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ===== GETTERS =====
@@ -234,7 +357,14 @@ class UnifiedRecipeService extends ChangeNotifier
   @override
   String? get currentUserDisplayName =>
       _authRepository.currentUser?.displayName ?? 'Du';
-  bool get isSyncing => _cacheModule.isSyncing;
+  bool get isSyncing {
+    try {
+      return _cacheModule.isSyncing;
+    } catch (_) {
+      // Module not yet initialized
+      return false;
+    }
+  }
 
   /// Public getter for firestore instance (for legacy interfaces)
   @override
@@ -262,6 +392,15 @@ class UnifiedRecipeService extends ChangeNotifier
         }
       }
 
+      // Wait for modules to be initialized if not already
+      if (!_areModulesInitialized()) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        if (!_areModulesInitialized()) {
+          AppLogger.warning('Modules not initialized, initializing now...');
+          _initializeModules();
+        }
+      }
+      
       // Initialize cache and load cached recipes
       final cachedRecipes = await _cacheModule.initializeCache();
       _recipes.clear();
@@ -367,7 +506,7 @@ class UnifiedRecipeService extends ChangeNotifier
   /// This method determines whether to create a new recipe or update an existing one
   Future<bool> _saveRecipeForSocialModule(Recipe recipe) async {
     try {
-      final serviceAdapter = _createServiceAdapter();
+      final serviceAdapter = _getServiceAdapter();
 
       // Check if this recipe already exists in our list
       final existingRecipe = getRecipeById(recipe.id);
@@ -688,15 +827,17 @@ class UnifiedRecipeService extends ChangeNotifier
       'recipeCount': _recipes.length,
       'personalCount': personalRecipes.length,
       'collaborativeCount': collaborativeRecipes.length,
-      'cacheStatus': _cacheModule.getSyncStatus(),
-      'realtimeStatus': _realtimeModule.getRealtimeStatus(),
+      'cacheStatus': _areModulesInitialized() ? _cacheModule.getSyncStatus() : 'not initialized',
+      'realtimeStatus': _areModulesInitialized() ? _realtimeModule.getRealtimeStatus() : 'not initialized',
     };
   }
 
   @override
   void dispose() {
-    _cacheModule.dispose();
-    _realtimeModule.dispose();
+    if (_areModulesInitialized()) {
+      _cacheModule.dispose();
+      _realtimeModule.dispose();
+    }
     super.dispose();
   }
 }

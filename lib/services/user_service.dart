@@ -71,7 +71,6 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// // Create or update user profile
 /// final profile = await userService.createOrUpdateProfile(
 ///   displayName: 'John Doe',
-///   bio: 'Food enthusiast and home cook',
 ///   isSearchable: true,
 /// );
 /// 
@@ -141,7 +140,6 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
   /// Create or update user profile
   Future<UserProfile?> createOrUpdateProfile({
     required String displayName,
-    String? bio,
     String? avatarUrl,
     bool? isSearchable,
     bool? allowEmailSearch,
@@ -164,7 +162,6 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
         // Update existing profile
         profile = existingProfile.copyWith(
           displayName: displayName,
-          bio: bio,
           avatarUrl: avatarUrl,
           isSearchable: isSearchable,
           allowEmailSearch: allowEmailSearch,
@@ -177,7 +174,6 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
           uid: user.uid,
           displayName: displayName,
           email: user.email ?? '',
-          bio: bio,
           avatarUrl: avatarUrl,
           isSearchable: isSearchable ?? true,
           allowEmailSearch: allowEmailSearch ?? false,
@@ -191,7 +187,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
 
       // Save via repository
       await _repository.saveProfile(profile);
-
+      
       // Update cache
       _currentUserProfile = profile;
       _profileCache[user.uid] = profile;

@@ -1,7 +1,8 @@
 # 🎯 ViewModel Testing Guide
 
-## Critical Status: 9.3% Coverage (5/54 tested)
-**Priority: CRITICAL** - ViewModels control all UI logic and user interactions
+> **📊 For current coverage and priorities: [TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md)**  
+> **⚡ For general patterns: [TEST_PATTERNS_QUICK_REFERENCE.md](./TEST_PATTERNS_QUICK_REFERENCE.md)**  
+> **📝 Use template: `/test/templates/viewmodel_test_template.dart.template`**
 
 ## Why ViewModel Testing is Critical
 
@@ -231,33 +232,14 @@ group('Pagination', () {
 
 ## Priority ViewModels to Test
 
-### Critical User Paths (15 ViewModels)
-1. **recipe_form_viewmodel.dart** - Recipe creation/editing
-2. **recipe_detail_viewmodel.dart** - Recipe viewing
-3. **recipe_list_viewmodel.dart** - Recipe browsing
-4. **unified_shopping_viewmodel.dart** - Shopping list management
-5. **collaborative_shopping_viewmodel.dart** - Shared shopping
-6. **chat_viewmodel.dart** - Messaging
-7. **conversations_viewmodel.dart** - Chat list
-8. **import_base_viewmodel.dart** - Recipe import
-9. **url_import_viewmodel.dart** - Web scraping
-10. **user_profile_viewmodel.dart** - User settings
-11. **realtime_menu_viewmodel.dart** - Menu planning
-12. **social_recipe_viewmodel.dart** - Recipe sharing
-13. **discovery_dashboard_viewmodel.dart** - Content discovery
-14. **group_content_viewmodel.dart** - Group features
-15. **shared_content_viewmodel.dart** - Shared items
+See [TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md) for the complete list of 47 untested ViewModels.
 
-### Secondary Priority (20 ViewModels)
-- Archive import
-- Photo import
-- Text import
-- Friend management
-- Group creation
-- Invitations
-- Recipe selection
-- Menu sub-ViewModels
-- Realtime sub-ViewModels
+**Start with these critical ViewModels:**
+1. `recipe_form_viewmodel.dart` - Recipe creation/editing
+2. `recipe_detail_viewmodel.dart` - Recipe viewing
+3. `unified_shopping_viewmodel.dart` - Shopping lists
+4. `chat_viewmodel.dart` - Messaging
+5. `import_base_viewmodel.dart` - Import foundation
 
 ## Common ViewModel Testing Patterns
 
@@ -455,6 +437,4 @@ cmd.exe /c "flutter test --coverage test/unit/viewmodels/"
 ```
 
 ---
-*Created: January 2025*
-*Current Coverage: 9.3% (5/54) - CRITICAL GAP*
-*Target: 90% coverage ensuring robust UI logic*
+*For current coverage and priorities, see [TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md)*

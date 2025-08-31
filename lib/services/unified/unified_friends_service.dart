@@ -51,6 +51,7 @@
 /// friendsService.watchFriendActivity().listen(updateSocialUI);
 /// ```
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -61,6 +62,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 // Feature interfaces
@@ -72,29 +74,246 @@ import 'package:butlery/services/unified/operations/social_group_sharing_operati
 // Friends service classes consolidated during nuclear consolidation
 
 /// Consolidated friends state manager (simplified)
-class FriendsStateManager {
-  FriendsStateManager();
+class FriendsStateManager extends ChangeNotifier {
+  final FirebaseFriendsRepository _repository;
   
-  // State getters (simplified implementations)
-  List<UserProfile> get friends => <UserProfile>[];
-  List<FriendRequest> get incomingRequests => <FriendRequest>[];
-  List<FriendRequest> get outgoingRequests => <FriendRequest>[];
-  List<FriendCategory> get categories => <FriendCategory>[];
-  List<GroupInvitation> get sentInvitations => <GroupInvitation>[];
-  final Set<String> blockedUsers = <String>{};
+  // Internal state
+  List<UserProfile> _friends = [];
+  List<FriendRequest> _incomingRequests = [];
+  List<FriendRequest> _outgoingRequests = [];
+  List<FriendCategory> _categories = [];
+  List<GroupInvitation> _sentInvitations = [];
+  final Set<String> _blockedUsers = <String>{};
+  bool _isInitialized = false;
+  bool _isLoading = false;
+  String? _error;
+  
+  // Stream subscriptions for real-time updates
+  late StreamSubscription? _incomingRequestsSubscription;
+  late StreamSubscription? _sentRequestsSubscription;
+  late StreamSubscription? _groupInvitationsSubscription;
+  
+  FriendsStateManager({required FirebaseFriendsRepository repository})
+      : _repository = repository {
+    AppLogger.debug('FriendsStateManager initialized with repository');
+  }
+  
+  // State getters
+  List<UserProfile> get friends => List.unmodifiable(_friends);
+  List<FriendRequest> get incomingRequests => List.unmodifiable(_incomingRequests);
+  List<FriendRequest> get outgoingRequests => List.unmodifiable(_outgoingRequests);
+  List<FriendCategory> get categories => List.unmodifiable(_categories);
+  List<GroupInvitation> get sentInvitations => List.unmodifiable(_sentInvitations);
+  Set<String> get blockedUsers => Set.unmodifiable(_blockedUsers);
   Map<String, Set<String>> get friendCategoryRelationships => <String, Set<String>>{};
   
   // Status getters
-  bool get isInitialized => true;
-  bool get isLoading => false;
-  String? get error => null;
-  bool get hasError => false;
+  bool get isInitialized => _isInitialized;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get hasError => _error != null;
+  
+  /// Initialize and load all friends data from Firebase
+  Future<void> initialize() async {
+    if (_isInitialized) {
+      AppLogger.debug('FriendsStateManager already initialized');
+      return;
+    }
+    
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    
+    try {
+      AppLogger.info('🔄 Loading friends data from Firebase...');
+      
+      // Get current user ID
+      final currentUserId = _repository.currentUserId;
+      if (currentUserId == null) {
+        throw Exception('User not authenticated');
+      }
+      
+      // Load all data in parallel for better performance
+      await Future.wait([
+        _loadFriends(currentUserId),
+        _loadFriendRequests(),
+        _loadCategories(currentUserId),
+      ]);
+      
+      // Set up real-time listeners
+      _setupRealtimeListeners(currentUserId);
+      
+      _isInitialized = true;
+      _isLoading = false;
+      AppLogger.success('✅ Friends data loaded successfully');
+      AppLogger.info('📊 Loaded: ${_friends.length} friends, ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests');
+      
+    } catch (e, stackTrace) {
+      _error = 'Failed to load friends data: $e';
+      _isLoading = false;
+      AppLogger.error('❌ Failed to initialize FriendsStateManager: $e', stackTrace);
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Load friends list from Firebase
+  Future<void> _loadFriends(String userId) async {
+    try {
+      // Get friend IDs first
+      final friendIds = await _repository.fetchFriendIds(userId);
+      
+      if (friendIds.isNotEmpty) {
+        // Get friend profiles
+        final friendProfiles = await _repository.fetchFriendProfiles(friendIds);
+        _friends = friendProfiles;
+        AppLogger.debug('Loaded ${_friends.length} friends');
+      } else {
+        _friends = [];
+        AppLogger.debug('No friends found');
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to load friends: $e');
+      _friends = [];
+    }
+  }
+  
+  /// Load friend requests from Firebase
+  Future<void> _loadFriendRequests() async {
+    try {
+      // Load both incoming and outgoing requests
+      final incomingFuture = _repository.getIncomingRequests();
+      final outgoingFuture = _repository.getSentRequests();
+      
+      final results = await Future.wait([incomingFuture, outgoingFuture]);
+      
+      _incomingRequests = results[0];
+      _outgoingRequests = results[1];
+      
+      AppLogger.debug('Loaded ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests');
+    } catch (e) {
+      AppLogger.warning('Failed to load friend requests: $e');
+      _incomingRequests = [];
+      _outgoingRequests = [];
+    }
+  }
+  
+  /// Load categories from Firebase
+  Future<void> _loadCategories(String userId) async {
+    try {
+      _categories = await _repository.fetchCategories(userId);
+      AppLogger.debug('Loaded ${_categories.length} categories');
+    } catch (e) {
+      AppLogger.warning('Failed to load categories: $e');
+      _categories = [];
+    }
+  }
+  
+  /// Set up real-time listeners for data changes
+  void _setupRealtimeListeners(String userId) {
+    try {
+      // Listen to incoming requests
+      _incomingRequestsSubscription = _repository.incomingRequestsStream(userId).listen(
+        (requests) {
+          _incomingRequests = requests;
+          AppLogger.debug('Real-time update: ${_incomingRequests.length} incoming requests');
+          notifyListeners();
+        },
+        onError: (e) {
+          AppLogger.warning('Incoming requests stream error: $e');
+        },
+      );
+      
+      // Listen to sent requests
+      _sentRequestsSubscription = _repository.sentRequestsStream(userId).listen(
+        (requests) {
+          _outgoingRequests = requests;
+          AppLogger.debug('Real-time update: ${_outgoingRequests.length} outgoing requests');
+          notifyListeners();
+        },
+        onError: (e) {
+          AppLogger.warning('Sent requests stream error: $e');
+        },
+      );
+      
+      // Listen to group invitations
+      _groupInvitationsSubscription = _repository.receivedInvitationsStream(userId).listen(
+        (invitations) {
+          _sentInvitations = invitations;
+          AppLogger.debug('Real-time update: ${_sentInvitations.length} group invitations');
+          notifyListeners();
+        },
+        onError: (e) {
+          AppLogger.warning('Group invitations stream error: $e');
+        },
+      );
+      
+      AppLogger.success('✅ Real-time listeners setup complete');
+    } catch (e) {
+      AppLogger.warning('Failed to setup real-time listeners: $e');
+    }
+  }
+  
+  /// Clear error state
+  void clearError() {
+    if (_error != null) {
+      _error = null;
+      notifyListeners();
+    }
+  }
+  
+  /// Refresh all data
+  Future<void> refresh() async {
+    if (!_isInitialized) {
+      await initialize();
+      return;
+    }
+    
+    final currentUserId = _repository.currentUserId;
+    if (currentUserId == null) {
+      _error = 'User not authenticated';
+      notifyListeners();
+      return;
+    }
+    
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    
+    try {
+      await Future.wait([
+        _loadFriends(currentUserId),
+        _loadFriendRequests(),
+        _loadCategories(currentUserId),
+      ]);
+      
+      _isLoading = false;
+      AppLogger.success('✅ Friends data refreshed successfully');
+    } catch (e) {
+      _error = 'Failed to refresh friends data: $e';
+      _isLoading = false;
+      AppLogger.error('❌ Failed to refresh friends data: $e');
+    }
+    
+    notifyListeners();
+  }
   
   // Additional methods for internal operations
   Map<String, Set<String>> get relationshipsInternal => <String, Set<String>>{};
-  dynamic getCategoryById(String categoryId) => null;
-  void addListener(dynamic listener) {}
-  void removeListener(dynamic listener) {}
+  dynamic getCategoryById(String categoryId) {
+    return _categories.where((c) => c.id == categoryId).firstOrNull;
+  }
+  
+  @override
+  void dispose() {
+    // Cancel all subscriptions
+    _incomingRequestsSubscription?.cancel();
+    _sentRequestsSubscription?.cancel();
+    _groupInvitationsSubscription?.cancel();
+    
+    AppLogger.debug('FriendsStateManager disposed - cleaned up ${_friends.length} friends data');
+    super.dispose();
+  }
 }
 
 /// Consolidated friends service coordinator (simplified)  
@@ -169,6 +388,8 @@ class FriendsCacheService {
 class UnifiedFriendsService extends ChangeNotifier {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
+  final AuthRepository _authRepository;
+  late final FirebaseFriendsRepository _friendsRepository;
   
   // Focused modules (Phase 9 refactoring)
   late final FriendsStateManager _stateManager;
@@ -185,7 +406,13 @@ class UnifiedFriendsService extends ChangeNotifier {
   UnifiedFriendsService({
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
-  })  : _firestoreRepository = firestoreRepository {
+  })  : _firestoreRepository = firestoreRepository,
+        _authRepository = authRepository {
+    
+    // Create Firebase friends repository
+    _friendsRepository = FirebaseFriendsRepository(
+      authRepository: _authRepository,
+    );
     
     // Initialize focused modules
     _initializeModules();
@@ -232,7 +459,13 @@ class UnifiedFriendsService extends ChangeNotifier {
   Future<void> initialize() async {
     try {
       AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
+      
+      // Initialize the state manager to load data from Firebase
+      await _stateManager.initialize();
+      
+      // Initialize the service coordinator
       await _serviceCoordinator.initialize();
+      
       AppLogger.success('✅ UnifiedFriendsService facade initialized');
     } catch (e) {
       AppLogger.error('❌ Failed to initialize UnifiedFriendsService facade: $e');
@@ -243,8 +476,8 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ===== PRIVATE INITIALIZATION METHODS =====
 
   void _initializeModules() {
-    // Initialize state manager
-    _stateManager = FriendsStateManager();
+    // Initialize state manager with Firebase repository
+    _stateManager = FriendsStateManager(repository: _friendsRepository);
     
     // Initialize service coordinator
     _serviceCoordinator = FriendsServiceCoordinator();
@@ -257,7 +490,7 @@ class UnifiedFriendsService extends ChangeNotifier {
       notifyListeners();
     });
     
-    AppLogger.debug('Focused modules initialized');
+    AppLogger.debug('Focused modules initialized with Firebase repository');
   }
 
   void _initializeFeatureInterfaces() {
@@ -589,7 +822,6 @@ class UnifiedFriendsService extends ChangeNotifier {
             displayName: friendData['displayName'] ?? 'Unknown User',
             email: friendData['email'] ?? '',
             avatarUrl: friendData['avatarUrl'],
-            bio: friendData['bio'],
             joinedAt: friendData['joinedAt'] != null ? (friendData['joinedAt'] as Timestamp).toDate() : DateTime.now(),
             lastActiveAt: friendData['lastActiveAt'] != null ? (friendData['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
           ));
@@ -686,7 +918,6 @@ class UnifiedFriendsService extends ChangeNotifier {
             displayName: userData['displayName'] ?? 'Unknown User',
             email: userData['email'] ?? '',
             avatarUrl: userData['avatarUrl'],
-            bio: userData['bio'],
             joinedAt: userData['joinedAt'] != null ? (userData['joinedAt'] as Timestamp).toDate() : DateTime.now(),
             lastActiveAt: userData['lastActiveAt'] != null ? (userData['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
           ));
@@ -761,7 +992,6 @@ class UnifiedFriendsService extends ChangeNotifier {
             displayName: userData['displayName'] ?? 'Unknown User',
             email: userData['email'] ?? '',
             avatarUrl: userData['avatarUrl'],
-            bio: userData['bio'],
             joinedAt: userData['joinedAt'] != null ? (userData['joinedAt'] as Timestamp).toDate() : DateTime.now(),
             lastActiveAt: userData['lastActiveAt'] != null ? (userData['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
           ));
@@ -779,7 +1009,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ===== VIEWMODEL COMPATIBILITY METHODS (Delegated) =====
 
   /// Clear error state (for ViewModels)
-  void clearError() => _serviceCoordinator.clearError();
+  void clearError() => _stateManager.clearError();
 
   /// Get friends list (for ViewModels)
   List<UserProfile> get friendsList => friends;

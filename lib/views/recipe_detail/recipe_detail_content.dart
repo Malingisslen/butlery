@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
+import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -203,9 +204,12 @@ class RecipeDetailContent extends StatelessWidget {
                 bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
                 bottomRight: Radius.circular(AppDimensions.borderRadiusM),
               ),
-              child: img.UniversalImageManager.carousel(
+              child: img.UniversalImageManager.recipeDetail(
                 imageUrls: viewModel.recipe.imageUrls,
-                height: 250,
+                size: ImageSize.large, // Now properly sized for recipe detail
+                showNavigationDots: true,
+                showImageCounter: true,
+                onImageTap: (index) => onImageTap(viewModel.recipe.imageUrls, index),
               ),
             ),
           ),

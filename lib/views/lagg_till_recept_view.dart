@@ -54,8 +54,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/services/dialog_service.dart';
+// Removed unused dialog_service import
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -79,39 +78,11 @@ class LaggTillReceptView extends StatelessWidget {
   /// through clean architectural separation and responsive design coordination.
   const LaggTillReceptView({super.key});
 
-  /// Comprehensive navigation handling with route coordination and user flow optimization.
-  /// 
-  /// [context] Build context for navigation coordination and route management
-  /// [routeName] Route name for navigation target and user flow destination
-  /// 
-  /// Handles navigation delegation enabling proper route management, user flow coordination,
-  /// and comprehensive navigation functionality through clean route handling
-  /// and proper navigation stack management with user experience optimization.
-  /// 
-  /// **Navigation Features:**
-  /// - Clean route delegation with proper navigation stack management
-  /// - User flow optimization with seamless transition coordination
-  /// - Navigation safety with proper context validation and error handling
-  /// - Route coordination with application navigation system integration
+  /// Navigate to the specified route
   void _navigate(BuildContext context, String routeName) {
     Navigator.pushNamed(context, routeName);
   }
 
-  /// Handle file import for CSV/Excel files
-  Future<void> _handleFileImport(BuildContext context) async {
-    try {
-      // Navigate to file import view
-      Navigator.pushNamed(context, '/fileImport');
-    } catch (e) {
-      // Show error if navigation fails
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Kunde inte öppna filimport: $e'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
-  }
 
   /// Comprehensive recipe addition interface construction with theme-centralized components and exit protection.
   /// 
@@ -144,35 +115,28 @@ class LaggTillReceptView extends StatelessWidget {
   /// Returns complete recipe addition interface with comprehensive functionality and modern architecture.
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) async {
-        if (!didPop) {
-          await DialogService().showExitDialogAndExit(context);
-        }
-      },
-      child: LayoutComponents.mainMenu(
-        currentIndex: 1,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Hur vill du lägga till ditt recept?',
-                  style: AppTextStyles.headlineSmall,
-                ),
+    return LayoutComponents.mainMenu(
+      currentIndex: 1,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Hur vill du lägga till ditt recept?',
+                style: AppTextStyles.headlineSmall,
+              ),
               const SizedBox(height: AppDimensions.spacingL),
 
-              // Grid with import options
-              LayoutComponents.squareButtonGrid(
+              // Recipe upload button grid using theme-based layout
+              LayoutComponents.recipeUploadButtonGrid(
                 context,
                 buttons: [
                   {
-                    'label': 'CSV/EXCEL',
-                    'icon': Icons.table_chart,
-                    'onPressed': () => _handleFileImport(context),
+                    'label': 'FACEBOOK',
+                    'icon': Icons.facebook,
+                    'onPressed': () => _navigate(context, '/franSocialaMedier'),
                   },
                   {
                     'label': 'FOTO',
@@ -200,20 +164,13 @@ class LaggTillReceptView extends StatelessWidget {
                     'onPressed': () => _navigate(context, '/skrivSjalv'),
                   },
                 ],
+                archiveButton: {
+                  'label': 'ARKIV',
+                  'icon': Icons.archive,
+                  'onPressed': () => _navigate(context, '/importFranArkiv'),
+                },
               ),
-              
-              const SizedBox(height: AppDimensions.spacingL),
-
-              // Large bottom button for Archive
-              UtilityComponents.largeButton(
-                context,
-                label: 'ARKIV',
-                icon: Icons.archive,
-                onPressed: () => _navigate(context, '/importFranArkiv'),
-                margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL + AppDimensions.spacingS),
-              ),
-              ],
-            ),
+            ],
           ),
         ),
       ),

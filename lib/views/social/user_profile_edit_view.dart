@@ -13,6 +13,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/layout/bordered_container.dart';
 
@@ -41,9 +42,7 @@ class _UserProfileEditViewContentState
     extends State<_UserProfileEditViewContent> {
   final _formKey = GlobalKey<FormState>();
   final _displayNameController = TextEditingController();
-  final _bioController = TextEditingController();
   final _displayNameFocusNode = FocusNode();
-  final _bioFocusNode = FocusNode();
 
   bool _hasInitialized = false;
 
@@ -62,9 +61,7 @@ class _UserProfileEditViewContentState
   @override
   void dispose() {
     _displayNameController.dispose();
-    _bioController.dispose();
     _displayNameFocusNode.dispose();
-    _bioFocusNode.dispose();
     super.dispose();
   }
 
@@ -72,7 +69,6 @@ class _UserProfileEditViewContentState
     if (_hasInitialized) return;
 
     _displayNameController.text = viewModel.displayName;
-    _bioController.text = viewModel.bio;
     _hasInitialized = true;
   }
 
@@ -85,9 +81,11 @@ class _UserProfileEditViewContentState
   }
 
   Future<void> _uploadAvatar() async {
+    AppLogger.debug('🎨 VIEW: _uploadAvatar called');
     final viewModel = context.read<UserProfileViewModel>();
 
     // Show loading dialog during upload
+    AppLogger.debug('🎨 VIEW: Showing loading dialog');
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -103,15 +101,20 @@ class _UserProfileEditViewContentState
       ),
     );
 
+    AppLogger.debug('🎨 VIEW: Calling viewModel.uploadAvatar()');
     final success = await viewModel.uploadAvatar();
+    AppLogger.debug('🎨 VIEW: uploadAvatar returned: $success');
 
     if (mounted) {
       Navigator.pop(context); // Close loading dialog
 
       if (success) {
+        AppLogger.info('🎨 VIEW: Upload success, showing success message');
         SnackBarUtils.showSuccess(context, 'Avatar uppladdad!');
       } else {
-        SnackBarUtils.showError(context, viewModel.error ?? 'Kunde inte ladda upp avatar');
+        final errorMsg = viewModel.error ?? 'Kunde inte ladda upp avatar';
+        AppLogger.error('🎨 VIEW: Upload failed, showing error: $errorMsg');
+        SnackBarUtils.showError(context, errorMsg);
       }
     }
   }
@@ -123,11 +126,9 @@ class _UserProfileEditViewContentState
 
     // Use ValidationUtils for safe text processing
     final displayName = ValidationUtils.safeTrim(_displayNameController.text);
-    final bio = ValidationUtils.safeTrim(_bioController.text);
 
     // Update ViewModel with current form values
     viewModel.updateDisplayName(displayName);
-    viewModel.updateBio(bio);
 
     final success = await viewModel.saveProfile();
 
@@ -205,7 +206,7 @@ class _UserProfileEditViewContentState
           form: _buildForm(viewModel),
           onSave: viewModel.isLoading || !viewModel.isFormValid ? null : _saveProfile,
           isLoading: viewModel.isLoading,
-          showSaveButton: true,
+          showSaveButton: false,
           showCancelButton: false,
           additionalActions: [
             // Clear error button
@@ -247,10 +248,6 @@ class _UserProfileEditViewContentState
 
           // Display name field
           _buildDisplayNameField(viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
-
-          // Bio field
-          _buildBioField(viewModel),
           const SizedBox(height: AppDimensions.spacingXl),
 
           // Privacy settings
@@ -287,8 +284,9 @@ class _UserProfileEditViewContentState
           const SizedBox(height: AppDimensions.spacingL),
 
           // Avatar action buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppDimensions.spacingL,
             children: [
               OutlinedButton.icon(
                 onPressed: viewModel.isUploadingAvatar ? null : _uploadAvatar,
@@ -297,8 +295,7 @@ class _UserProfileEditViewContentState
                     ? 'Ändra avatar'
                     : 'Lägg till avatar'),
               ),
-              if (viewModel.avatarUrl != null) ...[
-                const SizedBox(width: AppDimensions.spacingL),
+              if (viewModel.avatarUrl != null)
                 OutlinedButton.icon(
                   onPressed: viewModel.isUploadingAvatar
                       ? null
@@ -310,7 +307,6 @@ class _UserProfileEditViewContentState
                   label: const Text('Ta bort'),
                   style: ComponentThemes.deleteButtonStyle,
                 ),
-              ],
             ],
           ),
         ],
@@ -361,45 +357,6 @@ class _UserProfileEditViewContentState
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             viewModel.displayNameError!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.error,
-                ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildBioField(UserProfileViewModel viewModel) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Beskrivning',
-          style: AppTextStyles.labelMedium,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        TextFormField(
-          controller: _bioController,
-          focusNode: _bioFocusNode,
-          maxLines: 3,
-          maxLength: 150,
-          decoration: const InputDecoration(
-            hintText: 'Berätta lite om dig själv (valfritt)',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.info_outline),
-          ),
-          validator: (value) => ValidationUtils.validateLength(
-            value,
-            maxLength: 150,
-            fieldName: 'Beskrivning',
-          ),
-          onChanged: viewModel.updateBio,
-        ),
-        if (viewModel.bioError != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            viewModel.bioError!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.error,
                 ),

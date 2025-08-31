@@ -217,8 +217,11 @@ class AvatarImageWidget extends StatelessWidget {
 
   /// Get initials from display name or email
   String _getInitials() {
-    if (displayName != null && displayName!.isNotEmpty) {
-      final words = displayName!.trim().split(' ');
+    if (displayName != null && displayName!.trim().isNotEmpty) {
+      final words = displayName!.trim()
+          .split(' ')
+          .where((word) => word.isNotEmpty)
+          .toList();
       if (words.length >= 2) {
         return (words[0][0] + words[1][0]).toUpperCase();
       } else {

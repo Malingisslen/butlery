@@ -387,6 +387,17 @@ class ServiceLocator {
     return _container!.get<T>();
   }
 
+  /// Try to get a service from the global container.
+  /// Returns null if the service is not registered or container not initialized.
+  static T? tryGet<T extends Object>() {
+    if (_container == null) return null;
+    try {
+      return _container!.get<T>();
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Check if a service is registered.
   static bool isRegistered<T extends Object>() {
     if (_container == null) return false;

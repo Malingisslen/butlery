@@ -42,13 +42,6 @@ class GroupMemberCard {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (member.bio != null && member.bio!.isNotEmpty)
-              Text(
-                member.bio!,
-                style: Theme.of(context).textTheme.bodySmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
             Row(
               children: [
                 if (_isGroupOwner(member, group))

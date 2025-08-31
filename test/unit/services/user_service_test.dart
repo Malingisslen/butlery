@@ -178,14 +178,12 @@ void main() {
         // Act
         final result = await userService.createOrUpdateProfile(
           displayName: 'Updated Name',
-          bio: 'New bio',
           isSearchable: true,
         );
         
         // Assert
         expect(result, isNotNull);
         expect(result?.displayName, equals('Updated Name'));
-        expect(result?.bio, equals('New bio'));
         expect(result?.isSearchable, isTrue);
         verify(() => mockUserRepository.saveProfile(any())).called(1);
       });

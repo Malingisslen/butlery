@@ -158,6 +158,10 @@ class SwedishPluralization {
     'krossad': 'krossade',
     'krossade': 'krossade', // Already plural form
     'burk krossade tomater': 'burkar krossade tomater',
+    
+    // Common -a to -or plurals
+    'flicka': 'flickor',
+    'flaska': 'flaskor',
   };
 
   /// Advanced normalization of ingredient names to singular form for accurate grouping and consolidation
@@ -199,7 +203,18 @@ class SwedishPluralization {
       return name.substring(0, name.length - 2);
     }
     if (lower.endsWith('or') && lower.length > 3) {
-      return name.substring(0, name.length - 2);
+      // Many Swedish -or plurals have -a singulars (e.g., flickor -> flicka, flaskor -> flaska)
+      // Try both patterns: remove -or and remove -or + add a
+      final withoutOr = name.substring(0, name.length - 2);
+      final withA = '${withoutOr}a';
+      
+      // Check if the -a form is known in our database
+      if (irregularPlurals.containsKey(withA.toLowerCase()) && 
+          irregularPlurals[withA.toLowerCase()] == lower) {
+        return withA;
+      }
+      // Default to simple -or removal
+      return withoutOr;
     }
     if (lower.endsWith('er') && lower.length > 3) {
       return name.substring(0, name.length - 2);
@@ -250,7 +265,12 @@ class SwedishPluralization {
 
     // Check irregular plurals database first
     if (irregularPlurals.containsKey(lower)) {
-      return irregularPlurals[lower]!;
+      final plural = irregularPlurals[lower]!;
+      // Preserve original case for first letter
+      if (singular.isNotEmpty && singular[0].toUpperCase() == singular[0]) {
+        return plural[0].toUpperCase() + plural.substring(1);
+      }
+      return plural;
     }
 
     // Handle compound ingredient names (e.g., "burk tomatsås")
@@ -336,6 +356,7 @@ class SwedishPluralization {
       'påse': 'påsar',
       'förpackning': 'förpackningar',
       'flaska': 'flaskor',
+      'flicka': 'flickor',
       'ask': 'askar',
       'kött': 'kött', // Invariant
       'fisk': 'fisk', // Invariant
@@ -353,8 +374,8 @@ class SwedishPluralization {
     if (specialCases.containsKey(lower)) {
       // Behåll ursprunglig case-struktur
       final special = specialCases[lower]!;
-      if (word[0].toUpperCase() == word[0] && word.toLowerCase() == word) {
-        // Första bokstaven stor, resten små
+      if (word.isNotEmpty && word[0].toUpperCase() == word[0]) {
+        // Första bokstaven stor
         return special[0].toUpperCase() + special.substring(1);
       }
       return special;

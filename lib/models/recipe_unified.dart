@@ -310,23 +310,27 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
     return RecipeCore(
       id: id,
-      title: data['title'] as String,
-      description: data['description'] as String,
+      title: data['title'] as String? ?? '',
+      description: data['description'] as String? ?? '',
       portions: data['portions'] as int?,
       timeMinutes: data['timeMinutes'] as int?,
       ingredients: List<String>.from(data['ingredients'] ?? []),
       instructions: List<String>.from(data['instructions'] ?? []),
       tags: data['tags'] != null ? List<String>.from(data['tags']) : null,
       rating: data['rating']?.toDouble(),
-      mealType: data['mealType'] as String,
+      mealType: data['mealType'] as String? ?? 'Middag',
       sourceUrl: data['sourceUrl'] as String?,
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
       createdAt: data['createdAt'] is DateTime 
           ? data['createdAt'] as DateTime
-          : AppTimestamp.fromFirestore(data['createdAt']).dateTime,
+          : (data['createdAt'] != null 
+              ? AppTimestamp.fromFirestore(data['createdAt']).dateTime 
+              : DateTime.now()),
       updatedAt: data['updatedAt'] is DateTime 
           ? data['updatedAt'] as DateTime
-          : AppTimestamp.fromFirestore(data['updatedAt']).dateTime,
+          : (data['updatedAt'] != null 
+              ? AppTimestamp.fromFirestore(data['updatedAt']).dateTime 
+              : DateTime.now()),
       createdBy: data['createdBy'] as String?,
       isPublic: data['isPublic'] as bool? ?? false,
       lastCookedAt: data['lastCookedAt'] != null 
@@ -771,7 +775,10 @@ class Recipe {
         updatedAt: DateTime.now(),
       ),
       type: type ?? this.type,
-      socialData: socialData ?? this.socialData,
+      // When converting to personal recipe, clear social data
+      socialData: (type == RecipeType.personal && type != this.type) 
+          ? null 
+          : (socialData ?? this.socialData),
       realtimeData: realtimeData ?? this.realtimeData,
       offlineData: offlineData ?? this.offlineData,
     );

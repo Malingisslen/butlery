@@ -177,6 +177,7 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         return null;
       }
 
+
       return fromFirestore(doc);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to read ${T.toString()} $id: $e', stackTrace);

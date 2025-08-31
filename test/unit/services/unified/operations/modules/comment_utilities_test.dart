@@ -11,6 +11,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 // RecipeSocialData is part of recipe_unified.dart, already imported
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   late MockCommentsRepository mockCommentsRepository;
@@ -557,5 +558,3 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockCommentsRepository extends Mock implements CommentsRepository {}

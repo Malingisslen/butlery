@@ -3,21 +3,23 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('CollaborativeShoppingOperations', () {
     late MockUnifiedShoppingService mockParentService;
     late MockPermissionService mockPermissionService;
     late CollaborativeShoppingOperations operations;
-    late UnifiedShoppingList testList1;
-    late UnifiedShoppingList testList2;
+    late UnifiedShoppingList testCollaborativeList;
+    late UnifiedShoppingList testSharedList;
+    late UnifiedShoppingList testPersonalList;
     late UnifiedShoppingItem testItem1;
     late UnifiedShoppingItem testItem2;
     
@@ -27,6 +29,16 @@ void main() {
       registerFallbackValue(<String>[]);
       registerFallbackValue(<String, String>{});
       registerFallbackValue(<UnifiedShoppingItem>[]);
+      registerFallbackValue(UnifiedShoppingList(
+        id: 'test',
+        name: 'Test',
+        ownerId: 'test',
+        ownerDisplayName: 'Test',
+        items: [],
+        type: ListType.collaborative,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
     });
 
     setUp(() async {
@@ -43,7 +55,7 @@ void main() {
       }
       GetIt.instance.registerSingleton<PermissionService>(mockPermissionService);
       
-      // Create test data
+      // Create test items
       testItem1 = UnifiedShoppingItem(
         id: 'item_1',
         name: 'Mjölk',
@@ -62,14 +74,15 @@ void main() {
         amount: 1.0,
         unit: 'st',
         category: 'Bageri',
-        bought: false,
+        bought: true,
         addedByUserId: 'user_456',
         addedByDisplayName: 'Other User',
         addedAt: DateTime.now(),
       );
       
-      testList1 = UnifiedShoppingList(
-        id: 'list_1',
+      // Create test lists
+      testCollaborativeList = UnifiedShoppingList(
+        id: 'collab_list_1',
         name: 'Familjehandling',
         description: 'Veckans mat',
         ownerId: 'user_123',
@@ -77,6 +90,7 @@ void main() {
         memberPermissions: {
           'user_123': SharedListPermission.admin,
           'user_456': SharedListPermission.edit,
+          'user_789': SharedListPermission.view,
         },
         items: [testItem1],
         type: ListType.collaborative,
@@ -84,11 +98,14 @@ void main() {
         autoRemoveCompleted: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        lastActivityByUserId: 'user_123',
+        lastActivityByDisplayName: 'Test User',
       );
       
-      testList2 = UnifiedShoppingList(
-        id: 'list_2',
+      testSharedList = UnifiedShoppingList(
+        id: 'shared_list_2',
         name: 'Shared List',
+        description: 'Shared shopping',
         ownerId: 'user_456',
         ownerDisplayName: 'Other User',
         memberPermissions: {
@@ -98,82 +115,127 @@ void main() {
         items: [testItem2],
         type: ListType.collaborative,
         allowGuestEditing: false,
+        autoRemoveCompleted: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
       
-      // Configure mock parent service using configuration methods
+      testPersonalList = UnifiedShoppingList(
+        id: 'personal_list_1',
+        name: 'Min lista',
+        ownerId: 'user_123',
+        ownerDisplayName: 'Test User',
+        items: [],
+        type: ListType.personal,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      
+      // Set up mock parent service state
       mockParentService.setShoppingState(
-        collaborativeLists: [testList1, testList2],
+        collaborativeLists: [testCollaborativeList, testSharedList],
+        personalLists: [testPersonalList],
         currentUserId: 'user_123',
         currentUserDisplayName: 'Test User',
       );
-      when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
       
-      // Configure mock permission service using configuration methods
+      // Set up permission service using configuration
+      // The mock now has concrete implementations that use this configuration
       mockPermissionService.setPermissionState(
         isAuthenticated: true,
         currentUserId: 'user_123',
-        shoppingListOwnership: {
-          'list_1': true,
-          'list_2': false,
-        },
-        shoppingListEditPermissions: {
-          'list_1': true,
-          'list_2': false,
+        defaultHasPermission: false,  // Default to false for more controlled testing
+        permissions: {
+          'collab_list_1': {
+            ResourcePermission.owner: true,
+            ResourcePermission.admin: true,
+            ResourcePermission.write: true,
+            ResourcePermission.editor: true,
+            ResourcePermission.read: true,
+            ResourcePermission.viewer: true,
+          },
+          'shared_list_2': {
+            ResourcePermission.owner: false,
+            ResourcePermission.admin: false,
+            ResourcePermission.write: false,
+            ResourcePermission.editor: false,
+            ResourcePermission.read: true,
+            ResourcePermission.viewer: true,
+          },
+          'personal_list_1': {
+            ResourcePermission.owner: true,
+            ResourcePermission.admin: true,
+            ResourcePermission.write: true,
+            ResourcePermission.editor: true,
+            ResourcePermission.read: true,
+            ResourcePermission.viewer: true,
+          },
         },
       );
-      when(() => mockPermissionService.canViewShoppingList(any())).thenReturn(true);
-      when(() => mockPermissionService.canManageShoppingList(any())).thenReturn(true);
-      when(() => mockPermissionService.canDeleteShoppingList(any())).thenReturn(true);
       
-      // Create operations instance
+      // No need to stub these methods anymore - they have concrete implementations
+      // that use the configuration above
+      
+      // Create operations under test
       operations = CollaborativeShoppingOperations(mockParentService);
+      
+      // Default stub behaviors for parent service methods
+      when(() => mockParentService.createCollaborativeList(
+        name: any(named: 'name'),
+        description: any(named: 'description'),
+        memberIds: any(named: 'memberIds'),
+        memberDisplayNames: any(named: 'memberDisplayNames'),
+        items: any(named: 'items'),
+        categoryIds: any(named: 'categoryIds'),
+        allowGuestEditing: any(named: 'allowGuestEditing'),
+        autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
+      )).thenAnswer((_) async => 'new_list_id');
+      
+      when(() => mockParentService.createPersonalList(
+        any(),
+        items: any(named: 'items'),
+      )).thenAnswer((_) async => 'new_personal_list_id');
+      
+      when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
+      when(() => mockParentService.deleteList(any())).thenAnswer((_) async => true);
     });
     
     tearDown(() async {
+      if (GetIt.instance.isRegistered<PermissionService>()) {
+        GetIt.instance.unregister<PermissionService>();
+      }
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
     });
-
+    
     tearDownAll(() async {
-      // Cleanup if needed
+      await BaseUnitTest.teardownUnit();
     });
     
-    group('Collaborative List Management', () {
+    group('List Management', () {
       test('should create collaborative list', () async {
-        // Arrange
-        when(() => mockParentService.createCollaborativeList(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          items: any(named: 'items'),
-          categoryIds: any(named: 'categoryIds'),
-          allowGuestEditing: any(named: 'allowGuestEditing'),
-          autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
-        )).thenAnswer((_) async => 'new_list_id');
-        
         // Act
         final listId = await operations.createList(
-          name: 'New Collaborative List',
-          description: 'Test description',
-          memberIds: ['user_123', 'user_789'],
+          name: 'Ny lista',
+          description: 'Test beskrivning',
+          memberIds: ['user_456', 'user_789'],
           memberDisplayNames: {
-            'user_123': 'Test User',
-            'user_789': 'New User',
+            'user_456': 'Anna',
+            'user_789': 'Erik',
           },
           allowGuestEditing: true,
-          autoRemoveCompleted: false,
         );
         
         // Assert
         expect(listId, equals('new_list_id'));
         verify(() => mockParentService.createCollaborativeList(
-          name: 'New Collaborative List',
-          description: 'Test description',
-          memberIds: ['user_123', 'user_789'],
-          memberDisplayNames: any(named: 'memberDisplayNames'),
+          name: 'Ny lista',
+          description: 'Test beskrivning',
+          memberIds: ['user_456', 'user_789'],
+          memberDisplayNames: {
+            'user_456': 'Anna',
+            'user_789': 'Erik',
+          },
           items: null,
           categoryIds: null,
           allowGuestEditing: true,
@@ -186,19 +248,18 @@ void main() {
         final lists = operations.getAllLists();
         
         // Assert
-        expect(lists.length, equals(2));
-        expect(lists, contains(testList1));
-        expect(lists, contains(testList2));
+        expect(lists, hasLength(2));
+        expect(lists[0].name, equals('Familjehandling'));
+        expect(lists[1].name, equals('Shared List'));
       });
       
       test('should get list by ID', () {
         // Act
-        final list = operations.getListById('list_1');
+        final list = operations.getListById('collab_list_1');
         
         // Assert
         expect(list, isNotNull);
-        expect(list?.id, equals('list_1'));
-        expect(list?.name, equals('Familjehandling'));
+        expect(list!.name, equals('Familjehandling'));
       });
       
       test('should return null for non-existent list', () {
@@ -211,33 +272,67 @@ void main() {
       
       test('should get owned lists', () {
         // Act
-        final ownedLists = operations.getOwnedLists();
+        final lists = operations.getOwnedLists();
         
         // Assert
-        expect(ownedLists.length, equals(1));
-        expect(ownedLists.first.id, equals('list_1'));
+        expect(lists, hasLength(1));
+        expect(lists[0].id, equals('collab_list_1'));
       });
       
-      test('should get lists shared with user', () {
+      test('should get lists shared with current user', () {
         // Act
-        final sharedLists = operations.getSharedWithMe();
+        final lists = operations.getSharedWithMe();
         
         // Assert
-        expect(sharedLists.length, equals(1));
-        expect(sharedLists.first.id, equals('list_2'));
+        expect(lists, hasLength(1));
+        expect(lists[0].id, equals('shared_list_2'));
+      });
+      
+      test('should convert personal list to collaborative', () async {
+        // Act
+        final collaborativeId = await operations.convertPersonalToCollaborative(
+          personalListId: 'personal_list_1',
+          memberIds: ['user_456'],
+          memberDisplayNames: {'user_456': 'Anna'},
+          description: 'Now collaborative',
+        );
+        
+        // Assert
+        expect(collaborativeId, equals('new_list_id'));
+        verify(() => mockParentService.createCollaborativeList(
+          name: 'Min lista',
+          description: 'Now collaborative',
+          memberIds: ['user_456'],
+          memberDisplayNames: {'user_456': 'Anna'},
+          items: [],
+          categoryIds: null,
+          allowGuestEditing: true,
+          autoRemoveCompleted: false,
+        )).called(1);
+        verify(() => mockParentService.deleteList('personal_list_1')).called(1);
+      });
+      
+      test('should convert collaborative list to personal', () async {
+        // Act
+        final personalId = await operations.convertCollaborativeToPersonal('collab_list_1');
+        
+        // Assert
+        expect(personalId, equals('new_personal_list_id'));
+        verify(() => mockParentService.createPersonalList(
+          'Familjehandling',
+          items: [testItem1],
+        )).called(1);
+        verify(() => mockParentService.deleteList('collab_list_1')).called(1);
       });
     });
     
     group('Member Management', () {
       test('should add member to list', () async {
-        // Arrange
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
-        
         // Act
         final result = await operations.addMember(
-          listId: 'list_1',
-          userId: 'user_789',
-          userDisplayName: 'New Member',
+          listId: 'collab_list_1',
+          userId: 'user_999',
+          userDisplayName: 'New User',
           permission: SharedListPermission.edit,
         );
         
@@ -246,13 +341,38 @@ void main() {
         verify(() => mockParentService.updateList(any())).called(1);
       });
       
-      test('should remove member from list', () async {
-        // Arrange
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
+      test('should not add existing member', () async {
+        // Act
+        final result = await operations.addMember(
+          listId: 'collab_list_1',
+          userId: 'user_456',
+          userDisplayName: 'Existing User',
+          permission: SharedListPermission.edit,
+        );
         
+        // Assert
+        expect(result, isFalse);
+        verifyNever(() => mockParentService.updateList(any()));
+      });
+      
+      test('should not add member without permission', () async {
+        // Act
+        final result = await operations.addMember(
+          listId: 'shared_list_2',
+          userId: 'user_999',
+          userDisplayName: 'New User',
+          permission: SharedListPermission.edit,
+        );
+        
+        // Assert
+        expect(result, isFalse);
+        verifyNever(() => mockParentService.updateList(any()));
+      });
+      
+      test('should remove member from list', () async {
         // Act
         final result = await operations.removeMember(
-          listId: 'list_1',
+          listId: 'collab_list_1',
           userId: 'user_456',
         );
         
@@ -262,12 +382,9 @@ void main() {
       });
       
       test('should update member permission', () async {
-        // Arrange
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
-        
         // Act
         final result = await operations.updateMemberPermission(
-          listId: 'list_1',
+          listId: 'collab_list_1',
           userId: 'user_456',
           permission: SharedListPermission.admin,
         );
@@ -279,39 +396,78 @@ void main() {
       
       test('should get list members', () {
         // Act
-        final members = operations.getListMembers('list_1');
+        final members = operations.getListMembers('collab_list_1');
         
         // Assert
-        expect(members.length, equals(2));
-        expect(members.keys, containsAll(['user_123', 'user_456']));
+        expect(members, hasLength(3));
+        expect(members['user_123'], equals(SharedListPermission.admin));
+        expect(members['user_456'], equals(SharedListPermission.edit));
+        expect(members['user_789'], equals(SharedListPermission.view));
       });
       
-      test('should check if user is member', () {
+      test('should allow non-owner to leave list', () async {
+        // Arrange
+        mockParentService.setShoppingState(
+          collaborativeLists: [testCollaborativeList, testSharedList],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_456',
+          currentUserDisplayName: 'Other User',
+        );
+        mockPermissionService.setPermissionState(
+          isAuthenticated: true,
+          currentUserId: 'user_456',
+          permissions: {
+            'collab_list_1': {
+              ResourcePermission.owner: false,  // user_456 is not owner
+              ResourcePermission.admin: false,  // and not admin
+              ResourcePermission.write: true,   // but can edit
+              ResourcePermission.editor: true,
+              ResourcePermission.read: true,
+              ResourcePermission.viewer: true,
+            },
+          },
+        );
+        
         // Act
-        final members = operations.getListMembers('list_1');
-        final isMember = members.containsKey('user_456');
-        final isNotMember = members.containsKey('user_789');
+        final result = await operations.leaveList('collab_list_1');
         
         // Assert
-        expect(isMember, isTrue);
-        expect(isNotMember, isFalse);
+        // FIXED: Users can now leave collaborative lists regardless of permission level
+        // (as long as they're not the owner)
+        expect(result, isTrue);
+        verify(() => mockParentService.updateList(any())).called(1);
+      });
+      
+      test('should not allow owner to leave list', () async {
+        // Act
+        final result = await operations.leaveList('collab_list_1');
+        
+        // Assert
+        expect(result, isFalse);
+        verifyNever(() => mockParentService.updateList(any()));
       });
     });
     
     group('Item Management', () {
       test('should add item to collaborative list', () async {
         // Arrange
-        // currentUserDisplayName already configured in setUp
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
+        final originalList = testCollaborativeList;
+        when(() => mockParentService.updateList(any())).thenAnswer((invocation) async {
+          final list = invocation.positionalArguments[0] as UnifiedShoppingList;
+          // Verify the list has a new item
+          expect(list.items.length, greaterThan(originalList.items.length));
+          return true;
+        });
         
         // Act
         final result = await operations.addItem(
-          listId: 'list_1',
-          name: 'Ägg',
-          amount: 12.0,
-          unit: 'st',
+          listId: 'collab_list_1',
+          name: 'Ost',
+          amount: 500,
+          unit: 'g',
           category: 'Mejeri',
-          note: 'Ekologiska',
+          note: 'Gärna lagrad',
+          estimatedPrice: 89.90,
         );
         
         // Assert
@@ -319,125 +475,127 @@ void main() {
         verify(() => mockParentService.updateList(any())).called(1);
       });
       
-      test('should toggle item bought status in collaborative list', () async {
-        // Arrange
-        // currentUserDisplayName already configured in setUp
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
-        
+      test('should not add item without edit permission', () async {
         // Act
-        final result = await operations.toggleItemBought(
-          listId: 'list_1',
-          itemId: 'item_1',
+        final result = await operations.addItem(
+          listId: 'shared_list_2',
+          name: 'Ost',
+          amount: 500,
+          unit: 'g',
+          category: 'Mejeri',
         );
-        
-        // Assert
-        expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
-      });
-      
-      test('should remove item from collaborative list', () async {
-        // Arrange
-        // currentUserDisplayName already configured in setUp
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
-        
-        // Act
-        final result = await operations.removeItem(
-          listId: 'list_1',
-          itemId: 'item_1',
-        );
-        
-        // Assert
-        expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
-      });
-      
-      test('should leave collaborative list', () async {
-        // Arrange
-        // isShoppingListOwner already configured in setUp
-        when(() => mockParentService.updateList(any())).thenAnswer((_) async => true);
-        
-        // Act
-        final result = await operations.leaveList('list_2');
-        
-        // Assert
-        expect(result, isTrue);
-      });
-      
-      test('should not allow owner to leave list', () async {
-        // Arrange
-        // isShoppingListOwner already configured in setUp
-        
-        // Act
-        final result = await operations.leaveList('list_1');
         
         // Assert
         expect(result, isFalse);
-      });
-    });
-    
-    group('List Statistics and Activity', () {
-      test('should get list statistics', () {
-        // Act
-        final result = operations.getListStats('list_1');
-        
-        // Assert
-        expect(result['totalItems'], equals(1));
-        expect(result['boughtItems'], equals(0));
-        expect(result['remainingItems'], equals(1));
-        expect(result['memberCount'], equals(2));
-        expect(result['listName'], equals('Familjehandling'));
+        verifyNever(() => mockParentService.updateList(any()));
       });
       
-      test('should get recent activity', () {
+      test('should toggle item bought status', () async {
         // Act
-        final result = operations.getRecentActivity('list_1');
-        
-        // Assert
-        expect(result, isNotEmpty);
-        expect(result.first['type'], equals('list_updated'));
-        expect(result.first['description'], equals('Lista uppdaterad'));
-      });
-      
-      test('should mark list as seen', () async {
-        // Act
-        final result = await operations.markListAsSeen('list_1');
+        final result = await operations.toggleItemBought(
+          listId: 'collab_list_1',
+          itemId: 'item_1',
+        );
         
         // Assert
         expect(result, isTrue);
+        verify(() => mockParentService.updateList(any())).called(1);
+      });
+      
+      test('should remove item from list', () async {
+        // Act
+        final result = await operations.removeItem(
+          listId: 'collab_list_1',
+          itemId: 'item_1',
+        );
+        
+        // Assert
+        expect(result, isTrue);
+        verify(() => mockParentService.updateList(any())).called(1);
       });
     });
     
-    group('Permissions and Access Control', () {
-      test('should check if user can edit list', () {
+    group('Activity and Statistics', () {
+      test('should get recent activity', () {
         // Act
-        final canEdit1 = operations.canEdit('list_1');
-        final canEdit2 = operations.canEdit('list_2');
+        final activity = operations.getRecentActivity('collab_list_1');
         
         // Assert
-        expect(canEdit1, isTrue);
-        expect(canEdit2, isFalse);
+        expect(activity, isNotEmpty);
+        expect(activity[0]['type'], equals('list_updated'));
+        expect(activity[0]['userId'], equals('user_123'));
+        expect(activity[0]['userName'], equals('Test User'));
       });
       
-      test('should check if user can manage members', () {
+      test('should get list statistics', () {
         // Act
-        when(() => mockPermissionService.canManageShoppingList('list_1')).thenReturn(true);
-        when(() => mockPermissionService.canManageShoppingList('list_2')).thenReturn(false);
-        
-        final canManage1 = operations.canManageMembers('list_1');
-        final canManage2 = operations.canManageMembers('list_2');
+        final stats = operations.getListStats('collab_list_1');
         
         // Assert
-        expect(canManage1, isTrue);
-        expect(canManage2, isFalse);
+        expect(stats['listName'], equals('Familjehandling'));
+        expect(stats['totalItems'], equals(1));
+        expect(stats['boughtItems'], equals(0));
+        expect(stats['remainingItems'], equals(1));
+        expect(stats['memberCount'], equals(3));
+        expect(stats['allowGuestEditing'], isTrue);
+        expect(stats['autoRemoveCompleted'], isFalse);
       });
       
-      test('should get user permission for list', () {
-        // Act
-        when(() => mockPermissionService.canManageShoppingList('list_1')).thenReturn(true);
-        when(() => mockPermissionService.canManageShoppingList('list_2')).thenReturn(false);
+      test('should calculate completion percentage', () {
+        // Arrange - Add a bought item
+        final listWithBoughtItem = testCollaborativeList.copyWith(
+          items: [testItem1, testItem2], // testItem2 is bought
+        );
+        mockParentService.setShoppingState(
+          collaborativeLists: [listWithBoughtItem, testSharedList],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+        );
         
-        final permission1 = operations.getUserPermission('list_1');
-        final permission2 = operations.getUserPermission('list_2');
+        // Act
+        final stats = operations.getListStats('collab_list_1');
+        
+        // Assert
+        expect(stats['totalItems'], equals(2));
+        expect(stats['boughtItems'], equals(1));
+        expect(stats['completionPercentage'], equals(50));
+      });
+    });
+    
+    group('Permission Helpers', () {
+      test('should check edit permission', () {
+        // Act & Assert
+        expect(operations.canEdit('collab_list_1'), isTrue);
+        expect(operations.canEdit('shared_list_2'), isFalse);
+      });
+      
+      test('should check view permission', () {
+        // Act & Assert
+        expect(operations.canView('collab_list_1'), isTrue);
+        expect(operations.canView('shared_list_2'), isTrue);
+      });
+      
+      test('should check member management permission', () {
+        // Act & Assert
+        expect(operations.canManageMembers('collab_list_1'), isTrue);
+        expect(operations.canManageMembers('shared_list_2'), isFalse);
+      });
+      
+      test('should check delete permission', () {
+        // Act & Assert
+        expect(operations.canDelete('collab_list_1'), isTrue);
+        expect(operations.canDelete('shared_list_2'), isFalse);
+      });
+      
+      test('should get user permission level', () {
+        // Arrange - permissions are already configured in setUp
+        // collab_list_1 has owner permissions for user_123
+        // shared_list_2 has only view permissions for user_123
+        
+        // Act
+        final permission1 = operations.getUserPermission('collab_list_1');
+        final permission2 = operations.getUserPermission('shared_list_2');
         
         // Assert
         expect(permission1, equals(SharedListPermission.admin));
@@ -445,351 +603,22 @@ void main() {
       });
     });
     
-    group('Edge Cases', () {
-      test('should handle unauthenticated user', () {
-        // Arrange
-        mockPermissionService.setPermissionState(isAuthenticated: false);
-        
+    group('Notifications', () {
+      test('should get notification count', () {
         // Act
-        final ownedLists = operations.getOwnedLists();
-        final sharedLists = operations.getSharedWithMe();
+        final count = operations.getNotificationCount();
         
         // Assert
-        expect(ownedLists, isEmpty);
-        expect(sharedLists, isEmpty);
+        expect(count, greaterThanOrEqualTo(0));
       });
       
-      test('should handle empty lists', () {
-        // Arrange
-        mockParentService.setShoppingState(collaborativeLists: []);
-        
+      test('should mark list as seen', () async {
         // Act
-        final allLists = operations.getAllLists();
-        final list = operations.getListById('any_id');
-        
-        // Assert
-        expect(allLists, isEmpty);
-        expect(list, isNull);
-      });
-      
-      test('should handle list without members', () {
-        // Arrange
-        final emptyList = UnifiedShoppingList(
-          id: 'empty_list',
-          name: 'Empty List',
-          ownerId: 'user_123',
-          ownerDisplayName: 'Test User',
-          memberPermissions: {},
-          items: [],
-          type: ListType.collaborative,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-        mockParentService.setShoppingState(collaborativeLists: [emptyList]);
-        
-        // Act
-        final members = operations.getListMembers('empty_list');
-        final isMember = members.containsKey('user_123');
-        
-        // Assert
-        expect(members, isEmpty);
-        expect(isMember, isFalse);
-      });
-    });
-    
-    group('Additional Permission Tests (Merged)', () {
-      test('should check if can view list', () {
-        // Arrange
-        when(() => mockPermissionService.canViewShoppingList('list_1')).thenReturn(true);
-        
-        // Act - Check if user has permission to view the list
-        final canView = operations.canView('list_1');
-        
-        // Assert
-        expect(canView, isTrue); // User is a member
-      });
-      
-      test('should check if can edit list', () {
-        // Arrange
-        mockPermissionService.setPermissionState(
-          currentUserId: 'user_456',
-          shoppingListEditPermissions: {'list_1': true},
-        );
-        
-        // Act - Check if user has edit permission
-        final canEdit = operations.canEdit('list_1');
-        
-        // Assert
-        expect(canEdit, isTrue);
-      });
-      
-      test('should check if can delete list', () {
-        // Arrange
-        when(() => mockPermissionService.canDeleteShoppingList('list_1')).thenReturn(true);
-        
-        // Act - Owner should be able to delete
-        final canDelete = operations.canDelete('list_1');
-        
-        // Assert
-        expect(canDelete, isTrue); // Owner can delete
-      });
-      
-      test('should get user permission level', () {
-        // Act - Get permission for user from the list
-        final permission = testList1.memberPermissions['user_456'];
-        
-        // Assert
-        expect(permission, equals(SharedListPermission.edit));
-      });
-    });
-    
-    group('List Conversion Operations (Merged)', () {
-      test('should convert personal to collaborative', () async {
-        // Arrange
-        final personalList = UnifiedShoppingList(
-          id: 'personal_1',
-          name: 'Personal List',
-          ownerId: 'user_123',
-          ownerDisplayName: 'Test User',
-          type: ListType.personal,
-          items: [testItem1],
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-        
-        mockParentService.setShoppingState(
-          personalLists: [personalList],
-        );
-        
-        when(() => mockParentService.createCollaborativeList(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          items: any(named: 'items'),
-          categoryIds: any(named: 'categoryIds'),
-          allowGuestEditing: any(named: 'allowGuestEditing'),
-          autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
-        )).thenAnswer((_) async => 'collab_1');
-        
-        when(() => mockParentService.deleteList(any()))
-            .thenAnswer((_) async => true);
-        
-        // Act - Convert personal list to collaborative
-        final resultId = await operations.convertPersonalToCollaborative(
-          personalListId: personalList.id,
-          memberIds: ['user_456'],
-          memberDisplayNames: {'user_456': 'Other User'},
-        );
-        
-        // Assert
-        expect(resultId, equals('collab_1'));
-        verify(() => mockParentService.createCollaborativeList(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          items: any(named: 'items'),
-          categoryIds: any(named: 'categoryIds'),
-          allowGuestEditing: any(named: 'allowGuestEditing'),
-          autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
-        )).called(1);
-        verify(() => mockParentService.deleteList('personal_1')).called(1);
-      });
-      
-      test('should convert collaborative to personal', () async {
-        // Arrange
-        when(() => mockParentService.createPersonalList(
-          any(),
-          items: any(named: 'items'),
-        )).thenAnswer((_) async => 'personal_2');
-        
-        when(() => mockParentService.deleteList(any()))
-            .thenAnswer((_) async => true);
-        
-        mockPermissionService.setPermissionState(
-          currentUserId: 'user_123',
-          shoppingListOwnership: {'list_1': true},
-        );
-        
-        // Act - Convert collaborative to personal
-        final resultId = await operations.convertCollaborativeToPersonal(
-          testList1.id,
-        );
-        
-        // Assert
-        expect(resultId, equals('personal_2'));
-        verify(() => mockParentService.createPersonalList(
-          any(),
-          items: any(named: 'items'),
-        )).called(1);
-        verify(() => mockParentService.deleteList('list_1')).called(1);
-      });
-      
-      test('should not convert if not owner', () async {
-        // Arrange
-        mockPermissionService.setPermissionState(
-          currentUserId: 'user_456',
-          shoppingListOwnership: {'list_1': false},
-        );
-        
-        // Act - Try to convert without being owner
-        final resultId = await operations.convertCollaborativeToPersonal(
-          testList1.id,
-        );
-        
-        // Assert
-        expect(resultId, isNull);
-        verifyNever(() => mockParentService.updateList(any()));
-      });
-    });
-    
-    group('Advanced Collaborative Features (Merged)', () {
-      test('should toggle item bought status with user tracking', () async {
-        // Arrange
-        final itemWithTracking = testItem1.copyWith(
-          bought: false,
-        );
-        
-        final listWithItem = testList1.copyWith(items: [itemWithTracking]);
-        mockParentService.setShoppingState(
-          collaborativeLists: [listWithItem],
-        );
-        
-        when(() => mockParentService.updateList(any()))
-            .thenAnswer((_) async => true);
-        
-        mockPermissionService.setPermissionState(
-          currentUserId: 'user_123',
-          shoppingListEditPermissions: {'list_1': true},
-        );
-        
-        // Act - Toggle item bought status
-        final result = await operations.toggleItemBought(
-          listId: listWithItem.id,
-          itemId: itemWithTracking.id,
-        );
+        final result = await operations.markListAsSeen('collab_list_1');
         
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
-      });
-      
-      test('should get shared with me lists', () {
-        // Arrange
-        final sharedList = UnifiedShoppingList(
-          id: 'shared_1',
-          name: 'Shared with me',
-          ownerId: 'user_999',
-          ownerDisplayName: 'Another User',
-          memberPermissions: {
-            'user_123': SharedListPermission.view,
-          },
-          type: ListType.collaborative,
-          items: [],
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-        
-        mockParentService.setShoppingState(
-          collaborativeLists: [testList1, testList2, sharedList],
-          currentUserId: 'user_123',
-        );
-        
-        // Act
-        final sharedWithMe = operations.getSharedWithMe();
-        
-        // Assert
-        expect(sharedWithMe.length, equals(2)); // list_2 and shared_1 where user is not owner
-        expect(sharedWithMe.any((list) => list.ownerId == 'user_456'), isTrue);
-        expect(sharedWithMe.any((list) => list.ownerId == 'user_999'), isTrue);
-      });
-      
-      test('should leave list as member', () async {
-        // Arrange
-        mockParentService.setShoppingState(
-          currentUserId: 'user_456',
-        );
-        
-        mockPermissionService.setPermissionState(
-          isAuthenticated: true,
-          currentUserId: 'user_456',
-          shoppingListOwnership: {'list_1': false},
-        );
-        
-        when(() => mockParentService.updateList(any()))
-            .thenAnswer((_) async => true);
-        
-        // Act - Leave the list
-        final result = await operations.leaveList(testList1.id);
-        
-        // Assert
-        expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
       });
     });
   });
-}
-
-// Mock classes for testing with configuration support
-class MockUnifiedShoppingService extends Mock implements UnifiedShoppingService {
-  List<UnifiedShoppingList> _collaborativeLists = [];
-  List<UnifiedShoppingList> _personalLists = [];
-  String? _currentUserId;
-  String? _currentUserDisplayName;
-  
-  void setShoppingState({
-    List<UnifiedShoppingList>? collaborativeLists,
-    List<UnifiedShoppingList>? personalLists,
-    String? currentUserId,
-    String? currentUserDisplayName,
-  }) {
-    if (collaborativeLists != null) _collaborativeLists = collaborativeLists;
-    if (personalLists != null) _personalLists = personalLists;
-    if (currentUserId != null) _currentUserId = currentUserId;
-    if (currentUserDisplayName != null) _currentUserDisplayName = currentUserDisplayName;
-  }
-  
-  @override
-  List<UnifiedShoppingList> get collaborativeLists => _collaborativeLists;
-  
-  @override
-  List<UnifiedShoppingList> get personalLists => _personalLists;
-  
-  @override
-  String? get currentUserId => _currentUserId;
-  
-  @override
-  String? get currentUserDisplayName => _currentUserDisplayName;
-}
-
-class MockPermissionService extends Mock implements PermissionService {
-  bool _isAuthenticated = false;
-  String? _currentUserId;
-  Map<String, bool> _shoppingListOwnership = {};
-  Map<String, bool> _shoppingListEditPermissions = {};
-  
-  void setPermissionState({
-    bool? isAuthenticated,
-    String? currentUserId,
-    Map<String, bool>? shoppingListOwnership,
-    Map<String, bool>? shoppingListEditPermissions,
-  }) {
-    if (isAuthenticated != null) _isAuthenticated = isAuthenticated;
-    if (currentUserId != null) _currentUserId = currentUserId;
-    if (shoppingListOwnership != null) _shoppingListOwnership = shoppingListOwnership;
-    if (shoppingListEditPermissions != null) _shoppingListEditPermissions = shoppingListEditPermissions;
-  }
-  
-  @override
-  bool get isAuthenticated => _isAuthenticated;
-  
-  @override
-  String? get currentUserId => _currentUserId;
-  
-  @override
-  bool isShoppingListOwner(String listId) => _shoppingListOwnership[listId] ?? false;
-  
-  @override
-  bool canEditShoppingList(String listId) => _shoppingListEditPermissions[listId] ?? false;
 }

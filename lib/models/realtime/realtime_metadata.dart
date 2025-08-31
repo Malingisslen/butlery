@@ -172,8 +172,26 @@ class RealtimeMetadata {
     sanitized['lastEditedBy'] = metadata['lastEditedBy']?.toString() ?? '';
     sanitized['lastEditedByDisplayName'] = metadata['lastEditedByDisplayName']?.toString() ?? '';
     sanitized['lastEditedAt'] = metadata['lastEditedAt'] as DateTime? ?? DateTime.now();
-    sanitized['editCount'] = metadata['editCount'] as int? ?? 0;
-    sanitized['isActive'] = metadata['isActive'] as bool? ?? true;
+    
+    // Handle editCount with type conversion
+    final editCountValue = metadata['editCount'];
+    if (editCountValue is int) {
+      sanitized['editCount'] = editCountValue;
+    } else if (editCountValue is String) {
+      sanitized['editCount'] = int.tryParse(editCountValue) ?? 0;
+    } else {
+      sanitized['editCount'] = 0;
+    }
+    
+    // Handle isActive with type conversion
+    final isActiveValue = metadata['isActive'];
+    if (isActiveValue is bool) {
+      sanitized['isActive'] = isActiveValue;
+    } else if (isActiveValue is String) {
+      sanitized['isActive'] = isActiveValue.toLowerCase() == 'true';
+    } else {
+      sanitized['isActive'] = true;
+    }
     
     // Copy additional metadata
     for (final entry in metadata.entries) {

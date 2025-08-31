@@ -24,7 +24,11 @@ class RealtimeMenuOperations {
     required String categoryName,
     required Recipe recipe,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(data.menuSnapshot);
+    // Create deep copy of the menu snapshot
+    final updatedMenu = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
+    }
 
     // Initialize category if it doesn't exist
     if (!updatedMenu.containsKey(categoryName)) {
@@ -43,7 +47,11 @@ class RealtimeMenuOperations {
     required String categoryName,
     required int recipeIndex,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(data.menuSnapshot);
+    // Create deep copy of the menu snapshot
+    final updatedMenu = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
+    }
 
     if (updatedMenu.containsKey(categoryName) && 
         recipeIndex >= 0 && 
@@ -62,7 +70,11 @@ class RealtimeMenuOperations {
     required String toCategory,
     int? toIndex,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(data.menuSnapshot);
+    // Create deep copy of the menu snapshot
+    final updatedMenu = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
+    }
 
     if (!updatedMenu.containsKey(fromCategory) || 
         fromIndex < 0 || 
@@ -92,7 +104,11 @@ class RealtimeMenuOperations {
     required int recipeIndex,
     required Recipe newRecipe,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(data.menuSnapshot);
+    // Create deep copy of the menu snapshot
+    final updatedMenu = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
+    }
 
     if (updatedMenu.containsKey(categoryName) && 
         recipeIndex >= 0 && 
@@ -108,7 +124,11 @@ class RealtimeMenuOperations {
     RealtimeMenuData data, {
     required String categoryName,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(data.menuSnapshot);
+    // Create deep copy of the menu snapshot
+    final updatedMenu = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
+    }
     
     if (updatedMenu.containsKey(categoryName)) {
       updatedMenu[categoryName] = [];
@@ -123,7 +143,11 @@ class RealtimeMenuOperations {
     required String categoryName,
     required List<Recipe> recipes,
   }) {
-    final updatedMenu = Map<String, List<Recipe>>.from(data.menuSnapshot);
+    // Create deep copy of the menu snapshot
+    final updatedMenu = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
+    }
     updatedMenu[categoryName] = List.from(recipes);
     return data.copyWith(menuSnapshot: updatedMenu);
   }

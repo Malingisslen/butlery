@@ -96,6 +96,7 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
       AppLogger.error('❌ Failed to load personalized recommendations', e);
       _personalizedRecommendations = [];
       notifyListeners();
+      rethrow; // Rethrow to allow parent to handle error
     } finally {
       _setLoading(false);
     }

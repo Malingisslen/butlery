@@ -8,6 +8,7 @@ library;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart'; // For BuildContext
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,63 +24,100 @@ import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
 import 'package:butlery/repositories/interfaces/activity_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/repositories/interfaces/reactions_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
-import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart'; // For MenuOperationError
+import 'package:butlery/services/realtime/modules/menu_operations.dart'; // For MenuOperationError class
+import 'package:butlery/services/realtime_sync_service.dart' as realtime;
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
+import 'package:butlery/services/social/activity_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/social_menu_operations.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
+import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
+import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
+import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
+import 'package:butlery/services/import/file_content_provider.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/social_media_extractor.dart'; // For SourcePlatform and ExtractionResult
+import 'package:butlery/services/social_recipe_service.dart'; // For SocialRecipeService interface
+import 'package:butlery/services/image_picker_provider.dart'; // For provider interfaces
+// Note: Some interface classes may not exist - using mock implementations instead
 import '../di/test_service_locator.dart';
+import 'service_mocks.dart'; // For MockRecipeDiscoveryService
 
 // Firebase imports
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 // Third-party library imports
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:permission_handler/permission_handler.dart'; // For Permission and PermissionStatus
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:share_plus/share_plus.dart';
@@ -1002,6 +1040,8 @@ class MockUnifiedFriendsService extends Mock
   List<UserProfile> _friends = [];
   List<FriendRequest> _incomingRequests = [];
   List<FriendRequest> _outgoingRequests = [];
+  List<FriendCategory> _categories = []; // ⭐ ADDED: Missing categories state
+  MockFriendsManagementOperations? _management; // ⭐ ADDED: Missing management operations
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
@@ -1010,6 +1050,10 @@ class MockUnifiedFriendsService extends Mock
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
     List<FriendRequest>? outgoingRequests,
+    List<FriendCategory>? categoriesList, // ⭐ ADDED: Missing categoriesList parameter
+    MockFriendsManagementOperations? management, // ⭐ ADDED: Missing management parameter
+    String? currentUserId, // ✅ FIXED: Added missing currentUserId parameter
+    String? currentUserDisplayName, // ✅ FIXED: Added missing currentUserDisplayName parameter
     bool isInitialized = false,
     bool isLoading = false,
     String? error,
@@ -1017,6 +1061,9 @@ class MockUnifiedFriendsService extends Mock
     if (friends != null) _friends = friends;
     if (incomingRequests != null) _incomingRequests = incomingRequests;
     if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
+    if (categoriesList != null) _categories = categoriesList; // ⭐ ADDED: Store categories state
+    if (management != null) _management = management; // ⭐ ADDED: Store management operations
+    // Note: currentUserId and currentUserDisplayName can be stored in parent state if needed
     _isInitialized = isInitialized;
     _isLoading = isLoading;
     _error = error;
@@ -1034,6 +1081,17 @@ class MockUnifiedFriendsService extends Mock
       List.unmodifiable(_outgoingRequests);
 
   @override
+  List<FriendCategory> get categoriesList => List.unmodifiable(_categories); // ⭐ ADDED: Missing categoriesList getter
+
+  /// Get management operations ⭐ FIXED: Return proper interface type
+  @override
+  FriendsManagementOperations get management => _management ?? MockFriendsManagementOperations();
+
+  /// Get categories operations
+  @override
+  FriendsCategoriesOperations get categories => MockFriendCategoriesOperations();
+
+  @override
   bool get isInitialized => _isInitialized;
 
   @override
@@ -1044,6 +1102,30 @@ class MockUnifiedFriendsService extends Mock
 
   @override
   bool get hasError => _error != null;
+
+  /// Test utility method to update categories list
+  void updateCategoriesList(List<FriendCategory> categories) {
+    _categories = List.from(categories);
+    notifyListeners();
+  }
+
+  /// Test utility method to update friends list  
+  void updateFriendsList(List<UserProfile> friends) {
+    _friends = List.from(friends);
+    notifyListeners();
+  }
+
+  // ===== TEST HELPER PROPERTIES =====
+  
+  /// Test helper: Track sent invitations for verification - ✅ FIXED: Missing getter
+  final List<GroupInvitation> _sentInvitationsTracker = <GroupInvitation>[];
+  List<GroupInvitation> get sentInvitationsList => List.unmodifiable(_sentInvitationsTracker);
+  
+  /// Test helper: Clear sent invitations tracker
+  void clearSentInvitations() => _sentInvitationsTracker.clear();
+  
+  /// Test helper: Add invitation to tracker
+  void addSentInvitation(GroupInvitation invitation) => _sentInvitationsTracker.add(invitation);
 
   // Methods left without implementation to allow stubbing
 }
@@ -1141,6 +1223,16 @@ class MockPermissionService extends Mock implements PermissionService {
     if (_currentUserId == null) return false;
     // For tests, assume current user owns menus with IDs containing their userId
     return menuId.contains(_currentUserId!);
+  }
+
+  /// Reset method for test cleanup - ✅ FIXED: Added missing reset method
+  void reset() {
+    _permissions.clear();
+    _defaultHasPermission = true;
+    _currentUserId = null;
+    _userDisplayName = null;
+    _currentUser = null;
+    _isAuthenticated = false;
   }
 
   // Methods left without implementation to allow stubbing
@@ -1586,6 +1678,35 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {
   // All other methods left without implementation to allow stubbing
 }
 
+/// Mock implementation of User for mocktail stubbing with configuration support
+/// Note: This is separate from firebase_auth_mocks package's MockUser
+/// and provides a setUserState method for test configuration
+class MockUser extends Mock implements User {
+  // Configuration state
+  String? _uid;
+  String? _email;
+  String? _displayName;
+  
+  /// Configure mock state for User
+  void setUserState({String? uid, String? email, String? displayName}) {
+    _uid = uid;
+    _email = email;
+    _displayName = displayName;
+  }
+  
+  /// Override getters to return configured values
+  @override
+  String get uid => _uid ?? 'test_uid';
+  
+  @override
+  String? get email => _email;
+  
+  @override
+  String? get displayName => _displayName;
+  
+  // All other methods left without implementation to allow stubbing
+}
+
 /// Mock implementation of FirebaseStorage
 class MockFirebaseStorage extends Mock implements FirebaseStorage {}
 
@@ -1597,6 +1718,1311 @@ class MockTaskSnapshot extends Mock implements TaskSnapshot {}
 
 /// Mock implementation of WriteBatch
 class MockWriteBatch extends Mock implements WriteBatch {}
+
+/// Mock implementation of FirebaseFirestore for direct Firestore testing
+class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+
+// ignore: subtype_of_sealed_class
+/// Mock Firebase CollectionReference - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
+class MockCollectionReference<T> extends Mock implements CollectionReference<T> {}
+
+// ignore: subtype_of_sealed_class
+/// Mock Firebase DocumentReference - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
+class MockDocumentReference<T> extends Mock implements DocumentReference<T> {}
+
+// ignore: subtype_of_sealed_class  
+/// Mock Firebase DocumentSnapshot - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
+class MockDocumentSnapshot<T> extends Mock implements DocumentSnapshot<T> {}
+
+// ignore: subtype_of_sealed_class
+/// Mock Firebase Query - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
+class MockQuery<T> extends Mock implements Query<T> {}
+
+// ignore: subtype_of_sealed_class
+/// Mock Firebase QuerySnapshot - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
+class MockQuerySnapshot<T> extends Mock implements QuerySnapshot<T> {}
+
+// ignore: subtype_of_sealed_class
+/// Mock Firebase QueryDocumentSnapshot - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore  
+class MockQueryDocumentSnapshot<T> extends Mock implements QueryDocumentSnapshot<T> {}
+
+/// Mock implementation of FirebaseAnalytics for analytics testing
+class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
+
+/// Mock implementation of FirebaseAnalyticsObserver for route tracking
+class MockFirebaseAnalyticsObserver extends Mock implements FirebaseAnalyticsObserver {}
+
+/// Mock implementation of AggregateQuery for Firestore aggregate queries
+class MockAggregateQuery extends Mock implements AggregateQuery {}
+
+/// Mock implementation of AggregateQuerySnapshot for Firestore aggregate results
+class MockAggregateQuerySnapshot extends Mock implements AggregateQuerySnapshot {}
+
+
+
+
+/// Mock implementation of StreamSubscription for stream subscription tests
+class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
+
+
+/// Mock implementation of Timer for timer tests
+class MockTimer extends Mock implements Timer {}
+
+/// ULTRATHINK Phase 21 - Essential mock classes (simple Mock, no interface conflicts)
+
+/// Mock for FriendsManagementOperations (Tier 1 - 6 errors)
+// REMOVED: Duplicate class definition moved above
+
+/// Mock for SocialRecipeOperations (Tier 1 - 3 errors)  
+/// Mock implementation of SocialRecipeOperations - COMPREHENSIVE INTERFACE
+class MockSocialRecipeOperations extends Mock implements SocialRecipeOperations {
+  // ===== RECIPE SHARING =====
+  
+  @override
+  Future<String?> shareRecipe({required String recipeId, required List<String> memberIds, required Map<String, String> memberDisplayNames, String? collaborativeDescription, bool allowGuestViewing = false, bool allowMemberInvites = true, List<String>? categoryIds}) async => 
+      'shared-$recipeId';
+  
+  @override
+  Future<String?> makeRecipePersonal({required String collaborativeRecipeId, String? newTitle}) async => 
+      'personal-$collaborativeRecipeId';
+  
+  @override
+  Future<String?> duplicateAndShareRecipe({required String recipeId, required List<String> memberIds, required Map<String, String> memberDisplayNames, String? newTitle, String? collaborativeDescription, bool allowGuestViewing = false, bool allowMemberInvites = true, List<String>? categoryIds}) async => 
+      'duplicate-shared-$recipeId';
+  
+  // ===== MEMBER MANAGEMENT =====
+  
+  @override
+  Future<bool> addMember({required String recipeId, required String userId, required String userDisplayName, ResourcePermission? permission}) async => true;
+  
+  @override
+  Future<bool> removeMember({required String recipeId, required String userId}) async => true;
+  
+  @override
+  Future<bool> updateMemberPermission({required String recipeId, required String userId, required ResourcePermission permission}) async => true;
+  
+  @override
+  Future<List<Map<String, dynamic>>> getRecipeMembers(String recipeId) async => [];
+  
+  @override
+  bool canInviteMembers(String recipeId) => true;
+  
+  @override
+  Map<String, dynamic> getMemberStatistics(String recipeId) => {};
+  
+  // ===== SOCIAL DISCOVERY =====
+  
+  @override
+  Future<List<Recipe>> getCollaborativeRecipes({int limit = 50, String? startAfter, List<String>? categoryFilter, String? searchQuery}) async => [];
+  
+  @override
+  Future<List<Recipe>> getSharedWithMe({int limit = 50, List<String>? categoryFilter, String? searchQuery}) async => [];
+  
+  @override
+  Future<List<Recipe>> getSharedByMe({int limit = 50, bool includeEmpty = false, List<String>? categoryFilter, String? searchQuery}) async => [];
+  
+  @override
+  Future<List<Recipe>> getRecipesByUser({required String userId, int limit = 50, bool includePersonal = false, List<String>? categoryFilter, String? searchQuery}) async => [];
+  
+  @override
+  Future<List<Recipe>> getTrendingRecipes({int limit = 20, Duration? timeWindow, List<String>? categoryFilter}) async => [];
+  
+  @override
+  Future<List<Recipe>> searchRecipes({required String query, int limit = 20, List<String>? categoryFilter, bool includePersonal = false}) async => [];
+  
+  // ===== RECIPE COMMENTS =====
+  
+  @override
+  Future<String?> addComment({required String recipeId, required String content, String? parentCommentId, List<String>? mentions}) async => 
+      'comment-${DateTime.now().millisecondsSinceEpoch}';
+  
+  @override
+  Future<List<RecipeComment>> getComments({required String recipeId, int limit = 20, DateTime? before, bool includeReplies = true}) async => [];
+  
+  @override
+  Future<bool> editComment({required String commentId, required String newContent}) async => true;
+  
+  @override
+  Future<bool> deleteComment(String commentId) async => true;
+  
+  @override
+  Future<bool> toggleCommentLike(String commentId) async => true;
+  
+  @override
+  Stream<List<RecipeComment>> getCommentsStream(String recipeId) => Stream.value([]);
+  
+  @override
+  Future<Map<String, dynamic>> getCommentStatistics(String recipeId) async => {};
+  
+  // ===== RECIPE RATING & SOCIAL STATS =====
+  
+  @override
+  Future<bool> rateRecipe({required String recipeId, required double rating, String? review}) async => true;
+  
+  @override
+  Future<Map<String, dynamic>> getRecipeStats(String recipeId) async => {};
+  
+  @override
+  Future<Map<String, dynamic>?> getUserRating(String recipeId) async => null;
+  
+  @override
+  Future<List<Map<String, dynamic>>> getTopRatedRecipes({int limit = 10, double minRating = 4.0, int minRatingCount = 3}) async => [];
+  
+  @override
+  Future<Map<String, dynamic>> getUserSocialStats() async => {};
+  
+  // ===== LEGACY COMPATIBILITY =====
+  
+  @override
+  Future<List<Map<String, dynamic>>> getLegacySharedRecipes() async => [];
+  
+  @override
+  Future<void> markSharedRecipeAsViewed(String recipeId) async {}
+  
+  @override
+  bool checkLegacyPermission(String recipeId, String userId, String action) => true;
+  
+  // ===== PERMISSION HELPERS =====
+  
+  @override
+  bool canView(String recipeId) => true;
+  
+  @override
+  bool canEdit(String recipeId) => true;
+  
+  @override
+  bool canDelete(String recipeId) => true;
+  
+  @override
+  bool canManageMembers(String recipeId) => true;
+  
+  @override
+  bool canComment(String recipeId) => true;
+  
+  @override
+  bool canRate(String recipeId) => true;
+  
+  @override
+  ResourcePermission getUserPermission(String recipeId, String userId) => ResourcePermission.write;
+  
+  @override
+  Map<String, dynamic> getPermissionSummary(String recipeId, String userId) => {};
+  
+  // ===== ADDITIONAL FEATURES =====
+  
+  @override
+  RecipeDiscoveryService get discoveryService => MockRecipeDiscoveryService();
+  
+  @override
+  Map<String, dynamic> getDiscoveryStatistics() => {};
+  
+  @override
+  Future<Map<String, int>> getPopularCollaborativeCategories({int limit = 10}) async => {};
+  
+  @override
+  Map<String, dynamic> getSharingStats() => {};
+  
+  @override
+  void dispose() {}
+}
+
+/// Mock for RecipeServiceAdapter (Tier 1 - 3 errors)
+class MockRecipeServiceAdapter extends Mock implements RecipeServiceAdapter {
+  /// Create recipe
+  @override
+  Future<String?> createRecipe(Recipe recipe) async {
+    // Mock recipe creation - return recipe ID
+    return 'mock-recipe-${recipe.id}'; // Mock creation returns ID
+  }
+  
+  /// Update recipe
+  @override
+  Future<bool> updateRecipe(Recipe recipe) async {
+    // Mock recipe update - return success status
+    return true;
+  }
+  
+  /// Delete recipe
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    // Mock recipe deletion - return success status
+    return true;
+  }
+  
+  /// Get recipes for user
+  @override
+  Future<List<Recipe>> getRecipesForUser(String userId) async {
+    // Mock user recipes
+    return [
+      Recipe(
+        core: RecipeCore(
+          id: 'mock-recipe-1',
+          title: 'Mock Recipe 1',
+          description: 'Test recipe',
+          ingredients: ['ingredient1'],
+          instructions: ['step1'],
+          mealType: 'Lunch', // FIXED: Added required mealType parameter
+          createdBy: userId,
+        ),
+        type: RecipeType.personal, // FIXED: Added required type parameter
+      ),
+    ];
+  }
+}
+
+/// Mock for FriendsManagementOperations - FIXED: Added missing interface methods
+class MockFriendsManagementOperations extends Mock implements FriendsManagementOperations {
+  // Configuration state for testing
+  List<UserProfile> _friends = [];
+  List<FriendRequest> _incomingRequests = [];
+  List<FriendRequest> _outgoingRequests = [];
+  Set<String> _blockedUsers = {};
+
+  /// Configure mock state for tests - adds missing setManagementState method
+  void setManagementState({
+    List<UserProfile>? friends,
+    List<FriendRequest>? incomingRequests,
+    List<FriendRequest>? outgoingRequests,
+    Set<String>? blockedUsers,
+  }) {
+    if (friends != null) _friends = friends;
+    if (incomingRequests != null) _incomingRequests = incomingRequests;
+    if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
+    if (blockedUsers != null) _blockedUsers = blockedUsers;
+  }
+}
+
+class MockFriendCategoriesOperations extends Mock implements FriendsCategoriesOperations {}
+
+class MockFriendsInvitationsOperations extends Mock implements FriendsInvitationsOperations {
+  // Configuration state for testing
+  List<UserProfile> _friends = [];
+  List<FriendRequest> _incomingRequests = [];
+  List<FriendRequest> _outgoingRequests = [];
+  Set<String> _blockedUsers = {};
+
+  /// Configure mock state for tests
+  void setFriendsManagementState({
+    List<UserProfile>? friends,
+    List<FriendRequest>? incomingRequests,
+    List<FriendRequest>? outgoingRequests,
+    Set<String>? blockedUsers,
+  }) {
+    if (friends != null) _friends = friends;
+    if (incomingRequests != null) _incomingRequests = incomingRequests;
+    if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
+    if (blockedUsers != null) _blockedUsers = blockedUsers;
+  }
+  
+  /// Alias for setFriendsManagementState - ⭐ FIXED: Missing alias method
+  void setManagementState({
+    List<UserProfile>? friends,
+    List<FriendRequest>? incomingRequests,
+    List<FriendRequest>? outgoingRequests,
+    Set<String>? blockedUsers,
+  }) {
+    setFriendsManagementState(
+      friends: friends,
+      incomingRequests: incomingRequests,
+      outgoingRequests: outgoingRequests,
+      blockedUsers: blockedUsers,
+    );
+  }
+
+  // ===== KEY METHODS EXPECTED BY TESTS =====
+
+  /// Get all friends ⭐ CRITICAL METHOD
+  List<UserProfile> getAllFriends() => List.unmodifiable(_friends);
+
+  /// Get friend by ID
+  UserProfile? getFriendById(String friendId) {
+    try {
+      return _friends.firstWhere((friend) => friend.uid == friendId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ===== FRIEND REQUEST MANAGEMENT =====
+
+  /// Send friend request
+  Future<bool> sendFriendRequest(String recipientId, {String? message}) async => true;
+
+  /// Accept friend request
+  Future<bool> acceptFriendRequest(String requestId) async => true;
+
+  /// Reject friend request
+  Future<bool> rejectFriendRequest(String requestId) async => true;
+
+  /// Cancel friend request
+  Future<bool> cancelFriendRequest(String requestId) async => true;
+
+  // ===== RELATIONSHIP MANAGEMENT =====
+
+  /// Remove friend
+  Future<bool> removeFriend(String friendId) async => true;
+
+  /// Block user
+  Future<bool> blockUser(String userId) async => true;
+
+  /// Unblock user
+  Future<bool> unblockUser(String userId) async => true;
+
+  // ===== QUERY METHODS =====
+
+  /// Check if user is a friend
+  bool isFriend(String userId) => _friends.any((friend) => friend.uid == userId);
+
+  /// Check if has outgoing request
+  bool hasOutgoingRequest(String userId) => 
+      _outgoingRequests.any((request) => request.toUserId == userId);
+
+  /// Check if has incoming request  
+  bool hasIncomingRequest(String userId) =>
+      _incomingRequests.any((request) => request.fromUserId == userId);
+
+  /// Check if user is blocked
+  bool isBlocked(String userId) => _blockedUsers.contains(userId);
+
+  // ===== SEARCH AND DISCOVERY =====
+
+  /// Search users
+  Future<List<UserProfile>> searchUsers(String query) async => [];
+
+  /// Get mutual friends
+  Future<List<UserProfile>> getMutualFriends(String userId) async => [];
+
+  // ===== MISSING METHODS FROM INTERFACE =====
+  
+  /// Get online friends
+  List<UserProfile> getOnlineFriends() => _friends.where((friend) => true).toList(); // Mock: all friends are online
+  
+  /// Get friends by category
+  List<UserProfile> getFriendsByCategory(String category) => [];
+  
+  /// Search friends
+  List<UserProfile> searchFriends(String query) => _friends.where((friend) => 
+      friend.displayName.toLowerCase().contains(query.toLowerCase())).toList();
+  
+  /// Get incoming requests
+  List<FriendRequest> getIncomingRequests() => List.unmodifiable(_incomingRequests);
+  
+  /// Get outgoing requests
+  List<FriendRequest> getOutgoingRequests() => List.unmodifiable(_outgoingRequests);
+  
+  /// Get incoming request count
+  int getIncomingRequestCount() => _incomingRequests.length;
+  
+  /// Get blocked users
+  List<String> getBlockedUsers() => _blockedUsers.toList();
+  
+  /// Get friend statistics
+  Map<String, dynamic> getFriendStats() => {
+    'totalFriends': _friends.length,
+    'onlineFriends': _friends.length, // Mock: all friends are online
+    'incomingRequests': _incomingRequests.length,
+    'outgoingRequests': _outgoingRequests.length,
+    'blockedUsers': _blockedUsers.length,
+  };
+}
+
+/// Mock for FriendsCategoriesOperations - ⭐ FIXED: Added missing methods
+class MockFriendsCategoriesOperations extends Mock implements FriendsCategoriesOperations {
+  // Configuration state
+  bool _shouldSucceed = true;
+  String? _createdCategoryId;
+  List<UserProfile>? _categoryFriends;
+  FriendCategory? _categoryByName;
+  List<FriendCategory> _friendCategories = [];
+  
+  /// Configure mock state for tests - ⭐ FIXED: Missing state configuration method
+  void setCategoriesState({
+    bool shouldSucceed = true,
+    String? createdCategoryId,
+    List<UserProfile>? categoryFriends,
+    FriendCategory? categoryByName,
+    List<FriendCategory>? friendCategories,
+  }) {
+    _shouldSucceed = shouldSucceed;
+    _createdCategoryId = createdCategoryId;
+    _categoryFriends = categoryFriends;
+    _categoryByName = categoryByName;
+    _friendCategories = friendCategories ?? [];
+  }
+  
+  /// Get category by ID - ⭐ FIXED: Missing production method
+  @override
+  FriendCategory? getCategoryById(String categoryId) {
+    try {
+      return _friendCategories.where((category) => category.id == categoryId).firstOrNull;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // Getters for configured state (tests can access)
+  bool get shouldSucceed => _shouldSucceed;
+  String? get createdCategoryId => _createdCategoryId;
+  List<UserProfile>? get categoryFriends => _categoryFriends;
+  FriendCategory? get categoryByName => _categoryByName;
+  List<FriendCategory> get friendCategories => List.unmodifiable(_friendCategories);
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+
+/// Mock for UnifiedMenuService (Tier 2 - 2 errors)
+class MockUnifiedMenuService extends Mock implements UnifiedMenuService {}
+
+/// Mock for SocialSharingRepository - ⭐ FIXED: Added missing methods
+class MockSocialSharingRepository extends Mock implements SocialSharingRepository {
+  /// Get content shared with current user - ✅ FIXED: Stream return type to match interface
+  @override
+  Stream<List<SharedContent>> getSharedWithMe(String userId) {
+    // Mock implementation - return empty stream by default
+    return Stream.value(<SharedContent>[]);
+  }
+  
+  /// Share content to group - ✅ FIXED: Proper interface signature with tracking
+  @override
+  Future<void> shareToGroup(String groupId, SharedContent content) async {
+    // Track the sharing operation for test verification
+    _sharingOperations.add({
+      'groupId': groupId,
+      'content': content,
+    });
+  }
+  
+  /// Share content to specific users
+  @override
+  Future<void> shareToUsers(List<String> userIds, SharedContent content) async {
+    // Mock implementation
+  }
+  
+  /// Get content shared by the current user
+  @override
+  Stream<List<SharedContent>> getMySharedContent(String userId) {
+    return Stream.value(<SharedContent>[]);
+  }
+  
+  /// Update sharing permissions
+  @override
+  Future<void> updateSharingPermissions(
+    String contentId,
+    List<String> addUserIds,
+    List<String> removeUserIds,
+  ) async {
+    // Mock implementation
+  }
+  
+  /// Revoke sharing for specific content
+  @override
+  Future<void> revokeSharing(String contentId) async {
+    // Mock implementation
+  }
+  
+  /// Accept shared content
+  @override
+  Future<void> acceptSharedContent(String contentId, String userId) async {
+    // Mock implementation
+  }
+  
+  /// Decline shared content
+  @override
+  Future<void> declineSharedContent(String contentId, String userId) async {
+    // Mock implementation
+  }
+  
+  /// Get sharing statistics
+  @override
+  Future<Map<String, dynamic>> getSharingStats(String userId) async {
+    return <String, dynamic>{};
+  }
+  
+  // ===== TEST HELPER PROPERTIES =====
+  
+  /// Test helper: Track sharing operations for verification (includes groupId and content)
+  final List<Map<String, dynamic>> _sharingOperations = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> get sharedContent => _sharingOperations;
+  
+  /// Test helper: Clear shared content tracker
+  void clearSharedContent() => _sharingOperations.clear();
+  
+  /// Test helper: Add content to tracker (legacy method for backward compatibility)
+  void addSharedContent(SharedContent content) {
+    _sharingOperations.add({
+      'groupId': null, // No groupId for direct additions
+      'content': content,
+    });
+  }
+}
+
+/// Mock for ShoppingShareOperations (Tier 2 - 2 errors)
+class MockShoppingShareOperations extends Mock implements ShoppingShareOperations {
+  // ===== EXPORT OPERATIONS =====
+
+  /// Export shopping list as formatted text
+  @override
+  String exportListAsText(String listId) => 'Shopping List $listId:\n- Item 1\n- Item 2';
+
+  /// Export shopping list as minimal text (for SMS/messaging)
+  @override
+  String exportListAsMinimalText(String listId) => 'List $listId: Item 1, Item 2';
+
+  /// Export shopping list as structured JSON
+  @override
+  Map<String, dynamic> exportListAsJson(String listId) => {
+    'listId': listId,
+    'items': ['Item 1', 'Item 2'],
+    'exported': DateTime.now().toIso8601String(),
+  };
+
+  /// Export shopping list as CSV
+  @override
+  String exportListAsCSV(String listId) => 'Item,Quantity,Category\nItem 1,1,Food\nItem 2,2,Household';
+
+  // ===== EXTERNAL SHARING OPERATIONS =====
+
+  /// Share shopping list via external apps
+  @override
+  Future<bool> shareList({
+    required String listId,
+    String format = 'text',
+    String? customMessage,
+  }) async => true;
+
+  /// Create public link for shopping list
+  @override
+  Future<String?> createPublicLink(String listId) async => 'https://example.com/shared/$listId';
+
+  // ===== TEMPLATE OPERATIONS =====
+
+  /// Save shopping list as template
+  @override
+  Future<bool> saveAsTemplate({
+    required String listId,
+    required String templateName,
+    String? description,
+  }) async => true;
+
+  /// Create shopping list from template
+  @override
+  Future<String?> createFromTemplate({
+    required String templateId,
+    String? customName,
+  }) async => 'new-list-from-template';
+
+  // ===== IMPORT OPERATIONS =====
+
+  /// Import shopping list from text
+  @override
+  Future<String?> importFromText({
+    required String text,
+    String? listName,
+  }) async => 'imported-list-from-text';
+
+  /// Import shopping list from JSON
+  @override
+  Future<String?> importFromJson(Map<String, dynamic> jsonData) async => 'imported-list-from-json';
+
+  // ===== SOCIAL SHARING OPERATIONS =====
+
+  /// Share shopping list with specific friends
+  @override
+  Future<bool> shareWithFriends({
+    required String listId,
+    required List<String> friendIds,
+    String? message,
+  }) async => true;
+
+  /// Share shopping list with single friend ⭐ KEY METHOD
+  @override
+  Future<bool> shareListWithFriend(String listId, String friendId) async => true;
+
+  /// Share shopping list with multiple friends
+  @override
+  Future<bool> shareListWithMultipleFriends({
+    required String listId,
+    required List<String> friendIds,
+    String? message,
+  }) async => true;
+
+  /// Share shopping list with specific groups
+  @override
+  Future<bool> shareWithGroups({
+    required String listId,
+    required List<String> groupIds,
+    String? message,
+  }) async => true;
+
+  /// Share shopping list with single group
+  @override
+  Future<bool> shareListWithGroup(String listId, String groupId) async => true;
+
+  /// Share shopping list with multiple groups
+  @override
+  Future<bool> shareListWithMultipleGroups({
+    required String listId,
+    required List<String> groupIds,
+    String? message,
+  }) async => true;
+
+  /// Send shopping list collaboration invitation
+  @override
+  Future<bool> sendCollaborationInvite({
+    required String listId,
+    required String recipientId,
+    String? message,
+  }) async => true;
+
+  /// Get shopping lists shared with current user
+  @override
+  Future<List<Map<String, dynamic>>> getShoppingListsSharedWithMe() async => [];
+
+  /// Get shopping lists shared by current user
+  @override
+  Future<List<Map<String, dynamic>>> getShoppingListsSharedByMe() async => [];
+
+  /// Import shared shopping list
+  @override
+  Future<String?> importSharedShoppingList(String sharedListId) async => 'imported-shared-list';
+
+  /// Mark shared shopping list as viewed
+  @override
+  Future<void> markSharedShoppingListAsViewed(String sharedListId) async {}
+
+  /// Get shopping list sharing statistics
+  @override
+  Future<Map<String, dynamic>> getShoppingListSharingStats(String listId) async => {
+    'sharedWith': 0,
+    'views': 0,
+    'lastShared': DateTime.now().toIso8601String(),
+  };
+  
+  // ===== MODULE ACCESS PROPERTIES =====
+  
+  @override
+  ShoppingExportModule get export => MockShoppingExportModule();
+  
+  @override
+  ShoppingExternalShareModule get externalShare => MockShoppingExternalShareModule();
+  
+  @override
+  ShoppingTemplateModule get template => MockShoppingTemplateModule();
+  
+  @override
+  ShoppingImportModule get import => MockShoppingImportModule();
+  
+  @override
+  ShoppingSocialShareModule get socialShare => MockShoppingSocialShareModule();
+}
+
+/// Mock shopping module classes for ShoppingShareOperations - FIXED: Extend concrete classes with correct constructors
+class MockShoppingExportModule extends ShoppingExportModule {
+  MockShoppingExportModule();
+}
+
+class MockShoppingExternalShareModule extends ShoppingExternalShareModule {
+  MockShoppingExternalShareModule();
+}
+
+class MockShoppingTemplateModule extends ShoppingTemplateModule {
+  MockShoppingTemplateModule();
+}
+
+class MockShoppingImportModule extends ShoppingImportModule {
+  MockShoppingImportModule();
+}
+
+class MockShoppingSocialShareModule extends ShoppingSocialShareModule {
+  MockShoppingSocialShareModule();
+}
+/// Mock for AccountDeletionRepository (Tier 2 - 2 errors)
+class MockAccountDeletionRepository extends Mock {
+  // Configuration state for test scenarios
+  final Map<String, bool> _deletionResults = {};
+  
+  /// Delete all user recipes
+  Future<bool> deleteUserRecipes(String userId) async => _deletionResults['recipes'] ?? true;
+  
+  /// Delete all user menus
+  Future<bool> deleteUserMenus(String userId) async => _deletionResults['menus'] ?? true;
+  
+  /// Delete all user shopping lists
+  Future<bool> deleteShoppingLists(String userId) async => _deletionResults['shopping_lists'] ?? true;
+  
+  /// Remove all friend connections for user
+  Future<bool> removeFriendConnections(String userId) async => _deletionResults['friend_connections'] ?? true;
+  
+  /// Delete all user messages
+  Future<bool> deleteUserMessages(String userId) async => _deletionResults['messages'] ?? true;
+  
+  /// Remove from shared content
+  Future<bool> removeFromSharedContent(String userId) async => _deletionResults['shared_content'] ?? true;
+  
+  /// Delete comments and ratings
+  Future<bool> deleteCommentsAndRatings(String userId) async => _deletionResults['comments_ratings'] ?? true;
+  
+  /// Delete user preferences
+  Future<bool> deleteUserPreferences(String userId) async => _deletionResults['preferences'] ?? true;
+  
+  /// Delete user profile
+  Future<bool> deleteUserProfile(String userId) async => _deletionResults['profile'] ?? true;
+  
+  /// Create audit log - FIXED: Match production signature with named parameters
+  Future<String> createAuditLog({
+    required String userId,
+    required String email,
+    required String reason,
+    required List<dynamic> deletedCollections,
+    required List<dynamic> failedCollections,
+  }) async => 'audit-123';
+  
+  /// Test configuration methods
+  void resetDeletionState() {
+    _deletionResults.clear();
+  }
+  
+  void setDeletionResult(String operation, bool result) {
+    _deletionResults[operation] = result;
+  }
+  
+  /// Mock audit logs for testing
+  List<Map<String, dynamic>> get auditLogs => [
+    {
+      'id': 'audit-123',
+      'userId': 'test-user',
+      'reason': 'test-deletion',
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    },
+  ];
+}
+
+/// Tier 3 - Single occurrence mock classes
+class MockWebScraper extends Mock {
+  /// Perform extraction from URL - FIXED: Correct signature and return type
+  Future<ExtractionResult> performExtraction(String url, SourcePlatform platform) async {
+    // Return mock ExtractionResult matching test expectations
+    return ExtractionResult(
+      success: true,
+      extractedText: 'Mock recipe content from $url',
+      metadata: {
+        'platform': platform.toString().split('.').last,
+        'sourceUrl': url,
+        'title': 'Mock Recipe Title',
+      },
+    );
+  }
+  
+  /// Set timeout behavior for scraping - FIXED: Named parameters
+  void setTimeoutBehavior({
+    required bool shouldTimeout,
+    Duration? timeout,
+  }) {
+    // Mock timeout configuration
+  }
+  
+  /// Dispose of resources
+  void dispose() {
+    // Mock disposal - no actual resources to clean up
+  }
+}
+/// Mock implementation of RealtimeRecipeOperations - COMPREHENSIVE INTERFACE
+class MockRealtimeRecipeOperations extends Mock implements RealtimeRecipeOperations {
+  // ===== REAL-TIME WATCHING OPERATIONS =====
+  
+  /// ✅ FIXED: Replace Recipe.empty() with null streams - Phase 5A ultrathink approach
+  @override
+  Stream<Recipe> watchRecipe(String recipeId) => const Stream.empty();
+  
+  @override
+  Stream<Recipe> watchRecipeWithRetry(String recipeId, {int maxRetries = 3, Duration retryDelay = const Duration(seconds: 2)}) => 
+      const Stream.empty();
+  
+  @override
+  Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) => 
+      Stream.value([]);
+  
+  @override
+  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(List<String> recipeIds) => 
+      Stream.value({});
+  
+  @override
+  bool get isConnected => true;
+  
+  @override
+  Stream<bool> get connectionStream => Stream.value(true);
+  
+  @override
+  Future<bool> waitForConnection({Duration timeout = const Duration(seconds: 10)}) async => true;
+  
+  @override
+  Stream<ConnectionStatus> monitorConnectionStatus() => Stream.value(ConnectionStatus(
+    isConnected: true,
+    timestamp: DateTime.now(),
+    hasRealtimeService: true,
+  ));
+  
+  @override
+  StreamSubscription<Recipe> startWatchingRecipe(String recipeId, void Function(Recipe) onRecipeUpdated, {void Function(dynamic)? onError}) => 
+      Stream<Recipe>.empty().listen(onRecipeUpdated, onError: onError);
+  
+  @override
+  StreamSubscription<List<Recipe>> startWatchingMultipleRecipes(List<String> recipeIds, void Function(List<Recipe>) onRecipesUpdated, {void Function(dynamic)? onError}) => 
+      Stream<List<Recipe>>.empty().listen(onRecipesUpdated, onError: onError);
+  
+  @override
+  bool isWatchingAvailable() => true;
+  
+  @override
+  Map<String, bool> getWatchingCapabilities() => {'realtime': true, 'offline': true};
+  
+  // ===== REAL-TIME EDITING OPERATIONS =====
+  
+  @override
+  Future<bool> startRealtimeEditing(String recipeId) async => true;
+  
+  @override
+  Future<bool> stopRealtimeEditing(String recipeId) async => true;
+  
+  @override
+  bool isInRealtimeEditingMode(String recipeId) => true;
+  
+  @override
+  Future<bool> makeRealtimeEdit({required String recipeId, required Map<String, dynamic> changes, String? editDescription}) async => true;
+  
+  @override
+  Future<bool> makeBatchRealtimeEdits({required String recipeId, required List<Map<String, dynamic>> changeList, String? batchDescription}) async => true;
+  
+  @override
+  Future<bool> undoLastRealtimeEdit(String recipeId) async => true;
+  
+  @override
+  Future<bool> resolveConflict({required String recipeId, required Recipe localVersion, required Recipe remoteVersion, required String resolution}) async => true;
+  
+  @override
+  Future<bool> autoResolveConflict({required String recipeId, required Recipe localVersion, required Recipe remoteVersion, String strategy = 'merge'}) async => true;
+  
+  @override
+  Future<List<ConflictInfo>> getPendingConflicts(String recipeId) async => <ConflictInfo>[];
+  
+  @override
+  bool validateEditChanges(String recipeId, Map<String, dynamic> changes) => true;
+  
+  @override
+  Map<String, dynamic> getEditValidationRules() => {};
+  
+  @override
+  Map<String, dynamic> getEditingStatus(String recipeId) => {};
+  
+  // ===== COLLABORATION FEATURES =====
+  
+  @override
+  Future<bool> enableCollaborativeEditing(String recipeId, List<String> memberIds) async => true;
+  
+  @override
+  Future<bool> disableCollaborativeEditing(String recipeId) async => true;
+  
+  @override
+  bool canEnableCollaboration(String recipeId) => true;
+  
+  @override
+  bool canDisableCollaboration(String recipeId) => true;
+  
+  @override
+  Future<bool> addCollaborators(String recipeId, List<String> memberIds) async => true;
+  
+  @override
+  Future<bool> removeCollaborators(String recipeId, List<String> memberIds) async => true;
+  
+  @override
+  Future<bool> updateMemberPermissions(String recipeId, Map<String, String> memberPermissions) async => true;
+  
+  @override
+  Future<bool> transferOwnership(String recipeId, String newOwnerId) async => true;
+  
+  @override
+  Future<bool> leaveCollaboration(String recipeId) async => true;
+  
+  @override
+  Map<String, dynamic> getCollaborationDetails(String recipeId) => {};
+  
+  @override
+  Map<String, dynamic> getCollaborationStats(String recipeId) => {};
+  
+  @override
+  Future<List<Map<String, dynamic>>> getCollaborationHistory(String recipeId) async => [];
+  
+  @override
+  Future<List<Map<String, dynamic>>> getEditHistory(String recipeId) async => [];
+  
+  @override
+  Map<String, String> validateCollaborationSettings({required List<String> memberIds, Map<String, String>? memberPermissions}) => {};
+  
+  @override
+  bool isWithinCollaborationLimits(String recipeId, int additionalMembers) => true;
+  
+  @override
+  Map<String, dynamic> getCollaborationStatus(String recipeId) => {};
+  
+  // ===== PRESENCE FEATURES =====
+  
+  @override
+  Future<bool> showPresence(String recipeId) async => true;
+  
+  @override
+  Future<bool> hidePresence(String recipeId) async => true;
+  
+  @override
+  Future<bool> updatePresenceHeartbeat(String recipeId) async => true;
+  
+  @override
+  Future<List<Map<String, dynamic>>> getRecipePresence(String recipeId) async => [];
+  
+  @override
+  Future<Map<String, List<Map<String, dynamic>>>> getMultipleRecipePresence(List<String> recipeIds) async => {};
+  
+  @override
+  bool isUserPresent(String recipeId, String userId) => true;
+  
+  @override
+  int getPresenceCount(String recipeId) => 1;
+  
+  @override
+  Stream<List<Map<String, dynamic>>> watchRecipePresence(String recipeId) => Stream.value([]);
+  
+  @override
+  Stream<Map<String, List<Map<String, dynamic>>>> watchMultipleRecipePresence(List<String> recipeIds) => Stream.value({});
+  
+  @override
+  Stream<int> watchPresenceCount(String recipeId) => Stream.value(1);
+  
+  @override
+  StreamSubscription<void>? startAutomaticPresenceTracking(String recipeId, {Duration heartbeatInterval = const Duration(seconds: 30)}) => 
+      Stream<void>.empty().listen(null);
+  
+  @override
+  Future<void> updateMultipleRecipePresence(Map<String, bool> recipePresenceMap) async {}
+  
+  @override
+  Future<void> clearAllPresence() async {}
+  
+  @override
+  Map<String, dynamic> getPresenceStatistics() => {};
+  
+  @override
+  List<Map<String, dynamic>> getUserPresenceHistory(String userId) => [];
+  
+  // ===== LEGACY METHODS =====
+  
+  @override
+  List<String> getActiveEditors(String recipeId) => [];
+  
+  // ===== MODULE STATUS AND DIAGNOSTICS =====
+  
+  @override
+  Map<String, dynamic> getModuleStatus() => {};
+  
+  @override
+  Map<String, dynamic> getRealtimeOperationsStatus() => {};
+}
+/// Mock implementation of PermissionProvider - ⭐ FIXED: Implements correct interface  
+class MockPermissionProvider extends Mock implements PermissionProvider {
+  /// Check permission status - FIXED: Correct types (Permission -> PermissionStatus)
+  @override
+  Future<PermissionStatus> checkPermission(Permission permission) async {
+    // Mock permission granted by default
+    return PermissionStatus.granted;
+  }
+  
+  /// Request permission - FIXED: Correct types (Permission -> PermissionStatus)
+  @override
+  Future<PermissionStatus> requestPermission(Permission permission) async {
+    // Mock permission request granted by default
+    return PermissionStatus.granted;
+  }
+}
+class MockNotificationRepository extends Mock {
+  /// Get notification preferences
+  Future<Map<String, dynamic>> getPreferences(String userId) async {
+    return {
+      'enabled': true,
+      'sound': true,
+      'vibration': true,
+      'categories': ['social', 'recipes', 'system'],
+    };
+  }
+  
+  /// Save FCM token to Firestore
+  Future<void> saveTokenToFirestore(String userId, String token) async {
+    // Mock token storage
+  }
+  
+  /// Update device information
+  Future<void> updateDeviceInfo(String userId, Map<String, dynamic> deviceInfo) async {
+    // Mock device info update
+  }
+  
+  /// Update token timestamp
+  Future<void> updateTokenTimestamp(String userId, String token) async {
+    // Mock timestamp update
+  }
+  
+  /// Remove old token
+  Future<void> removeOldToken(String userId, String oldToken) async {
+    // Mock token removal
+  }
+  
+  /// Cleanup old devices
+  Future<void> cleanupOldDevices(String userId) async {
+    // Mock old device cleanup
+  }
+  
+  /// Get all user tokens
+  Future<List<String>> getAllUserTokens(String userId) async {
+    return ['mock-token-1', 'mock-token-2'];
+  }
+  
+  /// Mark device as inactive
+  Future<void> markDeviceInactive(String userId, String deviceId) async {
+    // Mock device deactivation
+  }
+}
+/// ✅ FIXED: Complete NotificationParent mock implementation - PHASE 4B SUCCESS!
+class MockNotificationParent extends Mock implements NotificationParent {
+  // Configuration state for notification parent
+  Map<String, dynamic> _parentState = {};
+  
+  /// Configure mock state for notification parent testing - ✅ FIXED: Added missing parameters
+  void setNotificationParentState({
+    Map<String, dynamic>? parentState,
+    String? currentUserId,
+    String? currentUserDisplayName,
+  }) {
+    if (parentState != null) _parentState = parentState;
+    if (currentUserId != null) _parentState['currentUserId'] = currentUserId;
+    if (currentUserDisplayName != null) _parentState['currentUserDisplayName'] = currentUserDisplayName;
+  }
+  
+  // Getters for configured state
+  Map<String, dynamic> get parentState => _parentState;
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+class MockMenuCollaborationRepository extends Mock implements MenuCollaborationRepository {
+  /// Enable collaboration for menu - ✅ FIXED: Named parameters for Phase 4D
+  @override
+  Future<bool> enableCollaboration({
+    required String menuId,
+    required List<String> collaboratorIds,
+    Map<String, String>? collaboratorDisplayNames,
+  }) async {
+    // Mock collaboration enablement
+    return true;
+  }
+  
+  /// Start collaboration listener - ✅ FIXED: Match interface signature
+  @override
+  void startCollaborationListener(String menuId, Function(SharedMenu) onUpdate) {
+    // Mock collaboration listener - does nothing in test
+    // In real implementation, this would set up Firebase listener
+  }
+  
+  /// Add recipe to menu - ✅ FIXED: Named parameters for Phase 4D
+  @override
+  Future<bool> addRecipeToMenu({
+    required String menuId,
+    required String category,
+    required Recipe recipe,
+    String? suggestedBy,
+    String? suggestion,
+  }) async {
+    // Mock recipe addition to menu
+    return true;
+  }
+  
+  /// Remove recipe from menu - ✅ FIXED: Named parameters for Phase 4D
+  @override
+  Future<bool> removeRecipeFromMenu({
+    required String menuId,
+    required String category,
+    required String recipeId,
+    String? reason,
+  }) async {
+    // Mock recipe removal from menu
+    return true;
+  }
+  
+  /// Rate menu - ✅ FIXED: Named parameters for Phase 4D
+  @override
+  Future<bool> rateMenu({
+    required String menuId,
+    required double rating,
+    String? comment,
+  }) async {
+    // Mock menu rating
+    return true;
+  }
+  
+  /// Get menu ratings
+  @override
+  Future<List<Map<String, dynamic>>> getMenuRatings(String menuId) async {
+    return [
+      {
+        'rating': 4.0,
+        'comment': 'Great menu!',
+        'userId': 'user1',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      },
+      {
+        'rating': 4.5,
+        'comment': 'Love the variety',
+        'userId': 'user2', 
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      },
+    ];
+  }
+  
+  /// ✅ FIXED: Missing methods for Phase 5A - MenuCollaborationRepository interface completion
+  /// Get menu average rating
+  @override
+  Future<double> getMenuAverageRating(String menuId) async {
+    return 4.2;
+  }
+  
+  /// Add comment to menu
+  @override
+  Future<bool> addMenuComment({
+    required String menuId,
+    required String comment,
+    String? replyToCommentId,
+  }) async {
+    // Mock menu comment addition
+    return true;
+  }
+  
+  /// Get menu comments stream
+  @override
+  Stream<List<Map<String, dynamic>>> getMenuCommentsStream(String menuId) {
+    return Stream.value([
+      {
+        'id': 'comment-1',
+        'userId': 'user-1', 
+        'comment': 'Great menu!',
+        'createdAt': DateTime.now().millisecondsSinceEpoch,
+      }
+    ]);
+  }
+  
+  /// Toggle like on menu comment
+  @override
+  Future<bool> toggleCommentLike({
+    required String menuId,
+    required String commentId,
+  }) async {
+    // Mock comment like toggle
+    return true;
+  }
+  
+  /// Create menu template
+  @override
+  Future<String?> createMenuTemplate({
+    required String templateName,
+    required Map<String, List<Recipe>> menuSnapshot,
+    String? description,
+    List<String>? tags,
+  }) async {
+    // Mock template creation
+    return 'template-id-123';
+  }
+  
+  /// Create menu from template
+  @override
+  Future<String?> createMenuFromTemplate({
+    required String templateId,
+    required String menuTitle,
+    List<String>? sharedToUserIds,
+    String? shareMessage,
+    bool enableCollaboration = false,
+  }) async {
+    // Mock menu creation from template
+    return 'menu-id-456';
+  }
+  
+  /// Dispose all listeners
+  @override
+  void disposeAllListeners() {
+    // Mock listener disposal
+  }
+}
+// ✅ REMOVED: Duplicate MockLegacyNotificationRepository - keeping the complete version
+/// Mock implementation of ImageValidator - ⭐ FIXED: Implements correct interface
+class MockImageValidator extends Mock implements ImageValidator {
+  /// Validate if file is a valid image - FIXED: File parameter instead of String
+  @override
+  bool isValidImageFile(File file) {
+    // Mock validation - accept common image extensions
+    final validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    return validExtensions.any((ext) => file.path.toLowerCase().endsWith(ext));
+  }
+}
+/// Mock implementation of ImagePickerProvider - ⭐ FIXED: Implements correct interface
+class MockImagePickerProvider extends Mock implements ImagePickerProvider {
+  /// Pick image from source - FIXED: Correct types (ImageSource, returns XFile)
+  @override
+  Future<XFile?> pickImage({
+    required ImageSource source,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+  }) async {
+    // Mock image picker - return mock XFile
+    return XFile('/mock/path/to/test-image.jpg');
+  }
+  
+  /// Pick multiple images - FIXED: No source param, returns List of XFile
+  @override
+  Future<List<XFile>> pickMultiImage({
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+  }) async {
+    // Mock multi image picker - return mock XFiles
+    return [
+      XFile('/mock/path/to/image1.jpg'),
+      XFile('/mock/path/to/image2.jpg'),
+    ];
+  }
+}
+/// ✅ FIXED: Complete FileContentProvider interface alignment - PHASE 4C SUCCESS!
+class MockFileContentProvider extends Mock implements FileContentProvider {
+  // Configuration state
+  FilePickerResult? _mockResult;
+  
+  /// Configure mock result for testing
+  void setFilePickerResult(FilePickerResult? result) {
+    _mockResult = result;
+  }
+  
+  @override
+  Future<FilePickerResult?> pickFiles({
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    bool allowMultiple = false,
+    bool withData = true,
+    bool withReadStream = false,
+  }) async {
+    return _mockResult;
+  }
+  
+  @override
+  Future<FilePickerResult?> provideContent(
+    Uint8List content,
+    String fileName,
+    String? extension,
+  ) async {
+    return _mockResult;
+  }
+}
 
 // ============= THIRD-PARTY LIBRARY MOCKS =============
 
@@ -1721,8 +3147,152 @@ class MockRemoteMessage extends Mock implements RemoteMessage {}
 /// Mock implementation of RemoteNotification (FCM)
 class MockRemoteNotification extends Mock implements RemoteNotification {}
 
-/// Mock implementation of FirebaseMessaging
-class MockFirebaseMessaging extends Mock implements FirebaseMessaging {}
+/// ✅ FIXED: Complete FirebaseMessaging mock implementation - PHASE 4B SUCCESS!
+/// Mock implementation of FirebaseMessaging with complete interface
+class MockFirebaseMessaging extends Mock implements FirebaseMessaging {
+  // Configuration state
+  String? _token = 'test-fcm-token-123';
+  AuthorizationStatus _authorizationStatus = AuthorizationStatus.authorized;
+  Stream<String> _tokenRefreshStream = const Stream.empty();
+  
+  /// Configure FCM messaging state for testing
+  void setFirebaseMessagingState({
+    String? token,
+    AuthorizationStatus? authorizationStatus,
+    Stream<String>? tokenRefreshStream,
+  }) {
+    if (token != null) _token = token;
+    if (authorizationStatus != null) _authorizationStatus = authorizationStatus;
+    if (tokenRefreshStream != null) _tokenRefreshStream = tokenRefreshStream;
+  }
+  
+  // Core token methods
+  @override
+  Future<String?> getToken({String? vapidKey}) async => _token;
+  
+  @override
+  Stream<String> get onTokenRefresh => _tokenRefreshStream;
+  
+  // Permission methods
+  @override
+  Future<NotificationSettings> requestPermission({
+    bool alert = true,
+    bool announcement = false,
+    bool badge = true,
+    bool carPlay = true,
+    bool criticalAlert = false,
+    bool providesAppNotificationSettings = true,
+    bool provisional = false,
+    bool sound = true,
+  }) async {
+    return MockNotificationSettings(authorizationStatus: _authorizationStatus);
+  }
+  
+  @override
+  Future<NotificationSettings> getNotificationSettings() async {
+    return MockNotificationSettings(authorizationStatus: _authorizationStatus);
+  }
+  
+  // Topic subscription methods
+  @override
+  Future<void> subscribeToTopic(String topic) async {
+    // Mock implementation
+  }
+  
+  @override
+  Future<void> unsubscribeFromTopic(String topic) async {
+    // Mock implementation
+  }
+  
+  // Message handling
+  Stream<RemoteMessage> get onMessage => const Stream.empty();
+  
+  Stream<RemoteMessage> get onMessageOpenedApp => const Stream.empty();
+  
+  @override
+  Future<RemoteMessage?> getInitialMessage() async => null;
+  
+  Stream<RemoteMessage> get onBackgroundMessage => const Stream.empty();
+}
+
+/// ✅ FIXED: Complete NotificationSettings mock implementation - PHASE 4B SUCCESS!
+/// Mock implementation of NotificationSettings
+class MockNotificationSettings extends Mock implements NotificationSettings {
+  AuthorizationStatus _authorizationStatus = AuthorizationStatus.authorized;
+  final AppleNotificationSetting _alert;
+  final AppleNotificationSetting _announcement;
+  final AppleNotificationSetting _badge;
+  final AppleNotificationSetting _carPlay;
+  final AppleNotificationSetting _lockScreen;
+  final AppleNotificationSetting _notificationCenter;
+  final AppleShowPreviewSetting _showPreviews;
+  final AppleNotificationSetting _timeSensitive;
+  final AppleNotificationSetting _criticalAlert;
+  final AppleNotificationSetting _sound;
+  
+  MockNotificationSettings({
+    AuthorizationStatus authorizationStatus = AuthorizationStatus.authorized,
+    AppleNotificationSetting alert = AppleNotificationSetting.enabled,
+    AppleNotificationSetting announcement = AppleNotificationSetting.notSupported,
+    AppleNotificationSetting badge = AppleNotificationSetting.enabled,
+    AppleNotificationSetting carPlay = AppleNotificationSetting.enabled,
+    AppleNotificationSetting lockScreen = AppleNotificationSetting.enabled,
+    AppleNotificationSetting notificationCenter = AppleNotificationSetting.enabled,
+    AppleShowPreviewSetting showPreviews = AppleShowPreviewSetting.always,
+    AppleNotificationSetting timeSensitive = AppleNotificationSetting.notSupported,
+    AppleNotificationSetting criticalAlert = AppleNotificationSetting.notSupported,
+    AppleNotificationSetting sound = AppleNotificationSetting.enabled,
+  }) : _alert = alert,
+       _announcement = announcement,
+       _badge = badge,
+       _carPlay = carPlay,
+       _lockScreen = lockScreen,
+       _notificationCenter = notificationCenter,
+       _showPreviews = showPreviews,
+       _timeSensitive = timeSensitive,
+       _criticalAlert = criticalAlert,
+       _sound = sound {
+    _authorizationStatus = authorizationStatus;
+  }
+  
+  /// Configure notification settings for testing
+  void setAuthorizationStatus(AuthorizationStatus status) {
+    _authorizationStatus = status;
+  }
+  
+  @override
+  AuthorizationStatus get authorizationStatus => _authorizationStatus;
+  
+  @override
+  AppleNotificationSetting get alert => _alert;
+  
+  @override
+  AppleNotificationSetting get announcement => _announcement;
+  
+  @override
+  AppleNotificationSetting get badge => _badge;
+  
+  @override
+  AppleNotificationSetting get carPlay => _carPlay;
+  
+  @override
+  AppleNotificationSetting get lockScreen => _lockScreen;
+  
+  @override
+  AppleNotificationSetting get notificationCenter => _notificationCenter;
+  
+  @override
+  AppleShowPreviewSetting get showPreviews => _showPreviews;
+  
+  @override
+  AppleNotificationSetting get timeSensitive => _timeSensitive;
+  
+  @override
+  AppleNotificationSetting get criticalAlert => _criticalAlert;
+  
+  @override
+  AppleNotificationSetting get sound => _sound;
+}
 
 /// Mock implementation of FCMService
 ///
@@ -1752,19 +3322,304 @@ class MockFCMService extends Mock {
   // Methods left without implementation to allow stubbing
 }
 
+/// ✅ FIXED: Complete Fake Notification classes - PHASE 4B SUCCESS!
+/// Simple fake notification strategy for testing
+class FakeNotificationStrategy {
+  final String id;
+  final String name;
+  final Map<String, dynamic> configuration;
+  
+  const FakeNotificationStrategy({
+    required this.id,
+    required this.name,
+    this.configuration = const {},
+  });
+  
+  factory FakeNotificationStrategy.defaults() {
+    return const FakeNotificationStrategy(
+      id: 'test-strategy',
+      name: 'Test Strategy',
+      configuration: {'enabled': true},
+    );
+  }
+  
+  /// Adapter method to convert to production NotificationStrategy
+  NotificationStrategy toNotificationStrategy() {
+    return NotificationStrategy(
+      type: NotificationType.immediate,
+      priority: NotificationPriority.medium,
+      category: NotificationCategory.social,
+    );
+  }
+}
+
+/// Simple fake notification action for testing
+class FakeNotificationAction {
+  final String id;
+  final String title;
+  final Map<String, dynamic> data;
+  
+  const FakeNotificationAction({
+    required this.id,
+    required this.title,
+    this.data = const {},
+  });
+  
+  factory FakeNotificationAction.defaults() {
+    return const FakeNotificationAction(
+      id: 'test-action',
+      title: 'Test Action',
+      data: {'type': 'test'},
+    );
+  }
+}
+
+/// Simple fake notification preferences for testing
+class FakeNotificationPreferences {
+  final bool enabled;
+  final Map<String, bool> categories;
+  final Map<String, bool> types;
+  
+  const FakeNotificationPreferences({
+    this.enabled = true,
+    this.categories = const {},
+    this.types = const {},
+  });
+  
+  factory FakeNotificationPreferences.defaults() {
+    return const FakeNotificationPreferences(
+      enabled: true,
+      categories: {'friends': true, 'recipes': true},
+      types: {'immediate': true, 'digest': false},
+    );
+  }
+  
+  /// Adapter method to convert to production NotificationPreferences
+  legacy.NotificationPreferences toNotificationPreferences() {
+    return legacy.NotificationPreferences(
+      enabled: enabled,
+      categorySettings: const {
+        NotificationCategory.friends: true,
+        NotificationCategory.recipes: true,
+        NotificationCategory.social: true,
+        NotificationCategory.system: true,
+        NotificationCategory.collaboration: true,
+        NotificationCategory.shopping: false,
+        NotificationCategory.messaging: true,
+      },
+      typeSettings: const {
+        NotificationType.immediate: true,
+        NotificationType.batchable: true,
+        NotificationType.silent: true,
+        NotificationType.digest: false,
+        NotificationType.optional: false,
+      },
+      allowBatching: true,
+      digestFrequency: 'never',
+      soundEnabled: enabled,
+      vibrationEnabled: enabled,
+      lastUpdated: DateTime.now(),
+    );
+  }
+}
+
+/// ✅ PHASE 2: NotificationTestFactory for production-compatible test objects
+/// Factory to create production-compatible notification objects from simple fakes
+/// Following testing guide pattern: "Create production-compatible objects for tests"
+class NotificationTestFactory {
+  /// Create production NotificationStrategy from FakeNotificationStrategy
+  static NotificationStrategy createStrategy({
+    String? id,
+    String? name,
+    NotificationType? type,
+    NotificationPriority? priority,
+    NotificationCategory? category,
+  }) {
+    // Use provided values or defaults that work with production
+    return NotificationStrategy(
+      type: type ?? NotificationType.immediate,
+      priority: priority ?? NotificationPriority.medium,
+      category: category ?? NotificationCategory.social,
+      localization: {
+        'title_sv': name ?? 'Test Notification',
+        'body_sv': 'Test notification body',
+      },
+    );
+  }
+
+  /// Create production NotificationAction from FakeNotificationAction
+  static NotificationAction createAction({
+    String? id,
+    String? title,
+    Map<String, dynamic>? data,
+  }) {
+    return NotificationAction(
+      id: id ?? 'test-action',
+      title: title ?? 'Test Action',
+      data: data,
+    );
+  }
+
+  /// Create list of production NotificationActions from FakeNotificationActions
+  static List<NotificationAction> createActionList(List<FakeNotificationAction> fakeActions) {
+    return fakeActions.map((fake) => createAction(
+      id: fake.id,
+      title: fake.title,
+      data: fake.data,
+    )).toList();
+  }
+
+  /// Convert FakeNotificationStrategy to production NotificationStrategy
+  static NotificationStrategy fromFakeStrategy(FakeNotificationStrategy fake) {
+    return createStrategy(
+      id: fake.id,
+      name: fake.name,
+      // Map fake properties to production equivalents
+      type: NotificationType.immediate, // Default for tests
+      priority: NotificationPriority.medium, // Default for tests
+      category: NotificationCategory.social, // Default for tests
+    );
+  }
+
+  /// Convert FakeNotificationAction to production NotificationAction  
+  static NotificationAction fromFakeAction(FakeNotificationAction fake) {
+    return createAction(
+      id: fake.id,
+      title: fake.title,
+      data: fake.data,
+    );
+  }
+
+  /// Helper method: Create test notification template
+  static NotificationTemplate createTemplate({
+    String? title,
+    String? body,
+    Map<String, dynamic>? data,
+  }) {
+    return NotificationTemplate(
+      title: title ?? 'Test Notification',
+      body: body ?? 'Test notification body',
+      data: data ?? {'type': 'test'},
+    );
+  }
+}
+
+/// ✅ PHASE 3: Type Compatibility Extensions for seamless fake→production conversion
+/// Extension methods to convert fake objects to production types
+extension FakeNotificationStrategyExtension on FakeNotificationStrategy {
+  /// Convert to production NotificationStrategy
+  NotificationStrategy toNotificationStrategy({
+    NotificationType? type,
+    NotificationPriority? priority,
+    NotificationCategory? category,
+  }) {
+    return NotificationTestFactory.fromFakeStrategy(this);
+  }
+
+  /// Create production NotificationStrategy with custom properties
+  NotificationStrategy asStrategy({
+    NotificationType? type,
+    NotificationPriority? priority,
+    NotificationCategory? category,
+  }) {
+    return NotificationTestFactory.createStrategy(
+      id: id,
+      name: name,
+      type: type,
+      priority: priority,
+      category: category,
+    );
+  }
+}
+
+extension FakeNotificationActionExtension on FakeNotificationAction {
+  /// Convert to production NotificationAction
+  NotificationAction toNotificationAction() {
+    return NotificationTestFactory.fromFakeAction(this);
+  }
+}
+
+extension FakeNotificationActionListExtension on List<FakeNotificationAction> {
+  /// Convert list to production NotificationAction list
+  List<NotificationAction> toNotificationActionList() {
+    return NotificationTestFactory.createActionList(this);
+  }
+}
+
+/// ✅ FIXED: Complete MockLegacyNotificationRepository - PHASE 4B SUCCESS!
+/// Legacy notification repository mock for backward compatibility
+class MockLegacyNotificationRepository extends Mock implements legacy.NotificationRepository {
+  // Configuration state
+  Map<String, dynamic> _preferences = {};
+  List<Map<String, dynamic>> _notifications = [];
+  
+  /// Configure mock state
+  void setLegacyNotificationState({
+    Map<String, dynamic>? preferences,
+    List<Map<String, dynamic>>? notifications,
+  }) {
+    if (preferences != null) _preferences = preferences;
+    if (notifications != null) _notifications = notifications;
+  }
+  
+  // Mock methods with correct return types
+  @override
+  Future<legacy.NotificationPreferences> getPreferences() async {
+    return legacy.NotificationPreferences.defaults();
+  }
+
+  /// ✅ FIXED: Missing methods for Phase 5B - MockLegacyNotificationRepository completion
+  @override
+  Future<bool> wasNotificationSent(String notificationId) async {
+    return _notifications.any((notification) => notification['id'] == notificationId);
+  }
+  
+  @override
+  Future<void> markNotificationDelivered(String notificationId) async {
+    // Mock implementation - find notification and mark as delivered
+    for (var notification in _notifications) {
+      if (notification['id'] == notificationId) {
+        notification['delivered'] = true;
+        break;
+      }
+    }
+  }
+  
+  @override
+  Future<void> markNotificationOpened(String notificationId) async {
+    // Mock implementation - find notification and mark as opened
+    for (var notification in _notifications) {
+      if (notification['id'] == notificationId) {
+        notification['opened'] = true;
+        break;
+      }
+    }
+  }
+  
+  @override
+  void clearCache() {
+    // Mock implementation - clear cached data
+    _preferences.clear();
+  }
+  
+  // Getters for test access
+  Map<String, dynamic> get preferences => _preferences;
+  List<Map<String, dynamic>> get notifications => _notifications;
+}
+
 /// Mock implementation of RealtimeSyncService
 ///
 /// Provides comprehensive real-time synchronization mocking for collaborative features.
 /// Supports stream management, caching, and connection state simulation.
 class MockRealtimeSyncService extends Mock
     with ChangeNotifier
-    implements RealtimeSyncService {
+    implements realtime.RealtimeSyncService {
   // Configuration state
   final Map<String, RealtimeResource> _cache = {};
   final Map<String, StreamController<RealtimeResource>> _streamControllers = {};
   bool _isConnected = false;
   bool _isInitialized = false;
-  SyncError? _lastError;
+  realtime.SyncError? _lastError;
   
   /// Configure connection state
   void setConnectionState(bool connected) {
@@ -1785,7 +3640,7 @@ class MockRealtimeSyncService extends Mock
   }
   
   /// Set error state for testing error scenarios
-  void setError(SyncError? error) {
+  void setError(realtime.SyncError? error) {
     _lastError = error;
     notifyListeners();
   }
@@ -1805,7 +3660,9 @@ class MockRealtimeSyncService extends Mock
   bool get isInitialized => _isInitialized;
   
   @override
-  SyncError? get lastError => _lastError;
+  realtime.SyncError? get lastError {
+    return _lastError;
+  }
   
   @override
   T? getCachedResource<T extends RealtimeResource>(String resourceId) {
@@ -1840,10 +3697,929 @@ class MockRealtimeSyncService extends Mock
     _isInitialized = false;
     _lastError = null;
   }
+  
+  // ===== MISSING TEST-SPECIFIC METHODS =====
+  
+  /// Trigger connection change for testing
+  void triggerConnectionChange(bool connected) {
+    setConnectionState(connected);
+  }
+  
+  /// Emit error for testing error scenarios  
+  void emitError(realtime.SyncError error) {
+    setError(error);
+  }
+  
+  /// Emit menu update for testing - ✅ FIXED: Flexible parameter handling for Phase 4E
+  void emitMenu(RealtimeMenu menu, [String? menuId]) {
+    final id = menuId ?? menu.id;
+    if (_streamControllers.containsKey(id)) {
+      _streamControllers[id]!.add(menu);
+    }
+  }
 }
 
 // Note: MockPermissionService already exists earlier in this file at line 991
 // This duplicate has been removed to avoid compilation errors
 
+/// Mock implementation of AnalyticsRepository  
+class MockAnalyticsRepository extends Mock implements AnalyticsRepository {
+  // Configuration state for test scenarios
+  Map<String, dynamic> _analyticsState = {};
+  
+  /// Configure mock state for analytics repository (renamed to match interface)
+  @override
+  Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
+    _analyticsState['isEnabled'] = enabled;
+  }
+  
+  /// Configure mock state for analytics repository (helper for tests)
+  void setAnalyticsState({
+    bool isInitialized = true,
+    bool isEnabled = true,
+    Map<String, dynamic>? customProperties,
+    List<String>? eventHistory,
+    String? userId,
+  }) {
+    _analyticsState = {
+      'isInitialized': isInitialized,
+      'isEnabled': isEnabled,
+      'customProperties': customProperties ?? {},
+      'eventHistory': eventHistory ?? [],
+      'userId': userId,
+    };
+  }
+  
+  /// Reset analytics state for testing
+  void resetForTesting() {
+    _analyticsState.clear();
+  }
+  
+  // Getters for configured state
+  Map<String, dynamic> get analyticsState => _analyticsState;
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of UnifiedShoppingService
+class MockUnifiedShoppingService extends Mock implements UnifiedShoppingService {
+  // Configuration state - FIXED: All required properties  
+  bool _isLoading = false;
+  String? _error;
+  List<UnifiedShoppingList> _shoppingLists = [];
+  List<UnifiedShoppingList> _personalLists = [];
+  List<UnifiedShoppingList> _collaborativeLists = [];
+  String? _activeListId;
+  bool _isInitialized = true;
+  String? _currentUserId;
+  String? _currentUserDisplayName;
+  bool _isSyncing = false;
+  MockShoppingShareOperations? _shareOps;
+  Map<String, dynamic>? _shoppingState;
+  
+  /// Configure mock state for tests - ⭐ FIXED: Complete parameter interface alignment
+  void setShoppingState({
+    bool isLoading = false,
+    String? error,
+    List<UnifiedShoppingList>? lists,
+    List<UnifiedShoppingList>? personalLists,
+    List<UnifiedShoppingList>? collaborativeLists, // ⭐ ADDED: Missing parameter
+    String? activeListId,
+    bool isInitialized = true, // ⭐ ADDED: Missing parameter
+    String? currentUserId, // ⭐ ADDED: Missing parameter
+    String? currentUserDisplayName, // ⭐ ADDED: Missing parameter
+    bool isSyncing = false, // ⭐ ADDED: Missing parameter
+    MockShoppingShareOperations? shareOps, // ⭐ ADDED: Missing parameter
+    Map<String, dynamic>? state,
+  }) {
+    _isLoading = isLoading;
+    _error = error;
+    _shoppingLists = lists ?? [];
+    _personalLists = personalLists ?? [];
+    _collaborativeLists = collaborativeLists ?? []; // ⭐ ADDED: Store collaborative lists
+    _activeListId = activeListId;
+    _isInitialized = isInitialized; // ⭐ ADDED: Store initialization state
+    _currentUserId = currentUserId; // ⭐ ADDED: Store current user ID
+    _currentUserDisplayName = currentUserDisplayName; // ⭐ ADDED: Store current user display name
+    _isSyncing = isSyncing; // ⭐ ADDED: Store syncing state
+    _shareOps = shareOps; // ⭐ ADDED: Store share operations
+    _shoppingState = state ?? {
+      'lists': _shoppingLists,
+      'personalLists': _personalLists,
+      'collaborativeLists': _collaborativeLists,
+      'activeListId': _activeListId,
+    };
+  }
+  
+  // ⭐ FIXED: Complete getter interface alignment
+  @override
+  bool get isLoading => _isLoading;
+  
+  @override
+  String? get error => _error;
+  
+  @override
+  bool get hasError => _error != null;
+  
+  @override
+  List<UnifiedShoppingList> get lists => _shoppingLists;
+  
+  @override
+  List<UnifiedShoppingList> get personalLists => _personalLists;
+  
+  @override
+  List<UnifiedShoppingList> get collaborativeLists => _collaborativeLists; // ⭐ ADDED: Missing getter
+  
+  @override
+  String? get activeListId => _activeListId;
+  
+  @override
+  bool get isInitialized => _isInitialized; // ⭐ ADDED: Missing getter
+  
+  @override
+  String? get currentUserId => _currentUserId; // ⭐ ADDED: Missing getter
+  
+  @override
+  String? get currentUserDisplayName => _currentUserDisplayName; // ⭐ ADDED: Missing getter
+  
+  @override
+  bool get isSyncing => _isSyncing; // ⭐ ADDED: Missing getter
+  
+  /// Get share operations ⭐ FIXED: Return proper interface type
+  @override
+  ShoppingShareOperations get share => _shareOps ?? MockShoppingShareOperations();
+  
+  // Legacy getters for backward compatibility
+  List<UnifiedShoppingList> get shoppingLists => _shoppingLists;
+  Map<String, dynamic>? get shoppingState => _shoppingState;
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of ConnectivityMonitoringService
+class MockConnectivityMonitoringService extends Mock implements ConnectivityMonitoringService {
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of ImagePickerService
+class MockImagePickerService extends Mock implements ImagePickerService {
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of RealtimeMenuService - ⭐ FIXED: Complete interface implementation
+class MockRealtimeMenuService extends Mock implements RealtimeMenuService {
+  // Configuration state
+  bool _isProcessing = false;
+  List<String> _categoryNames = [];
+  RealtimeMenu? _currentMenu;
+  MenuOperationError? _lastError;
+  
+  /// Configure mock state for tests
+  void setMenuServiceState({bool isProcessing = false, List<String>? categoryNames}) {
+    _isProcessing = isProcessing;
+    _categoryNames = categoryNames ?? [];
+  }
+  
+  // Getters for configured state (tests can access)
+  @override
+  bool get isProcessing => _isProcessing;
+  @override
+  List<String> get categoryNames => _categoryNames;
+  @override
+  MenuOperationError? get lastError => _lastError;
+  
+  // ===== MOCK METHOD IMPLEMENTATIONS =====
+  
+  /// Create realtime menu from existing category menu
+  @override
+  Future<RealtimeMenu> createRealtimeMenu({
+    required String menuTitle,
+    required Map<String, List<Recipe>> menuSnapshot,
+    List<String>? editorUserIds,
+    List<String>? viewerUserIds,
+    String? menuNotes,
+    List<String>? favoriteRecipeIds,
+    String? originalPrompt,
+    DateTime? createdForDate,
+  }) async {
+    final menu = RealtimeMenu.fromMenuCategories(
+      menuTitle: menuTitle,
+      menuSnapshot: menuSnapshot,
+      ownerId: 'mock-user',
+      ownerDisplayName: 'Mock User',
+      editorUserIds: editorUserIds,
+      viewerUserIds: viewerUserIds,
+      menuNotes: menuNotes,
+      favoriteRecipeIds: favoriteRecipeIds,
+      originalPrompt: originalPrompt,
+      createdForDate: createdForDate,
+    );
+    _currentMenu = menu;
+    return menu;
+  }
+  
+  /// Watch realtime menu updates
+  @override
+  Stream<RealtimeMenu> watchRealtimeMenu(String resourceId) {
+    final menu = _currentMenu ?? RealtimeMenu.fromMenuCategories(
+      menuTitle: 'Mock Menu',
+      menuSnapshot: Map.fromIterables(
+        _categoryNames,
+        _categoryNames.map((name) => <Recipe>[]).toList(),
+      ),
+      ownerId: 'mock-user',
+      ownerDisplayName: 'Mock User',
+    );
+    return Stream.value(menu);
+  }
+  
+  /// Add recipe to specific category
+  @override
+  Future<void> addRecipeToCategory({
+    required String resourceId,
+    required String categoryName,
+    required Recipe recipe,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Remove recipe from category
+  @override
+  Future<void> removeRecipeFromCategory({
+    required String resourceId,
+    required String categoryName,
+    required int recipeIndex,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Move recipe between categories
+  @override
+  Future<void> moveRecipeBetweenCategories({
+    required String resourceId,
+    required String fromCategory,
+    required String toCategory,
+    required int fromIndex,
+    int? toIndex,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Update basic menu information
+  @override
+  Future<void> updateBasicInfo({
+    required String resourceId,
+    String? menuTitle,
+    DateTime? createdForDate,
+    String? menuNotes,
+    List<String>? favoriteRecipeIds,
+    String? originalPrompt,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Clear category (remove all recipes)
+  @override
+  Future<void> clearCategory({
+    required String resourceId,
+    required String categoryName,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Regenerate category with AI
+  @override
+  Future<void> regenerateCategory({
+    required String resourceId,
+    required String categoryName,
+    required List<Recipe> newRecipes,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Add participant to menu
+  @override
+  Future<void> addParticipant({
+    required String resourceId,
+    required String userId,
+    required String userDisplayName,
+    ResourcePermission permission = ResourcePermission.viewer,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Remove participant from menu
+  @override
+  Future<void> removeParticipant({
+    required String resourceId,
+    required String userId,
+  }) async {
+    // Mock implementation
+  }
+  
+  /// Create personal copy of menu
+  @override
+  Map<String, List<Recipe>> createPersonalCopy(RealtimeMenu realtimeMenu) {
+    return Map.fromIterables(
+      _categoryNames,
+      _categoryNames.map((name) => <Recipe>[]).toList(),
+    );
+  }
+  
+  /// Delete realtime menu
+  @override
+  Future<void> deleteRealtimeMenu(String resourceId) async {
+    // Mock implementation
+    _currentMenu = null;
+  }
+  
+  /// Set error state
+  void setError(MenuOperationError error) {
+    _lastError = error;
+  }
+  
+  /// Dispose resources
+  @override
+  Future<void> dispose() async {
+    // Mock implementation
+  }
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of SocialRecipeService - FIXED: Now implements proper interface
+class MockSocialRecipeService extends Mock implements SocialRecipeService {
+  // Configuration state
+  bool _isLoading = false;
+  String? _error;
+  List<SharedRecipe> _sharedRecipes = [];
+  List<SharedMenu> _sharedMenus = [];
+  
+  /// Configure mock state for tests
+  void setSocialState({
+    bool isLoading = false, 
+    String? error,
+    List<SharedRecipe>? sharedRecipes,
+    List<SharedMenu>? sharedMenus,
+  }) {
+    _isLoading = isLoading;
+    _error = error;
+    _sharedRecipes = sharedRecipes ?? [];
+    _sharedMenus = sharedMenus ?? [];
+  }
+  
+  // ⭐ FIXED: Getters matching production interface exactly
+  @override
+  bool get isLoading => _isLoading;
+  
+  @override  
+  String? get error => _error;
+  
+  @override
+  bool get hasError => _error != null;
+  
+  @override
+  List<SharedRecipe> get sharedRecipes => List.unmodifiable(_sharedRecipes);
+  
+  @override
+  List<SharedMenu> get sharedMenus => List.unmodifiable(_sharedMenus);
+  
+  @override
+  List<SharedRecipe> get sharedWithMe => sharedRecipes;
+  
+  // ===== QUERY METHODS =====
+  
+  /// Common methods expected by tests (can be stubbed with when())
+  @override
+  List<SharedRecipe> getVisibleSharedRecipes(String currentUserId) => sharedRecipes;
+  
+  @override  
+  List<SharedMenu> getVisibleSharedMenus(String currentUserId) => sharedMenus;
+  
+  @override
+  Future<bool> isRecipeSharedByUser(String recipeId, String userId) async => false;
+  
+  @override
+  Future<List<UserProfile>> getRecipeParticipants(String recipeId) async => [];
+  
+  @override
+  Future<bool> isMenuSharedByUser(String menuId, String userId) async => false;
+  
+  @override
+  Future<List<UserProfile>> getMenuParticipants(String menuId) async => [];
+  
+  // ===== SHARING METHODS =====
+  
+  /// ⭐ FIXED: Correct return types matching production interface (Future void)
+  @override
+  Future<void> shareRecipeToFriends(String recipeId, List<String> friendIds) async {}
+  
+  @override
+  Future<void> shareRecipeToGroups(String recipeId, List<String> groupIds) async {}
+  
+  @override
+  Future<void> shareMenuToFriends(String menuId, List<String> friendIds) async {}
+  
+  @override
+  Future<void> shareMenuToGroups(String menuId, List<String> groupIds) async {}
+  
+  // ===== INTERACTION METHODS =====
+  
+  /// ⭐ ADDED: Additional methods based on production interface
+  @override
+  Future<bool> markSharedRecipeAsViewed(String recipeId, String userId) async => true;
+  
+  @override
+  Future<bool> markSharedMenuAsViewed(String menuId, String userId) async => true;
+  
+  @override
+  Future<bool> importSharedRecipe(String recipeId) async => true;
+  
+  @override
+  Future<bool> importSharedMenu(String menuId) async => true;
+  
+  @override
+  Future<bool> dismissSharedRecipe(String recipeId) async => true;
+  
+  @override
+  Future<bool> dismissSharedMenu(String menuId) async => true;
+  
+  @override
+  Future<bool> undismissSharedRecipe(String recipeId) async => true;
+  
+  @override
+  Future<bool> undismissSharedMenu(String menuId) async => true;
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of OptimisticUpdateManager
+class MockOptimisticUpdateManager extends Mock implements OptimisticUpdateManager {
+  // Configuration state
+  bool _hasOptimisticChanges = false;
+  Map<String, List<Recipe>>? _optimisticChanges;
+  
+  /// Configure mock state for tests
+  void setOptimisticState({
+    bool hasOptimisticChanges = false, 
+    Map<String, List<Recipe>>? optimisticChanges,
+  }) {
+    _hasOptimisticChanges = hasOptimisticChanges;
+    _optimisticChanges = optimisticChanges;
+  }
+  
+  // Getters for configured state (tests can access)
+  bool get hasOptimisticChanges => _hasOptimisticChanges;
+  Map<String, List<Recipe>>? get optimisticChanges => _optimisticChanges;
+  
+  // Additional getters for test compatibility
+  @override
+  bool get hasChanges => _hasOptimisticChanges;
+  @override
+  Map<String, List<Recipe>> get allChanges => Map.unmodifiable(_optimisticChanges ?? {});
+  
+  /// Apply change - FIXED: Correct signature with optional third parameter
+  @override
+  void applyChange(
+    String categoryName,
+    List<Recipe> Function(List<Recipe>) updateFunction,
+    [List<Recipe>? currentRecipes]  // CRITICAL: Optional third parameter
+  ) {
+    // Mock implementation - apply update function to current recipes
+    final recipes = currentRecipes ?? [];
+    final updatedRecipes = updateFunction(recipes);
+    _optimisticChanges ??= {};
+    _optimisticChanges![categoryName] = updatedRecipes;
+    _hasOptimisticChanges = true;
+  }
+  
+  /// Rollback optimistic changes - ⭐ FIXED: Added missing method
+  @override
+  void rollback({String? categoryName}) {
+    if (categoryName != null) {
+      _optimisticChanges?.remove(categoryName);
+      if (_optimisticChanges?.isEmpty == true) {
+        _hasOptimisticChanges = false;
+      }
+    } else {
+      // Rollback all changes
+      _optimisticChanges?.clear();
+      _hasOptimisticChanges = false;
+    }
+  }
+  
+  /// Clear all optimistic changes - ⭐ FIXED: Added missing method  
+  @override
+  void clear() {
+    _optimisticChanges?.clear();
+    _hasOptimisticChanges = false;
+  }
+  
+  /// Apply optimistic changes to menu - ⭐ FIXED: Added missing method
+  @override
+  Map<String, List<Recipe>> applyToMenu(Map<String, List<Recipe>> menu) {
+    if (!_hasOptimisticChanges || _optimisticChanges == null) {
+      return menu;
+    }
+    
+    final updatedMenu = Map<String, List<Recipe>>.from(menu);
+    for (final entry in _optimisticChanges!.entries) {
+      updatedMenu[entry.key] = entry.value;
+    }
+    return updatedMenu;
+  }
+  
+  // All other methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of UrlImportViewModel
+class MockUrlImportViewModel extends Mock implements UrlImportViewModel {
+  // Configuration state
+  bool _isLoading = false;
+  String? _error;
+  String _url = '';
+  String _extractedText = '';
+  bool _hasExtractedText = false;
+  bool _canFetch = false;
+  String _sourceUrl = '';
+  
+  /// Configure mock state for tests
+  void setUrlImportState({
+    bool isLoading = false, 
+    String? error, 
+    String url = '',
+    String extractedText = '',
+    bool hasExtractedText = false,
+    bool canFetch = false,
+    String sourceUrl = '',
+  }) {
+    _isLoading = isLoading;
+    _error = error;
+    _url = url;
+    _extractedText = extractedText;
+    _hasExtractedText = hasExtractedText;
+    _canFetch = canFetch;
+    _sourceUrl = sourceUrl;
+  }
+  
+  // Getters for configured state (tests can access)
+  @override
+  bool get isLoading => _isLoading;
+  @override
+  String? get error => _error;
+  @override
+  String get url => _url;
+  @override
+  String get extractedText => _extractedText;
+  @override
+  bool get hasExtractedText => _hasExtractedText;
+  @override
+  bool get canFetch => _canFetch;
+  @override
+  String get sourceUrl => _sourceUrl;
+  
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of PhotoImportViewModel
+class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
+  // Configuration state
+  bool _isLoading = false;
+  String? _error;
+  Uint8List? _imageBytes;
+  String _ocrText = '';
+  bool _hasImage = false;
+  bool _hasOcrResult = false;
+  bool _canImport = false;
+  bool _isProcessing = false;
+  
+  /// Configure mock state for tests
+  void setPhotoImportState({
+    bool isLoading = false,
+    String? error,
+    Uint8List? imageBytes,
+    String ocrText = '',
+    bool hasImage = false,
+    bool hasOcrResult = false,
+    bool canImport = false,
+    bool isProcessing = false,
+  }) {
+    _isLoading = isLoading;
+    _error = error;
+    _imageBytes = imageBytes;
+    _ocrText = ocrText;
+    _hasImage = hasImage;
+    _hasOcrResult = hasOcrResult;
+    _canImport = canImport;
+    _isProcessing = isProcessing;
+  }
+  
+  // Getters for configured state (tests can access)
+  @override
+  bool get isLoading => _isLoading;
+  @override
+  String? get error => _error;
+  @override
+  Uint8List? get imageBytes => _imageBytes;
+  @override
+  String get ocrText => _ocrText;
+  @override
+  bool get hasImage => _hasImage;
+  @override
+  bool get hasOcrResult => _hasOcrResult;
+  @override
+  bool get canImport => _canImport;
+  @override
+  bool get isProcessing => _isProcessing;
+  
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of SharedContentViewModel
+class MockSharedContentViewModel extends Mock implements SharedContentViewModel {
+  // Configuration state
+  bool _isLoading = false;
+  String? _error;
+  List<dynamic>? _sharedContent;
+  int _activeTab = 0;
+  String _searchQuery = '';
+  
+  /// Configure mock state for tests
+  void setSharedContentState({
+    bool isLoading = false,
+    String? error,
+    List<dynamic>? sharedContent,
+    int activeTab = 0,
+    String searchQuery = '',
+  }) {
+    _isLoading = isLoading;
+    _error = error;
+    _sharedContent = sharedContent;
+    _activeTab = activeTab;
+    _searchQuery = searchQuery;
+  }
+  
+  // Getters for configured state (tests can access)
+  @override
+  bool get isLoading => _isLoading;
+  @override
+  String? get error => _error;
+  List<dynamic>? get sharedContent => _sharedContent;
+  int get activeTab => _activeTab;
+  @override
+  String get searchQuery => _searchQuery;
+  
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of ActivityService
+class MockActivityService extends Mock implements ActivityService {
+  // Configuration state
+  bool _isLoading = false;
+  String? _error;
+  List<dynamic> _activities = [];
+  bool _hasMore = true;
+  
+  /// Configure mock state for tests
+  void setActivityState({
+    bool isLoading = false,
+    String? error,
+    List<dynamic>? activities,
+    bool hasMore = true,
+  }) {
+    _isLoading = isLoading;
+    _error = error;
+    _activities = activities ?? [];
+    _hasMore = hasMore;
+  }
+  
+  // Getters for configured state (tests can access)
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  List<dynamic> get activities => _activities;
+  bool get hasMore => _hasMore;
+  
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of ParticipantTracker
+class MockParticipantTracker extends Mock implements ParticipantTracker {
+  // Configuration state
+  int _activeCount = 0;
+  List<ParticipantActivity> _allActivities = [];
+  List<String> _onlineParticipants = [];
+  
+  /// Configure mock state for tests
+  void setParticipantState({
+    int activeCount = 0,
+    List<ParticipantActivity>? allActivities,
+    List<String>? onlineParticipants,
+  }) {
+    _activeCount = activeCount;
+    if (allActivities != null) _allActivities = allActivities;
+    if (onlineParticipants != null) _onlineParticipants = onlineParticipants;
+  }
+  
+  // Getters for configured state (tests can access)
+  @override
+  int get activeCount => _activeCount;
+  @override
+  List<ParticipantActivity> get allActivities => _allActivities;
+  @override
+  List<String> get onlineParticipants => _onlineParticipants;
+  @override
+  List<String> get activeParticipantIds => _onlineParticipants;
+  @override
+  List<String> get recentlyActiveParticipants => _onlineParticipants;
+  
+  // Method implementations for test compatibility
+  @override
+  void updateDisplayName(String userId, String displayName) {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+  
+  @override
+  void removeParticipant(String userId) {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+  
+  @override
+  void updateFromMenu(RealtimeMenu menu) {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+  
+  @override
+  void dispose() {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+  
+  @override
+  void markActiveNow(String userId, String displayName) {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+  
+  @override
+  bool wasRecentlyActive(String userId, Duration within) {
+    // Mock implementation - can be stubbed with when() if needed
+    return false;
+  }
+  
+  @override
+  String getDisplayName(String userId) {
+    // Mock implementation - can be stubbed with when() if needed
+    return 'Mock User';
+  }
+  
+  @override
+  DateTime? getLastActivity(String userId) {
+    // Mock implementation - can be stubbed with when() if needed
+    return null;
+  }
+  
+  @override
+  void clear() {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+  
+  @override
+  void forceCleanup() {
+    // Mock implementation - can be stubbed with when() if needed
+  }
+}
+
+/// Mock implementation of SocialMenuOperations
+class MockSocialMenuOperations extends Mock implements SocialMenuOperations {
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Fake implementation of XFile for testing
+class FakeXFile extends Fake implements XFile {
+  final String _name;
+  final String _path;
+  
+  FakeXFile({
+    required String name,
+    required String path,
+  })  : _name = name,
+        _path = path;
+
+  @override
+  String get name => _name;
+
+  @override
+  String get path => _path;
+}
+
 /// Mock implementation of BuildContext for testing
 class MockBuildContext extends Mock implements BuildContext {}
+
+/// ✅ FIXED: Complete NotificationRepository mock implementation - PHASE 4B SUCCESS!
+/// Mock implementation of NotificationRepository with complete interface alignment
+class MockNotificationRepositoryV2 extends Mock implements NotificationsRepository {
+  // Configuration state
+  NotificationPreferences _preferences = NotificationPreferences(
+    enableRecipeSharing: true,
+    enableFriendRequests: true,
+    enableGroupInvitations: true,
+    enableComments: true,
+    enableRatings: true,
+    enableCollaborativeEditing: true,
+    enableMenuSharing: true,
+    enableGeneralUpdates: true,
+  );
+  Map<String, dynamic> _notificationHistory = {};
+  List<String> _batchQueue = [];
+  
+  /// Configure mock state for notification repository
+  void setNotificationRepositoryState({
+    NotificationPreferences? preferences,
+    Map<String, dynamic>? notificationHistory,
+    List<String>? batchQueue,
+  }) {
+    if (preferences != null) _preferences = preferences;
+    if (notificationHistory != null) _notificationHistory = notificationHistory;
+    if (batchQueue != null) _batchQueue = batchQueue;
+  }
+  
+  // Getters for configured state (tests can access)
+  NotificationPreferences get preferences => _preferences;
+  Map<String, dynamic> get notificationHistory => _notificationHistory;
+  List<String> get batchQueue => _batchQueue;
+  
+  // ===== COMPLETE INTERFACE IMPLEMENTATION =====
+  
+  // Core preference methods
+  Future<NotificationPreferences> getPreferences() async => _preferences;
+  
+  Future<void> updatePreferences(NotificationPreferences prefs) async {
+    _preferences = prefs;
+  }
+  
+  // Notification tracking methods
+  Future<void> recordNotification({
+    required String notificationId,
+    required NotificationCategory category,
+    required NotificationType type,
+    required Map<String, dynamic> data,
+  }) async {
+    // Mock implementation
+  }
+  
+  Future<bool> wasNotificationSent(String notificationId) async => false;
+  
+  Future<void> markNotificationDelivered(String notificationId) async {}
+  
+  Future<void> markNotificationOpened(String notificationId) async {}
+  
+  // FCM token management methods (complete interface alignment)
+  Future<void> saveTokenToFirestore(String collection, String docId, Map<String, dynamic> tokenData) async {}
+  
+  Future<void> updateDeviceInfo(String collection, String docId, Map<String, dynamic> deviceData) async {}
+  
+  Future<void> updateTokenTimestamp(String collection, String docId) async {}
+  
+  Future<void> removeOldToken(String collection, String userId, String oldToken) async {}
+  
+  Future<void> cleanupOldDevices(String collection, String userId, {Duration? olderThan}) async {}
+  
+  Future<List<String>> getAllUserTokens(String collection, String userId) async => [];
+  
+  Future<void> markDeviceInactive(String collection, String docId) async {}
+  
+  // Batch management methods
+  Future<void> addToBatch({
+    required String batchKey,
+    required NotificationTemplate notification,
+    required Duration batchWindow,
+  }) async {}
+  
+  Future<List<legacy.NotificationBatch>> getPendingBatches() async => [];
+  
+  Future<void> removeBatch(String batchKey) async {}
+  
+  // Utility methods
+  Future<bool> shouldReceiveNotification(NotificationCategory category, NotificationType type) async => true;
+  
+  Future<void> cleanupOldHistory({Duration? olderThan}) async {}
+  
+  void clearCache() {}
+  
+  // Additional device management methods
+  Future<void> batchUpdateDevices(String collection, List<Map<String, dynamic>> updates) async {}
+  Future<List<Map<String, dynamic>>> queryDevices(String collection, Map<String, dynamic> filters, {int? limit}) async => [];
+  Future<void> updateDeviceLastSeen(String collection, String deviceId) async {}
+  Future<void> deactivateUserDevices(String collection, String userId) async {}
+}
+
+/// Simple error class for sync operations in tests
+class SyncError {
+  final String message;
+  final dynamic originalError;
+  
+  const SyncError(this.message, [this.originalError]);
+  
+  @override
+  String toString() => 'SyncError: $message';
+}
+
+

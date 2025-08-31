@@ -16,15 +16,15 @@ import 'package:butlery/core/utils/logger.dart';
 /// backward compatibility with existing code.
 class RecipeServiceAdapter {
   final RecipeRepository _recipeRepository;
-  final CommentsRepository _commentsRepository;
-  final RatingsRepository _ratingsRepository;
-  final NotificationsRepository _notificationsRepository;
+  final CommentsRepository? _commentsRepository;
+  final RatingsRepository? _ratingsRepository;
+  final NotificationsRepository? _notificationsRepository;
 
   RecipeServiceAdapter({
     required RecipeRepository recipeRepository,
-    required CommentsRepository commentsRepository,
-    required RatingsRepository ratingsRepository,
-    required NotificationsRepository notificationsRepository,
+    CommentsRepository? commentsRepository,
+    RatingsRepository? ratingsRepository,
+    NotificationsRepository? notificationsRepository,
   }) : _recipeRepository = recipeRepository,
        _commentsRepository = commentsRepository,
        _ratingsRepository = ratingsRepository,
@@ -110,6 +110,10 @@ class RecipeServiceAdapter {
     required String content,
     String? parentCommentId,
   }) async {
+    if (_commentsRepository == null) {
+      AppLogger.warning('⚠️ CommentsRepository not available');
+      return null;
+    }
     try {
       return await _commentsRepository.addComment(
         recipeId: recipeId,
@@ -125,6 +129,10 @@ class RecipeServiceAdapter {
 
   /// Get comments for recipe using repository pattern
   Future<List<RecipeComment>> getCommentsForRecipe(String recipeId) async {
+    if (_commentsRepository == null) {
+      AppLogger.warning('⚠️ CommentsRepository not available');
+      return [];
+    }
     try {
       return await _commentsRepository.getCommentsForRecipe(recipeId);
     } catch (e) {
@@ -142,6 +150,10 @@ class RecipeServiceAdapter {
     required double rating,
     String? review,
   }) async {
+    if (_ratingsRepository == null) {
+      AppLogger.warning('⚠️ RatingsRepository not available');
+      return false;
+    }
     try {
       await _ratingsRepository.rateRecipe(
         recipeId: recipeId,
@@ -158,6 +170,15 @@ class RecipeServiceAdapter {
 
   /// Get rating statistics using repository pattern
   Future<RatingStatistics> getRatingStatistics(String recipeId) async {
+    if (_ratingsRepository == null) {
+      AppLogger.warning('⚠️ RatingsRepository not available');
+      return RatingStatistics(
+        recipeId: recipeId,
+        averageRating: 0.0,
+        totalRatings: 0,
+        ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+      );
+    }
     try {
       return await _ratingsRepository.getRatingStatistics(recipeId);
     } catch (e) {
@@ -181,6 +202,10 @@ class RecipeServiceAdapter {
     required String body,
     Map<String, dynamic>? data,
   }) async {
+    if (_notificationsRepository == null) {
+      AppLogger.warning('⚠️ NotificationsRepository not available');
+      return;
+    }
     try {
       await _notificationsRepository.sendNotification(
         userId: userId,
@@ -198,6 +223,10 @@ class RecipeServiceAdapter {
 
   /// Get bulk rating statistics using repository pattern
   Future<Map<String, RatingStatistics>> getBulkRatingStatistics(List<String> recipeIds) async {
+    if (_ratingsRepository == null) {
+      AppLogger.warning('⚠️ RatingsRepository not available');
+      return {};
+    }
     try {
       return await _ratingsRepository.getBulkRatingStatistics(recipeIds);
     } catch (e) {
@@ -210,11 +239,24 @@ class RecipeServiceAdapter {
 
   /// Get comments stream using repository pattern
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
+    if (_commentsRepository == null) {
+      AppLogger.warning('⚠️ CommentsRepository not available');
+      return Stream.value([]);
+    }
     return _commentsRepository.getCommentsStream(recipeId);
   }
 
   /// Get rating statistics stream using repository pattern
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId) {
+    if (_ratingsRepository == null) {
+      AppLogger.warning('⚠️ RatingsRepository not available');
+      return Stream.value(RatingStatistics(
+        recipeId: recipeId,
+        averageRating: 0.0,
+        totalRatings: 0,
+        ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+      ));
+    }
     return _ratingsRepository.getRatingStatisticsStream(recipeId);
   }
 }

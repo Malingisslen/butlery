@@ -237,7 +237,7 @@ class SocialInvitationComponents {
   static Widget radioTargetSelector({
     required List<InvitationTarget> targets,
     InvitationTarget? selectedTarget,
-    Function(InvitationTarget?)? onSelectionChanged,
+    ValueChanged<InvitationTarget?>? onSelectionChanged,
     ScrollPhysics? physics,
     EdgeInsets? padding,
   }) {

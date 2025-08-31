@@ -70,7 +70,7 @@ service cloud.firestore {
       }
       
       // Friend categories/groups
-      match /friend_categories/{categoryId} {
+      match /friendCategories/{categoryId} {
         allow read, write: if isOwner(userId);
       }
       
@@ -84,13 +84,13 @@ service cloud.firestore {
     // PUBLIC PROFILES - Readable by all authenticated users
     // ========================================
     
-    match /user_profiles/{userId} {
-      // Anyone authenticated can read profiles
+    match /public_profiles/{userId} {
+      // Anyone authenticated can read profiles for user search functionality
       allow read: if isAuthenticated();
       
       // Only profile owner can write
       allow create: if isOwner(userId) 
-        && hasRequiredFields(['displayName', 'createdAt', 'updatedAt'])
+        && hasRequiredFields(['displayName', 'email'])
         && request.resource.data.isSearchable is bool;
         
       allow update: if isOwner(userId);

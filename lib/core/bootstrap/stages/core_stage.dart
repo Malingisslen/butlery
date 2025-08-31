@@ -1,8 +1,8 @@
 /// Core services initialization stage.
 ///
 /// Handles initialization of essential core services including authentication,
-/// storage, analytics, and persistence. These are the foundational services
-/// that other modules depend on.
+/// storage, analytics, persistence, and Firebase App Check. These are the 
+/// foundational services that other modules depend on.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -36,10 +36,6 @@ class CoreStage implements BootstrapStage {
 
   @override
   Future<void> execute() async {
-    if (kDebugMode) {
-      debugPrint('🚀 [CoreStage] Starting core services initialization...');
-    }
-
     try {
       // Core module initialization is handled by the DI container
       // This stage validates that core services are ready
@@ -48,7 +44,7 @@ class CoreStage implements BootstrapStage {
       await Future.delayed(const Duration(milliseconds: 100));
       
       if (kDebugMode) {
-        debugPrint('✅ [CoreStage] Core services initialization complete');
+        debugPrint('✅ [CoreStage] Core services ready');
       }
     } catch (e) {
       throw BootstrapException(
@@ -65,10 +61,6 @@ class CoreStage implements BootstrapStage {
     try {
       // Validation is primarily handled by the DI container's health checks
       // This stage just confirms we can proceed
-      
-      if (kDebugMode) {
-        debugPrint('✅ [CoreStage] Validation passed');
-      }
       
       return true;
     } catch (e) {

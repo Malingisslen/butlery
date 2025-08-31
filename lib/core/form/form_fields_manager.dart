@@ -128,6 +128,12 @@ class FormFieldsManager {
   final Function(int, String)? onValueChanged;
   final List<String>? initialItems;
   final String? Function(String?)? validator;
+  
+  // CRITICAL FIX: State synchronization lock to prevent race conditions
+  bool _isUpdating = false;
+  
+  // CRITICAL FIX: Listener tracking for proper memory management
+  final Map<String, VoidCallback> _controllerListeners = {};
 
   FormFieldsManager({
     this.onValueChanged,
@@ -144,32 +150,57 @@ class FormFieldsManager {
 
   /// Hämta alla controllers synkroniserade med aktuella värden
   List<TextEditingController> getControllers(List<String> currentValues) {
+    debugPrint('🔍 CONTROLLER_DEBUG: getControllers called with currentValues = $currentValues');
+    debugPrint('🔍 CONTROLLER_DEBUG: Before sync - _values = $_values');
+    
+    // CRITICAL FIX: Prevent race conditions with state synchronization lock
+    if (_isUpdating) {
+      debugPrint('⚠️ CONTROLLER_WARNING: Already updating, skipping sync to prevent race condition');
+      // Return controllers based on current internal state
+      return _buildControllers();
+    }
+    
     // Synkronisera _values med currentValues
     _syncValues(currentValues);
 
+    debugPrint('🔍 CONTROLLER_DEBUG: After sync - _values = $_values');
+    debugPrint('🔍 CONTROLLER_DEBUG: Creating controllers for ${_values.length} values');
+
+    return _buildControllers();
+  }
+
+  /// CRITICAL FIX: Extracted controller building logic with proper synchronization
+  List<TextEditingController> _buildControllers() {
     // Skapa/uppdatera controllers för varje värde
     final controllers = <TextEditingController>[];
 
     for (int i = 0; i < _values.length; i++) {
       final key = 'field_$i';
+      debugPrint('🔍 CONTROLLER_DEBUG: Processing field $i with key=$key, value="${_values[i]}"');
 
       // Skapa ny controller om den inte finns
       if (!_controllers.containsKey(key)) {
         final controller = TextEditingController(text: _values[i]);
+        debugPrint('🔍 CONTROLLER_DEBUG: Created new controller for field $i with text "${_values[i]}"');
 
-        // Lägg till listener för att spåra ändringar
-        controller.addListener(() {
+        // CRITICAL FIX: Create and track listener for proper memory management
+        void listener() {
           if (onValueChanged != null && i < _values.length) {
             onValueChanged!(i, controller.text);
           }
-        });
-
+        }
+        
+        _controllerListeners[key] = listener;
+        controller.addListener(listener);
         _controllers[key] = controller;
       } else {
         // Uppdatera befintlig controller om texten ändrats externt
         final existingController = _controllers[key]!;
         if (existingController.text != _values[i]) {
+          debugPrint('🔍 CONTROLLER_DEBUG: Updated existing controller for field $i: "${existingController.text}" -> "${_values[i]}"');
           existingController.text = _values[i];
+        } else {
+          debugPrint('🔍 CONTROLLER_DEBUG: Reused existing controller for field $i with text "${existingController.text}"');
         }
       }
 
@@ -179,53 +210,96 @@ class FormFieldsManager {
     // Rensa upp controllers som inte längre används
     _cleanupUnusedControllers(controllers.length);
 
+    debugPrint('🔍 CONTROLLER_DEBUG: _buildControllers returning ${controllers.length} controllers');
+    debugPrint('🔍 CONTROLLER_DEBUG: Final _controllers.keys = ${_controllers.keys}');
+
     return controllers;
   }
 
   /// Lägg till ny tom controller
   void addController() {
-    _values.add('');
-    // getControllers kommer skapa den nya controllern nästa gång den anropas
+    // CRITICAL FIX: Protect mutation with synchronization lock
+    if (_isUpdating) return; // Skip if already updating
+    
+    _isUpdating = true;
+    try {
+      _values.add('');
+      // getControllers kommer skapa den nya controllern nästa gång den anropas
+    } finally {
+      _isUpdating = false;
+    }
   }
 
   /// Ta bort controller vid specifikt index
   void removeController(int index) {
     if (index < 0 || index >= _values.length) return;
 
-    // Ta bort värdet
-    _values.removeAt(index);
+    // CRITICAL FIX: Protect mutation with synchronization lock
+    if (_isUpdating) return; // Skip if already updating
+    
+    _isUpdating = true;
+    try {
+      // Ta bort värdet
+      _values.removeAt(index);
 
-    // Dispose och ta bort controller
-    final key = 'field_$index';
-    _controllers[key]?.dispose();
-    _controllers.remove(key);
+      // CRITICAL FIX: Remove listener before disposing controller
+      final key = 'field_$index';
+      final controller = _controllers[key];
+      final listener = _controllerListeners[key];
+      
+      if (controller != null && listener != null) {
+        controller.removeListener(listener);
+        _controllerListeners.remove(key);
+      }
+      
+      controller?.dispose();
+      _controllers.remove(key);
 
-    // Omarrangera kvarvarande controllers
-    _reorganizeControllers(index);
+      // Omarrangera kvarvarande controllers
+      _reorganizeControllers(index);
+    } finally {
+      _isUpdating = false;
+    }
   }
 
   /// Uppdatera värde direkt (används vid programmatisk uppdatering)
   void updateValue(int index, String value) {
     if (index < 0 || index >= _values.length) return;
 
-    _values[index] = value;
-    final key = 'field_$index';
+    // CRITICAL FIX: Protect mutation with synchronization lock
+    if (_isUpdating) return; // Skip if already updating
+    
+    _isUpdating = true;
+    try {
+      _values[index] = value;
+      final key = 'field_$index';
 
-    if (_controllers.containsKey(key)) {
-      final controller = _controllers[key]!;
-      // Undvik onödiga uppdateringar som triggar listeners
-      if (controller.text != value) {
-        controller.text = value;
+      if (_controllers.containsKey(key)) {
+        final controller = _controllers[key]!;
+        // Undvik onödiga uppdateringar som triggar listeners
+        if (controller.text != value) {
+          controller.text = value;
+        }
       }
+    } finally {
+      _isUpdating = false;
     }
   }
 
   /// Update items (for backward compatibility)
   void updateItems(List<String> items) {
-    _values.clear();
-    _values.addAll(items);
-    if (_values.isEmpty) {
-      _values.add('');
+    // CRITICAL FIX: Protect mutation with synchronization lock
+    if (_isUpdating) return; // Skip if already updating
+    
+    _isUpdating = true;
+    try {
+      _values.clear();
+      _values.addAll(items);
+      if (_values.isEmpty) {
+        _values.add('');
+      }
+    } finally {
+      _isUpdating = false;
     }
   }
 
@@ -244,9 +318,54 @@ class FormFieldsManager {
     removeController(index);
   }
 
-  /// Get controllers property
+  /// Get controllers property - creates controllers for current internal values
   List<TextEditingController> get controllers {
-    return getControllers(_values);
+    debugPrint('🔍 CONTROLLER_DEBUG: FormFieldsManager.controllers called');
+    debugPrint('🔍 CONTROLLER_DEBUG: _values = $_values');
+    debugPrint('🔍 CONTROLLER_DEBUG: _values.length = ${_values.length}');
+    debugPrint('🔍 CONTROLLER_DEBUG: _controllers.keys = ${_controllers.keys}');
+    
+    // Don't sync - just create controllers for current internal values
+    final controllers = <TextEditingController>[];
+
+    for (int i = 0; i < _values.length; i++) {
+      final key = 'field_$i';
+      debugPrint('🔍 CONTROLLER_DEBUG: Processing field $i with key=$key, value="${_values[i]}"');
+
+      // Create new controller if it doesn't exist
+      if (!_controllers.containsKey(key)) {
+        final controller = TextEditingController(text: _values[i]);
+        debugPrint('🔍 CONTROLLER_DEBUG: Created new controller for field $i with text "${_values[i]}"');
+
+        // Add listener to track changes
+        controller.addListener(() {
+          if (onValueChanged != null && i < _values.length) {
+            onValueChanged!(i, controller.text);
+          }
+        });
+
+        _controllers[key] = controller;
+      } else {
+        // Update existing controller if text changed externally
+        final existingController = _controllers[key]!;
+        if (existingController.text != _values[i]) {
+          debugPrint('🔍 CONTROLLER_DEBUG: Updated existing controller for field $i: "${existingController.text}" -> "${_values[i]}"');
+          existingController.text = _values[i];
+        } else {
+          debugPrint('🔍 CONTROLLER_DEBUG: Reused existing controller for field $i with text "${existingController.text}"');
+        }
+      }
+
+      controllers.add(_controllers[key]!);
+    }
+
+    // Clean up unused controllers
+    _cleanupUnusedControllers(controllers.length);
+
+    debugPrint('🔍 CONTROLLER_DEBUG: controllers getter returning ${controllers.length} controllers');
+    debugPrint('🔍 CONTROLLER_DEBUG: Final _controllers.keys = ${_controllers.keys}');
+    
+    return controllers;
   }
 
   /// Hämta antal fält
@@ -262,10 +381,21 @@ class FormFieldsManager {
 
   /// Rensa och dispose alla controllers
   void dispose() {
-    for (final controller in _controllers.values) {
+    // CRITICAL FIX: Remove listeners before disposing controllers
+    for (final entry in _controllers.entries) {
+      final key = entry.key;
+      final controller = entry.value;
+      final listener = _controllerListeners[key];
+      
+      if (listener != null) {
+        controller.removeListener(listener);
+        _controllerListeners.remove(key);
+      }
+      
       controller.dispose();
     }
     _controllers.clear();
+    _controllerListeners.clear();
     _values.clear();
   }
 
@@ -279,12 +409,18 @@ class FormFieldsManager {
 
   /// Synkronisera interna värden med externa
   void _syncValues(List<String> currentValues) {
-    _values.clear();
-    _values.addAll(currentValues);
+    // CRITICAL FIX: Use synchronization lock to prevent race conditions
+    _isUpdating = true;
+    try {
+      _values.clear();
+      _values.addAll(currentValues);
 
-    // Säkerställ minst ett fält
-    if (_values.isEmpty) {
-      _values.add('');
+      // Säkerställ minst ett fält
+      if (_values.isEmpty) {
+        _values.add('');
+      }
+    } finally {
+      _isUpdating = false;
     }
   }
 
@@ -295,6 +431,13 @@ class FormFieldsManager {
     _controllers.forEach((key, controller) {
       final index = int.tryParse(key.replaceFirst('field_', ''));
       if (index != null && index >= activeCount) {
+        // CRITICAL FIX: Remove listener before disposing controller
+        final listener = _controllerListeners[key];
+        if (listener != null) {
+          controller.removeListener(listener);
+          _controllerListeners.remove(key);
+        }
+        
         controller.dispose();
         keysToRemove.add(key);
       }
@@ -308,6 +451,7 @@ class FormFieldsManager {
   /// Omarrangera controllers efter borttagning
   void _reorganizeControllers(int removedIndex) {
     final newControllers = <String, TextEditingController>{};
+    final newListeners = <String, VoidCallback>{};
 
     _controllers.forEach((key, controller) {
       final index = int.tryParse(key.replaceFirst('field_', ''));
@@ -315,16 +459,28 @@ class FormFieldsManager {
         if (index < removedIndex) {
           // Behåll controllers före borttagen index
           newControllers[key] = controller;
+          final listener = _controllerListeners[key];
+          if (listener != null) {
+            newListeners[key] = listener;
+          }
         } else if (index > removedIndex) {
           // Flytta ner controllers efter borttagen index
           final newKey = 'field_${index - 1}';
           newControllers[newKey] = controller;
+          final listener = _controllerListeners[key];
+          if (listener != null) {
+            newListeners[newKey] = listener;
+          }
         }
       }
     });
 
     _controllers.clear();
     _controllers.addAll(newControllers);
+    
+    // CRITICAL FIX: Also reorganize listener tracking
+    _controllerListeners.clear();
+    _controllerListeners.addAll(newListeners);
   }
 
   /// Debug-metod för att logga state

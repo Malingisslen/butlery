@@ -150,7 +150,7 @@ class SmartUnitConverter {
 
       // Vikt: g → kg
       case 'g':
-        if (quantity >= 1000) {
+        if (quantity.abs() >= 1000) {
           return ConvertedMeasurement(quantity / 1000, 'kg');
         }
         break;
@@ -170,12 +170,12 @@ class SmartUnitConverter {
         break;
 
       case 'tsk':
-        if (quantity >= 3) {
-          // 3 tsk = 1 msk
-          return ConvertedMeasurement(quantity / 3, 'msk');
-        } else if (quantity >= 15) {
+        if (quantity >= 15) {
           // 15 tsk ≈ 1 dl (fallback för stora mängder)
           return ConvertedMeasurement(quantity / 15, 'dl');
+        } else if (quantity >= 3) {
+          // 3 tsk = 1 msk
+          return ConvertedMeasurement(quantity / 3, 'msk');
         }
         break;
 

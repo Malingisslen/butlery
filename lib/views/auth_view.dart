@@ -311,6 +311,7 @@ class _AuthViewState extends State<AuthView> {
   /// Returns name input field widget for registration form integration.
   Widget _buildNameField(AuthViewModel viewModel) {
     return TextFormField(
+      key: const Key('name_field'),
       controller: _nameController,
       focusNode: _nameFocus,
       textInputAction: TextInputAction.next,
@@ -350,9 +351,6 @@ class _AuthViewState extends State<AuthView> {
       label: 'E-post',
       hint: 'din.email@exempel.se',
       validator: FormValidators.authEmail(),
-      onChanged: (_) {
-        FocusScope.of(context).requestFocus(_passwordFocus);
-      },
     );
   }
 
@@ -391,7 +389,6 @@ class _AuthViewState extends State<AuthView> {
         ),
         onPressed: viewModel.togglePasswordVisibility,
       ),
-      onChanged: (_) => _handleSubmit(viewModel),
     );
   }
 
@@ -448,7 +445,7 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildErrorMessage(String message) {
     return StateWidget.error(
       message: message,
-      onAction: () => context.read<AuthViewModel>().clearError(),
+      // Removed non-functional "Try Again" button - error messages are self-explanatory
     );
   }
 
@@ -469,6 +466,7 @@ class _AuthViewState extends State<AuthView> {
   /// Returns form submission button widget for authentication workflow completion.
   Widget _buildSubmitButton(AuthViewModel viewModel) {
     return FilledButton(
+      key: const Key('submit_button'),
       onPressed: viewModel.isLoading ? null : () => _handleSubmit(viewModel),
       child:
           viewModel.isLoading
@@ -607,6 +605,7 @@ class _AuthViewState extends State<AuthView> {
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
                 TextField(
+                  key: const Key('reset_email_field'),
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
@@ -618,10 +617,12 @@ class _AuthViewState extends State<AuthView> {
             ),
             actions: [
               TextButton(
+                key: const Key('back_to_login_button'),
                 onPressed: () => Navigator.of(context).pop(false),
                 child: const Text(AppStrings.cancel),
               ),
               FilledButton(
+                key: const Key('send_reset_button'),
                 onPressed: () => Navigator.of(context).pop(true),
                 child: const Text(AppStrings.send),
               ),

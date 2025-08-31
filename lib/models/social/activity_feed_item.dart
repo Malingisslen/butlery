@@ -145,11 +145,13 @@ class ActivityFeedItem {
   }
 
   /// Generate unique activity ID with timestamp
+  static int _idCounter = 0;
   static String _generateActivityId() {
     final now = DateTime.now();
     final timestamp = now.millisecondsSinceEpoch;
-    final random = DateTime.now().microsecond;
-    return 'activity_${timestamp}_$random';
+    final random = now.microsecond;
+    _idCounter++;
+    return 'activity_${timestamp}_${random}_$_idCounter';
   }
 
   /// Create from Firestore document
@@ -216,6 +218,28 @@ class ActivityFeedItem {
 
   /// Create from JSON format
   factory ActivityFeedItem.fromJson(Map<String, dynamic> json) {
+    // Ensure metadata is properly typed
+    final metadata = json['metadata'];
+    final Map<String, dynamic> typedMetadata;
+    if (metadata == null) {
+      typedMetadata = {};
+    } else if (metadata is Map<String, dynamic>) {
+      typedMetadata = metadata;
+    } else {
+      typedMetadata = Map<String, dynamic>.from(metadata as Map);
+    }
+
+    // Ensure engagement is properly typed
+    final engagement = json['engagement'];
+    final Map<String, dynamic> typedEngagement;
+    if (engagement == null) {
+      typedEngagement = {};
+    } else if (engagement is Map<String, dynamic>) {
+      typedEngagement = engagement;
+    } else {
+      typedEngagement = Map<String, dynamic>.from(engagement as Map);
+    }
+
     return ActivityFeedItem(
       id: json['id'] as String,
       userId: json['userId'] as String? ?? '',
@@ -230,8 +254,8 @@ class ActivityFeedItem {
       parentType: json['parentType'] as String?,
       timestamp: DateTime.parse(json['timestamp'] as String),
       visibility: (json['visibility'] as List?)?.cast<String>() ?? ['all_friends'],
-      metadata: json['metadata'] as Map<String, dynamic>? ?? {},
-      engagement: ActivityEngagement.fromJson(json['engagement'] as Map<String, dynamic>? ?? {}),
+      metadata: typedMetadata,
+      engagement: ActivityEngagement.fromJson(typedEngagement),
     );
   }
 

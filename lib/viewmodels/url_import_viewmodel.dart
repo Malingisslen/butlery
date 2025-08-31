@@ -76,8 +76,10 @@
 
 // lib/viewmodels/url_import_viewmodel.dart
 
-import 'package:http/http.dart' as http;
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
+import 'package:butlery/services/extraction/web_scraper.dart';
+import 'package:butlery/services/extraction/platform_detector.dart' as pd;
+import 'package:butlery/services/social_media_extractor.dart';
 
 /// Comprehensive URL import ViewModel providing advanced web content extraction through HTTP coordination.
 ///
@@ -171,92 +173,45 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     return await completeImport();
   }
 
-  /// Fetches raw content from URL with comprehensive HTTP handling and fallback strategies.
+  /// Fetches recipe content from URL using advanced WebScraper with platform-specific extraction.
   /// 
-  /// [url] Target URL for content fetching and extraction
+  /// [url] Target URL for recipe content extraction
   /// 
-  /// Returns raw HTML content string for further processing and text extraction.
-  /// Performs HTTP request with proper headers, status code validation, and comprehensive
-  /// error handling with fallback strategies for optimal content retrieval success.
+  /// Returns extracted recipe text content optimized for parsing.
+  /// Uses sophisticated WebScraper service with platform detection, headless browser technology,
+  /// and recipe-specific content selectors for optimal extraction quality.
   /// 
-  /// **Content Fetching Process:**
-  /// - HTTP GET request with appropriate headers and user agent
-  /// - Status code validation ensuring successful response
-  /// - Content validation ensuring non-empty response body
-  /// - Fallback strategy execution if primary fetch fails
+  /// **Advanced Extraction Process:**
+  /// - Platform detection for extraction strategy optimization
+  /// - WebScraper service with headless browser and JavaScript support
+  /// - Recipe-specific DOM selectors and structured data parsing
+  /// - Comprehensive error handling with Swedish localized messages
   /// 
-  /// **Override Implementation**: Required by UrlImportMixin for URL content fetching.
+  /// **Override Implementation**: Replaces basic HTTP with sophisticated WebScraper integration.
   @override
   Future<String> fetchContentFromUrl(String url) async {
-    try {
-      // Fetch the HTML content with proper headers
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'sv-SE,sv;q=0.9,en;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
-        },
-      );
-      
-      if (response.statusCode != 200) {
-        throw Exception('Kunde inte hämta innehåll från URL: HTTP ${response.statusCode}');
-      }
-      
-      final htmlContent = response.body;
-      
-      if (htmlContent.isEmpty) {
-        throw Exception('Inget innehåll hittades på denna sida');
-      }
-      
-      return htmlContent;
-    } catch (e) {
-      // Fallback to basic HTTP fetch if specialized scraping fails
-      return await _basicHttpFetch(url);
-    }
-  }
-
-  /// Performs basic HTTP fetch with fallback strategy when specialized scraping fails.
-  /// 
-  /// [url] Target URL for basic content fetching with simplified extraction
-  /// 
-  /// Returns processed text content with HTML tags removed and whitespace normalized.
-  /// Provides fallback content extraction when primary fetching strategies fail,
-  /// using basic HTML tag removal and text normalization for recipe parsing.
-  /// 
-  /// **Basic Fetch Process:**
-  /// - Simple HTTP GET with minimal headers
-  /// - HTML tag removal using regex patterns
-  /// - Whitespace normalization and content trimming
-  /// - Content length validation ensuring parsing viability
-  Future<String> _basicHttpFetch(String url) async {
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Kunde inte hämta innehåll: HTTP ${response.statusCode}');
-    }
-
-    // Basic HTML content extraction
-    String content = response.body;
+    // Detect platform for optimized extraction
+    final platformDetector = pd.PlatformDetector();
+    final platform = platformDetector.detectPlatform(url);
     
-    // Remove HTML tags for basic text extraction
-    content = content.replaceAll(RegExp(r'<[^>]*>'), ' ');
-    content = content.replaceAll(RegExp(r'\s+'), ' ');
-    content = content.trim();
-
-    if (content.length < 100) {
-      throw Exception('Innehållet är för kort för att innehålla ett recept');
+    // Convert mobile URLs to web versions if needed
+    final webUrl = platformDetector.convertToWebUrl(url);
+    
+    // Use WebScraper service for advanced content extraction
+    final webScraper = WebScraper();
+    
+    try {
+      final extractionResult = await webScraper.performExtraction(webUrl, platform);
+      
+      if (extractionResult.success && extractionResult.extractedText != null) {
+        return extractionResult.extractedText!;
+      } else {
+        throw Exception(extractionResult.error ?? 'Kunde inte extrahera innehåll från sidan');
+      }
+    } finally {
+      // Always dispose WebScraper to prevent memory leaks
+      webScraper.dispose();
     }
-
-    return content;
   }
 
   // ===== URL VALIDATION OPERATIONS =====

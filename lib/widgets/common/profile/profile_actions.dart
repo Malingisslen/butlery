@@ -158,7 +158,7 @@ class ProfileActions {
   }
 
   /// Build data backup section
-  static Widget buildDataBackupSection(BuildContext context) {
+  static Widget buildDataBackupSection(BuildContext context, {BuildContext? rootContext}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
@@ -182,7 +182,7 @@ class ProfileActions {
             icon: Icons.download,
             title: 'Ladda ner backup',
             subtitle: 'Spara alla recept som JSON',
-            onTap: () => _handleBackup(context),
+            onTap: () => _handleBackup(rootContext ?? context),
             color: AppColors.primaryBlue,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -191,7 +191,7 @@ class ProfileActions {
             icon: Icons.upload,
             title: 'Återställ från backup',
             subtitle: 'Importera recept från JSON',
-            onTap: () => _handleRestore(context),
+            onTap: () => _handleRestore(rootContext ?? context),
             color: AppColors.primaryBlue,
           ),
         ],
@@ -332,9 +332,14 @@ class ProfileActions {
   static Future<void> _handleBackup(BuildContext context) async {
     try {
       final backupService = ServiceLocator.get<BackupService>();
-      await backupService.exportToFile();
+      final result = await backupService.exportToFile();
+      
       if (context.mounted) {
-        _showBackupResult(context, true, 'Backup skapad framgångsrikt!');
+        if (result.success) {
+          _showBackupResult(context, true, result.message);
+        } else {
+          _showBackupResult(context, false, 'Backup misslyckades: ${result.message}');
+        }
       }
     } catch (e) {
       AppLogger.error('Backup failed', e);
@@ -348,9 +353,17 @@ class ProfileActions {
   static Future<void> _handleRestore(BuildContext context) async {
     try {
       final backupService = ServiceLocator.get<BackupService>();
-      await backupService.importFromFile();
+      final result = await backupService.importFromFile();
+      
       if (context.mounted) {
-        _showRestoreResult(context, true, 'Återställning genomförd!');
+        if (result.success) {
+          _showRestoreResult(context, true, 'Återställning genomförd!');
+        } else if (result.cancelled) {
+          // User cancelled - no message needed
+          return;
+        } else {
+          _showRestoreResult(context, false, 'Återställning misslyckades: ${result.errorMessage ?? 'Okänt fel'}');
+        }
       }
     } catch (e) {
       AppLogger.error('Restore failed', e);
@@ -370,22 +383,48 @@ class ProfileActions {
 
   /// Show backup result
   static void _showBackupResult(BuildContext context, bool success, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: success ? AppColors.success : AppColors.error,
-      ),
-    );
+    // Close the modal first
+    Navigator.of(context).pop();
+    
+    // Use a delay to show the snackbar after the modal closes
+    Future.delayed(const Duration(milliseconds: 300), () {
+      try {
+        if (!context.mounted) return;
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } catch (e) {
+        AppLogger.error('Failed to show backup result', e);
+      }
+    });
   }
 
   /// Show restore result
   static void _showRestoreResult(BuildContext context, bool success, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: success ? AppColors.success : AppColors.error,
-      ),
-    );
+    // Close the modal first
+    Navigator.of(context).pop();
+    
+    // Use a delay to show the snackbar after the modal closes
+    Future.delayed(const Duration(milliseconds: 300), () {
+      try {
+        if (!context.mounted) return;
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } catch (e) {
+        AppLogger.error('Failed to show restore result', e);
+      }
+    });
   }
 
   /// Show logout dialog
@@ -419,7 +458,7 @@ class ProfileActions {
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/login',
+          '/auth',  // Fixed: Use correct auth route
           (route) => false,
         );
       }
@@ -491,7 +530,7 @@ class ProfileActions {
           // Account deleted successfully
           Navigator.pushNamedAndRemoveUntil(
             context,
-            '/login',
+            '/auth',
             (route) => false,
           );
           ScaffoldMessenger.of(context).showSnackBar(

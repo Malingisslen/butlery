@@ -14,29 +14,59 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Handles ONLY real-time collaborative editing operations.
 /// This includes real-time sessions, live edits, active editor tracking, and connection management.
 class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
-  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+  final UnifiedRecipeService _recipeService;
+  bool _disposed = false;
+
+  /// Create RealtimeRecipeViewModel with dependency injection
+  RealtimeRecipeViewModel([UnifiedRecipeService? recipeService]) 
+      : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+
+  @override
+  void addListener(VoidCallback listener) {
+    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    super.addListener(listener);
+  }
 
   String get serviceName => 'RealtimeRecipeViewModel';
 
   // ===== GETTERS =====
 
-  String? get currentUserId => _recipeService.currentUserId;
-  String? get currentUserDisplayName => _recipeService.currentUserDisplayName;
+  String? get currentUserId {
+    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    return _recipeService.currentUserId;
+  }
+  
+  String? get currentUserDisplayName {
+    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    return _recipeService.currentUserDisplayName;
+  }
 
-  bool get isRealtimeConnected => _recipeService.realtime.isConnected;
-  Stream<bool> get realtimeConnectionStream => _recipeService.realtime.connectionStream;
+  bool get isRealtimeConnected {
+    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    return _recipeService.realtime.isConnected;
+  }
+  
+  Stream<bool> get realtimeConnectionStream {
+    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    return _recipeService.realtime.connectionStream;
+  }
 
   // ===== REALTIME SESSION MANAGEMENT =====
 
   Future<bool> startRealtimeEditing(String recipeId) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
+    if (ValidationUtils.isNullOrEmpty(recipeId) || recipeId.trim().isEmpty) return false;
 
-    return await LoggingUtils.loggedOperation(
-      'Start Realtime Editing',
-      () => _recipeService.realtime.startRealtimeEditing(recipeId),
-      metadata: {'recipe_id': recipeId},
-      level: LogLevel.info,
-    );
+    try {
+      return await LoggingUtils.loggedOperation(
+        'Start Realtime Editing',
+        () => _recipeService.realtime.startRealtimeEditing(recipeId),
+        metadata: {'recipe_id': recipeId},
+        level: LogLevel.info,
+      );
+    } catch (e) {
+      // Handle exceptions gracefully - return false on any error
+      return false;
+    }
   }
 
   Future<bool> stopRealtimeEditing(String recipeId) async {
@@ -412,6 +442,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
   }
   @override
   void dispose() {
+    _disposed = true;
     // Cancel all timers
     // Cancel all stream subscriptions  
     // Dispose of resources

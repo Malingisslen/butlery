@@ -53,7 +53,8 @@ class RecipeSocialStats {
     required double rating,
     String? review,
   }) async {
-    if (currentUserId == null) {
+    final userId = currentUserId;
+    if (userId == null) {
       AppLogger.error('❌ User must be logged in to rate recipes');
       return false;
     }
@@ -61,7 +62,7 @@ class RecipeSocialStats {
     final result = await _ratingSystem.rateRecipe(
       recipeId: recipeId,
       rating: rating,
-      currentUserId: currentUserId!,
+      currentUserId: userId,
       currentUserDisplayName: currentUserDisplayName,
       review: review,
       canRateValidator: _canRateRecipe,
@@ -79,7 +80,7 @@ class RecipeSocialStats {
       final recipe = _getRecipe(recipeId);
       if (recipe != null) {
         final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-        if (ownerId != currentUserId) {
+        if (ownerId != userId) {
           await RatingNotifications.sendRatingNotification(
             notificationService: _notificationService,
             recipe: recipe,
@@ -103,11 +104,12 @@ class RecipeSocialStats {
 
   /// Get user's rating for a specific recipe
   Future<Map<String, dynamic>?> getUserRating(String recipeId) async {
-    if (currentUserId == null) return null;
+    final userId = currentUserId;
+    if (userId == null) return null;
 
     final rating = await _ratingSystem.getUserRating(
       recipeId: recipeId,
-      userId: currentUserId!,
+      userId: userId,
     );
     
     if (rating == null) return null;
@@ -183,7 +185,8 @@ class RecipeSocialStats {
 
   /// Get social statistics for user
   Future<Map<String, dynamic>> getUserSocialStats() async {
-    if (currentUserId == null) {
+    final userId = currentUserId;
+    if (userId == null) {
       return {'error': 'No current user'};
     }
 
@@ -191,12 +194,12 @@ class RecipeSocialStats {
     final allRecipes = recipes;
     final userRecipes = allRecipes.where((r) {
       final ownerId = r.socialData?.ownerId ?? r.core.createdBy;
-      return ownerId == currentUserId;
+      return ownerId == userId;
     }).toList();
 
     return SocialEngagementMetrics.calculateUserSocialStats(
       firestore: _firestoreRepository.firestore,
-      userId: currentUserId!,
+      userId: userId,
       userRecipes: userRecipes,
     );
   }

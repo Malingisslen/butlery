@@ -130,28 +130,12 @@ class FranSocialaMedierView extends StatelessWidget {
           viewModel.setSourceUrl(sourceUrl!);
         }
 
-        // Om vi har initial text, sätt den direkt
-        if (initialText != null && initialText!.isNotEmpty) {
-          viewModel.updateInputText(initialText!);
-          // Parse automatiskt efter att widgeten byggts
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            viewModel.parseText().then((success) {
-              if (success && context.mounted) {
-                Navigator.pushNamed(
-                  context,
-                  '/skrivSjalv',
-                  arguments: {
-                    'initialRecipe': viewModel.parsedRecipe,
-                    'isTemplate': true,
-                  },
-                );
-              }
-            });
-          });
-        }
         return viewModel;
       },
-      child: const _FranSocialaMedierViewContent(),
+      child: _FranSocialaMedierViewContent(
+        initialText: initialText,
+        sourceUrl: sourceUrl,
+      ),
     );
   }
 }
@@ -161,13 +145,50 @@ class FranSocialaMedierView extends StatelessWidget {
 /// Handles complete text import state management including text input, recipe parsing, navigation coordination,
 /// and error handling while maintaining clean TextImportViewModel integration and proper lifecycle management
 /// through comprehensive import workflow coordination and user experience optimization.
-class _FranSocialaMedierViewContent extends StatelessWidget {
+class _FranSocialaMedierViewContent extends StatefulWidget {
+  final String? initialText;
+  final String? sourceUrl;
+  
   /// Creates text import view content with parsing coordination and workflow management.
   /// 
-  /// Establishes stateless content interface enabling text processing, recipe parsing,
+  /// Establishes stateful content interface enabling text processing, recipe parsing,
   /// and comprehensive import functionality through proper ViewModel integration
   /// and navigation coordination with user experience optimization.
-  const _FranSocialaMedierViewContent();
+  const _FranSocialaMedierViewContent({
+    this.initialText,
+    this.sourceUrl,
+  });
+
+  @override
+  State<_FranSocialaMedierViewContent> createState() => _FranSocialaMedierViewContentState();
+}
+
+class _FranSocialaMedierViewContentState extends State<_FranSocialaMedierViewContent> {
+  late TextEditingController _textController;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _textController = TextEditingController(text: widget.initialText ?? '');
+    
+    // Uppdatera ViewModel med initial text efter att widgeten är byggd
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialText != null && widget.initialText!.isNotEmpty) {
+        final viewModel = context.read<TextImportViewModel>();
+        viewModel.updateInputText(widget.initialText!);
+        viewModel.parseText();
+      }
+      _isInitialized = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   /// Text parsing and navigation coordination with recipe template creation.
   /// 
@@ -223,10 +244,11 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
     final viewModel = context.watch<TextImportViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Klistra in recepttext')),
-      body: Padding(
+      appBar: AppBar(title: const Text('Från sociala medier')),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Instruktionstext
             _buildInstructions(context),
@@ -238,41 +260,8 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingM),
             ],
 
-            // Textfält för input
-            Expanded(
-              child: TextFormField(
-                initialValue: viewModel.inputText,
-                onChanged: viewModel.updateInputText,
-                enabled: !viewModel.isParsing,
-                decoration: InputDecoration(
-                  hintText: 'Klistra in recepttext här...\n\n'
-                      'Exempel:\n'
-                      'Köttfärssås\n'
-                      '500g köttfärs\n'
-                      '1 gul lök\n'
-                      '1 burk krossade tomater\n\n'
-                      'Gör så här:\n'
-                      '1. Stek löken\n'
-                      '2. Tillsätt färs och stek\n'
-                      '3. Häll i tomaterna och låt sjuda',
-                  hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
-                  border: const OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                  suffixIcon: viewModel.inputText.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: viewModel.clearInput,
-                        )
-                      : null,
-                ),
-                style: Theme.of(context).textTheme.bodyMedium,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-              ),
-            ),
+            // Textfält för recept
+            _buildTextInput(context, viewModel),
             const SizedBox(height: AppDimensions.spacingXl),
 
             // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
@@ -355,9 +344,65 @@ class _FranSocialaMedierViewContent extends StatelessWidget {
       ),
     );
   }
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+
+  /// Textinput-widget construction med expanderbar höjd och automatisk validering.
+  /// 
+  /// [context] Build context för tema-access och ViewModel-integration
+  /// [viewModel] TextImportViewModel för texthantering och validering
+  /// 
+  /// Konstruerar textinput-interface med expanderbar textruta,
+  /// automatisk höjdjustering och real-time validering genom TextEditingController
+  /// integration med ViewModel state coordination och användarvänlig feedback.
+  /// 
+  /// **Textinput Features:**
+  /// - Expanderbar textruta med automatisk höjdjustering baserat på innehåll
+  /// - Real-time synkronisering mellan TextEditingController och ViewModel state
+  /// - Placeholder-text med exempel och användarguide för optimal importupplevelse
+  /// - Responsiv design med proper spacing och visuell hierarki
+  /// - Text validering och längd-feedback för användarguidning och kvalitetskontroll
+  /// 
+  /// Returns textinput widget med komplett funktionalitet och användarupplevelse.
+  Widget _buildTextInput(BuildContext context, TextImportViewModel viewModel) {
+    // Synkronisera ViewModel-text med controller om de skiljer sig åt
+    if (_isInitialized && _textController.text != viewModel.inputText) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_textController.text != viewModel.inputText) {
+          _textController.text = viewModel.inputText;
+        }
+      });
+    }
+
+    return Container(
+      constraints: const BoxConstraints(
+        minHeight: 200,
+        maxHeight: 400,
+      ),
+      child: TextField(
+        controller: _textController,
+        onChanged: viewModel.updateInputText,
+        decoration: InputDecoration(
+          hintText: 'Klistra in recepttext här...\n\n'
+              'Exempel:\n'
+              'Ingredienser:\n'
+              '- 500g pasta\n'
+              '- 2 vitlöksklyftor\n'
+              '\n'
+              'Instruktioner:\n'
+              '1. Koka pastan enligt förpackningen\n'
+              '2. Hacka vitlöken fint...',
+          hintMaxLines: 10,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          ),
+          filled: true,
+          fillColor: AppColors.backgroundTint,
+        ),
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        expands: true,
+        textAlignVertical: TextAlignVertical.top,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
   }
 }

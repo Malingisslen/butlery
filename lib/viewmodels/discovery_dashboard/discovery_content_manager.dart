@@ -59,6 +59,7 @@ class DiscoveryContentManager extends ChangeNotifier {
     } catch (e) {
       _setError('Failed to load trending content: $e');
       AppLogger.error('❌ Failed to load trending content', e);
+      rethrow; // Rethrow to allow parent to handle error
     } finally {
       _setLoading(false);
     }

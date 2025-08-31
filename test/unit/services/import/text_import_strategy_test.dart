@@ -242,6 +242,70 @@ Ingredienser:
           }
         }
       });
+
+      test('should parse Kroppkakor recipe format correctly - BUG-040 fix', () async {
+        // Arrange - This is the actual failing recipe format from BUG-040
+        const kroppkakorRecipe = '''
+Kroppkakor av kokt potatis
+
+Ingredienser:
+- 1 kg mjölig potatis
+- vatten att koka potatisen i
+- 1 tsk salt
+- 2 ägg
+- ca 3 dl vetemjöl
+
+Fyllning:
+- 200 g fläsk, tärnat
+- 1 gul lök, hackad
+- salt och peppar
+
+Instruktioner:
+1. Koka potatisen mjuk med skalet på
+2. Låt svalna och skala av
+3. Pressa genom potatispress eller mosa fint
+4. Tillsätt salt, ägg och mjöl
+5. Arbeta till en smidig deg
+6. Forma till bollar med fyllning
+7. Koka i saltat vatten tills de flyter upp
+''';
+        
+        // Act
+        final result = await strategy.import(kroppkakorRecipe);
+        
+        // Assert
+        expect(result.isSuccess, isTrue, reason: 'Recipe parsing should succeed');
+        expect(result.recipe, isNotNull);
+        
+        final recipe = result.recipe!;
+        
+        // Title should be extracted correctly (not an ingredient line)
+        expect(recipe.title, equals('Kroppkakor av kokt potatis'), 
+               reason: 'Should extract proper recipe title, not ingredient');
+        
+        // Should find ingredients (with new 'ingredienser' pattern recognition)
+        expect(recipe.ingredients, isNot(equals(['Ingen ingrediensinformation'])),
+               reason: 'Should recognize "Ingredienser:" header and parse ingredients');
+        expect(recipe.ingredients.length, greaterThan(3),
+               reason: 'Should find multiple ingredients from the recipe');
+               
+        // Check that some specific ingredients are found
+        final hasPotatoIngredient = recipe.ingredients.any(
+            (ingredient) => ingredient.toLowerCase().contains('potatis'));
+        expect(hasPotatoIngredient, isTrue, 
+               reason: 'Should find potato ingredient');
+               
+        final hasFlourIngredient = recipe.ingredients.any(
+            (ingredient) => ingredient.toLowerCase().contains('mjöl'));
+        expect(hasFlourIngredient, isTrue,
+               reason: 'Should find flour ingredient');
+        
+        // Should find instructions
+        expect(recipe.instructions, isNot(equals(['Ingen instruktionsinformation'])),
+               reason: 'Should find cooking instructions');
+        expect(recipe.instructions.length, greaterThan(3),
+               reason: 'Should find multiple cooking steps');
+      });
     });
     
     group('Ingredient Extraction', () {

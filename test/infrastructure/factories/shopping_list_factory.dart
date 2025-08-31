@@ -47,6 +47,7 @@ class ShoppingListFactory {
     String unit = 'liter',
     String category = 'Mejeri',
     bool bought = false,
+    int priority = 3,
     DateTime? addedAt,
   }) {
     final now = DateTime.now();
@@ -57,6 +58,7 @@ class ShoppingListFactory {
       unit: unit,
       category: category,
       bought: bought,
+      priority: priority,
       addedAt: addedAt ?? now,
     );
   }

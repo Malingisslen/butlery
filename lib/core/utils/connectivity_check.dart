@@ -121,6 +121,7 @@ class ConnectivityCheck {
   /// - **cloudflare.com**: Secondary CDN-based validation for alternative routing
   /// - **1.1.1.1**: Cloudflare's direct IP for DNS-independent validation
   /// - **8.8.8.8**: Google's direct IP for redundant DNS-independent validation
+  /// - **9.9.9.9**: Quad9 DNS for additional DNS server diversity
   ///
   /// **Validation Features:**
   /// - **Progressive Fallback**: Tests servers sequentially until one succeeds
@@ -139,13 +140,14 @@ class ConnectivityCheck {
   /// }
   /// ```
   ///
-  /// **Performance:** O(n) - Up to 4 DNS lookups with 5-second timeout each
+  /// **Performance:** O(n) - Up to 5 DNS lookups with 5-second timeout each
   static Future<bool> hasRobustInternetConnection() async {
     final dnsServers = [
       'google.com',
       'cloudflare.com',
       '1.1.1.1',
       '8.8.8.8',
+      '9.9.9.9',
     ];
 
     for (final server in dnsServers) {
@@ -164,23 +166,60 @@ class ConnectivityCheck {
     return false;
   }
 
-  /// Validates Firebase database connectivity through repository abstraction with comprehensive error handling.
+  /// Firebase endpoints with DNS failover support for enhanced connectivity resilience.
   ///
-  /// This method performs specialized Firebase connectivity testing using the connectivity repository pattern
-  /// to ensure proper Firebase database access. It provides isolated Firebase connectivity validation
-  /// independent of general internet connectivity, enabling accurate Firebase-specific feature management.
+  /// This constant provides primary Firebase endpoints and their direct IP alternatives
+  /// to enable DNS failover when domain resolution fails. The system attempts domain
+  /// resolution first and falls back to direct IP connections if DNS fails.
   ///
-  /// Returns `true` if Firebase database connectivity is available, `false` if Firebase is unreachable
+  /// **DNS Failover Strategy:**
+  /// - **Primary**: Domain-based endpoints (firestore.googleapis.com)
+  /// - **Fallback**: Direct IP addresses for Firebase services
+  /// - **Validation**: Each endpoint tested with configurable timeout
+  static const _firebaseEndpoints = {
+    'firestore.googleapis.com': ['142.250.191.110', '172.217.16.42'],
+    'firebase.googleapis.com': ['142.250.191.106', '172.217.16.46'],
+  };
+
+  /// Enhanced DNS servers list with additional diversity for maximum resilience.
+  ///
+  /// Includes multiple DNS providers to ensure connectivity validation works across
+  /// different network conditions and regional restrictions. The diverse provider
+  /// mix ensures reliable connectivity detection globally.
+  static const _enhancedDnsServers = [
+    'google.com',
+    'cloudflare.com',
+    '1.1.1.1',      // Cloudflare DNS
+    '8.8.8.8',      // Google DNS
+    '9.9.9.9',      // Quad9 DNS
+    '208.67.222.222', // OpenDNS
+  ];
+
+  /// Validates Firebase database connectivity with DNS failover and IP fallback strategies.
+  ///
+  /// This enhanced method provides comprehensive Firebase connectivity testing using multiple
+  /// strategies including domain resolution, direct IP connections, and repository-based testing.
+  /// It implements intelligent failover to handle DNS resolution issues that cause production
+  /// connectivity problems.
+  ///
+  /// Returns `true` if Firebase database connectivity is available through any method
+  ///
+  /// **Enhanced Validation Strategy:**
+  /// - **Primary**: Repository-based Firebase connectivity testing
+  /// - **DNS Failover**: Direct domain resolution testing with multiple endpoints
+  /// - **IP Fallback**: Direct IP connection testing when DNS fails
+  /// - **Progressive Testing**: Sequential testing with early success return
   ///
   /// **Firebase Validation Features:**
   /// - **Repository Abstraction**: Uses ConnectivityRepository for testable Firebase connectivity
+  /// - **DNS Resilience**: Direct IP fallback for DNS resolution failures
   /// - **Service Integration**: Integrates with dependency injection through ServiceLocator
   /// - **Error Isolation**: Comprehensive error handling with detailed debug logging
   /// - **Feature Management**: Enables conditional Firebase-dependent feature activation
   ///
   /// **Usage Examples:**
   /// ```dart
-  /// // Check Firebase availability before database operations
+  /// // Check Firebase availability with DNS failover before database operations
   /// final firebaseOnline = await ConnectivityCheck.hasFirebaseConnectivity();
   /// if (firebaseOnline) {
   ///   await syncRecipesToFirebase();
@@ -190,48 +229,120 @@ class ConnectivityCheck {
   /// }
   /// ```
   ///
-  /// **Architecture:** Uses repository pattern for testable and flexible Firebase connectivity
+  /// **Architecture:** Uses repository pattern with DNS failover for maximum resilience
   static Future<bool> hasFirebaseConnectivity() async {
     try {
+      // First try the repository-based check (standard approach)
       final connectivityRepo = ServiceLocator.get<ConnectivityRepository>();
-      return await connectivityRepo.checkFirebaseConnection();
+      final repoResult = await connectivityRepo.checkFirebaseConnection()
+          .timeout(const Duration(seconds: 5));
+      
+      if (repoResult) {
+        return true;
+      }
+      
+      AppLogger.debug('Repository Firebase check failed, trying DNS failover');
+      
+      // If repository check fails, try DNS failover approach
+      return await _testFirebaseWithDNSFailover();
+      
     } catch (e) {
-      AppLogger.debug('Firebase connectivity test failed: $e');
-      return false;
+      AppLogger.debug('Firebase connectivity test failed, trying DNS failover: $e');
+      
+      // If repository completely fails, try DNS failover
+      return await _testFirebaseWithDNSFailover();
     }
   }
 
-  /// Performs comprehensive connectivity analysis with detailed result categorization for optimal application behavior.
+  /// Tests Firebase connectivity using DNS failover and direct IP connections.
   ///
-  /// This method executes complete connectivity validation including both internet and Firebase connectivity
-  /// testing to provide detailed connectivity status information. It enables applications to make informed
-  /// decisions about feature availability and appropriate user experience adaptations.
+  /// This internal method implements the DNS failover strategy for Firebase connectivity
+  /// testing when standard domain resolution fails. It attempts to connect to Firebase
+  /// endpoints using both domain names and direct IP addresses.
+  ///
+  /// Returns `true` if any Firebase endpoint responds successfully
+  ///
+  /// **DNS Failover Process:**
+  /// 1. **Domain Resolution**: Test firestore.googleapis.com domain resolution
+  /// 2. **Direct IP Testing**: Test direct IP addresses if domain resolution fails
+  /// 3. **Multiple Endpoints**: Test multiple Firebase service endpoints
+  /// 4. **Timeout Management**: 3-second timeout per test for responsive validation
+  static Future<bool> _testFirebaseWithDNSFailover() async {
+    // Test Firebase endpoints with DNS failover
+    for (final entry in _firebaseEndpoints.entries) {
+      final domain = entry.key;
+      final ipAddresses = entry.value;
+      
+      // First try domain resolution
+      try {
+        final result = await InternetAddress.lookup(domain)
+            .timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          AppLogger.debug('Firebase domain resolution successful: $domain');
+          return true;
+        }
+      } on SocketException catch (_) {
+        AppLogger.debug('Domain resolution failed for $domain, trying IP fallback');
+      } catch (e) {
+        AppLogger.debug('Domain test error for $domain: $e');
+      }
+      
+      // If domain fails, try direct IP addresses
+      for (final ip in ipAddresses) {
+        try {
+          final result = await InternetAddress.lookup(ip)
+              .timeout(const Duration(seconds: 3));
+          if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+            AppLogger.debug('Firebase IP connection successful: $ip');
+            return true;
+          }
+        } on SocketException catch (_) {
+          AppLogger.debug('IP connection failed: $ip');
+          continue;
+        } catch (e) {
+          AppLogger.debug('IP test error for $ip: $e');
+          continue;
+        }
+      }
+    }
+    
+    AppLogger.debug('All Firebase connectivity tests failed');
+    return false;
+  }
+
+  /// Performs comprehensive connectivity analysis with enhanced DNS resilience and detailed result categorization.
+  ///
+  /// This enhanced method executes complete connectivity validation including internet connectivity with DNS failover,
+  /// Firebase connectivity with IP fallback, and intelligent error handling. It provides detailed connectivity status
+  /// information while being resilient to DNS resolution failures that cause production issues.
   ///
   /// Returns [ConnectivityResult] with detailed connectivity status categorization
   ///
-  /// **Connectivity Analysis Process:**
-  /// 1. **Internet Validation**: Tests robust internet connectivity using multiple DNS servers
-  /// 2. **Firebase Validation**: Tests Firebase database connectivity through repository abstraction
-  /// 3. **Result Categorization**: Provides detailed connectivity status for appropriate application responses
-  /// 4. **Error Handling**: Comprehensive error handling with appropriate fallback categorization
+  /// **Enhanced Connectivity Analysis Process:**
+  /// 1. **Enhanced Internet Validation**: Tests connectivity using multiple DNS servers with extended diversity
+  /// 2. **Firebase Validation with Failover**: Tests Firebase connectivity with DNS failover and IP fallback
+  /// 3. **Intelligent Result Categorization**: Provides detailed connectivity status with degraded state support
+  /// 4. **Comprehensive Error Handling**: Graceful handling of DNS failures and network issues
   ///
   /// **Result Categories:**
   /// - **ConnectivityResult.full**: Complete internet and Firebase connectivity available
-  /// - **ConnectivityResult.limited**: Internet available but Firebase unreachable
+  /// - **ConnectivityResult.limited**: Internet available but Firebase unreachable (may be DNS issues)
+  /// - **ConnectivityResult.degraded**: Partial connectivity with DNS issues but some services reachable
   /// - **ConnectivityResult.none**: No internet connectivity detected
   /// - **ConnectivityResult.unknown**: Unable to determine connectivity due to errors
   ///
   /// **Usage Examples:**
   /// ```dart
-  /// // Comprehensive connectivity-based feature management
+  /// // Enhanced connectivity-based feature management with DNS resilience
   /// final connectivity = await ConnectivityCheck.checkConnectivity();
   /// switch (connectivity) {
   ///   case ConnectivityResult.full:
   ///     enableAllFeatures();
   ///     break;
   ///   case ConnectivityResult.limited:
+  ///   case ConnectivityResult.degraded:
   ///     enableBasicFeatures();
-  ///     disableFirebaseFeatures();
+  ///     enableOfflineQueue();
   ///     break;
   ///   case ConnectivityResult.none:
   ///     enableOfflineMode();
@@ -242,18 +353,20 @@ class ConnectivityCheck {
   /// }
   /// ```
   ///
-  /// **Performance:** Sequential validation with comprehensive error handling and logging
+  /// **Performance:** Sequential validation with DNS failover and comprehensive error handling
   static Future<ConnectivityResult> checkConnectivity() async {
     try {
-      // Check basic internet connectivity
+      // Check enhanced internet connectivity with additional DNS servers
       final hasInternet = await hasRobustInternetConnection();
       if (!hasInternet) {
         return ConnectivityResult.none;
       }
 
-      // Check Firebase connectivity
+      // Check Firebase connectivity with DNS failover
       final hasFirebase = await hasFirebaseConnectivity();
       if (!hasFirebase) {
+        // If Firebase fails but internet works, it might be DNS issues - mark as limited
+        AppLogger.warning('Internet available but Firebase unreachable - possible DNS issues');
         return ConnectivityResult.limited;
       }
 
@@ -262,6 +375,46 @@ class ConnectivityCheck {
       AppLogger.error('Connectivity check failed: $e');
       return ConnectivityResult.unknown;
     }
+  }
+
+  /// Performs enhanced DNS resolution test with multiple server fallback strategies.
+  ///
+  /// This method provides comprehensive DNS resolution testing using multiple DNS servers
+  /// and providers to ensure connectivity validation works across different network conditions.
+  /// It's designed to handle DNS-specific failures that cause production connectivity issues.
+  ///
+  /// Returns `true` if any DNS server responds successfully, `false` if all DNS tests fail
+  ///
+  /// **Enhanced DNS Strategy:**
+  /// - **Multiple Providers**: Google, Cloudflare, Quad9, OpenDNS servers
+  /// - **Mixed Resolution**: Domain names and direct IP addresses
+  /// - **Progressive Testing**: Sequential testing with early success return
+  /// - **Timeout Management**: 3-second timeout per test for responsive validation
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// // Test DNS resolution health before critical operations
+  /// final dnsHealthy = await ConnectivityCheck.hasEnhancedDNSResolution();
+  /// if (!dnsHealthy) {
+  ///   // Enable direct IP fallback strategies
+  ///   enableIPFallbackMode();
+  /// }
+  /// ```
+  static Future<bool> hasEnhancedDNSResolution() async {
+    for (final server in _enhancedDnsServers) {
+      try {
+        final result = await InternetAddress.lookup(server)
+            .timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          return true;
+        }
+      } on SocketException catch (_) {
+        continue;
+      } catch (_) {
+        continue;
+      }
+    }
+    return false;
   }
 }
 
@@ -317,6 +470,13 @@ enum ConnectivityResult {
   /// are not accessible, enabling basic online features while disabling Firebase-dependent
   /// functionality such as real-time synchronization and social features.
   limited,
+  
+  /// Partial connectivity with DNS resolution issues but some services reachable.
+  ///
+  /// This state indicates connectivity problems likely related to DNS resolution failures,
+  /// where some services may work through direct IP connections while domain-based
+  /// services fail. Enables conservative operation with enhanced error handling.
+  degraded,
   
   /// Complete connectivity with both internet and Firebase database access.
   ///

@@ -1,17 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 import '../../test_support/base_unit_test.dart';
-import '../../infrastructure/mocks/repositories/mock_analytics_repository.dart';
 import '../../infrastructure/di/test_service_locator.dart';
-
-// Mock FirebaseAnalyticsObserver
-class MockFirebaseAnalyticsObserver extends Mock implements FirebaseAnalyticsObserver {}
+import '../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('AnalyticsService', () {
@@ -31,8 +27,11 @@ void main() {
       mockRepository = MockAnalyticsRepository();
       mockObserver = MockFirebaseAnalyticsObserver();
       
-      // Set the observer on the mock repository
-      mockRepository.setObserver(mockObserver);
+      // Configure the analytics repository state
+      mockRepository.setAnalyticsState(
+        isInitialized: true,
+        isEnabled: true,
+      );
       
       // Register fallback values for mocktail
       registerFallbackValue(<String, Object>{});

@@ -1,128 +1,35 @@
-# 🎯 Work Instructions - Master Guide for Butlery Development
+# 🎯 Work Instructions - Current Session Guide
 
 ## 🚀 Quick Start for New Sessions
 
-**Just say:** "Continue work following WORK_INSTRUCTIONS.md"
+**Just say:** "Continue testing ViewModels starting with recipe_form_viewmodel.dart"
 
-### Essential Context Loading
-1. **Read this file completely** - Contains all critical patterns and current state
-2. **Check `/mnt/c/Butlery/butlery/CLAUDE.md`** - Project configuration
-3. **Review current priorities below** - Know what to work on
+> **📊 For current coverage and priorities: [/docs/testing/TESTING_DASHBOARD.md](/docs/testing/TESTING_DASHBOARD.md)**  
+> **⚡ For test patterns: [/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md](/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md)**
 
-## 📊 Current Project State (January 2025 - Priority 6 Complete)
+## 📊 Current Session State (January 2025)
 
-### Test System Status
-- **Total Tests**: 2,414 (up from 2,289)
-- **Test Files**: 95 (85 unit, 10 integration, 0 widget)
-- **Mock System**: 46 centralized mocks in `production_mocks.dart` (enhanced)
-- **Templates**: 5 test templates ready to use
-- **Analyzer Status**: ✅ Zero errors, zero warnings
+### What's Complete ✅
+- **Repositories**: 100% coverage (25/25 tested)
+- **Services**: 93.7% coverage (118/126 tested) 
+- **Documentation**: Consolidated into TESTING_DASHBOARD.md
 
-### Coverage by Layer
-| Layer | Coverage | Status | Files Tested | Total Files |
-|-------|----------|--------|--------------|-------------|
-| **Repositories** | 100% | ✅ COMPLETE | 25 | 25 |
-| **Services** | 98% | ✅ COMPLETE | 112 | 112 |
-| **ViewModels** | 9.6% | 🔴 URGENT | 5 | 52 |
-| **Widgets** | 0% | ⚠️ Not started | 0 | Many |
+### What's Next 🎯
+- **ViewModels**: Only 9.6% coverage (5/52 tested) - **CRITICAL GAP**
+- Start with: `recipe_form_viewmodel.dart`
+- Use template: `/test/templates/viewmodel_test_template.dart.template`
 
-### Recent Achievements (Priority 6)
-- **Added**: 125 new high-quality tests
-- **Enhanced/Created**: 8 service test files
-- **Coverage**: Services increased from 94.1% → 98% (COMPLETE)
-- **Fixed**: All test failures and analyzer warnings
-- **Swedish Support**: Validated in all new tests
+### Recent Achievements (This Session)
+- Created TESTING_DASHBOARD.md as single source of truth
+- Created TEST_PATTERNS_QUICK_REFERENCE.md for essential patterns
+- Removed documentation duplication across 8 files
+- Clarified actual coverage: Services 93.7%, not conflicting 31-98%
 
-## 🎯 Current Priorities (Updated January 2025)
+## ⛔ CRITICAL PATTERNS
 
-### Priority 1: ViewModel Testing (Critical Gap - 47 files untested)
-**Coverage**: Only 9.6% (5/52 tested)  
-**Target**: 50% coverage  
-**Read**: `/mnt/c/Butlery/butlery/docs/testing/VIEWMODEL_TESTING_GUIDE.md`
+See [TEST_PATTERNS_QUICK_REFERENCE.md](/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md) for all patterns.
 
-Critical ViewModels to test:
-1. `recipe_form_viewmodel.dart`
-2. `recipe_detail_viewmodel.dart`
-3. `unified_shopping_viewmodel.dart`
-4. `chat_viewmodel.dart`
-5. `import_base_viewmodel.dart`
-
-### Priority 2: Service Tests COMPLETED ✅
-**Coverage**: 98% achieved (goal reached!)  
-**Status**: All 112 services now have comprehensive test coverage
-
-Completed in Priority 6:
-1. `ShoppingListTemplates` - 90% coverage (41 tests) ✅
-2. `GroupManagementService` - Already had coverage ✅
-3. `ShareService` - 90% coverage (47 tests) ✅
-4. `WebScraperService` - 85% coverage (28 tests) ✅
-5. `PlatformDetectorService` - 80% coverage (30 tests) ✅
-6. `ExtractionManager` - 85% coverage (32 tests) ✅
-7. `CommentsService` - 90% coverage (29 tests) ✅
-8. `OfflineService` - 85% coverage (37 tests) ✅
-9. `CacheOptimizationModule` - 90% coverage (28 tests) ✅
-
-### Priority 3: Widget Testing (Not Started)
-**Coverage**: 0% (need 20+ test files)  
-**Read**: `/mnt/c/Butlery/butlery/docs/testing/WIDGET_TESTING_GUIDE.md`
-
-Critical widgets to test:
-1. Recipe creation/editing forms
-2. Shopping list UI components
-3. Social interaction widgets
-4. Navigation components
-5. Custom input fields
-
-## ⛔ CRITICAL PATTERNS - NEVER VIOLATE
-
-### 1. Configuration Over Stubbing
-```dart
-// ✅ ALWAYS USE - Configuration methods
-mockAuthService.setAuthState(userId: 'test123');
-mockRecipeService.setRecipeState(recipes: []);
-
-// ❌ NEVER USE - Stubbing concrete getters
-when(() => mockAuthService.currentUserId).thenReturn('test123');
-// This causes: "Bad state: No method stub was called from within `when()`"
-```
-
-### 2. Test Structure Pattern
-```dart
-// ✅ CORRECT - Every test must follow this
-setUp(() async {
-  await BaseUnitTest.setupUnit();  // NOT BaseTest.setup()
-  await TestServiceLocator.initialize();
-});
-
-tearDown(() async {
-  await TestServiceLocator.reset();
-  BaseUnitTest.resetMocks();
-});
-
-// ❌ WRONG - Old patterns
-tearDown(() async {
-  await BaseUnitTest.teardownUnit();  // This is for tearDownAll!
-});
-```
-
-### 3. Use Centralized Mocks
-```dart
-// ✅ CORRECT - Import from centralized location
-import '../../infrastructure/mocks/production_mocks.dart';
-
-// ❌ WRONG - Creating local mocks
-class MockAuthService extends Mock implements AuthService {}
-```
-
-### 4. Check Actual JSON Structure
-```dart
-// ✅ CORRECT - Verify structure first
-final json = recipe.toJson();
-expect(json['core']['id'], equals(recipe.core.id));
-
-// ❌ WRONG - Assuming structure
-expect(json['id'], equals(recipe.id));
-```
+**The Golden Rule**: NEVER stub concrete getters - use configuration methods!
 
 ## 🛠️ Development Workflow
 
@@ -144,23 +51,11 @@ cmd.exe /c "flutter test path/to/specific_test.dart"  # Run one test
 
 ## 📁 Key File Locations
 
-### Test Infrastructure
-- `/test/test_support/base_unit_test.dart` - Base test class
-- `/test/infrastructure/di/test_service_locator.dart` - DI for tests
-- `/test/infrastructure/mocks/production_mocks.dart` - 46 centralized mocks
-- `/test/templates/*.dart.template` - 5 test templates
-
-### Documentation
-- `/docs/testing/TEST_GUIDE.md` - Primary test reference
-- `/docs/testing/TEST_COVERAGE_AUDIT.md` - Coverage analysis
-- `/docs/testing/SERVICE_TESTING_GUIDE.md` - Service test patterns
-- `/docs/testing/VIEWMODEL_TESTING_GUIDE.md` - ViewModel patterns
-- `/docs/testing/WIDGET_TESTING_GUIDE.md` - Widget test patterns
-
-### Production Code
-- `/lib/services/` - 129 service files (98% tested) ✅
-- `/lib/viewmodels/` - 54 ViewModel files (9.3% tested) 🔴
-- `/lib/repositories/` - 47 repository files (100% tested) ✅
+### Essential References
+- **Coverage & Priorities**: `/docs/testing/TESTING_DASHBOARD.md`
+- **Pattern Quick Ref**: `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md`
+- **Templates**: `/test/templates/viewmodel_test_template.dart.template`
+- **Mocks**: `/test/infrastructure/mocks/production_mocks.dart` (46 mocks)
 
 ## 🔍 Debugging Test Failures
 
@@ -224,37 +119,3 @@ You're successful when:
 5. **Document pattern changes** - If you find a better way, update the guides
 
 ---
-
-## 🎯 Your Mission
-
-1. **Completed**: ✅ All service tests (98% coverage achieved)
-2. **Immediate**: Start ViewModel tests (47 files need testing)
-3. **This Week**: Achieve 30% ViewModel coverage
-4. **Next Week**: Begin widget testing
-5. **Goal**: Reach 80% overall test coverage
-
-**Remember**: Quality over quantity. One well-written test following all patterns is better than ten tests with violations.
-
-## 🎆 Priority 6 Accomplishments (January 2025)
-
-### Tests Added (125 total)
-- ShoppingListTemplates: 41 tests (template operations, Swedish support)
-- ShareService: 47 tests (platform sharing, social media formats)
-- WebScraperService: 28 tests (extraction, platform detection)
-- PlatformDetectorService: 30 tests (URL detection, conversions)
-- ExtractionManager: 32 tests (multi-source extraction, validation)
-- CommentsService: 29 tests (threading, moderation, real-time)
-- OfflineService: 37 tests (queue operations, sync, conflicts)
-- CacheOptimizationModule: 28 tests (LRU, TTL, performance)
-
-### Key Improvements
-- All tests follow TEST_GUIDE.md patterns strictly
-- Swedish language support validated across all services
-- Configuration-based mocking used throughout
-- Zero analyzer warnings maintained
-- All tests passing (198 tests across enhanced files)
-
----
-*Last Updated: January 2025 - Post Priority 6*
-*Session Context: All services complete, ViewModels critical*
-*Next Action: Begin ViewModel testing with recipe_form_viewmodel.dart*

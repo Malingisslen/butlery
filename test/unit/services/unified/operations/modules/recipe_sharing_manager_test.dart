@@ -3,13 +3,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('RecipeSharingManager', () {
@@ -22,6 +21,8 @@ void main() {
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(NotificationStrategy.recipeShared);
+      registerFallbackValue(NotificationAction.viewRecipe);
+      registerFallbackValue(<NotificationAction>[]);
       registerFallbackValue(Recipe(
         core: RecipeCore(
           id: 'test',
@@ -96,13 +97,14 @@ void main() {
         ),
       );
       
-      // Configure mocks
-      when(() => mockParentService.currentUserId).thenReturn('user_123');
-      when(() => mockParentService.currentUserDisplayName).thenReturn('Current User');
-      when(() => mockParentService.recipes).thenReturn([
-        testPersonalRecipe,
-        testCollaborativeRecipe,
-      ]);
+      // Configure mocks using setRecipeState method
+      mockParentService.setRecipeState(
+        currentUserId: 'user_123',
+        currentUserDisplayName: 'Current User',
+        recipes: [testPersonalRecipe, testCollaborativeRecipe],
+        isInitialized: true,
+      );
+      // No need to stub recipes - it's a concrete getter that returns the configured value
     });
     
     tearDown(() async {
@@ -142,11 +144,13 @@ void main() {
           categoryIds: any(named: 'categoryIds'),
         )).thenAnswer((_) async => 'new_collab_id');
         
-        when(() => mockNotificationService.sendBatchableNotification(
+        when(() => mockNotificationService.sendImmediateNotification(
           targetUserIds: any(named: 'targetUserIds'),
           strategy: any(named: 'strategy'),
           variables: any(named: 'variables'),
           additionalData: any(named: 'additionalData'),
+          imageUrl: any(named: 'imageUrl'),
+          actions: any(named: 'actions'),
         )).thenAnswer((_) async {});
         
         // Act
@@ -182,11 +186,13 @@ void main() {
           categoryIds: ['category_1'],
         )).called(1);
         
-        verify(() => mockNotificationService.sendBatchableNotification(
+        verify(() => mockNotificationService.sendImmediateNotification(
           targetUserIds: memberIds,
           strategy: NotificationStrategy.recipeShared,
           variables: any(named: 'variables'),
           additionalData: any(named: 'additionalData'),
+          imageUrl: any(named: 'imageUrl'),
+          actions: any(named: 'actions'),
         )).called(1);
       });
       
@@ -359,6 +365,3 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
-class MockNotificationService extends Mock implements NotificationService {}

@@ -15,8 +15,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 
 // Note: MockFirebaseAuth is now in production_mocks.dart for mocktail stubbing
 
-// Custom Mock User that extends Mock for stubbing
-class _MockUser extends Mock implements User {}
+// MockUser is now imported from production_mocks.dart
 
 void main() {
   group('FirebaseAuthRepository', () {
@@ -242,11 +241,13 @@ void main() {
       
       test('should handle requires-recent-login error', () async {
         // Arrange
-        // Create a custom mock User that extends Mock
-        final mockUser = _MockUser();
+        // Create a mock User using centralized mock
+        final mockUser = MockUser();
         
-        when(() => mockUser.uid).thenReturn('test_user');
-        when(() => mockUser.email).thenReturn('test@example.com');
+        mockUser.setUserState(
+          uid: 'test_user',
+          email: 'test@example.com',
+        );
         mockFirebaseAuth.setAuthState(currentUser: mockUser);
         when(() => mockUser.delete()).thenAnswer((_) async => throw FirebaseAuthException(
           code: 'requires-recent-login',

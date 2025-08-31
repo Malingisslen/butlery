@@ -46,6 +46,57 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
+/// Error classification enum for intelligent error handling strategies.
+///
+/// This enumeration provides detailed error classification to enable appropriate
+/// handling strategies based on the specific type of connectivity or service issue.
+/// It helps distinguish between DNS problems, network issues, and service errors.
+///
+/// **Error Categories:**
+/// - [dnsResolution] DNS resolution failures preventing domain name resolution
+/// - [networkConnectivity] Network connectivity issues affecting communication
+/// - [authentication] Authentication and permission errors
+/// - [notFound] Resource not found errors
+/// - [serviceUnavailable] Temporary service unavailability
+/// - [unknown] Unclassified errors requiring conservative handling
+enum ErrorType {
+  /// DNS resolution failures preventing domain name resolution.
+  ///
+  /// This error type indicates issues resolving domain names to IP addresses,
+  /// which can be addressed through DNS failover and direct IP connection strategies.
+  dnsResolution,
+  
+  /// Network connectivity issues affecting communication.
+  ///
+  /// This error type indicates broader network connectivity problems that may require
+  /// retry strategies, connection quality assessment, or offline mode activation.
+  networkConnectivity,
+  
+  /// Authentication and permission errors.
+  ///
+  /// This error type indicates authentication failures or insufficient permissions
+  /// that require user authentication or permission elevation.
+  authentication,
+  
+  /// Resource not found errors.
+  ///
+  /// This error type indicates that requested resources could not be found,
+  /// requiring appropriate user communication and error handling.
+  notFound,
+  
+  /// Temporary service unavailability.
+  ///
+  /// This error type indicates temporary service problems that may resolve
+  /// with retry strategies or require user notification about service status.
+  serviceUnavailable,
+  
+  /// Unclassified errors requiring conservative handling.
+  ///
+  /// This error type indicates errors that cannot be clearly classified and
+  /// require conservative error handling and user communication.
+  unknown,
+}
+
 /// Mixin providing comprehensive error handling capabilities.
 ///
 /// Consolidates common error handling patterns into reusable methods that provide
@@ -102,7 +153,7 @@ mixin ErrorHandlingMixin {
       }
       
       if (customErrorMessage != null) {
-        _handleUserError(customErrorMessage);
+        handleUserError(customErrorMessage);
       }
       
       return defaultValue;
@@ -147,7 +198,7 @@ mixin ErrorHandlingMixin {
       }
       
       if (customErrorMessage != null) {
-        _handleUserError(customErrorMessage);
+        handleUserError(customErrorMessage);
       }
       
       return defaultValue;
@@ -260,7 +311,7 @@ mixin ErrorHandlingMixin {
     final result = await safeLoadList(loadOperation, itemType);
     
     if (result.isEmpty && showEmptyMessage) {
-      _handleUserInfo(AppStrings.noItemsFound);
+      handleUserInfo(AppStrings.noItemsFound);
     }
     
     return result;
@@ -287,7 +338,7 @@ mixin ErrorHandlingMixin {
         if (attempts >= maxRetries) {
           final opName = operationName ?? 'Network operation';
           AppLogger.error('$opName failed after $maxRetries attempts: $e', stackTrace);
-          _handleUserError(AppStrings.networkError);
+          handleUserError(AppStrings.networkError);
           return defaultValue;
         }
         
@@ -313,11 +364,11 @@ mixin ErrorHandlingMixin {
       AppLogger.error('$operationName failed: $e', stackTrace);
       
       if (e.toString().toLowerCase().contains('permission')) {
-        _handleUserError(AppStrings.permissionDenied);
+        handleUserError(AppStrings.permissionDenied);
       } else if (e.toString().toLowerCase().contains('auth')) {
-        _handleUserError(AppStrings.authenticationError);
+        handleUserError(AppStrings.authenticationError);
       } else {
-        _handleUserError(AppStrings.genericError);
+        handleUserError(AppStrings.genericError);
       }
       
       return defaultValue;
@@ -335,7 +386,7 @@ mixin ErrorHandlingMixin {
     T? defaultValue,
   }) async {
     if (!validator()) {
-      _handleUserError(validationError);
+      handleUserError(validationError);
       return defaultValue;
     }
     
@@ -434,64 +485,185 @@ mixin ErrorHandlingMixin {
 
   // ===== ERROR CATEGORIZATION =====
   
-  /// Categorize and handle different error types
+  /// Categorize and handle different error types with enhanced DNS-aware error classification.
+  ///
+  /// This enhanced method provides comprehensive error categorization including DNS resolution
+  /// failures, network connectivity issues, and service-specific errors. It enables intelligent
+  /// error handling strategies based on the specific type of connectivity or service issue.
+  ///
+  /// [error] The error to categorize and handle
+  /// [operation] The operation context for logging and error reporting
+  ///
+  /// **Enhanced Error Categories:**
+  /// - DNS resolution failures with specific user messaging
+  /// - Network connectivity issues with appropriate guidance
+  /// - Authentication and permission errors
+  /// - Service-specific errors with contextual information
   void handleCategorizedError(dynamic error, String operation) {
+    final errorCategory = classifyError(error);
+    final userMessage = getUserMessageForErrorType(errorCategory);
+    
+    handleUserError(userMessage);
+    
+    // Enhanced logging with error classification
+    AppLogger.error('Categorized error in $operation [${errorCategory.name}]: $error');
+  }
+
+  /// Classifies errors into specific categories for intelligent handling.
+  ///
+  /// This method provides detailed error classification that enables appropriate
+  /// handling strategies based on the specific type of connectivity or service issue.
+  /// It's particularly useful for distinguishing DNS issues from other network problems.
+  ///
+  /// [error] The error to classify
+  ///
+  /// Returns [ErrorType] indicating the specific error category
+  ErrorType classifyError(dynamic error) {
     if (error is Exception) {
       final errorMessage = error.toString().toLowerCase();
       
-      if (errorMessage.contains('network') || errorMessage.contains('connection')) {
-        _handleUserError(AppStrings.networkError);
-      } else if (errorMessage.contains('permission') || errorMessage.contains('unauthorized')) {
-        _handleUserError(AppStrings.permissionDenied);
-      } else if (errorMessage.contains('not found')) {
-        _handleUserError(AppStrings.notFound);
-      } else if (errorMessage.contains('auth')) {
-        _handleUserError(AppStrings.authenticationError);
-      } else {
-        _handleUserError(AppStrings.genericError);
+      // DNS resolution errors (critical for production DNS issues)
+      if (errorMessage.contains('resolve') ||
+          errorMessage.contains('dns') ||
+          errorMessage.contains('host') ||
+          errorMessage.contains('address associated with hostname') ||
+          errorMessage.contains('name resolution failed')) {
+        return ErrorType.dnsResolution;
       }
-    } else {
-      _handleUserError(AppStrings.genericError);
+      
+      // Network connectivity errors
+      if (errorMessage.contains('network') || 
+          errorMessage.contains('connection') ||
+          errorMessage.contains('timeout') ||
+          errorMessage.contains('unreachable')) {
+        return ErrorType.networkConnectivity;
+      }
+      
+      // Authentication and permission errors
+      if (errorMessage.contains('permission') || 
+          errorMessage.contains('unauthorized') ||
+          errorMessage.contains('auth') ||
+          errorMessage.contains('forbidden')) {
+        return ErrorType.authentication;
+      }
+      
+      // Resource not found errors
+      if (errorMessage.contains('not found') ||
+          errorMessage.contains('404')) {
+        return ErrorType.notFound;
+      }
+      
+      // Service unavailable errors
+      if (errorMessage.contains('service unavailable') ||
+          errorMessage.contains('503') ||
+          errorMessage.contains('502') ||
+          errorMessage.contains('internal server error')) {
+        return ErrorType.serviceUnavailable;
+      }
     }
     
-    AppLogger.error('Categorized error in $operation: $error');
+    return ErrorType.unknown;
   }
 
-  // ===== ABSTRACT METHODS FOR USER FEEDBACK =====
+  /// Gets appropriate user message for specific error types.
+  ///
+  /// This method provides user-friendly error messages tailored to specific
+  /// error categories, enabling better user communication and guidance.
+  ///
+  /// [errorType] The classified error type
+  ///
+  /// Returns user-friendly error message string
+  String getUserMessageForErrorType(ErrorType errorType) {
+    switch (errorType) {
+      case ErrorType.dnsResolution:
+        return 'Anslutningsproblem upptäckts. Försöker återansluta...';
+      case ErrorType.networkConnectivity:
+        return AppStrings.networkError;
+      case ErrorType.authentication:
+        return AppStrings.authenticationError;
+      case ErrorType.notFound:
+        return AppStrings.notFound;
+      case ErrorType.serviceUnavailable:
+        return 'Tjänsten är tillfälligt otillgänglig. Försök igen senare.';
+      case ErrorType.unknown:
+        return AppStrings.genericError;
+    }
+  }
+
+  // ===== PROTECTED METHODS FOR USER FEEDBACK =====
   
-  /// Handle user-facing errors - to be implemented by mixing class
-  void _handleUserError(String message) {
+  /// Handle user-facing errors - to be overridden by mixing class
+  void handleUserError(String message) {
     // Default implementation - can be overridden
     AppLogger.error('User error: $message');
   }
   
-  /// Handle user-facing info messages - to be implemented by mixing class
-  void _handleUserInfo(String message) {
+  /// Handle user-facing info messages - to be overridden by mixing class
+  void handleUserInfo(String message) {
     // Default implementation - can be overridden
     AppLogger.info('User info: $message');
   }
   
   // ===== UTILITY METHODS =====
   
-  /// Check if error is recoverable
+  /// Check if error is recoverable with enhanced DNS-aware classification.
+  ///
+  /// This enhanced method provides comprehensive error recoverability assessment
+  /// including DNS resolution issues, network connectivity problems, and temporary
+  /// service failures. It helps determine appropriate retry strategies.
+  ///
+  /// [error] The error to assess for recoverability
+  ///
+  /// Returns `true` if the error indicates a recoverable condition
   bool isRecoverableError(dynamic error) {
-    final errorMessage = error.toString().toLowerCase();
-    return errorMessage.contains('network') || 
-           errorMessage.contains('timeout') ||
-           errorMessage.contains('connection');
+    final errorCategory = classifyError(error);
+    
+    switch (errorCategory) {
+      case ErrorType.dnsResolution:
+      case ErrorType.networkConnectivity:
+      case ErrorType.serviceUnavailable:
+        return true; // These are typically recoverable
+      case ErrorType.authentication:
+      case ErrorType.notFound:
+      case ErrorType.unknown:
+        return false; // These typically require different handling
+    }
+  }
+
+  /// Checks if error is specifically related to DNS resolution issues.
+  ///
+  /// This method provides targeted DNS error detection to enable DNS-specific
+  /// recovery strategies like IP fallback and DNS server switching.
+  ///
+  /// [error] The error to check for DNS issues
+  ///
+  /// Returns `true` if the error is related to DNS resolution
+  bool isDNSResolutionError(dynamic error) {
+    return classifyError(error) == ErrorType.dnsResolution;
+  }
+
+  /// Checks if error is related to general network connectivity.
+  ///
+  /// This method distinguishes between DNS-specific issues and broader
+  /// network connectivity problems for appropriate handling strategies.
+  ///
+  /// [error] The error to check for network issues
+  ///
+  /// Returns `true` if the error is related to network connectivity
+  bool isNetworkConnectivityError(dynamic error) {
+    return classifyError(error) == ErrorType.networkConnectivity;
   }
   
-  /// Extract user-friendly message from error
+  /// Extract user-friendly message from error with enhanced DNS-aware messaging.
+  ///
+  /// This enhanced method provides user-friendly error messages with specific
+  /// handling for DNS resolution issues and other connectivity problems.
+  ///
+  /// [error] The error to extract user message from
+  ///
+  /// Returns user-friendly error message string
   String extractUserMessage(dynamic error) {
-    if (error is Exception) {
-      final errorMessage = error.toString().toLowerCase();
-      
-      if (errorMessage.contains('network')) return AppStrings.networkError;
-      if (errorMessage.contains('permission')) return AppStrings.permissionDenied;
-      if (errorMessage.contains('not found')) return AppStrings.notFound;
-      if (errorMessage.contains('auth')) return AppStrings.authenticationError;
-    }
-    
-    return AppStrings.genericError;
+    final errorCategory = classifyError(error);
+    return getUserMessageForErrorType(errorCategory);
   }
 }

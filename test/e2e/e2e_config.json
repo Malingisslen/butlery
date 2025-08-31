@@ -1,0 +1,56 @@
+{
+  "test_configuration": {
+    "description": "Butlery E2E Test Configuration",
+    "version": "2.0.0",
+    "last_updated": "2025-08-29"
+  },
+  "test_flows": {
+    "comprehensive": {
+      "description": "Complete user journey testing (authentication, recipe creation, critical workflows)",
+      "test_file": "test/e2e/flows/comprehensive_e2e_test.dart",
+      "priority": "high",
+      "estimated_duration_seconds": {
+        "mock": 30,
+        "emulator": 60,
+        "staging": 120
+      }
+    }
+  },
+  "test_tiers": {
+    "mock": {
+      "description": "Fast UI/UX validation with mocked services",
+      "coverage_percentage": 70,
+      "firebase_services": "mocked",
+      "use_case": "Primary development testing"
+    },
+    "emulator": {
+      "description": "Firebase integration via emulator",
+      "coverage_percentage": 25,
+      "firebase_services": "emulated",
+      "requirements": ["Firebase CLI", "Firebase emulators"],
+      "use_case": "Integration validation"
+    },
+    "staging": {
+      "description": "Production-like validation",
+      "coverage_percentage": 5,
+      "firebase_services": "staging",
+      "requirements": ["Staging Firebase project", "Internet connectivity"],
+      "use_case": "Critical path validation"
+    }
+  },
+  "execution_profiles": {
+    "development": {
+      "description": "Quick development feedback",
+      "default_tier": "mock",
+      "parallel_execution": true,
+      "timeout_minutes": 5
+    },
+    "ci": {
+      "description": "Automated CI/CD validation",
+      "default_tier": "mock",
+      "include_emulator": true,
+      "parallel_execution": true,
+      "timeout_minutes": 10
+    }
+  }
+}

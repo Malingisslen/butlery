@@ -175,9 +175,11 @@ class CategoryDisplayWidgets {
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
             child: Column(
+              mainAxisSize: MainAxisSize.min, // Fix unbounded height issue
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min, // Fix unbounded width constraints in horizontal scrollable
                   children: [
                     Icon(
                       category.emoji != null ? Icons.emoji_emotions : Icons.group,
@@ -185,12 +187,11 @@ class CategoryDisplayWidgets {
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
-                    Expanded(
+                    Flexible(
                       child: Text(
                         category.name,
                         style: AppTextStyles.cardTitleStyle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        // Using Flexible instead of Expanded for horizontal scrollable context
                       ),
                     ),
                   ],
@@ -204,7 +205,7 @@ class CategoryDisplayWidgets {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const Spacer(),
+                // Removed const Spacer() to fix unbounded height issues in scrollable contexts
                 if (showMemberCount) ...[
                   const SizedBox(height: AppDimensions.spacingS),
                   Row(
@@ -251,7 +252,7 @@ class CategoryDisplayWidgets {
           return categoryCard(
             category: category,
             onTap: () => onCategoryTap(category),
-            width: 140,
+            // Removed fixed width to prevent layout constraints issues
             showDescription: false,
           );
         },

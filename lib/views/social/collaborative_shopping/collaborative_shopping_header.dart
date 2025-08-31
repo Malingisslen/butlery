@@ -165,7 +165,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       children: [
         _buildMemberCount(context),
         const SizedBox(width: AppDimensions.spacingM),
-        _buildActivitySummary(context),
+        Expanded(
+          child: _buildActivitySummary(context),
+        ),
       ],
     );
   }

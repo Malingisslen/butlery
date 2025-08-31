@@ -12,39 +12,59 @@ import 'package:butlery/views/edit_recipe/edit_recipe_dynamic_list.dart';
 
 /// Form fields for edit recipe view
 class EditRecipeFormFields {
-  
   /// Build all form fields for recipe editing
   static List<Widget> buildFormFields(
     BuildContext context,
     RecipeFormViewModel viewModel,
   ) {
     return [
-      // Meal type dropdown
-      DropdownButtonFormField<String>(
-        value: viewModel.mealType,
-        decoration: const InputDecoration(labelText: 'Måltidstyp'),
-        items: RecipeFormViewModel.mealTypes
-            .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
-            .toList(),
-        onChanged: (value) {
-          if (value != null) viewModel.setMealType(value);
-        },
+      // Meal type dropdown - Custom layout to fix text cutoff
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Måltidstyp',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4.0), // Minimal gap between label and dropdown
+          DropdownButtonFormField<String>(
+            initialValue: viewModel.mealType,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingL,
+                vertical: AppDimensions.paddingM,
+              ),
+              border: OutlineInputBorder(),
+            ),
+            style: Theme.of(context).textTheme.bodyMedium,
+            items: RecipeFormViewModel.mealTypes
+                .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) viewModel.setMealType(value);
+            },
+          ),
+        ],
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Image management
       UniversalImageManager.recipeEdit(
         imageUrls: viewModel.imageUrls,
-        userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
-        onAddImage: viewModel.addImageUrl,
         onRemoveImage: viewModel.removeImageAt,
         onSetPrimary: (index) {
           if (index < viewModel.imageUrls.length) {
-            viewModel.setPrimaryImage(viewModel.imageUrls[index]);
+            final imageUrl = viewModel.imageUrls[index];
+            viewModel.setPrimaryImage(imageUrl);
           }
         },
+        userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
         onPickImage: () => EditRecipeImagePicker.pickImage(context, viewModel),
         maxImages: 5,
+        isLoading: viewModel.isUploadingImage,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
@@ -52,6 +72,8 @@ class EditRecipeFormFields {
       TextFormField(
         initialValue: viewModel.title,
         decoration: const InputDecoration(labelText: 'Titel'),
+        style: Theme.of(context).textTheme.bodyMedium,
+        textInputAction: TextInputAction.next,
         onChanged: viewModel.setTitle,
         validator: FormValidators.combine([
           FormValidators.required('Titel'),
@@ -65,6 +87,8 @@ class EditRecipeFormFields {
         initialValue: viewModel.description,
         maxLines: 2,
         decoration: const InputDecoration(labelText: 'Beskrivning'),
+        style: Theme.of(context).textTheme.bodyMedium,
+        textInputAction: TextInputAction.next,
         onChanged: viewModel.setDescription,
         validator: FormValidators.maxLength(500, 'Beskrivning'),
       ),
@@ -73,8 +97,10 @@ class EditRecipeFormFields {
       // Portions field
       TextFormField(
         initialValue: viewModel.portions?.toString() ?? '',
+        decoration: const InputDecoration(labelText: 'Portioner'),
+        style: Theme.of(context).textTheme.bodyMedium,
         keyboardType: TextInputType.number,
-        decoration: const InputDecoration(labelText: 'Antal portioner'),
+        textInputAction: TextInputAction.next,
         onChanged: (value) => viewModel.setPortions(int.tryParse(value)),
         validator: FormValidators.portions(),
       ),
@@ -83,8 +109,10 @@ class EditRecipeFormFields {
       // Time field
       TextFormField(
         initialValue: viewModel.timeMinutes?.toString() ?? '',
+        decoration: const InputDecoration(labelText: 'Tid (min)'),
+        style: Theme.of(context).textTheme.bodyMedium,
         keyboardType: TextInputType.number,
-        decoration: const InputDecoration(labelText: 'Tid (minuter)'),
+        textInputAction: TextInputAction.next,
         onChanged: (value) => viewModel.setTimeMinutes(int.tryParse(value)),
         validator: FormValidators.cookingTime(),
       ),
@@ -97,6 +125,7 @@ class EditRecipeFormFields {
         onUpdate: viewModel.updateIngredient,
         onAdd: viewModel.addIngredient,
         onRemove: viewModel.removeIngredient,
+        context: context,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
@@ -107,6 +136,7 @@ class EditRecipeFormFields {
         onUpdate: viewModel.updateInstruction,
         onAdd: viewModel.addInstruction,
         onRemove: viewModel.removeInstruction,
+        context: context,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
@@ -117,14 +147,17 @@ class EditRecipeFormFields {
         onUpdate: viewModel.updateTag,
         onAdd: viewModel.addTag,
         onRemove: viewModel.removeTag,
+        context: context,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Rating field
       TextFormField(
         initialValue: viewModel.rating?.toString() ?? '',
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+        style: Theme.of(context).textTheme.bodyMedium,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textInputAction: TextInputAction.next,
         onChanged: (value) => viewModel.setRating(double.tryParse(value)),
         validator: FormValidators.rating(),
       ),
@@ -133,15 +166,21 @@ class EditRecipeFormFields {
       // Source URL field
       TextFormField(
         initialValue: viewModel.sourceUrl ?? '',
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           labelText: 'Källa (URL)',
-          hintText: 'https://exempel.com/recept',
-          helperText: 'Länk till originalreceptet',
-          prefixIcon: Icon(Icons.link, size: AppDimensions.iconSizeAction),
+          hintText: 'Valfritt: länk till originalreceptet',
+          helperText: viewModel.sourceUrl == 'Delad från annan app'
+              ? 'Importerat från delning'
+              : 'Länk till originalreceptet',
+          prefixIcon: const Icon(
+            Icons.link,
+            size: AppDimensions.iconSizeAction,
+          ),
         ),
+        style: Theme.of(context).textTheme.bodyMedium,
         keyboardType: TextInputType.url,
         onChanged: viewModel.setSourceUrl,
-        validator: FormValidators.url(),
+        validator: FormValidators.recipeSourceUrl(),
       ),
     ];
   }

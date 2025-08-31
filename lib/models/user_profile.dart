@@ -7,7 +7,7 @@
 ///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles user profile data and operations:
-/// - **Core Profile Data**: Complete user information including display name, email, bio, and avatar management
+/// - **Core Profile Data**: Complete user information including display name, email, and avatar management
 /// - **Social Networking**: Social features including friend counts, searchability, and discovery preferences
 /// - **Privacy Controls**: Comprehensive privacy settings with search visibility and email search permissions
 /// - **Activity Tracking**: User activity monitoring with online status, last active tracking, and membership analytics
@@ -19,7 +19,7 @@
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 ///
 /// **User Profile Features:**
-/// - **Complete Profile Management**: Full user profile with display name, bio, avatar, and contact information
+/// - **Complete Profile Management**: Full user profile with display name, avatar, and contact information
 /// - **Social Networking Integration**: Friend connections, public recipe sharing, and social discovery features
 /// - **Privacy and Security**: Granular privacy controls with search visibility and email discovery settings
 /// - **Notification System**: FCM token management with notification preferences and delivery capabilities
@@ -32,7 +32,6 @@
 ///   uid: 'user123',
 ///   displayName: 'Anna Andersson',
 ///   email: 'anna@example.com',
-///   bio: 'Matentusiast som älskar att experimentera med nya recept',
 ///   isSearchable: true,
 ///   allowEmailSearch: false,
 ///   joinedAt: DateTime.now(),
@@ -41,7 +40,6 @@
 /// 
 /// // Update profile with notification settings
 /// final updatedProfile = profile.copyWith(
-///   bio: 'Uppdaterad beskrivning',
 ///   fcmToken: newFCMToken,
 ///   fcmTokenUpdatedAt: DateTime.now(),
 ///   notificationsEnabled: true,
@@ -67,7 +65,6 @@ class UserProfile with JsonSerializableMixin {
   final String uid;
   final String displayName;
   final String email;
-  final String? bio;
   final String? avatarUrl;
   final bool isSearchable;
   final bool allowEmailSearch;
@@ -86,7 +83,6 @@ class UserProfile with JsonSerializableMixin {
     required this.uid,
     required this.displayName,
     required this.email,
-    this.bio,
     this.avatarUrl,
     this.isSearchable = true,
     this.allowEmailSearch = false,
@@ -105,7 +101,6 @@ class UserProfile with JsonSerializableMixin {
   UserProfile copyWith({
     String? displayName,
     String? email,
-    String? bio,
     String? avatarUrl,
     bool? isSearchable,
     bool? allowEmailSearch,
@@ -123,7 +118,6 @@ class UserProfile with JsonSerializableMixin {
       uid: uid,
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
-      bio: bio ?? this.bio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isSearchable: isSearchable ?? this.isSearchable,
       allowEmailSearch: allowEmailSearch ?? this.allowEmailSearch,
@@ -214,7 +208,6 @@ class UserProfile with JsonSerializableMixin {
     return {
       'displayName': displayName,
       'email': email,
-      'bio': bio,
       'avatarUrl': avatarUrl,
       'isSearchable': isSearchable,
       'allowEmailSearch': allowEmailSearch,
@@ -236,7 +229,6 @@ class UserProfile with JsonSerializableMixin {
       'uid': uid,
       'displayName': displayName,
       'email': email,
-      'bio': bio,
       'avatarUrl': avatarUrl,
       'isSearchable': isSearchable,
       'allowEmailSearch': allowEmailSearch,
@@ -258,7 +250,6 @@ class UserProfile with JsonSerializableMixin {
       uid: uid,
       displayName: data['displayName'] as String? ?? '',
       email: data['email'] as String? ?? '',
-      bio: data['bio'] as String?,
       avatarUrl: data['avatarUrl'] as String?,
       isSearchable: data['isSearchable'] as bool? ?? true,
       allowEmailSearch: data['allowEmailSearch'] as bool? ?? false,
@@ -288,7 +279,6 @@ class UserProfile with JsonSerializableMixin {
       uid: json['uid'] as String,
       displayName: json['displayName'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      bio: json['bio'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       isSearchable: json['isSearchable'] as bool? ?? true,
       allowEmailSearch: json['allowEmailSearch'] as bool? ?? false,

@@ -324,6 +324,8 @@ class WebScraper {
         return _extractFacebook(controller);
       case pd.SourcePlatform.tiktok:
         return _extractTikTok(controller);
+      case pd.SourcePlatform.recipesite:
+        return _extractRecipeSite(controller);
       default:
         return _extractGeneric(controller);
     }
@@ -347,6 +349,28 @@ class WebScraper {
       'h1[data-e2e="browse-video-desc"]',
       'span[data-e2e="video-desc"]',
       'meta[property="og:description"]',
+    ],
+    pd.SourcePlatform.recipesite: [
+      // Recipe structured data (JSON-LD and microdata)
+      'script[type="application/ld+json"]',
+      '[itemtype*="Recipe"]',
+      '[itemscope][itemtype*="Recipe"]',
+      
+      // Common recipe content selectors
+      '.recipe-content, .recipe-details, .recipe-instructions',
+      '.recipe-ingredients, .ingredients-list',
+      '.recipe-method, .method-list',
+      'article.recipe, section.recipe',
+      '.entry-content',
+      
+      // ICA-specific selectors
+      '.recipe-description, .recipe-intro',
+      '.ingredient-list li, .ingredients li',
+      '.instruction-list li, .instructions li',
+      
+      // Generic content areas
+      'main, article, [role="main"]',
+      '.content, .main-content',
     ],
   };
 
@@ -553,6 +577,177 @@ class WebScraper {
     }
 
     return null;
+  }
+
+  /// Recipe site-specific extraction with structured data parsing
+  Future<String?> _extractRecipeSite(InAppWebViewController controller) async {
+    if (_isDisposed) return null;
+
+    debugPrint('🍽️ Extracting from recipe site...');
+
+    try {
+      // First, try to extract structured recipe data (JSON-LD)
+      final jsonLdResult = await controller.evaluateJavascript(
+        source: '''
+        (function() {
+          try {
+            const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+            for (const script of scripts) {
+              const data = JSON.parse(script.textContent);
+              
+              // Handle single recipe or array of recipes
+              const recipes = Array.isArray(data) ? data : [data];
+              
+              for (const item of recipes) {
+                if (item['@type'] === 'Recipe' || (item['@graph'] && item['@graph'].some(g => g['@type'] === 'Recipe'))) {
+                  const recipe = item['@type'] === 'Recipe' ? item : item['@graph'].find(g => g['@type'] === 'Recipe');
+                  
+                  let recipeText = '';
+                  
+                  if (recipe.name) recipeText += recipe.name + '\\n\\n';
+                  if (recipe.description) recipeText += recipe.description + '\\n\\n';
+                  
+                  if (recipe.recipeIngredient) {
+                    recipeText += 'Ingredienser:\\n';
+                    recipe.recipeIngredient.forEach(ing => recipeText += '- ' + ing + '\\n');
+                    recipeText += '\\n';
+                  }
+                  
+                  if (recipe.recipeInstructions) {
+                    recipeText += 'Instruktioner:\\n';
+                    recipe.recipeInstructions.forEach((inst, i) => {
+                      const text = typeof inst === 'string' ? inst : inst.text;
+                      recipeText += (i + 1) + '. ' + text + '\\n';
+                    });
+                    recipeText += '\\n';
+                  }
+                  
+                  if (recipe.nutrition && recipe.nutrition.calories) {
+                    recipeText += 'Kalorier: ' + recipe.nutrition.calories + '\\n';
+                  }
+                  
+                  if (recipe.totalTime || recipe.prepTime || recipe.cookTime) {
+                    recipeText += 'Tid: ';
+                    if (recipe.totalTime) recipeText += 'Total: ' + recipe.totalTime + ' ';
+                    if (recipe.prepTime) recipeText += 'Förberedelse: ' + recipe.prepTime + ' ';
+                    if (recipe.cookTime) recipeText += 'Tillagning: ' + recipe.cookTime;
+                    recipeText += '\\n';
+                  }
+                  
+                  if (recipe.recipeYield) {
+                    recipeText += 'Portioner: ' + recipe.recipeYield + '\\n';
+                  }
+                  
+                  return recipeText.trim();
+                }
+              }
+            }
+            return null;
+          } catch (e) {
+            console.error('JSON-LD parsing error:', e);
+            return null;
+          }
+        })()
+        ''',
+      );
+
+      if (jsonLdResult != null && jsonLdResult.toString().isNotEmpty && jsonLdResult.toString() != 'null') {
+        debugPrint('✅ Recipe structured data found!');
+        return jsonLdResult.toString();
+      }
+
+      // Fallback to microdata extraction
+      final microdataResult = await controller.evaluateJavascript(
+        source: '''
+        (function() {
+          try {
+            const recipeElement = document.querySelector('[itemtype*="Recipe"]');
+            if (!recipeElement) return null;
+            
+            let recipeText = '';
+            
+            const name = recipeElement.querySelector('[itemprop="name"]');
+            if (name) recipeText += name.textContent.trim() + '\\n\\n';
+            
+            const description = recipeElement.querySelector('[itemprop="description"]');
+            if (description) recipeText += description.textContent.trim() + '\\n\\n';
+            
+            const ingredients = recipeElement.querySelectorAll('[itemprop="recipeIngredient"]');
+            if (ingredients.length > 0) {
+              recipeText += 'Ingredienser:\\n';
+              ingredients.forEach(ing => recipeText += '- ' + ing.textContent.trim() + '\\n');
+              recipeText += '\\n';
+            }
+            
+            const instructions = recipeElement.querySelectorAll('[itemprop="recipeInstructions"]');
+            if (instructions.length > 0) {
+              recipeText += 'Instruktioner:\\n';
+              instructions.forEach((inst, i) => {
+                recipeText += (i + 1) + '. ' + inst.textContent.trim() + '\\n';
+              });
+              recipeText += '\\n';
+            }
+            
+            return recipeText.trim() || null;
+          } catch (e) {
+            console.error('Microdata parsing error:', e);
+            return null;
+          }
+        })()
+        ''',
+      );
+
+      if (microdataResult != null && microdataResult.toString().isNotEmpty && microdataResult.toString() != 'null') {
+        debugPrint('✅ Recipe microdata found!');
+        return microdataResult.toString();
+      }
+
+      // Final fallback to content-based extraction
+      final selectors = _platformSelectors[pd.SourcePlatform.recipesite] ?? [];
+      
+      for (final selector in selectors.skip(3)) { // Skip structured data selectors
+        if (_isDisposed) break;
+
+        final result = await controller.evaluateJavascript(
+          source: '''
+          (function() {
+            try {
+              const element = document.querySelector('$selector');
+              if (element) {
+                // Filter out common non-recipe content
+                const text = element.innerText || element.textContent || '';
+                if (text.length > 300 && 
+                    !text.includes('cookie') && 
+                    !text.includes('gdpr') &&
+                    !text.includes('OneTrust') &&
+                    !text.includes('window.') &&
+                    (text.toLowerCase().includes('ingrediens') || 
+                     text.toLowerCase().includes('ingredient') ||
+                     text.toLowerCase().includes('recept') ||
+                     text.toLowerCase().includes('recipe'))) {
+                  return text;
+                }
+              }
+              return null;
+            } catch (e) {
+              return null;
+            }
+          })()
+          ''',
+        );
+
+        if (result != null && result.toString().isNotEmpty && result.toString() != 'null') {
+          debugPrint('✅ Recipe content found with selector: $selector');
+          return result.toString();
+        }
+      }
+
+      debugPrint('⚠️ No recipe content found');
+      return null;
+    } catch (e) {
+      debugPrint('❌ Recipe site extraction error: $e');
+      return null;
+    }
   }
 
   /// Generic extraction for other pages

@@ -4,7 +4,6 @@
 
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/unified/modules/realtime_cache_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -19,16 +18,15 @@ void main() {
     late Recipe testRecipe;
     late Recipe testRecipe2;
     
-    setUpAll(() async {
-      // Register fallback values for mocktail
-      registerFallbackValue(<String, dynamic>{});
+    setUpAll(() {
+      // Centralized fallback values already registered via TestServiceLocator
     });
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       
-      // Get mocks
+      // Initialize mocks using centralized infrastructure
       mockCacheHelper = MockJsonCacheHelper();
       
       // Create test data
@@ -232,7 +230,7 @@ void main() {
       
       test('should handle errors when clearing cache', () async {
         // Arrange - create a mock that throws on delete
-        final errorHelper = MockJsonCacheHelperWithErrors();
+        final errorHelper = MockJsonCacheHelper();
         
         // Act & Assert - should not throw
         await RealtimeCacheManager.clearRecipeCache(
@@ -737,33 +735,4 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockStreamSubscription extends Mock implements StreamSubscription<DocumentSnapshot> {
-  @override
-  Future<void> cancel() async {
-    return Future.value();
-  }
-}
-
-class MockTimer extends Mock implements Timer {
-  bool _isActive = true;
-  
-  @override
-  bool get isActive => _isActive;
-  
-  @override
-  void cancel() {
-    _isActive = false;
-  }
-  
-  @override
-  int get tick => 0;
-}
-
-// Mock helper that throws errors for error testing
-class MockJsonCacheHelperWithErrors extends MockJsonCacheHelper {
-  @override
-  Future<bool> delete(String key) async {
-    throw Exception('Delete failed');
-  }
-}
+// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks

@@ -447,5 +447,84 @@ void main() {
         verify(() => mockParent.updateRecipe(testRecipe)).called(1);
       });
     });
+
+    group('Edge Cases', () {
+      test('should handle empty batch import', () async {
+        // Act
+        final result = await operations.addMultipleUnifiedRecipes([]);
+        
+        // Assert
+        expect(result.isSuccess, isTrue);
+        expect(result.message, equals('Alla 0 recept importerade'));
+      });
+      
+      test('should handle recipe with minimal data', () async {
+        // Arrange
+        final minimalRecipe = RecipeBuilder()
+          .withTitle('Simple Recipe')
+          .withDescription('')
+          .withIngredients([])
+          .withInstructions([])
+          .build();
+        
+        when(() => mockParent.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+        )).thenAnswer((_) async => 'recipe-id');
+        
+        // Act
+        final result = await operations.addUnifiedRecipe(minimalRecipe);
+        
+        // Assert
+        expect(result.isSuccess, isTrue);
+      });
+      
+      test('should handle special characters in recipe content', () async {
+        // Arrange
+        final specialRecipe = RecipeBuilder()
+          .withTitle('Räksmörgås & lax')
+          .withDescription('En "klassisk" rätt med <special> tecken')
+          .withIngredients(['100g räkor & lax', '1 msk "majonnäs"'])
+          .build();
+        
+        when(() => mockParent.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+        )).thenAnswer((_) async => 'recipe-id');
+        
+        // Act
+        final result = await operations.addUnifiedRecipe(specialRecipe);
+        
+        // Assert
+        expect(result.isSuccess, isTrue);
+      });
+      
+      test('should handle add recipe exception', () async {
+        // Arrange
+        when(() => mockParent.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+        )).thenThrow(Exception('Database error'));
+        
+        // Act
+        final result = await operations.addUnifiedRecipe(testRecipe);
+        
+        // Assert
+        expect(result.isSuccess, isFalse);
+        expect(result.message, contains('Database error'));
+      });
+    });
   });
 }

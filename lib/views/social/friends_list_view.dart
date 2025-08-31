@@ -217,9 +217,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       icon: Badge(
                         isLabelVisible: viewModel.incomingRequests.isNotEmpty,
                         label: Text('${viewModel.incomingRequests.length}'),
-                        child: const Icon(Icons.person_add),
+                        child: const Icon(Icons.search),
                       ),
-                      text: 'Förfrågningar',
+                      text: 'Hitta Vänner',
                     ),
                   ],
                 ),
@@ -258,22 +258,22 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 const SizedBox(height: AppDimensions.spacingL),
               ],
 
-              // Search functionality in both friends and groups tabs
-              if (_currentTabIndex == 0)
-                SearchFilterWidget.searchOnly(
-                  searchQuery: _searchQuery,
-                  onSearchChanged: _onSearchChanged,
-                  searchHint: 'Sök efter vänner...',
-                  autofocus: false,
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
-                  showStats: true,
-                  resultCount: viewModel.searchResults.length,
-                ),
+              // Search functionality for groups and friend discovery tabs
               if (_currentTabIndex == 1)
                 SearchFilterWidget.searchOnly(
                   searchQuery: _searchQuery,
                   onSearchChanged: _onSearchChanged,
                   searchHint: 'Sök efter grupper...',
+                  autofocus: false,
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  showStats: true,
+                  resultCount: viewModel.searchResults.length,
+                ),
+              if (_currentTabIndex == 2)
+                SearchFilterWidget.searchOnly(
+                  searchQuery: _searchQuery,
+                  onSearchChanged: _onSearchChanged,
+                  searchHint: 'Sök efter nya vänner...',
                   autofocus: false,
                   padding: const EdgeInsets.all(AppDimensions.spacingL),
                   showStats: true,
@@ -287,7 +287,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   children: [
                     _buildFriendsTab(viewModel), // Vänner
                     _buildGroupsTab(friendsService), // Grupper (with search)
-                    _buildRequestsTab(viewModel), // Förfrågningar
+                    _buildDiscoveryTab(viewModel), // Hitta Vänner
                   ],
                 ),
               ),
@@ -319,14 +319,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
-    // Friends tab with search functionality
-    return _searchQuery.isEmpty 
-        ? FriendsTab.build(context, viewModel)
-        : SearchTab.build(context, viewModel, _searchQuery, isGroupsSearch: false);
+    // Clean friends tab - existing friends only, no search
+    return FriendsTab.build(context, viewModel);
   }
 
-  Widget _buildRequestsTab(FriendsViewModel viewModel) {
-    return RequestsTab.build(context, viewModel);
+  Widget _buildDiscoveryTab(FriendsViewModel viewModel) {
+    // Friend discovery hub with search and requests
+    return _searchQuery.isEmpty 
+        ? RequestsTab.build(context, viewModel)
+        : SearchTab.build(context, viewModel, _searchQuery, isGroupsSearch: false);
   }
 
   Widget _buildGroupsTab(UnifiedFriendsService friendsService) {

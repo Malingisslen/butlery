@@ -37,10 +37,6 @@ class ContentStage implements BootstrapStage {
 
   @override
   Future<void> execute() async {
-    if (kDebugMode) {
-      debugPrint('🚀 [ContentStage] Starting content services initialization...');
-    }
-
     try {
       // Content module initialization is handled by the DI container
       // This stage can perform any additional content-specific setup
@@ -49,7 +45,7 @@ class ContentStage implements BootstrapStage {
       await Future.delayed(const Duration(milliseconds: 200));
       
       if (kDebugMode) {
-        debugPrint('✅ [ContentStage] Content services initialization complete');
+        debugPrint('✅ [ContentStage] Content services ready');
       }
     } catch (e) {
       throw BootstrapException(
@@ -66,10 +62,6 @@ class ContentStage implements BootstrapStage {
     try {
       // Validation is primarily handled by the DI container's health checks
       // This stage confirms content services are ready
-      
-      if (kDebugMode) {
-        debugPrint('✅ [ContentStage] Validation passed');
-      }
       
       return true;
     } catch (e) {

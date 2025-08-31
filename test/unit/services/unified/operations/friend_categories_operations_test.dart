@@ -4,11 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -101,23 +99,17 @@ void main() {
         lastActiveAt: DateTime.now(),
       );
 
-      // Configure parent service mock
-      when(() => mockParentService.currentUserId).thenReturn('user_123');
-      when(() => mockParentService.categoriesList)
-          .thenReturn([testCategory1, testCategory2]);
-      when(() => mockParentService.friendsList)
-          .thenReturn([testFriend1, testFriend2]);
-      when(() => mockParentService.management).thenReturn(mockManagement);
-      when(() => mockParentService.friendCategoryRelationshipsInternal)
-          .thenReturn({
-        'friend_1': {'category_1'},
-        'friend_2': {'category_2'},
-      });
+      // Configure parent service mock using configuration methods
+      mockParentService.setFriendsState(
+        friends: [testFriend1, testFriend2],
+        categoriesList: [testCategory1, testCategory2],
+        management: mockManagement,
+      );
 
-      // Configure management mock
-      when(() => mockManagement.isFriend('friend_1')).thenReturn(true);
-      when(() => mockManagement.isFriend('friend_2')).thenReturn(true);
-      when(() => mockManagement.isFriend('friend_3')).thenReturn(false);
+      // Configure management mock using configuration methods
+      mockManagement.setManagementState(
+        friends: [testFriend1, testFriend2],
+      );
 
       // Configure permission service mock
       mockPermissionService.setPermissionState(
@@ -133,8 +125,7 @@ void main() {
           // Simulate adding the category to the list
           final category = invocation.positionalArguments[0] as FriendCategory;
           final currentList = mockParentService.categoriesList;
-          when(() => mockParentService.categoriesList)
-              .thenReturn([...currentList, category]);
+          mockParentService.updateCategoriesList([...currentList, category]);
           return;
         },
       );
@@ -166,7 +157,7 @@ void main() {
     group('Category CRUD Operations', () {
       test('should create category successfully', () async {
         // Arrange
-        when(() => mockParentService.categoriesList).thenReturn([]);
+        mockParentService.updateCategoriesList([]);
 
         // Act
         final categoryId = await operations.createCategory(
@@ -267,7 +258,9 @@ void main() {
     group('Category Membership Operations', () {
       test('should add friend to category', () async {
         // Arrange
-        when(() => mockManagement.isFriend('friend_2')).thenReturn(true);
+        mockManagement.setManagementState(
+          friends: [],
+        );
 
         // Act
         final result =
@@ -332,8 +325,9 @@ void main() {
     group('Bulk Operations', () {
       test('should add multiple friends to category', () async {
         // Arrange
-        when(() => mockManagement.isFriend('friend_2')).thenReturn(true);
-        when(() => mockManagement.isFriend('friend_3')).thenReturn(false);
+        mockManagement.setManagementState(
+          friends: [],
+        );
 
         // Act
         final results = await operations.addMultipleFriendsToCategory(
@@ -361,10 +355,10 @@ void main() {
       test('should create category with initial friends', () async {
         // Arrange
         final initialCategories = <FriendCategory>[];
-        when(() => mockParentService.categoriesList)
-            .thenReturn(initialCategories);
-        when(() => mockManagement.isFriend('friend_1')).thenReturn(true);
-        when(() => mockManagement.isFriend('friend_2')).thenReturn(true);
+        mockParentService.updateCategoriesList(initialCategories);
+        mockManagement.setManagementState(
+          friends: [],
+        );
 
         // Mock the addCategoryInternal to actually add the category
         when(() => mockParentService.addCategoryInternal(any())).thenAnswer(
@@ -372,8 +366,7 @@ void main() {
             final category =
                 invocation.positionalArguments[0] as FriendCategory;
             initialCategories.add(category);
-            when(() => mockParentService.categoriesList)
-                .thenReturn(initialCategories);
+            mockParentService.updateCategoriesList(initialCategories);
             return;
           },
         );
@@ -454,8 +447,7 @@ void main() {
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         );
-        when(() => mockParentService.friendsList)
-            .thenReturn([testFriend1, testFriend2, friend3]);
+        mockParentService.updateFriendsList([testFriend1, testFriend2, friend3]);
 
         // Act
         final uncategorized = operations.getUncategorizedFriends();
@@ -493,7 +485,7 @@ void main() {
           updatedAt: DateTime.now(),
           friendUserIds: [], // memberIds is a getter that returns friendUserIds
         );
-        when(() => mockParentService.categoriesList).thenReturn([
+        mockParentService.updateCategoriesList([
           emptyCategory,
           testCategory1
         ]); // Include testCategory1 for second assertion
@@ -538,7 +530,9 @@ void main() {
 
       test('should assign friend to category', () async {
         // Arrange
-        when(() => mockManagement.isFriend('friend_2')).thenReturn(true);
+        mockManagement.setManagementState(
+          friends: [],
+        );
 
         // Act
         final result =
@@ -546,6 +540,14 @@ void main() {
 
         // Assert
         expect(result, isTrue);
+      });
+
+      test('should not add friend to non-existent category', () async {
+        // Act
+        final result = await operations.assignFriendToCategory('friend_1', 'invalid_category');
+        
+        // Assert
+        expect(result, isFalse);
       });
 
       test('should refresh data', () async {
@@ -557,10 +559,4 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {}
-
-// Using MockPermissionService from production_mocks.dart
-
-class MockFriendsManagementOperations extends Mock
-    implements FriendsManagementOperations {}
+// All mocks are now imported from production_mocks.dart

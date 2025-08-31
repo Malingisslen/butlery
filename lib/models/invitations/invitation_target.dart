@@ -46,7 +46,7 @@
 /// // Individual target operations
 /// final target = InvitationTarget.individual(user);
 /// print(target.displayEmoji); // 👤
-/// print(target.subtitle); // "Butlery-användare" or bio
+/// print(target.subtitle); // "Butlery-användare"
 /// print(target.allUserIds); // [userId]
 /// ```
 
@@ -117,7 +117,7 @@ class InvitationTarget {
   /// Flexible metadata container for target-specific information and UI optimization.
   ///
   /// Stores additional target information including:
-  /// - For individuals: bio, isSearchable, friendsCount, memberSince
+  /// - For individuals: isSearchable, friendsCount, memberSince
   /// - For groups: description, createdAt, ownerId
   /// Used for enhanced UI display and target filtering capabilities.
   final Map<String, dynamic>? metadata;
@@ -150,13 +150,13 @@ class InvitationTarget {
   /// Creates an individual user target with comprehensive user metadata.
   ///
   /// This factory provides streamlined creation for individual user targets with automatic
-  /// metadata extraction from UserProfile including bio, searchability, friend count, and
+  /// metadata extraction from UserProfile including searchability, friend count, and
   /// membership information for enhanced UI display and filtering capabilities.
   ///
   /// [user] Required UserProfile containing complete user information for target creation
   ///
   /// Returns a new [InvitationTarget] configured for individual user invitations with
-  /// comprehensive metadata including bio, searchability status, and social information.
+  /// comprehensive metadata including searchability status, and social information.
   factory InvitationTarget.individual(UserProfile user) {
     return InvitationTarget(
       type: InvitationTargetType.individual,
@@ -166,7 +166,6 @@ class InvitationTarget {
       memberCount: null,
       memberIds: null,
       metadata: {
-        'bio': user.bio,
         'isSearchable': user.isSearchable,
         'friendsCount': user.friendsCount,
         'memberSince': user.memberSinceText,
@@ -234,28 +233,27 @@ class InvitationTarget {
   /// Gets the descriptive text for target information display.
   ///
   /// For group targets: returns Swedish-localized member count (e.g., "3 medlemmar").
-  /// For individual targets: returns user bio text or empty string if unavailable.
+  /// For individual targets: returns empty string.
   /// Used for secondary information display in target selection interfaces.
   String get description {
     if (isGroup) {
       final count = memberCount ?? 0;
       return '$count medlem${count != 1 ? 'mar' : ''}';
     } else {
-      return metadata?['bio'] as String? ?? '';
+      return '';
     }
   }
 
   /// Gets the subtitle text for ListTile widget display optimization.
   ///
   /// For group targets: returns the description with member count information.
-  /// For individual targets: returns bio if available, otherwise "Butlery-användare".
+  /// For individual targets: returns fallback text for user.
   /// Optimized for UI display with appropriate fallback text for enhanced user experience.
   String get subtitle {
     if (isGroup) {
       return description;
     } else {
-      final bio = metadata?['bio'] as String?;
-      return bio?.isNotEmpty == true ? bio! : 'Butlery-användare';
+      return 'Butlery-användare';
     }
   }
 
@@ -291,13 +289,6 @@ class InvitationTarget {
     }
   }
 
-  /// Gets the bio text from metadata for individual user targets.
-  ///
-  /// Extracts bio information from metadata for individual users, returning
-  /// empty string if bio is not available. Used for user information display.
-  String get bioText {
-    return metadata?['bio'] as String? ?? '';
-  }
 
   /// Gets the creation date from metadata for group targets.
   ///
@@ -647,7 +638,7 @@ class InvitationTarget {
   /// Filters invitation targets based on search text with comprehensive matching.
   ///
   /// Performs multi-field search including display names, descriptions, and metadata.
-  /// For groups: searches in group descriptions. For individuals: searches in bio text.
+  /// For groups: searches in group descriptions. For individuals: searches in display name.
   /// Implements case-insensitive matching for optimal search user experience.
   ///
   /// [targets] List of invitation targets to filter
@@ -668,7 +659,7 @@ class InvitationTarget {
         return true;
       }
 
-      // Sök i beskrivning/bio
+      // Sök i beskrivning
       if (target.description.toLowerCase().contains(query)) {
         return true;
       }

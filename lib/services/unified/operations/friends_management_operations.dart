@@ -165,7 +165,7 @@ class FriendsManagementOperations extends BaseService {
 
         // Send notification to recipient
         final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
-        await _sendFriendRequestNotification(request, currentUserDisplayName!, recipientDisplayName);
+        await _sendFriendRequestNotification(request, currentUserDisplayName ?? 'Unknown User', recipientDisplayName);
 
         return true;
       },
@@ -202,7 +202,6 @@ class FriendsManagementOperations extends BaseService {
           displayName: 'User ${request.fromUserId.substring(0, 6)}...', // Would be fetched from user profile
           email: '', // Would be fetched from user profile
           avatarUrl: null, // Would be fetched from user profile
-          bio: null,
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         );

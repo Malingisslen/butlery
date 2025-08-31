@@ -226,7 +226,13 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     Text(category.emoji!),
                     const SizedBox(width: AppDimensions.spacingXs),
                   ],
-                  Text(category.name),
+                  Flexible(
+                    child: Text(
+                      category.name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -299,15 +305,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        Container(
-          height: 240,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
+        SizedBox(
+          height: 320, // Increased from 240 to accommodate 5 friends (5 × ~64px)
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          child: friends.isEmpty
+            child: friends.isEmpty
               ? StateWidget.empty(
                   title: 'Inga vänner att visa',
                   subtitle: 'Lägg till vänner först',
@@ -341,14 +348,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                                 : FontWeight.normal,
                           ),
                         ),
-                        subtitle: friend.bio != null && friend.bio!.isNotEmpty
-                            ? Text(
-                                friend.bio!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              )
-                            : null,
+                        subtitle: null,
                         dense: true,
                         controlAffinity: ListTileControlAffinity.trailing,
                         contentPadding: const EdgeInsets.symmetric(
@@ -361,6 +361,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     );
                   },
                 ),
+          ),
         ),
       ],
     );

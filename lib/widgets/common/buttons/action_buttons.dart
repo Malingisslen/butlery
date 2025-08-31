@@ -160,7 +160,10 @@ class ActionButtons {
     final Widget button = SizedBox(
       height: height,
       child: ElevatedButton.icon(
-        onPressed: isLoading ? null : onPressed,
+        onPressed: isLoading ? null : () {
+          // Button pressed - debug logging removed for production
+          onPressed();
+        },
         icon: isLoading
             ? const SizedBox(
                 width: 24,

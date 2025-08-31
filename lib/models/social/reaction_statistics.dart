@@ -95,6 +95,13 @@ class ReactionStatistics {
     final countsData = data['reactionCounts'] as Map<String, dynamic>? ?? {};
     for (final entry in countsData.entries) {
       try {
+        // Check if this is a valid reaction type key
+        final validKey = ReactionType.values.any((type) => type.key == entry.key);
+        if (!validKey) {
+          // Skip invalid reaction types for forward compatibility
+          continue;
+        }
+        
         final reactionType = ReactionType.fromKey(entry.key);
         final count = entry.value as int? ?? 0;
         if (count > 0) {

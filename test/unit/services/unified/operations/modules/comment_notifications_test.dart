@@ -3,12 +3,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/comment_notifications.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import '../../../../../test_support/base_unit_test.dart';
+import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('CommentNotifications', () {
@@ -365,5 +365,3 @@ void main() {
   });
 }
 
-// Mock classes for testing
-class MockNotificationService extends Mock implements NotificationService {}
