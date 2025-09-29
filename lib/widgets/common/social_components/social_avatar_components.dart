@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social avatar and user display components
@@ -272,7 +273,7 @@ class SocialAvatarComponents {
     return Row(
       children: [
         ...users.map((user) => Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
           child: avatar(
             user: user,
             size: avatarSize,
@@ -284,7 +285,7 @@ class SocialAvatarComponents {
         if (remainingCount > 0 && moreUsersText != null)
           Text(
             moreUsersText.replaceAll('{count}', remainingCount.toString()),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
           ),
       ],
     );
@@ -299,7 +300,7 @@ class SocialAvatarComponents {
   ) {
     return Column(
       children: users.map((user) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
+        padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
         child: userListTile(
           user: user,
           onTap: onUserTap != null ? () => onUserTap(user) : null,
@@ -323,7 +324,7 @@ class SocialAvatarComponents {
       height: _getSizeValue(size),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: backgroundColor ?? Colors.grey[200],
+        color: backgroundColor ?? AppColors.textMedium200,
       ),
       child: const CircularProgressIndicator(),
     );
@@ -362,12 +363,12 @@ class SocialAvatarComponents {
       height: _getSizeValue(size),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: backgroundColor ?? Colors.grey[300],
+        color: backgroundColor ?? AppColors.textMedium300,
       ),
       child: Icon(
         icon,
         size: _getSizeValue(size) * 0.6,
-        color: iconColor ?? Colors.grey[600],
+        color: iconColor ?? AppColors.textMedium600,
       ),
     );
   }

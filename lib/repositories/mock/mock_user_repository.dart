@@ -90,4 +90,26 @@ class MockUserRepository extends InMemoryRepository<UserProfile>
     // Mock implementation - no-op for testing
     return;
   }
+
+  @override
+  Future<void> incrementPublicRecipeCount(String userId) async {
+    // Mock implementation - increment the counter in the mock profile
+    final profile = items[userId];
+    if (profile != null) {
+      items[userId] = profile.copyWith(
+        publicRecipeCount: profile.publicRecipeCount + 1,
+      );
+    }
+  }
+
+  @override
+  Future<void> decrementPublicRecipeCount(String userId) async {
+    // Mock implementation - decrement the counter in the mock profile
+    final profile = items[userId];
+    if (profile != null) {
+      items[userId] = profile.copyWith(
+        publicRecipeCount: (profile.publicRecipeCount - 1).clamp(0, double.infinity).toInt(),
+      );
+    }
+  }
 }

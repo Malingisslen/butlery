@@ -202,7 +202,7 @@ class _ReactionPickerState extends State<ReactionPicker>
     return GestureDetector(
       onTap: _collapsePicker,
       child: ColoredBox(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: Stack(
           children: [
             _buildReactionOverlay(),
@@ -225,7 +225,7 @@ class _ReactionPickerState extends State<ReactionPicker>
       left: _calculateLeft(position, size, reactions.length),
       top: _calculateTop(position, size),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: AnimatedBuilder(
           animation: _expandAnimation,
           builder: (context, child) {
@@ -247,7 +247,7 @@ class _ReactionPickerState extends State<ReactionPicker>
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingS,
-        vertical: 4.0,
+        vertical: AppDimensions.spacingXxs,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -287,12 +287,12 @@ class _ReactionPickerState extends State<ReactionPicker>
           child: Transform.scale(
             scale: isSelected ? 1.0 : (1.0 - _scaleAnimation.value * 0.1),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXxs),
               padding: const EdgeInsets.all(AppDimensions.paddingS),
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppColors.primary.withValues(alpha: 0.1)
-                    : Colors.transparent,
+                    : AppColors.transparent,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusM),
               ),
               child: Column(
@@ -308,7 +308,7 @@ class _ReactionPickerState extends State<ReactionPicker>
                   
                   // Reaction label (if enabled)
                   if (widget.showLabels) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppDimensions.spacingXxs),
                     Text(
                       reaction.displayName,
                       style: AppTextStyles.captionText.copyWith(
@@ -418,7 +418,7 @@ class _ReactionPickerState extends State<ReactionPicker>
         decoration: BoxDecoration(
           color: widget.currentReaction != null
               ? AppColors.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
+              : AppColors.transparent,
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
           border: Border.all(
             color: widget.currentReaction != null
@@ -434,7 +434,7 @@ class _ReactionPickerState extends State<ReactionPicker>
               widget.currentReaction != null
                   ? Icons.favorite
                   : Icons.favorite_border,
-              size: 18,
+              size: AppDimensions.iconSizeS,
               color: widget.currentReaction != null
                   ? AppColors.primary
                   : AppColors.onSurface.withValues(alpha: 0.6),

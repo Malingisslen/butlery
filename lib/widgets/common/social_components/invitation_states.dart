@@ -1,6 +1,7 @@
 // lib/widgets/common/social_components/invitation_states.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target state widgets
@@ -83,7 +84,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(errorIcon, size: 64, color: Colors.red),
+          Icon(errorIcon, size: AppDimensions.iconSizeXXXl, color: Colors.red),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -128,7 +129,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.lock, size: 64, color: Colors.orange),
+          const Icon(Icons.lock, size: AppDimensions.iconSizeXXXl, color: Colors.orange),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -161,7 +162,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey),
+          Icon(icon, size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -193,7 +194,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey),
+          Icon(icon, size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -223,7 +224,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey),
+          Icon(icon, size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -250,7 +251,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: successColor),
+          Icon(icon, size: AppDimensions.iconSizeXXXl, color: successColor),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -285,7 +286,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: successColor),
+          Icon(icon, size: AppDimensions.iconSizeXXXl, color: successColor),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -365,7 +366,7 @@ class InvitationStates {
             const SizedBox(height: AppDimensions.spacing8),
             Text(
               'Aktuell: $currentItem',
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: AppColors.textMedium),
             ),
           ],
         ],

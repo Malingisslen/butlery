@@ -2,12 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
+import 'package:butlery/widgets/common/social_components.dart';
 
 /// Dialog for creating a new group
 /// 
@@ -29,6 +31,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   
   String _selectedEmoji = '👥';
   final Set<String> _selectedFriendIds = <String>{};
+  List<UserProfile> _selectedFriends = <UserProfile>[];
   bool _isCreating = false;
   String? _error;
 
@@ -36,9 +39,20 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   void initState() {
     super.initState();
     if (widget.preSelectedMembers != null) {
+      _selectedFriends = List.from(widget.preSelectedMembers!);
       _selectedFriendIds.addAll(
         widget.preSelectedMembers!.map((member) => member.uid)
       );
+    }
+  }
+
+  void _onFriendSelectionChanged(List<UserProfile> selectedFriends) {
+    if (mounted) {
+      setState(() {
+        _selectedFriends = selectedFriends;
+        _selectedFriendIds.clear();
+        _selectedFriendIds.addAll(selectedFriends.map((f) => f.uid));
+      });
     }
   }
 
@@ -50,47 +64,77 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   }
 
   Future<void> _createGroup() async {
-    if (!_formKey.currentState!.validate()) return;
+    print('🚀 [DEBUG] _createGroup() called');
+    print('🔍 [DEBUG] Form validation result: ${_formKey.currentState!.validate()}');
+    
+    if (!_formKey.currentState!.validate()) {
+      print('❌ [DEBUG] Form validation failed, returning early');
+      return;
+    }
+    
+    print('✅ [DEBUG] Form validation passed, proceeding with group creation');
+    print('📝 [DEBUG] Group name: "${_nameController.text.trim()}"');
+    print('📝 [DEBUG] Group description: "${_descriptionController.text.trim()}"');
+    print('👥 [DEBUG] Selected friends count: ${_selectedFriendIds.length}');
+    print('🎭 [DEBUG] Selected emoji: $_selectedEmoji');
     
     if (mounted) {
       setState(() {
         _isCreating = true;
         _error = null;
       });
+      print('🔄 [DEBUG] Set loading state to true');
     }
 
     try {
+      print('🔧 [DEBUG] Getting UnifiedFriendsService...');
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      print('✅ [DEBUG] Got UnifiedFriendsService successfully');
       
+      print('📞 [DEBUG] Calling friendsService.categories.createCategory...');
       final categoryId = await friendsService.categories.createCategory(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         icon: _selectedEmoji,
         initialMemberIds: _selectedFriendIds.toList(),
       );
+      print('🎯 [DEBUG] createCategory returned: $categoryId');
 
       if (categoryId != null) {
+        print('✅ [DEBUG] Category created successfully with ID: $categoryId');
+        
+        // Get the created category to return it
+        final createdCategory = friendsService.categories.getCategoryById(categoryId);
+        print('🎯 [DEBUG] Retrieved created category: ${createdCategory?.name}');
+        
         if (mounted) {
-          Navigator.of(context).pop(true);
+          print('🚪 [DEBUG] Closing dialog with success, returning category');
+          Navigator.of(context).pop(createdCategory);
         }
       } else {
+        print('❌ [DEBUG] Category creation failed - categoryId is null');
         if (mounted) {
           setState(() {
             _error = 'Kunde inte skapa grupp. Försök igen.';
           });
+          print('🔴 [DEBUG] Set error state: $_error');
         }
       }
     } catch (e) {
+      print('💥 [DEBUG] Exception during group creation: $e');
       if (mounted) {
         setState(() {
           _error = 'Ett fel uppstod: ${e.toString()}';
         });
+        print('🔴 [DEBUG] Set exception error state: $_error');
       }
     } finally {
+      print('🏁 [DEBUG] Finally block - setting loading to false');
       if (mounted) {
         setState(() {
           _isCreating = false;
         });
+        print('🔄 [DEBUG] Set loading state to false');
       }
     }
   }
@@ -113,66 +157,73 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 onClose: () => Navigator.of(context).pop(),
               ),
               
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Emoji selection
-                    EmojiSelector(
-                      selectedEmoji: _selectedEmoji,
-                      onEmojiSelected: (emoji) {
-                        if (mounted) {
-                          setState(() {
-                            _selectedEmoji = emoji;
-                          });
-                        }
-                      },
-                    ),
-                    
-                    const SizedBox(height: AppDimensions.spacingL),
-                    
-                    // ✅ CONSOLIDATED: Group name using standardized form field
-                    DialogFormFields.buildNameField(
-                      controller: _nameController,
-                      labelText: 'Gruppnamn',
-                      hintText: 'T.ex. "Familjen", "Jobbet", "Bokklubben"',
-                      prefixIcon: Icons.group,
-                      maxLength: 50,
-                    ),
-                    
-                    // ✅ CONSOLIDATED: Description using standardized form field  
-                    DialogFormFields.buildDescriptionField(
-                      controller: _descriptionController,
-                      labelText: 'Beskrivning (valfritt)',
-                      hintText: 'Vad handlar den här gruppen om?',
-                      maxLength: 200,
-                      maxLines: 3,
-                    ),
-                    
-                    // Pre-selected members info
-                    if (_selectedFriendIds.isNotEmpty) ...[
-                      const SizedBox(height: AppDimensions.spacingM),
-                      Text(
-                        'Förvalda medlemmar (${_selectedFriendIds.length})',
-                        style: AppTextStyles.titleMedium,
+              // Content - Make scrollable to handle overflow
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Emoji selection
+                      EmojiSelector(
+                        selectedEmoji: _selectedEmoji,
+                        onEmojiSelected: (emoji) {
+                          if (mounted) {
+                            setState(() {
+                              _selectedEmoji = emoji;
+                            });
+                          }
+                        },
                       ),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      Text(
-                        'Dessa vänner kommer att få en inbjudan till gruppen.',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      
+                      const SizedBox(height: AppDimensions.spacingL),
+                      
+                      // ✅ CONSOLIDATED: Group name using standardized form field
+                      DialogFormFields.buildNameField(
+                        controller: _nameController,
+                        labelText: 'Gruppnamn',
+                        hintText: 'T.ex. "Familjen", "Jobbet", "Bokklubben"',
+                        prefixIcon: Icons.group,
+                        maxLength: 50,
+                      ),
+                      
+                      // ✅ CONSOLIDATED: Description using standardized form field  
+                      DialogFormFields.buildDescriptionField(
+                        controller: _descriptionController,
+                        labelText: 'Beskrivning (valfritt)',
+                        hintText: 'Vad handlar den här gruppen om?',
+                        maxLength: 200,
+                        maxLines: 3,
+                      ),
+                      
+                      const SizedBox(height: AppDimensions.spacingL),
+                      
+                      // 🆕 FRIEND SELECTION UI
+                      _buildFriendSelectionSection(),
+                      
+                      // Selected members info
+                      if (_selectedFriendIds.isNotEmpty) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        Text(
+                          'Valda medlemmar (${_selectedFriendIds.length})',
+                          style: AppTextStyles.titleMedium,
                         ),
-                      ),
+                        const SizedBox(height: AppDimensions.spacingS),
+                        Text(
+                          'Dessa vänner kommer att få en inbjudan till gruppen.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                      
+                      // Error display
+                      if (_error != null) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        ErrorDisplayWidget(errorMessage: _error!),
+                      ],
                     ],
-                    
-                    // Error display
-                    if (_error != null) ...[
-                      const SizedBox(height: AppDimensions.spacingM),
-                      ErrorDisplayWidget(errorMessage: _error!),
-                    ],
-                  ],
+                  ),
                 ),
               ),
               
@@ -189,6 +240,80 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFriendSelectionSection() {
+    return AnimatedBuilder(
+      animation: ServiceLocator.get<UnifiedFriendsService>(),
+      builder: (context, child) {
+        final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+        final availableFriends = friendsService.friendsList;
+        
+        if (availableFriends.isEmpty) {
+          return Column(
+            children: [
+              Text(
+                'Välj medlemmar',
+                style: AppTextStyles.titleMedium,
+              ),
+              const SizedBox(height: AppDimensions.spacingS),
+              Text(
+                'Du har inga vänner att lägga till än. Lägg till vänner först för att skapa grupper med dem.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          );
+        }
+
+        // Convert UserProfile to InvitationTarget for SocialComponents
+        final availableTargets = availableFriends.map((friend) => 
+          InvitationTarget.individual(friend)
+        ).toList();
+
+        final selectedTargets = _selectedFriends.map((friend) => 
+          InvitationTarget.individual(friend)
+        ).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Välj medlemmar',
+              style: AppTextStyles.titleMedium,
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            Text(
+              'Välj vänner som du vill bjuda in till gruppen:',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: SocialComponents.checkableTargetList(
+                targets: availableTargets,
+                selectedTargets: selectedTargets,
+                onSelectionChanged: (selectedTargetsList) {
+                  // Convert back to UserProfile
+                  final selectedFriends = selectedTargetsList
+                      .map((target) => availableFriends
+                          .firstWhere((friend) => friend.uid == target.targetId))
+                      .toList();
+                  _onFriendSelectionChanged(selectedFriends);
+                },
+                showSelectAll: true,
+                selectAllText: 'Välj alla',
+                selectNoneText: 'Avmarkera alla',
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

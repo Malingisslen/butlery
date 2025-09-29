@@ -59,6 +59,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -105,8 +106,16 @@ class SharedWithMeView extends StatelessWidget {
   /// Returns complete shared content interface with comprehensive functionality and content organization.
   @override
   Widget build(BuildContext context) {
+    AppLogger.info('SharedWithMeView.build() called');
+    AppLogger.info('Creating ChangeNotifierProvider for SharedContentViewModel');
+    
     return ChangeNotifierProvider<SharedContentViewModel>(
-      create: (context) => ServiceLocator.get<SharedContentViewModel>(),
+      create: (context) {
+        AppLogger.info('Provider create() called - getting SharedContentViewModel from ServiceLocator');
+        final viewModel = ServiceLocator.get<SharedContentViewModel>();
+        AppLogger.info('SharedContentViewModel obtained from ServiceLocator');
+        return viewModel;
+      },
       child: const _SharedWithMeViewContent(),
     );
   }
@@ -127,18 +136,24 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
   @override
   void initState() {
+    AppLogger.info('_SharedWithMeViewContent.initState() called');
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppLogger.info('PostFrameCallback executed - getting SharedContentViewModel');
       final viewModel = context.read<SharedContentViewModel>();
+      AppLogger.info('SharedContentViewModel obtained from context');
 
       // Sync tab controller med ViewModel
       _tabController.addListener(() {
         if (!_tabController.indexIsChanging) {
+          AppLogger.info('Tab changed to index: ${_tabController.index}');
           viewModel.setTabIndex(_tabController.index);
         }
       });
+      
+      AppLogger.info('Tab controller listener added');
     });
 
     // Konfigurera svenska för timeago
@@ -234,6 +249,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
         children: [
           SharedContentLists.buildRecipesList(context, viewModel, _searchController),
           SharedContentLists.buildMenusList(context, viewModel, _searchController),
+          SharedContentLists.buildSharedShoppingListsList(context, viewModel, _searchController),
         ],
       ),
     );

@@ -154,7 +154,7 @@ class ShoppingListContent {
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
             color:
-                (isCompleted ? AppColors.neutralMedium : AppColors.primaryBlue)
+                (isCompleted ? AppColors.textMedium : AppColors.primaryBlue)
                     .withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
@@ -169,7 +169,7 @@ class ShoppingListContent {
                     fontSize: AppTextStyles.bodyLarge.fontSize,
                     fontWeight: FontWeight.w600,
                     color: isCompleted
-                        ? AppColors.neutralMedium
+                        ? AppColors.textMedium
                         : AppColors.primaryBlue,
                   ),
                   maxLines: 1,
@@ -183,7 +183,7 @@ class ShoppingListContent {
                     vertical: AppDimensions.spacing2),
                 decoration: BoxDecoration(
                   color: (isCompleted
-                          ? AppColors.neutralMedium
+                          ? AppColors.textMedium
                           : AppColors.primaryBlue)
                       .withValues(alpha: 0.1),
                   borderRadius:
@@ -195,7 +195,7 @@ class ShoppingListContent {
                     fontSize: AppTextStyles.bodySmall.fontSize,
                     fontWeight: FontWeight.w500,
                     color: isCompleted
-                        ? AppColors.neutralMedium
+                        ? AppColors.textMedium
                         : AppColors.primaryBlue,
                   ),
                 ),
@@ -256,7 +256,7 @@ class ShoppingListContent {
     return Icon(
       iconData,
       size: AppDimensions.iconSizeS,
-      color: isCompleted ? AppColors.neutralMedium : AppColors.primaryBlue,
+      color: isCompleted ? AppColors.textMedium : AppColors.primaryBlue,
     );
   }
 
@@ -266,7 +266,7 @@ class ShoppingListContent {
         const Icon(
           Icons.check_circle,
           size: AppDimensions.iconSizeM,
-          color: AppColors.success,
+          color: AppColors.primaryBlue,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
@@ -277,13 +277,13 @@ class ShoppingListContent {
                 'Inhandlat',
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.success,
+                  color: AppColors.primaryBlue,
                 ),
               ),
               Text(
                 '${viewModel.boughtItems} av ${viewModel.totalItems} varor',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.success.withValues(alpha: 0.8),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.8),
                 ),
               ),
             ],

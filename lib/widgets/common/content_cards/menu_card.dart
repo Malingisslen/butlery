@@ -47,7 +47,7 @@ class MenuCard extends StatelessWidget {
     return Container(
       margin: margin ?? _getDefaultMargin(),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
@@ -141,7 +141,7 @@ class MenuCard extends StatelessWidget {
       children: [
         const Icon(
           Icons.restaurant_menu,
-          size: 20,
+          size: AppDimensions.iconSizeM,
           color: AppColors.textMedium,
         ),
         const SizedBox(width: AppDimensions.spacingS),
@@ -195,7 +195,7 @@ class MenuCard extends StatelessWidget {
           children: [
             const Icon(
               Icons.info_outline,
-              size: 16,
+              size: AppDimensions.iconSizeS,
               color: AppColors.textMedium,
             ),
             const SizedBox(width: AppDimensions.spacingS),
@@ -279,7 +279,7 @@ class MenuCard extends StatelessWidget {
         children: [
           Icon(
             Icons.people,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: Colors.blue[700],
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -309,7 +309,7 @@ class MenuCard extends StatelessWidget {
       ),
       child: const Icon(
         Icons.people,
-        size: 16,
+        size: AppDimensions.iconSizeS,
         color: Colors.white,
       ),
     );

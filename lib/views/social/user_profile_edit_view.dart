@@ -9,13 +9,14 @@ import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/layout/bordered_container.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 
 class UserProfileEditView extends StatelessWidget {
@@ -155,20 +156,23 @@ class _UserProfileEditViewContentState
           'Du har osparade ändringar. Vill du spara innan du lämnar?',
         ),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Kasta bort',
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Kasta bort'),
           ),
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
           ),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Spara',
             onPressed: () async {
               Navigator.pop(context, false);
               await _saveProfile();
             },
-            child: const Text('Spara'),
           ),
         ],
       ),
@@ -288,24 +292,25 @@ class _UserProfileEditViewContentState
             alignment: WrapAlignment.center,
             spacing: AppDimensions.spacingL,
             children: [
-              OutlinedButton.icon(
-                onPressed: viewModel.isUploadingAvatar ? null : _uploadAvatar,
-                icon: const Icon(Icons.camera_alt),
-                label: Text(viewModel.avatarUrl != null
+              ActionButtons.outlinedButton(
+                context,
+                label: viewModel.avatarUrl != null
                     ? 'Ändra avatar'
-                    : 'Lägg till avatar'),
+                    : 'Lägg till avatar',
+                icon: Icons.camera_alt,
+                onPressed: viewModel.isUploadingAvatar ? null : _uploadAvatar,
               ),
               if (viewModel.avatarUrl != null)
-                OutlinedButton.icon(
+                ActionButtons.outlinedButton(
+                  context,
+                  label: 'Ta bort',
+                  icon: Icons.delete_outline,
                   onPressed: viewModel.isUploadingAvatar
                       ? null
                       : () {
                           viewModel.removeAvatar();
                           SnackBarUtils.showSuccess(context, 'Avatar borttagen');
                         },
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Ta bort'),
-                  style: ComponentThemes.deleteButtonStyle,
                 ),
             ],
           ),
@@ -323,20 +328,17 @@ class _UserProfileEditViewContentState
           style: AppTextStyles.labelMedium,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
-        TextFormField(
+        StyledInput(
           controller: _displayNameController,
           focusNode: _displayNameFocusNode,
-          decoration: InputDecoration(
-            hintText: 'Ditt namn som andra ser',
-            border: const OutlineInputBorder(),
-            prefixIcon: const Icon(Icons.person),
-            suffixIcon: viewModel.displayNameError != null
-                ? const Icon(Icons.error, color: AppColors.error)
-                : _displayNameController.text.isNotEmpty &&
-                        viewModel.displayNameError == null
-                    ? const Icon(Icons.check_circle, color: AppColors.success)
-                    : null,
-          ),
+          hint: 'Ditt namn som andra ser',
+          prefixIcon: const Icon(Icons.person),
+          suffixIcon: viewModel.displayNameError != null
+              ? const Icon(Icons.error, color: AppColors.error)
+              : _displayNameController.text.isNotEmpty &&
+                      viewModel.displayNameError == null
+                  ? const Icon(Icons.check_circle, color: AppColors.success)
+                  : null,
           validator: (value) => ValidationUtils.validateRequired(
             value,
             fieldName: 'Visningsnamn',
@@ -357,7 +359,7 @@ class _UserProfileEditViewContentState
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             viewModel.displayNameError!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.error,
                 ),
           ),
@@ -406,50 +408,33 @@ class _UserProfileEditViewContentState
     return Column(
       children: [
         // Save button
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: viewModel.isLoading || !viewModel.isFormValid
-                ? null
-                : _saveProfile,
-            icon: viewModel.isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.save),
-            label: Text(
-              viewModel.isLoading ? 'Sparar...' : 'Spara profil',
-            ),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: AppColors.cardWhite,
-              minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              ),
-            ),
-          ),
+        ActionButtons.primaryButton(
+          context,
+          label: 'Spara profil',
+          icon: Icons.save,
+          onPressed: viewModel.isLoading || !viewModel.isFormValid
+              ? null
+              : _saveProfile,
+          isLoading: viewModel.isLoading,
+          loadingText: 'Sparar...',
+          isExpanded: true,
         ),
 
         const SizedBox(height: AppDimensions.spacingL),
 
         // Reset button
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: viewModel.hasUnsavedChanges
-                ? () {
-                    viewModel.resetForm();
-                    _initializeForm(viewModel);
-                    SnackBarUtils.showSuccess(context, 'Formulär återställt');
-                  }
-                : null,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Återställ ändringar'),
-          ),
+        ActionButtons.outlinedButton(
+          context,
+          label: 'Återställ ändringar',
+          icon: Icons.refresh,
+          onPressed: viewModel.hasUnsavedChanges
+              ? () {
+                  viewModel.resetForm();
+                  _initializeForm(viewModel);
+                  SnackBarUtils.showSuccess(context, 'Formulär återställt');
+                }
+              : null,
+          isExpanded: true,
         ),
 
         // Unsaved changes indicator

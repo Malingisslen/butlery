@@ -145,7 +145,7 @@ class GroupActivityTimeline {
             ),
             child: Icon(
               activityIcon,
-              size: 12,
+              size: AppDimensions.iconSizeXs,
               color: _getActivityColor(activityType),
             ),
           ),
@@ -205,7 +205,7 @@ class GroupActivityTimeline {
         children: [
           Icon(
             _getActivityIcon(activityType),
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: _getActivityColor(activityType),
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -281,7 +281,7 @@ class GroupActivityTimeline {
         children: [
           Icon(
             icon,
-            size: 12,
+            size: AppDimensions.iconSizeXs,
             color: AppColors.onPrimaryContainer,
           ),
           const SizedBox(width: 4),
@@ -313,13 +313,13 @@ class GroupActivityTimeline {
   static Color _getActivityColor(String activityType) {
     switch (activityType) {
       case 'recipe':
-        return AppColors.success;
+        return AppColors.primaryBlue;
       case 'menu':
-        return AppColors.info;
+        return AppColors.accent;
       case 'shopping_list':
-        return AppColors.warning;
+        return AppColors.primaryBlue;
       default:
-        return AppColors.primary;
+        return AppColors.primaryBlue;
     }
   }
 

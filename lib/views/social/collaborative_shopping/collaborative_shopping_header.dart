@@ -62,7 +62,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Expanded(
           child: Text(
             viewModel.listTitle,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
@@ -100,7 +100,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildDescriptionSection(BuildContext context) {
     return Text(
       viewModel.listDescription,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+      style: AppTextStyles.bodyMedium.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
       maxLines: 3,
@@ -130,13 +130,13 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       children: [
         Text(
           '${viewModel.completedItems} av ${viewModel.totalItems} klara',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
         ),
         Text(
           '${viewModel.completionPercentage.toStringAsFixed(0)}%',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
                 color: progressColor,
               ),
@@ -218,11 +218,11 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   /// Get estimated header height for layout calculations
   double getEstimatedHeight(BuildContext context) {
     double baseHeight = AppDimensions.paddingL * 2; // Top and bottom padding
-    baseHeight += Theme.of(context).textTheme.headlineSmall?.height ?? 24; // Title
+    baseHeight += 24; // Title (headlineSmall height)
     
     if (viewModel.hasDescription) {
       baseHeight += AppDimensions.spacingXs;
-      baseHeight += (Theme.of(context).textTheme.bodyMedium?.height ?? 16) * 3; // Max 3 lines
+      baseHeight += 16 * 3; // Max 3 lines (bodyMedium height)
     }
     
     baseHeight += AppDimensions.spacingM; // Before progress

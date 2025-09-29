@@ -112,7 +112,6 @@ void main() {
                 showImage: false,
                 showTags: false,
                 showMetadata: false,
-                showFavoriteButton: false,
               ),
             ),
           ),
@@ -218,15 +217,14 @@ void main() {
               child: RecipeCard(
                 recipe: testRecipe,
                 style: RecipeCardStyle.grid,
-                showFavoriteButton: true,
               ),
             ),
           ),
         );
         
-        // Favorite button should be positioned absolutely
-        expect(find.byType(Positioned), findsOneWidget);
-        expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+        // Recipe card should render without favorite button
+        expect(find.byIcon(Icons.favorite_border), findsNothing);
+        expect(find.byIcon(Icons.favorite), findsNothing);
       });
     });
     
@@ -271,25 +269,20 @@ void main() {
         expect(longPressedRecipe, equals(testRecipe));
       });
       
-      testWidgets('should handle favorite toggle', (tester) async {
-        Recipe? favoritedRecipe;
-        
+      testWidgets('should not display favorite buttons', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
-                onFavoriteToggle: (recipe) => favoritedRecipe = recipe,
-                showFavoriteButton: true,
               ),
             ),
           ),
         );
         
-        await tester.tap(find.byIcon(Icons.favorite_border));
-        await tester.pump();
-        
-        expect(favoritedRecipe, equals(testRecipe));
+        // Verify favorite buttons are not present
+        expect(find.byIcon(Icons.favorite_border), findsNothing);
+        expect(find.byIcon(Icons.favorite), findsNothing);
       });
       
       testWidgets('should not respond to tap when callback is null', (tester) async {

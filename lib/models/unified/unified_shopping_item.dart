@@ -410,6 +410,11 @@ class UnifiedShoppingItem {
     final amountStr = formattedAmount;
     final unitStr = formattedUnit;
 
+    // Om amount är 0, visa bara namnet (för ingredienser som redan har kvantitet)
+    if (amount == 0.0) {
+      return name;
+    }
+
     // Om vi har enhet, visa: "1,5 l Mjölk" eller "2 st Ägg"
     if (unitStr.isNotEmpty) {
       return '$amountStr $unitStr $name';

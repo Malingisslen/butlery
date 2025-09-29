@@ -237,7 +237,7 @@ class RequestsTab {
               ),
               child: const Icon(
                 Icons.person,
-                size: 24,
+                size: AppDimensions.iconSizeL,
                 color: AppColors.textMedium,
               ),
             ),

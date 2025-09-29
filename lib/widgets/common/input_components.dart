@@ -48,6 +48,7 @@
 // ignore_for_file: unintended_html_in_doc_comment
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -299,6 +300,7 @@ class InputComponents {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.transparent,
       builder: (context) => ShoppingListSelector(
         onListSelected: onListSelected,
         menu: menu,

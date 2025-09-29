@@ -10,11 +10,12 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/layout/category_header.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -93,7 +94,7 @@ class MenuPreviewView extends StatelessWidget {
                       Text(
                         'Delat av ${sharedMenu.sharedByDisplayName}',
                         style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                            AppTextStyles.titleMedium.copyWith(
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onPrimaryContainer,
@@ -102,7 +103,7 @@ class MenuPreviewView extends StatelessWidget {
                       ),
                       Text(
                         timeago.format(sharedMenu.sharedAt, locale: 'sv'),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: AppTextStyles.bodySmall.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
                                   .onPrimaryContainer,
@@ -120,7 +121,7 @@ class MenuPreviewView extends StatelessWidget {
             // Meny titel och beskrivning
             Text(
               sharedMenu.menuTitle,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              style: AppTextStyles.headlineSmall.copyWith(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.bold,
                   ),
@@ -139,7 +140,7 @@ class MenuPreviewView extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingXs),
                 Text(
                   '${sharedMenu.totalRecipeCount} recept',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: AppTextStyles.bodyMedium.copyWith(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                 ),
@@ -152,7 +153,7 @@ class MenuPreviewView extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingXs),
                 Text(
                   '${sharedMenu.categories.length} kategorier',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: AppTextStyles.bodyMedium.copyWith(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                 ),
@@ -175,14 +176,14 @@ class MenuPreviewView extends StatelessWidget {
                   children: [
                     Text(
                       'Meddelande:',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      style: AppTextStyles.labelSmall.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       '"${sharedMenu.shareMessage}"',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: AppTextStyles.bodyMedium.copyWith(
                             fontStyle: FontStyle.italic,
                           ),
                     ),
@@ -269,43 +270,31 @@ class MenuPreviewView extends StatelessWidget {
             return Column(
               children: [
                 // Import knapp
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: isImported || viewModel.isImporting
-                        ? null
-                        : () => _importMenu(context, viewModel),
-                    icon: isImported
-                        ? const Icon(Icons.check)
-                        : viewModel.isImporting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.download),
-                    label: Text(
-                      isImported
-                          ? 'Meny importerad'
-                          : viewModel.isImporting
-                              ? 'Importerar...'
-                              : 'Importera hela menyn',
-                    ),
-                  ),
+                ActionButtons.primaryButton(
+                  context,
+                  label: isImported
+                      ? 'Meny importerad'
+                      : 'Importera hela menyn',
+                  icon: isImported
+                      ? Icons.check
+                      : Icons.download,
+                  onPressed: isImported || viewModel.isImporting
+                      ? null
+                      : () => _importMenu(context, viewModel),
+                  isLoading: viewModel.isImporting,
+                  loadingText: 'Importerar...',
+                  isExpanded: true,
                 ),
 
                 const SizedBox(height: AppDimensions.spacingS),
 
                 // Dismiss knapp
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _dismissMenu(context, viewModel),
-                    icon: const Icon(Icons.visibility_off),
-                    label: const Text('Dölj från min lista'),
-                    style: ComponentThemes.outlinedButtonStyle,
-                  ),
+                ActionButtons.outlinedButton(
+                  context,
+                  label: 'Dölj från min lista',
+                  icon: Icons.visibility_off,
+                  onPressed: () => _dismissMenu(context, viewModel),
+                  isExpanded: true,
                 ),
 
                 const SizedBox(height: AppDimensions.spacingL),
@@ -313,7 +302,7 @@ class MenuPreviewView extends StatelessWidget {
                 // Info text
                 Text(
                   'När du importerar menyn läggs alla ${sharedMenu.totalRecipeCount} recept till i din samling.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                   textAlign: TextAlign.center,
@@ -402,13 +391,15 @@ class MenuPreviewView extends StatelessWidget {
           '${sharedMenu.sharedByDisplayName} att dela den igen.',
         ),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
           ),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Dölj',
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Dölj'),
           ),
         ],
       ),

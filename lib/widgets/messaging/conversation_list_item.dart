@@ -174,7 +174,7 @@ class ConversationListItem extends StatelessWidget {
       child: const Icon(
         Icons.group,
         color: AppColors.primaryBlue,
-        size: 28,
+        size: AppDimensions.iconSizeL,
       ),
     );
   }

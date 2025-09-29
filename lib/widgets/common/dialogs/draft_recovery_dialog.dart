@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 
@@ -40,7 +41,7 @@ class DraftRecoveryDialog extends StatelessWidget {
       ),
       title: Text(
         AppStrings.draftRecovery,
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+        style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w600,
             ),
       ),
@@ -50,7 +51,7 @@ class DraftRecoveryDialog extends StatelessWidget {
         children: [
           Text(
             AppStrings.draftRecoverySubtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: AppTextStyles.bodyMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
@@ -135,7 +136,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                       draft.title.isEmpty
                           ? AppStrings.unnamedRecipe
                           : draft.title,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                       maxLines: 1,
@@ -147,7 +148,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                     // Metadata (time and field count)
                     Text(
                       '${draft.timeAgo} • ${AppStrings.fieldsFilledCount(draft.fieldCount)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      style: AppTextStyles.bodySmall.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),

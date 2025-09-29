@@ -11,10 +11,14 @@ class AppColors {
   static const Color darkNavy = Color(0xFF2C3E50);
   static const Color backgroundBeige = Color(0xFFEFE9E3);
   static const Color cardWhite = Color(0xFFFFFFFF);
+  static const Color cardWhite54 = Color(0x8AFFFFFF);  // 54% opacity white
   
   // Text colors
   static const Color textDark = Color(0xFF2C3E50);
   static const Color textMedium = Color(0xFF6B7280);
+  static const Color textMedium200 = Color(0xFFE5E7EB);  // Lighter variant for backgrounds
+  static const Color textMedium300 = Color(0xFFD1D5DB);  // Medium-light variant
+  static const Color textMedium600 = Color(0xFF4B5563);  // Darker variant for text
   static const Color textLight = Color(0xFF9CA3AF);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;

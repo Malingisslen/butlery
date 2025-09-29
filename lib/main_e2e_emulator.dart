@@ -12,6 +12,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -39,6 +40,7 @@ import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Emulator Application Entry Point
 /// 
@@ -195,11 +197,11 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
     return MaterialApp(
       title: 'E2E Emulator Error',
       home: Scaffold(
-        backgroundColor: Colors.orange[50],
+        backgroundColor: AppColors.warningContainer,
         appBar: AppBar(
           title: const Text('E2E Emulator Error'),
-          backgroundColor: Colors.orange,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.warning,
+          foregroundColor: AppColors.cardWhite,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -208,8 +210,8 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
             children: [
               const Icon(
                 Icons.warning_outlined,
-                size: 48,
-                color: Colors.orange,
+                size: AppDimensions.iconSizeXxl,
+                color: AppColors.warning,
               ),
               const SizedBox(height: 16),
               const Text(
@@ -217,7 +219,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.orange,
+                  color: AppColors.warning,
                 ),
               ),
               const SizedBox(height: 16),
@@ -229,7 +231,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
@@ -247,9 +249,9 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(color: AppColors.divider),
                     ),
                     child: Text(
                       message,

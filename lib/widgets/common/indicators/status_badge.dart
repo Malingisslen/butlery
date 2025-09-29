@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Reusable status badge component
 /// 
@@ -39,7 +40,7 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        style: AppTextStyles.labelSmall.copyWith(
           color: textColor ?? Theme.of(context).colorScheme.onPrimary,
           fontWeight: FontWeight.w600,
         ),

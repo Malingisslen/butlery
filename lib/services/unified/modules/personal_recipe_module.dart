@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
@@ -58,6 +59,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 /// ```
 class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
+  final UserRepository _userRepository;
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
@@ -67,6 +69,7 @@ class PersonalRecipeModule {
 
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
+    required UserRepository userRepository,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
@@ -74,6 +77,7 @@ class PersonalRecipeModule {
     required void Function() notifyListeners,
     required RecipeServiceAdapter Function() getServiceAdapter,
   })  : _recipeRepository = recipeRepository,
+        _userRepository = userRepository,
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
@@ -126,6 +130,15 @@ class PersonalRecipeModule {
 
       // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
       await _saveToCache(newRecipe);
+      
+      // Increment user's public recipe count
+      try {
+        await _userRepository.incrementPublicRecipeCount(currentUserId);
+        AppLogger.debug('✅ Incremented public recipe count for user $currentUserId');
+      } catch (e) {
+        AppLogger.warning('⚠️ Failed to increment recipe count: $e');
+        // Continue anyway - don't fail recipe creation for counter issues
+      }
       
       // Start background database sync without waiting
       _startBackgroundRecipeSync(newRecipe, 'create');
@@ -188,6 +201,15 @@ class PersonalRecipeModule {
       // Delete from Firebase using repository pattern
       final deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
       if (deleteSuccess) {
+        // Decrement user's public recipe count
+        try {
+          await _userRepository.decrementPublicRecipeCount(currentUserId);
+          AppLogger.debug('✅ Decremented public recipe count for user $currentUserId');
+        } catch (e) {
+          AppLogger.warning('⚠️ Failed to decrement recipe count: $e');
+          // Continue anyway - don't fail recipe deletion for counter issues
+        }
+        
         AppLogger.success('✅ Personal recipe deleted');
       } else {
         _setError('Kunde inte ta bort recept från servern');

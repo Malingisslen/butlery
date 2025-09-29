@@ -138,6 +138,14 @@ class FriendsViewModel extends ChangeNotifier {
   /// preventing memory leaks and null pointer exceptions in social functionality.
   bool _isDisposed = false;
 
+  // ===== PERFORMANCE OPTIMIZATION =====
+  
+  /// Debounce timer for notifyListeners optimization to prevent excessive rebuilds.
+  /// 
+  /// Reduces UI rebuild frequency during rapid user interactions like friend selection,
+  /// search queries, and bulk operations, improving overall app performance.
+  Timer? _debounceTimer;
+
   // ===== SEARCH STATE MANAGEMENT =====
   
   /// Current user search query for friend discovery and social search functionality.
@@ -426,7 +434,7 @@ class FriendsViewModel extends ChangeNotifier {
     if (_searchQuery.length < 2) {
       _searchResults = [];
       _searchError = 'Skriv minst 2 tecken för att söka';
-      notifyListeners();
+      _notifyListenersDebounced(); // Debounced for search input
       return;
     }
 
@@ -445,19 +453,33 @@ class FriendsViewModel extends ChangeNotifier {
   /// ```
   void clearSearch() {
     _clearSearch();
-    notifyListeners();
+    _notifyListenersImmediate(); // Immediate for clear operations
   }
 
   // ===== FRIEND REQUEST ACTIONS =====
 
   /// Send friend request to user
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
+    AppLogger.info('🔄 Sending friend request to $userId...');
+    
     final success = await _friendsService.management.sendFriendRequest(userId, message: message);
 
     if (success) {
+      AppLogger.success('✅ Friend request sent successfully to $userId');
+      
       // Remove from search results to show updated state
       _searchResults.removeWhere((user) => user.uid == userId);
+      
+      // 🎯 UX ENHANCEMENT: Clear search to show clean state after successful request
+      _clearSearch();
+      
+      // 🎯 ULTRATHINK FIX: Comprehensive UI notification for all friends UI components
+      // This ensures pending requests list, friend status indicators, and all reactive UI updates immediately
       notifyListeners();
+      
+      AppLogger.debug('🔄 UI notified of friend request state change with search cleared');
+    } else {
+      AppLogger.error('❌ Failed to send friend request to $userId');
     }
 
     return success;
@@ -614,20 +636,20 @@ class FriendsViewModel extends ChangeNotifier {
     } else {
       _selectedFriendIds.add(friendId);
     }
-    notifyListeners();
+    _notifyListenersDebounced(); // Optimized for rapid selection changes
   }
 
   /// Select all friends
   void selectAllFriends() {
     _selectedFriendIds.clear();
     _selectedFriendIds.addAll(friends.map((f) => f.uid));
-    notifyListeners();
+    _notifyListenersImmediate(); // Immediate for bulk operations
   }
 
   /// Clear all selections
   void clearSelection() {
     _selectedFriendIds.clear();
-    notifyListeners();
+    _notifyListenersImmediate(); // Immediate for clear operations
   }
 
   /// Get selected friends as UserProfile objects
@@ -830,6 +852,33 @@ class FriendsViewModel extends ChangeNotifier {
     await loadUserProfilesForRequests();
   }
 
+  // ===== PERFORMANCE OPTIMIZATION METHODS =====
+
+  /// Debounced notifyListeners for performance optimization.
+  /// 
+  /// Prevents excessive UI rebuilds during rapid user interactions by debouncing
+  /// notifyListeners calls. Particularly useful for friend selection toggles,
+  /// search operations, and bulk operations.
+  void _notifyListenersDebounced({Duration delay = const Duration(milliseconds: 150)}) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(delay, () {
+      if (!_isDisposed) {
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Immediate notifyListeners for critical state changes.
+  /// 
+  /// Use this for important state changes that need immediate UI updates,
+  /// such as loading states, errors, or completed operations.
+  void _notifyListenersImmediate() {
+    _debounceTimer?.cancel();
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     // ✅ MARKERA som disposed för säkerhet
@@ -845,6 +894,10 @@ class FriendsViewModel extends ChangeNotifier {
     // Cancel any listeners that might be causing memory pressure
     _friendsService.removeListener(_onFriendsServiceChanged);
     _userService.removeListener(_onUserServiceChanged);
+    
+    // Clean up performance optimization timer
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
 
     super.dispose();
   }

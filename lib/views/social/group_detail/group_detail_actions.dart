@@ -10,6 +10,8 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/core/events/group_events.dart';
 
 /// GroupDetailActions - Group action methods
 ///
@@ -59,7 +61,7 @@ class GroupDetailActions {
               backgroundColor: AppColors.success,
             ),
           );
-          // GroupEventBus.emit(GroupEventType.memberRemoved);
+          GroupEventBus.memberRemoved();
           return true;
         }
       } catch (e) {
@@ -94,41 +96,32 @@ class GroupDetailActions {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              StyledInput(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Gruppnamn',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Gruppnamn',
               ),
               const SizedBox(height: AppDimensions.spacingL),
-              TextField(
+              StyledInput(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Beskrivning',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Beskrivning',
                 maxLines: 3,
               ),
               const SizedBox(height: AppDimensions.spacingL),
-              TextField(
+              StyledInput(
                 controller: emojiController,
-                decoration: const InputDecoration(
-                  labelText: 'Emoji',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Emoji',
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(
+          StyledButton.secondary(
+            text: 'Avbryt',
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
           ),
-          FilledButton(
+          StyledButton.primary(
+            text: 'Spara',
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Spara'),
           ),
         ],
       ),
@@ -150,7 +143,7 @@ class GroupDetailActions {
               backgroundColor: AppColors.success,
             ),
           );
-          // GroupEventBus.emit(GroupEventType.updated);
+          GroupEventBus.groupUpdated();
           return true;
         }
       } catch (e) {
@@ -193,7 +186,7 @@ class GroupDetailActions {
               backgroundColor: AppColors.success,
             ),
           );
-          // GroupEventBus.emit(GroupEventType.deleted);
+          GroupEventBus.groupDeleted();
           Navigator.pop(context);
           return true;
         }
@@ -217,6 +210,8 @@ class GroupDetailActions {
     BuildContext context,
     FriendCategory group,
   ) async {
+    print('🚪 [DEBUG] leaveGroup called for group: ${group.name}');
+    
     final shouldLeave = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: 'Lämna grupp',
@@ -226,31 +221,48 @@ class GroupDetailActions {
       isDangerous: true,
     );
 
+    print('🤔 [DEBUG] User confirmed leave: $shouldLeave');
+
     if (shouldLeave == true) {
       try {
         final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUserId;
 
+        print('👤 [DEBUG] Current user ID: $currentUserId');
+        print('🏷️ [DEBUG] Group ID: ${group.id}');
+        print('👥 [DEBUG] Group members before leaving: ${group.friendUserIds}');
+
         if (currentUserId != null) {
+          print('📞 [DEBUG] Calling removeFriendFromCategory...');
           final success = await categoriesService.categories.removeFriendFromCategory(
             currentUserId,
             group.id,
           );
 
+          print('✅ [DEBUG] removeFriendFromCategory result: $success');
+
           if (success && context.mounted) {
+            print('🎉 [DEBUG] Success! Showing snackbar and emitting event...');
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Du har lämnat gruppen'),
                 backgroundColor: AppColors.success,
               ),
             );
-            // GroupEventBus.emit(GroupEventType.memberRemoved);
+            print('📡 [DEBUG] Emitting GroupEventBus.memberRemoved event...');
+            GroupEventBus.memberRemoved();
+            print('🚪 [DEBUG] Navigating back...');
             Navigator.pop(context);
             return true;
+          } else {
+            print('❌ [DEBUG] Success was false or context not mounted. success: $success, mounted: ${context.mounted}');
           }
+        } else {
+          print('❌ [DEBUG] Current user ID is null');
         }
       } catch (e) {
+        print('💥 [DEBUG] Exception in leaveGroup: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -262,6 +274,7 @@ class GroupDetailActions {
       }
     }
 
+    print('🔙 [DEBUG] leaveGroup returning false');
     return false;
   }
 }

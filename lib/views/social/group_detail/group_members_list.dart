@@ -5,6 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -34,7 +35,7 @@ class GroupMembersList {
           children: [
             Text(
               'Medlemmar & Inbjudningar',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: AppTextStyles.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -53,7 +54,7 @@ class GroupMembersList {
         if (members.isNotEmpty) ...[
           Text(
             'Medlemmar (${members.length})',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            style: AppTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -82,7 +83,7 @@ class GroupMembersList {
           if (members.isNotEmpty) const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Väntande inbjudningar (${pendingInvitations.length})',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            style: AppTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.tertiary,
             ),

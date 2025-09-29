@@ -120,7 +120,7 @@ class ReactionBar extends StatelessWidget {
         children: [
           Icon(
             Icons.favorite_border,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: AppColors.onSurface.withValues(alpha: 0.4),
           ),
           const SizedBox(width: AppDimensions.paddingS),
@@ -235,7 +235,7 @@ class ReactionBar extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
+              : AppColors.transparent,
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
           border: Border.all(
             color: isSelected

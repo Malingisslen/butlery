@@ -275,9 +275,9 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Dela lista',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           ListTile(

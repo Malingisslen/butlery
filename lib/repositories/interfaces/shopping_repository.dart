@@ -13,6 +13,9 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Adds a new item to the specified shopping list.
   Future<void> addItem(String listId, UnifiedShoppingItem item);
 
+  /// Adds multiple items to the specified shopping list using batch operations.
+  Future<void> addItemsBatch(String listId, List<UnifiedShoppingItem> items);
+
   /// Removes an item from the specified shopping list.
   Future<void> removeItem(String listId, String itemId);
 

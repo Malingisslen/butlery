@@ -24,6 +24,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/events/group_events.dart';
 
 /// Comprehensive friend categories operations providing advanced friend organization and group management systems.
 ///
@@ -88,62 +89,106 @@ class FriendsCategoriesOperations {
     String? icon,
     List<String>? initialMemberIds,
   }) async {
+    print('🏗️ [DEBUG] createCategory called with:');
+    print('  📝 name: "$name"');
+    print('  📝 description: "$description"');
+    print('  🎭 icon: "$icon"');
+    print('  👥 initialMemberIds: $initialMemberIds');
+    
+    print('🔐 [DEBUG] Checking authentication...');
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       AppLogger.warning('Cannot create category: User not logged in');
+      print('❌ [DEBUG] User not authenticated');
       return null;
     }
+    print('✅ [DEBUG] User is authenticated');
     
+    print('🔍 [DEBUG] Getting current user ID...');
     final currentUserId = _parent.currentUserId;
     if (currentUserId == null) {
       AppLogger.warning('Cannot create category: User ID not available');
+      print('❌ [DEBUG] Current user ID is null');
       return null;
     }
+    print('✅ [DEBUG] Current user ID: $currentUserId');
 
     if (name.trim().isEmpty) {
       AppLogger.warning('Category name cannot be empty');
+      print('❌ [DEBUG] Category name is empty');
       return null;
     }
+    print('✅ [DEBUG] Category name is valid: "${name.trim()}"');
 
+    print('🔍 [DEBUG] Checking if category name exists...');
     if (_categoryNameExists(name.trim())) {
       AppLogger.warning('Category name already exists: $name');
+      print('❌ [DEBUG] Category name already exists');
       return null;
     }
+    print('✅ [DEBUG] Category name is unique');
 
+    print('🚀 [DEBUG] Starting category creation...');
     try {
       // Create category internally
+      print('🏗️ [DEBUG] Creating FriendCategory object...');
+      final categoryId = const Uuid().v4();
       final category = FriendCategory(
-        id: const Uuid().v4(),
+        id: categoryId,
         name: name.trim(),
         description: description.trim(),
         ownerId: currentUserId,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         emoji: icon,
-        friendUserIds: [],
+        friendUserIds: [currentUserId], // Add owner as member
       );
+      print('✅ [DEBUG] Created category with ID: $categoryId');
       
+      print('📝 [DEBUG] Adding category to internal state...');
       _parent.addCategoryInternal(category);
+      print('✅ [DEBUG] Category added to internal state');
+      
+      print('☁️ [DEBUG] Syncing category to Firebase...');
       await _parent.syncCategoryToFirebaseInternal(category);
+      print('✅ [DEBUG] Category synced to Firebase successfully');
+      
       const success = true;
+      print('🎯 [DEBUG] Success status: $success');
 
       if (success) {
+        print('✅ [DEBUG] Category creation successful, processing initial members...');
         // If initial members provided, add them
         if (initialMemberIds != null && initialMemberIds.isNotEmpty) {
-          final category = getCategoryByName(name.trim());
-          if (category != null) {
+          print('👥 [DEBUG] Adding ${initialMemberIds.length} initial members...');
+          final createdCategory = getCategoryByName(name.trim());
+          if (createdCategory != null) {
+            print('✅ [DEBUG] Found created category, adding members...');
             for (final memberId in initialMemberIds) {
-              await addFriendToCategory(memberId, category.id);
+              print('👤 [DEBUG] Adding member: $memberId');
+              await addFriendToCategory(memberId, createdCategory.id);
             }
+            print('✅ [DEBUG] All initial members added');
+          } else {
+            print('❌ [DEBUG] Could not find created category by name');
           }
+        } else {
+          print('ℹ️ [DEBUG] No initial members to add');
         }
         
         AppLogger.success('✅ Category created: $name');
-        return getCategoryByName(name.trim())?.id;
+        final finalCategoryId = getCategoryByName(name.trim())?.id;
+        print('🎯 [DEBUG] Final category ID to return: $finalCategoryId');
+        return finalCategoryId;
       }
     } catch (e) {
+      print('💥 [DEBUG] Exception in createCategory: $e');
       AppLogger.error('Error creating category: $name', e);
+      print('❌ [DEBUG] Returning null due to exception');
       return null;
     }
+    
+    print('❌ [DEBUG] Reached end of method without returning - this should not happen');
+    return null;
   }
 
   /// Update category details
@@ -266,46 +311,78 @@ class FriendsCategoriesOperations {
 
   /// Remove friend from category
   Future<bool> removeFriendFromCategory(String friendId, String categoryId) async {
+    print('🗑️ [DEBUG] removeFriendFromCategory called: friendId=$friendId, categoryId=$categoryId');
+    print('📞 [DEBUG] Called from: ${StackTrace.current.toString().split('\n').take(3).join('\\n')}');
+    
     final category = getCategoryById(categoryId);
     if (category == null) {
+      print('❌ [DEBUG] Category not found: $categoryId');
       AppLogger.warning('Category not found: $categoryId');
       return false;
     }
+    print('✅ [DEBUG] Found category: ${category.name}');
 
-    if (!isFriendInCategory(friendId, categoryId)) {
+    print('🔍 [DEBUG] Checking if friend is in category...');
+    final isInCategory = isFriendInCategory(friendId, categoryId);
+    print('🔍 [DEBUG] Friend in category: $isInCategory');
+    
+    if (!isInCategory) {
+      print('ℹ️ [DEBUG] Friend not in category (already removed): $friendId -> $categoryId');
       AppLogger.warning('Friend not in category: $friendId -> $categoryId');
       return true; // Not an error, just already removed
     }
 
+    print('🔐 [DEBUG] Checking edit permissions...');
     if (!_canEditCategory(category)) {
+      print('❌ [DEBUG] No permission to edit category: $categoryId');
       AppLogger.warning('No permission to edit category: $categoryId');
       return false;
     }
+    print('✅ [DEBUG] Edit permission granted');
 
     try {
+      print('🔄 [DEBUG] Starting removal process...');
+      
       // Remove from friend-category relationships
       final friendCategoryRelationships = _parent.friendCategoryRelationshipsInternal;
+      print('🔗 [DEBUG] Current relationships: $friendCategoryRelationships');
+      
       friendCategoryRelationships[friendId]?.remove(categoryId);
       if (friendCategoryRelationships[friendId]?.isEmpty == true) {
         friendCategoryRelationships.remove(friendId);
       }
+      print('🔗 [DEBUG] Updated relationships: $friendCategoryRelationships');
       
       // Update the category's member list
+      print('👥 [DEBUG] Original members: ${category.friendUserIds}');
+      final updatedMemberIds = category.friendUserIds.where((id) => id != friendId).toList();
+      print('👥 [DEBUG] Updated members: $updatedMemberIds');
+      
       final updatedCategory = category.copyWith(
-        friendUserIds: category.friendUserIds.where((id) => id != friendId).toList(),
+        friendUserIds: updatedMemberIds,
         updatedAt: DateTime.now(),
       );
       
+      print('💾 [DEBUG] Updating category internal state...');
       // Use the internal update method that handles caching and notifications
       _parent.updateCategoryInternal(categoryId, updatedCategory);
-      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      print('✅ [DEBUG] Internal state updated');
       
-      // Sync to Firebase
+      print('☁️ [DEBUG] Syncing to Firebase...');
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      print('✅ [DEBUG] Firebase sync completed');
       
       AppLogger.success('✅ Friend removed from category: $friendId -> $categoryId');
+      print('🎉 [DEBUG] removeFriendFromCategory returning true');
+      
+      // Emit event bus notification for UI updates
+      print('📡 [DEBUG] Emitting GroupEventBus.memberRemoved event...');
+      GroupEventBus.memberRemoved();
+      print('✅ [DEBUG] Event emitted successfully');
+      
       return true;
     } catch (e) {
+      print('💥 [DEBUG] Exception in removeFriendFromCategory: $e');
       AppLogger.error('Error removing friend from category', e);
       return false;
     }
@@ -490,12 +567,26 @@ class FriendsCategoriesOperations {
   // ===== PRIVATE HELPER METHODS =====
 
   bool _canEditCategory(FriendCategory category) {
-    // Can edit if owner or has edit permissions
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    
+    // Can edit if owner
+    if (currentUserId == category.ownerId) {
+      return true;
+    }
+    
+    // Or if has admin permissions
     return ServiceLocator.get<PermissionService>().isGroupAdmin(category.id);
   }
 
   bool _canDeleteCategory(FriendCategory category) {
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    
     // Can delete if owner
+    if (currentUserId == category.ownerId) {
+      return true;
+    }
+    
+    // Or if has delete permissions
     return ServiceLocator.get<PermissionService>().canDeleteGroup(category.id);
   }
 
@@ -541,6 +632,27 @@ class FriendsCategoriesOperations {
   
   /// Get categories list (for ViewModels)
   List<FriendCategory> get categoriesList => _parent.categoriesList;
+  
+  /// Migrate existing groups to ensure owners are members
+  Future<void> migrateOwnersAsMembers() async {
+    print('🔄 [DEBUG] Running owner-as-member migration...');
+    final categories = getAllCategories();
+    
+    for (final category in categories) {
+      if (!category.friendUserIds.contains(category.ownerId)) {
+        print('🔧 [DEBUG] Adding owner ${category.ownerId} to group "${category.name}"');
+        
+        final updatedCategory = category.copyWith(
+          friendUserIds: [...category.friendUserIds, category.ownerId],
+          updatedAt: DateTime.now(),
+        );
+        
+        _parent.updateCategoryInternal(category.id, updatedCategory);
+        await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      }
+    }
+    print('✅ [DEBUG] Owner-as-member migration completed');
+  }
   
   /// Assign friend to category (alternative name for addFriendToCategory)
   Future<bool> assignFriendToCategory(String friendId, String categoryId) async {

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Reusable text display card component
 /// 
@@ -30,7 +31,7 @@ class TextDisplayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget textWidget = Text(
       text,
-      style: textStyle ?? Theme.of(context).textTheme.bodyMedium,
+      style: textStyle ?? AppTextStyles.bodyMedium,
     );
 
     return Container(

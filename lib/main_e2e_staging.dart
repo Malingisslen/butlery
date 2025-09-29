@@ -12,6 +12,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -38,6 +39,7 @@ import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Staging Application Entry Point
 /// 
@@ -210,11 +212,11 @@ class _E2EStagingErrorApp extends StatelessWidget {
     return MaterialApp(
       title: 'E2E Staging Error',
       home: Scaffold(
-        backgroundColor: Colors.purple[50],
+        backgroundColor: AppColors.infoContainer,
         appBar: AppBar(
           title: const Text('E2E Staging Error'),
-          backgroundColor: Colors.purple,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.secondaryPurple,
+          foregroundColor: AppColors.cardWhite,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -223,8 +225,8 @@ class _E2EStagingErrorApp extends StatelessWidget {
             children: [
               const Icon(
                 Icons.cloud_off_outlined,
-                size: 48,
-                color: Colors.purple,
+                size: AppDimensions.iconSizeXxl,
+                color: AppColors.secondaryPurple,
               ),
               const SizedBox(height: 16),
               const Text(
@@ -232,7 +234,7 @@ class _E2EStagingErrorApp extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.purple,
+                  color: AppColors.secondaryPurple,
                 ),
               ),
               const SizedBox(height: 16),
@@ -260,9 +262,9 @@ class _E2EStagingErrorApp extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(color: AppColors.divider),
                     ),
                     child: Text(
                       message,

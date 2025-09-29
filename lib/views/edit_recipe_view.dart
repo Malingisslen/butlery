@@ -68,6 +68,7 @@ import 'package:butlery/views/edit_recipe/edit_recipe_banners.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_bottom_bar.dart';
 import 'package:butlery/views/edit_recipe/edit_recipe_form_fields.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 /// Comprehensive recipe editing view serving as facade for focused component architecture and collaborative editing.
 ///
 /// This view has been refactored to use the focused components pattern for enhanced maintainability and clean separation:
@@ -328,14 +329,15 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         title: const Text('Osparade ändringar'),
         content: const Text('Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Fortsätt redigera',
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Fortsätt redigera'),
           ),
-          TextButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Lämna utan att spara',
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Lämna utan att spara'),
           ),
         ],
       ),

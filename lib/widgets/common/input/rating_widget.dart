@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// A reusable star rating widget supporting full stars, half stars, and interactive rating.
 ///
@@ -53,7 +54,7 @@ class RatingWidget extends StatelessWidget {
   const RatingWidget({
     super.key,
     required this.rating,
-    this.size = 16,
+    this.size = AppDimensions.iconSizeS,
     this.starColor = AppColors.warning,
     this.emptyStarColor = AppColors.outline,
     this.isInteractive = false,
@@ -63,7 +64,7 @@ class RatingWidget extends StatelessWidget {
   /// Factory constructor for read-only rating display
   factory RatingWidget.readonly({
     required double rating,
-    double size = 16,
+    double size = AppDimensions.iconSizeS,
     Color starColor = AppColors.warning,
     Color emptyStarColor = AppColors.outline,
   }) {
@@ -80,7 +81,7 @@ class RatingWidget extends StatelessWidget {
   factory RatingWidget.interactive({
     required double rating,
     required ValueChanged<double> onRatingChanged,
-    double size = 24,
+    double size = AppDimensions.iconSizeM,
     Color starColor = AppColors.warning,
     Color emptyStarColor = AppColors.outline,
   }) {

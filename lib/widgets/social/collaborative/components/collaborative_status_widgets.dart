@@ -126,7 +126,7 @@ class CollaborativeStatusWidgets {
             else
               const Icon(
                 Icons.people_outline,
-                size: 24,
+                size: AppDimensions.iconSizeL,
                 color: AppColors.primaryBlue,
               ),
           ],

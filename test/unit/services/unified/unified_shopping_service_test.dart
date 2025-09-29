@@ -22,6 +22,7 @@ void main() {
     late UnifiedShoppingService service;
     late MockAuthRepository mockAuthRepo;
     late MockFirestoreRepository mockFirestoreRepo;
+    late MockShoppingRepository mockShoppingRepo;
     late MockPermissionService mockPermissionService;
     
     setUpAll(() async {
@@ -44,6 +45,7 @@ void main() {
       // Create mocks
       mockAuthRepo = MockAuthRepository();
       mockFirestoreRepo = MockFirestoreRepository();
+      mockShoppingRepo = MockShoppingRepository();
       mockPermissionService = MockPermissionService();
       // Configure auth repository
       mockAuthRepo.setAuthState(
@@ -62,6 +64,7 @@ void main() {
       service = UnifiedShoppingService(
         firestoreRepository: mockFirestoreRepo,
         authRepository: mockAuthRepo,
+        shoppingRepository: mockShoppingRepo,
       );
     });
     
@@ -515,6 +518,7 @@ void main() {
         service = UnifiedShoppingService(
           firestoreRepository: mockFirestoreRepo,
           authRepository: mockAuthRepo,
+          shoppingRepository: mockShoppingRepo,
         );
       });
       
@@ -527,6 +531,7 @@ void main() {
         service = UnifiedShoppingService(
           firestoreRepository: mockFirestoreRepo,
           authRepository: mockAuthRepo,
+          shoppingRepository: mockShoppingRepo,
         );
       });
     });

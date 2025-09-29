@@ -62,9 +62,9 @@ void main() {
           allowImport: true,
           allowCollaboration: true,
           viewCount: 5,
-          importCount: 2,
+          engagementCount: 2,
           viewedByUserIds: const ['user_2'],
-          importedByUserIds: const ['user_3'],
+          engagedByUserIds: const ['user_3'],
           dismissedByUserIds: const ['user_4'],
           recipeSnapshot: testRecipe,
         );
@@ -224,7 +224,7 @@ void main() {
           sharedByDisplayName: 'Anna',
           sharedToUserIds: ['user_2', 'user_3'],
           viewedByUserIds: const ['user_2'],
-          importedByUserIds: const ['user_3'],
+          engagedByUserIds: const ['user_3'],
           dismissedByUserIds: const ['user_4'],
           recipeSnapshot: testRecipe,
         );
@@ -455,9 +455,9 @@ void main() {
           allowImport: true,
           allowCollaboration: true,
           viewCount: 5,
-          importCount: 2,
+          engagementCount: 2,
           viewedByUserIds: const ['user_2'],
-          importedByUserIds: const ['user_3'],
+          engagedByUserIds: const ['user_3'],
           dismissedByUserIds: const ['user_4'],
           recipeSnapshot: testRecipe,
         );

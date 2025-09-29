@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// View for displaying shared shopping lists.
 /// 
@@ -20,7 +21,7 @@ class SharedShoppingListsView extends StatelessWidget {
             Icon(
               Icons.shopping_cart_outlined,
               size: 64,
-              color: Colors.grey,
+              color: AppColors.textMedium,
             ),
             SizedBox(height: 16),
             Text(
@@ -35,7 +36,7 @@ class SharedShoppingListsView extends StatelessWidget {
               'Kommer snart...',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                color: AppColors.textMedium,
               ),
             ),
           ],

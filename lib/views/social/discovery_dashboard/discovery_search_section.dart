@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Discovery Search Section - Enhanced search for discovery dashboard
 class DiscoverySearchSection {
@@ -62,7 +63,7 @@ class DiscoverySearchSection {
           prefixIcon: const Icon(
             Icons.search,
             color: AppColors.primary,
-            size: 24,
+            size: AppDimensions.iconSizeL,
           ),
           suffixIcon: viewModel.searchQuery.isNotEmpty
               ? Row(
@@ -130,7 +131,7 @@ class DiscoverySearchSection {
         children: [
           const Icon(
             Icons.search,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: AppColors.primary,
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -204,9 +205,10 @@ class DiscoverySearchSection {
                   ),
                 ),
                 const Spacer(),
-                TextButton(
+                ActionButtons.textButton(
+                  context,
+                  label: 'Stäng',
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Stäng'),
                 ),
               ],
             ),
@@ -267,7 +269,7 @@ class DiscoverySearchSection {
               ),
               child: const Icon(
                 Icons.mic,
-                size: 40,
+                size: AppDimensions.iconSizeXl,
                 color: AppColors.primary,
               ),
             ),
@@ -287,18 +289,20 @@ class DiscoverySearchSection {
           ],
         ),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
           ),
-          ElevatedButton.icon(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Starta',
+            icon: Icons.mic,
             onPressed: () {
               Navigator.pop(context);
               // Simulate voice input for now
               _simulateVoiceInput(context);
             },
-            icon: const Icon(Icons.mic),
-            label: const Text('Starta'),
           ),
         ],
       ),

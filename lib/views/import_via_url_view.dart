@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
 class ImportViaUrlView extends StatelessWidget {
@@ -81,8 +82,9 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<UrlImportViewModel>();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Import via URL')),
+    return LayoutComponents.mainMenu(
+      currentIndex: null,
+      title: 'Import via URL',
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -94,38 +96,25 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
           child: Column(
             children: [
             // URL input
-            TextFormField(
+            StyledInput(
               controller: _urlController,
               enabled: !viewModel.isLoading,
-              decoration: const InputDecoration(
-                labelText: 'Klistra in recept-URL',
-                border: OutlineInputBorder(),
-                hintText: 'https://example.com/recept',
-              ),
+              label: 'Klistra in recept-URL',
+              hint: 'https://example.com/recept',
               keyboardType: TextInputType.url,
               textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _fetchPage(),
+              // Note: onFieldSubmitted functionality moved to fetch button
             ),
             const SizedBox(height: AppDimensions.spacingXl),
 
             // Hämta-knapp
-            ElevatedButton(
-              onPressed:
-                  viewModel.canFetch && !viewModel.isLoading
-                      ? _fetchPage
-                      : null,
-              style: ComponentThemes.primaryButtonStyle,
-              child:
-                  viewModel.isLoading
-                      ? const SizedBox(
-                          width: AppDimensions.iconSizeS,
-                          height: AppDimensions.iconSizeS,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
-                          ),
-                        )
-                      : const Text('Hämta text'),
+            ActionButtons.primaryButton(
+              context,
+              label: 'Hämta text',
+              onPressed: viewModel.canFetch && !viewModel.isLoading ? _fetchPage : null,
+              isLoading: viewModel.isLoading,
+              loadingText: 'Hämtar...',
+              isExpanded: true,
             ),
 
             // Error visning
@@ -142,25 +131,21 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               const Text('Extraherad text:', style: AppTextStyles.headlineSmall),
               const SizedBox(height: AppDimensions.spacingS),
               Expanded(
-                child: TextFormField(
+                child: StyledInput(
                   controller: _extractedTextController..text = viewModel.extractedText,
                   maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: const InputDecoration(
-                    labelText: 'Redigera text innan import',
-                    hintText: 'Du kan redigera den extraherade texten här...',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  minLines: 10,
+                  label: 'Redigera text innan import',
+                  hint: 'Du kan redigera den extraherade texten här...',
+                  keyboardType: TextInputType.multiline,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingXl),
-              ElevatedButton(
+              ActionButtons.primaryButton(
+                context,
+                label: 'Gå vidare till klistra-in',
                 onPressed: _navigateToTextImport,
-                style: ComponentThemes.primaryButtonStyle,
-                child: const Text('Gå vidare till klistra-in'),
+                isExpanded: true,
               ),
             ],
             ],

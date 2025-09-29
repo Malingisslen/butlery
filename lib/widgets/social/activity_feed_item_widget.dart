@@ -102,7 +102,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onTap != null ? () => onTap!(activity) : null,
           onLongPress: onLongPress != null ? () => onLongPress!(activity) : null,
@@ -127,7 +127,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
                     children: [
                       // Activity header
                       _buildActivityHeader(),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppDimensions.spacingXxs),
                       
                       // Activity description
                       if (showDescription) ...[
@@ -228,8 +228,8 @@ class ActivityFeedItemWidget extends StatelessWidget {
         children: [
           // Content image or icon
           Container(
-            width: 40,
-            height: 40,
+            width: AppDimensions.iconSizeXl,
+            height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
               color: AppColors.primaryContainer.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
@@ -239,8 +239,8 @@ class ActivityFeedItemWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                     child: Image.network(
                       activity.targetImageUrl!,
-                      width: 40,
-                      height: 40,
+                      width: AppDimensions.iconSizeXl,
+                      height: AppDimensions.iconSizeXl,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => _buildContentIcon(),
                     ),
@@ -283,10 +283,10 @@ class ActivityFeedItemWidget extends StatelessWidget {
         if (!showFullTimestamp) ...[
           Icon(
             Icons.schedule,
-            size: 14,
+            size: AppDimensions.iconSizeS,
             color: AppColors.onSurface.withValues(alpha: 0.5),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             activity.timeAgo,
             style: AppTextStyles.bodySmall.copyWith(
@@ -350,7 +350,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 14,
+            size: AppDimensions.iconSize14,
             color: color.withValues(alpha: 0.7),
           ),
           const SizedBox(width: 2),
@@ -420,7 +420,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
       ),
       child: Icon(
         iconData,
-        size: 18,
+        size: AppDimensions.iconSize18,
         color: iconColor,
       ),
     );
@@ -448,7 +448,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
     
     return Icon(
       iconData,
-      size: 20,
+      size: AppDimensions.iconSizeM,
       color: AppColors.primary.withValues(alpha: 0.7),
     );
   }

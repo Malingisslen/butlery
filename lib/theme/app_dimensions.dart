@@ -155,6 +155,18 @@ class AppDimensions {
   /// Extra small icon size (12px)
   static const double iconSizeXs = 12.0;
 
+  /// Icon size 14px
+  static const double iconSize14 = 14.0;
+
+  /// Icon size 18px
+  static const double iconSize18 = 18.0;
+
+  /// Icon size 28px
+  static const double iconSize28 = 28.0;
+
+  /// Extra extra extra large icon size (64px)
+  static const double iconSizeXXXl = 64.0;
+
   // ===== STROKE/BORDER WIDTH CONSTANTS =====
 
   /// Thin stroke width (0.5px)
@@ -247,11 +259,57 @@ class AppDimensions {
   /// Medium animation duration (200ms)
   static const Duration animationDurationMedium = Duration(milliseconds: 200);
 
+  /// Common animation duration (300ms)
+  static const Duration animationDurationCommon = Duration(milliseconds: 300);
+
   /// Slow animation duration (350ms)
   static const Duration animationDurationSlow = Duration(milliseconds: 350);
 
+  /// Long animation duration (500ms)
+  static const Duration animationDurationLong = Duration(milliseconds: 500);
+
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
+
+  // ===== OPACITY/ALPHA CONSTANTS =====
+
+  /// Very light transparency (0.1)
+  static const double opacityVeryLight = 0.1;
+
+  /// Light transparency (0.2)
+  static const double opacityLight = 0.2;
+
+  /// Medium light transparency (0.3)
+  static const double opacityMediumLight = 0.3;
+
+  /// Medium transparency (0.4)
+  static const double opacityMedium = 0.4;
+
+  /// Half transparency (0.5)
+  static const double opacityHalf = 0.5;
+
+  /// Medium dark transparency (0.6)
+  static const double opacityMediumDark = 0.6;
+
+  /// Dark transparency (0.7)
+  static const double opacityDark = 0.7;
+
+  /// Very dark transparency (0.8)
+  static const double opacityVeryDark = 0.8;
+
+  // ===== COMMON HEIGHT CONSTANTS =====
+
+  /// Thumbnail height (80px)
+  static const double heightThumbnail = 80.0;
+
+  /// Medium container height (100px)
+  static const double heightMedium = 100.0;
+
+  /// Large container height (120px)
+  static const double heightLarge = 120.0;
+
+  /// Extra large container height (200px)
+  static const double heightXLarge = 200.0;
 
   // ===== GRID CONSTANTS =====
 

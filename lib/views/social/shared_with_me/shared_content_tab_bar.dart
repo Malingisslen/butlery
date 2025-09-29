@@ -8,7 +8,7 @@ import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
 ///
-/// Handles tab navigation between recipes and menus with unread counts.
+/// Handles tab navigation between recipes, menus, and shared shopping lists with unread counts.
 class SharedContentTabBar {
   static Widget build(
     BuildContext context,
@@ -33,7 +33,7 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.restaurant, size: 20),
+                  const Icon(Icons.restaurant, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text('Recept (${viewModel.totalSharedRecipes})'),
                   if (viewModel.unreadRecipesCount > 0) ...[
@@ -50,7 +50,7 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_month, size: 20),
+                  const Icon(Icons.calendar_month, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text('Menyer (${viewModel.totalSharedMenus})'),
                   if (viewModel.unreadMenusCount > 0) ...[
@@ -63,6 +63,23 @@ class SharedContentTabBar {
                 ],
               ),
             ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
+                  const SizedBox(width: AppDimensions.spacingXs),
+                  Text('Inköpslistor (${viewModel.totalSharedShoppingLists})'),
+                  if (viewModel.unreadShoppingListsCount > 0) ...[
+                    const SizedBox(width: AppDimensions.spacingXs),
+                    _buildUnreadBadge(
+                      context,
+                      viewModel.unreadShoppingListsCount,
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
           indicator: BoxDecoration(
             color: Theme.of(context).colorScheme.primary,
@@ -70,7 +87,7 @@ class SharedContentTabBar {
           ),
           labelColor: Theme.of(context).colorScheme.onPrimary,
           unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          dividerColor: Colors.transparent,
+          dividerColor: AppColors.transparent,
         ),
       ),
     );

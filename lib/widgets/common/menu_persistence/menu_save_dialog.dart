@@ -189,17 +189,44 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Container(
-          height: 100,
+          height: 150,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
-          child: const Center(
-            child: Text(
-              'Vänlistor inte tillgängliga',
-              style: TextStyle(color: AppColors.textMedium),
-            ),
-          ),
+          child: widget.availableFriends == null || widget.availableFriends!.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Inga vänner tillgängliga',
+                    style: TextStyle(color: AppColors.textMedium),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: widget.availableFriends!.length,
+                  itemBuilder: (context, index) {
+                    final friend = widget.availableFriends![index];
+                    final friendId = friend.userId ?? friend.id ?? '';
+                    final friendName = friend.displayName ?? friend.name ?? 'Okänd vän';
+                    final isSelected = _selectedFriendIds.contains(friendId);
+                    
+                    return CheckboxListTile(
+                      title: Text(friendName),
+                      value: isSelected,
+                      onChanged: _isLoading ? null : (bool? selected) {
+                        if (mounted) {
+                          setState(() {
+                            if (selected == true) {
+                              _selectedFriendIds.add(friendId);
+                            } else {
+                              _selectedFriendIds.remove(friendId);
+                            }
+                          });
+                        }
+                      },
+                      dense: true,
+                    );
+                  },
+                ),
         ),
       ],
     );

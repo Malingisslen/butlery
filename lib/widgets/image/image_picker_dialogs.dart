@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Progress data for upload operations
 class UploadProgress {
@@ -52,7 +53,7 @@ class ImagePickerDialogs {
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             ListTile(
-              leading: const Icon(Icons.camera_alt, size: 28),
+              leading: const Icon(Icons.camera_alt, size: AppDimensions.iconSizeL),
               title: const Text('Ta foto'),
               subtitle: const Text('Använd kameran för att ta en ny bild'),
               onTap: () {
@@ -62,7 +63,7 @@ class ImagePickerDialogs {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.photo_library, size: 28),
+              leading: const Icon(Icons.photo_library, size: AppDimensions.iconSizeL),
               title: const Text('Välj från galleri'),
               subtitle: const Text(
                 'Välj en befintlig bild från ditt galleri',
@@ -94,18 +95,20 @@ class ImagePickerDialogs {
           'ge behörighet.',
         ),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
           ),
-          TextButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Inställningar',
             onPressed: () async {
               await openAppSettings();
               if (context.mounted) {
                 Navigator.pop(context, true);
               }
             },
-            child: const Text('Inställningar'),
           ),
         ],
       ),
@@ -173,12 +176,12 @@ class ImagePickerDialogs {
                   const SizedBox(height: AppDimensions.spacingL),
                   Text(
                     progress.message,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: AppTextStyles.bodyMedium,
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
                   Text(
                     '$percentage% (${progress.completed}/${progress.total})',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),

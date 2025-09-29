@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -168,7 +169,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             ),
 
           // Debug info (if enabled)
-          if (true) ...[
+          if (kDebugMode) ...[
             const Divider(color: AppColors.divider),
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),

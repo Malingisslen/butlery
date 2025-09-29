@@ -103,7 +103,7 @@ class GroupContentSearchBar {
         children: [
           Icon(
             Icons.filter_list,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: AppColors.onSurface.withValues(alpha: 0.6),
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -145,7 +145,7 @@ class GroupContentSearchBar {
         children: [
           Icon(
             icon,
-            size: 12,
+            size: AppDimensions.iconSizeXs,
             color: AppColors.primary,
           ),
           const SizedBox(width: 4),

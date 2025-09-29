@@ -6,6 +6,9 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 class FriendRequestCard {
   static Widget buildIncomingCard(
@@ -80,13 +83,13 @@ class FriendRequestCard {
                       children: [
                         Text(
                           displayName,
-                          style: Theme.of(context).textTheme.titleMedium,
+                          style: AppTextStyles.titleMedium,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           'vill bli vän',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: AppTextStyles.bodyMedium.copyWith(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                         ),
@@ -103,7 +106,7 @@ class FriendRequestCard {
                             ),
                             child: Text(
                               '"${request.message!}"',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              style: AppTextStyles.bodySmall.copyWith(
                                     fontStyle: FontStyle.italic,
                                   ),
                               maxLines: 2,
@@ -114,7 +117,7 @@ class FriendRequestCard {
                         const SizedBox(height: AppDimensions.spacingXs),
                         Text(
                           request.timeAgoText,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                         ),
@@ -130,29 +133,23 @@ class FriendRequestCard {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton.icon(
+                      child: ActionButtons.outlinedButton(
+                        context,
+                        label: 'Avböj',
+                        icon: Icons.close,
                         onPressed: viewModel.isLoading
                             ? null
                             : () => _rejectRequest(context, request, viewModel),
-                        icon: const Icon(Icons.close),
-                        label: const Text('Avböj'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.error,
-                          side: const BorderSide(color: AppColors.error),
-                        ),
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingL),
                     Expanded(
-                      child: FilledButton.icon(
+                      child: StyledButton.primary(
+                        text: 'Acceptera',
+                        icon: const Icon(Icons.check),
                         onPressed: viewModel.isLoading
                             ? null
                             : () => _acceptRequest(context, request, viewModel),
-                        icon: const Icon(Icons.check),
-                        label: const Text('Acceptera'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.success,
-                        ),
                       ),
                     ),
                   ],
@@ -270,14 +267,14 @@ class FriendRequestCard {
                   children: [
                     Text(
                       displayName,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: AppTextStyles.titleMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (request.message?.isNotEmpty == true)
                       Text(
                         request.message!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: AppTextStyles.bodySmall.copyWith(
                               fontStyle: FontStyle.italic,
                             ),
                         maxLines: 1,
@@ -286,11 +283,11 @@ class FriendRequestCard {
                     const SizedBox(height: AppDimensions.spacingXs),
                     Row(
                       children: [
-                        Icon(statusIcon, size: 16, color: statusColor),
+                        Icon(statusIcon, size: AppDimensions.iconSizeS, color: statusColor),
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           statusText,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: AppTextStyles.bodySmall.copyWith(
                                 color: statusColor,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -298,7 +295,7 @@ class FriendRequestCard {
                         const Spacer(),
                         Text(
                           request.timeAgoText,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                         ),

@@ -150,7 +150,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           children: [
             Icon(
               Icons.people_outline,
-              size: 64,
+              size: AppDimensions.iconSizeXxl,
               color: AppColors.textMedium,
             ),
             SizedBox(height: AppDimensions.paddingM),

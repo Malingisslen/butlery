@@ -1,7 +1,6 @@
 // lib/widgets/common/share_dialog/share_mode_selection.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -14,7 +13,7 @@ class ShareModeSelection {
     bool supportsRealtimeSharing,
     Function(ShareMode) onModeChanged,
   ) {
-    if (!supportsRealtimeSharing || contentType == ShareContentType.shoppingList) {
+    if (!supportsRealtimeSharing) {
       return const SizedBox.shrink();
     }
 
@@ -30,34 +29,33 @@ class ShareModeSelection {
         ),
         const SizedBox(height: AppDimensions.spacingM),
         
-        RadioGroup<ShareMode>(
-          onChanged: (ShareMode? mode) => onModeChanged(mode!),
-          child: Column(
-            children: [
-              // Static Copy Option
-              Container(
-                margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                child: InkWell(
-                  onTap: () => onModeChanged(ShareMode.staticCopy),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: selectedMode == ShareMode.staticCopy
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outline,
-                      ),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        Column(
+          children: [
+            // Static Copy Option
+            Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              child: InkWell(
+                onTap: () => onModeChanged(ShareMode.staticCopy),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  decoration: BoxDecoration(
+                    border: Border.all(
                       color: selectedMode == ShareMode.staticCopy
-                          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
-                          : null,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline,
                     ),
-                    child: Row(
-                      children: [
-                        const Radio<ShareMode>(
-                          value: ShareMode.staticCopy,
-                        ),
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                    color: selectedMode == ShareMode.staticCopy
+                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        selectedMode == ShareMode.staticCopy ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        color: selectedMode == ShareMode.staticCopy ? Theme.of(context).colorScheme.primary : null,
+                      ),
                         const SizedBox(width: AppDimensions.spacingM),
                         Expanded(
                           child: Column(
@@ -85,65 +83,45 @@ class ShareModeSelection {
                 ),
               ),
               
-              // Realtime Sharing Option
-              InkWell(
-                  onTap: () => onModeChanged(ShareMode.realtime),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: selectedMode == ShareMode.realtime
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outline,
-                      ),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            // Realtime Sharing Option
+            InkWell(
+                onTap: () => onModeChanged(ShareMode.realtime),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  decoration: BoxDecoration(
+                    border: Border.all(
                       color: selectedMode == ShareMode.realtime
-                          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
-                          : null,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline,
                     ),
-                    child: Row(
-                      children: [
-                        const Radio<ShareMode>(
-                          value: ShareMode.realtime,
-                        ),
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                    color: selectedMode == ShareMode.realtime
+                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        selectedMode == ShareMode.realtime ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        color: selectedMode == ShareMode.realtime ? Theme.of(context).colorScheme.primary : null,
+                      ),
                         const SizedBox(width: AppDimensions.spacingM),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Realtidsdelning',
-                                    style: AppTextStyles.bodyLarge.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppDimensions.spacingXs,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.success,
-                                      borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
-                                    ),
-                                    child: Text(
-                                      'NYTT',
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                'Realtidsdelning',
+                                style: AppTextStyles.bodyLarge.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               const SizedBox(height: AppDimensions.spacingXs),
                               Text(
-                                'Alla kan redigera tillsammans i realtid',
+                                contentType == ShareContentType.shoppingList
+                                    ? 'Alla kan lägga till och checka av varor i realtid'
+                                    : 'Alla kan redigera tillsammans i realtid',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
@@ -155,8 +133,7 @@ class ShareModeSelection {
                     ),
                   ),
                 ),
-            ],
-          ),
+          ],
         ),
         
         const SizedBox(height: AppDimensions.spacingXl),

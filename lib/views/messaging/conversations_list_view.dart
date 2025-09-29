@@ -21,8 +21,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
+import 'package:butlery/models/user_profile.dart';
 
 /// Conversations list view showing all user's messaging conversations
 /// 
@@ -381,13 +383,40 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
   
-  void _navigateToUserProfile(BuildContext context, Conversation conversation) {
-    // Navigate to friend profile using existing routes
-    Navigator.pushNamed(
-      context,
-      Routes.friendProfile,
-      arguments: {'userId': conversation.id}, // In 1:1 chats, conversation.id is often the other user's ID
-    );
+  Future<void> _navigateToUserProfile(BuildContext context, Conversation conversation) async {
+    // For direct conversations, get the other participant's profile
+    try {
+      // Get the other participant's ID (not the current user)
+      final otherParticipantId = conversation.participantIds
+          .firstWhere((id) => id != _currentUserId, orElse: () => conversation.participantIds.first);
+      
+      // Try to get the UserProfile from friends service
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final friends = friendsService.friends;
+      
+      // Find the friend profile
+      final UserProfile friendProfile = friends.firstWhere(
+        (friend) => friend.uid == otherParticipantId,
+        orElse: () => throw Exception('Friend not found'),
+      );
+      
+      // Navigate to friend profile with UserProfile object
+      Navigator.pushNamed(
+        context,
+        Routes.friendProfile,
+        arguments: friendProfile,
+      );
+    } catch (e) {
+      // If friend not found or error occurred, show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte visa profil: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
   
   Future<void> _performConversationDeletion(Conversation conversation) async {

@@ -61,14 +61,14 @@ class GroupContentTabBar {
             viewModel.groupActivityFeed.length,
           ),
         ],
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.onSurface.withValues(alpha: 0.6),
+        labelColor: Theme.of(context).colorScheme.primary,
+        unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
         labelStyle: AppTextStyles.bodyMedium.copyWith(
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: AppTextStyles.bodyMedium,
         indicator: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppDimensions.radiusS),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -89,7 +89,7 @@ class GroupContentTabBar {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, size: 20),
+              Icon(icon, size: AppDimensions.iconSizeM),
               if (count > 0)
                 Positioned(
                   right: -8,
@@ -164,7 +164,7 @@ class GroupContentTabBar {
       children: [
         Icon(
           icon,
-          size: 16,
+          size: AppDimensions.iconSizeS,
           color: AppColors.primary.withValues(alpha: 0.7),
         ),
         const SizedBox(height: 4),

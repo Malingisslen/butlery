@@ -46,18 +46,15 @@ class ShoppingListCard extends StatelessWidget {
     return Container(
       margin: margin ?? _getDefaultMargin(),
       child: Material(
-        color: Colors.transparent,
+        elevation: AppDimensions.elevationMedium,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: AppColors.backgroundLight,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Container(
+          child: Padding(
             padding: padding ?? _getDefaultPadding(),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.textLight, width: AppDimensions.borderWidthThin),
-            ),
             child: _buildContent(context),
           ),
         ),
@@ -147,7 +144,7 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         const Icon(
           Icons.shopping_cart,
-          size: 20,
+          size: AppDimensions.iconSizeM,
           color: AppColors.textMedium,
         ),
         const SizedBox(width: AppDimensions.spacingS),
@@ -205,7 +202,7 @@ class ShoppingListCard extends StatelessWidget {
           children: [
             const Icon(
               Icons.info_outline,
-              size: 16,
+              size: AppDimensions.iconSizeS,
               color: AppColors.textMedium,
             ),
             const SizedBox(width: AppDimensions.spacingS),
@@ -232,7 +229,7 @@ class ShoppingListCard extends StatelessWidget {
             children: [
               Icon(
                 _isItemCompleted(item) ? Icons.check_circle : Icons.radio_button_unchecked,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: _isItemCompleted(item) ? Colors.green : AppColors.textMedium,
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -287,7 +284,7 @@ class ShoppingListCard extends StatelessWidget {
         children: [
           Icon(
             Icons.people,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: Colors.blue[700],
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -317,7 +314,7 @@ class ShoppingListCard extends StatelessWidget {
       ),
       child: const Icon(
         Icons.people,  
-        size: 16,
+        size: AppDimensions.iconSizeS,
         color: Colors.white,
       ),
     );
@@ -348,7 +345,7 @@ class ShoppingListCard extends StatelessWidget {
         children: [
           Icon(
             isComplete ? Icons.check_circle : Icons.hourglass_empty,
-            size: 14,
+            size: AppDimensions.iconSizeS,
             color: isComplete ? Colors.green[700] : Colors.orange[700],
           ),
           const SizedBox(width: AppDimensions.spacingXs),

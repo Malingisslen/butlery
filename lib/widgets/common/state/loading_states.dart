@@ -73,7 +73,7 @@ class LoadingStates {
         vertical: AppDimensions.spacingXs,
       ),
       child: Card(
-        elevation: 2,
+        elevation: AppDimensions.elevationLow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingS),

@@ -139,23 +139,57 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
   void _setupEventListening() {
     // Manual stream subscription since this is a StatefulWidget
     _eventSubscription = GroupEventBus.stream.listen((eventType) {
-      if (!mounted || _isNavigating) return;
+      print('🎧 [DEBUG] GroupDetailView (${widget.groupId}) received event: $eventType');
+      print('🎧 [DEBUG] mounted: $mounted, _isNavigating: $_isNavigating');
+      
+      if (!mounted || _isNavigating) {
+        print('🎧 [DEBUG] Ignoring event - not mounted or navigating');
+        return;
+      }
 
       switch (eventType) {
         case GroupEventType.created:
+          print('🎧 [DEBUG] Group created event - no action needed');
           break;
         case GroupEventType.updated:
         case GroupEventType.memberAdded:
         case GroupEventType.memberRemoved:
+          print('🎧 [DEBUG] Group/member changed event - checking if user is still member...');
+          
+          // Check if current user is still a member of this group
+          final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+          final currentGroup = categoriesService.getCategoryById(widget.groupId);
+          final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+          
+          if (currentGroup != null && currentUserId != null) {
+            final isStillMember = currentGroup.friendUserIds.contains(currentUserId);
+            print('🎧 [DEBUG] User still member of group: $isStillMember');
+            
+            if (!isStillMember) {
+              print('🎧 [DEBUG] User no longer member - should navigate away');
+              // User was removed from this group, navigate away
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+              return;
+            }
+          }
+          
+          print('🎧 [DEBUG] Reloading group data...');
           _loadGroupData();
           break;
         case GroupEventType.deleted:
+          print('🎧 [DEBUG] Group deleted event - checking if group still exists...');
           final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
           final currentGroup =
               categoriesService.getCategoryById(widget.groupId);
           if (currentGroup == null) {
-            // Gruppen blev borttagen
+            print('🎧 [DEBUG] Group was deleted - navigating away');
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
           } else {
+            print('🎧 [DEBUG] Group still exists - reloading data...');
             _loadGroupData();
           }
           break;
@@ -165,10 +199,14 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
 
   /// Ladda både gruppdata OCH pending inbjudningar med force refresh
   Future<void> _loadGroupData() async {
+    print('🔄 [DEBUG] _loadGroupData() called');
+    
     if (!mounted) {
+      print('🔄 [DEBUG] Not mounted - returning early');
       return;
     }
 
+    print('🔄 [DEBUG] Setting loading state...');
     if (mounted) {
       setState(() {
         _isLoading = true;
@@ -184,30 +222,38 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       await groupInvitationService.refresh();
 
       // Hämta gruppdata
+      print('🔄 [DEBUG] Getting group by ID: ${widget.groupId}');
       _group = categoriesService.getCategoryById(widget.groupId);
 
       if (_group != null) {
+        print('🔄 [DEBUG] Found group: ${_group!.name}');
+        print('🔄 [DEBUG] Group members: ${_group!.friendUserIds}');
+        
         // ✅ DEBUG: Logga gruppinformation
         _debugGroupInfo();
 
         // Hämta medlemmar från vänlistan
+        print('🔄 [DEBUG] Getting member profiles from friends list...');
         _members = friendsViewModel.friends
             .where((friend) => _group!.friendUserIds.contains(friend.uid))
             .toList();
+        print('🔄 [DEBUG] Found ${_members.length} member profiles');
 
         // Hämta pending inbjudningar för denna grupp
         // Note: Group invitation fetching is not implemented in current version
         _pendingInvitations = [];
 
-        debugPrint(
-            '🔍 DEBUG: Efter refresh - Laddade ${_members.length} medlemmar och ${_pendingInvitations.length} väntande inbjudningar');
+        print('🔄 [DEBUG] Data loading completed - ${_members.length} members, ${_pendingInvitations.length} pending invitations');
+      } else {
+        print('🔄 [DEBUG] Group not found - group may have been deleted or user removed');
       }
     } catch (e) {
-      debugPrint('🔍 DEBUG: Fel vid laddning av gruppdata: $e');
+      print('💥 [DEBUG] Error loading group data: $e');
       _group = null;
       _members = [];
       _pendingInvitations = [];
     } finally {
+      print('🔄 [DEBUG] Setting loading to false and updating UI...');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -433,6 +479,7 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     );
 
     if (shouldLeave == true && mounted) {
+      print('🚪 [DEBUG] User confirmed leaving group - starting removal process...');
       final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
       final success = await categoriesService.categories.removeFriendFromCategory(
         currentUserId!,
@@ -440,13 +487,18 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       );
 
       if (success && mounted) {
+        print('🚪 [DEBUG] Leave successful - showing snackbar...');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Du har lämnat gruppen 👋'),
             backgroundColor: AppColors.success,
           ),
         );
-        Navigator.pop(context); // Gå tillbaka till grupp-listan
+        print('🚪 [DEBUG] Navigation will be handled automatically by event listener');
+        // Navigation will be handled automatically by the event listener
+        // when it detects the user is no longer a member
+      } else {
+        print('🚪 [DEBUG] Leave not successful - success: $success, mounted: $mounted');
       }
     }
   }

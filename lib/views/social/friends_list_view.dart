@@ -67,6 +67,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friends_list/friends_tab.dart';
@@ -187,6 +188,17 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   Widget build(BuildContext context) {
     return Consumer2<FriendsViewModel, UnifiedFriendsService>(
       builder: (context, viewModel, friendsService, child) {
+        // 🎯 UX ENHANCEMENT: Sync local search query with ViewModel
+        // When ViewModel clears search (after friend request), clear UI search field
+        if (viewModel.searchQuery.isEmpty && _searchQuery.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _searchQuery = '';
+              });
+            }
+          });
+        }
 
         return LayoutComponents.mainMenu(
           currentIndex: null,
@@ -200,9 +212,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   controller: _tabController,
                   isScrollable: false, // Center the tabs
                   tabAlignment: TabAlignment.fill, // Fill available space
-                  labelColor: AppColors.primaryBlue,
-                  unselectedLabelColor: AppColors.textMedium,
-                  indicatorColor: AppColors.primaryBlue,
+                  labelColor: Theme.of(context).colorScheme.primary,
+                  unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                  indicatorColor: Theme.of(context).colorScheme.primary,
                   indicatorWeight: AppDimensions.borderWidthThick,
                   tabs: [
                     const Tab(
@@ -247,9 +259,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
                           ),
                         ),
-                        TextButton(
+                        ActionButtons.secondaryButton(
+                          context,
+                          label: 'Stäng',
                           onPressed: viewModel.clearError,
-                          child: const Text('Stäng'),
                         ),
                       ],
                     ),
@@ -340,13 +353,19 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   // ✅ UPPDATERAD: Använd SocialComponents.showCreateGroupDialog
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
-    final result = await SocialComponents.showCreateGroupDialog(
-      context: context,
-    );
+    try {
+      final result = await SocialComponents.showCreateGroupDialog(
+        context: context,
+      );
 
-    if (result == true && mounted) {
-      SnackBarUtils.showSuccess(context, 'Gruppen skapades! 🎉');
-      if (mounted) setState(() {}); // Uppdatera vyn
+      if (result == true && mounted) {
+        SnackBarUtils.showSuccess(context, 'Gruppen skapades! 🎉');
+        if (mounted) setState(() {}); // Uppdatera vyn
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, 'Kunde inte skapa grupp: $e');
+      }
     }
   }
 

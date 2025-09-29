@@ -543,7 +543,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   _detectionResult.extractedUrl!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                       ),
                   maxLines: 1,
@@ -579,7 +579,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         text: widget.content,
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderColor: Theme.of(context).dividerColor,
-        textStyle: Theme.of(context).textTheme.bodyMedium,
+        textStyle: AppTextStyles.bodyMedium,
       ),
     );
   }
@@ -620,7 +620,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                     Expanded(
                       child: Text(
                         _extractionError!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.error,
                             ),
                       ),
@@ -641,7 +641,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               style: ComponentThemes.primaryButtonStyle,
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            Text('eller', style: Theme.of(context).textTheme.bodySmall),
+            const Text('eller', style: AppTextStyles.bodySmall),
             const SizedBox(height: AppDimensions.spacingS),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
@@ -656,9 +656,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         // Vanlig receptwebbsida - vi kan scrapa denna
         return Column(
           children: [
-            Text(
+            const Text(
               'Receptlänk från webbsida detekterad!',
-              style: Theme.of(context).textTheme.titleSmall,
+              style: AppTextStyles.titleSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -690,7 +690,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                   Expanded(
                     child: Text(
                       'Recepttext detekterad! Vi kan importera detta.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.success,
                           ),
                     ),
@@ -712,9 +712,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         // Vanlig text utan recept
         return Column(
           children: [
-            Text(
+            const Text(
               'Ingen receptinformation hittades i texten.',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingL),

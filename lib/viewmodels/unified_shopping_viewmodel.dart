@@ -86,12 +86,13 @@
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
-import 'package:get_it/get_it.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Comprehensive unified shopping ViewModel providing advanced shopping list management through service coordination.
 ///
@@ -99,7 +100,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 /// for personal and collaborative shopping lists, item management, analytics, and export functionality
 /// while maintaining clean MVVM architecture separation between shopping business logic and UI presentation concerns.
 class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
-  final UnifiedShoppingService _shoppingService = GetIt.instance<UnifiedShoppingService>();
+  final UnifiedShoppingService _shoppingService = ServiceLocator.get<UnifiedShoppingService>();
 
   // ===== SHOPPING LIST STATE ACCESSORS =====
 
@@ -231,7 +232,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// 
   /// Provides current user ID for permission validation, operation attribution,
   /// and user-specific functionality throughout shopping management operations.
-  String? get currentUserId => GetIt.instance<PermissionService>().currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
   
   /// Current user display name for UI personalization and collaborative interaction.
   /// 
@@ -287,11 +288,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
     await safeExecute(
       () async {
         await _shoppingService.initialize();
-
-        // Create default shopping list for new users
-        if (!hasLists && GetIt.instance<PermissionService>().currentUserId != null) {
-          await createPersonalList('Min Inköpslista');
-        }
       },
       operationName: 'Initialize unified shopping system',
     );
@@ -493,38 +489,25 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return exportListAsText();
   }
 
-  /// Adds bulk items to specific shopping list for shopping list selector API compatibility.
+  /// Adds bulk items to specific shopping list using optimized batch operations.
   /// 
   /// [listId] Target shopping list identifier for item addition
   /// [items] List of shopping items for bulk addition
   /// 
   /// Returns true if bulk addition succeeds, false if operation fails.
-  /// Performs bulk item addition with list activation and comprehensive item processing
-  /// for shopping list selector functionality and recipe import capabilities.
+  /// Uses Firebase batch operations for better performance and atomic operations.
   /// 
-  /// **Bulk Addition Process:**
+  /// **Optimized Bulk Addition Process:**
   /// - Target list activation for focused operations
-  /// - Individual item addition with comprehensive validation
-  /// - State synchronization and UI notification
-  /// - Error handling with partial success support
+  /// - Single batch Firebase operation for all items
+  /// - Atomic transaction ensuring data consistency
+  /// - Single UI notification after completion
   Future<bool> addItemsToList(String listId, List<UnifiedShoppingItem> items) async {
     // Activate target list for focused operations
     await setActiveList(listId);
     
-    // Process bulk item addition with comprehensive validation
-    for (final item in items) {
-      await addItem(
-        name: item.name,
-        amount: item.amount,
-        unit: item.unit,
-        category: item.category,
-        note: item.note,
-        estimatedPrice: item.estimatedPrice,
-        priority: item.priority,
-      );
-    }
-    
-    return true;
+    // Use optimized batch operation instead of individual item additions
+    return await _shoppingService.addItemsBatch(items);
   }
 
   // ===== ITEM MANAGEMENT - BÅDA API:ER för kompatibilitet =====
@@ -539,17 +522,40 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
     double? estimatedPrice,
     int priority = 3,
   }) async {
-    if (name.trim().isEmpty) return false;
+    if (name.trim().isEmpty) {
+      return false;
+    }
+    
+    // ULTRATHINK PHASE 13A: Enhanced permission checking
+    AppLogger.info('Starting addItem for "${name.trim()}" to list: ${activeList?.name}');
+    
+    if (!canEditActiveList) {
+      AppLogger.error('PERMISSION DENIED - User cannot edit active list');
+      return false;
+    }
 
-    return await _shoppingService.addItemToActiveList(
-      name: name.trim(),
-      amount: amount,
-      unit: unit,
-      category: category,
-      note: note,
-      estimatedPrice: estimatedPrice,
-      priority: priority,
-    );
+    try {
+      final result = await _shoppingService.addItemToActiveList(
+        name: name.trim(),
+        amount: amount,
+        unit: unit,
+        category: category,
+        note: note,
+        estimatedPrice: estimatedPrice,
+        priority: priority,
+      );
+      
+      if (result) {
+        AppLogger.success('Successfully added item "${name.trim()}" to list');
+      } else {
+        AppLogger.error('Failed to add item "${name.trim()}" to list');
+      }
+      
+      return result;
+    } catch (e) {
+      AppLogger.error('Exception while adding item: $e');
+      return false;
+    }
   }
 
   /// ✅ NY: Lägg till artikel (ShoppingListSelector API)
@@ -574,10 +580,22 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   Future<bool> toggleItemBought(String itemId) async {
+    // ULTRATHINK FIX: Check permissions before allowing edit operations
+    if (!canEditActiveList) {
+      AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
+      return false;
+    }
+    
     return await _shoppingService.toggleItemBought(itemId);
   }
 
   Future<bool> removeItem(String itemId) async {
+    // ULTRATHINK FIX: Check permissions before allowing edit operations
+    if (!canEditActiveList) {
+      AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
+      return false;
+    }
+    
     return await _shoppingService.removeItemFromActiveList(itemId);
   }
 
@@ -604,6 +622,12 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
     double? estimatedPrice,
     int? priority,
   }) async {
+    // ULTRATHINK FIX: Check permissions before allowing edit operations
+    if (!canEditActiveList) {
+      AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
+      return false;
+    }
+    
     return await _shoppingService.updateItemInActiveList(
       itemId: itemId,
       name: name,
@@ -700,14 +724,26 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Kontrollera om användaren kan redigera aktiv lista
   bool get canEditActiveList {
-    if (activeList == null || currentUserId == null) return false;
-    return GetIt.instance<PermissionService>().canEditShoppingList(activeList!.id);
+    if (activeList == null || currentUserId == null) {
+      AppLogger.warning('canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId');
+      return false;
+    }
+    
+    // ULTRATHINK PHASE 13A FIX: Use correct DI system
+    final permissionService = ServiceLocator.get<PermissionService>();
+    final canEdit = permissionService.canEditShoppingList(activeList!.id);
+    
+    AppLogger.info('Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit');
+    
+    return canEdit;
   }
 
   /// Kontrollera om användaren kan hantera aktiv lista
   bool get canManageActiveList {
     if (activeList == null || currentUserId == null) return false;
-    return GetIt.instance<PermissionService>().canManageShoppingList(activeList!.id);
+    
+    // ULTRATHINK PHASE 13A FIX: Use correct DI system
+    return ServiceLocator.get<PermissionService>().canManageShoppingList(activeList!.id);
   }
 
   /// Få medlemmar i aktiv lista

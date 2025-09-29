@@ -392,7 +392,7 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
         shareMessage: content.metadata['shareMessage'] as String?,
         allowImport: true,
         viewedByUserIds: content.viewedBy.keys.toList(),
-        importedByUserIds: content.acceptedBy.keys.toList(),
+        engagedByUserIds: content.acceptedBy.keys.toList(),
         dismissedByUserIds: content.declinedBy.keys.toList(),
         recipeSnapshot: recipeSnapshot,
       );
@@ -458,7 +458,7 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
         menuTitle: content.metadata['title'] ?? 'Namnlös meny',
         menuSnapshot: reconstructedMenu,
         viewedByUserIds: content.viewedBy.keys.toList(),
-        importedByUserIds: content.acceptedBy.keys.toList(),
+        engagedByUserIds: content.acceptedBy.keys.toList(),
         dismissedByUserIds: content.declinedBy.keys.toList(),
       );
     } catch (e) {

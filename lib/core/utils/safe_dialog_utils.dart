@@ -13,6 +13,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Result of a safe dialog operation
 class SafeDialogResult<T> {
@@ -83,7 +85,7 @@ class SafeDialogUtils with ErrorHandlingMixin {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                style: TextButton.styleFrom(foregroundColor: AppColors.error),
                 child: Text(confirmText),
               ),
             ],
@@ -386,7 +388,7 @@ class SafeDialogUtils with ErrorHandlingMixin {
                 const SizedBox(height: 16),
                 Text(
                   message,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: AppTextStyles.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
               ],

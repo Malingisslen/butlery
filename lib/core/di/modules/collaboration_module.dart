@@ -30,6 +30,13 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 
+// Shopping repository
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
+
+// Shared shopping repository
+import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
+
 // Collaboration services
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
@@ -67,6 +74,7 @@ class CollaborationModule implements DIModule {
     UnifiedShoppingService,
     PermissionService,
     MenuCollaborationRepository,
+    FirebaseSharedShoppingRepository,
   ];
 
   @override
@@ -108,6 +116,24 @@ class CollaborationModule implements DIModule {
         ),
       );
 
+      // ==================== SHOPPING REPOSITORY ====================
+      
+      // ShoppingRepository - Firebase shopping list data access
+      container.registerLazySingleton<ShoppingRepository>(
+        () => FirebaseShoppingRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // ==================== SHARED SHOPPING REPOSITORY ====================
+      
+      // FirebaseSharedShoppingRepository - unified shared shopping list management
+      container.registerLazySingleton<FirebaseSharedShoppingRepository>(
+        () => FirebaseSharedShoppingRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
       // ==================== UNIFIED SHOPPING SYSTEM ====================
       
       // UnifiedShoppingService - collaborative shopping lists
@@ -115,6 +141,7 @@ class CollaborationModule implements DIModule {
         () => UnifiedShoppingService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
+          shoppingRepository: container<ShoppingRepository>(),
         ),
       );
 
@@ -141,7 +168,7 @@ class CollaborationModule implements DIModule {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] Configured 5 services (Realtime sync, Shopping, Permissions)');
+        debugPrint('✅ [CollaborationModule] Configured 6 services (Realtime sync, Shopping, Shared shopping, Permissions)');
       }
     } catch (e) {
       throw DIModuleException(

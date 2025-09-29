@@ -1,6 +1,7 @@
 // lib/widgets/common/social_components/social_collaborative_components.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
@@ -136,7 +137,7 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.sync, size: 14, color: activeColor ?? Colors.green),
+          Icon(Icons.sync, size: AppDimensions.iconSizeXs, color: activeColor ?? Colors.green),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
@@ -167,7 +168,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.all(AppDimensions.spacingSm),
       child: Row(
         children: [
-          const Icon(Icons.people, size: 16),
+          const Icon(Icons.people, size: AppDimensions.iconSizeS),
           const SizedBox(width: AppDimensions.spacingXs),
           const Text(
             'Deltagare',
@@ -250,7 +251,7 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color ?? Colors.green),
+          Icon(icon, size: AppDimensions.iconSizeXs, color: color ?? Colors.green),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
@@ -279,20 +280,20 @@ class SocialCollaborativeComponents {
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color:
-            color?.withValues(alpha: 0.1) ?? Colors.grey.withValues(alpha: 0.1),
+            color?.withValues(alpha: 0.1) ?? AppColors.textMedium.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: color ?? Colors.grey),
+        border: Border.all(color: color ?? AppColors.textMedium),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color ?? Colors.grey),
+          Icon(icon, size: AppDimensions.iconSizeXs, color: color ?? AppColors.textMedium),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
             style: TextStyle(
               fontSize: 12,
-              color: color ?? Colors.grey,
+              color: color ?? AppColors.textMedium,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -316,7 +317,7 @@ class SocialCollaborativeComponents {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacing12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.textMedium.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       child: Column(
@@ -355,7 +356,7 @@ class SocialCollaborativeComponents {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
             ),
           ],
         ],
@@ -374,7 +375,7 @@ class SocialCollaborativeComponents {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: Colors.grey),
+            Icon(icon, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               value,
@@ -385,7 +386,7 @@ class SocialCollaborativeComponents {
         const SizedBox(height: AppDimensions.spacing2),
         Text(
           label,
-          style: const TextStyle(fontSize: 10, color: Colors.grey),
+          style: const TextStyle(fontSize: 10, color: AppColors.textMedium),
         ),
       ],
     );
@@ -430,7 +431,7 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, size: 12, color: color ?? config.color),
+          Icon(config.icon, size: AppDimensions.iconSizeXs, color: color ?? config.color),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
@@ -454,13 +455,13 @@ class SocialCollaborativeComponents {
         return const _PermissionConfig(
           icon: Icons.star,
           label: 'Ägare',
-          color: Colors.amber,
+          color: AppColors.darkNavy,
         );
       case 'admin':
         return const _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: 'Admin',
-          color: Colors.red,
+          color: AppColors.primaryBlue,
         );
       case 'editor':
         return const _PermissionConfig(
@@ -472,13 +473,13 @@ class SocialCollaborativeComponents {
         return const _PermissionConfig(
           icon: Icons.visibility,
           label: 'Läsa',
-          color: Colors.grey,
+          color: AppColors.textMedium,
         );
       default:
         return const _PermissionConfig(
           icon: Icons.help_outline,
           label: 'Okänd',
-          color: Colors.grey,
+          color: AppColors.textMedium,
         );
     }
   }

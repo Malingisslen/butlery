@@ -9,6 +9,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Clean input section with message composition and attachments
 class ChatInputSection extends StatefulWidget {
@@ -120,12 +121,12 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Colors.grey.withValues(alpha: 0.3),
+            color: AppColors.textMedium.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -136,9 +137,9 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           // Attachment options (shown above input when active)
           if (_showAttachments)
             Container(
-              margin: const EdgeInsets.only(bottom: 8),
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: const Text('Bilagor: Recept, Meny, Handlingslista, Foto'),
               ),
             ),

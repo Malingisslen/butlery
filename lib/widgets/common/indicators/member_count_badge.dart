@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable member count badge component
 /// 
@@ -20,7 +21,7 @@ class MemberCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final badgeSize = size ?? 32.0;
+    final badgeSize = size ?? AppDimensions.iconSizeXl;
     
     return Container(
       width: badgeSize,
@@ -30,7 +31,7 @@ class MemberCountBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: AppColors.divider,
-          width: 1,
+          width: AppDimensions.borderWidthStandard,
         ),
       ),
       child: Center(

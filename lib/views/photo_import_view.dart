@@ -56,6 +56,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/widgets/common/content_cards/image_preview_card.dart';
 import 'package:butlery/widgets/common/buttons/overlay_button.dart';
@@ -236,8 +237,9 @@ class _PhotoImportViewContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<PhotoImportViewModel>();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Importera från foto')),
+    return LayoutComponents.mainMenu(
+      currentIndex: null,
+      title: 'Importera från foto',
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(

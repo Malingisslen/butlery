@@ -165,7 +165,7 @@ class MenuBuilder {
       menuTitle: _menuTitle,
       menuSnapshot: _menuSnapshot,
       viewedByUserIds: _viewedByUserIds,
-      importedByUserIds: _importedByUserIds,
+      engagedByUserIds: _importedByUserIds,
       dismissedByUserIds: _dismissedByUserIds,
       allowCollaboration: _allowCollaboration,
     );

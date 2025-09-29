@@ -81,15 +81,20 @@ class StorageService extends BaseService
     String userId,
     String fileName, {
     Function(double)? onProgress,
+    String? prefix, // Allow custom prefix for different image types
   }) async {
     return await executeServiceOperation<String?>(
       () async {
+        // Use provided prefix or default to avatar
+        final imagePrefix = prefix ?? 'avatar';
+        final pathFolder = imagePrefix == 'avatar' ? 'avatars' : 'recipes';
+        
         // Generate unique filename if not provided
         final uniqueFileName = _repository.generateFileName(
           originalPath: fileName,
-          prefix: 'avatar',
+          prefix: imagePrefix,
         );
-        final path = 'users/$userId/avatars/$uniqueFileName';
+        final path = 'users/$userId/$pathFolder/$uniqueFileName';
         
         final url = await _repository.uploadImageData(
           imageData: imageBytes,

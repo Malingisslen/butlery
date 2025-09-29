@@ -58,6 +58,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 
@@ -186,14 +187,14 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppDimensions.spacingXl),
-            Text(
+            const Text(
               'Lista hittades inte',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: AppTextStyles.headlineSmall,
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            Text(
+            const Text(
               'Listan kanske har tagits bort eller så har du inte tillgång längre',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingXl),

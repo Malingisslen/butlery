@@ -85,7 +85,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       widget.socialViewModel.hasComments
                           ? 'Kommentarer (${widget.socialViewModel.comments.length})'
                           : 'Kommentarer',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: AppTextStyles.titleMedium.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                           ),
                     ),
@@ -163,9 +163,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
-                          Text(
+                          const Text(
                             'Inga kommentarer än',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: AppTextStyles.titleMedium,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
@@ -259,9 +259,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
-                          Text(
+                          const Text(
                             'Skapa profil för att kommentera',
-                            style: Theme.of(context).textTheme.titleSmall,
+                            style: AppTextStyles.titleSmall,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
@@ -422,7 +422,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                         Text(
                           socialViewModel.getAuthorDisplayName(comment.authorId),
                           style:
-                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                              AppTextStyles.labelMedium.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                         ),
@@ -436,7 +436,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       comment.text,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: AppTextStyles.bodyMedium,
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Row(

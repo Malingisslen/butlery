@@ -6,10 +6,11 @@ import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
+import 'package:butlery/views/social/shared_with_me/shared_shopping_list_card.dart';
 
 /// SharedContentLists - List builders for shared content
 ///
-/// Handles building lists of shared recipes and menus.
+/// Handles building lists of shared recipes, menus, and shared shopping lists.
 class SharedContentLists {
   /// Build recipes list
   static Widget buildRecipesList(
@@ -79,6 +80,43 @@ class SharedContentLists {
             context,
             viewModel,
             sharedMenu,
+          );
+        },
+      ),
+    );
+  }
+
+  /// Build shared shopping lists list
+  static Widget buildSharedShoppingListsList(
+    BuildContext context,
+    SharedContentViewModel viewModel,
+    TextEditingController searchController,
+  ) {
+    final sharedShoppingLists = viewModel.filteredSharedShoppingLists;
+
+    if (sharedShoppingLists.isEmpty) {
+      return StateWidget.empty(
+        title: 'Inga delade inköpslistor',
+        subtitle: 'Inga inköpslistor har delats med dig än.',
+        icon: Icons.shopping_cart_outlined,
+        actionLabel: 'Hitta vänner',
+        onAction: () => Navigator.pushNamed(context, '/friends'),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: viewModel.refresh,
+      child: ListView.separated(
+        padding: AppDimensions.screenPadding,
+        itemCount: sharedShoppingLists.length,
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: AppDimensions.spacingS),
+        itemBuilder: (context, index) {
+          final sharedShoppingList = sharedShoppingLists[index];
+          return SharedShoppingListCard.build(
+            context,
+            viewModel,
+            sharedShoppingList,
           );
         },
       ),

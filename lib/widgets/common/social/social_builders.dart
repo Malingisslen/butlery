@@ -22,11 +22,11 @@ class SocialBuilders {
       onPressed: enabled && !isLoading ? onPressed : null,
       icon: isLoading 
         ? const SizedBox(
-            width: 16,
-            height: 16,
+            width: AppDimensions.iconSizeS,
+            height: AppDimensions.iconSizeS,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        : Icon(icon, size: iconSize ?? 16),
+        : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
       label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor ?? AppColors.primaryBlue,
@@ -64,8 +64,8 @@ class SocialBuilders {
               entry.key,
               style: labelStyle ?? const TextStyle(
                 fontSize: 12,
-                color: Colors.grey,
-              ).copyWith(color: textColor ?? Colors.grey),
+                color: AppColors.textMedium,
+              ).copyWith(color: textColor ?? AppColors.textMedium),
             ),
           ],
         ],

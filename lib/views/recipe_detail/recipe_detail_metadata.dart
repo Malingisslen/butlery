@@ -80,20 +80,21 @@ class RecipeDetailMetadata extends StatelessWidget {
           // Metadata items
           Row(
             children: [
-              // Portions
-              Expanded(
-                child: _buildMetadataItem(
-                  context,
-                  Icons.restaurant_menu,
-                  'Portioner',
-                  '$currentPortions ${currentPortions == 1 ? 'portion' : 'portioner'}',
-                  isHighlighted: isScaled,
+              // Portions (only show if portions are specified)
+              if (currentPortions > 0) 
+                Expanded(
+                  child: _buildMetadataItem(
+                    context,
+                    Icons.restaurant_menu,
+                    'Portioner',
+                    '$currentPortions ${currentPortions == 1 ? 'portion' : 'portioner'}',
+                    isHighlighted: isScaled,
+                  ),
                 ),
-              ),
               
               // Cooking time
               if ((recipe.timeMinutes ?? 0) > 0) ...[
-                const SizedBox(width: AppDimensions.spacingXs),
+                if (currentPortions > 0) const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -106,7 +107,7 @@ class RecipeDetailMetadata extends StatelessWidget {
               
               // Rating
               if ((recipe.rating ?? 0) > 0) ...[
-                const SizedBox(width: AppDimensions.spacingXs),
+                if (currentPortions > 0 || (recipe.timeMinutes ?? 0) > 0) const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -185,14 +186,14 @@ class RecipeDetailMetadata extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isHighlighted ? AppColors.primaryBlue : AppColors.textMedium,
+            color: isHighlighted ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeAction,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: isHighlighted ? AppColors.primaryBlue : AppColors.textMedium,
+              color: isHighlighted ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
             ),
             textAlign: TextAlign.center,

@@ -181,7 +181,7 @@ class SimpleImageWidget extends StatelessWidget {
                   child: const Center(
                     child: Icon(
                       Icons.add_photo_alternate_outlined,
-                      size: 32,
+                      size: AppDimensions.iconSizeXl,
                     ),
                   ),
                 )
@@ -424,7 +424,7 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.image_outlined, size: 32),
+                Icon(Icons.image_outlined, size: AppDimensions.iconSizeXl),
                 SizedBox(height: AppDimensions.spacingSm),
                 Text('Tap to load'),
               ],

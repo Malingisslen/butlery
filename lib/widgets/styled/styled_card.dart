@@ -100,7 +100,7 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
   }) : padding = null,
        margin = null,
-       elevation = 1,
+       elevation = AppDimensions.elevationLow,
        borderRadius = AppDimensions.borderRadius8,
        showBorder = false,
        borderColor = null;
@@ -127,7 +127,7 @@ class StyledCard extends StatelessWidget {
     required bool isSelected,
   }) : padding = null,
        margin = null,
-       elevation = isSelected ? AppDimensions.elevationMedium : 1,
+       elevation = isSelected ? AppDimensions.elevationMedium : AppDimensions.elevationLow,
        borderRadius = AppDimensions.borderRadius8,
        showBorder = isSelected,
        borderColor = isSelected ? AppColors.primaryBlue : null;
@@ -270,14 +270,14 @@ class StyledCards {
       child: Container(
         height: height ?? 100,
         width: width,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.grey.shade200,
-              Colors.grey.shade100,
-              Colors.grey.shade200,
+              AppColors.divider,
+              AppColors.backgroundLight,
+              AppColors.divider,
             ],
-            stops: const [0.0, 0.5, 1.0],
+            stops: [0.0, 0.5, 1.0],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),

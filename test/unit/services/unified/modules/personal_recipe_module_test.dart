@@ -20,6 +20,7 @@ void main() {
   group('PersonalRecipeModule', () {
     late PersonalRecipeModule module;
     late MockRecipeRepository mockRepository;
+    late MockUserRepository mockUserRepository;
     late MockJsonCacheHelper mockCacheHelper;
     late MockRecipeServiceAdapter mockServiceAdapter;
     late Recipe testRecipe;
@@ -40,6 +41,7 @@ void main() {
       
       // Initialize mocks using centralized infrastructure
       mockRepository = MockRecipeRepository();
+      mockUserRepository = MockUserRepository();
       mockCacheHelper = MockJsonCacheHelper();
       mockServiceAdapter = MockRecipeServiceAdapter();
       
@@ -50,6 +52,7 @@ void main() {
       
       module = PersonalRecipeModule(
         recipeRepository: mockRepository,
+        userRepository: mockUserRepository,
         cacheHelper: mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,

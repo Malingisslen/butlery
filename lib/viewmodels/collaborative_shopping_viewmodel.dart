@@ -479,7 +479,8 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   /// }
   /// ```
   Future<bool> toggleItemCompletion(String itemId) async {
-    if (!canView) return false;
+    // ULTRATHINK FIX: Use canEdit for edit operations, not canView
+    if (!canEdit) return false;
 
     try {
       AppLogger.info('🔄 Växlar artikel status: $itemId');
