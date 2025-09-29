@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 class IncomingRequestsTab {
   static Widget build(
@@ -51,14 +53,15 @@ class IncomingRequestsTab {
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
                     '${selectedIncoming.length} förfrågningar valda',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    style: AppTextStyles.titleSmall.copyWith(
                           color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                   ),
                   const Spacer(),
-                  TextButton(
+                  ActionButtons.secondaryButton(
+                    context,
+                    label: 'Rensa',
                     onPressed: onClearSelection,
-                    child: const Text('Rensa'),
                   ),
                 ],
               ),

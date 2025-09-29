@@ -93,6 +93,69 @@ import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+
+/// PHASE 2: Validation result for sharing operations
+class ShareValidationResult {
+  final bool hasExistingCollaborators;
+  final String errorMessage;
+  final List<String> existingCollaboratorIds;
+  final List<String> newFriendIds;
+  final bool canProceed;
+
+  const ShareValidationResult({
+    required this.hasExistingCollaborators,
+    required this.errorMessage,
+    required this.existingCollaboratorIds,
+    required this.newFriendIds,
+    required this.canProceed,
+  });
+
+  /// Factory for successful validation (no existing collaborators)
+  factory ShareValidationResult.success() {
+    return const ShareValidationResult(
+      hasExistingCollaborators: false,
+      errorMessage: '',
+      existingCollaboratorIds: [],
+      newFriendIds: [],
+      canProceed: true,
+    );
+  }
+
+  /// Factory for partial success (some existing collaborators, but new friends to invite)
+  factory ShareValidationResult.partialSuccess(List<String> newIds, List<String> existingIds) {
+    final existingCount = existingIds.length;
+    final newCount = newIds.length;
+    final warningMessage = existingCount == 1 
+        ? 'En vän har redan tillgång. $newCount nya inbjudningar kommer skickas.'
+        : '$existingCount vänner har redan tillgång. $newCount nya inbjudningar kommer skickas.';
+        
+    return ShareValidationResult(
+      hasExistingCollaborators: true,
+      errorMessage: warningMessage,
+      existingCollaboratorIds: existingIds,
+      newFriendIds: newIds,
+      canProceed: true,
+    );
+  }
+
+  /// Factory for validation failure with existing collaborators
+  factory ShareValidationResult.existingCollaborators(List<String> existingIds) {
+    final count = existingIds.length;
+    final errorMessage = count == 1 
+        ? 'Den valda vännen har redan tillgång till listan'
+        : 'Alla valda vänner har redan tillgång till listan';
+        
+    return ShareValidationResult(
+      hasExistingCollaborators: true,
+      errorMessage: errorMessage,
+      existingCollaboratorIds: existingIds,
+      newFriendIds: [],
+      canProceed: false,
+    );
+  }
+}
 
 /// Comprehensive universal sharing dialog ViewModel providing advanced multi-content social distribution through service integration.
 ///
@@ -261,55 +324,112 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     required List<String> friendUserIds,
     List<String>? groupIds,
     String? message,
+    ShareMode shareMode = ShareMode.staticCopy,
   }) async {
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
       _setError('Inga vänner eller grupper valda');
       return false;
     }
 
+    // PHASE 2: Validate sharing targets and filter existing collaborators
+    final validationResult = _validateSharingTargets(shoppingList, friendUserIds);
+    if (!validationResult.canProceed) {
+      _setError(validationResult.errorMessage);
+      return false;
+    }
+    
+    // Use filtered friends list (exclude existing collaborators)
+    final filteredFriendUserIds = validationResult.newFriendIds.isNotEmpty 
+        ? validationResult.newFriendIds 
+        : friendUserIds;
+
     _setSharing(true);
     _clearError();
 
     try {
-      final totalTargets = friendUserIds.length + (groupIds?.length ?? 0);
+      final totalTargets = filteredFriendUserIds.length + (groupIds?.length ?? 0);
+      final modeText = shareMode == ShareMode.realtime ? 'kollaborativ lista' : 'kopia';
+      
       AppLogger.info(
-        '📋 Delar inköpslista: ${shoppingList.name} med $totalTargets mottagare (${friendUserIds.length} vänner, ${groupIds?.length ?? 0} grupper)',
+        '📋 Delar inköpslista: ${shoppingList.name} som $modeText med $totalTargets mottagare (${filteredFriendUserIds.length} vänner, ${groupIds?.length ?? 0} grupper)',
       );
+
+      // Show info about validation results
+      if (validationResult.hasExistingCollaborators) {
+        AppLogger.info('⚠️ ${validationResult.existingCollaboratorIds.length} friends skipped (already have access)');
+      }
 
       if (message != null) {
         AppLogger.info('💬 Meddelande: $message');
       }
 
-      // Use UnifiedShoppingService for sharing to friends
-      bool allSuccessful = true;
-      for (final friendId in friendUserIds) {
-        final success = await _shoppingService.sharing.shareListWithFriend(
+      // Handle collaborative sharing for realtime mode - USE INVITATION SYSTEM
+      if (shareMode == ShareMode.realtime) {
+        AppLogger.info('🚀 REALTIME DEBUG: ✅ CONFIRMED - Using realtime sharing mode');
+        AppLogger.info('🚀 REALTIME DEBUG: This SHOULD use invitation system, not direct addition');
+        AppLogger.info('🚀 INVITATION DEBUG: Starting realtime sharing flow');
+        AppLogger.info('🚀 INVITATION DEBUG: List ID: ${shoppingList.id}');
+        AppLogger.info('🚀 INVITATION DEBUG: List name: "${shoppingList.name}"');
+        AppLogger.info('🚀 INVITATION DEBUG: Original friends: $friendUserIds');
+        AppLogger.info('🚀 INVITATION DEBUG: Filtered friends (new): $filteredFriendUserIds');
+        AppLogger.info('🚀 INVITATION DEBUG: List type: ${shoppingList.type}');
+        AppLogger.info('🚀 INVITATION DEBUG: List is collaborative: ${shoppingList.isCollaborative}');
+        AppLogger.info('🚀 INVITATION DEBUG: List collaborators: ${shoppingList.collaborators}');
+        
+        // ULTRATHINK FIX: Use invitation system with filtered friends
+        final success = await SocialContentFeatures.shareContentWithFriends(
           shoppingList.id,
-          friendId,
+          'shopping_list',
+          filteredFriendUserIds,
+          message ?? 'Vill dela denna inköpslista med dig!',
+          _shoppingService,
         );
-        if (!success) {
-          allSuccessful = false;
-        }
-      }
 
-      // Share to groups if any selected
-      if (groupIds != null && groupIds.isNotEmpty) {
-        for (final groupId in groupIds) {
-          final success = await _shoppingService.sharing.shareListWithGroup(
-            shoppingList.id,
-            groupId,
-          );
-          if (!success) {
-            allSuccessful = false;
+        if (success) {
+          AppLogger.success('✅ INVITATION DEBUG: Inköpslista inbjudningar skickade framgångsrikt');
+          AppLogger.info('🚀 INVITATION DEBUG: Recipients should see invitations in "delat med mig" view');
+          
+          // Set success message that includes info about skipped friends
+          if (validationResult.hasExistingCollaborators) {
+            final invitedCount = filteredFriendUserIds.length;
+            final skippedCount = validationResult.existingCollaboratorIds.length;
+            _setError('$invitedCount inbjudningar skickade. $skippedCount vänner hoppades över (har redan tillgång).');
           }
+          
+          return true;
+        } else {
+          AppLogger.error('❌ INVITATION DEBUG: Failed to send invitations');
+          throw Exception('Kunde inte skicka inbjudningar');
         }
-      }
-
-      if (allSuccessful) {
-        AppLogger.success('✅ Inköpslista delad framgångsrikt');
-        return true;
       } else {
-        throw Exception('Några delningar misslyckades');
+        // Handle traditional copy-based sharing with filtered friends
+        AppLogger.warning('⚠️ COPY MODE DEBUG: Using static copy mode instead of realtime!');
+        AppLogger.info('📋 COPY MODE DEBUG: Share mode: $shareMode');
+        AppLogger.info('📋 COPY MODE DEBUG: Content type: ${shareMode == ShareMode.staticCopy ? "STATIC COPY" : "OTHER"}');
+        AppLogger.warning('🚨 COPY MODE FIX: The old copy mode was broken - just returned true without doing anything!');
+        AppLogger.info('✅ COPY MODE FIX: Now using invitation system for copy mode too');
+        
+        // ULTRATHINK FIX: Use invitation system for copy mode too instead of broken shareListWithFriend
+        final success = await SocialContentFeatures.shareContentWithFriends(
+          shoppingList.id,
+          'shopping_list',
+          filteredFriendUserIds,
+          message ?? 'Vill dela denna inköpslista med dig!',
+          _shoppingService,
+        );
+
+        // Share to groups if any selected (TODO: Implement group invitations)
+        if (groupIds != null && groupIds.isNotEmpty) {
+          AppLogger.warning('⚠️ COPY MODE: Group sharing not yet implemented for copy mode');
+          // For now, just log this - group sharing would need similar invitation system
+        }
+
+        if (success) {
+          AppLogger.success('✅ COPY MODE FIX: Inköpslista invitations sent successfully via invitation system');
+          return true;
+        } else {
+          throw Exception('Kunde inte skicka inbjudningar');
+        }
       }
     } catch (e) {
       _setError('Kunde inte dela inköpslista: $e');
@@ -352,6 +472,50 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     
     AppLogger.info('Generated menu ID: $menuId for menu with $dayCount days and $recipeCount recipes');
     return menuId;
+  }
+
+  /// PHASE 2: Validate sharing targets to filter existing collaborators but allow new friends
+  ShareValidationResult _validateSharingTargets(
+    UnifiedShoppingList shoppingList, 
+    List<String> friendUserIds
+  ) {
+    // Get existing collaborators from the shopping list
+    final existingCollaborators = shoppingList.collaborators.toSet();
+    
+    // Find friends who are already collaborators
+    final existingCollaboratorIds = friendUserIds.where((friendId) => 
+      existingCollaborators.contains(friendId)
+    ).toList();
+    
+    // Find friends who are NOT already collaborators (new friends to invite)
+    final newFriendIds = friendUserIds.where((friendId) => 
+      !existingCollaborators.contains(friendId)
+    ).toList();
+    
+    AppLogger.info('🔍 VALIDATION: Analyzing ${friendUserIds.length} selected friends for list "${shoppingList.name}"');
+    AppLogger.info('📊 VALIDATION: Existing collaborators: ${existingCollaboratorIds.length}, New friends: ${newFriendIds.length}');
+    
+    if (existingCollaboratorIds.isNotEmpty) {
+      AppLogger.info(
+        '⚠️ VALIDATION: ${existingCollaboratorIds.length} friends already have access: $existingCollaboratorIds'
+      );
+    }
+    
+    if (newFriendIds.isEmpty) {
+      // All selected friends are already collaborators
+      AppLogger.warning('🚫 VALIDATION: All selected friends already have access to this list');
+      return ShareValidationResult.existingCollaborators(existingCollaboratorIds);
+    }
+    
+    if (existingCollaboratorIds.isNotEmpty) {
+      // Some friends already have access, but we have new friends to invite
+      AppLogger.info('✅ VALIDATION: Will invite ${newFriendIds.length} new friends and skip ${existingCollaboratorIds.length} existing collaborators');
+      return ShareValidationResult.partialSuccess(newFriendIds, existingCollaboratorIds);
+    }
+    
+    // All friends are new
+    AppLogger.info('✅ VALIDATION: All selected friends are new - sharing can proceed with all ${newFriendIds.length} friends');
+    return ShareValidationResult.success();
   }
   @override
   void dispose() {

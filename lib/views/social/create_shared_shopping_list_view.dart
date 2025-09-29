@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -202,14 +203,10 @@ class _CreateSharedShoppingListViewState
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Beskrivning med validation
-        TextFormField(
+        StyledInput(
           controller: _descriptionController,
-          decoration: InputDecoration(
-            labelText: 'Beskrivning (valfri)',
-            hintText: 'T.ex. "Handla till middagsmys på fredag"',
-            prefixIcon: const Icon(Icons.description),
-            errorText: viewModel.descriptionError,
-          ),
+          label: 'Beskrivning (valfri)',
+          hint: 'T.ex. "Handla till middagsmys på fredag"',
           maxLines: 3,
           minLines: 1,
           onChanged: viewModel.updateDescription,
@@ -316,21 +313,13 @@ class _CreateSharedShoppingListViewState
 
           SizedBox(
             width: 120,
-            child: FilledButton.icon(
+            child: StyledButton.primary(
+              text: viewModel.createButtonText,
+              icon: viewModel.isCreating ? null : const Icon(Icons.group_add),
               onPressed: viewModel.canCreate
                   ? () => _createSharedList(context, viewModel)
                   : null,
-              icon: viewModel.isCreating
-                  ? const SizedBox(
-                      width: AppDimensions.iconSizeS,
-                      height: AppDimensions.iconSizeS,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
-                      ),
-                    )
-                  : const Icon(Icons.group_add),
-              label: Text(viewModel.createButtonText),
+              isLoading: viewModel.isCreating,
             ),
           ),
         ],

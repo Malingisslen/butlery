@@ -306,7 +306,7 @@ class MessageBubble extends StatelessWidget {
               color: _isFromCurrentUser 
                   ? AppColors.cardWhite 
                   : AppColors.primaryBlue,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
           ),
           const SizedBox(width: AppDimensions.paddingS),
@@ -370,7 +370,7 @@ class MessageBubble extends StatelessWidget {
               color: _isFromCurrentUser 
                   ? AppColors.cardWhite 
                   : AppColors.primaryBlue,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
           ),
           const SizedBox(width: AppDimensions.paddingS),
@@ -425,7 +425,7 @@ class MessageBubble extends StatelessWidget {
               color: _isFromCurrentUser 
                   ? AppColors.cardWhite 
                   : AppColors.primaryBlue,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
           ),
           const SizedBox(width: AppDimensions.paddingS),
@@ -473,7 +473,7 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Icon(
                 Icons.image,
-                size: 40,
+                size: AppDimensions.iconSizeXl,
                 color: _isFromCurrentUser 
                     ? AppColors.cardWhite 
                     : AppColors.primaryBlue,
@@ -531,7 +531,7 @@ class MessageBubble extends StatelessWidget {
         children: [
           Icon(
             _getStatusIcon(),
-            size: 12,
+            size: AppDimensions.iconSizeXs,
             color: AppColors.cardWhite.withValues(alpha: 0.7),
           ),
           const SizedBox(width: AppDimensions.spacing2),

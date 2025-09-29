@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/services/performance/optimized_image_loader.dart';
@@ -146,7 +147,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.transparent,
+                  AppColors.transparent,
                   AppColors.cardWhite.withValues(alpha: 0.1),
                 ],
               ),
@@ -269,7 +270,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
               child: const Center(
                 child: Icon(
                   Icons.add_photo_alternate_outlined,
-                  size: 48,
+                  size: AppDimensions.iconSizeXxl,
                 ),
               ),
             )

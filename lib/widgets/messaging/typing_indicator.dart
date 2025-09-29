@@ -91,7 +91,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 child: Icon(
                   Icons.more_horiz,
                   color: AppColors.primaryBlue,
-                  size: 16,
+                  size: AppDimensions.iconSizeS,
                 ),
               ),
             ),

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -61,7 +62,7 @@ class GroupInvitationCard {
         ),
         title: Text(
           'Inbjudan skickad',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: AppTextStyles.titleMedium.copyWith(
             color: Theme.of(context).colorScheme.tertiary,
           ),
         ),

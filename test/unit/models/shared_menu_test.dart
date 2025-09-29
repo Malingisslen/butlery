@@ -102,7 +102,7 @@ void main() {
           menuTitle: 'Annas veckomeny v.45',
           menuSnapshot: testMenuSnapshot,
           viewedByUserIds: ['user_2'],
-          importedByUserIds: ['user_3'],
+          engagedByUserIds: ['user_3'],
           dismissedByUserIds: ['user_4'],
           allowCollaboration: true,
         );
@@ -274,7 +274,7 @@ void main() {
           menuTitle: 'Test Menu',
           menuSnapshot: testMenuSnapshot,
           viewedByUserIds: ['user_2'],
-          importedByUserIds: ['user_3'],
+          engagedByUserIds: ['user_3'],
           dismissedByUserIds: ['user_4'],
         );
       });
@@ -486,7 +486,7 @@ void main() {
           menuTitle: 'Test',
           menuSnapshot: testMenuSnapshot,
           viewedByUserIds: ['user_2', 'user_3'],
-          importedByUserIds: ['user_2'], // user_2 both viewed and imported
+          engagedByUserIds: ['user_2'], // user_2 both viewed and imported
           dismissedByUserIds: ['user_4'],
         );
         
@@ -535,7 +535,7 @@ void main() {
           menuTitle: 'Veckomeny',
           menuSnapshot: {'Middag': [dinnerRecipe1]},
           viewedByUserIds: ['user_2'],
-          importedByUserIds: ['user_3'],
+          engagedByUserIds: ['user_3'],
           dismissedByUserIds: ['user_4'],
           allowCollaboration: true,
         );

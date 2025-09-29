@@ -116,7 +116,7 @@ class ErrorDisplayWidget extends StatelessWidget {
           const Icon(
             Icons.error_outline,
             color: AppColors.error,
-            size: 20,
+            size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
@@ -158,7 +158,7 @@ class WarningDisplayWidget extends StatelessWidget {
           const Icon(
             Icons.info_outline,
             color: AppColors.warning,
-            size: 20,
+            size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
@@ -263,26 +263,29 @@ class DialogFooter extends StatelessWidget {
             child: Text(secondaryActionText),
           ),
           const SizedBox(width: AppDimensions.spacingM),
-          FilledButton.icon(
-            onPressed: onPrimaryAction,
-            style: primaryActionColor != null
-                ? FilledButton.styleFrom(
-                    backgroundColor: primaryActionColor,
-                    foregroundColor: primaryActionForegroundColor ?? Colors.white,
-                  )
-                : null,
-            icon: isLoading
-                ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: primaryActionForegroundColor ?? 
-                          Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  )
-                : Icon(primaryActionIcon),
-            label: Text(primaryActionText),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 200),
+            child: FilledButton.icon(
+              onPressed: onPrimaryAction,
+              style: primaryActionColor != null
+                  ? FilledButton.styleFrom(
+                      backgroundColor: primaryActionColor,
+                      foregroundColor: primaryActionForegroundColor ?? Colors.white,
+                    )
+                  : null,
+              icon: isLoading
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryActionForegroundColor ?? 
+                            Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    )
+                  : Icon(primaryActionIcon),
+              label: Text(primaryActionText),
+            ),
           ),
         ],
       ),

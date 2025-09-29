@@ -89,7 +89,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
   Widget? get dialogIcon => const Icon(
     Icons.person_remove,
     color: AppColors.warning,
-    size: 48,
+    size: AppDimensions.iconSizeXxl,
   );
 
   @override

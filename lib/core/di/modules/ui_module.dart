@@ -162,10 +162,11 @@ class UIModule implements DIModule {
         () => UnifiedRecipeViewModel(),
       );
       
-      // Social Recipe ViewModel - requires UnifiedFriendsService only
+      // Social Recipe ViewModel - requires UnifiedFriendsService and UnifiedRecipeService
       container.registerFactory<SocialRecipeViewModel>(
         () => SocialRecipeViewModel(
           friendsService: container<UnifiedFriendsService>(),
+          recipeService: container<UnifiedRecipeService>(),
         ),
       );
       
@@ -177,7 +178,7 @@ class UIModule implements DIModule {
 
       // ==================== MENU VIEWMODELS ====================
       
-      // Menu ViewModel - Optional services
+      // Menu ViewModel - Factory for proper lifecycle management
       container.registerFactory<MenuViewModel>(
         () => MenuViewModel(),
       );

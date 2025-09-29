@@ -6,6 +6,7 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/group_invitation_card.dart';
 import 'package:butlery/views/social/friends_list/group_card.dart';
 
@@ -20,8 +21,20 @@ class GroupsTab {
     return AnimatedBuilder(
       animation: friendsService,
       builder: (context, child) {
-        final groups = friendsService.categories.categoriesList;
+        // Only show groups where the current user is a member
+        final allGroups = friendsService.categories.categoriesList;
+        final groups = friendsService.categories.getMemberCategories();
         final pendingInvitations = friendsService.invitations.pendingReceivedInvitations;
+        
+        print('🏠 [DEBUG] Groups tab render:');
+        print('  📊 All groups: ${allGroups.length}');
+        print('  👤 Member groups: ${groups.length}');
+        for (final group in allGroups) {
+          print('  📋 Group "${group.name}" (${group.id}): members=${group.friendUserIds}');
+        }
+        for (final group in groups) {
+          print('  ✅ User is member of "${group.name}" (${group.id})');
+        }
 
         if (friendsService.isLoading && groups.isEmpty && pendingInvitations.isEmpty) {
           return StateWidget.loading(message: 'Laddar grupper...');
@@ -125,7 +138,7 @@ class GroupsTab {
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 'Gruppinbjudningar (${invitations.length})',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.tertiary,
                 ),
@@ -135,7 +148,7 @@ class GroupsTab {
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             'Du har fått inbjudningar att gå med i grupper',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -160,7 +173,7 @@ class GroupsTab {
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
             'Mina grupper (${groups.length})',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),

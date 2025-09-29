@@ -71,12 +71,13 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/input_components.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 // Theme system integration
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 
 // Utility services for user feedback
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -132,8 +133,8 @@ class VeckomenyView extends StatelessWidget {
   /// Returns provider-wrapped weekly menu view with comprehensive functionality.
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<MenuViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _PersistentMenuViewModel.instance,
       child: const _VeckomenyViewContent(),
     );
   }
@@ -398,8 +399,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       context,
       menu: viewModel.menu, // Pass menu data for ingredient extraction
       onListSelected: () {
-        // Shopping list created and ingredients added - close modal
+        // Shopping list created and ingredients added - close modal and navigate to shopping view
         Navigator.pop(context);
+        Navigator.pushNamed(context, '/inkopslista');
       },
     );
   }
@@ -424,16 +426,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         title: const Text('Avsluta Butlery?'),
         content: const Text('Vill du verkligen avsluta appen?'),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
           ),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Avsluta',
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('Avsluta'),
           ),
         ],
       ),
@@ -595,14 +596,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ],
         ),
 
-        // ✅ UPPDATERAD: Floating action button för inköpslista
+        // ✅ UPPDATERAD: Extended FAB med proper theming för svensk text
         floatingActionButton: viewModel.hasMenu
-            ? FloatingActionButton.extended(
-                onPressed: _showShoppingListSelector, // ✅ MIGRERAD METOD
-                icon: const Icon(Icons.shopping_cart),
-                label: const Text('Till inköpslista'),
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ? ActionButtons.actionButton(
+                context,
+                label: 'Till inköpslista',
+                icon: Icons.shopping_cart,
+                onPressed: _showShoppingListSelector,
+                style: ActionButtonStyle.primary,
               )
             : null,
       ),
@@ -653,25 +654,25 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          TextField(
+          StyledInput(
             controller: _promptController,
             enabled: !viewModel.isGenerating,
-            style: Theme.of(context).textTheme.bodyMedium,
-            decoration: InputDecoration(
-              hintText: 'Ex: 3 middagar, 2 luncher och 1 frukost',
-              hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
-              border: const OutlineInputBorder(),
-              prefixIcon: const Icon(Icons.edit),
-              suffixIcon: _promptController.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-                      onPressed: () {
-                        _promptController.clear();
-                      },
-                    )
-                  : null,
-            ),
-            onSubmitted: (_) => _generateMenu(),
+            hint: 'Ex: 3 middagar, 2 luncher och 1 frukost',
+            prefixIcon: const Icon(Icons.edit),
+            suffixIcon: _promptController.text.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.clear, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                    onPressed: () {
+                      _promptController.clear();
+                      setState(() {}); // Update UI after clearing
+                    },
+                  )
+                : null,
+            textInputAction: TextInputAction.done,
+            onChanged: (value) {
+              setState(() {}); // Update suffixIcon visibility
+              // Note: onSubmitted functionality moved to generate button press
+            },
           ),
         ],
       ),
@@ -695,26 +696,17 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// Returns generation button widget with AI-powered functionality and loading state management.
   Widget _buildGenerateButton(MenuViewModel viewModel) {
     return Center(
-      child: ElevatedButton.icon(
-          onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
-              ? _generateMenu
-              : null,
-          icon: viewModel.isGenerating
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.neutralLight,
-                  ),
-                )
-              : const Icon(Icons.restaurant_menu),
-          label: Text(
-            viewModel.isGenerating
-                ? 'Genererar...'
-                : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
-          ),
-          style: ComponentThemes.primaryButtonStyle,
+      child: ActionButtons.primaryButton(
+        context,
+        label: viewModel.isGenerating
+            ? 'Genererar...'
+            : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
+        icon: Icons.restaurant_menu,
+        onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
+            ? _generateMenu
+            : null,
+        isLoading: viewModel.isGenerating,
+        loadingText: 'Genererar...',
       ),
     );
   }
@@ -748,8 +740,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         // Meny-sammanfattning
         _buildMenuSummary(viewModel),
 
-        // Meny-sektioner
-        for (final entry in viewModel.menu.entries) ...[
+        // Meny-sektioner (sorterade i logisk ordning)
+        for (final entry in _getSortedMenuEntries(viewModel.menu)) ...[
           _buildMenuSection(viewModel, entry.key, entry.value),
           const Divider(),
         ],
@@ -785,13 +777,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 children: [
                   Text(
                     'Din veckomeny',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: AppTextStyles.titleMedium.copyWith(
                           color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                   ),
                   Text(
                     '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                   ),
@@ -818,14 +810,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         Row(
           children: [
             Expanded(
-              child: Text(category, style: AppTextStyles.titleLarge),
+              child: Text(_capitalizeCategory(category), style: AppTextStyles.titleLarge),
             ),
             IconButton(
               icon: Icon(Icons.refresh, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
               onPressed: viewModel.isGenerating
                   ? null
                   : () => viewModel.regenerateSection(category),
-              tooltip: 'Uppdatera $category',
+              tooltip: 'Uppdatera ${_capitalizeCategory(category)}',
             ),
           ],
         ),
@@ -843,5 +835,62 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ),
       ],
     );
+  }
+
+  /// Sorterar meny-sektioner i logisk måltidsordning
+  List<MapEntry<String, List<Recipe>>> _getSortedMenuEntries(Map<String, List<Recipe>> menu) {
+    // Definiera logisk ordning för måltider
+    const mealOrder = [
+      'Frukost',
+      'Lunch', 
+      'Middag',
+      'Dessert',
+      'Mellanmål',
+      'Fika',
+    ];
+
+    final entries = menu.entries.toList();
+    
+    entries.sort((a, b) {
+      final aIndex = mealOrder.indexOf(_capitalizeCategory(a.key));
+      final bIndex = mealOrder.indexOf(_capitalizeCategory(b.key));
+      
+      // Om båda finns i ordningslistan, sortera enligt den
+      if (aIndex != -1 && bIndex != -1) {
+        return aIndex.compareTo(bIndex);
+      }
+      
+      // Om bara en finns i listan, den kommer först
+      if (aIndex != -1) return -1;
+      if (bIndex != -1) return 1;
+      
+      // Om ingen finns i listan, alfabetisk ordning
+      return a.key.compareTo(b.key);
+    });
+    
+    return entries;
+  }
+
+  /// Kapitaliserar första bokstaven i kategorinamn
+  String _capitalizeCategory(String category) {
+    if (category.isEmpty) return category;
+    return category[0].toUpperCase() + category.substring(1).toLowerCase();
+  }
+}
+
+/// Persistent MenuViewModel singleton to preserve menu state across navigation.
+/// 
+/// This class ensures the same MenuViewModel instance is reused when navigating
+/// between views, preventing menu state loss that occurs with factory registration.
+/// The instance is never disposed, allowing menu state to persist throughout
+/// the application lifecycle.
+class _PersistentMenuViewModel {
+  static MenuViewModel? _instance;
+  
+  /// Get the persistent MenuViewModel instance.
+  /// Creates instance on first access and reuses it for subsequent calls.
+  static MenuViewModel get instance {
+    _instance ??= MenuViewModel();
+    return _instance!;
   }
 }

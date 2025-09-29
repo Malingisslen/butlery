@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 class AppLogo extends StatelessWidget {
   final double? size;
   final Color? backgroundColor;
@@ -137,7 +138,7 @@ class AppBranding extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacing16),
         Text(
           appName,
-          style: nameStyle ?? Theme.of(context).textTheme.headlineMedium?.copyWith(
+          style: nameStyle ?? AppTextStyles.headlineMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: Theme.of(context).colorScheme.primary,
           ),
@@ -146,7 +147,7 @@ class AppBranding extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacing8),
           Text(
             tagline!,
-            style: taglineStyle ?? Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: taglineStyle ?? AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,

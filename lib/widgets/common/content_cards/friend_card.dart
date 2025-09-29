@@ -6,8 +6,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/image/simple_image_widget.dart';
-import 'package:butlery/widgets/image/image_config.dart' as image_config;
+import 'package:butlery/widgets/common/social_components.dart';
 
 /// Focused module for friend card components
 /// 
@@ -52,7 +51,7 @@ class FriendCard extends StatelessWidget {
     return Container(
       margin: margin ?? _getDefaultMargin(),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
@@ -108,7 +107,7 @@ class FriendCard extends StatelessWidget {
               ),
             ),
             if (trailing != null) 
-              Flexible(child: trailing!),
+              trailing!,
           ],
         ),
       ],
@@ -144,50 +143,14 @@ class FriendCard extends StatelessWidget {
   }
 
   Widget _buildUserAvatar(BuildContext context, {required double size}) {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(size / 2),
-          child: SimpleImageWidget(
-            imageUrl: user.avatarUrl,
-            fit: BoxFit.cover,
-            placeholder: Container(
-              width: size,
-              height: size,
-              decoration: const BoxDecoration(
-                color: AppColors.backgroundTint,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.person,
-                size: size * 0.6,
-                color: AppColors.textMedium,
-              ),
-            ),
-            config: const image_config.ImageConfig(
-              type: image_config.ImageType.avatar,
-              size: image_config.ImageSize.medium,
-            ),
-          ),
-        ),
-        if (showOnlineStatus)
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: size * 0.3,
-              height: size * 0.3,
-              decoration: BoxDecoration(
-                color: user.isOnline == true ? Colors.green : Colors.grey,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.backgroundLight,
-                  width: 2,
-                ),
-              ),
-            ),
-          ),
-      ],
+    // Map size to ImageSize enum - 50+ is large, 40+ is medium, default small
+    final imageSize = size >= 50 ? ImageSize.large : (size >= 40 ? ImageSize.medium : ImageSize.small);
+    
+    return SocialComponents.avatar(
+      user: user,
+      size: imageSize,
+      showOnlineStatus: showOnlineStatus,
+      isOnline: user.isOnline == true,
     );
   }
 
@@ -218,9 +181,6 @@ class FriendCard extends StatelessWidget {
     if (user.email.isNotEmpty) {
       metadata.add(user.email);
     }
-    
-    // Display member duration using the UserProfile's memberSinceText getter
-    metadata.add(user.memberSinceText);
     
     if (metadata.isEmpty) {
       return const SizedBox.shrink();
@@ -284,7 +244,7 @@ class FriendRequestCard extends StatelessWidget {
     return Container(
       margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -347,29 +307,10 @@ class FriendRequestCard extends StatelessWidget {
   }
 
   Widget _buildSenderAvatar(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadius25),
-      child: SimpleImageWidget(
-        imageUrl: null, // FriendRequest doesn't store sender avatar directly
-        fit: BoxFit.cover,
-        placeholder: Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
-            color: AppColors.backgroundTint,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.person,
-            size: 30,
-            color: AppColors.textMedium,
-          ),
-        ),
-        config: const image_config.ImageConfig(
-          type: image_config.ImageType.avatar,
-          size: image_config.ImageSize.medium,
-        ),
-      ),
+    return SocialComponents.avatar(
+      imageUrl: null, // FriendRequest doesn't store sender avatar directly
+      displayName: '', // No sender display name available
+      size: ImageSize.large, // 50px corresponds to large size
     );
   }
 

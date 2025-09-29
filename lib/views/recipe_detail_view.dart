@@ -104,14 +104,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 expandedHeight: 200.0,
                 floating: false,
                 pinned: true,
-                backgroundColor: AppColors.backgroundBeige,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 foregroundColor: AppColors.textDark,
-                iconTheme: const IconThemeData(
-                  color: AppColors.primaryBlue,
+                iconTheme: IconThemeData(
+                  color: Theme.of(context).colorScheme.primary,
                   size: AppDimensions.iconSizeL,
                 ),
-                actionsIconTheme: const IconThemeData(
-                  color: AppColors.primaryBlue,
+                actionsIconTheme: IconThemeData(
+                  color: Theme.of(context).colorScheme.primary,
                   size: AppDimensions.iconSizeL,
                 ),
                 flexibleSpace: FlexibleSpaceBar(
@@ -144,7 +144,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  Colors.transparent,
+                                  AppColors.transparent,
                                   Colors.black26,
                                 ],
                               ),
@@ -157,7 +157,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   color: AppColors.cardColor,
                                   child: Icon(
                                     Icons.restaurant,
-                                    size: 80,
+                                    size: AppDimensions.iconSizeHero,
                                     color: AppColors.textSecondary,
                                   ),
                                 );
@@ -169,7 +169,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           color: AppColors.cardColor,
                           child: Icon(
                             Icons.restaurant,
-                            size: 80,
+                            size: AppDimensions.iconSizeHero,
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -189,7 +189,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(Icons.edit, size: 20),
+                            Icon(Icons.edit, size: AppDimensions.iconSizeM),
                             SizedBox(width: AppDimensions.spacingM),
                             Text('Edit Recipe'),
                           ],
@@ -199,9 +199,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         value: 'fork',
                         child: Row(
                           children: [
-                            Icon(Icons.content_copy, size: 20),
+                            Icon(Icons.content_copy, size: AppDimensions.iconSizeM),
                             SizedBox(width: AppDimensions.spacingM),
                             Text('Make Copy'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'generate_shopping_list',
+                        child: Row(
+                          children: [
+                            Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
+                            SizedBox(width: AppDimensions.spacingM),
+                            Text('Skapa inköpslista'),
                           ],
                         ),
                       ),
@@ -210,7 +220,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         child: Row(
                           children: [
                             Icon(Icons.delete,
-                                size: 20, color: AppColors.error),
+                                size: AppDimensions.iconSizeM, color: AppColors.error),
                             SizedBox(width: AppDimensions.spacingM),
                             Text('Delete Recipe',
                                 style: TextStyle(color: AppColors.error)),
@@ -223,7 +233,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           value: 'source',
                           child: Row(
                             children: [
-                              Icon(Icons.link, size: 20),
+                              Icon(Icons.link, size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
                               Text('View Source'),
                             ],
@@ -309,6 +319,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             arguments: recipe.copyWith(
               title: '${recipe.title} (Copy)',
             ));
+        break;
+      case 'generate_shopping_list':
+        await _actions.generateShoppingListFromRecipe(context);
         break;
       case 'delete':
         await _actions.deleteRecipe(context);

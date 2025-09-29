@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social widget builders and helper components
@@ -212,7 +213,7 @@ class SocialBuilderComponents {
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
           ),
         ],
       ],
@@ -337,7 +338,7 @@ class SocialBuilderComponents {
                     subtitle,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey,
+                      color: AppColors.textMedium,
                     ),
                   ),
               ],
@@ -374,7 +375,7 @@ class SocialBuilderComponents {
               vertical: AppDimensions.spacingSm),
       child: Material(
         color: backgroundColor ?? Colors.white,
-        elevation: elevation ?? 1.0,
+        elevation: elevation ?? AppDimensions.elevationLow,
         borderRadius:
             borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),
         child: InkWell(
@@ -452,7 +453,7 @@ class SocialBuilderComponents {
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               text,
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: AppColors.textMedium),
               textAlign: TextAlign.center,
             ),
           ],
@@ -495,13 +496,13 @@ class SocialBuilderComponents {
   /// Get social color scheme
   static Map<String, Color> getSocialColorScheme() {
     return {
-      'primary': Colors.blue,
-      'secondary': Colors.blue.shade100,
-      'success': Colors.green,
-      'warning': Colors.orange,
-      'danger': Colors.red,
-      'info': Colors.blue.shade300,
-      'muted': Colors.grey,
+      'primary': AppColors.primaryBlue,
+      'secondary': AppColors.primaryBlue.withValues(alpha: 0.1),
+      'success': AppColors.primaryBlue,
+      'warning': AppColors.textMedium,
+      'danger': AppColors.error,
+      'info': AppColors.primaryBlue.withValues(alpha: 0.7),
+      'muted': AppColors.textMedium,
     };
   }
 

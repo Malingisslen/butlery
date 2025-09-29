@@ -7,6 +7,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Shopping list card widget
 ///
@@ -30,27 +33,32 @@ class ShoppingListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
-      color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildListHeader(context),
-              const SizedBox(height: AppDimensions.spacingM),
-              _buildListMetadata(context),
-              if (list.itemCount > 0) ...[
+      child: Material(
+        elevation: AppDimensions.elevationMedium,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildListHeader(context),
                 const SizedBox(height: AppDimensions.spacingM),
-                _buildListPreview(context),
+                _buildListMetadata(context),
+                if (list.itemCount > 0) ...[
+                  const SizedBox(height: AppDimensions.spacingM),
+                  _buildListPreview(context),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -141,8 +149,10 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.people,
             '${list.memberCount} medlemmar',
-            AppColors.secondaryPurple,
+            AppColors.primaryBlue,
           ),
+          // User permission badge
+          ..._buildUserPermissionBadge(context),
         ],
 
         // Recent activity
@@ -279,10 +289,64 @@ class ShoppingListCard extends StatelessWidget {
       case ShoppingListType.personal:
         return AppColors.primaryBlue;
       case ShoppingListType.collaborative:
-        return AppColors.secondaryPurple;
+        return AppColors.primaryBlue;
       case ShoppingListType.template:
         return AppColors.warning;
     }
+  }
+
+  /// Build user permission badge for collaborative lists
+  List<Widget> _buildUserPermissionBadge(BuildContext context) {
+    if (!list.isCollaborative) return [];
+    
+    final permissionService = ServiceLocator.get<PermissionService>();
+    final currentUserId = permissionService.currentUser?.uid;
+    if (currentUserId == null) return [];
+    
+    final isOwner = list.ownerId == currentUserId;
+    final userPermission = list.memberPermissions[currentUserId];
+    
+    String permissionLabel;
+    IconData permissionIcon;
+    Color permissionColor;
+    
+    if (isOwner) {
+      permissionLabel = 'Ägare';
+      permissionIcon = Icons.admin_panel_settings;
+      permissionColor = AppColors.primaryBlue;
+    } else {
+      switch (userPermission) {
+        case SharedListPermission.view:
+          permissionLabel = 'Kan se';
+          permissionIcon = Icons.visibility;
+          permissionColor = AppColors.warning;
+          break;
+        case SharedListPermission.edit:
+          permissionLabel = 'Kan redigera';
+          permissionIcon = Icons.edit;
+          permissionColor = AppColors.success;
+          break;
+        case SharedListPermission.admin:
+          permissionLabel = 'Admin';
+          permissionIcon = Icons.admin_panel_settings;
+          permissionColor = AppColors.primaryBlue;
+          break;
+        default:
+          // If not in permissions map but is collaborative, assume edit permission
+          permissionLabel = 'Kan redigera';
+          permissionIcon = Icons.edit;
+          permissionColor = AppColors.success;
+      }
+    }
+    
+    return [
+      _buildMetadataBadge(
+        context,
+        permissionIcon,
+        permissionLabel,
+        permissionColor,
+      ),
+    ];
   }
 }
 
@@ -304,7 +368,7 @@ class ShoppingListEmptyState extends StatelessWidget {
         children: [
           const Icon(
             Icons.shopping_cart_outlined,
-            size: 64,
+            size: AppDimensions.iconSizeXxl,
             color: AppColors.textLight,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -322,10 +386,11 @@ class ShoppingListEmptyState extends StatelessWidget {
           ),
           if (onCreateList != null) ...[
             const SizedBox(height: AppDimensions.spacingXl),
-            FilledButton.icon(
-              onPressed: onCreateList,
-              icon: const Icon(Icons.add),
-              label: const Text('Skapa lista'),
+            ActionButtons.primaryButton(
+              context,
+              label: 'Skapa lista',
+              icon: Icons.add,
+              onPressed: onCreateList!,
             ),
           ],
         ],

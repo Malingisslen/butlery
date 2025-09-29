@@ -40,7 +40,7 @@ class MessageStates {
               // Error titel
               Text(
                 title ?? 'Ett fel uppstod',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: AppTextStyles.headlineSmall.copyWith(
                       color: AppColors.error,
                     ),
                 textAlign: TextAlign.center,
@@ -112,7 +112,7 @@ class MessageStates {
               // Success titel
               Text(
                 title ?? 'Klart!',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: AppTextStyles.headlineSmall.copyWith(
                       color: AppColors.success,
                     ),
                 textAlign: TextAlign.center,
@@ -172,7 +172,7 @@ class MessageStates {
               if (title != null) ...[
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: AppTextStyles.titleLarge,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
@@ -227,7 +227,7 @@ class MessageStates {
               if (title != null) ...[
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  style: AppTextStyles.titleLarge.copyWith(
                         color: AppColors.warning,
                       ),
                   textAlign: TextAlign.center,

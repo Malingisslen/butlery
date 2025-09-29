@@ -13,6 +13,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/services/user_service.dart';
 
 // Operations modules
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
@@ -66,6 +68,7 @@ class UnifiedMenuService extends ChangeNotifier
 
   // Core services
   late final MenuService _menuService;
+  late final FirebaseSharedMenuRepository _sharedMenuRepository;
   
   // Operations modules
   CollaborativeMenuOperations? _collaborative;
@@ -86,6 +89,9 @@ class UnifiedMenuService extends ChangeNotifier
   })  : _firestore = firestore ?? FirebaseFirestore.instance {
     // Initialize core menu service immediately
     _menuService = MenuService();
+    
+    // Initialize SharedMenu repository
+    _sharedMenuRepository = FirebaseSharedMenuRepository();
     
     AppLogger.info(
         '✅ UnifiedMenuService created - collaborative operations will initialize on first use');
@@ -262,6 +268,191 @@ class UnifiedMenuService extends ChangeNotifier
   /// Get menu by ID
   SharedMenu? getMenuById(String menuId) {
     return _menus.where((m) => m.id == menuId).firstOrNull;
+  }
+
+  // ===== MENU INVITATION SYSTEM =====
+
+  /// Create menu invitation using SharedMenu model for universal invitation system
+  Future<String?> createMenuInvitation({
+    required String menuTitle,
+    required Map<String, List<Recipe>> menuSnapshot,
+    required List<String> inviteeUserIds,
+    String? message,
+    bool allowCollaboration = false,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('Cannot create menu invitation: No authenticated user');
+      return null;
+    }
+
+    final result = await safeExecute<String?>(() async {
+      try {
+        AppLogger.info('📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users');
+
+        // Get current user's display name
+        final userService = ServiceLocator.get<UserService>();
+        final currentUserProfile = userService.currentUserProfile;
+        if (currentUserProfile == null) {
+          AppLogger.error('Cannot get current user profile for menu invitation');
+          return null;
+        }
+
+        // Create SharedMenu invitation
+        final sharedMenu = SharedMenu.create(
+          sharedByUserId: userId,
+          sharedByDisplayName: currentUserProfile.displayName,
+          sharedToUserIds: inviteeUserIds,
+          shareMessage: message,
+          menuTitle: menuTitle,
+          menuSnapshot: menuSnapshot,
+          allowCollaboration: allowCollaboration,
+        );
+
+        // Save invitation to Firebase
+        final invitationId = await _sharedMenuRepository.createSharedMenu(sharedMenu);
+
+        AppLogger.success('✅ Menu invitation created successfully: $invitationId');
+        AppLogger.info('📥 Recipients will see invitation in "Delat med mig" view');
+
+        return invitationId;
+      } catch (e) {
+        AppLogger.error('Failed to create menu invitation: $e');
+        return null;
+      }
+    });
+
+    return result;
+  }
+
+  /// Share menu with friends using invitation system
+  Future<bool> shareMenuWithFriends({
+    required String menuTitle,
+    required Map<String, List<Recipe>> menuSnapshot,
+    required List<String> friendIds,
+    String? message,
+    bool allowCollaboration = false,
+  }) async {
+    final invitationId = await createMenuInvitation(
+      menuTitle: menuTitle,
+      menuSnapshot: menuSnapshot,
+      inviteeUserIds: friendIds,
+      message: message,
+      allowCollaboration: allowCollaboration,
+    );
+
+    return invitationId != null;
+  }
+
+  /// Get menu invitations received by current user
+  Future<List<SharedMenu>> getReceivedMenuInvitations() async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.warning('Cannot get received menu invitations: No authenticated user');
+      return [];
+    }
+
+    final result = await safeExecute<List<SharedMenu>>(() async {
+      try {
+        AppLogger.info('📥 Getting received menu invitations for user $userId');
+        return await _sharedMenuRepository.getSharedMenusForUser(userId);
+      } catch (e) {
+        AppLogger.error('Failed to get received menu invitations: $e');
+        return <SharedMenu>[];
+      }
+    });
+
+    return result ?? [];
+  }
+
+  /// Import shared menu (copy-on-write collaboration)
+  Future<String?> importSharedMenu({
+    required String sharedMenuId,
+    String? newTitle,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('Cannot import menu: No authenticated user');
+      return null;
+    }
+
+    final result = await safeExecute<String?>(() async {
+      try {
+        AppLogger.info('📥 Importing shared menu $sharedMenuId');
+
+        // Get shared menu
+        final sharedMenu = await _sharedMenuRepository.getSharedMenu(sharedMenuId);
+        if (sharedMenu == null) {
+          AppLogger.error('Shared menu not found: $sharedMenuId');
+          return null;
+        }
+
+        // Create imported menu with attribution
+        final menuTitle = newTitle ?? '${sharedMenu.menuTitle} (Importerad)';
+        final attributedMenu = Map<String, List<Recipe>>.from(sharedMenu.menuSnapshot);
+        
+        // Add attribution to menu description or first recipe
+        if (attributedMenu.isNotEmpty) {
+          final firstCategory = attributedMenu.keys.first;
+          final recipes = attributedMenu[firstCategory]!;
+          if (recipes.isNotEmpty) {
+            final firstRecipe = recipes[0];
+            final attributionText = 'Inspirerat av meny från ${sharedMenu.sharedByDisplayName}';
+            final attributedRecipe = firstRecipe.copyWith(
+              description: firstRecipe.description.isEmpty
+                  ? attributionText
+                  : '${firstRecipe.description}\n\n$attributionText',
+            );
+            attributedMenu[firstCategory] = [attributedRecipe, ...recipes.skip(1)];
+          }
+        }
+
+        // Create new menu with imported data
+        final importedMenuId = await createMenu(
+          name: menuTitle,
+          initialRecipes: attributedMenu,
+        );
+
+        if (importedMenuId == null) {
+          AppLogger.error('Failed to create imported menu');
+          return null;
+        }
+
+        // Mark as imported in SharedMenu
+        await _sharedMenuRepository.markAsImported(sharedMenuId, userId);
+
+        AppLogger.success('✅ Menu imported successfully with attribution');
+        return importedMenuId;
+      } catch (e) {
+        AppLogger.error('Failed to import shared menu: $e');
+        return null;
+      }
+    });
+
+    return result;
+  }
+
+  /// Dismiss shared menu from user's list
+  Future<bool> dismissSharedMenu(String sharedMenuId) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('Cannot dismiss menu: No authenticated user');
+      return false;
+    }
+
+    final result = await safeExecute<bool>(() async {
+      try {
+        AppLogger.info('🗑️ Dismissing shared menu $sharedMenuId');
+        await _sharedMenuRepository.markAsDismissed(sharedMenuId, userId);
+        AppLogger.success('✅ Shared menu dismissed');
+        return true;
+      } catch (e) {
+        AppLogger.error('Failed to dismiss shared menu: $e');
+        return false;
+      }
+    });
+
+    return result ?? false;
   }
 
   // ===== GETTERS =====

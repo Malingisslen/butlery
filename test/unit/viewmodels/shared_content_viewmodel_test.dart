@@ -95,7 +95,7 @@ class SharedRecipeBuilder {
       allowImport: allowImport,
       allowCollaboration: allowCollaboration,
       viewedByUserIds: viewedByUserIds ?? [],
-      importedByUserIds: importedByUserIds ?? [],
+      engagedByUserIds: importedByUserIds ?? [],
       dismissedByUserIds: dismissedByUserIds ?? [],
     );
   }
@@ -138,7 +138,7 @@ class SharedMenuBuilder {
           },
       allowCollaboration: allowCollaboration,
       viewedByUserIds: viewedByUserIds ?? [],
-      importedByUserIds: importedByUserIds ?? [],
+      engagedByUserIds: importedByUserIds ?? [],
       dismissedByUserIds: dismissedByUserIds ?? [],
     );
   }

@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Base class for all dialogs that eliminates duplicate dialog scaffolding patterns.
@@ -90,7 +91,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
               color: widget.isDangerous 
                   ? AppColors.error 
                   : widget.primaryActionColor ?? AppColors.primaryBlue,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
             )
           : null,
       title: Text(widget.title),
@@ -101,7 +102,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           if (widget.subtitle != null) ...[
             Text(
               widget.subtitle!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -139,7 +140,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         onPressed: _isLoading ? null : _onPrimaryAction,
         style: FilledButton.styleFrom(
           backgroundColor: buttonColor,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.cardWhite,
         ),
         icon: _isLoading
             ? const SizedBox(
@@ -147,7 +148,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.delete),
@@ -163,7 +164,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.check),
@@ -346,7 +347,7 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     return customContent ??
         RichText(
           text: TextSpan(
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppTextStyles.bodyMedium,
             children: [
               TextSpan(text: message),
               TextSpan(
@@ -460,7 +461,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: AppColors.cardWhite,
                 ),
               )
             : widget.actionButtonIcon,

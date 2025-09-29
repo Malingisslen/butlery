@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// GroupDetailStats - Group statistics component
 ///
@@ -55,14 +56,14 @@ class GroupDetailStats {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: AppTextStyles.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
         ),
         Text(
           title,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),

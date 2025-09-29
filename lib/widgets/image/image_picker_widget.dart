@@ -114,7 +114,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         color: AppColors.cardColor,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: _isLoading ? null : _pickImages,
           borderRadius: widget.config.effectiveBorderRadius,
@@ -149,7 +149,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     ),
                     child: const Icon(
                       Icons.add_photo_alternate_outlined,
-                      size: 32,
+                      size: AppDimensions.iconSizeXl,
                       color: AppColors.primaryBlue,
                     ),
                   ),
@@ -282,7 +282,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               ),
               child: const Icon(
                 Icons.close,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: Colors.white,
               ),
             ),

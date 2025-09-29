@@ -71,7 +71,7 @@ class DiscoveryCategories {
             Icon(
               _getCategoryIcon(category['icon']),
               color: isSelected ? AppColors.onPrimary : AppColors.primary,
-              size: 24,
+              size: AppDimensions.iconSizeL,
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(

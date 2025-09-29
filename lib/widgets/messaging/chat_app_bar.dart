@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Clean chat app bar with conversation info and menu actions
@@ -49,7 +51,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.info_outline),
-                  SizedBox(width: 12),
+                  SizedBox(width: AppDimensions.spacingS),
                   Flexible(
                     child: Text('Konversationsinfo'),
                   ),
@@ -62,7 +64,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.notifications_off_outlined),
-                  SizedBox(width: 12),
+                  SizedBox(width: AppDimensions.spacingS),
                   Flexible(
                     child: Text('Tysta'),
                   ),
@@ -76,7 +78,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.exit_to_app, color: AppColors.error),
-                  SizedBox(width: 12),
+                  SizedBox(width: AppDimensions.spacingS),
                   Flexible(
                     child: Text('Lämna konversation'),
                   ),
@@ -100,18 +102,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       children: [
         Text(
           conversation?.title ?? '',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleMedium,
         ),
         if (conversation != null && conversation!.participantIds.length > 2)
           Text(
             '${conversation!.participantIds.length} deltagare',
-            style: const TextStyle(
-              fontSize: 12,
+            style: AppTextStyles.labelMedium.copyWith(
               color: AppColors.textSecondary,
-              fontWeight: FontWeight.normal,
             ),
           ),
       ],

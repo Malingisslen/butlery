@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/core/constants/app_strings.dart';
@@ -46,7 +47,7 @@ class EmptyStates {
               // Titel
               Text(
                 title ?? emptyConfig.title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: AppTextStyles.headlineSmall.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                 textAlign: TextAlign.center,
@@ -57,7 +58,7 @@ class EmptyStates {
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(
                   subtitle ?? emptyConfig.subtitle!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: AppTextStyles.bodyMedium.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                   textAlign: TextAlign.center,

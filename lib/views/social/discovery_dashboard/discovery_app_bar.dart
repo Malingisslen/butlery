@@ -35,8 +35,8 @@ class DiscoveryAppBar {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primary,
-                AppColors.primary.withValues(alpha: 0.8),
+                AppColors.primaryBlue,
+                AppColors.primaryBlue.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -52,7 +52,7 @@ class DiscoveryAppBar {
                     const Icon(
                       Icons.explore,
                       color: AppColors.onPrimary,
-                      size: 32,
+                      size: AppDimensions.iconSizeXl,
                     ),
                     const SizedBox(width: AppDimensions.spacingM),
                     Expanded(

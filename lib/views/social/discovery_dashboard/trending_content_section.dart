@@ -23,7 +23,7 @@ class TrendingContentSection {
             const Icon(
               Icons.trending_up,
               color: AppColors.success,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -45,7 +45,7 @@ class TrendingContentSection {
           _buildEmptyState()
         else
           SizedBox(
-            height: 200,
+            height: AppDimensions.heightXLarge,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: trendingRecipes.take(10).length,
@@ -62,12 +62,12 @@ class TrendingContentSection {
 
   static Widget _buildEmptyState() {
     return Container(
-      height: 120,
+      height: AppDimensions.heightLarge,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: 0.2),
+          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: const Center(
@@ -77,7 +77,7 @@ class TrendingContentSection {
             Icon(
               Icons.trending_up,
               color: AppColors.outline,
-              size: 32,
+              size: AppDimensions.iconSizeL,
             ),
             SizedBox(height: AppDimensions.spacingS),
             Text(
@@ -166,7 +166,7 @@ class TrendingContentSection {
                       children: [
                         const Icon(
                           Icons.people,
-                          size: 14,
+                          size: AppDimensions.iconSizeXs,
                           color: AppColors.success,
                         ),
                         const SizedBox(width: 4),
@@ -216,7 +216,7 @@ class TrendingContentSection {
       child: Icon(
         Icons.restaurant,
         color: AppColors.primary.withValues(alpha: 0.6),
-        size: 32,
+        size: AppDimensions.iconSizeL,
       ),
     );
   }
@@ -329,10 +329,7 @@ class TrendingContentSection {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.titleLarge,
         ),
         Container(
           padding: const EdgeInsets.symmetric(
@@ -341,13 +338,12 @@ class TrendingContentSection {
           ),
           decoration: BoxDecoration(
             color: AppColors.primary,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           ),
           child: Text(
             count.toString(),
-            style: const TextStyle(
+            style: AppTextStyles.labelMedium.copyWith(
               color: AppColors.onPrimary,
-              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),

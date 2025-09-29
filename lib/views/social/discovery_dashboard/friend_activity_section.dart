@@ -22,7 +22,7 @@ class FriendActivitySection {
             const Icon(
               Icons.people,
               color: AppColors.primary,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -69,7 +69,7 @@ class FriendActivitySection {
             Icon(
               Icons.people_outline,
               color: AppColors.outline,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
             ),
             SizedBox(height: AppDimensions.spacingM),
             Text(
@@ -157,7 +157,7 @@ class FriendActivitySection {
                       children: [
                         Icon(
                           _getActivityIcon(type),
-                          size: 16,
+                          size: AppDimensions.iconSizeS,
                           color: AppColors.primary,
                         ),
                         const SizedBox(width: 4),
@@ -189,7 +189,7 @@ class FriendActivitySection {
                         if (engagement['shares'] > 0) ...[
                           const Icon(
                             Icons.people,
-                            size: 14,  
+                            size: AppDimensions.iconSize14,  
                             color: AppColors.success,
                           ),
                           const SizedBox(width: 4),
@@ -212,7 +212,7 @@ class FriendActivitySection {
               Icon(
                 Icons.chevron_right,
                 color: AppColors.onSurface.withValues(alpha: 0.4),
-                size: 20,
+                size: AppDimensions.iconSizeM,
               ),
             ],
           ),
@@ -240,7 +240,7 @@ class FriendActivitySection {
     return Icon(
       icon,
       color: AppColors.primary.withValues(alpha: 0.6),
-      size: 32,
+      size: AppDimensions.iconSizeXl,
     );
   }
 
@@ -325,7 +325,7 @@ class FriendActivitySection {
                 children: [
                   Icon(
                     Icons.people_outline,
-                    size: 64,
+                    size: AppDimensions.iconSizeXXXl,
                     color: AppColors.onSurface,
                   ),
                   SizedBox(height: AppDimensions.spacingM),

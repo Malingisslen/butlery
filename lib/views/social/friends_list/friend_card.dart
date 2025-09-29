@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// FriendCard - Individual friend card component
 ///
@@ -22,21 +23,12 @@ class FriendCard {
       child: ListTile(
         onTap: () => Navigator.pushNamed(
           context,
-          '/friend-profile',
+          Routes.friendProfile,
           arguments: friend,
         ),
-        leading: Container(
-          width: 56,
-          height: 56,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryBlue,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.person,
-            color: AppColors.cardWhite,
-            size: 32,
-          ),
+        leading: SocialComponents.avatar(
+          user: friend,
+          size: ImageSize.medium,
         ),
         title: Text(
           friend.displayName,

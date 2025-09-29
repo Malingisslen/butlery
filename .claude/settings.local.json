@@ -168,7 +168,14 @@
       "Bash(if [ -f \"$file\" ])",
       "Bash(then grep -c \"class Mock.*extends Mock\" \"$file\")",
       "Bash(else echo \"not found\")",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git worktree:*)",
+      "Bash(git branch:*)",
+      "Bash(q)",
+      "Bash(pkill:*)",
+      "Bash(flutter run:*)",
+      "Bash(r)",
+      "Bash(firebase deploy:*)"
     ],
     "deny": []
   },

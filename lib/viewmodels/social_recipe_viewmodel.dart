@@ -72,9 +72,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/social/social_comment.dart';
+import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 /// Comprehensive social recipe ViewModel providing advanced social interaction management through service coordination.
 ///
@@ -83,6 +85,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// separation between social recipe business logic and UI presentation concerns.
 class SocialRecipeViewModel extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
+  final UnifiedRecipeService _recipeService;
 
   // ===== COMMENT SYSTEM STATE MANAGEMENT =====
   
@@ -158,7 +161,9 @@ class SocialRecipeViewModel extends ChangeNotifier {
   /// - Comment system preparation for threaded conversations
   SocialRecipeViewModel({
     required UnifiedFriendsService friendsService,
-  }) : _friendsService = friendsService;
+    required UnifiedRecipeService recipeService,
+  }) : _friendsService = friendsService,
+       _recipeService = recipeService;
 
   // ===== COMMENT SYSTEM STATE ACCESSORS =====
 
@@ -253,7 +258,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
     try {
       // Load comments from service with comprehensive error handling
-      _comments = [];
+      final recipeComments = await _recipeService.social.getComments(recipeId: recipeId);
+      _comments = recipeComments.map((comment) => _convertRecipeCommentToSocialComment(comment)).toList();
       AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
     } catch (e) {
       _commentsError = 'Kunde inte ladda kommentarer: $e';
@@ -308,25 +314,26 @@ class SocialRecipeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Create comment with comprehensive metadata and threading support
-      final comment = SocialComment(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      // Post comment to backend service
+      final commentId = await _recipeService.social.addComment(
         recipeId: recipeId,
-        authorId: _currentUser?.uid ?? 'unknown',
-        text: _newCommentText.trim(),
-        createdAt: DateTime.now(),
+        content: _newCommentText.trim(),
         parentCommentId: _replyToCommentId,
       );
-
-      // Add to local state for immediate UI feedback
-      _comments.add(comment);
       
-      // Clean up form state and reply mode
-      _newCommentText = '';
-      _replyToCommentId = null;
-      _isReplying = false;
+      if (commentId != null) {
+        // Clean up form state and reply mode
+        _newCommentText = '';
+        _replyToCommentId = null;
+        _isReplying = false;
 
-      AppLogger.info('Comment posted successfully for recipe: $recipeId');
+        // Refresh comments to get the updated list from server
+        await refreshComments(recipeId);
+
+        AppLogger.info('Comment posted successfully for recipe: $recipeId');
+      } else {
+        throw Exception('Failed to post comment - service returned null');
+      }
     } catch (e) {
       _commentsError = 'Kunde inte posta kommentar: $e';
       AppLogger.error('Failed to post comment for recipe $recipeId: $e');
@@ -559,6 +566,18 @@ class SocialRecipeViewModel extends ChangeNotifier {
   /// Gets recipes shared by me (placeholder implementation)
   List<Recipe> getSharedByMe() {
     return [];
+  }
+
+  /// Convert RecipeComment to SocialComment for ViewModel compatibility
+  SocialComment _convertRecipeCommentToSocialComment(RecipeComment recipeComment) {
+    return SocialComment(
+      id: recipeComment.id,
+      recipeId: recipeComment.recipeId,
+      authorId: recipeComment.authorId,
+      text: recipeComment.text,
+      createdAt: recipeComment.createdAt,
+      parentCommentId: recipeComment.parentCommentId,
+    );
   }
 
   /// Service name for debugging

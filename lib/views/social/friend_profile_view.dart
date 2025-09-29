@@ -168,46 +168,13 @@ class FriendProfileView extends StatelessWidget {
 
             const SizedBox(height: AppDimensions.spacingL),
 
-            // Aktivitet kort
-            CardContent.standard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Aktivitet',
-                    style: AppTextStyles.titleLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.access_time,
-                      color: AppColors.primaryBlue,
-                    ),
-                    title: const Text('Senast aktiv'),
-                    subtitle: Text(friend.lastActiveText),
-                  ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.calendar_today,
-                      color: AppColors.primaryBlue,
-                    ),
-                    title: const Text('Medlem sedan'),
-                    subtitle: Text(friend.memberSinceText),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacingL),
 
             // Action buttons
             Column(
               children: [
                 Row(
                   children: [
-                    Expanded(
+                    Flexible(
                       child: OutlinedButton.icon(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -222,8 +189,8 @@ class FriendProfileView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingL),
-                    Expanded(
-                      child: FilledButton.icon(
+                    Flexible(
+                      child: ElevatedButton.icon(
                         onPressed: () => _showRecipeSelection(context),
                         icon: const Icon(Icons.share),
                         label: const Text('Dela recept'),

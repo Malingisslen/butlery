@@ -5,8 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// SearchResultCard - Enhanced search result card component with explicit action buttons
 ///
@@ -53,83 +52,30 @@ class SearchResultCard {
     UserProfile user,
     FriendsViewModel viewModel,
   ) {
-    return ElevatedButton(
+    return ActionButtons.primaryButton(
+      context,
+      label: 'Skicka vänförfrågan',
       onPressed: () => _handleSendFriendRequest(context, user, viewModel),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-      ),
-      child: Text(
-        'Skicka vänförfrågan',
-        style: AppTextStyles.labelMedium.copyWith(
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
-      ),
     );
   }
 
   /// Build disabled button showing request already sent
   static Widget _buildRequestSentButton(BuildContext context) {
-    return OutlinedButton(
+    return ActionButtons.outlinedButton(
+      context,
+      label: 'Skickad',
+      icon: Icons.schedule,
       onPressed: null, // Disabled
-      style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: AppColors.textLight),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.schedule,
-            size: AppDimensions.iconSizeS,
-            color: AppColors.textMedium,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            'Förfrågan skickad',
-            style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.textMedium,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
   /// Build disabled button showing already friends status
   static Widget _buildAlreadyFriendsButton(BuildContext context) {
-    return OutlinedButton(
+    return ActionButtons.outlinedButton(
+      context,
+      label: 'Vänner',
+      icon: Icons.check_circle,
       onPressed: null, // Disabled
-      style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: AppColors.success),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.check_circle,
-            size: AppDimensions.iconSizeS,
-            color: AppColors.success,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            'Vänner',
-            style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.success,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -139,52 +85,20 @@ class SearchResultCard {
     UserProfile user,
     FriendsViewModel viewModel,
   ) {
-    return ElevatedButton(
+    return ActionButtons.primaryButton(
+      context,
+      label: 'Acceptera',
       onPressed: () => _handleAcceptFriendRequest(context, user, viewModel),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.success,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-      ),
-      child: Text(
-        'Acceptera',
-        style: AppTextStyles.labelMedium.copyWith(
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
-      ),
     );
   }
 
   /// Build disabled button for blocked users
   static Widget _buildBlockedButton(BuildContext context) {
-    return OutlinedButton(
+    return ActionButtons.outlinedButton(
+      context,
+      label: 'Blockerad',
+      icon: Icons.block,
       onPressed: null, // Disabled
-      style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: AppColors.error),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.block,
-            size: AppDimensions.iconSizeS,
-            color: AppColors.error,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            'Blockerad',
-            style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.error,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

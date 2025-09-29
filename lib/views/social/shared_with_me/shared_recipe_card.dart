@@ -3,10 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
 ///
@@ -21,8 +23,9 @@ class SharedRecipeCard {
     final isRead = viewModel.isRecipeRead(sharedRecipe);
     final isImported = viewModel.isRecipeImported(sharedRecipe);
 
-    return Card(
-      elevation: isRead ? 1 : 3,
+    return Material(
+      elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         onTap: () {
@@ -31,7 +34,7 @@ class SharedRecipeCard {
           }
           Navigator.pushNamed(
             context,
-            '/receptDetalj',
+            Routes.receptDetalj,
             arguments: recipe,
           );
         },
@@ -111,7 +114,7 @@ class SharedRecipeCard {
               ),
               Text(
                 timeago.format(sharedRecipe.sharedAt, locale: 'sv'),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context)
                           .colorScheme
                           .onSurfaceVariant,
@@ -121,36 +124,30 @@ class SharedRecipeCard {
           ),
         ),
         // Dismiss knapp
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context)
-                .colorScheme
-                .errorContainer
-                .withValues(alpha: 0.1),
+        Material(
+          color: Theme.of(context)
+              .colorScheme
+              .errorContainer
+              .withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          child: InkWell(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            border: Border.all(
-              color: Theme.of(context)
-                  .colorScheme
-                  .outline
-                  .withValues(alpha: 0.2),
-            ),
-          ),
-          child: IconButton(
-            onPressed: () => SharedContentActions.dismissRecipe(
+            onTap: () => SharedContentActions.dismissRecipe(
               context,
               viewModel,
               sharedRecipe,
             ),
-            icon: Icon(
-              Icons.close,
-              size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            tooltip: 'Dölj från min lista',
-            padding: const EdgeInsets.all(AppDimensions.spacingXs),
-            constraints: const BoxConstraints(
-              minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
-              minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingXs),
+              constraints: const BoxConstraints(
+                minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+              ),
+              child: Icon(
+                Icons.close,
+                size: AppDimensions.iconSizeM,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -176,10 +173,9 @@ class SharedRecipeCard {
           ClipRRect(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             child: Container(
-              width: 100, // Increased from 80 to 100 for better visibility
-              height: 100, // Increased from 80 to 100 for better visibility
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 image: recipe.primaryImageUrl != null
                     ? DecorationImage(
                         image: NetworkImage(recipe.primaryImageUrl!),
@@ -208,13 +204,13 @@ class SharedRecipeCard {
             children: [
               Text(
                 recipe.title,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: AppTextStyles.titleMedium,
               ),
               if (recipe.description.isNotEmpty) ...[
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   recipe.description,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: AppTextStyles.bodySmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -224,24 +220,24 @@ class SharedRecipeCard {
                 children: [
                   Icon(
                     Icons.restaurant,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '${recipe.portions ?? '?'} portioner',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Icon(
                     Icons.access_time,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     recipe.cookTimeText,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
@@ -262,7 +258,7 @@ class SharedRecipeCard {
       ),
       child: Text(
         '"$message"',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        style: AppTextStyles.bodySmall.copyWith(
               fontStyle: FontStyle.italic,
             ),
       ),
@@ -280,43 +276,43 @@ class SharedRecipeCard {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton.icon(
+          child: SocialComponents.socialActionButton(
+            text: 'Visa',
             onPressed: () {
               if (!isRead) {
                 viewModel.markRecipeAsRead(sharedRecipe);
               }
               Navigator.pushNamed(
                 context,
-                '/receptDetalj',
+                Routes.receptDetalj,
                 arguments: recipe,
               );
             },
-            icon: const Icon(Icons.visibility, size: 18),
-            label: const Text('Visa'),
+            icon: Icons.visibility,
+            outlined: true,
+            compact: true,
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
-          child: FilledButton.icon(
-            onPressed: isImported || viewModel.isImporting
-                ? null
-                : () => SharedContentActions.importRecipe(
-                      context,
-                      viewModel,
-                      sharedRecipe,
-                    ),
+          child: SocialComponents.socialActionButton(
+            text: isImported ? 'Importerat' : 'Importera',
+            onPressed: () {
+              if (!isImported && !viewModel.isImporting) {
+                SharedContentActions.importRecipe(
+                  context,
+                  viewModel,
+                  sharedRecipe,
+                );
+              }
+            },
             icon: isImported
-                ? const Icon(Icons.check, size: 18)
+                ? Icons.check
                 : viewModel.isImporting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.download, size: 18),
-            label: Text(
-              isImported ? 'Importerat' : 'Importera',
-            ),
+                    ? null  // Loading handled by facade
+                    : Icons.download,
+            loading: viewModel.isImporting,
+            compact: true,
           ),
         ),
       ],

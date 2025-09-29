@@ -9,12 +9,12 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/widgets/common/indicators/emoji_avatar.dart';
 import 'package:butlery/widgets/common/indicators/member_count_badge.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 class GroupInvitationsView extends StatelessWidget {
   const GroupInvitationsView({super.key});
 
@@ -28,7 +28,7 @@ class GroupInvitationsView extends StatelessWidget {
             appBar: AppBar(
               title: const Text('Tillgängliga grupper'),
               // ✅ KORRIGERAT: Använd textTheme istället för icke-existerande styles
-              titleTextStyle: Theme.of(context).textTheme.headlineSmall,
+              titleTextStyle: AppTextStyles.headlineSmall,
               backgroundColor: AppColors.backgroundBeige,
               foregroundColor: AppColors.textDark,
               elevation: AppDimensions.elevationLow,
@@ -77,7 +77,7 @@ class GroupInvitationsView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+              const Icon(Icons.error_outline, size: AppDimensions.iconSizeHero, color: AppColors.error),
               const SizedBox(height: AppDimensions.spacingXl),
               const Text(
                 'Ett fel uppstod',
@@ -99,12 +99,11 @@ class GroupInvitationsView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingXl),
-              OutlinedButton.icon(
+              ActionButtons.outlinedButton(
+                context,
+                label: 'Försök igen',
+                icon: Icons.refresh,
                 onPressed: viewModel.refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Försök igen'),
-                // ✅ KORRIGERAT: Använd secondaryButtonStyle som finns
-                style: ComponentThemes.outlinedButtonStyle,
               ),
             ],
           ),
@@ -185,35 +184,14 @@ class GroupInvitationsView extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingM),
 
                 // Gå med-knapp
-                FilledButton(
+                ActionButtons.primaryButton(
+                  context,
+                  label: 'Gå med',
                   onPressed: isJoining
                       ? null
                       : () => _showJoinConfirmation(context, group, viewModel),
-                  child: isJoining
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.neutralLight),
-                            ),
-                            // ✅ KORRIGERAT: Använd tinyHorizontalGap som finns
-                            const SizedBox(width: AppDimensions.spacingXs),
-                            Text(
-                              'Går med...',
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.neutralLight,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text(
-                          'Gå med',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: AppColors.neutralLight,
-                          ),
-                        ),
+                  isLoading: isJoining,
+                  loadingText: 'Går med...',
                 ),
               ],
             ),
@@ -338,26 +316,15 @@ class GroupInvitationsView extends StatelessWidget {
           ],
         ),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context, false),
-            // ✅ KORRIGERAT: Använd secondaryButtonStyle istället för icke-existerande textButtonStyle
-            style: ComponentThemes.textButtonStyle,
-            child: const Text('Avbryt'),
           ),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Gå med',
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: AppColors.cardWhite,
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              ),
-            ),
-            child: Text(
-              'Gå med',
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.neutralLight),
-            ),
           ),
         ],
       ),

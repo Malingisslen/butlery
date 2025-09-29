@@ -24,7 +24,7 @@ extension AppColorsExtension on AppColors {
   static Color get onSurface => AppColors.textDark;
   
   /// Primary container (existing in ColorScheme but need static access)
-  static Color get primaryContainer => const Color(0xFFE3F2FD);
+  static Color get primaryContainer => AppColors.primaryBlue.withValues(alpha: 0.1);
   
   /// On primary container (maps to darkNavy)
   static Color get onPrimaryContainer => AppColors.darkNavy;

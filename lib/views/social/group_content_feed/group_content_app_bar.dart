@@ -36,8 +36,8 @@ class GroupContentAppBar {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primary,
-                AppColors.primary.withValues(alpha: 0.8),
+                AppColors.primaryBlue,
+                AppColors.primaryBlue.withValues(alpha: 0.8),
               ],
             ),
           ),

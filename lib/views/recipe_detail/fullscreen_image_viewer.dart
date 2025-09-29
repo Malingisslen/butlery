@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Fullscreen image viewer for recipe images
 ///
@@ -67,12 +69,12 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         title: _showAppBar
             ? Text(
                 '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.cardWhite),
               )
             : null,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: AppColors.cardWhite),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.cardWhite),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -108,7 +110,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                       if (progress == null) return child;
                       return Center(
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.cardWhite,
                           value: progress.expectedTotalBytes != null
                               ? progress.cumulativeBytesLoaded /
                                   progress.expectedTotalBytes!
@@ -120,8 +122,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                       return const Center(
                         child: Icon(
                           Icons.error_outline,
-                          size: 64,
-                          color: Colors.white54,
+                          size: AppDimensions.iconSizeXxl,
+                          color: AppColors.cardWhite54,
                         ),
                       );
                     },

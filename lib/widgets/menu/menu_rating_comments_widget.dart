@@ -103,7 +103,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
-                    _buildStarRating(widget.averageRating, size: 20),
+                    _buildStarRating(widget.averageRating, size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
                       '(${widget.ratingsCount})',
@@ -127,7 +127,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   onPressed: () => _openRatingDialog(),
                   icon: Icon(
                     widget.userRating != null ? Icons.edit : Icons.star,
-                    size: 18,
+                    size: AppDimensions.iconSizeS,
                   ),
                   label: Text(
                     widget.userRating != null ? 'Ändra' : 'Betygsätt',
@@ -192,7 +192,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
           const SizedBox(width: 4),
           const Icon(
             Icons.star,
-            size: 12,
+            size: AppDimensions.iconSizeXs,
             color: AppColors.warning,
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -244,7 +244,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.star, size: 18),
+                Icon(Icons.star, size: AppDimensions.iconSizeS),
                 SizedBox(width: AppDimensions.spacingS),
                 Text('Betyg'),
               ],
@@ -254,7 +254,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.comment, size: 18),
+                Icon(Icons.comment, size: AppDimensions.iconSizeS),
                 SizedBox(width: AppDimensions.spacingS),
                 Text('Kommentarer'),
               ],
@@ -337,7 +337,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   ),
                   Row(
                     children: [
-                      _buildStarRating(ratingValue, size: 16),
+                      _buildStarRating(ratingValue, size: AppDimensions.iconSizeS),
                       const SizedBox(width: AppDimensions.spacingS),
                       if (ratedAt != null)
                         Text(
@@ -429,7 +429,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                 children: [
                   const Icon(
                     Icons.reply,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: AppColors.info,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -451,7 +451,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                     },
                     child: const Icon(
                       Icons.close,
-                      size: 16,
+                      size: AppDimensions.iconSizeS,
                       color: AppColors.info,
                     ),
                   ),
@@ -566,7 +566,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   children: [
                     Icon(
                       likes > 0 ? Icons.favorite : Icons.favorite_border,
-                      size: 16,
+                      size: AppDimensions.iconSizeS,
                       color: likes > 0 ? AppColors.error : AppColors.onSurface.withValues(alpha: 0.6),
                     ),
                     if (likes > 0) ...[
@@ -595,7 +595,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   children: [
                     Icon(
                       Icons.reply,
-                      size: 16,
+                      size: AppDimensions.iconSizeS,
                       color: AppColors.onSurface.withValues(alpha: 0.6),
                     ),
                     const SizedBox(width: 4),
@@ -622,7 +622,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
         children: [
           const Icon(
             Icons.star_border,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: AppColors.outline,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -650,7 +650,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
         children: [
           const Icon(
             Icons.chat_bubble_outline,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: AppColors.outline,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -671,7 +671,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
     );
   }
 
-  Widget _buildStarRating(double rating, {double size = 16}) {
+  Widget _buildStarRating(double rating, {double size = AppDimensions.iconSizeS}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
@@ -718,7 +718,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   },
                   child: Icon(
                     _selectedRating >= starRating ? Icons.star : Icons.star_border,
-                    size: 32,
+                    size: AppDimensions.iconSizeL,
                     color: AppColors.warning,
                   ),
                 );

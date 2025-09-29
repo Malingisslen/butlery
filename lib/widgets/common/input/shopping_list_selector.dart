@@ -11,6 +11,9 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/input/shopping_list_card.dart';
 import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Shopping List Selector Widget
 /// 
@@ -37,49 +40,64 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   late UnifiedShoppingViewModel _viewModel;
   String? _selectedListId;
   bool _isAddingToList = false;
+  List<UnifiedShoppingItem>? _filteredMenuItems;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = UnifiedShoppingViewModel();
+    _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
     _selectedListId = _viewModel.activeList?.id;
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, child) {
-        if (_viewModel.isLoading) {
-          return const StateWidget(
-            type: StateType.loading,
-            title: 'Laddar listor...',
-          );
-        }
-        
-        if (_viewModel.hasError) {
-          return StateWidget(
-            type: StateType.error,
-            title: 'Fel vid laddning',
-            subtitle: _viewModel.error,
-            actionLabel: 'Försök igen',
-            onAction: () => _viewModel.loadLists(),
-          );
-        }
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: AppDimensions.spacingXl),
-            _buildListsSection(context, _viewModel),
-            if (widget.menu != null && _selectedListId != null) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
-              _buildAddToListSection(context, _viewModel),
-            ],
-          ],
-        );
-      },
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      maxChildSize: 0.9,
+      minChildSize: 0.5,
+      builder: (context, scrollController) => Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppDimensions.borderRadiusL),
+          ),
+        ),
+        child: AnimatedBuilder(
+          animation: _viewModel,
+          builder: (context, child) {
+            if (_viewModel.isLoading) {
+              return const StateWidget(
+                type: StateType.loading,
+                title: 'Laddar listor...',
+              );
+            }
+            
+            if (_viewModel.hasError) {
+              return StateWidget(
+                type: StateType.error,
+                title: 'Fel vid laddning',
+                subtitle: _viewModel.error,
+                actionLabel: 'Försök igen',
+                onAction: () => _viewModel.loadLists(),
+              );
+            }
+            
+            return ListView(
+              controller: scrollController,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: AppDimensions.spacingXl),
+                _buildListsSection(context, _viewModel),
+                if (widget.menu != null && _selectedListId != null) ...[
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  _buildAddToListSection(context, _viewModel),
+                ],
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -95,16 +113,18 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         const SizedBox(width: AppDimensions.spacingM),
         const Expanded(
           child: Text(
-            'Handlistor',
+            'Inköpslistor',
             style: AppTextStyles.headlineSmall,
           ),
         ),
-        FilledButton.icon(
-          onPressed: () => _createNewList(context),
-          icon: const Icon(Icons.add, size: AppDimensions.iconSizeAction),
-          label: const Text('Ny lista'),
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
+        Flexible(
+          child: SizedBox(
+            height: 40,
+            child: StyledButton.primary(
+              text: 'Ny lista',
+              icon: const Icon(Icons.add),
+              onPressed: () => _createNewList(context),
+            ),
           ),
         ),
       ],
@@ -144,7 +164,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       orElse: () => viewModel.lists.first,
     );
 
-    final menuItems = _convertMenuToShoppingItems();
+    // Initialize filtered items if not already set
+    _filteredMenuItems ??= _convertMenuToShoppingItems();
+    final menuItems = _filteredMenuItems!;
     
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -176,41 +198,33 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'Lägg till ${menuItems.length} artiklar från menyn i "${selectedList.name}"',
+            menuItems.isEmpty
+                ? 'Inga artiklar valda från menyn'
+                : 'Lägg till ${menuItems.length} artiklar från menyn i "${selectedList.name}"',
             style: AppTextStyles.bodyLarge,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _previewMenuItems(context, menuItems),
-                  icon: const Icon(Icons.preview),
-                  label: const Text('Förhandsgranska'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.success),
-                    foregroundColor: AppColors.success,
-                  ),
+                child: ActionButtons.outlinedButton(
+                  context,
+                  label: 'Förhandsgranska',
+                  icon: Icons.preview,
+                  onPressed: () => _previewAndEditMenuItems(context, menuItems),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
-                child: FilledButton.icon(
-                  onPressed: _isAddingToList ? null : () => _addMenuToList(context, viewModel, selectedList, menuItems),
-                  icon: _isAddingToList 
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
-                          ),
-                        )
-                      : const Icon(Icons.add_shopping_cart),
-                  label: Text(_isAddingToList ? 'Lägger till...' : 'Lägg till'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.success,
-                  ),
+                child: StyledButton.primary(
+                  text: _isAddingToList 
+                      ? 'Lägger till...' 
+                      : menuItems.isEmpty 
+                          ? 'Inga artiklar att lägga till'
+                          : 'Lägg till',
+                  icon: _isAddingToList ? null : const Icon(Icons.add_shopping_cart),
+                  onPressed: (_isAddingToList || menuItems.isEmpty) ? null : () => _addMenuToList(context, viewModel, selectedList, menuItems),
+                  isLoading: _isAddingToList,
                 ),
               ),
             ],
@@ -221,13 +235,14 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   }
 
   /// Select a list
-  void _selectList(String listId) {
+  Future<void> _selectList(String listId) async {
+    await _viewModel.setActiveList(listId); // Activate in service layer
     if (mounted) {
       setState(() {
         _selectedListId = listId;
       });
     }
-    widget.onListSelected?.call();
+    // Don't call onListSelected here - only call it after successful ingredient addition
   }
 
   /// Create new list
@@ -250,10 +265,15 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         );
 
         if (success) {
-          if (mounted) {
-            setState(() {
-              _selectedListId = _viewModel.activeList?.id;
-            });
+          // Auto-select the newly created list
+          final newListId = _viewModel.lists.isNotEmpty ? _viewModel.lists.last.id : null;
+          if (newListId != null) {
+            await _viewModel.setActiveList(newListId);
+            if (mounted) {
+              setState(() {
+                _selectedListId = newListId;
+              });
+            }
           }
         }
       }
@@ -294,6 +314,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               backgroundColor: success ? AppColors.success : AppColors.error,
             ),
           );
+          
+          // Call onListSelected callback on success to let parent handle navigation
+          if (success) {
+            widget.onListSelected?.call();
+          }
         }
       } finally {
         if (mounted) {
@@ -305,38 +330,36 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     }
   }
 
-  /// Preview menu items
-  void _previewMenuItems(BuildContext context, List<UnifiedShoppingItem> items) {
-    showDialog(
+  /// Preview and edit menu items
+  Future<void> _previewAndEditMenuItems(BuildContext context, List<UnifiedShoppingItem> items) async {
+    final selectedList = _viewModel.lists.firstWhere(
+      (list) => list.id == _selectedListId,
+      orElse: () => _viewModel.lists.first,
+    );
+    
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Förhandsgranska artiklar'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ListTile(
-                dense: true,
-                leading: const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
-                title: Text(item.name),
-                subtitle: item.quantity > 0 
-                    ? Text('${item.quantity} ${item.unit}')
-                    : null,
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Stäng'),
-          ),
-        ],
+      builder: (context) => EditableMenuItemsPreviewDialog(
+        items: List.from(items), // Create a copy to avoid modifying original
+        selectedListName: selectedList.name,
       ),
     );
+    
+    if (result != null && mounted) {
+      final editedItems = result['items'] as List<UnifiedShoppingItem>?;
+      final shouldAddToList = result['addToList'] as bool? ?? false;
+      
+      if (editedItems != null) {
+        setState(() {
+          _filteredMenuItems = editedItems;
+        });
+        
+        // If user chose to add to list, do it automatically
+        if (shouldAddToList && editedItems.isNotEmpty && mounted && context.mounted) {
+          await _addMenuToList(context, _viewModel, selectedList, editedItems);
+        }
+      }
+    }
   }
 
   /// Convert menu recipes to shopping items
@@ -359,8 +382,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           } else {
             itemMap[key] = UnifiedShoppingItem(
               name: ingredient,
-              amount: 1,
-              unit: 'st',
+              amount: 0, // No additional amount since ingredient already contains quantity
+              unit: '', // No additional unit since ingredient already contains unit
               bought: false,
             );
           }
@@ -373,7 +396,145 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   @override
   void dispose() {
-    _viewModel.dispose();
+    // Don't dispose shared ViewModel instance from ServiceLocator
     super.dispose();
+  }
+}
+
+/// Editable preview dialog for menu items with delete functionality
+class EditableMenuItemsPreviewDialog extends StatefulWidget {
+  final List<UnifiedShoppingItem> items;
+  final String selectedListName;
+
+  const EditableMenuItemsPreviewDialog({
+    super.key,
+    required this.items,
+    required this.selectedListName,
+  });
+
+  @override
+  State<EditableMenuItemsPreviewDialog> createState() => _EditableMenuItemsPreviewDialogState();
+}
+
+class _EditableMenuItemsPreviewDialogState extends State<EditableMenuItemsPreviewDialog> {
+  late List<UnifiedShoppingItem> _editableItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _editableItems = List.from(widget.items);
+  }
+
+  void _removeItem(int index) {
+    setState(() {
+      _editableItems.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Förhandsgranska och redigera artiklar'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 400,
+        child: _editableItems.isEmpty
+            ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_cart_outlined,
+                      size: AppDimensions.iconSizeXxl,
+                      color: AppColors.textLight,
+                    ),
+                    SizedBox(height: AppDimensions.spacingM),
+                    Text(
+                      'Inga artiklar valda',
+                      style: AppTextStyles.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: AppDimensions.spacingS),
+                    Text(
+                      'Du har tagit bort alla artiklar från menyn',
+                      style: AppTextStyles.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: _editableItems.length,
+                itemBuilder: (context, index) {
+                  final item = _editableItems[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.spacingXs,
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      leading: const Icon(
+                        Icons.shopping_cart,
+                        size: AppDimensions.iconSizeM,
+                        color: AppColors.primaryBlue,
+                      ),
+                      title: Text(
+                        item.name,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: item.amount > 0
+                          ? Text(
+                              '${item.amount} ${item.unit}',
+                              style: AppTextStyles.bodyMedium,
+                            )
+                          : null,
+                      trailing: IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: AppColors.error,
+                          size: AppDimensions.iconSizeAction,
+                        ),
+                        onPressed: () => _removeItem(index),
+                        tooltip: 'Ta bort artikel',
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
+      actions: [
+        if (_editableItems.isNotEmpty)
+          TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _editableItems.clear();
+              });
+            },
+            icon: const Icon(Icons.clear_all, color: AppColors.error),
+            label: const Text(
+              'Ta bort alla',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, {
+            'items': _editableItems,
+            'addToList': false,
+          }), // Cancel - save changes but don't add to list
+          child: const Text('Avbryt'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, {
+            'items': _editableItems,
+            'addToList': _editableItems.isNotEmpty,
+          }),
+          child: Text(_editableItems.isEmpty 
+              ? 'Stäng' 
+              : 'Till "${widget.selectedListName}" (${_editableItems.length})'),
+        ),
+      ],
+    );
   }
 }

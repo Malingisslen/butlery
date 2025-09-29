@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -27,33 +28,24 @@ class GroupSharedShoppingListCard {
     GroupContentViewModel viewModel,
     UnifiedShoppingList shoppingList,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(
-          color: AppColors.outline.withValues(alpha: 0.2),
+    return Material(
+      elevation: AppDimensions.elevationMedium,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      color: AppColors.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context, shoppingList),
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildContent(context, shoppingList),
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildStats(context, shoppingList),
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildActions(context, viewModel, shoppingList),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context, shoppingList),
-          const SizedBox(height: AppDimensions.spacingM),
-          _buildContent(context, shoppingList),
-          const SizedBox(height: AppDimensions.spacingM),
-          _buildStats(context, shoppingList),
-          const SizedBox(height: AppDimensions.spacingM),
-          _buildActions(context, viewModel, shoppingList),
-        ],
       ),
     );
   }
@@ -69,7 +61,7 @@ class GroupSharedShoppingListCard {
           ),
           child: const Icon(
             Icons.shopping_cart,
-            size: 20,
+            size: AppDimensions.iconSizeM,
             color: AppColors.onPrimaryContainer,
           ),
         ),
@@ -146,7 +138,7 @@ class GroupSharedShoppingListCard {
             children: [
               Icon(
                 Icons.list_alt,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: AppColors.onSurface.withValues(alpha: 0.7),
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -250,7 +242,7 @@ class GroupSharedShoppingListCard {
         children: [
           Icon(
             icon,
-            size: 12,
+            size: AppDimensions.iconSizeXs,
             color: color,
           ),
           const SizedBox(width: 4),
@@ -282,30 +274,20 @@ class GroupSharedShoppingListCard {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton.icon(
+          child: ActionButtons.secondaryButton(
+            context,
+            label: 'Visa lista',
+            icon: Icons.visibility,
             onPressed: () => _viewShoppingList(context, shoppingList),
-            icon: const Icon(Icons.visibility, size: 16),
-            label: const Text('Visa lista'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingM,
-                vertical: AppDimensions.spacingS,
-              ),
-            ),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
-          child: FilledButton.icon(
+          child: ActionButtons.primaryButton(
+            context,
+            label: 'Importera',
+            icon: Icons.download,
             onPressed: () => _importShoppingList(context, viewModel, shoppingList),
-            icon: const Icon(Icons.download, size: 16),
-            label: const Text('Importera'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingM,
-                vertical: AppDimensions.spacingS,
-              ),
-            ),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),

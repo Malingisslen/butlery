@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target selection widgets
@@ -42,7 +43,7 @@ class InvitationSelectors {
             padding: EdgeInsets.all(AppDimensions.spacingLg),
             child: Text(
               'Inga målgrupper tillgängliga',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: AppColors.textMedium),
             ),
           ),
         );
@@ -353,7 +354,7 @@ class InvitationSelectors {
           if (compact)
             Text(
               '${selectedTargets.length} målgrupper valda',
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: AppColors.textMedium),
             )
           else
             Wrap(
@@ -438,10 +439,10 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+                color: isSelected ? Theme.of(context).primaryColor : AppColors.textMedium,
                 width: 2,
               ),
-              color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+              color: isSelected ? Theme.of(context).primaryColor : AppColors.transparent,
             ),
             child: isSelected 
               ? const Icon(

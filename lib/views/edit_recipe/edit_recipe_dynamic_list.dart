@@ -32,7 +32,7 @@ class EditRecipeDynamicList {
                       decoration: InputDecoration(
                         hintText: '$label ${index + 1}',
                       ),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: AppTextStyles.bodyMedium,
                       textInputAction: TextInputAction.next,
                       maxLines: null,
                       keyboardType: TextInputType.multiline,

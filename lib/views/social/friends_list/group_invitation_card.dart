@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// GroupInvitationCard - Group invitation card component
@@ -41,7 +42,7 @@ class GroupInvitationCard {
                   child: Center(
                     child: Text(
                       invitation.groupEmoji,
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: AppTextStyles.headlineMedium,
                     ),
                   ),
                 ),
@@ -52,19 +53,19 @@ class GroupInvitationCard {
                     children: [
                       Text(
                         invitation.groupName,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: AppTextStyles.titleMedium.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         'Inbjudan från ${invitation.fromUserName}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
                         'Skickat: ${invitation.timeAgoText}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.tertiary,
                         ),
                       ),
@@ -83,7 +84,7 @@ class GroupInvitationCard {
                 ),
                 child: Text(
                   invitation.personalMessage!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontStyle: FontStyle.italic,
                   ),
                 ),

@@ -27,9 +27,9 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// A view for adding new members to an existing social group.
 ///
@@ -114,30 +114,22 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       elevation: AppDimensions.elevationLow,
       actions: [
         if (viewModel.hasSelectedFriends)
-          TextButton(
+          ActionButtons.textButton(
+            context,
+            label: 'Välj alla',
             onPressed: () {
               debugPrint('🔍 DEBUG: "Välj alla" knapp tryckt');
               viewModel.selectAllVisible();
             },
-            child: Text(
-              'Välj alla',
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.primaryBlue,
-              ),
-            ),
           ),
         if (viewModel.hasSelectedFriends)
-          TextButton(
+          ActionButtons.textButton(
+            context,
+            label: 'Rensa',
             onPressed: () {
               debugPrint('🔍 DEBUG: "Rensa" knapp tryckt');
               viewModel.clearAllSelections();
             },
-            child: Text(
-              'Rensa',
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.textMedium,
-              ),
-            ),
           ),
       ],
     );
@@ -371,7 +363,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
               ),
               const SizedBox(height: AppDimensions.spacingM),
             ],
-            FilledButton(
+            ActionButtons.primaryButton(
+              context,
+              label: 'Skicka ${viewModel.selectedCount} inbjudningar',
               onPressed: viewModel.isSendingInvitations
                   ? null
                   : () async {
@@ -404,36 +398,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                         );
                       }
                     },
-              style: ComponentThemes.primaryButtonStyle,
-              child: viewModel.isSendingInvitations
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.neutralLight,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppDimensions.spacingM),
-                        Text(
-                          'Skickar...',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: AppColors.neutralLight,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Text(
-                      'Skicka ${viewModel.selectedCount} inbjudningar',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.neutralLight,
-                      ),
-                    ),
+              isLoading: viewModel.isSendingInvitations,
+              loadingText: 'Skickar...',
+              isExpanded: true,
             ),
           ],
         ),

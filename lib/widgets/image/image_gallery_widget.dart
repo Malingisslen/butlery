@@ -30,8 +30,8 @@ class ImageGalleryWidget extends StatefulWidget {
     this.onAddImage,
     this.showAddButton = false,
     this.crossAxisCount = 3,
-    this.crossAxisSpacing = 8.0,
-    this.mainAxisSpacing = 8.0,
+    this.crossAxisSpacing = AppDimensions.spacingSm,
+    this.mainAxisSpacing = AppDimensions.spacingSm,
     this.childAspectRatio = 1.0,
   });
 
@@ -46,8 +46,8 @@ class ImageGalleryWidget extends StatefulWidget {
     Function()? onAddImage,
     bool showAddButton = false,
     int crossAxisCount = 3,
-    double crossAxisSpacing = 8.0,
-    double mainAxisSpacing = 8.0,
+    double crossAxisSpacing = AppDimensions.spacingSm,
+    double mainAxisSpacing = AppDimensions.spacingSm,
     double childAspectRatio = 1.0,
   }) {
     return ImageGalleryWidget(
@@ -95,6 +95,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          cacheExtent: 2000, // Performance optimization: cache more items for smooth scrolling
+          addRepaintBoundaries: true, // Optimization: reduce repaints
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.crossAxisCount,
             crossAxisSpacing: widget.crossAxisSpacing,
@@ -120,7 +122,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     // Remove unused theme variable
 
     return Container(
-      height: 200,
+      height: AppDimensions.minHeightLarge,
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
@@ -135,7 +137,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           children: [
             Icon(
               Icons.photo_library_outlined,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
               color: AppColors.textPrimary.withValues(alpha: 0.4),
             ),
             const SizedBox(height: AppDimensions.spacing12),
@@ -221,7 +223,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               children: [
                 const Icon(
                   Icons.add_photo_alternate_outlined,
-                  size: 32,
+                  size: AppDimensions.iconSizeXl,
                   color: AppColors.primaryBlue,
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
@@ -307,7 +309,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               ),
               child: Icon(
                 isSelected ? Icons.check : Icons.circle_outlined,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: isSelected
                     ? Colors.white
                     : AppColors.textPrimary.withValues(alpha: 0.6),
@@ -396,8 +398,8 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
     this.onImageTap,
     this.onImageLongPress,
     this.crossAxisCount = 2,
-    this.crossAxisSpacing = 8.0,
-    this.mainAxisSpacing = 8.0,
+    this.crossAxisSpacing = AppDimensions.spacingSm,
+    this.mainAxisSpacing = AppDimensions.spacingSm,
   });
 
   @override
@@ -406,7 +408,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
 
     if (imageUrls.isEmpty) {
       return Container(
-        height: 200,
+        height: AppDimensions.minHeightLarge,
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
@@ -421,7 +423,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
             children: [
               Icon(
                 Icons.photo_library_outlined,
-                size: 48,
+                size: AppDimensions.iconSizeXxl,
                 color: AppColors.textPrimary.withValues(alpha: 0.4),
               ),
               const SizedBox(height: AppDimensions.spacing12),

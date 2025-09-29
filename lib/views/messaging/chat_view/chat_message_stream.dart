@@ -9,6 +9,11 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/state/loading_states.dart';
+import 'package:butlery/widgets/common/state/empty_states.dart';
+import 'package:butlery/widgets/common/state/state_enums.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Optimized message stream with real-time updates and pagination
 class ChatMessageStream extends StatefulWidget {
@@ -100,7 +105,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
+        duration: AppDimensions.animationDurationCommon,
         curve: Curves.easeOut,
       );
     }
@@ -134,7 +139,11 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return LoadingStates.buildLoadingState(
+        context,
+        variant: LoadingVariant.spinner,
+        message: 'Laddar meddelanden...',
+      );
     }
 
     if (_error != null) {
@@ -143,10 +152,12 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(_error!),
-            const SizedBox(height: 16),
-            ElevatedButton(
+            const SizedBox(height: AppDimensions.spacingL),
+            ActionButtons.actionButton(
+              context,
+              label: 'Försök igen',
               onPressed: _refreshMessages,
-              child: const Text('Försök igen'),
+              icon: Icons.refresh,
             ),
           ],
         ),
@@ -154,8 +165,11 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     }
 
     if (_messages.isEmpty) {
-      return const Center(
-        child: Text('Inga meddelanden än'),
+      return EmptyStates.buildEmptyState(
+        context,
+        variant: EmptyStateVariant.generic,
+        title: 'Inga meddelanden än',
+        subtitle: 'Skicka ett meddelande för att starta konversationen',
       );
     }
 
@@ -163,19 +177,19 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       onRefresh: _refreshMessages,
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingL),
         itemCount: _messages.length,
         itemBuilder: (context, index) {
           final message = _messages[index];
           return Padding(
             key: ValueKey(message.id),
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
             child: Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
               child: Text(message.content),
             ),

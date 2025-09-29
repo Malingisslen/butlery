@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social group and friend category management components
@@ -397,7 +398,7 @@ class SocialGroupComponents {
   }) {
     return Column(
       children: [
-        Icon(icon, color: Colors.grey),
+        Icon(icon, color: AppColors.textMedium),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
@@ -405,7 +406,7 @@ class SocialGroupComponents {
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
           textAlign: TextAlign.center,
         ),
       ],
@@ -428,7 +429,7 @@ class SocialGroupComponents {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey),
+          Icon(icon, size: AppDimensions.iconSizeXxl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacing16),
           Text(
             title,
@@ -437,7 +438,7 @@ class SocialGroupComponents {
           const SizedBox(height: AppDimensions.spacing8),
           Text(
             subtitle,
-            style: const TextStyle(color: Colors.grey),
+            style: const TextStyle(color: AppColors.textMedium),
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null && createButtonText != null) ...[

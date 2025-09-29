@@ -401,7 +401,7 @@ class _FranSocialaMedierViewContentState extends State<_FranSocialaMedierViewCon
         maxLines: null,
         expands: true,
         textAlignVertical: TextAlignVertical.top,
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
       ),
     );
   }

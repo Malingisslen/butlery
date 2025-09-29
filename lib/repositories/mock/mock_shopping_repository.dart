@@ -29,6 +29,13 @@ class MockShoppingRepository extends InMemoryRepository<UnifiedShoppingList>
   }
 
   @override
+  Future<void> addItemsBatch(String listId, List<UnifiedShoppingItem> itemsList) async {
+    for (final item in itemsList) {
+      await addItem(listId, item);
+    }
+  }
+
+  @override
   Future<void> removeItem(String listId, String itemId) async {
     final list = items[listId];
     if (list != null) {

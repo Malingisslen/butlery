@@ -303,7 +303,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           icon: Icons.stop,
           label: 'Stoppa alla ($active)',
           onTap: widget.onCancelAllActive!,
-          color: Colors.orange.shade600,
+          color: AppColors.textMedium,
         ),
       );
     }
@@ -315,7 +315,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           icon: Icons.clear_all,
           label: 'Rensa misslyckade',
           onTap: widget.onClearAllFailed!,
-          color: Colors.red.shade600,
+          color: AppColors.error,
         ),
       );
     }
@@ -353,13 +353,13 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
               Icon(
                 icon,
                 size: AppDimensions.iconSizeS,
-                color: Colors.white,
+                color: AppColors.cardWhite,
               ),
               const SizedBox(width: AppDimensions.spacingXs),
               Text(
                 label,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.white,
+                  color: AppColors.cardWhite,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -423,7 +423,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         color: AppColors.cardColor,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: (_isAddingImage || widget.isLoading) ? null : _addImage,
           borderRadius: widget.config.effectiveBorderRadius,
@@ -544,11 +544,11 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: widget.config.effectiveBorderRadius,
-                color: Colors.black.withValues(alpha: 0.5),
+                color: AppColors.textDark.withValues(alpha: 0.5),
               ),
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: AppColors.cardWhite,
                 ),
               ),
             ),
@@ -611,13 +611,13 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                   const Icon(
                     Icons.star,
                     size: AppDimensions.iconSizeS,
-                    color: Colors.white,
+                    color: AppColors.cardWhite,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     'Primary',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.cardWhite,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -636,7 +636,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: widget.config.effectiveBorderRadius,
-          color: Colors.black.withValues(alpha: 0.6),
+          color: AppColors.textDark.withValues(alpha: 0.6),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -653,7 +653,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                 vertical: AppDimensions.paddingS,
               ),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.8),
+                color: AppColors.textDark.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(AppDimensions.paddingS),
               ),
               child: Column(
@@ -662,7 +662,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                   Text(
                     status.statusDescription,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.cardWhite,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
@@ -675,7 +675,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     Text(
                       '${status.formattedTimeRemaining} kvar',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: AppColors.cardWhite.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -686,7 +686,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     Text(
                       '${status.fileSizeMB!.toStringAsFixed(1)} MB',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: AppColors.cardWhite.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -721,7 +721,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                       icon: Icons.close,
                       label: 'Ta bort',
                       onTap: () => widget.onCancelUpload!(imageUrl),
-                      color: Colors.red.shade400,
+                      color: AppColors.error,
                     ),
                 ],
               ),
@@ -741,12 +741,12 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.2),
+            color: AppColors.cardWhite.withValues(alpha: 0.2),
           ),
           child: const Icon(
             Icons.schedule,
-            color: Colors.white,
-            size: 30,
+            color: AppColors.cardWhite,
+            size: AppDimensions.iconSizeL,
           ),
         );
 
@@ -758,10 +758,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           child: CircularProgressIndicator(
             value: status.progress > 0 ? status.progress : null,
             strokeWidth: 4,
-            backgroundColor: Colors.white.withValues(alpha: 0.3),
+            backgroundColor: AppColors.cardWhite.withValues(alpha: 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(
               status.state == ImageUploadState.retrying
-                  ? Colors.orange
+                  ? AppColors.textMedium
                   : AppColors.primaryBlue,
             ),
           ),
@@ -773,12 +773,12 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.green.withValues(alpha: 0.9),
+            color: AppColors.primaryBlue.withValues(alpha: 0.9),
           ),
           child: const Icon(
             Icons.check,
-            color: Colors.white,
-            size: 30,
+            color: AppColors.cardWhite,
+            size: AppDimensions.iconSizeL,
           ),
         );
 
@@ -788,12 +788,12 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.red.withValues(alpha: 0.9),
+            color: AppColors.error.withValues(alpha: 0.9),
           ),
           child: const Icon(
             Icons.error,
-            color: Colors.white,
-            size: 30,
+            color: AppColors.cardWhite,
+            size: AppDimensions.iconSizeL,
           ),
         );
 
@@ -803,12 +803,12 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.grey.withValues(alpha: 0.9),
+            color: AppColors.textMedium.withValues(alpha: 0.9),
           ),
           child: const Icon(
             Icons.cancel,
-            color: Colors.white,
-            size: 30,
+            color: AppColors.cardWhite,
+            size: AppDimensions.iconSizeL,
           ),
         );
     }
@@ -838,14 +838,14 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           children: [
             Icon(
               icon,
-              color: Colors.white,
+              color: AppColors.cardWhite,
               size: AppDimensions.iconSizeS,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.white,
+                color: AppColors.cardWhite,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -918,7 +918,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             child: Icon(
               icon,
               size: AppDimensions.iconSizeM,
-              color: isDestructive ? Colors.white : AppColors.textPrimary,
+              color: isDestructive ? AppColors.cardWhite : AppColors.textPrimary,
             ),
           ),
         ),
@@ -1159,14 +1159,14 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     Icon(
                       isPrimary ? Icons.star : Icons.star_outline,
                       size: AppDimensions.iconSizeXs,
-                      color: Colors.white,
+                      color: AppColors.cardWhite,
                     ),
                     if (isPrimary) ...[
                       const SizedBox(width: AppDimensions.spacingXxs),
                       Text(
                         'Primär',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.white,
+                        style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.cardWhite,
                               fontWeight: FontWeight.w600,
                             ),
                       ),
@@ -1218,7 +1218,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: AppColors.textDark.withValues(alpha: 0.2),
               blurRadius: AppDimensions.spacingXs,
               offset: const Offset(0, 2),
             ),
@@ -1227,7 +1227,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         child: Icon(
           icon,
           size: AppDimensions.iconSizeS,
-          color: isDestructive ? Colors.white : AppColors.textPrimary,
+          color: isDestructive ? AppColors.cardWhite : AppColors.textPrimary,
         ),
       ),
     );

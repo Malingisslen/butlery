@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Image picker functionality for edit recipe view
 class EditRecipeImagePicker {
@@ -20,9 +21,9 @@ class EditRecipeImagePicker {
           children: [
             Container(
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Text(
+              child: const Text(
                 'Lägg till bild',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: AppTextStyles.titleMedium,
               ),
             ),
             const Divider(height: 1),

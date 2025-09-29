@@ -313,8 +313,8 @@ class StyledInput extends StatelessWidget {
         ),
         filled: true,
         fillColor: enabled 
-            ? Theme.of(context).colorScheme.surface
-            : Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
+            ? AppColors.cardWhite
+            : AppColors.cardWhite.withValues(alpha: 0.7),
       ),
     );
   }

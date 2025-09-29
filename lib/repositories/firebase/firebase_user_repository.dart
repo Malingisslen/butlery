@@ -428,4 +428,50 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       'initialized': true,
     }, SetOptions(merge: true));
   }
+
+  /// Increment public recipe count when a recipe is created or shared publicly
+  @override
+  Future<void> incrementPublicRecipeCount(String userId) async {
+    // Validate user is updating their own recipe count
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'increment public recipe count',
+    );
+    
+    await collection.doc(userId).update({
+      'publicRecipeCount': FieldValue.increment(1),
+    });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'increment_public_recipe_count',
+      granted: true,
+    );
+  }
+
+  /// Decrement public recipe count when a recipe is deleted or made private
+  @override
+  Future<void> decrementPublicRecipeCount(String userId) async {
+    // Validate user is updating their own recipe count
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'decrement public recipe count',
+    );
+    
+    await collection.doc(userId).update({
+      'publicRecipeCount': FieldValue.increment(-1),
+    });
+    
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'decrement_public_recipe_count',
+      granted: true,
+    );
+  }
 }

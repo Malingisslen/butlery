@@ -12,6 +12,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 // Core application
 import 'package:butlery/main.dart';
@@ -32,6 +33,7 @@ import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Mock Application Entry Point
 /// 
@@ -139,11 +141,11 @@ class _E2EMockErrorApp extends StatelessWidget {
     return MaterialApp(
       title: 'E2E Mock Error',
       home: Scaffold(
-        backgroundColor: Colors.red[50],
+        backgroundColor: AppColors.errorContainer,
         appBar: AppBar(
           title: const Text('E2E Mock Error'),
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.error,
+          foregroundColor: AppColors.cardWhite,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -152,8 +154,8 @@ class _E2EMockErrorApp extends StatelessWidget {
             children: [
               const Icon(
                 Icons.error_outline,
-                size: 48,
-                color: Colors.red,
+                size: AppDimensions.iconSizeXxl,
+                color: AppColors.error,
               ),
               const SizedBox(height: 16),
               const Text(
@@ -161,7 +163,7 @@ class _E2EMockErrorApp extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.red,
+                  color: AppColors.error,
                 ),
               ),
               const SizedBox(height: 16),
@@ -176,9 +178,9 @@ class _E2EMockErrorApp extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(color: AppColors.divider),
                     ),
                     child: Text(
                       message,

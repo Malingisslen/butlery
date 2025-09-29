@@ -46,9 +46,12 @@ class ImageComponents {
   /// Check if string is a file path (vs URL)
   static bool _isFilePath(String pathOrUrl) {
     // File paths start with '/' or contain file system patterns
+    // CRITICAL: Blob URLs (blob:http://...) should be treated as URLs, not file paths
     return pathOrUrl.startsWith('/') || 
            pathOrUrl.contains('\\') || 
-           (!pathOrUrl.startsWith('http') && !pathOrUrl.startsWith('gs://'));
+           (!pathOrUrl.startsWith('http') && 
+            !pathOrUrl.startsWith('gs://') && 
+            !pathOrUrl.startsWith('blob:'));
   }
   
   /// Build image from local file
@@ -91,7 +94,7 @@ class ImageComponents {
             config: config,
             child: const Icon(
               Icons.image_outlined,
-              size: 32,
+              size: AppDimensions.iconSizeXl,
               color: AppColors.textTertiary,
             ),
           );
@@ -218,7 +221,7 @@ class ImageComponents {
       backgroundColor: backgroundColor,
       child: const Icon(
         Icons.image_outlined,
-        size: 32,
+        size: AppDimensions.iconSizeL,
         color: AppColors.textTertiary,
       ),
     );
@@ -352,7 +355,7 @@ class ImageComponents {
     final dimensions = config.getDimensions();
     // Handle infinite dimensions gracefully - use reasonable default size
     final indicatorSize = dimensions.width == double.infinity 
-        ? 20.0  // Default indicator size for infinite/large avatars
+        ? AppDimensions.spacing20  // Default indicator size for infinite/large avatars
         : dimensions.width * 0.25;
 
     return Positioned(

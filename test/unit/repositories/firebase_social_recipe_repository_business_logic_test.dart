@@ -57,7 +57,7 @@ void main() {
           shareMessage: 'Try this recipe!',
           recipeSnapshot: recipe,
           viewedByUserIds: [],
-          importedByUserIds: [],
+          engagedByUserIds: [],
           dismissedByUserIds: [],
         );
         
@@ -156,7 +156,7 @@ void main() {
           menuTitle: 'Veckomeny',
           menuSnapshot: {'Middag': []},
           viewedByUserIds: [],
-          importedByUserIds: [],
+          engagedByUserIds: [],
           dismissedByUserIds: [],
         );
         

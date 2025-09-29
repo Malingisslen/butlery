@@ -66,6 +66,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Comprehensive social activity feed view providing real-time friend activity streams through advanced social architecture.
 ///
@@ -456,19 +457,21 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: ActionButtons.secondaryButton(
+                    context,
+                    label: 'Stäng',
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Stäng'),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Expanded(
-                  child: ElevatedButton(
+                  child: ActionButtons.primaryButton(
+                    context,
+                    label: 'Visa innehåll',
                     onPressed: () {
                       Navigator.pop(context);
                       _onActivityTap(activity);
                     },
-                    child: const Text('Visa innehåll'),
                   ),
                 ),
               ],
@@ -518,12 +521,11 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
               },
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt'),
-              ),
+            ActionButtons.outlinedButton(
+              context,
+              label: 'Avbryt',
+              onPressed: () => Navigator.pop(context),
+              isExpanded: true,
             ),
           ],
         ),
@@ -620,16 +622,18 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
           ],
         ),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
           ),
-          ElevatedButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Tillämpa',
             onPressed: () {
               Navigator.pop(context);
               _refreshFeed();
             },
-            child: const Text('Tillämpa'),
           ),
         ],
       ),
@@ -669,7 +673,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView> {
                       const Icon(
                         Icons.fiber_new,
                         color: AppColors.primary,
-                        size: 20,
+                        size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
                       Text(

@@ -20,6 +20,8 @@ import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -277,11 +279,11 @@ class _SkrivSjalvReceptViewContentState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+            const Padding(
+              padding: EdgeInsets.all(AppDimensions.paddingL),
               child: Text(
                 AppStrings.addImage,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: AppTextStyles.titleMedium,
               ),
             ),
             const Divider(height: 1),
@@ -380,14 +382,15 @@ class _SkrivSjalvReceptViewContentState
         title: const Text('Osparade ändringar'),
         content: const Text('Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Fortsätt skriva',
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Fortsätt skriva'),
           ),
-          TextButton(
+          ActionButtons.primaryButton(
+            context,
+            label: 'Lämna utan att spara',
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Lämna utan att spara'),
           ),
         ],
       ),
@@ -468,7 +471,7 @@ class _SkrivSjalvReceptViewContentState
                     children: [
                       Text(
                         'Måltidstyp',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -483,7 +486,7 @@ class _SkrivSjalvReceptViewContentState
                           ),
                           border: OutlineInputBorder(),
                         ),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: AppTextStyles.bodyMedium,
                         items: RecipeFormViewModel.mealTypes
                             .map(
                               (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
@@ -531,10 +534,9 @@ class _SkrivSjalvReceptViewContentState
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Titel
-                  TextFormField(
-                    initialValue: viewModel.title,
-                    decoration: const InputDecoration(labelText: 'Titel'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  StyledInput(
+                    controller: TextEditingController(text: viewModel.title),
+                    label: 'Titel',
                     textInputAction: TextInputAction.next,
                     onChanged: viewModel.setTitle,
                     validator: FormValidators.combine([
@@ -545,11 +547,11 @@ class _SkrivSjalvReceptViewContentState
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Beskrivning
-                  TextFormField(
-                    initialValue: viewModel.description,
+                  StyledInput(
+                    controller: TextEditingController(text: viewModel.description),
+                    label: 'Beskrivning',
                     maxLines: 2,
-                    decoration: const InputDecoration(labelText: 'Beskrivning'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    minLines: 2,
                     textInputAction: TextInputAction.next,
                     onChanged: viewModel.setDescription,
                     validator: FormValidators.maxLength(500, 'Beskrivning'),
@@ -557,10 +559,9 @@ class _SkrivSjalvReceptViewContentState
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Portioner
-                  TextFormField(
-                    initialValue: viewModel.portions?.toString() ?? '',
-                    decoration: const InputDecoration(labelText: 'Portioner'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  StyledInput(
+                    controller: TextEditingController(text: viewModel.portions?.toString() ?? ''),
+                    label: 'Portioner',
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
                     onChanged: (value) =>
@@ -570,10 +571,9 @@ class _SkrivSjalvReceptViewContentState
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Tid
-                  TextFormField(
-                    initialValue: viewModel.timeMinutes?.toString() ?? '',
-                    decoration: const InputDecoration(labelText: 'Tid (min)'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  StyledInput(
+                    controller: TextEditingController(text: viewModel.timeMinutes?.toString() ?? ''),
+                    label: 'Tid (min)',
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
                     onChanged: (value) =>
@@ -616,13 +616,10 @@ class _SkrivSjalvReceptViewContentState
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Betyg
-                  TextFormField(
-                    initialValue: viewModel.rating?.toString() ?? '',
-                    decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                  StyledInput(
+                    controller: TextEditingController(text: viewModel.rating?.toString() ?? ''),
+                    label: 'Betyg (0–5)',
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     textInputAction: TextInputAction.next,
                     onChanged: (value) =>
                         viewModel.setRating(double.tryParse(value)),
@@ -631,20 +628,17 @@ class _SkrivSjalvReceptViewContentState
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Source URL-fält
-                  TextFormField(
-                    initialValue: viewModel.sourceUrl ?? '',
-                    decoration: InputDecoration(
-                      labelText: 'Källa (URL)',
-                      hintText: 'Valfritt: länk till originalreceptet',
-                      helperText: viewModel.sourceUrl == 'Delad från annan app'
-                          ? 'Importerat från delning'
-                          : 'Länk till originalreceptet',
-                      prefixIcon: const Icon(
-                        Icons.link,
-                        size: AppDimensions.iconSizeAction,
-                      ),
+                  StyledInput(
+                    controller: TextEditingController(text: viewModel.sourceUrl ?? ''),
+                    label: 'Källa (URL)',
+                    hint: 'Valfritt: länk till originalreceptet',
+                    helperText: viewModel.sourceUrl == 'Delad från annan app'
+                        ? 'Importerat från delning'
+                        : 'Länk till originalreceptet',
+                    prefixIcon: const Icon(
+                      Icons.link,
+                      size: AppDimensions.iconSizeAction,
                     ),
-                    style: Theme.of(context).textTheme.bodyMedium,
                     keyboardType: TextInputType.url,
                     onChanged: viewModel.setSourceUrl,
                     validator: FormValidators.recipeSourceUrl(),
@@ -702,14 +696,12 @@ class _SkrivSjalvReceptViewContentState
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: StyledInput(
                       controller: controllers[index],
-                      decoration: InputDecoration(
-                        hintText: '$label ${index + 1}',
-                      ),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      hint: '$label ${index + 1}',
                       textInputAction: TextInputAction.next,
                       maxLines: null,
+                      minLines: 1,
                       keyboardType: TextInputType.multiline,
                       onChanged: (value) {
                         onUpdate(index, value);

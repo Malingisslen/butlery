@@ -37,9 +37,8 @@ class ShareDialogHelpers {
     switch (contentType) {
       case ShareContentType.recipe:
       case ShareContentType.menu:
-        return true;
       case ShareContentType.shoppingList:
-        return false;
+        return true;
     }
   }
 

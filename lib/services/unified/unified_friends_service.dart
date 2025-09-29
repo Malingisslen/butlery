@@ -63,7 +63,10 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
+import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
+import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 // Feature interfaces
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
@@ -76,6 +79,7 @@ import 'package:butlery/services/unified/operations/social_group_sharing_operati
 /// Consolidated friends state manager (simplified)
 class FriendsStateManager extends ChangeNotifier {
   final FirebaseFriendsRepository _repository;
+  final FriendCategoryRepository _categoryRepository;
   
   // Internal state
   List<UserProfile> _friends = [];
@@ -88,14 +92,17 @@ class FriendsStateManager extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   
-  // Stream subscriptions for real-time updates
-  late StreamSubscription? _incomingRequestsSubscription;
-  late StreamSubscription? _sentRequestsSubscription;
-  late StreamSubscription? _groupInvitationsSubscription;
+  // Stream subscriptions for real-time updates - ULTRATHINK FIX: Initialize as null
+  StreamSubscription? _incomingRequestsSubscription;
+  StreamSubscription? _sentRequestsSubscription;
+  StreamSubscription? _groupInvitationsSubscription;
   
-  FriendsStateManager({required FirebaseFriendsRepository repository})
-      : _repository = repository {
-    AppLogger.debug('FriendsStateManager initialized with repository');
+  FriendsStateManager({
+    required FirebaseFriendsRepository repository,
+    required FriendCategoryRepository categoryRepository,
+  }) : _repository = repository,
+       _categoryRepository = categoryRepository {
+    AppLogger.debug('FriendsStateManager initialized with repository and category repository');
   }
   
   // State getters
@@ -164,10 +171,18 @@ class FriendsStateManager extends ChangeNotifier {
       final friendIds = await _repository.fetchFriendIds(userId);
       
       if (friendIds.isNotEmpty) {
-        // Get friend profiles
-        final friendProfiles = await _repository.fetchFriendProfiles(friendIds);
-        _friends = friendProfiles;
-        AppLogger.debug('Loaded ${_friends.length} friends');
+        // ULTRATHINK FIX: Filter out current user from friend IDs to prevent self-friend bug
+        final filteredFriendIds = friendIds.where((id) => id != userId).toList();
+        
+        if (filteredFriendIds.isNotEmpty) {
+          // Get friend profiles
+          final friendProfiles = await _repository.fetchFriendProfiles(filteredFriendIds);
+          _friends = friendProfiles;
+          AppLogger.debug('Loaded ${_friends.length} friends (filtered out self)');
+        } else {
+          _friends = [];
+          AppLogger.debug('No friends found after filtering self');
+        }
       } else {
         _friends = [];
         AppLogger.debug('No friends found');
@@ -201,17 +216,54 @@ class FriendsStateManager extends ChangeNotifier {
   /// Load categories from Firebase
   Future<void> _loadCategories(String userId) async {
     try {
-      _categories = await _repository.fetchCategories(userId);
-      AppLogger.debug('Loaded ${_categories.length} categories');
+      _categories = await _categoryRepository.fetchCategories(userId);
+      AppLogger.debug('Loaded ${_categories.length} categories using FriendCategoryRepository');
     } catch (e) {
       AppLogger.warning('Failed to load categories: $e');
       _categories = [];
     }
   }
   
+  /// Clear all cached friends data (called on user logout)
+  void clearAllData() {
+    AppLogger.info('🧹 Clearing all friends data for user logout');
+    
+    // Cancel all subscriptions
+    _incomingRequestsSubscription?.cancel();
+    _sentRequestsSubscription?.cancel();
+    _groupInvitationsSubscription?.cancel();
+    
+    // ULTRATHINK FIX: Nullify subscription references for complete cleanup
+    _incomingRequestsSubscription = null;
+    _sentRequestsSubscription = null;
+    _groupInvitationsSubscription = null;
+    
+    // Clear all state
+    _friends.clear();
+    _incomingRequests.clear();
+    _outgoingRequests.clear();
+    _categories.clear();
+    _sentInvitations.clear();
+    _blockedUsers.clear();
+    
+    // Reset flags
+    _isInitialized = false;
+    _isLoading = false;
+    _error = null;
+    
+    AppLogger.debug('✅ Friends data cleared successfully');
+    notifyListeners();
+  }
+  
   /// Set up real-time listeners for data changes
   void _setupRealtimeListeners(String userId) {
     try {
+      // ULTRATHINK FIX: Cancel existing listeners first to prevent duplicates
+      _incomingRequestsSubscription?.cancel();
+      _sentRequestsSubscription?.cancel();
+      _groupInvitationsSubscription?.cancel();
+      AppLogger.debug('🧹 Cancelled existing real-time listeners before setting up new ones');
+      
       // Listen to incoming requests
       _incomingRequestsSubscription = _repository.incomingRequestsStream(userId).listen(
         (requests) {
@@ -304,12 +356,121 @@ class FriendsStateManager extends ChangeNotifier {
     return _categories.where((c) => c.id == categoryId).firstOrNull;
   }
   
+  // ===== ULTRATHINK FIX: INTERNAL STATE MODIFICATION METHODS =====
+  
+  /// Add friend to local state
+  void addFriend(UserProfile friend) {
+    if (!_friends.any((f) => f.uid == friend.uid)) {
+      _friends.add(friend);
+      AppLogger.debug('Added friend to state: ${friend.displayName} (${friend.uid})');
+      notifyListeners();
+    }
+  }
+  
+  /// Remove friend from local state
+  void removeFriend(String friendId) {
+    final initialLength = _friends.length;
+    _friends.removeWhere((f) => f.uid == friendId);
+    if (_friends.length < initialLength) {
+      AppLogger.debug('Removed friend from state: $friendId');
+      notifyListeners();
+    }
+  }
+  
+  /// Add incoming friend request to local state
+  void addIncomingRequest(FriendRequest request) {
+    if (!_incomingRequests.any((r) => r.id == request.id)) {
+      _incomingRequests.add(request);
+      AppLogger.debug('Added incoming request to state: ${request.id}');
+      notifyListeners();
+    }
+  }
+  
+  /// Remove incoming friend request from local state
+  void removeIncomingRequest(String requestId) {
+    final initialLength = _incomingRequests.length;
+    _incomingRequests.removeWhere((r) => r.id == requestId);
+    if (_incomingRequests.length < initialLength) {
+      AppLogger.debug('Removed incoming request from state: $requestId');
+      notifyListeners();
+    }
+  }
+  
+  /// Add outgoing friend request to local state
+  void addOutgoingRequest(FriendRequest request) {
+    if (!_outgoingRequests.any((r) => r.id == request.id)) {
+      _outgoingRequests.add(request);
+      AppLogger.debug('Added outgoing request to state: ${request.id}');
+      notifyListeners();
+    }
+  }
+  
+  /// Remove outgoing friend request from local state
+  void removeOutgoingRequest(String requestId) {
+    final initialLength = _outgoingRequests.length;
+    _outgoingRequests.removeWhere((r) => r.id == requestId);
+    if (_outgoingRequests.length < initialLength) {
+      AppLogger.debug('Removed outgoing request from state: $requestId');
+      notifyListeners();
+    }
+  }
+  
+  /// Add blocked user to local state
+  void addBlockedUser(String userId) {
+    if (_blockedUsers.add(userId)) {
+      AppLogger.debug('Added blocked user to state: $userId');
+      notifyListeners();
+    }
+  }
+  
+  /// Remove blocked user from local state
+  void removeBlockedUser(String userId) {
+    if (_blockedUsers.remove(userId)) {
+      AppLogger.debug('Removed blocked user from state: $userId');
+      notifyListeners();
+    }
+  }
+  
+  /// Add category to local state
+  void addCategory(FriendCategory category) {
+    if (!_categories.any((c) => c.id == category.id)) {
+      _categories.add(category);
+      AppLogger.debug('Added category to state: ${category.name}');
+      notifyListeners();
+    }
+  }
+  
+  /// Update category in local state
+  void updateCategory(String categoryId, FriendCategory category) {
+    final index = _categories.indexWhere((c) => c.id == categoryId);
+    if (index != -1) {
+      _categories[index] = category;
+      AppLogger.debug('Updated category in state: ${category.name}');
+      notifyListeners();
+    }
+  }
+  
+  /// Remove category from local state
+  void removeCategory(String categoryId) {
+    final initialLength = _categories.length;
+    _categories.removeWhere((c) => c.id == categoryId);
+    if (_categories.length < initialLength) {
+      AppLogger.debug('Removed category from state: $categoryId');
+      notifyListeners();
+    }
+  }
+  
   @override
   void dispose() {
     // Cancel all subscriptions
     _incomingRequestsSubscription?.cancel();
     _sentRequestsSubscription?.cancel();
     _groupInvitationsSubscription?.cancel();
+    
+    // ULTRATHINK FIX: Nullify subscription references for complete cleanup
+    _incomingRequestsSubscription = null;
+    _sentRequestsSubscription = null;
+    _groupInvitationsSubscription = null;
     
     AppLogger.debug('FriendsStateManager disposed - cleaned up ${_friends.length} friends data');
     super.dispose();
@@ -332,21 +493,102 @@ class FriendsServiceCoordinator {
   void dispose() {}
 }
 
-/// Consolidated friends internal operations (simplified)
+/// Consolidated friends internal operations
 class FriendsInternalOperations {
-  FriendsInternalOperations();
+  final FriendCategoryRepository _categoryRepository;
+  final AuthRepository _authRepository;
+  late final FriendsStateManager _stateManager;
   
-  // Internal method implementations (simplified)
-  List<UserProfile> get friendsInternal => <UserProfile>[];
-  List<FriendCategory> getAllCategoriesInternal() => <FriendCategory>[];
-  List<GroupInvitation> getAllSentInvitationsInternal() => <GroupInvitation>[];
-  void notifyListenersInternal() {}
-  dynamic getCategoryByIdInternal(String categoryId) => null;
-  void addCategoryInternal(dynamic category) {}
-  void updateCategoryInternal(String categoryId, dynamic category) {}
-  void removeCategoryInternal(String categoryId) {}
-  Future<void> syncCategoryToFirebaseInternal(dynamic category) async {}
-  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async {}
+  FriendsInternalOperations({
+    required FriendCategoryRepository categoryRepository,
+    required AuthRepository authRepository,
+  }) : _categoryRepository = categoryRepository,
+       _authRepository = authRepository;
+  
+  /// Set state manager reference after initialization
+  void setStateManager(FriendsStateManager stateManager) {
+    _stateManager = stateManager;
+  }
+  
+  // Internal method implementations
+  List<UserProfile> get friendsInternal => _stateManager.friends;
+  List<FriendCategory> getAllCategoriesInternal() => _stateManager.categories;
+  List<GroupInvitation> getAllSentInvitationsInternal() => _stateManager.sentInvitations;
+  void notifyListenersInternal() => _stateManager.notifyListeners();
+  
+  dynamic getCategoryByIdInternal(String categoryId) {
+    return _stateManager.categories
+        .where((category) => category.id == categoryId)
+        .firstOrNull;
+  }
+  
+  void addCategoryInternal(dynamic category) {
+    print('🔧 [DEBUG] addCategoryInternal called with: ${category.runtimeType}');
+    if (category is FriendCategory) {
+      print('✅ [DEBUG] Adding category to state manager: ${category.name}');
+      _stateManager.addCategory(category);
+      print('✅ [DEBUG] Category added successfully and listeners notified');
+    } else {
+      print('❌ [DEBUG] Invalid category type: ${category.runtimeType}');
+    }
+  }
+  
+  void updateCategoryInternal(String categoryId, dynamic category) {
+    if (category is FriendCategory) {
+      _stateManager.updateCategory(categoryId, category);
+    }
+  }
+  
+  void removeCategoryInternal(String categoryId) {
+    _stateManager.removeCategory(categoryId);
+  }
+  Future<void> syncCategoryToFirebaseInternal(dynamic category) async {
+    print('☁️ [DEBUG] syncCategoryToFirebaseInternal called');
+    print('🔍 [DEBUG] Category type: ${category.runtimeType}');
+    
+    if (category is FriendCategory) {
+      print('✅ [DEBUG] Category is valid FriendCategory');
+      print('📝 [DEBUG] Category details: name="${category.name}", id="${category.id}"');
+      
+      try {
+        print('🔐 [DEBUG] Getting current user ID for Firebase auth...');
+        final currentUserId = _authRepository.currentUser?.uid;
+        if (currentUserId == null) {
+          AppLogger.warning('Cannot sync category: User not authenticated');
+          print('❌ [DEBUG] Current user is null, cannot sync');
+          return;
+        }
+        print('✅ [DEBUG] Current user ID: $currentUserId');
+        
+        print('💾 [DEBUG] Calling _categoryRepository.saveCategory...');
+        await _categoryRepository.saveCategory(currentUserId, category);
+        print('✅ [DEBUG] Category saved to Firebase successfully');
+        AppLogger.success('✅ Category synced to Firebase: ${category.name}');
+      } catch (e) {
+        print('💥 [DEBUG] Exception in Firebase sync: $e');
+        AppLogger.error('❌ Failed to sync category to Firebase: ${category.name}', e);
+        rethrow;
+      }
+    } else {
+      print('❌ [DEBUG] Invalid category type: ${category.runtimeType}');
+      AppLogger.warning('Invalid category type for Firebase sync');
+    }
+  }
+  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async {
+    try {
+      final currentUserId = _authRepository.currentUser?.uid;
+      if (currentUserId == null) {
+        AppLogger.warning('Cannot delete category: User not authenticated');
+        return;
+      }
+      
+      await _categoryRepository.deleteCategory(currentUserId, categoryId);
+      AppLogger.success('✅ Category deleted from Firebase: $categoryId');
+    } catch (e) {
+      AppLogger.error('❌ Failed to delete category from Firebase: $categoryId', e);
+      rethrow;
+    }
+  }
   void addFriendToCategoryInternal(String friendId, String categoryId) {}
   void removeFriendFromCategoryInternal(String friendId, String categoryId) {}
   Set<String> getFriendsInCategoryInternal(String categoryId) => {};
@@ -385,11 +627,13 @@ class FriendsCacheService {
 /// - Feature operations: Handle specific business logic
 /// 
 /// Maintains 100% backward compatibility while providing clean modular architecture.
-class UnifiedFriendsService extends ChangeNotifier {
+class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
   late final FirebaseFriendsRepository _friendsRepository;
+  late final FriendRelationshipRepository _relationshipRepository;
+  late final FriendCategoryRepository _categoryRepository;
   
   // Focused modules (Phase 9 refactoring)
   late final FriendsStateManager _stateManager;
@@ -411,6 +655,16 @@ class UnifiedFriendsService extends ChangeNotifier {
     
     // Create Firebase friends repository
     _friendsRepository = FirebaseFriendsRepository(
+      authRepository: _authRepository,
+    );
+    
+    // Create friend relationship repository (for counter updates)
+    _relationshipRepository = FriendRelationshipRepository(
+      authRepository: _authRepository,
+    );
+    
+    // Create friend category repository (for group/category management)
+    _categoryRepository = FriendCategoryRepository(
       authRepository: _authRepository,
     );
     
@@ -440,6 +694,7 @@ class UnifiedFriendsService extends ChangeNotifier {
   
   String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
+  FriendRelationshipRepository get relationshipRepository => _relationshipRepository;
 
   // ===== FEATURE INTERFACE GETTERS =====
 
@@ -460,13 +715,40 @@ class UnifiedFriendsService extends ChangeNotifier {
     try {
       AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
       
-      // Initialize the state manager to load data from Firebase
-      await _stateManager.initialize();
+      // Set up auth state change listener (CRITICAL FIX for authentication bug)
+      listenToStream(
+        _authRepository.authStateChanges(),
+        (user) async {
+          if (user != null) {
+            // User logged in - reload friends data
+            AppLogger.info('🔄 User logged in - reloading friends data for: ${user.uid}');
+            await _stateManager.initialize();
+            
+            // Run migration to ensure owners are members of their groups
+            await categories.migrateOwnersAsMembers();
+          } else {
+            // User logged out - clear all cached data
+            AppLogger.info('🚪 User logged out - clearing friends data');
+            // ULTRATHINK FIX: Ensure clearAllData completes before any subsequent operations
+            await Future.microtask(() => _stateManager.clearAllData());
+            AppLogger.debug('✅ Friends data clearing completed');
+          }
+        },
+        name: 'friends_auth_state_changes',
+      );
+      
+      // Initialize for current user if already authenticated
+      if (_authRepository.currentUser != null) {
+        await _stateManager.initialize();
+        
+        // Run migration to ensure owners are members of their groups
+        await categories.migrateOwnersAsMembers();
+      }
       
       // Initialize the service coordinator
       await _serviceCoordinator.initialize();
       
-      AppLogger.success('✅ UnifiedFriendsService facade initialized');
+      AppLogger.success('✅ UnifiedFriendsService facade initialized with auth state handling');
     } catch (e) {
       AppLogger.error('❌ Failed to initialize UnifiedFriendsService facade: $e');
       rethrow;
@@ -476,21 +758,30 @@ class UnifiedFriendsService extends ChangeNotifier {
   // ===== PRIVATE INITIALIZATION METHODS =====
 
   void _initializeModules() {
-    // Initialize state manager with Firebase repository
-    _stateManager = FriendsStateManager(repository: _friendsRepository);
+    // Initialize state manager with Firebase repository and category repository
+    _stateManager = FriendsStateManager(
+      repository: _friendsRepository,
+      categoryRepository: _categoryRepository,
+    );
     
     // Initialize service coordinator
     _serviceCoordinator = FriendsServiceCoordinator();
     
     // Initialize internal operations
-    _internalOps = FriendsInternalOperations();
+    _internalOps = FriendsInternalOperations(
+      categoryRepository: _categoryRepository,
+      authRepository: _authRepository,
+    );
+    
+    // Connect internal operations to state manager
+    _internalOps.setStateManager(_stateManager);
     
     // Forward state manager notifications to facade
     _stateManager.addListener(() {
       notifyListeners();
     });
     
-    AppLogger.debug('Focused modules initialized with Firebase repository');
+    AppLogger.debug('Focused modules initialized with Firebase repository and category repository');
   }
 
   void _initializeFeatureInterfaces() {
@@ -582,62 +873,54 @@ class UnifiedFriendsService extends ChangeNotifier {
 
   // ===== ADDITIONAL INTERNAL METHODS FOR FRIENDS MANAGEMENT =====
   
+  // ===== ULTRATHINK FIX: INTERNAL METHODS THAT ACTUALLY MODIFY STATE =====
+  
   /// Internal method to add outgoing friend request
   void addOutgoingRequestInternal(FriendRequest request) {
-    // This would be implemented in FriendsInternalOperations
-    AppLogger.debug('Adding outgoing request to ${request.toUserId}');
-    notifyListeners();
+    _stateManager.addOutgoingRequest(request);
+    AppLogger.debug('✅ Added outgoing request to ${request.toUserId} via state manager');
   }
   
   /// Internal method to remove outgoing friend request
   void removeOutgoingRequestInternal(String requestId) {
-    // This would be implemented in FriendsInternalOperations
-    AppLogger.debug('Removing outgoing request $requestId');
-    notifyListeners();
+    _stateManager.removeOutgoingRequest(requestId);
+    AppLogger.debug('✅ Removed outgoing request $requestId via state manager');
   }
   
   /// Internal method to add incoming friend request
   void addIncomingRequestInternal(FriendRequest request) {
-    // This would be implemented in FriendsInternalOperations
-    AppLogger.debug('Adding incoming request from ${request.fromUserId}');
-    notifyListeners();
+    _stateManager.addIncomingRequest(request);
+    AppLogger.debug('✅ Added incoming request from ${request.fromUserId} via state manager');
   }
   
   /// Internal method to remove incoming friend request
   void removeIncomingRequestInternal(String requestId) {
-    // This would be implemented in FriendsInternalOperations
-    AppLogger.debug('Removing incoming request $requestId');
-    notifyListeners();
+    _stateManager.removeIncomingRequest(requestId);
+    AppLogger.debug('✅ Removed incoming request $requestId via state manager');
   }
   
   /// Internal method to add friend
   void addFriendInternal(UserProfile friend) {
-    // This would be implemented in FriendsInternalOperations
-    AppLogger.debug('Adding friend ${friend.displayName}');
-    notifyListeners();
+    _stateManager.addFriend(friend);
+    AppLogger.debug('✅ Added friend ${friend.displayName} via state manager');
   }
   
   /// Internal method to remove friend
   void removeFriendInternal(String friendId) {
-    // This would be implemented in FriendsInternalOperations
-    AppLogger.debug('Removing friend $friendId');
-    notifyListeners();
+    _stateManager.removeFriend(friendId);
+    AppLogger.debug('✅ Removed friend $friendId via state manager');
   }
   
   /// Internal method to add blocked user
   void addBlockedUserInternal(String userId) {
-    // This would be implemented in FriendsInternalOperations
-    blockedUsers.add(userId);
-    AppLogger.debug('Blocked user $userId');
-    notifyListeners();
+    _stateManager.addBlockedUser(userId);
+    AppLogger.debug('✅ Blocked user $userId via state manager');
   }
   
   /// Internal method to remove blocked user
   void removeBlockedUserInternal(String userId) {
-    // This would be implemented in FriendsInternalOperations
-    blockedUsers.remove(userId);
-    AppLogger.debug('Unblocked user $userId');
-    notifyListeners();
+    _stateManager.removeBlockedUser(userId);
+    AppLogger.debug('✅ Unblocked user $userId via state manager');
   }
   
   /// Sync friend request to Firebase
@@ -681,6 +964,11 @@ class UnifiedFriendsService extends ChangeNotifier {
   }
   
   /// Sync friend to Firebase
+  /// 
+  /// ⚠️ ULTRATHINK WARNING: This method should NOT be used for friend request acceptance!
+  /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles:
+  /// - Atomic operations, counter updates, and consistent field structures
+  /// This method uses different field names and doesn't update friendsCount
   Future<void> syncFriendToFirebase(UserProfile friend) async {
     try {
       final userId = currentUserId;
@@ -1024,7 +1312,15 @@ class UnifiedFriendsService extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Clear friends state manager first
+    _stateManager.clearAllData();
+    
+    // Dispose service coordinator
     _serviceCoordinator.dispose();
+    
+    // Dispose stream subscriptions (async, so we'll do it without await)
+    disposeStreamResources();
+    
     super.dispose();
   }
 }

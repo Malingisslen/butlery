@@ -139,44 +139,107 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
 
     int? parseNumber(String s) => int.tryParse(s) ?? word2num[s];
 
-    // Dela prompt på kommatecken, 'och', '&' eller ';'
-    final parts = input.toLowerCase().split(RegExp(r'[,&;]| och | & '));
+    // Enhanced parsing: Handle both explicit separators and space-separated patterns
     final counts = <String, int>{};
-
-    for (var part in parts) {
-      part = part.trim();
-      if (part.isEmpty) continue;
-
-      // Matcha siffror eller ordade tal i början
-      final match = RegExp(r'^(\d+|[a-zåäö]+)').firstMatch(part);
-      if (match == null) continue;
-      final raw = match.group(1)!;
-      final num = parseNumber(raw) ?? 0;
-      if (num <= 0) continue;
-
-      // Resterande ord är måltidstyp
-      final keyword = part.substring(raw.length).trim();
-      final type = _detectType(keyword, types);
-      if (type != null) {
-        counts[type] = (counts[type] ?? 0) + num;
+    final lowerInput = input.toLowerCase();
+    
+    // First try explicit separators (kommatecken, 'och', '&' eller ';')
+    final explicitParts = lowerInput.split(RegExp(r'[,&;]| och | & '));
+    
+    if (explicitParts.length > 1) {
+      // Use explicit separator parsing
+      for (var part in explicitParts) {
+        part = part.trim();
+        if (part.isEmpty) continue;
+        _parseMealPart(part, counts, types, parseNumber);
+      }
+    } else {
+      // Try space-separated pattern recognition for single part
+      final singlePart = explicitParts[0].trim();
+      if (singlePart.isNotEmpty) {
+        // Look for multiple quantity+meal patterns in the string
+        final patterns = _extractMealPatterns(singlePart);
+        
+        if (patterns.length > 1) {
+          // Multiple patterns found - use pattern-based parsing
+          for (final pattern in patterns) {
+            _parseMealPart(pattern, counts, types, parseNumber);
+          }
+        } else {
+          // Single pattern - use original parsing
+          _parseMealPart(singlePart, counts, types, parseNumber);
+        }
       }
     }
 
     // Om inga instruktioner hittas => returnera tom meny
     if (counts.isEmpty) return {};
 
-    // Slumpa recept per vald typ
+    // Case-insensitive recipe aggregation
     final rand = Random();
     final result = <String, List<Recipe>>{};
     counts.forEach((mealType, count) {
-      final bucket =
-          allRecipes.where((r) => r.mealType == mealType).toList()
-            ..shuffle(rand);
+      // Aggregate recipes from all case variations of the same meal type
+      final bucket = allRecipes.where((r) => 
+        r.mealType.toLowerCase() == mealType.toLowerCase()
+      ).toList()..shuffle(rand);
+      
       // Ta så många som önskat (eller färre om inte tillräckligt många finns)
       result[mealType] = bucket.take(min(count, bucket.length)).toList();
     });
 
     return result;
+  }
+
+  /// Parserar en enskild måltidsdel och extraherar antal och typ
+  void _parseMealPart(
+    String part,
+    Map<String, int> counts,
+    Set<String> types,
+    int? Function(String) parseNumber,
+  ) {
+    part = part.trim();
+    if (part.isEmpty) return;
+
+    // Hitta antal i början av strängen
+    final match = RegExp(r'^(\d+|[a-zåäö]+)').firstMatch(part);
+    if (match == null) return;
+
+    final raw = match.group(1)!;
+    final num = parseNumber(raw) ?? 0;
+    if (num <= 0) return;
+
+    // Extrahera nyckelord efter antalet
+    final keyword = part.substring(match.end).trim();
+    if (keyword.isEmpty) return;
+
+    final type = _detectType(keyword, types);
+    if (type != null) {
+      counts[type] = (counts[type] ?? 0) + num;
+    }
+  }
+
+  /// Extraherar måltidsmönster från space-separerad text
+  List<String> _extractMealPatterns(String input) {
+    final patterns = <String>[];
+    final words = input.split(RegExp(r'\s+'));
+    
+    for (int i = 0; i < words.length - 1; i++) {
+      final currentWord = words[i];
+      final nextWord = words[i + 1];
+      
+      // Kolla om nuvarande ord är ett nummer (siffra eller svenskt ord)
+      final isNumber = RegExp(r'^(\d+|en|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio)$').hasMatch(currentWord);
+      
+      // Kolla om nästa ord ser ut som en måltidstyp
+      final isMealType = RegExp(r'^(frukost|lunch|middag|dessert|mellanmål|fika)', caseSensitive: false).hasMatch(nextWord);
+      
+      if (isNumber && isMealType) {
+        patterns.add('$currentWord $nextWord');
+      }
+    }
+    
+    return patterns;
   }
 
   /// Normaliserar pluralformer och matchar mot tillgängliga typer
@@ -186,6 +249,7 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
             .replaceAll(RegExp(r'\d+'), '')
             .replaceAll(RegExp(r'(ar|er)$', unicode: true), '')
             .trim();
+    
     for (var type in available) {
       final low = type.toLowerCase();
       if (low == norm || low.startsWith(norm)) return type;

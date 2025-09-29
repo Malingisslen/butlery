@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 
 /// GroupMemberCard - Member card component
@@ -35,7 +36,7 @@ class GroupMemberCard {
         ),
         title: Text(
           member.displayName,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: AppTextStyles.titleMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -56,7 +57,7 @@ class GroupMemberCard {
                     ),
                     child: Text(
                       'Ägare',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      style: AppTextStyles.bodySmall.copyWith(
                             color: Theme.of(context).colorScheme.onPrimary,
                             fontWeight: FontWeight.w500,
                           ),
@@ -77,7 +78,7 @@ class GroupMemberCard {
                     ),
                     child: Text(
                       'Skapare',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      style: AppTextStyles.bodySmall.copyWith(
                             color: Theme.of(context).colorScheme.onSecondary,
                             fontWeight: FontWeight.w500,
                           ),

@@ -75,7 +75,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
   Widget? get dialogIcon => const Icon(
     Icons.warning_amber_rounded,
     color: AppColors.warning,
-    size: 48,
+    size: AppDimensions.iconSizeXxl,
   );
 
   @override

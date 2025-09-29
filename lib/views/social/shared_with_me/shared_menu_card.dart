@@ -9,6 +9,8 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 /// SharedMenuCard - Card for displaying shared menus
 ///
 /// Displays shared menu information with action buttons.
@@ -21,8 +23,9 @@ class SharedMenuCard {
     final isRead = viewModel.isMenuRead(sharedMenu);
     final isImported = viewModel.isMenuImported(sharedMenu);
 
-    return Card(
-      elevation: isRead ? 1 : 3,
+    return Material(
+      elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         onTap: () {
@@ -114,7 +117,7 @@ class SharedMenuCard {
               ),
               Text(
                 timeago.format(sharedMenu.sharedAt, locale: 'sv'),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context)
                           .colorScheme
                           .onSurfaceVariant,
@@ -124,36 +127,30 @@ class SharedMenuCard {
           ),
         ),
         // Dismiss knapp
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context)
-                .colorScheme
-                .errorContainer
-                .withValues(alpha: 0.1),
+        Material(
+          color: Theme.of(context)
+              .colorScheme
+              .errorContainer
+              .withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          child: InkWell(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            border: Border.all(
-              color: Theme.of(context)
-                  .colorScheme
-                  .outline
-                  .withValues(alpha: 0.2),
-            ),
-          ),
-          child: IconButton(
-            onPressed: () => SharedContentActions.dismissMenu(
+            onTap: () => SharedContentActions.dismissMenu(
               context,
               viewModel,
               sharedMenu,
             ),
-            icon: Icon(
-              Icons.close,
-              size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            tooltip: 'Dölj från min lista',
-            padding: const EdgeInsets.all(AppDimensions.spacingXs),
-            constraints: const BoxConstraints(
-              minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
-              minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingXs),
+              constraints: const BoxConstraints(
+                minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+              ),
+              child: Icon(
+                Icons.close,
+                size: AppDimensions.iconSizeM,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -183,7 +180,7 @@ class SharedMenuCard {
           ),
           child: Icon(
             Icons.calendar_month,
-            size: 40,
+            size: AppDimensions.iconSizeXl,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
@@ -194,12 +191,12 @@ class SharedMenuCard {
             children: [
               Text(
                 sharedMenu.menuTitle,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: AppTextStyles.titleMedium,
               ),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 sharedMenu.menuSummary,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: AppTextStyles.bodySmall,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -208,24 +205,24 @@ class SharedMenuCard {
                 children: [
                   Icon(
                     Icons.restaurant_menu,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '${sharedMenu.totalRecipeCount} recept',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Icon(
                     Icons.category,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     '${sharedMenu.categories.length} kategorier',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
@@ -246,7 +243,7 @@ class SharedMenuCard {
       ),
       child: Text(
         '"$message"',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        style: AppTextStyles.bodySmall.copyWith(
               fontStyle: FontStyle.italic,
             ),
       ),
@@ -263,7 +260,10 @@ class SharedMenuCard {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton.icon(
+          child: ActionButtons.secondaryButton(
+            context,
+            label: 'Visa',
+            icon: Icons.visibility,
             onPressed: () {
               if (!isRead) {
                 viewModel.markMenuAsRead(sharedMenu);
@@ -278,13 +278,15 @@ class SharedMenuCard {
                 ),
               );
             },
-            icon: const Icon(Icons.visibility, size: 18),
-            label: const Text('Visa'),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
-          child: FilledButton.icon(
+          child: ActionButtons.primaryButton(
+            context,
+            label: isImported ? 'Importerat' : 'Importera',
+            icon: isImported ? Icons.check : Icons.download,
+            isLoading: viewModel.isImporting,
             onPressed: isImported || viewModel.isImporting
                 ? null
                 : () => SharedContentActions.importMenu(
@@ -292,26 +294,9 @@ class SharedMenuCard {
                       viewModel,
                       sharedMenu,
                     ),
-            icon: isImported
-                ? const Icon(Icons.check, size: 18)
-                : viewModel.isImporting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.download, size: 18),
-            label: Text(
-              isImported ? 'Importerat' : 'Importera',
-            ),
           ),
         ),
       ],
     );
-  }
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
   }
 }

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -24,11 +25,11 @@ class EditRecipeFormFields {
         children: [
           Text(
             'Måltidstyp',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 4.0), // Minimal gap between label and dropdown
+          const SizedBox(height: AppDimensions.spacingXs), // Minimal gap between label and dropdown
           DropdownButtonFormField<String>(
             initialValue: viewModel.mealType,
             isExpanded: true,
@@ -39,7 +40,7 @@ class EditRecipeFormFields {
               ),
               border: OutlineInputBorder(),
             ),
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppTextStyles.bodyMedium,
             items: RecipeFormViewModel.mealTypes
                 .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
                 .toList(),
@@ -72,7 +73,7 @@ class EditRecipeFormFields {
       TextFormField(
         initialValue: viewModel.title,
         decoration: const InputDecoration(labelText: 'Titel'),
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
         textInputAction: TextInputAction.next,
         onChanged: viewModel.setTitle,
         validator: FormValidators.combine([
@@ -87,7 +88,7 @@ class EditRecipeFormFields {
         initialValue: viewModel.description,
         maxLines: 2,
         decoration: const InputDecoration(labelText: 'Beskrivning'),
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
         textInputAction: TextInputAction.next,
         onChanged: viewModel.setDescription,
         validator: FormValidators.maxLength(500, 'Beskrivning'),
@@ -98,7 +99,7 @@ class EditRecipeFormFields {
       TextFormField(
         initialValue: viewModel.portions?.toString() ?? '',
         decoration: const InputDecoration(labelText: 'Portioner'),
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.next,
         onChanged: (value) => viewModel.setPortions(int.tryParse(value)),
@@ -110,7 +111,7 @@ class EditRecipeFormFields {
       TextFormField(
         initialValue: viewModel.timeMinutes?.toString() ?? '',
         decoration: const InputDecoration(labelText: 'Tid (min)'),
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.next,
         onChanged: (value) => viewModel.setTimeMinutes(int.tryParse(value)),
@@ -155,7 +156,7 @@ class EditRecipeFormFields {
       TextFormField(
         initialValue: viewModel.rating?.toString() ?? '',
         decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         textInputAction: TextInputAction.next,
         onChanged: (value) => viewModel.setRating(double.tryParse(value)),
@@ -177,7 +178,7 @@ class EditRecipeFormFields {
             size: AppDimensions.iconSizeAction,
           ),
         ),
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.url,
         onChanged: viewModel.setSourceUrl,
         validator: FormValidators.recipeSourceUrl(),

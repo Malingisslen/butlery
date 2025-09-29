@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Comprehensive scaffold templates that eliminate duplicate scaffold patterns
 /// found across 30+ view files in the codebase.
@@ -150,7 +151,7 @@ class LoadingScaffold extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               loadingMessage,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: AppTextStyles.bodyLarge,
             ),
           ],
         ),
@@ -197,7 +198,7 @@ class ErrorScaffold extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 errorMessage,
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: AppTextStyles.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
@@ -259,7 +260,7 @@ class EmptyStateScaffold extends StatelessWidget {
               ],
               Text(
                 emptyMessage,
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: AppTextStyles.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               if (onAction != null && actionText != null) ...[

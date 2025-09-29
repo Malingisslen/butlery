@@ -218,6 +218,14 @@ class UnifiedShoppingList {
   ///
   /// Controls automatic cleanup behavior for purchased items to maintain list cleanliness.
   final bool autoRemoveCompleted;
+  
+  /// Optional field tracking the origin of collaborative lists to prevent duplicates.
+  ///
+  /// Used to distinguish between collaborative lists created explicitly vs those created 
+  /// from shared list acceptance. Helps prevent showing duplicates in the shopping list dropdown.
+  /// - null: Explicitly created collaborative list or personal list (show in dropdown)
+  /// - 'shared': Created from accepting a shared list invitation (don't show in dropdown)
+  final String? collaborativeOrigin;
 
   /// Creates a new unified shopping list with comprehensive metadata and automatic ID generation.
   ///
@@ -264,6 +272,7 @@ class UnifiedShoppingList {
     this.categoryIds = const [],
     this.allowGuestEditing = true,
     this.autoRemoveCompleted = false,
+    this.collaborativeOrigin,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
@@ -449,6 +458,7 @@ class UnifiedShoppingList {
     List<String>? categoryIds,
     bool? allowGuestEditing,
     bool? autoRemoveCompleted,
+    String? collaborativeOrigin,
   }) {
     return UnifiedShoppingList(
       id: id,
@@ -471,6 +481,7 @@ class UnifiedShoppingList {
       categoryIds: categoryIds ?? List.from(this.categoryIds),
       allowGuestEditing: allowGuestEditing ?? this.allowGuestEditing,
       autoRemoveCompleted: autoRemoveCompleted ?? this.autoRemoveCompleted,
+      collaborativeOrigin: collaborativeOrigin ?? this.collaborativeOrigin,
     );
   }
 
@@ -631,6 +642,7 @@ class UnifiedShoppingList {
       'categoryIds': categoryIds,
       'allowGuestEditing': allowGuestEditing,
       'autoRemoveCompleted': autoRemoveCompleted,
+      'collaborativeOrigin': collaborativeOrigin,
     };
   }
 
@@ -732,7 +744,7 @@ class UnifiedShoppingList {
       ownerDisplayName: data['ownerDisplayName'] as String,
       items: (data['items'] as List<dynamic>?)
               ?.map((item) =>
-                  UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
+                  UnifiedShoppingItem.fromFirestore(item as Map<String, dynamic>))
               .toList() ??
           [],
       createdAt: data['createdAt'] is DateTime 
@@ -767,6 +779,7 @@ class UnifiedShoppingList {
       categoryIds: List<String>.from(data['categoryIds'] ?? []),
       allowGuestEditing: data['allowGuestEditing'] as bool? ?? true,
       autoRemoveCompleted: data['autoRemoveCompleted'] as bool? ?? false,
+      collaborativeOrigin: data['collaborativeOrigin'] as String?,
     );
   }
 

@@ -30,7 +30,7 @@ class CategoryDisplayWidgets {
           ),
           title: Text(category.name),
           subtitle: showMemberCount ? Text('${category.friendUserIds.length} medlemmar') : null,
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          trailing: const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
           onTap: () => onCategoryTap(category),
         );
       },
@@ -212,7 +212,7 @@ class CategoryDisplayWidgets {
                     children: [
                       const Icon(
                         Icons.people,
-                        size: 16,
+                        size: AppDimensions.iconSizeS,
                         color: AppColors.textMedium,
                       ),
                       const SizedBox(width: AppDimensions.spacingXs),
@@ -374,7 +374,7 @@ class _StatItem extends StatelessWidget {
         Icon(
           icon,
           color: color,
-          size: 24,
+          size: AppDimensions.iconSizeL,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(

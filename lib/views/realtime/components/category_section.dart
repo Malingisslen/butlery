@@ -202,7 +202,7 @@ class _CategorySectionState extends State<CategorySection>
       onSelected: (value) => _handleCategoryAction(context, value),
       icon: const Icon(
         Icons.more_vert,
-        size: 20,
+        size: AppDimensions.iconSizeM,
         color: AppColors.textMedium,
       ),
       itemBuilder: (context) => [
@@ -210,7 +210,7 @@ class _CategorySectionState extends State<CategorySection>
           value: 'add_recipe',
           child: Row(
             children: [
-              Icon(Icons.add, size: 18),
+              Icon(Icons.add, size: AppDimensions.iconSize18),
               SizedBox(width: AppDimensions.spacingS),
               Text('Lägg till recept', style: AppTextStyles.bodyMedium),
             ],
@@ -220,7 +220,7 @@ class _CategorySectionState extends State<CategorySection>
           value: 'edit_category',
           child: Row(
             children: [
-              Icon(Icons.edit, size: 18),
+              Icon(Icons.edit, size: AppDimensions.iconSize18),
               SizedBox(width: AppDimensions.spacingS),
               Text('Redigera kategori', style: AppTextStyles.bodyMedium),
             ],
@@ -230,7 +230,7 @@ class _CategorySectionState extends State<CategorySection>
           value: 'clear_category',
           child: Row(
             children: [
-              Icon(Icons.clear_all, size: 18),
+              Icon(Icons.clear_all, size: AppDimensions.iconSize18),
               SizedBox(width: AppDimensions.spacingS),
               Text('Rensa kategori', style: AppTextStyles.bodyMedium),
             ],
@@ -241,7 +241,7 @@ class _CategorySectionState extends State<CategorySection>
             value: 'delete_category',
             child: Row(
               children: [
-                const Icon(Icons.delete, size: 18, color: AppColors.error),
+                const Icon(Icons.delete, size: AppDimensions.iconSize18, color: AppColors.error),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Ta bort kategori',
@@ -354,7 +354,7 @@ class _CategorySectionState extends State<CategorySection>
         children: [
           const Icon(
             Icons.restaurant_menu,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: AppColors.textLight,
           ),
           const SizedBox(height: AppDimensions.spacingM),

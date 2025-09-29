@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Dialog for adding/editing unified shopping items
 ///
@@ -113,25 +114,16 @@ class _AddUnifiedShoppingItemDialogState
             mainAxisSize: MainAxisSize.min,
             children: [
               // Article name - focus first
-              TextFormField(
+              StyledInput(
                 controller: _nameController,
                 autofocus: true,
-                style: AppTextStyles.bodyLarge,
-                decoration: InputDecoration(
-                  labelText: 'Artikel',
-                  labelStyle: AppTextStyles.labelLarge,
-                  hintText: 'T.ex. Mjölk',
-                  hintStyle: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textMedium),
-                  prefixIcon: const Icon(
-                    Icons.shopping_basket,
-                    color: AppColors.primaryBlue,
-                    size: AppDimensions.iconSizeAction,
-                  ),
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
+                label: 'Artikel',
+                hint: 'T.ex. Mjölk',
+                prefixIcon: const Icon(
+                  Icons.shopping_basket,
+                  color: AppColors.primaryBlue,
+                  size: AppDimensions.iconSizeAction,
                 ),
-                textCapitalization: TextCapitalization.sentences,
                 validator: FormValidators.shoppingItemName(),
               ),
               const SizedBox(height: AppDimensions.spacingXl),
@@ -142,23 +134,14 @@ class _AddUnifiedShoppingItemDialogState
                   // Amount (less space - flex: 1)
                   Expanded(
                     flex: 1,
-                    child: TextFormField(
+                    child: StyledInput(
                       controller: _amountController,
-                      style: AppTextStyles.bodyLarge,
-                      decoration: InputDecoration(
-                        labelText: 'Antal',
-                        labelStyle: AppTextStyles.labelLarge,
-                        hintText: '1',
-                        hintStyle: AppTextStyles.bodyMedium
-                            .copyWith(color: AppColors.textMedium),
-                        prefixIcon: const Icon(
-                          Icons.numbers,
-                          color: AppColors.primaryBlue,
-                          size: AppDimensions.iconSizeAction,
-                        ),
-                        border: const OutlineInputBorder(),
-                        contentPadding:
-                            const EdgeInsets.all(AppDimensions.paddingM),
+                      label: 'Antal',
+                      hint: '1',
+                      prefixIcon: const Icon(
+                        Icons.numbers,
+                        color: AppColors.primaryBlue,
+                        size: AppDimensions.iconSizeAction,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -253,28 +236,14 @@ class _AddUnifiedShoppingItemDialogState
         ),
       ),
       actions: [
-        TextButton(
+        StyledButton.secondary(
+          text: 'Avbryt',
           onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt', style: AppTextStyles.labelLarge),
         ),
-        FilledButton.icon(
+        StyledButton.primary(
+          text: isEditing ? 'Spara' : 'Lägg till',
+          icon: Icon(isEditing ? Icons.save : Icons.add),
           onPressed: _submitForm,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-            foregroundColor: AppColors.neutralLight,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-          ),
-          icon: Icon(
-            isEditing ? Icons.save : Icons.add,
-            size: AppDimensions.iconSizeAction,
-          ),
-          label: Text(
-            isEditing ? 'Spara' : 'Lägg till',
-            style: AppTextStyles.labelLarge,
-          ),
         ),
       ],
     );

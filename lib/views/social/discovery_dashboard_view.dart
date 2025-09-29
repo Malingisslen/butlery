@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/state/loading_states.dart';
 
 // Import focused components
 import 'package:butlery/views/social/discovery_dashboard/discovery_app_bar.dart';
@@ -136,8 +137,8 @@ class _DiscoveryDashboardViewContentState
               _buildTab('Aktivitet', Icons.timeline, viewModel.friendActivityCount),
               _buildTab('För dig', Icons.recommend, viewModel.recommendationsCount),
             ],
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.onSurface.withValues(alpha: 0.6),
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
             labelStyle: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -166,7 +167,7 @@ class _DiscoveryDashboardViewContentState
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, size: 20),
+              Icon(icon, size: AppDimensions.iconSizeM),
               if (count > 0)
                 Positioned(
                   right: -8,
@@ -183,9 +184,8 @@ class _DiscoveryDashboardViewContentState
                     ),
                     child: Text(
                       count > 99 ? '99+' : count.toString(),
-                      style: AppTextStyles.bodySmall.copyWith(
+                      style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.onPrimary,
-                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -194,7 +194,7 @@ class _DiscoveryDashboardViewContentState
                 ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
             style: AppTextStyles.bodySmall,
@@ -206,23 +206,11 @@ class _DiscoveryDashboardViewContentState
 
   Widget _buildContent(BuildContext context, DiscoveryDashboardViewModel viewModel) {
     if (viewModel.isInitialLoading) {
-      return const SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: AppDimensions.iconSizeL,
-                height: AppDimensions.iconSizeL,
-                child: CircularProgressIndicator(),
-              ),
-              SizedBox(height: AppDimensions.spacingXl),
-              Text(
-                'Laddar upptäcktsinnehåll...',
-                style: AppTextStyles.titleMedium,
-              ),
-            ],
-          ),
+      return SliverFillRemaining(
+        child: LoadingStates.buildLoadingState(
+          context,
+          variant: LoadingVariant.spinner,
+          message: 'Laddar upptäcktsinnehåll...',
         ),
       );
     }
@@ -366,7 +354,7 @@ class _DiscoveryDashboardViewContentState
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
-          size: 16,
+          size: AppDimensions.iconSizeS,
           color: AppColors.onSurface.withValues(alpha: 0.4),
         ),
         onTap: () => _handleSearchResultTap(context, item),
@@ -398,7 +386,7 @@ class _DiscoveryDashboardViewContentState
 
     return CircleAvatar(
       backgroundColor: color.withValues(alpha: 0.1),
-      child: Icon(icon, color: color, size: 20),
+      child: Icon(icon, color: color, size: AppDimensions.iconSizeM),
     );
   }
 
@@ -411,7 +399,7 @@ class _DiscoveryDashboardViewContentState
             const Icon(
               Icons.people,
               color: AppColors.primary,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -487,7 +475,7 @@ class _DiscoveryDashboardViewContentState
             const Icon(
               Icons.access_time,
               color: AppColors.secondary,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(

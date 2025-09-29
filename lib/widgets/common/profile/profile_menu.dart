@@ -10,7 +10,6 @@ import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
-import 'package:intl/intl.dart';
 /// Profile menu display components
 ///
 /// This module provides the main profile menu widget with user information
@@ -299,56 +298,10 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
   /// User metadata
   Widget _buildUserMetadata(BuildContext context, dynamic user) {
-    return Column(
-      children: [
-        _buildInfoItem(
-          context,
-          'Medlem sedan',
-          _formatDate(user.metadata.creationTime),
-          Icons.calendar_today,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        _buildInfoItem(
-          context,
-          'Senast aktiv',
-          _formatDate(user.metadata.lastSignInTime),
-          Icons.access_time,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        _buildInfoItem(
-          context,
-          'Autentisering',
-          user.providerData.isNotEmpty ? user.providerData[0].providerId : 'Email',
-          Icons.security,
-        ),
-      ],
-    );
+    // Removed auth metadata for cleaner profile display
+    return const SizedBox.shrink();
   }
 
-  /// Info item
-  Widget _buildInfoItem(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-  ) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: AppDimensions.iconSizeM,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: AppDimensions.spacingXs),
-        Expanded(
-          child: Text(
-            '$label: $value',
-            style: AppTextStyles.bodySmall,
-          ),
-        ),
-      ],
-    );
-  }
 
   /// Social section
   Widget _buildSocialSection(BuildContext context) {
@@ -393,11 +346,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
     );
   }
 
-  /// Format date
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'Okänt';
-    return DateFormat('yyyy-MM-dd').format(date);
-  }
   @override
   void dispose() {
     // Cancel all timers

@@ -171,6 +171,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
@@ -452,7 +453,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
       children: [
         RichText(
           text: TextSpan(
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppTextStyles.bodyMedium,
             children: [
               const TextSpan(text: 'Vill du verkligen ta bort '),
               TextSpan(
@@ -467,7 +468,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           const SizedBox(height: AppDimensions.spacing12),
           Text(
             warningMessage!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.warning,
             ),
           ),
@@ -513,7 +514,7 @@ class _ActionConfirmationDialog extends BaseDialog<bool> {
   Widget buildContent(BuildContext context) {
     return Text(
       message,
-      style: Theme.of(context).textTheme.bodyMedium,
+      style: AppTextStyles.bodyMedium,
     );
   }
 
@@ -550,7 +551,7 @@ class _InfoDialog extends StatelessWidget {
       title: Text(title),
       content: Text(
         message,
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTextStyles.bodyMedium,
       ),
       actions: [
         FilledButton(

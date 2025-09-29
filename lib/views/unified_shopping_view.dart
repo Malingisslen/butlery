@@ -190,7 +190,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                   _showCreateListDialog,
                   _showShoppingShareDialog,
                   _shareListExternally,
-                  () => _showSyncStatus(viewModel),
+                  () => _showSharingStatus(viewModel),
                 ),
               );
             },
@@ -214,6 +214,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                   viewModel,
                   () => _clearBoughtItemsWithConfirmation(viewModel),
                   () => _uncheckAllItems(viewModel),
+                  () => _showRenameListDialog(viewModel),
+                  () => _showDeleteListConfirmation(viewModel),
                 ),
 
                 // Main shopping list content with item management
@@ -343,20 +345,20 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     shareService.shareShoppingList(_viewModel.items);
   }
 
-  /// Comprehensive synchronization status dialog with collaborative information and connection coordination.
+  /// Comprehensive sharing status dialog with collaborative information and permission coordination.
   /// 
-  /// [viewModel] UnifiedShoppingViewModel instance for synchronization status access and management
+  /// [viewModel] UnifiedShoppingViewModel instance for sharing status access and management
   /// 
-  /// Presents synchronization status dialog enabling collaborative status display,
-  /// connection information, and comprehensive synchronization management through
+  /// Presents sharing status dialog enabling collaborative status display,
+  /// member permissions, and comprehensive sharing management through
   /// dialog presentation and ViewModel integration.
   /// 
-  /// **Sync Status Features:**
-  /// - Collaborative synchronization status with connection information and participant tracking
-  /// - Real-time sync information with last sync time and collaborative activity display
-  /// - Connection management with offline status and synchronization coordination
-  Future<void> _showSyncStatus(UnifiedShoppingViewModel viewModel) async {
-    await ShoppingDialogs.showSyncStatus(context, viewModel);
+  /// **Sharing Status Features:**
+  /// - Collaborative sharing status with member information and permission level tracking
+  /// - Real-time sharing information with member activity and permission management display
+  /// - Permission management with user roles and collaborative coordination
+  Future<void> _showSharingStatus(UnifiedShoppingViewModel viewModel) async {
+    await ShoppingDialogs.showSharingStatus(context, viewModel);
   }
 
   /// Advanced shopping list creation dialog with validation and collaborative setup coordination.
@@ -412,6 +414,40 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Future<void> _uncheckAllItems(UnifiedShoppingViewModel viewModel) async {
     await viewModel.uncheckAllItems();
     _showSuccessSnackBar('Alla artiklar avbockade!');
+  }
+
+  /// Show rename list dialog with text input and validation
+  Future<void> _showRenameListDialog(UnifiedShoppingViewModel viewModel) async {
+    final activeList = viewModel.activeList;
+    if (activeList == null) {
+      _showErrorSnackBar('Ingen lista vald för att byta namn');
+      return;
+    }
+
+    await ShoppingDialogs.showRenameListDialog(
+      context,
+      activeList,
+      viewModel,
+      _showSuccessSnackBar,
+      _showErrorSnackBar,
+    );
+  }
+
+  /// Show delete list confirmation dialog with item count warning
+  Future<void> _showDeleteListConfirmation(UnifiedShoppingViewModel viewModel) async {
+    final activeList = viewModel.activeList;
+    if (activeList == null) {
+      _showErrorSnackBar('Ingen lista vald för borttagning');
+      return;
+    }
+
+    await ShoppingDialogs.showDeleteListConfirmationDialog(
+      context,
+      activeList,
+      viewModel,
+      _showSuccessSnackBar,
+      _showErrorSnackBar,
+    );
   }
 
   // ===== USER FEEDBACK AND LIFECYCLE MANAGEMENT =====

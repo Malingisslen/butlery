@@ -164,18 +164,46 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   Future<void> _loadReceivedInvitations() async {
     try {
       AppLogger.info('🔄 Laddar mottagna gruppinbjudningar...');
+      
+      // Check if friends service is properly initialized
+      if (_friendsService.invitations == null) {
+        AppLogger.warning('⚠️ FriendsService invitations not initialized');
+        _receivedInvitations = [];
+        notifyListeners();
+        return;
+      }
 
-      // Hämta inbjudningar från UnifiedFriendsService
-      _receivedInvitations = _friendsService.invitations.getSentInvitations();
+      // Get received invitations properly via repository
+      _receivedInvitations = _friendsService.invitations.pendingReceivedInvitations;
+      
+      // Add detailed debugging information
+      AppLogger.info('📊 Invitation loading details:');
+      AppLogger.info('  - Raw invitations count: ${_receivedInvitations.length}');
+      AppLogger.info('  - Pending invitations count: ${receivedInvitations.length}');
+      
+      // Log individual invitations for debugging
+      for (int i = 0; i < _receivedInvitations.length && i < 5; i++) {
+        final invitation = _receivedInvitations[i];
+        AppLogger.info('  - Invitation $i: from=${invitation.fromUserName}, group=${invitation.groupName}, status=${invitation.status}');
+      }
+      
+      if (_receivedInvitations.length > 5) {
+        AppLogger.info('  - And ${_receivedInvitations.length - 5} more invitations...');
+      }
 
-
-      AppLogger.info(
-        '📨 ${_receivedInvitations.length} mottagna inbjudningar (${receivedInvitations.length} väntande)',
-      );
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte ladda mottagna inbjudningar', e);
-      // Inte kritiskt fel - fortsätt med tomma inbjudningar
+      AppLogger.success('✅ Successfully loaded ${receivedInvitations.length} pending invitations');
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ Failed to load received invitations', e);
+      AppLogger.debug('Stack trace: $stackTrace');
+      
+      // Ensure we always have a valid state
       _receivedInvitations = [];
+      
+      // Add user-friendly error state
+      AppLogger.warning('⚠️ Using empty invitations list as fallback');
+    } finally {
+      // Always notify listeners to update UI
+      notifyListeners();
     }
   }
 

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// ActionButtons - Utility action buttons with loading support
 ///
@@ -25,7 +26,7 @@ class ActionButtons {
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
       child: Row(
-        mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (isLoading)
@@ -44,14 +45,11 @@ class ActionButtons {
               padding: const EdgeInsets.only(right: AppDimensions.spacingS),
               child: Icon(icon),
             ),
-          Flexible(
-            fit: isExpanded ? FlexFit.tight : FlexFit.loose,
-            child: Text(
-              effectiveLabel,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: isExpanded ? TextAlign.center : TextAlign.start,
-            ),
+          Text(
+            effectiveLabel,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            textAlign: isExpanded ? TextAlign.center : TextAlign.start,
           ),
         ],
       ),
@@ -66,7 +64,7 @@ class ActionButtons {
         );
         break;
       case ActionButtonStyle.secondary:
-        button = FilledButton(
+        button = ElevatedButton(
           onPressed: effectiveOnPressed,
           child: buttonChild,
         );
@@ -81,7 +79,10 @@ class ActionButtons {
 
     return isExpanded
         ? SizedBox(width: double.infinity, child: button)
-        : button;
+        : ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 200),
+            child: button,
+          );
   }
 
   /// Primary action button convenience method
@@ -124,15 +125,15 @@ class ActionButtons {
           children: [
             if (isLoading)
               const SizedBox(
-                width: 24,
-                height: 24,
+                width: AppDimensions.iconSizeM,
+                height: AppDimensions.iconSizeM,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                 ),
               )
             else
-              Icon(icon, size: 32),
+              Icon(icon, size: AppDimensions.iconSizeXl),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               isLoading ? (loadingText ?? 'Laddar...') : label,
@@ -170,16 +171,14 @@ class ActionButtons {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                 ),
               )
-            : Icon(icon, size: 32, color: Colors.white),
+            : Icon(icon, size: AppDimensions.iconSizeXl, color: AppColors.onPrimary),
         label: Text(
           isLoading ? (loadingText ?? 'Laddar...') : label,
-          style: const TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.labelLarge.copyWith(
+            color: AppColors.onPrimary,
           ),
         ),
       ),
@@ -233,6 +232,63 @@ class ActionButtons {
       style: ActionButtonStyle.outlined,
       isExpanded: isExpanded,
     );
+  }
+
+  /// Text button convenience method for minimal styling
+  static Widget textButton(
+    BuildContext context, {
+    required String label,
+    VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    String? loadingText,
+    bool isExpanded = false,
+    ButtonStyle? style,
+  }) {
+    final effectiveOnPressed = isLoading ? null : onPressed;
+    final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
+
+    final Widget buttonChild = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              child: SizedBox(
+                width: AppDimensions.iconSizeS,
+                height: AppDimensions.iconSizeS,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                ),
+              ),
+            )
+          else if (icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
+              child: Icon(icon),
+            ),
+          Text(
+            effectiveLabel,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+          ),
+        ],
+      ),
+    );
+
+    final button = TextButton(
+      onPressed: effectiveOnPressed,
+      style: style,
+      child: buttonChild,
+    );
+
+    return isExpanded
+        ? SizedBox(width: double.infinity, child: button)
+        : button;
   }
 }
 

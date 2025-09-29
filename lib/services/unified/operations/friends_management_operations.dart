@@ -196,26 +196,36 @@ class FriendsManagementOperations extends BaseService {
           respondedAt: DateTime.now(),
         );
 
-        // Add as friend
-        final friend = model.UserProfile(
-          uid: request.fromUserId,
-          displayName: 'User ${request.fromUserId.substring(0, 6)}...', // Would be fetched from user profile
-          email: '', // Would be fetched from user profile
-          avatarUrl: null, // Would be fetched from user profile
-          joinedAt: DateTime.now(),
-          lastActiveAt: DateTime.now(),
-        );
+        // ULTRATHINK FIX: Fetch real user profile instead of creating fake one
+        final userProfile = await _userService.getUserProfile(request.fromUserId);
+        if (userProfile == null) {
+          throw Exception('Could not fetch user profile for friend request sender');
+        }
+        
+        final friend = userProfile;
 
         // Update local state
         _parent.addFriendInternal(friend);
         _parent.removeIncomingRequestInternal(requestId);
 
-        // Sync to Firebase
-        await _parent.syncFriendToFirebase(friend);
+        // Add mutual friends with counter updates using relationship repository
+        await _parent.relationshipRepository.addMutualFriends(
+          _parent.currentUserId!,
+          request.fromUserId,
+        );
         await _parent.updateFriendRequestStatus(acceptedRequest);
 
         // Send notification to the original sender
         await _sendFriendRequestAcceptedNotification(request, _parent.currentUserDisplayName ?? 'Unknown User');
+
+        // ULTRATHINK FIX: Refresh state from Firebase to ensure consistency
+        try {
+          await _parent.refresh();
+          AppLogger.success('✅ State refreshed after friend request acceptance');
+        } catch (e) {
+          AppLogger.warning('⚠️ State refresh failed after friend acceptance, but operation completed: $e');
+          // Don't fail the entire operation just because refresh failed
+        }
 
         return true;
       },
@@ -305,8 +315,11 @@ class FriendsManagementOperations extends BaseService {
       // Remove from local state
       _parent.removeFriendInternal(friendId);
 
-      // Remove from Firebase
-      await _parent.removeFriendFromFirebase(friendId);
+      // Remove mutual friends with counter updates using relationship repository
+      await _parent.relationshipRepository.removeMutualFriends(
+        _parent.currentUserId!,
+        friendId,
+      );
 
       AppLogger.success('Removed friend: ${friend.displayName}');
       return true;

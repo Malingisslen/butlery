@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Reusable category header component
 /// 
@@ -46,7 +47,7 @@ class CategoryHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: AppTextStyles.titleMedium.copyWith(
                 color: textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
                 fontWeight: FontWeight.w600,
               ),
@@ -64,7 +65,7 @@ class CategoryHeader extends StatelessWidget {
             ),
             child: Text(
               '$count',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              style: AppTextStyles.labelSmall.copyWith(
                 color: Theme.of(context).colorScheme.onSecondary,
                 fontWeight: FontWeight.bold,
               ),

@@ -7,6 +7,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 /// Friend Category Manager
@@ -165,7 +166,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       children: [
         Text(
           widget.title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
@@ -173,7 +174,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           const SizedBox(height: AppDimensions.spacingM),
           Text(
             widget.subtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: AppTextStyles.bodyMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
@@ -197,7 +198,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               'Kategorier',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -207,7 +208,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         const SizedBox(height: AppDimensions.spacingM),
         Text(
           'Välj hela kategorier för snabb delning',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
@@ -290,7 +291,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               'Individuellt val',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -300,7 +301,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         const SizedBox(height: AppDimensions.spacingM),
         Text(
           'Välj specifika vänner från din vänlista',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
@@ -398,14 +399,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               children: [
                 Text(
                   'Valda vänner',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 Text(
                   '${_selectedFriends.length} ${_selectedFriends.length == 1 ? 'vän vald' : 'vänner valda'}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: AppTextStyles.bodyMedium.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -416,7 +417,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           if (_selectedFriends.isNotEmpty)
             TextButton.icon(
               onPressed: _clearAllSelections,
-              icon: const Icon(Icons.clear, size: 18.0),
+              icon: const Icon(Icons.clear, size: AppDimensions.iconSizeS),
               label: const Text('Rensa'),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.primary,

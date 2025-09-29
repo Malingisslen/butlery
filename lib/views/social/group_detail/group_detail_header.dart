@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// GroupDetailHeader - Group header component
 ///
@@ -29,7 +30,7 @@ class GroupDetailHeader {
                   children: [
                     Text(
                       group.name,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: AppTextStyles.headlineSmall.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -38,7 +39,7 @@ class GroupDetailHeader {
                       group.emoji != null && group.emoji!.isNotEmpty
                           ? '${group.emoji} ${group.description ?? 'Ingen beskrivning'}'
                           : group.description ?? 'Ingen beskrivning',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: AppTextStyles.bodyMedium.copyWith(
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
@@ -70,7 +71,7 @@ class GroupDetailHeader {
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       'Gruppinformation',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      style: AppTextStyles.titleSmall.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -130,14 +131,14 @@ class GroupDetailHeader {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             '$label: ',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
           ),
           Expanded(
             child: Text(
               value,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),

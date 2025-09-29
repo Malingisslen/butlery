@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/group_detail_view.dart';
 
 /// GroupCard - Group card component
@@ -20,12 +21,12 @@ class GroupCard {
           backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           child: Text(
             group.emoji ?? '👥',
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: AppTextStyles.headlineMedium,
           ),
         ),
         title: Text(
           group.name,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: AppTextStyles.titleMedium,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,12 +36,12 @@ class GroupCard {
                 group.description!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: AppTextStyles.bodySmall,
               ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               group.summary,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -48,7 +49,7 @@ class GroupCard {
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
-          size: 16,
+          size: AppDimensions.iconSizeS,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),

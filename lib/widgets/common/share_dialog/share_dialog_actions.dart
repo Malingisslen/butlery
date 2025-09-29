@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 class ShareDialogActions {
   static Widget buildActionButtons(
@@ -40,38 +41,21 @@ class ShareDialogActions {
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton(
+            flex: 3,
+            child: ActionButtons.outlinedButton(
+              context,
+              label: 'Avbryt',
               onPressed: isLoading ? null : onCancel,
-              child: Text(
-                'Avbryt',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             ),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
-            child: ElevatedButton(
+            flex: 4,
+            child: ActionButtons.primaryButton(
+              context,
+              label: shareButtonText,
               onPressed: (!hasSelectedFriends || isLoading) ? null : onShare,
-              child: isLoading
-                  ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Theme.of(context).colorScheme.onPrimary,
-                        ),
-                      ),
-                    )
-                  : Text(
-                      shareButtonText,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
+              isLoading: isLoading,
             ),
           ),
         ],
@@ -120,7 +104,7 @@ class ShareDialogActions {
           children: [
             const Icon(
               Icons.info_outline,
-              size: 16,
+              size: AppDimensions.iconSizeS,
               color: AppColors.warning,
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -154,7 +138,7 @@ class ShareDialogActions {
         children: [
           const Icon(
             Icons.check_circle_outline,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: AppColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingM),

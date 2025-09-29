@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -177,6 +178,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     _personalModule = PersonalRecipeModule(
       recipeRepository: _getRecipeRepository(),
+      userRepository: ServiceLocator.get<UserRepository>(),
       cacheHelper: cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -798,9 +800,56 @@ class UnifiedRecipeService extends ChangeNotifier
   // ===== AUTH STATE HANDLING =====
 
   void _handleAuthStateChange(String? userId) {
+    AppLogger.info('🔍 [UnifiedRecipeService] Auth state changed - User ID: ${userId ?? 'NULL'}');
+    
     _cacheModule.onAuthStateChanged(userId);
+    
     if (userId == null) {
+      AppLogger.info('🔍 [UnifiedRecipeService] User logged out - clearing all recipe data');
       _clearAll();
+    } else {
+      // ULTRATHINK FIX: Reload user-specific recipes when user logs in
+      AppLogger.info('🔍 [UnifiedRecipeService] 🚨 USER LOGGED IN - RELOADING RECIPES');
+      AppLogger.info('🔍 [UnifiedRecipeService] ✅ Triggering recipe reload for user: $userId');
+      
+      _reloadUserRecipes(userId);
+    }
+  }
+
+  /// ULTRATHINK FIX: Reload user-specific recipes when user logs in
+  Future<void> _reloadUserRecipes(String userId) async {
+    try {
+      AppLogger.info('🔍 [UnifiedRecipeService] Starting user recipe reload for: $userId');
+      
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+      
+      // Clear existing recipes to prevent showing wrong user's data
+      _recipes.clear();
+      
+      // Reload from cache first (contains user-specific data)
+      AppLogger.info('🔍 [UnifiedRecipeService] Reloading from cache...');
+      final cachedRecipes = await _cacheModule.initializeCache();
+      _recipes.addAll(cachedRecipes);
+      
+      AppLogger.info('🔍 [UnifiedRecipeService] ✅ Loaded ${cachedRecipes.length} recipes from cache');
+      
+      // Ensure Firebase sync is active for this user
+      if (_authRepository.currentUser != null) {
+        AppLogger.info('🔍 [UnifiedRecipeService] Starting Firebase sync for authenticated user');
+        await _cacheModule.startFirebaseSync();
+      }
+      
+      _isLoading = false;
+      AppLogger.success('🔍 [UnifiedRecipeService] ✅ User recipe reload complete - ${_recipes.length} recipes loaded');
+      notifyListeners();
+      
+    } catch (e) {
+      AppLogger.error('🔍 [UnifiedRecipeService] ❌ Recipe reload failed: $e');
+      _setError('Kunde inte ladda recept: $e');
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

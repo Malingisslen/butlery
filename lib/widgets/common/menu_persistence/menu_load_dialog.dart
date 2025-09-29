@@ -170,7 +170,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ),
         ),
         title: Text(
-          'Meny ${menu.toString()}',
+          menu.name ?? 'Namnlös meny',
           style: AppTextStyles.titleMedium,
         ),
         subtitle: const Text(

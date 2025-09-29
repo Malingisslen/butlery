@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Shopping list actions handler
 ///
@@ -100,25 +101,21 @@ class ShoppingListActions {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            StyledInput(
               controller: controller,
-              decoration: const InputDecoration(
-                labelText: AppStrings.newName,
-                border: OutlineInputBorder(),
-              ),
+              label: AppStrings.newName,
               autofocus: true,
-              onSubmitted: (value) => Navigator.pop(context, value.trim()),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          StyledButton.secondary(
+            text: AppStrings.cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text(AppStrings.cancel),
           ),
-          FilledButton(
+          StyledButton.primary(
+            text: AppStrings.save,
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text(AppStrings.save),
           ),
         ],
       ),
@@ -219,26 +216,22 @@ class ShoppingListActions {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            StyledInput(
               controller: controller,
-              decoration: const InputDecoration(
-                labelText: AppStrings.listName,
-                border: OutlineInputBorder(),
-                hintText: 'T.ex. "Veckans handlista"',
-              ),
+              label: AppStrings.listName,
+              hint: 'T.ex. "Veckans handlista"',
               autofocus: true,
-              onSubmitted: (value) => Navigator.pop(context, value.trim()),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          StyledButton.secondary(
+            text: AppStrings.cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text(AppStrings.cancel),
           ),
-          FilledButton(
+          StyledButton.primary(
+            text: AppStrings.create,
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text(AppStrings.create),
           ),
         ],
       ),

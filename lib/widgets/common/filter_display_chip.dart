@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Chip widget to display active filter information
 class FilterDisplayChip extends StatelessWidget {
@@ -43,7 +44,7 @@ class FilterDisplayChip extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.secondary,
               ),
             ),

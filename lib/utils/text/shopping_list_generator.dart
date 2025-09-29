@@ -45,6 +45,8 @@
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 /// Intelligent shopping list generation system providing ingredient consolidation and optimization for menu planning.
 ///
@@ -200,5 +202,151 @@ class ShoppingListGenerator {
     }
 
     return displayList;
+  }
+
+  /// Generate shopping items from a single recipe with Swedish ingredient parsing and categorization.
+  ///
+  /// This method creates UnifiedShoppingItem objects from a recipe's ingredients, providing
+  /// structured shopping data ready for addition to shopping lists. It leverages the existing
+  /// Swedish ingredient parsing infrastructure and intelligent categorization system.
+  ///
+  /// **Processing Features:**
+  /// - Swedish ingredient parsing with unit/quantity extraction
+  /// - Automatic ingredient categorization (Mejeri, Kött & Fisk, etc.)
+  /// - Smart unit conversion and formatting  
+  /// - Fallback categorization for unknown ingredients
+  /// - Robust error handling for malformed ingredient strings
+  ///
+  /// [recipe] Recipe object containing ingredients list to convert
+  /// [portions] Optional portion scaling factor (defaults to recipe portions)
+  /// 
+  /// Returns List of UnifiedShoppingItem objects ready for shopping list addition
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// final recipe = Recipe(
+  ///   title: 'Pannkakor',
+  ///   ingredients: ['2 dl mjölk', '1 ägg', '100g mjöl'],
+  /// );
+  /// 
+  /// final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(recipe);
+  /// // Returns: [
+  /// //   UnifiedShoppingItem(name: 'mjölk', amount: 2.0, unit: 'dl', category: 'Mejeri'),
+  /// //   UnifiedShoppingItem(name: 'ägg', amount: 1.0, unit: 'st', category: 'Mejeri'),
+  /// //   UnifiedShoppingItem(name: 'mjöl', amount: 100.0, unit: 'g', category: 'Torrvaror'),
+  /// // ]
+  /// ```
+  static List<UnifiedShoppingItem> generateShoppingItemsFromRecipe(
+    Recipe recipe, {
+    int? portions,
+  }) {
+    // Handle empty ingredients gracefully
+    if (recipe.ingredients.isEmpty) return [];
+
+    final List<UnifiedShoppingItem> shoppingItems = [];
+    final targetPortions = portions ?? recipe.portions ?? 1;
+    final originalPortions = recipe.portions ?? 1;
+    final scalingFactor = originalPortions > 0 ? targetPortions / originalPortions : 1.0;
+
+    for (final rawIngredient in recipe.ingredients) {
+      // Skip empty or whitespace-only ingredients
+      if (rawIngredient.trim().isEmpty) continue;
+
+      try {
+        // Parse Swedish ingredient string into structured data
+        final parsed = IngredientParser.parseIngredient(rawIngredient);
+        
+        // Scale quantity based on portion adjustment
+        final scaledQuantity = parsed.quantity * scalingFactor;
+        
+        // Determine appropriate category for ingredient
+        final category = _categorizeIngredient(parsed.name);
+        
+        // Create UnifiedShoppingItem with parsed and processed data
+        final shoppingItem = UnifiedShoppingItem(
+          name: parsed.name.trim(),
+          amount: scaledQuantity,
+          unit: parsed.unit,
+          category: category,
+          bought: false,
+          note: '', // No notes from recipe ingredients
+          priority: 3, // Default priority
+        );
+        
+        shoppingItems.add(shoppingItem);
+        
+      } catch (e) {
+        // Handle parsing errors gracefully - create basic item
+        final fallbackItem = UnifiedShoppingItem(
+          name: rawIngredient.trim(),
+          amount: 1.0,
+          unit: 'st',
+          category: 'Övrigt',
+          bought: false,
+          note: 'Kunde inte tolka ingrediens',
+          priority: 3,
+        );
+        
+        shoppingItems.add(fallbackItem);
+      }
+    }
+
+    return shoppingItems;
+  }
+
+  /// Categorize ingredient based on Swedish ingredient name patterns.
+  ///
+  /// Uses intelligent pattern matching to assign appropriate Swedish shopping categories
+  /// based on ingredient names. Provides fallback to 'Övrigt' for unknown ingredients.
+  ///
+  /// [ingredientName] Raw ingredient name to categorize
+  /// Returns Swedish category string suitable for shopping organization
+  static String _categorizeIngredient(String ingredientName) {
+    final name = ingredientName.toLowerCase().trim();
+    
+    // Mejeri (Dairy)
+    if (name.contains('mjölk') || name.contains('grädde') || name.contains('fil') ||
+        name.contains('yoghurt') || name.contains('ost') || name.contains('smör') ||
+        name.contains('ägg')) {
+      return 'Mejeri';
+    }
+    
+    // Kött & Fisk (Meat & Fish)
+    if (name.contains('kött') || name.contains('fläsk') || name.contains('nöt') ||
+        name.contains('kyckling') || name.contains('fisk') || name.contains('räk') ||
+        name.contains('korv') || name.contains('bacon') || name.contains('skinka')) {
+      return 'Kött & Fisk';
+    }
+    
+    // Frukt & Grönt (Fruits & Vegetables)
+    if (name.contains('tomat') || name.contains('lök') || name.contains('vitlök') ||
+        name.contains('potatis') || name.contains('morot') || name.contains('gurka') ||
+        name.contains('paprika') || name.contains('sallad') || name.contains('äpple') ||
+        name.contains('banan') || name.contains('citron') || name.contains('lime')) {
+      return 'Frukt & Grönt';
+    }
+    
+    // Torrvaror (Dry Goods)
+    if (name.contains('mjöl') || name.contains('socker') || name.contains('salt') ||
+        name.contains('pasta') || name.contains('ris') || name.contains('bröd') ||
+        name.contains('havr') || name.contains('müsli')) {
+      return 'Torrvaror';
+    }
+    
+    // Kryddor (Spices)
+    if (name.contains('peppar') || name.contains('krydda') || name.contains('basilika') ||
+        name.contains('oregano') || name.contains('timjan') || name.contains('rosmarin') ||
+        name.contains('paprika') || name.contains('curry')) {
+      return 'Kryddor';
+    }
+    
+    // Konserver (Canned Goods)
+    if (name.contains('konserv') || name.contains('burk') || name.contains('tomatpuré') ||
+        name.contains('kokosmjölk') || name.contains('bönor')) {
+      return 'Konserver';
+    }
+    
+    // Default fallback
+    return 'Övrigt';
   }
 }

@@ -24,7 +24,7 @@ class RecommendationsSection {
             const Icon(
               Icons.auto_awesome,
               color: AppColors.secondary,
-              size: 20,
+              size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -71,7 +71,7 @@ class RecommendationsSection {
             Icon(
               Icons.auto_awesome_outlined,
               color: AppColors.outline,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
             ),
             SizedBox(height: AppDimensions.spacingM),
             Text(
@@ -165,7 +165,7 @@ class RecommendationsSection {
                         children: [
                           const Icon(
                             Icons.auto_awesome,
-                            size: 12,
+                            size: AppDimensions.iconSizeXs,
                             color: AppColors.secondary,
                           ),
                           const SizedBox(width: 4),
@@ -225,7 +225,7 @@ class RecommendationsSection {
                           final starValue = (index + 1) * 0.2;
                           return Icon(
                             starValue <= score ? Icons.star : Icons.star_border,
-                            size: 16,
+                            size: AppDimensions.iconSizeS,
                             color: AppColors.warning,
                           );
                         }),
@@ -253,7 +253,7 @@ class RecommendationsSection {
                     icon: Icon(
                       Icons.favorite_border,
                       color: AppColors.error.withValues(alpha: 0.7),
-                      size: 20,
+                      size: AppDimensions.iconSizeM,
                     ),
                     tooltip: 'Gilla',
                   ),
@@ -262,7 +262,7 @@ class RecommendationsSection {
                     icon: Icon(
                       Icons.close,
                       color: AppColors.onSurface.withValues(alpha: 0.4),
-                      size: 20,
+                      size: AppDimensions.iconSizeM,
                     ),
                     tooltip: 'Dölj',
                   ),
@@ -279,7 +279,7 @@ class RecommendationsSection {
     return Icon(
       Icons.auto_awesome,
       color: AppColors.secondary.withValues(alpha: 0.6),
-      size: 32,
+      size: AppDimensions.iconSizeXl,
     );
   }
 

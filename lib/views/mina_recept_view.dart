@@ -70,7 +70,7 @@ import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/indicators/notification_badge.dart';
-import 'package:butlery/widgets/common/indicators/filter_indicator_dot.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -316,16 +316,15 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         title: const Text(AppStrings.exitApp),
         content: const Text(AppStrings.exitAppConfirmation),
         actions: [
-          TextButton(
+          ActionButtons.secondaryButton(
+            context,
+            label: AppStrings.cancel,
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(AppStrings.cancel),
           ),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: AppStrings.exit,
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text(AppStrings.exit),
           ),
         ],
       ),
@@ -505,34 +504,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             child: _buildUserAvatarWithBadge(),
           ),
 
-          // Filter-knapp med indikator för aktiva filter
-          IconButton(
-            icon: Stack(
-              children: [
-                Icon(
-                  Icons.filter_list,
-                  color: _showFilters
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
-                // Visa en prick om det finns aktiva filter
-                if (viewModel.hasActiveFilters)
-                  const Positioned(
-                    right: 0,
-                    top: 0,
-                    child: FilterIndicatorDot(),
-                  ),
-              ],
-            ),
-            onPressed: () {
-              if (mounted) {
-                setState(() {
-                  _showFilters = !_showFilters;
-                });
-              }
-            },
-            tooltip: 'Filtrera',
-          ),
 
           // Error indicator
           if (viewModel.hasError)
@@ -662,12 +633,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingXl),
-              ElevatedButton(
+              ActionButtons.primaryButton(
+                context,
+                label: 'Försök igen',
                 onPressed: () {
                   viewModel.clearError();
                   viewModel.refresh();
                 },
-                child: const Text('Försök igen'),
               ),
             ],
           ),
@@ -742,9 +714,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           if (viewModel.canLoadMore)
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
+              child: ActionButtons.primaryButton(
+                context,
+                label: 'Visa fler recept',
                 onPressed: () => viewModel.loadMore(),
-                child: const Text('Visa fler recept'),
               ),
             ),
         ],

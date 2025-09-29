@@ -3,7 +3,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Consolidated dialog factory with all dialog functionality
 class DialogFactory {
@@ -33,7 +35,7 @@ class DialogFactory {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
-              foregroundColor: isDangerous ? Colors.red : confirmColor,
+              foregroundColor: isDangerous ? AppColors.error : confirmColor,
             ),
             child: Text(confirmText),
           ),
@@ -56,10 +58,11 @@ class DialogFactory {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: TextField(
+        content: StyledInput.multiline(
           controller: controller,
-          decoration: InputDecoration(hintText: hint),
+          hint: hint,
           maxLines: 3,
+          minLines: 3,
         ),
         actions: [
           TextButton(
@@ -170,11 +173,13 @@ class DialogFactory {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: TextField(
+        content: StyledInput(
           controller: controller,
-          decoration: InputDecoration(hintText: hintText),
+          hint: hintText,
           maxLines: maxLines,
+          minLines: maxLines > 1 ? 2 : 1,
           autofocus: true,
+          keyboardType: maxLines > 1 ? TextInputType.multiline : TextInputType.text,
         ),
         actions: [
           TextButton(

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 ///
@@ -70,7 +71,7 @@ class _MainMenuLayout extends StatelessWidget {
               ),
               actions: actions,
               backgroundColor: Theme.of(context).colorScheme.surface,
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              foregroundColor: AppColors.textDark,
               automaticallyImplyLeading: false,
             )
           : null,

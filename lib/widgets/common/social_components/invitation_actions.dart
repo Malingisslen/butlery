@@ -1,6 +1,7 @@
 // lib/widgets/common/social_components/invitation_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -383,11 +384,11 @@ class InvitationActions {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.delete, color: Colors.white),
+            const Icon(Icons.delete, color: AppColors.cardWhite),
             if (leftLabel != null)
               Text(
                 leftLabel,
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: AppColors.cardWhite, fontSize: 12),
               ),
           ],
         ),
@@ -399,11 +400,11 @@ class InvitationActions {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.send, color: Colors.white),
+            const Icon(Icons.send, color: AppColors.cardWhite),
             if (rightLabel != null)
               Text(
                 rightLabel,
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: AppColors.cardWhite, fontSize: 12),
               ),
           ],
         ),

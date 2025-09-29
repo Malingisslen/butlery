@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Shopping Templates Widget
 /// 
@@ -50,7 +52,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
         const Icon(
           Icons.library_books,
           color: AppColors.primary,
-          size: 24,
+          size: AppDimensions.iconSizeL,
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Text(
@@ -88,7 +90,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
           const Icon(
             Icons.library_books_outlined,
             color: AppColors.outline,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           const Text(
@@ -103,10 +105,10 @@ class ShoppingTemplatesWidget extends StatelessWidget {
           ),
           if (onCreateNewTemplate != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
-            ElevatedButton.icon(
-              onPressed: onCreateNewTemplate,
+            StyledButton.primary(
+              text: 'Skapa första mallen',
               icon: const Icon(Icons.add),
-              label: const Text('Skapa första mallen'),
+              onPressed: onCreateNewTemplate,
             ),
           ],
         ],
@@ -118,6 +120,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      cacheExtent: 1000, // Performance optimization: cache more items
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: AppDimensions.spacingM,
@@ -140,7 +143,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
     final List<String> tags = List<String>.from(template['tags'] ?? []);
 
     return Card(
-      elevation: 2,
+      elevation: AppDimensions.elevationLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
       ),
@@ -165,7 +168,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                     child: const Icon(
                       Icons.library_books,
                       color: AppColors.primary,
-                      size: 20,
+                      size: AppDimensions.iconSizeM,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -204,7 +207,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.shopping_cart,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: AppColors.onSurface.withValues(alpha: 0.6),
                   ),
                   const SizedBox(width: 4),
@@ -217,7 +220,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                   const Spacer(),
                   Icon(
                     Icons.favorite,
-                    size: 16,
+                    size: AppDimensions.iconSizeS,
                     color: AppColors.error.withValues(alpha: 0.6),
                   ),
                   const SizedBox(width: 4),
@@ -261,21 +264,10 @@ class ShoppingTemplatesWidget extends StatelessWidget {
               // Create button
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: ActionButtons.outlinedButton(
+                  context,
+                  label: 'Skapa lista',
                   onPressed: () => _showCreateFromTemplateDialog(context, template),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                    ),
-                  ),
-                  child: Text(
-                    'Skapa lista',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -306,12 +298,9 @@ class ShoppingTemplatesWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            TextField(
+            StyledInput(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Listnamn',
-                border: OutlineInputBorder(),
-              ),
+              label: 'Listnamn',
               autofocus: true,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -329,7 +318,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                   const Icon(
                     Icons.info_outline,
                     color: AppColors.info,
-                    size: 20,
+                    size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
@@ -346,14 +335,12 @@ class ShoppingTemplatesWidget extends StatelessWidget {
           ],
         ),
         actions: [
-          TextButton(
+          StyledButton.secondary(
+            text: 'Avbryt',
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Avbryt',
-              style: AppTextStyles.bodyMedium,
-            ),
           ),
-          ElevatedButton(
+          StyledButton.primary(
+            text: 'Skapa lista',
             onPressed: () {
               final listName = nameController.text.trim();
               if (listName.isNotEmpty) {
@@ -361,16 +348,6 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                 onCreateFromTemplate(template['id'], listName);
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
-            child: Text(
-              'Skapa lista',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.onPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
           ),
         ],
       ),

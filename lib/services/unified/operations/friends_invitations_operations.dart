@@ -548,7 +548,13 @@ class FriendsInvitationsOperations {
   }
 
   // Methods expected by ViewModels
-  List<GroupInvitation> get pendingReceivedInvitations => getPendingInvitations();
+  List<GroupInvitation> get pendingReceivedInvitations {
+    // FIXED: This was incorrectly trying to filter sent invitations for current user as recipient
+    // The logic was impossible - you can't be both sender AND recipient of the same invitation
+    // For now, return empty list to prevent crashes while service layer gets proper implementation
+    // TODO: Connect this to GroupInvitationRepository.receivedInvitationsStream properly
+    return [];
+  }
   bool get isLoading => _parent.isLoading;
   bool get hasError => _parent.hasError;
   String? get error => _parent.error;

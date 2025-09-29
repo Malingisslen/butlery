@@ -85,4 +85,10 @@ abstract class UserRepository extends Repository<UserProfile> {
 
   /// Ensure base user document exists in 'users' collection for friends system
   Future<void> ensureBaseUserDocument(String userId);
+
+  /// Increment public recipe count when a recipe is created or shared publicly
+  Future<void> incrementPublicRecipeCount(String userId);
+
+  /// Decrement public recipe count when a recipe is deleted or made private
+  Future<void> decrementPublicRecipeCount(String userId);
 }

@@ -22,8 +22,6 @@ class RecipeCard extends StatelessWidget {
   final Recipe recipe;
   final void Function(Recipe)? onTap;
   final void Function(Recipe)? onLongPress;
-  final void Function(Recipe)? onFavoriteToggle;
-  final bool showFavoriteButton;
   final bool showContextMenu;
   final bool showImage;
   final bool showTags;
@@ -38,8 +36,6 @@ class RecipeCard extends StatelessWidget {
     required this.recipe,
     this.onTap,
     this.onLongPress,
-    this.onFavoriteToggle,
-    this.showFavoriteButton = true,
     this.showContextMenu = false,
     this.showImage = true,
     this.showTags = true,
@@ -57,9 +53,9 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         margin: margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
         child: Material(
-          elevation: isSelected ? 4 : 1,
+          elevation: isSelected ? AppDimensions.elevationMedium : AppDimensions.elevationLow,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : null,
+          color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
           child: InkWell(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             onTap: onTap != null ? () => onTap!(recipe) : null,
@@ -107,7 +103,6 @@ class RecipeCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(child: _buildTitle(context)),
-                      if (showFavoriteButton) _buildFavoriteButton(),
                       if (showContextMenu) _buildContextMenuButton(context),
                     ],
                   ),
@@ -150,7 +145,6 @@ class RecipeCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(child: _buildTitle(context, style: AppTextStyles.titleMedium)),
-                  if (showFavoriteButton) _buildFavoriteButton(),
                 ],
               ),
               if (showMetadata) ...[
@@ -168,19 +162,9 @@ class RecipeCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Image with overlay actions
+        // Image
         if (showImage) ...[
-          Stack(
-            children: [
-              _buildRecipeImage(height: 150, width: double.infinity),
-              if (showFavoriteButton)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: _buildFavoriteButton(background: true),
-                ),
-            ],
-          ),
+          _buildRecipeImage(height: 150, width: double.infinity),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
         // Title
@@ -202,7 +186,7 @@ class RecipeCard extends StatelessWidget {
       height: height ?? size ?? 80,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        color: AppColors.surface,
+        color: AppColors.backgroundBeige,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -218,7 +202,7 @@ class RecipeCard extends StatelessWidget {
             : Icon(
                 Icons.restaurant,
                 size: (size ?? 80) * 0.4,
-                color: AppColors.textSecondary,
+                color: AppColors.textMedium,
               ),
       ),
     );
@@ -237,7 +221,7 @@ class RecipeCard extends StatelessWidget {
     return Text(
       recipe.description,
       style: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.textSecondary,
+        color: AppColors.textMedium,
       ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
@@ -290,13 +274,13 @@ class RecipeCard extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
         recipe.mealType,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.primary,
+          color: AppColors.primaryBlue,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -310,13 +294,13 @@ class RecipeCard extends StatelessWidget {
         Icon(
           icon,
           size: 16,
-          color: AppColors.textSecondary,
+          color: AppColors.textMedium,
         ),
         const SizedBox(width: AppDimensions.spacingXs),
         Text(
           text,
           style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.textSecondary,
+            color: AppColors.textMedium,
           ),
         ),
       ],
@@ -338,7 +322,7 @@ class RecipeCard extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.backgroundBeige,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
         border: Border.all(
           color: AppColors.divider.withValues(alpha: 0.3),
@@ -347,41 +331,18 @@ class RecipeCard extends StatelessWidget {
       child: Text(
         tag,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.textSecondary,
+          color: AppColors.textMedium,
         ),
       ),
     );
   }
 
-  Widget _buildFavoriteButton({bool background = false}) {
-    return DecoratedBox(
-      decoration: background
-          ? BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.9),
-              shape: BoxShape.circle,
-            )
-          : const BoxDecoration(),
-      child: IconButton(
-        icon: const Icon(
-          Icons.favorite_border,
-          color: AppColors.textSecondary,
-        ),
-        onPressed: onFavoriteToggle != null ? () => onFavoriteToggle!(recipe) : null,
-        tooltip: 'Lägg till i favoriter',
-        // Ensure minimum touch target size for accessibility
-        constraints: const BoxConstraints(
-          minWidth: 48,
-          minHeight: 48,
-        ),
-      ),
-    );
-  }
 
   Widget _buildContextMenuButton(BuildContext context) {
     return PopupMenuButton<String>(
       icon: const Icon(
         Icons.more_vert,
-        color: AppColors.textSecondary,
+        color: AppColors.textMedium,
       ),
       // Ensure minimum touch target size for accessibility
       constraints: const BoxConstraints(

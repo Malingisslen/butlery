@@ -148,8 +148,8 @@ class AvatarImageWidget extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.edit,
-                size: 16,
-                color: Colors.white,
+                size: AppDimensions.iconSizeS,
+                color: AppColors.cardWhite,
               ),
             ),
           ),
@@ -206,7 +206,7 @@ class AvatarImageWidget extends StatelessWidget {
         child: Text(
           initials,
           style: AppTextStyles.headlineMedium.copyWith(
-            color: Colors.white,
+            color: AppColors.cardWhite,
             fontWeight: FontWeight.w600,
             fontSize: _getFontSize(dimensions.width),
           ),
@@ -352,8 +352,8 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                 ),
                 child: const Icon(
                   Icons.close,
-                  size: 16,
-                  color: Colors.white,
+                  size: AppDimensions.iconSizeS,
+                  color: AppColors.cardWhite,
                 ),
               ),
             ),

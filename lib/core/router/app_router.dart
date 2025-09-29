@@ -5,6 +5,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // Auth view
 import 'package:butlery/views/auth_view.dart';
@@ -360,7 +361,7 @@ class AppRouter {
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 message ?? 'Sidan kunde inte hittas',
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.spacingMd),

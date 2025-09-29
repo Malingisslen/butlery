@@ -19,15 +19,15 @@ class ShoppingItemTiles {
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
-        color: AppColors.neutralLight,
+        color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.neutralMedium.withValues(alpha: 0.2),
+          color: AppColors.divider,
           width: AppDimensions.borderWidthStandard,
         ),
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: () => onItemTap(item),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -43,19 +43,19 @@ class ShoppingItemTiles {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isCompleted
-                          ? AppColors.success
-                          : AppColors.neutralMedium.withValues(alpha: 0.6),
+                          ? AppColors.primaryBlue
+                          : AppColors.textMedium.withValues(alpha: 0.6),
                       width: AppDimensions.borderWidthThick,
                     ),
                     color: isCompleted
-                        ? AppColors.success
-                        : Colors.transparent,
+                        ? AppColors.primaryBlue
+                        : AppColors.transparent,
                   ),
                   child: isCompleted
                       ? const Icon(
                           Icons.check,
                           size: AppDimensions.iconSizeS,
-                          color: AppColors.neutralLight,
+                          color: AppColors.cardWhite,
                         )
                       : null,
                 ),
@@ -72,7 +72,7 @@ class ShoppingItemTiles {
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.w500,
                           color: isCompleted
-                              ? AppColors.neutralMedium
+                              ? AppColors.textMedium
                               : AppColors.textDark,
                           decoration: isCompleted
                               ? TextDecoration.lineThrough
@@ -88,7 +88,7 @@ class ShoppingItemTiles {
                           item.note!,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: isCompleted
-                                ? AppColors.neutralMedium.withValues(alpha: 0.8)
+                                ? AppColors.textMedium.withValues(alpha: 0.8)
                                 : AppColors.textMedium,
                             decoration: isCompleted
                                 ? TextDecoration.lineThrough
@@ -123,7 +123,7 @@ class ShoppingItemTiles {
                       icon: const Icon(
                         Icons.edit,
                         size: AppDimensions.iconSizeS,
-                        color: AppColors.neutralMedium,
+                        color: AppColors.textMedium,
                       ),
                       onPressed: () => onEditItem(item),
                       tooltip: 'Redigera',
@@ -136,7 +136,7 @@ class ShoppingItemTiles {
                       icon: Icon(
                         Icons.delete,
                         size: AppDimensions.iconSizeS,
-                        color: AppColors.error.withValues(alpha: 0.7),
+                        color: AppColors.textMedium.withValues(alpha: 0.7),
                       ),
                       onPressed: () => onDeleteItem(item),
                       tooltip: 'Ta bort',
@@ -156,11 +156,11 @@ class ShoppingItemTiles {
   static Color _getPriorityColor(int priority) {
     switch (priority) {
       case 5:
-        return AppColors.error; // Highest priority
+        return AppColors.darkNavy; // Highest priority - strong brand color
       case 4:
-        return AppColors.warning; // High priority
+        return AppColors.primaryBlue; // High priority - main brand color
       default:
-        return AppColors.neutralMedium; // Normal priority
+        return AppColors.textMedium; // Normal priority - subtle brand color
     }
   }
 
@@ -176,13 +176,13 @@ class ShoppingItemTiles {
           Icon(
             icon,
             size: 64,
-            color: AppColors.neutralMedium,
+            color: AppColors.textMedium,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title,
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.neutralMedium,
+              color: AppColors.textMedium,
             ),
             textAlign: TextAlign.center,
           ),
@@ -190,7 +190,7 @@ class ShoppingItemTiles {
           Text(
             message,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.neutralMedium,
+              color: AppColors.textMedium,
             ),
             textAlign: TextAlign.center,
           ),

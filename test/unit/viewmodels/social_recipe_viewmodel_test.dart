@@ -4,6 +4,7 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/social/social_comment.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -89,6 +90,7 @@ void main() {
   group('SocialRecipeViewModel', () {
     late SocialRecipeViewModel viewModel;
     late MockUnifiedFriendsService mockFriendsService;
+    late MockUnifiedRecipeService mockRecipeService;
     const testRecipeId = 'test_recipe_123';
     
     setUpAll(() async {
@@ -102,6 +104,7 @@ void main() {
       
       // Create mocks
       mockFriendsService = MockUnifiedFriendsService();
+      mockRecipeService = MockUnifiedRecipeService();
       
       // Configure default state
       final testFriends = [
@@ -126,10 +129,12 @@ void main() {
       
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedFriendsService>(mockFriendsService);
+      TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       
       // Create viewModel
       viewModel = SocialRecipeViewModel(
         friendsService: mockFriendsService,
+        recipeService: mockRecipeService,
       );
     });
 
@@ -768,6 +773,7 @@ void main() {
         // Arrange
         final testViewModel = SocialRecipeViewModel(
           friendsService: mockFriendsService,
+          recipeService: mockRecipeService,
         );
         
         // Act & Assert
@@ -778,6 +784,7 @@ void main() {
         // Arrange
         final testViewModel = SocialRecipeViewModel(
           friendsService: mockFriendsService,
+          recipeService: mockRecipeService,
         );
         var notificationCount = 0;
         testViewModel.addListener(() => notificationCount++);

@@ -58,7 +58,7 @@ class ComponentThemes {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primaryBlue,
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         side: const BorderSide(
           color: AppColors.primaryBlue,
           width: 1, // 1px border per spec
@@ -82,7 +82,7 @@ class ComponentThemes {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.primaryBlue,
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
               AppDimensions.borderRadius8), // 8px per spec
@@ -101,10 +101,10 @@ class ComponentThemes {
   static IconButtonThemeData get iconButtonTheme {
     return IconButtonThemeData(
       style: IconButton.styleFrom(
-        foregroundColor: Colors.grey[700], // Grey 700 for action icons per spec
-        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.textMedium, // Grey 700 for action icons per spec
+        backgroundColor: AppColors.transparent,
         minimumSize: const Size(48, 48), // Standard touch target per spec
-        iconSize: 24, // Consistent 24px size per spec
+        iconSize: AppDimensions.iconSizeL, // Consistent 24px size per spec
       ),
     );
   }
@@ -117,7 +117,7 @@ class ComponentThemes {
       elevation: 6, // Standard FAB elevation per spec
       highlightElevation: 8, // Elevated when pressed per spec
       shape: CircleBorder(), // Perfect circle per spec
-      iconSize: 24, // Standard 24px icon per spec
+      iconSize: AppDimensions.iconSizeL, // Standard 24px icon per spec
     );
   }
 
@@ -283,7 +283,7 @@ class ComponentThemes {
     return ListTileThemeData(
       tileColor: AppColors.cardWhite,
       selectedTileColor: AppColors.lightColorScheme.primaryContainer,
-      iconColor: Colors.grey[700], // Grey 700 for icons per spec
+      iconColor: AppColors.textMedium, // Grey 700 for icons per spec
       textColor: AppColors.textDark,
       titleTextStyle: AppTextStyles.listTileTitle,
       subtitleTextStyle: AppTextStyles.listTileSubtitle,
@@ -363,14 +363,14 @@ class ComponentThemes {
         if (states.contains(WidgetState.selected)) {
           return AppColors.primaryBlue; // Primary blue when active per spec
         }
-        return Colors.grey[400]; // Grey 400 when inactive per spec
+        return AppColors.textLight; // Grey 400 when inactive per spec
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return AppColors.primaryBlue
               .withValues(alpha: 0.5); // Primary blue with 50% opacity per spec
         }
-        return Colors.grey[300]; // Grey 300 when inactive per spec
+        return AppColors.divider; // Grey 300 when inactive per spec
       }),
     );
   }
@@ -386,8 +386,8 @@ class ComponentThemes {
       }),
       checkColor: WidgetStateProperty.all(
           AppColors.cardWhite), // White checkmark per spec
-      side: BorderSide(
-        color: Colors.grey[400]!, // Grey 400 border per spec
+      side: const BorderSide(
+        color: AppColors.textLight, // Grey 400 border per spec
         width: 1.5, // 1.5px border per spec
       ),
       shape: RoundedRectangleBorder(
@@ -517,7 +517,7 @@ class ComponentThemes {
   static ButtonStyle get outlinedButtonStyle {
     return OutlinedButton.styleFrom(
       foregroundColor: AppColors.primaryBlue,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
         vertical: AppDimensions.paddingM,
@@ -536,7 +536,7 @@ class ComponentThemes {
   static ButtonStyle get deleteButtonStyle {
     return OutlinedButton.styleFrom(
       foregroundColor: AppColors.error,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
         vertical: AppDimensions.paddingM,
@@ -548,6 +548,25 @@ class ComponentThemes {
         color: AppColors.error,
         width: 1,
       ),
+    );
+  }
+
+  /// Extended FAB style for Swedish text with proper sizing
+  static ButtonStyle get extendedFabStyle {
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primaryBlue,
+      foregroundColor: AppColors.cardWhite,
+      elevation: AppDimensions.elevationMedium,
+      shadowColor: Colors.black26,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingXl,
+        vertical: AppDimensions.paddingM,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+      ),
+      minimumSize: const Size(200, 56), // Guaranteed width for Swedish text
+      textStyle: AppTextStyles.buttonText,
     );
   }
 }
