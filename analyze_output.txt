@@ -1,0 +1,129 @@
+Analyzing butlery...                                            
+
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:92:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:93:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:94:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:95:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:96:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:98:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:101:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:104:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:106:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:110:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:113:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:117:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:120:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:122:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:125:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:128:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:130:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:133:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:145:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:147:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:149:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:151:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:153:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:156:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:159:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:162:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:165:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:167:15 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:170:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:172:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:175:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:180:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:184:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:186:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:190:5 - avoid_print
+warning - Dead code - lib\services\unified\operations\friend_categories_operations.dart:190:5 - dead_code
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:314:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:315:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:319:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:323:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:325:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:327:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:330:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:335:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:337:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:341:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:344:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:348:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:354:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:357:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:359:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:366:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:369:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:371:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:373:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:376:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:379:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:381:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:385:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:638:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:643:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\operations\friend_categories_operations.dart:654:5 - avoid_print
+   info - Empty constructor bodies should be written using a ';' rather than '{}' - lib\services\unified\unified_friends_service.dart:105:49 - empty_constructor_bodies
+warning - The member 'notifyListeners' can only be used within instance members of subclasses of 'ChangeNotifier' - lib\services\unified\unified_friends_service.dart:525:51 - invalid_use_of_protected_member
+  error - The member 'notifyListeners' can only be used within 'package:flutter/src/foundation/change_notifier.dart' or a test - lib\services\unified\unified_friends_service.dart:525:51 - invalid_use_of_visible_for_testing_member
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:534:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:536:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:538:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:540:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:554:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:555:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:558:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:559:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:562:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:566:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:569:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:571:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:573:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:576:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\unified\unified_friends_service.dart:581:7 - avoid_print
+warning - The operand can't be 'null', so the condition is always 'false' - lib\viewmodels\group_invitations_viewmodel.dart:169:39 - unnecessary_null_comparison
+   info - Don't invoke 'print' in production code - lib\views\social\friends_list\groups_tab.dart:29:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\friends_list\groups_tab.dart:30:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\friends_list\groups_tab.dart:31:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\friends_list\groups_tab.dart:33:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\friends_list\groups_tab.dart:36:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:213:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:224:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:232:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:233:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:234:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:237:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:243:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:246:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:253:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:255:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:259:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:262:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:265:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\views\social\group_detail\group_detail_actions.dart:277:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:67:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:68:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:71:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:75:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:76:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:77:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:78:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:79:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:86:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:90:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:92:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:94:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:101:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:104:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:108:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:111:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:115:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:120:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:124:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:129:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:132:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\widgets\social\groups\create_group_dialog.dart:137:9 - avoid_print
+   info - Use 'const' with the constructor to improve performance - lib\widgets\social\groups\create_group_dialog.dart:256:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\social\groups\create_group_dialog.dart:284:13 - prefer_const_constructors
+warning - Unused import: 'dart:io' - test_counter_logic.dart:5:8 - unused_import
+
+125 issues found. (ran in 5.2s)

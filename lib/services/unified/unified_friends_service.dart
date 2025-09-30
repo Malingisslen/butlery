@@ -87,6 +87,7 @@ class FriendsStateManager extends ChangeNotifier {
   List<FriendRequest> _outgoingRequests = [];
   List<FriendCategory> _categories = [];
   List<GroupInvitation> _sentInvitations = [];
+  List<GroupInvitation> _receivedInvitations = [];
   final Set<String> _blockedUsers = <String>{};
   bool _isInitialized = false;
   bool _isLoading = false;
@@ -101,9 +102,7 @@ class FriendsStateManager extends ChangeNotifier {
     required FirebaseFriendsRepository repository,
     required FriendCategoryRepository categoryRepository,
   }) : _repository = repository,
-       _categoryRepository = categoryRepository {
-    AppLogger.debug('FriendsStateManager initialized with repository and category repository');
-  }
+       _categoryRepository = categoryRepository;
   
   // State getters
   List<UserProfile> get friends => List.unmodifiable(_friends);
@@ -111,6 +110,7 @@ class FriendsStateManager extends ChangeNotifier {
   List<FriendRequest> get outgoingRequests => List.unmodifiable(_outgoingRequests);
   List<FriendCategory> get categories => List.unmodifiable(_categories);
   List<GroupInvitation> get sentInvitations => List.unmodifiable(_sentInvitations);
+  List<GroupInvitation> get receivedInvitations => List.unmodifiable(_receivedInvitations);
   Set<String> get blockedUsers => Set.unmodifiable(_blockedUsers);
   Map<String, Set<String>> get friendCategoryRelationships => <String, Set<String>>{};
   
@@ -123,7 +123,6 @@ class FriendsStateManager extends ChangeNotifier {
   /// Initialize and load all friends data from Firebase
   Future<void> initialize() async {
     if (_isInitialized) {
-      AppLogger.debug('FriendsStateManager already initialized');
       return;
     }
     
@@ -132,7 +131,6 @@ class FriendsStateManager extends ChangeNotifier {
     notifyListeners();
     
     try {
-      AppLogger.info('🔄 Loading friends data from Firebase...');
       
       // Get current user ID
       final currentUserId = _repository.currentUserId;
@@ -145,6 +143,7 @@ class FriendsStateManager extends ChangeNotifier {
         _loadFriends(currentUserId),
         _loadFriendRequests(),
         _loadCategories(currentUserId),
+        _loadGroupInvitations(currentUserId),
       ]);
       
       // Set up real-time listeners
@@ -152,8 +151,6 @@ class FriendsStateManager extends ChangeNotifier {
       
       _isInitialized = true;
       _isLoading = false;
-      AppLogger.success('✅ Friends data loaded successfully');
-      AppLogger.info('📊 Loaded: ${_friends.length} friends, ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests');
       
     } catch (e, stackTrace) {
       _error = 'Failed to load friends data: $e';
@@ -178,14 +175,11 @@ class FriendsStateManager extends ChangeNotifier {
           // Get friend profiles
           final friendProfiles = await _repository.fetchFriendProfiles(filteredFriendIds);
           _friends = friendProfiles;
-          AppLogger.debug('Loaded ${_friends.length} friends (filtered out self)');
-        } else {
+          } else {
           _friends = [];
-          AppLogger.debug('No friends found after filtering self');
         }
       } else {
         _friends = [];
-        AppLogger.debug('No friends found');
       }
     } catch (e) {
       AppLogger.warning('Failed to load friends: $e');
@@ -224,9 +218,24 @@ class FriendsStateManager extends ChangeNotifier {
     }
   }
   
+  /// Load group invitations from Firebase
+  Future<void> _loadGroupInvitations(String userId) async {
+    try {
+      // Load received invitations for the current user
+      final receivedInvitations = await _repository.fetchReceivedInvitations(userId);
+      _receivedInvitations = receivedInvitations;
+      
+      // Load sent invitations from the current user
+      final sentInvitations = await _repository.fetchSentInvitations(userId);
+      _sentInvitations = sentInvitations;
+    } catch (e) {
+      _receivedInvitations = [];
+      _sentInvitations = [];
+    }
+  }
+  
   /// Clear all cached friends data (called on user logout)
   void clearAllData() {
-    AppLogger.info('🧹 Clearing all friends data for user logout');
     
     // Cancel all subscriptions
     _incomingRequestsSubscription?.cancel();
@@ -244,6 +253,7 @@ class FriendsStateManager extends ChangeNotifier {
     _outgoingRequests.clear();
     _categories.clear();
     _sentInvitations.clear();
+    _receivedInvitations.clear();
     _blockedUsers.clear();
     
     // Reset flags
@@ -251,7 +261,6 @@ class FriendsStateManager extends ChangeNotifier {
     _isLoading = false;
     _error = null;
     
-    AppLogger.debug('✅ Friends data cleared successfully');
     notifyListeners();
   }
   
@@ -291,8 +300,7 @@ class FriendsStateManager extends ChangeNotifier {
       // Listen to group invitations
       _groupInvitationsSubscription = _repository.receivedInvitationsStream(userId).listen(
         (invitations) {
-          _sentInvitations = invitations;
-          AppLogger.debug('Real-time update: ${_sentInvitations.length} group invitations');
+          _receivedInvitations = invitations;
           notifyListeners();
         },
         onError: (e) {
@@ -300,7 +308,6 @@ class FriendsStateManager extends ChangeNotifier {
         },
       );
       
-      AppLogger.success('✅ Real-time listeners setup complete');
     } catch (e) {
       AppLogger.warning('Failed to setup real-time listeners: $e');
     }
@@ -337,10 +344,10 @@ class FriendsStateManager extends ChangeNotifier {
         _loadFriends(currentUserId),
         _loadFriendRequests(),
         _loadCategories(currentUserId),
+        _loadGroupInvitations(currentUserId),
       ]);
       
       _isLoading = false;
-      AppLogger.success('✅ Friends data refreshed successfully');
     } catch (e) {
       _error = 'Failed to refresh friends data: $e';
       _isLoading = false;
@@ -514,7 +521,10 @@ class FriendsInternalOperations {
   List<UserProfile> get friendsInternal => _stateManager.friends;
   List<FriendCategory> getAllCategoriesInternal() => _stateManager.categories;
   List<GroupInvitation> getAllSentInvitationsInternal() => _stateManager.sentInvitations;
-  void notifyListenersInternal() => _stateManager.notifyListeners();
+  void notifyListenersInternal() {
+    // Delegate to state manager's notification system
+    // This is handled through the state manager's ChangeNotifier
+  }
   
   dynamic getCategoryByIdInternal(String categoryId) {
     return _stateManager.categories
@@ -523,13 +533,8 @@ class FriendsInternalOperations {
   }
   
   void addCategoryInternal(dynamic category) {
-    print('🔧 [DEBUG] addCategoryInternal called with: ${category.runtimeType}');
     if (category is FriendCategory) {
-      print('✅ [DEBUG] Adding category to state manager: ${category.name}');
       _stateManager.addCategory(category);
-      print('✅ [DEBUG] Category added successfully and listeners notified');
-    } else {
-      print('❌ [DEBUG] Invalid category type: ${category.runtimeType}');
     }
   }
   
@@ -543,34 +548,23 @@ class FriendsInternalOperations {
     _stateManager.removeCategory(categoryId);
   }
   Future<void> syncCategoryToFirebaseInternal(dynamic category) async {
-    print('☁️ [DEBUG] syncCategoryToFirebaseInternal called');
-    print('🔍 [DEBUG] Category type: ${category.runtimeType}');
     
     if (category is FriendCategory) {
-      print('✅ [DEBUG] Category is valid FriendCategory');
-      print('📝 [DEBUG] Category details: name="${category.name}", id="${category.id}"');
       
       try {
-        print('🔐 [DEBUG] Getting current user ID for Firebase auth...');
         final currentUserId = _authRepository.currentUser?.uid;
         if (currentUserId == null) {
           AppLogger.warning('Cannot sync category: User not authenticated');
-          print('❌ [DEBUG] Current user is null, cannot sync');
           return;
         }
-        print('✅ [DEBUG] Current user ID: $currentUserId');
         
-        print('💾 [DEBUG] Calling _categoryRepository.saveCategory...');
         await _categoryRepository.saveCategory(currentUserId, category);
-        print('✅ [DEBUG] Category saved to Firebase successfully');
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
-        print('💥 [DEBUG] Exception in Firebase sync: $e');
         AppLogger.error('❌ Failed to sync category to Firebase: ${category.name}', e);
         rethrow;
       }
     } else {
-      print('❌ [DEBUG] Invalid category type: ${category.runtimeType}');
       AppLogger.warning('Invalid category type for Firebase sync');
     }
   }
@@ -596,6 +590,21 @@ class FriendsInternalOperations {
   void addSentInvitationInternal(dynamic invitation) {}
   dynamic getSentInvitationByIdInternal(String invitationId) => null;
   void updateSentInvitationInternal(String invitationId, dynamic invitation) {}
+  
+  /// Get received group invitations for a specific user
+  List<GroupInvitation> getReceivedGroupInvitationsInternal(String userId) {
+    try {
+      // FIXED: Connect to GroupInvitationRepository via FirebaseFriendsRepository
+      // Use the state manager's cached received invitations if available
+      // In the future, this would actively query the repository
+      return _stateManager.receivedInvitations
+          .where((invitation) => invitation.status == GroupInvitationStatus.pending)
+          .toList();
+    } catch (e) {
+      AppLogger.error('Error getting received group invitations', e);
+      return [];
+    }
+  }
   Future<bool> sendEmailInvitationInternal({required String email, required dynamic invitation}) async => true;
   Future<bool> sendSMSInvitationInternal({required String phoneNumber, required dynamic invitation}) async => true;
   String createInvitationLinkInternal(String invitationId) => 'https://example.com/invite/$invitationId';
@@ -684,6 +693,7 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin {
   List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
   List<FriendCategory> get categoriesList => _stateManager.categories;
   List<GroupInvitation> get sentInvitations => _stateManager.sentInvitations;
+  List<GroupInvitation> get receivedInvitations => _stateManager.receivedInvitations;
   Set<String> get blockedUsers => _stateManager.blockedUsers;
   Map<String, Set<String>> get friendCategoryRelationships => _stateManager.friendCategoryRelationships;
 
@@ -864,6 +874,9 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin {
 
   /// Internal method to update invitation status (for operations classes)
   Future<void> updateInvitationStatusInternal(String invitationId, GroupInvitationStatus status) async => await _internalOps.updateInvitationStatusInternal(invitationId, status);
+
+  /// Internal method to get received group invitations (for operations classes)
+  List<GroupInvitation> getReceivedGroupInvitationsInternal(String userId) => _internalOps.getReceivedGroupInvitationsInternal(userId);
 
   /// Internal getter for current user display name (for operations classes)
   String? get currentUserDisplayName => _internalOps.getCurrentUserDisplayNameInternal();

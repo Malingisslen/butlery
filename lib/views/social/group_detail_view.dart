@@ -71,6 +71,7 @@ import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Import focused components
 import 'package:butlery/views/social/group_detail/group_detail_header.dart';
@@ -139,23 +140,16 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
   void _setupEventListening() {
     // Manual stream subscription since this is a StatefulWidget
     _eventSubscription = GroupEventBus.stream.listen((eventType) {
-      print('🎧 [DEBUG] GroupDetailView (${widget.groupId}) received event: $eventType');
-      print('🎧 [DEBUG] mounted: $mounted, _isNavigating: $_isNavigating');
-      
       if (!mounted || _isNavigating) {
-        print('🎧 [DEBUG] Ignoring event - not mounted or navigating');
         return;
       }
 
       switch (eventType) {
         case GroupEventType.created:
-          print('🎧 [DEBUG] Group created event - no action needed');
           break;
         case GroupEventType.updated:
         case GroupEventType.memberAdded:
         case GroupEventType.memberRemoved:
-          print('🎧 [DEBUG] Group/member changed event - checking if user is still member...');
-          
           // Check if current user is still a member of this group
           final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
           final currentGroup = categoriesService.getCategoryById(widget.groupId);
@@ -163,10 +157,8 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
           
           if (currentGroup != null && currentUserId != null) {
             final isStillMember = currentGroup.friendUserIds.contains(currentUserId);
-            print('🎧 [DEBUG] User still member of group: $isStillMember');
             
             if (!isStillMember) {
-              print('🎧 [DEBUG] User no longer member - should navigate away');
               // User was removed from this group, navigate away
               if (mounted) {
                 Navigator.of(context).pop();
@@ -175,21 +167,17 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
             }
           }
           
-          print('🎧 [DEBUG] Reloading group data...');
           _loadGroupData();
           break;
         case GroupEventType.deleted:
-          print('🎧 [DEBUG] Group deleted event - checking if group still exists...');
           final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
           final currentGroup =
               categoriesService.getCategoryById(widget.groupId);
           if (currentGroup == null) {
-            print('🎧 [DEBUG] Group was deleted - navigating away');
             if (mounted) {
               Navigator.of(context).pop();
             }
           } else {
-            print('🎧 [DEBUG] Group still exists - reloading data...');
             _loadGroupData();
           }
           break;
@@ -197,16 +185,11 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     });
   }
 
-  /// Ladda både gruppdata OCH pending inbjudningar med force refresh
   Future<void> _loadGroupData() async {
-    print('🔄 [DEBUG] _loadGroupData() called');
-    
     if (!mounted) {
-      print('🔄 [DEBUG] Not mounted - returning early');
       return;
     }
 
-    print('🔄 [DEBUG] Setting loading state...');
     if (mounted) {
       setState(() {
         _isLoading = true;
@@ -221,39 +204,22 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       // Force refresh: Säkerställ att vi har senaste datan
       await groupInvitationService.refresh();
 
-      // Hämta gruppdata
-      print('🔄 [DEBUG] Getting group by ID: ${widget.groupId}');
       _group = categoriesService.getCategoryById(widget.groupId);
 
       if (_group != null) {
-        print('🔄 [DEBUG] Found group: ${_group!.name}');
-        print('🔄 [DEBUG] Group members: ${_group!.friendUserIds}');
-        
-        // ✅ DEBUG: Logga gruppinformation
-        _debugGroupInfo();
-
-        // Hämta medlemmar från vänlistan
-        print('🔄 [DEBUG] Getting member profiles from friends list...');
+        // Get member profiles from friends list
         _members = friendsViewModel.friends
             .where((friend) => _group!.friendUserIds.contains(friend.uid))
             .toList();
-        print('🔄 [DEBUG] Found ${_members.length} member profiles');
 
-        // Hämta pending inbjudningar för denna grupp
-        // Note: Group invitation fetching is not implemented in current version
+        // Get pending invitations for this group
         _pendingInvitations = [];
-
-        print('🔄 [DEBUG] Data loading completed - ${_members.length} members, ${_pendingInvitations.length} pending invitations');
-      } else {
-        print('🔄 [DEBUG] Group not found - group may have been deleted or user removed');
       }
     } catch (e) {
-      print('💥 [DEBUG] Error loading group data: $e');
       _group = null;
       _members = [];
       _pendingInvitations = [];
     } finally {
-      print('🔄 [DEBUG] Setting loading to false and updating UI...');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -262,25 +228,6 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     }
   }
 
-  /// ✅ NYTT: Debug gruppinformation och behörigheter
-  void _debugGroupInfo() {
-    if (_group == null) return;
-
-    final permissionService = ServiceLocator.get<PermissionService>();
-    final currentUserId = permissionService.currentUserId;
-    debugPrint('🔍 DEBUG: Group info för ${_group!.name}:');
-    debugPrint('   - ownerId: ${_group!.ownerId}');
-    debugPrint('   - createdBy: ${_group!.createdBy}');
-    debugPrint('   - friendUserIds: ${_group!.friendUserIds}');
-    debugPrint('   - friendCount: ${_group!.friendCount}');
-    debugPrint('   - current userId: $currentUserId');
-
-    // Kontrollera behörigheter med PermissionService
-    debugPrint('   - Är jag ägare? ${permissionService.isOwner(_group!.ownerId)}');
-    debugPrint('   - Är jag skapare? ${permissionService.isOwner(_group!.createdBy)}');
-    debugPrint('   - Är jag admin? ${permissionService.isGroupAdmin(_group!.id)}');
-    debugPrint('   - Är jag medlem? ${_group!.friendUserIds.contains(currentUserId)}');
-  }
 
   Future<void> _refreshData() async {
     final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
@@ -468,18 +415,56 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
     );
   }
 
-  /// ✅ NYTT: Lägg till metod för att lämna grupp
+  /// ✅ IMPROVED: Leave group with ownership succession handling
   Future<void> _leaveGroup(FriendCategory group) async {
     final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) return;
 
+    final permissionService = ServiceLocator.get<PermissionService>();
+    final isOwner = permissionService.isGroupAdmin(group.id);
+    
+    // CRITICAL: Handle ownership succession for group owners
+    if (isOwner) {
+      // Get other members (excluding the owner)
+      final otherMembers = _members.where((member) => member.uid != currentUserId).toList();
+      
+      if (otherMembers.isEmpty) {
+        // No other members - offer to delete group
+        final shouldDeleteEmptyGroup = await _showEmptyGroupDeleteDialog(group);
+        if (shouldDeleteEmptyGroup == true) {
+          await _showDeleteGroupDialog(group);
+        }
+        return;
+      } else {
+        // Has other members - require ownership transfer
+        final newOwner = await _showOwnershipTransferDialog(group, otherMembers);
+        if (newOwner == null) {
+          // User cancelled ownership transfer - don't leave group
+          return;
+        }
+        
+        // Transfer ownership before leaving
+        final transferSuccess = await _transferGroupOwnership(group, newOwner);
+        if (!transferSuccess && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Kunde inte överföra ägande. Försök igen.'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          return;
+        }
+      }
+    }
+
+    // Standard leave confirmation for non-owners or after ownership transfer
+    if (!mounted) return;
     final shouldLeave = await CommonDialogActions.showLeaveGroupConfirmation(
       context: context,
       groupName: group.name,
     );
 
     if (shouldLeave == true && mounted) {
-      print('🚪 [DEBUG] User confirmed leaving group - starting removal process...');
       final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
       final success = await categoriesService.categories.removeFriendFromCategory(
         currentUserId!,
@@ -487,22 +472,111 @@ class _GroupDetailViewState extends State<GroupDetailView> with ErrorHandlingMix
       );
 
       if (success && mounted) {
-        print('🚪 [DEBUG] Leave successful - showing snackbar...');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Du har lämnat gruppen 👋'),
+          SnackBar(
+            content: Text(isOwner ? 'Ägande överfört och du har lämnat gruppen 👑➡️' : 'Du har lämnat gruppen 👋'),
             backgroundColor: AppColors.success,
           ),
         );
-        print('🚪 [DEBUG] Navigation will be handled automatically by event listener');
         // Navigation will be handled automatically by the event listener
         // when it detects the user is no longer a member
-      } else {
-        print('🚪 [DEBUG] Leave not successful - success: $success, mounted: $mounted');
       }
     }
   }
 
+  /// Show dialog for empty group deletion when owner wants to leave
+  Future<bool?> _showEmptyGroupDeleteDialog(FriendCategory group) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gruppen är tom'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Du är den enda medlemmen i "${group.name}".'),
+            const SizedBox(height: AppDimensions.spacingM),
+            const Text('Vill du ta bort gruppen när du lämnar den?'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Avbryt'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ta bort gruppen'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show dialog for choosing new group owner
+  Future<UserProfile?> _showOwnershipTransferDialog(FriendCategory group, List<UserProfile> otherMembers) async {
+    return await showDialog<UserProfile>(
+      context: context,
+      barrierDismissible: false, // Force user to make a choice
+      builder: (context) => AlertDialog(
+        title: const Text('Överför gruppägande'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Du är ägare av "${group.name}". Du måste välja en ny ägare innan du kan lämna gruppen.'),
+            const SizedBox(height: AppDimensions.spacingL),
+            const Text('Välj ny ägare:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: AppDimensions.spacingM),
+            ...otherMembers.map((member) => ListTile(
+              leading: CircleAvatar(
+                backgroundImage: member.avatarUrl != null ? NetworkImage(member.avatarUrl!) : null,
+                child: member.avatarUrl == null ? Text(member.displayName[0].toUpperCase()) : null,
+              ),
+              title: Text(member.displayName),
+              subtitle: Text(member.email),
+              onTap: () => Navigator.pop(context, member),
+            )),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Avbryt'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Transfer group ownership to a new owner
+  Future<bool> _transferGroupOwnership(FriendCategory group, UserProfile newOwner) async {
+    try {
+      final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+      
+      AppLogger.info('Transferring ownership of "${group.name}" from ${group.ownerId} to ${newOwner.uid}');
+      
+      // Create updated group with new owner
+      final updatedGroup = group.copyWith(
+        ownerId: newOwner.uid,
+        updatedAt: DateTime.now(),
+      );
+      
+      // Update local cache and sync to Firebase
+      categoriesService.updateCategoryInternal(group.id, updatedGroup);
+      await categoriesService.syncCategoryToFirebaseInternal(updatedGroup);
+      
+      // Refresh local group data
+      await _loadGroupData();
+      
+      AppLogger.success('Successfully transferred ownership of "${group.name}" to ${newOwner.displayName}');
+      
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to transfer group ownership', e);
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

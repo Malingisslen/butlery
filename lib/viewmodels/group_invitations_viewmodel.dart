@@ -165,13 +165,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
     try {
       AppLogger.info('🔄 Laddar mottagna gruppinbjudningar...');
       
-      // Check if friends service is properly initialized
-      if (_friendsService.invitations == null) {
-        AppLogger.warning('⚠️ FriendsService invitations not initialized');
-        _receivedInvitations = [];
-        notifyListeners();
-        return;
-      }
+      // Friends service invitations is always available
 
       // Get received invitations properly via repository
       _receivedInvitations = _friendsService.invitations.pendingReceivedInvitations;
