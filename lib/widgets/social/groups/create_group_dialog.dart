@@ -64,77 +64,55 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   }
 
   Future<void> _createGroup() async {
-    print('🚀 [DEBUG] _createGroup() called');
-    print('🔍 [DEBUG] Form validation result: ${_formKey.currentState!.validate()}');
     
     if (!_formKey.currentState!.validate()) {
-      print('❌ [DEBUG] Form validation failed, returning early');
       return;
     }
     
-    print('✅ [DEBUG] Form validation passed, proceeding with group creation');
-    print('📝 [DEBUG] Group name: "${_nameController.text.trim()}"');
-    print('📝 [DEBUG] Group description: "${_descriptionController.text.trim()}"');
-    print('👥 [DEBUG] Selected friends count: ${_selectedFriendIds.length}');
-    print('🎭 [DEBUG] Selected emoji: $_selectedEmoji');
     
     if (mounted) {
       setState(() {
         _isCreating = true;
         _error = null;
       });
-      print('🔄 [DEBUG] Set loading state to true');
     }
 
     try {
-      print('🔧 [DEBUG] Getting UnifiedFriendsService...');
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      print('✅ [DEBUG] Got UnifiedFriendsService successfully');
       
-      print('📞 [DEBUG] Calling friendsService.categories.createCategory...');
       final categoryId = await friendsService.categories.createCategory(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         icon: _selectedEmoji,
         initialMemberIds: _selectedFriendIds.toList(),
       );
-      print('🎯 [DEBUG] createCategory returned: $categoryId');
 
       if (categoryId != null) {
-        print('✅ [DEBUG] Category created successfully with ID: $categoryId');
         
         // Get the created category to return it
         final createdCategory = friendsService.categories.getCategoryById(categoryId);
-        print('🎯 [DEBUG] Retrieved created category: ${createdCategory?.name}');
         
         if (mounted) {
-          print('🚪 [DEBUG] Closing dialog with success, returning category');
           Navigator.of(context).pop(createdCategory);
         }
       } else {
-        print('❌ [DEBUG] Category creation failed - categoryId is null');
         if (mounted) {
           setState(() {
             _error = 'Kunde inte skapa grupp. Försök igen.';
           });
-          print('🔴 [DEBUG] Set error state: $_error');
         }
       }
     } catch (e) {
-      print('💥 [DEBUG] Exception during group creation: $e');
       if (mounted) {
         setState(() {
           _error = 'Ett fel uppstod: ${e.toString()}';
         });
-        print('🔴 [DEBUG] Set exception error state: $_error');
       }
     } finally {
-      print('🏁 [DEBUG] Finally block - setting loading to false');
       if (mounted) {
         setState(() {
           _isCreating = false;
         });
-        print('🔄 [DEBUG] Set loading state to false');
       }
     }
   }
@@ -253,7 +231,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         if (availableFriends.isEmpty) {
           return Column(
             children: [
-              Text(
+              const Text(
                 'Välj medlemmar',
                 style: AppTextStyles.titleMedium,
               ),
@@ -281,7 +259,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Välj medlemmar',
               style: AppTextStyles.titleMedium,
             ),

@@ -113,6 +113,7 @@ class FriendCategory {
 
   /// Create copy with updated values
   FriendCategory copyWith({
+    String? ownerId,
     String? name,
     String? description,
     String? emoji,
@@ -123,7 +124,7 @@ class FriendCategory {
   }) {
     return FriendCategory(
       id: id,
-      ownerId: ownerId,
+      ownerId: ownerId ?? this.ownerId,
       name: name ?? this.name,
       description: description ?? this.description,
       emoji: emoji ?? this.emoji,

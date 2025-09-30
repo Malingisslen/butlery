@@ -210,7 +210,6 @@ class GroupDetailActions {
     BuildContext context,
     FriendCategory group,
   ) async {
-    print('🚪 [DEBUG] leaveGroup called for group: ${group.name}');
     
     final shouldLeave = await CommonDialogActions.showActionConfirmation(
       context: context,
@@ -221,7 +220,6 @@ class GroupDetailActions {
       isDangerous: true,
     );
 
-    print('🤔 [DEBUG] User confirmed leave: $shouldLeave');
 
     if (shouldLeave == true) {
       try {
@@ -229,40 +227,29 @@ class GroupDetailActions {
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUserId;
 
-        print('👤 [DEBUG] Current user ID: $currentUserId');
-        print('🏷️ [DEBUG] Group ID: ${group.id}');
-        print('👥 [DEBUG] Group members before leaving: ${group.friendUserIds}');
 
         if (currentUserId != null) {
-          print('📞 [DEBUG] Calling removeFriendFromCategory...');
           final success = await categoriesService.categories.removeFriendFromCategory(
             currentUserId,
             group.id,
           );
 
-          print('✅ [DEBUG] removeFriendFromCategory result: $success');
 
           if (success && context.mounted) {
-            print('🎉 [DEBUG] Success! Showing snackbar and emitting event...');
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Du har lämnat gruppen'),
                 backgroundColor: AppColors.success,
               ),
             );
-            print('📡 [DEBUG] Emitting GroupEventBus.memberRemoved event...');
             GroupEventBus.memberRemoved();
-            print('🚪 [DEBUG] Navigating back...');
             Navigator.pop(context);
             return true;
           } else {
-            print('❌ [DEBUG] Success was false or context not mounted. success: $success, mounted: ${context.mounted}');
           }
         } else {
-          print('❌ [DEBUG] Current user ID is null');
         }
       } catch (e) {
-        print('💥 [DEBUG] Exception in leaveGroup: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -274,7 +261,6 @@ class GroupDetailActions {
       }
     }
 
-    print('🔙 [DEBUG] leaveGroup returning false');
     return false;
   }
 }

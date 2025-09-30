@@ -299,6 +299,18 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     return await _groupInvitationRepo.updateInvitation(invitationId, data);
   }
 
+  /// Fetch received invitations for a user (one-time fetch)
+  Future<List<GroupInvitation>> fetchReceivedInvitations(String userId) async {
+    final stream = _groupInvitationRepo.receivedInvitationsStream(userId);
+    return await stream.first;
+  }
+
+  /// Fetch sent invitations for a user (one-time fetch)
+  Future<List<GroupInvitation>> fetchSentInvitations(String userId) async {
+    final stream = _groupInvitationRepo.sentInvitationsStream(userId);
+    return await stream.first;
+  }
+
   @override
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
       DateTime now) async {

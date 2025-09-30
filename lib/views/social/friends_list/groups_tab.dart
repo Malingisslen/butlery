@@ -22,19 +22,8 @@ class GroupsTab {
       animation: friendsService,
       builder: (context, child) {
         // Only show groups where the current user is a member
-        final allGroups = friendsService.categories.categoriesList;
         final groups = friendsService.categories.getMemberCategories();
         final pendingInvitations = friendsService.invitations.pendingReceivedInvitations;
-        
-        print('🏠 [DEBUG] Groups tab render:');
-        print('  📊 All groups: ${allGroups.length}');
-        print('  👤 Member groups: ${groups.length}');
-        for (final group in allGroups) {
-          print('  📋 Group "${group.name}" (${group.id}): members=${group.friendUserIds}');
-        }
-        for (final group in groups) {
-          print('  ✅ User is member of "${group.name}" (${group.id})');
-        }
 
         if (friendsService.isLoading && groups.isEmpty && pendingInvitations.isEmpty) {
           return StateWidget.loading(message: 'Laddar grupper...');

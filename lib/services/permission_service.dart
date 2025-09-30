@@ -1,6 +1,8 @@
 /// Comprehensive permission management service providing centralized authorization and access control across the application.
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// This singleton service provides sophisticated permission management and access control functionality for
 /// collaborative features including recipes, shopping lists, groups, and user interactions. It implements
@@ -58,7 +60,6 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Permission management service providing centralized authorization and access control for collaborative features.
@@ -540,14 +541,11 @@ class PermissionService {
   bool canEditShoppingList(String listId) {
     // Security: Must be authenticated to edit shopping lists
     if (currentUserId == null) {
-      AppLogger.warning(
-          'PERMISSION DEBUG: User not authenticated for list editing');
       return false;
     }
 
     // Security: Validate list ID
     if (listId.isEmpty) {
-      AppLogger.warning('PERMISSION DEBUG: Empty list ID provided');
       return false;
     }
 
@@ -558,72 +556,40 @@ class PermissionService {
         orElse: () => throw StateError('List not found'),
       );
 
-      AppLogger.info(
-          'PERMISSION DEBUG: Checking edit permission for list "${list.name}" (${list.type})');
-      AppLogger.info(
-          'PERMISSION DEBUG: Current user: $currentUserId, List owner: ${list.ownerId}');
-
       // Check ownership first - owners can always edit
       if (list.ownerId == currentUserId) {
-        AppLogger.success('PERMISSION DEBUG: User is owner - EDIT ALLOWED');
         return true;
       }
 
       // For collaborative lists, check member permissions
       if (list.type == ListType.collaborative) {
         final userPermission = list.memberPermissions[currentUserId];
-        AppLogger.info(
-            'PERMISSION DEBUG: User permission in collaborative list: $userPermission');
-        AppLogger.info(
-            'PERMISSION DEBUG: All member permissions: ${list.memberPermissions}');
 
         // Only admin and edit permissions allow editing
         final canEdit = userPermission == SharedListPermission.admin ||
             userPermission == SharedListPermission.edit;
 
-        if (canEdit) {
-          AppLogger.success(
-              '✅ PERMISSION PHASE 12: Collaborative edit permission GRANTED');
-        } else {
-          AppLogger.warning(
-              '⚠️ PERMISSION PHASE 12: Collaborative edit permission DENIED - user has $userPermission');
-        }
-
         return canEdit;
       }
 
       // For personal lists, only owner can edit
-      AppLogger.info(
-          '🔍 PERMISSION PHASE 12: Personal list - only owner can edit - DENIED');
       return false;
     } catch (e) {
       // If list not found or error occurs, deny access (secure default)
-      AppLogger.error(
-          '❌ PERMISSION PHASE 12: Error checking edit permission: $e');
-      AppLogger.info(
-          '🔍 PERMISSION PHASE 12: Available lists: ${_shoppingService.lists.map((l) => '${l.name}(${l.id})').join(', ')}');
       return false;
     }
   }
 
-  /// ULTRATHINK PHASE 12: Add retry logic for permission checking with service refresh
+  /// Add retry logic for permission checking with service refresh
   Future<bool> canEditShoppingListWithRetry(String listId,
       {int maxRetries = 3}) async {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
-      AppLogger.info(
-          '🔄 PERMISSION PHASE 12: Permission check attempt $attempt for list $listId');
-
       final result = canEditShoppingList(listId);
       if (result) {
-        AppLogger.success(
-            '✅ PERMISSION PHASE 12: Permission granted on attempt $attempt');
         return true;
       }
 
       if (attempt < maxRetries) {
-        AppLogger.info(
-            '🔄 PERMISSION PHASE 12: Permission denied, refreshing service data...');
-
         // Refresh shopping service data
         await _shoppingService.loadLists();
 
@@ -632,8 +598,6 @@ class PermissionService {
       }
     }
 
-    AppLogger.warning(
-        '⚠️ PERMISSION PHASE 12: Permission denied after $maxRetries attempts');
     return false;
   }
 
@@ -754,12 +718,24 @@ class PermissionService {
     // Security: Validate group ID
     if (groupId.isEmpty) return false;
 
-    // Check if user is a group admin
-    // In a full implementation, this would query the group from Firebase
-    // and check if group.adminIds.contains(currentUserId)
-    // For now, check if the group ID suggests ownership
-    // Groups created by a user might include their ID in the group ID
-    return groupId.contains(currentUserId!);
+    try {
+      // FIXED: Properly check group ownership by querying the group
+      // Get the group data from UnifiedFriendsService
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final group = friendsService.getCategoryById(groupId);
+      
+      if (group == null) {
+        return false;
+      }
+      
+      // Check if current user is the group owner
+      final isOwner = group.ownerId == currentUserId;
+      
+      return isOwner;
+    } catch (e) {
+      AppLogger.error('Error checking group admin status', e);
+      return false;
+    }
   }
 
   /// Validates user permission to permanently delete a specific group.
