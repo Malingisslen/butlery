@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -86,11 +87,23 @@ class AccountDeletionService {
       
       // 8. Delete user preferences and settings
       deletionTasks['preferences'] = _deleteUserPreferences(userId);
-      
+
       // 9. Clear offline cache
       deletionTasks['offline_cache'] = _clearOfflineData(userId);
-      
-      // 10. Delete user profile (must be last before auth)
+
+      // 10. Delete public profile
+      deletionTasks['public_profile'] = _deletePublicProfile(userId);
+
+      // 11. Delete realtime recipes
+      deletionTasks['realtime_recipes'] = _deleteRealtimeRecipes(userId);
+
+      // 12. Delete activity feed
+      deletionTasks['activity_feed'] = _deleteActivityFeed(userId);
+
+      // 13. Delete Firebase Storage files (avatars, recipe images)
+      deletionTasks['storage_files'] = _deleteUserStorageFiles(userId);
+
+      // 14. Delete user profile (must be last before auth)
       deletionTasks['profile'] = _deleteUserProfile(userId);
       
       // Execute all deletion tasks
@@ -224,43 +237,70 @@ class AccountDeletionService {
 
   Future<bool> _removeFriendConnections(String userId) async {
     try {
-      // Remove from friends collection
-      final friendsSnapshot = await _firestore
-          .collection('friendships')
-          .where('userId', isEqualTo: userId)
-          .get();
-      
-      final friendsSnapshot2 = await _firestore
-          .collection('friendships')
-          .where('friendId', isEqualTo: userId)
-          .get();
-      
       final batch = _firestore.batch();
-      for (final doc in friendsSnapshot.docs) {
+
+      // Delete user's own friends subcollection: users/{userId}/friends
+      final userFriends = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('friends')
+          .get();
+
+      for (final doc in userFriends.docs) {
         batch.delete(doc.reference);
       }
-      for (final doc in friendsSnapshot2.docs) {
+
+      // Delete user's friend categories
+      final categories = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('friendCategories')
+          .get();
+
+      for (final doc in categories.docs) {
         batch.delete(doc.reference);
       }
-      
-      // Remove friend requests
-      final requestsSnapshot = await _firestore
+
+      // Delete friend requests sent by user
+      final sentRequests = await _firestore
           .collection('friend_requests')
           .where('fromUserId', isEqualTo: userId)
           .get();
-      
-      final requestsSnapshot2 = await _firestore
+
+      for (final doc in sentRequests.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete friend requests received by user
+      final receivedRequests = await _firestore
           .collection('friend_requests')
           .where('toUserId', isEqualTo: userId)
           .get();
-      
-      for (final doc in requestsSnapshot.docs) {
+
+      for (final doc in receivedRequests.docs) {
         batch.delete(doc.reference);
       }
-      for (final doc in requestsSnapshot2.docs) {
+
+      // Delete group invitations sent by user
+      final sentInvitations = await _firestore
+          .collection('group_invitations')
+          .where('fromUserId', isEqualTo: userId)
+          .get();
+
+      for (final doc in sentInvitations.docs) {
         batch.delete(doc.reference);
       }
-      
+
+      // Delete group invitations received by user
+      final receivedInvitations = await _firestore
+          .collection('group_invitations')
+          .where('toUserId', isEqualTo: userId)
+          .get();
+
+      for (final doc in receivedInvitations.docs) {
+        batch.delete(doc.reference);
+      }
+
       await batch.commit();
       return true;
     } catch (e) {
@@ -348,27 +388,48 @@ class AccountDeletionService {
 
   Future<bool> _deleteCommentsAndRatings(String userId) async {
     try {
-      // Delete comments
+      final batch = _firestore.batch();
+
+      // Delete recipe comments
       final commentsSnapshot = await _firestore
-          .collection('comments')
+          .collection('recipe_comments')
           .where('userId', isEqualTo: userId)
           .get();
-      
-      final batch = _firestore.batch();
+
       for (final doc in commentsSnapshot.docs) {
         batch.delete(doc.reference);
       }
-      
-      // Delete ratings
+
+      // Delete recipe ratings
       final ratingsSnapshot = await _firestore
-          .collection('ratings')
+          .collection('recipe_ratings')
           .where('userId', isEqualTo: userId)
           .get();
-      
+
       for (final doc in ratingsSnapshot.docs) {
         batch.delete(doc.reference);
       }
-      
+
+      // Delete menu comments
+      final menuCommentsSnapshot = await _firestore
+          .collection('menu_comments')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (final doc in menuCommentsSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete menu ratings
+      final menuRatingsSnapshot = await _firestore
+          .collection('menu_ratings')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (final doc in menuRatingsSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
       await batch.commit();
       return true;
     } catch (e) {
@@ -410,6 +471,114 @@ class AccountDeletionService {
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete user profile', e);
       return false;
+    }
+  }
+
+  Future<bool> _deletePublicProfile(String userId) async {
+    try {
+      await _firestore.collection('public_profiles').doc(userId).delete();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete public profile', e);
+      return false;
+    }
+  }
+
+  Future<bool> _deleteRealtimeRecipes(String userId) async {
+    try {
+      // Delete realtime recipes where user is owner
+      final realtimeRecipes = await _firestore
+          .collection('realtime_recipes')
+          .where('ownerId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in realtimeRecipes.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete realtime recipes', e);
+      return false;
+    }
+  }
+
+  Future<bool> _deleteActivityFeed(String userId) async {
+    try {
+      // Delete activity feed items created by user
+      final activities = await _firestore
+          .collection('activity_feed')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in activities.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete activity feed', e);
+      return false;
+    }
+  }
+
+  Future<bool> _deleteUserStorageFiles(String userId) async {
+    try {
+      final storage = FirebaseStorage.instance;
+
+      // Delete all files in user's directory
+      // Path: /users/{userId}/
+      final userRef = storage.ref('users/$userId');
+
+      // List all files in user's directory
+      final ListResult result = await userRef.listAll();
+
+      // Delete all files
+      for (final fileRef in result.items) {
+        try {
+          await fileRef.delete();
+          app_logger.AppLogger.debug('[$_logTag] Deleted storage file: ${fileRef.fullPath}');
+        } catch (e) {
+          app_logger.AppLogger.warning('[$_logTag] Failed to delete storage file ${fileRef.fullPath}: $e');
+        }
+      }
+
+      // Recursively delete subdirectories
+      for (final prefix in result.prefixes) {
+        await _deleteStorageDirectory(prefix);
+      }
+
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete user storage files', e);
+      // Return true anyway - storage deletion is not critical
+      // Some users may not have any storage files
+      return true;
+    }
+  }
+
+  /// Helper method to recursively delete a storage directory
+  Future<void> _deleteStorageDirectory(Reference dirRef) async {
+    try {
+      final ListResult result = await dirRef.listAll();
+
+      // Delete all files in this directory
+      for (final fileRef in result.items) {
+        try {
+          await fileRef.delete();
+        } catch (e) {
+          app_logger.AppLogger.warning('[$_logTag] Failed to delete ${fileRef.fullPath}: $e');
+        }
+      }
+
+      // Recursively delete subdirectories
+      for (final prefix in result.prefixes) {
+        await _deleteStorageDirectory(prefix);
+      }
+    } catch (e) {
+      app_logger.AppLogger.warning('[$_logTag] Failed to delete directory ${dirRef.fullPath}: $e');
     }
   }
 

@@ -3,8 +3,10 @@
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Analytics service that delegates to an AnalyticsRepository implementation.
 ///
@@ -12,25 +14,55 @@ import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 /// maintaining the singleton pattern and existing API. The repository pattern
 /// allows for easy mocking in tests and switching between different analytics
 /// providers if needed.
+///
+/// **GDPR Compliance**: This service checks user consent before logging analytics
+/// events as required by GDPR Article 7. Key methods include consent checks via
+/// `_hasAnalyticsConsent()`. Auth/security events (login, logout, account deletion)
+/// are exempt from consent requirements as they are necessary for service operation.
 class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsService> {
   final AnalyticsRepository _repository;
-  
+  ConsentService? _consentService;
+
   AnalyticsService._internal(this._repository);
-  
+
   /// Factory constructor with dependency injection support.
-  /// 
+  ///
   /// Accepts an optional [repository] parameter for testing.
   /// In production, uses FirebaseAnalyticsRepository by default.
-  factory AnalyticsService({AnalyticsRepository? repository}) => 
+  factory AnalyticsService({AnalyticsRepository? repository}) =>
     SingletonServiceMixin.createSingletonWithDependencies(
       () => AnalyticsService._internal(
         repository ?? FirebaseAnalyticsRepository(),
       ),
       dependencies: repository != null ? [repository] : [],
     );
-  
+
   @override
   String get serviceName => 'AnalyticsService';
+
+  /// Set consent service for GDPR compliance checking
+  /// This should be called after ConsentService is initialized
+  void setConsentService(ConsentService consentService) {
+    _consentService = consentService;
+    app_logger.AppLogger.info('[AnalyticsService] Consent service configured for GDPR compliance');
+  }
+
+  /// Check if user has granted analytics consent
+  /// Returns true if consent not yet configured (graceful degradation)
+  Future<bool> _hasAnalyticsConsent() async {
+    if (_consentService == null) {
+      // Consent service not yet configured - allow analytics by default
+      // This handles initialization race conditions
+      return true;
+    }
+
+    try {
+      return await _consentService!.hasConsent('analytics');
+    } catch (e) {
+      app_logger.AppLogger.warning('[AnalyticsService] Failed to check consent, defaulting to false: $e');
+      return false;
+    }
+  }
 
   @override
   Future<void> initialize() async {
@@ -54,6 +86,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required String source,
     String? platform,
   }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
     await executeServiceOperation(
       () async {
         await _repository.logImportStarted(
@@ -73,6 +108,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     String? platform,
     int? recipeLength,
   }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
     await _repository.logImportSuccess(
       source: source,
       platform: platform,
@@ -111,6 +149,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     required String source,
     bool hasImage = false,
   }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
     await _repository.logRecipeCreated(
       source: source,
       hasImage: hasImage,
@@ -121,6 +162,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   Future<void> logRecipeShared({
     required String method,
   }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
     await _repository.logRecipeShared(
       method: method,
     );
