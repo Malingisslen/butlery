@@ -91,10 +91,13 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// PHASE 2: Validation result for sharing operations
 class ShareValidationResult {
@@ -269,9 +272,10 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     }
   }
 
-  /// Share a menu with selected friends and groups
+  /// Share a menu with selected friends and groups using UnifiedMenuService invitation system
   Future<bool> shareMenu({
     required Map<String, List<Recipe>> menu,
+    String? menuName,
     required List<String> friendUserIds,
     List<String>? groupIds,
     String? menuId,
@@ -287,28 +291,56 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     _clearError();
 
     try {
-      // Generate menu ID if not provided
-      final actualMenuId = menuId ?? _generateMenuId(menu);
-      
-      // Share to friends if any selected
-      if (friendUserIds.isNotEmpty) {
-        await _socialRecipeService.shareMenuToFriends(
-          actualMenuId,
-          friendUserIds,
-        );
-      }
+      // Get menu service for invitation system
+      final menuService = ServiceLocator.get<UnifiedMenuService>();
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
-      // Share to groups if any selected
+      // Use provided menu name or generate from menu content
+      final menuTitle = menuName ?? _generateMenuTitle(menu);
+
+      // Collect all recipient user IDs (friends + resolved group members)
+      final allRecipientIds = <String>{...friendUserIds};
+
+      // Resolve group members to user IDs
       if (groupIds != null && groupIds.isNotEmpty) {
-        await _socialRecipeService.shareMenuToGroups(
-          actualMenuId,
-          groupIds,
-        );
+        for (final groupId in groupIds) {
+          final group = friendsService.getCategoryByIdInternal(groupId);
+          if (group != null) {
+            allRecipientIds.addAll(group.friendUserIds);
+            AppLogger.info('📋 Resolved group "${group.name}" to ${group.friendUserIds.length} members');
+          } else {
+            AppLogger.warning('⚠️ Group $groupId not found');
+          }
+        }
       }
 
-      final totalTargets = friendUserIds.length + (groupIds?.length ?? 0);
-      AppLogger.success('Menu shared successfully with $totalTargets targets (${friendUserIds.length} friends, ${groupIds?.length ?? 0} groups)');
-      return true;
+      if (allRecipientIds.isEmpty) {
+        _setError('Inga mottagare hittades');
+        return false;
+      }
+
+      AppLogger.info('📨 Creating menu invitation for ${allRecipientIds.length} recipients');
+      AppLogger.info('   Friends: ${friendUserIds.length}, Groups: ${groupIds?.length ?? 0}');
+      AppLogger.info('   Total unique recipients: ${allRecipientIds.length}');
+
+      // Use UnifiedMenuService to create invitation (writes to shared_menus collection)
+      final success = await menuService.shareMenuWithFriends(
+        menuTitle: menuTitle,
+        menuSnapshot: menu,
+        friendIds: allRecipientIds.toList(),
+        message: message,
+        allowCollaboration: allowCollaboration,
+      );
+
+      if (success) {
+        final totalTargets = friendUserIds.length + (groupIds?.length ?? 0);
+        AppLogger.success('✅ Menu invitation created successfully');
+        AppLogger.info('📥 Recipients will see menu in group shared content');
+        AppLogger.success('Menu shared with $totalTargets targets (${friendUserIds.length} friends, ${groupIds?.length ?? 0} groups)');
+        return true;
+      } else {
+        throw Exception('Failed to create menu invitation');
+      }
     } catch (e) {
       _setError('Kunde inte dela meny: $e');
       AppLogger.error('Failed to share menu: $e');
@@ -460,18 +492,19 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     notifyListeners();
   }
 
-  /// Generate a unique menu ID based on menu content
-  String _generateMenuId(Map<String, List<Recipe>> menu) {
-    // Create a deterministic ID based on menu content
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
+  /// Generate a descriptive menu title based on menu content
+  String _generateMenuTitle(Map<String, List<Recipe>> menu) {
     final recipeCount = menu.values.fold<int>(0, (sum, recipes) => sum + recipes.length);
     final dayCount = menu.keys.length;
-    
-    // Generate ID: timestamp_dayCount_recipeCount
-    final menuId = 'menu_${timestamp}_${dayCount}d_${recipeCount}r';
-    
-    AppLogger.info('Generated menu ID: $menuId for menu with $dayCount days and $recipeCount recipes');
-    return menuId;
+
+    // Create a descriptive title like "Veckans meny (5 dagar, 12 recept)"
+    if (dayCount == 7) {
+      return 'Veckans meny ($recipeCount recept)';
+    } else if (dayCount == 1) {
+      return 'Dagens meny ($recipeCount recept)';
+    } else {
+      return 'Meny ($dayCount dagar, $recipeCount recept)';
+    }
   }
 
   /// PHASE 2: Validate sharing targets to filter existing collaborators but allow new friends

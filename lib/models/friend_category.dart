@@ -128,7 +128,7 @@ class FriendCategory {
       name: name ?? this.name,
       description: description ?? this.description,
       emoji: emoji ?? this.emoji,
-      friendUserIds: friendUserIds ?? List.from(this.friendUserIds),
+      friendUserIds: friendUserIds ?? List<String>.from(this.friendUserIds),
       createdAt: createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       sortOrder: sortOrder ?? this.sortOrder,

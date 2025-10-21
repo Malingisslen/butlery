@@ -118,7 +118,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             context,
             label: 'Välj alla',
             onPressed: () {
-              debugPrint('🔍 DEBUG: "Välj alla" knapp tryckt');
               viewModel.selectAllVisible();
             },
           ),
@@ -127,7 +126,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             context,
             label: 'Rensa',
             onPressed: () {
-              debugPrint('🔍 DEBUG: "Rensa" knapp tryckt');
               viewModel.clearAllSelections();
             },
           ),
@@ -155,7 +153,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         icon: Icons.people_outline,
         actionLabel: 'Uppdatera',
         onAction: () {
-          debugPrint('🔍 DEBUG: Empty state refresh tryckt');
           viewModel.refresh();
         },
       );
@@ -183,7 +180,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: TextField(
         onChanged: (value) {
-          debugPrint('🔍 DEBUG: Search query ändrad: "$value"');
           viewModel.updateSearch(value);
         },
         decoration: InputDecoration(
@@ -193,7 +189,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
               ? IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
-                    debugPrint('🔍 DEBUG: Search clear tryckt');
                     viewModel.clearSearch();
                   },
                 )
@@ -250,8 +245,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
     return SelectionCard(
       onTap: () {
-        debugPrint(
-            '🔍 DEBUG: Friend tile tapped - ${friend.displayName} (${friend.uid})');
         viewModel.toggleFriendSelection(friend.uid);
       },
       child: ListTile(
@@ -316,8 +309,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     return Checkbox(
       value: isSelected,
       onChanged: (value) {
-        debugPrint(
-            '🔍 DEBUG: Checkbox changed för ${friend.displayName} - new value: $value');
         viewModel.toggleFriendSelection(friend.uid);
       },
       activeColor: AppColors.primaryBlue,
@@ -369,25 +360,15 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
               onPressed: viewModel.isSendingInvitations
                   ? null
                   : () async {
-                      debugPrint(
-                          '🔍 DEBUG: ===== SKICKA INBJUDNINGAR KNAPP TRYCKT =====');
-                      debugPrint(
-                          '🔍 DEBUG: Selected friends: ${viewModel.selectedFriendIds.toList()}');
-                      debugPrint(
-                          '🔍 DEBUG: ViewModel kan skicka: ${viewModel.canSendInvitations}');
-                      debugPrint(
-                          '🔍 DEBUG: ViewModel isSending: ${viewModel.isSendingInvitations}');
-
+                      // ✅ FIXED: Capture count BEFORE sending (sendInvitations clears selection)
+                      final invitationCount = viewModel.selectedCount;
                       final success = await viewModel.sendInvitations();
-
-                      debugPrint(
-                          '🔍 DEBUG: sendInvitations() result: $success');
 
                       if (mounted && success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '${viewModel.selectedCount} inbjudningar skickade! 📨',
+                              '$invitationCount inbjudningar skickade! 📨',
                             ),
                             backgroundColor: AppColors.success,
                             behavior: SnackBarBehavior.floating,
@@ -411,7 +392,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     return StateWidget.error(
       message: viewModel.error ?? 'Okänt fel',
       onAction: () {
-        debugPrint('🔍 DEBUG: Error state retry tryckt');
         viewModel.clearError();
         viewModel.refresh();
       },

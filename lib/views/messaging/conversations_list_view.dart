@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -149,22 +150,21 @@ class _ConversationsListViewState extends State<ConversationsListView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meddelanden'),
-        actions: [
-          IconButton(
-            onPressed: _showNewConversationDialog,
-            icon: const Icon(Icons.add),
-            tooltip: 'Ny konversation',
-          ),
-        ],
-      ),
+    return LayoutComponents.mainMenu(
+      currentIndex: 4, // Messaging tab
+      title: 'Meddelanden',
+      actions: [
+        IconButton(
+          onPressed: _showNewConversationDialog,
+          icon: const Icon(Icons.add),
+          tooltip: 'Ny konversation',
+        ),
+      ],
       body: Column(
         children: [
           // Search bar
           _buildSearchBar(),
-          
+
           // Conversations list
           Expanded(
             child: _buildConversationsList(),

@@ -1,22 +1,18 @@
 # Claude Code Project Configuration
 
-## Flutter Commands (WSL Environment)
-**CRITICAL: ALWAYS use Windows Flutter via cmd.exe**
-cmd.exe /c "flutter COMMAND"
+## Flutter Commands (Windows Environment)
+**Environment**: Running Flutter directly on Windows via VS Code
 
 **Examples:**
-- Analysis: `cmd.exe /c "flutter analyze"`
-- Run: `cmd.exe /c "flutter run"`
-- **Clean Run**: `./flutter_run_clean.sh` or `flutter_run_clean.bat` (filters system noise)
-- **Tests**: `cmd.exe /c "flutter test test/unit/file_test.dart"` (ALWAYS use forward slashes!)
+- Analysis: `flutter analyze`
+- Run: `flutter run`
+- **Clean Run**: `flutter_run_clean.bat` (filters system noise, to be created if needed)
+- **Tests**: `flutter test test/unit/file_test.dart` (use forward slashes for consistency)
 
-**PATH RULES - CRITICAL TO PREVENT CRASHES:**
-- **NEVER** use backslashes in test paths: `test\unit\file_test.dart` ❌
-- **ALWAYS** use forward slashes: `test/unit/file_test.dart` ✅
+**PATH RULES:**
+- **ALWAYS** use forward slashes in test paths: `test/unit/file_test.dart` ✅
+- Backslashes work but forward slashes are preferred for consistency: `test\unit\file_test.dart` (works but avoid)
 - **PREFERRED**: Use `./run_tests_safely.sh` script for batch testing
-- Flutter in WSL cannot handle Windows-style paths with backslashes
-
-**Why:** WSL line ending issues, project in Windows filesystem `/mnt/c/Butlery/butlery`
 
 ## Architecture & Standards
 - **Pattern**: MVVM + Repository Pattern (Views → ViewModels → Services → Repositories → Firebase)
@@ -75,7 +71,7 @@ await ApplicationBootstrap.initialize();
 - **Predictive Intelligence**: Bug hotspots and maintenance burden forecasting
 - **Actionable Remediation**: Specific fix suggestions with effort estimates
 - **Flutter Intelligence**: State management, widget optimization, lifecycle analysis
-- **Run Command**: `cmd.exe /c "dart tools/code_intelligence_platform.dart"`
+- **Run Command**: `dart tools/code_intelligence_platform.dart`
 
 ## Test System Guidelines
 - **Complete Guide**: See `/docs/testing/TEST_GUIDE.md`
@@ -103,7 +99,7 @@ await ApplicationBootstrap.initialize();
    - When modifying viewmodels: Update viewmodel tests in `test/unit/viewmodels/`
    - When modifying models: Update model tests in `test/unit/models/`
    - When modifying repositories: Update repository tests in `test/unit/repositories/`
-   - Run `cmd.exe /c "flutter test"` before completing any production code changes
+   - Run `flutter test` before completing any production code changes
 6. **DEBUGGING METHODOLOGY**: Use systematic approach for production issues:
    - Step 1: Add comprehensive logging to trace data flow (repositories → services → viewmodels)
    - Step 2: Test with multiple users to verify data persistence vs caching issues
@@ -114,7 +110,11 @@ await ApplicationBootstrap.initialize();
 **When finished:**
 1. Add review section to `todo.md` with summary of changes
 2. Update relevant documentation in `/docs` and `CLAUDE.md`
-3. Run `cmd.exe /c "flutter analyze"` to check for issues
+3. **Run targeted analysis**: `flutter analyze lib/path/to/changed_file.dart` on files you modified
+   - **NEVER run full `flutter analyze`** when working in parallel sessions
+   - Only analyze files you changed or files directly affected by your changes
+   - Prevents conflicts with issues being fixed by other Claude Code instances
+   - If unclear about scope, ask user before running analysis
 4. Verify implementations match documentation claims
 
 ## Critical Rules

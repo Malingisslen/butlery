@@ -99,11 +99,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   @override
   Future<List<RecipeComment>> getCommentsForRecipe(String recipeId) async {
     // ✅ PERFORMANCE FIX: Added limit to prevent loading hundreds of comments
+    // ✅ REPLY FIX: Removed parentCommentId filter to load both top-level and replies
     final querySnapshot = await collection
         .where('recipeId', isEqualTo: recipeId)
-        .where('parentCommentId', isNull: true) // Top-level comments only
         .orderBy('createdAt', descending: false)
-        .limit(50) // Load max 50 top-level comments
+        .limit(50) // Load max 50 comments (including replies)
         .get();
 
     return querySnapshot.docs
@@ -323,11 +323,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   @override
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
     // ✅ PERFORMANCE FIX: Added limit to prevent streaming large comment datasets
+    // ✅ REPLY FIX: Removed parentCommentId filter to stream both top-level and replies
     return collection
         .where('recipeId', isEqualTo: recipeId)
-        .where('parentCommentId', isNull: true)
         .orderBy('createdAt', descending: false)
-        .limit(50) // Stream max 50 top-level comments
+        .limit(50) // Stream max 50 comments (including replies)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => fromFirestore(doc))

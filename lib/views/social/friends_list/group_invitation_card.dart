@@ -6,6 +6,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// GroupInvitationCard - Group invitation card component
 ///
@@ -132,7 +133,21 @@ class GroupInvitationCard {
     String invitationId,
     UnifiedFriendsService service,
   ) async {
-    final success = await service.invitations.acceptGroupInvitation(invitationId);
+    AppLogger.info('🔘 [UI] Accept button pressed for invitation: $invitationId');
+    AppLogger.debug('🔍 [UI] Service type: ${service.runtimeType}');
+    AppLogger.debug('🔍 [UI] Invitations type: ${service.invitations.runtimeType}');
+
+    bool success = false;
+    // Try calling the method and catch any synchronous exceptions
+    try {
+      success = await service.invitations.acceptGroupInvitation(invitationId);
+      AppLogger.info('📊 [UI] Accept result: success=$success, hasError=${service.invitations.hasError}, error=${service.invitations.error}');
+    } catch (e, stack) {
+      AppLogger.error('❌ [UI] Exception during accept: $e');
+      AppLogger.error('📍 [UI] Stack trace: $stack');
+    }
+
+    AppLogger.debug('📊 [UI] After accept call');
 
     if (success && context.mounted) {
       SnackBarUtils.showSuccess(
@@ -143,6 +158,11 @@ class GroupInvitationCard {
       SnackBarUtils.showError(
         context,
         'Fel: ${service.invitations.error}',
+      );
+    } else if (!success && context.mounted) {
+      SnackBarUtils.showError(
+        context,
+        'Kunde inte acceptera inbjudan. Försök igen.',
       );
     }
   }

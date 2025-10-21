@@ -139,6 +139,21 @@ class Conversation {
   /// conversation settings, feature flags, and conversation-specific configurations.
   final Map<String, dynamic>? metadata;
 
+  /// Indicates if conversation is pinned to top of list
+  final bool isPinned;
+
+  /// Indicates if conversation is archived (hidden from main list)
+  final bool isArchived;
+
+  /// Indicates if notifications are muted for this conversation
+  final bool isMuted;
+
+  /// Timestamp when conversation was pinned (null if not pinned)
+  final DateTime? pinnedAt;
+
+  /// Timestamp when conversation was archived (null if not archived)
+  final DateTime? archivedAt;
+
   /// Creates a new conversation with comprehensive participant and metadata configuration.
   ///
   /// This constructor provides complete conversation initialization with support for both
@@ -168,6 +183,11 @@ class Conversation {
     this.title,
     required this.isGroup,
     this.metadata,
+    this.isPinned = false,
+    this.isArchived = false,
+    this.isMuted = false,
+    this.pinnedAt,
+    this.archivedAt,
   });
 
   /// Factory constructors for simplified conversation creation with specific configurations.
@@ -279,6 +299,11 @@ class Conversation {
     Map<String, String>? participantDisplayNames,
     Map<String, String?>? participantAvatarUrls,
     Map<String, dynamic>? metadata,
+    bool? isPinned,
+    bool? isArchived,
+    bool? isMuted,
+    DateTime? pinnedAt,
+    DateTime? archivedAt,
   }) {
     return Conversation(
       id: id,
@@ -292,6 +317,11 @@ class Conversation {
       title: title ?? this.title,
       isGroup: isGroup,
       metadata: metadata ?? this.metadata,
+      isPinned: isPinned ?? this.isPinned,
+      isArchived: isArchived ?? this.isArchived,
+      isMuted: isMuted ?? this.isMuted,
+      pinnedAt: pinnedAt ?? this.pinnedAt,
+      archivedAt: archivedAt ?? this.archivedAt,
     );
   }
 

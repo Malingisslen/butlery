@@ -1,15 +1,22 @@
 /// Nuclear Facade for ChatView - Architectural Explosion Component
-/// 
+///
 /// This facade coordinates the complete chat experience through focused components,
 /// reducing the massive 1,648-line ChatView into a clean, maintainable architecture.
 /// Each component handles a specific responsibility with clear interfaces.
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_message_stream.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
+import 'package:butlery/widgets/messaging/typing_indicator.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/presence_service.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Clean ChatView facade coordinating specialized components
 class ChatViewFacade extends StatefulWidget {
@@ -27,47 +34,84 @@ class ChatViewFacade extends StatefulWidget {
 }
 
 class _ChatViewFacadeState extends State<ChatViewFacade> {
+  late final ChatViewModel _viewModel;
   late final ChatActionHandler _actionHandler;
 
   @override
   void initState() {
     super.initState();
+
+    // Try to get PresenceService (optional dependency)
+    PresenceService? presenceService;
+    try {
+      presenceService = ServiceLocator.get<PresenceService>();
+    } catch (e) {
+      // PresenceService not registered yet - typing indicators will be disabled
+    }
+
+    // Initialize ChatViewModel
+    _viewModel = ChatViewModel(
+      messagingService: ServiceLocator.get<MessagingService>(),
+      authRepository: ServiceLocator.get<AuthRepository>(),
+      conversationId: widget.conversationId,
+      initialConversation: widget.conversation,
+      presenceService: presenceService,
+    );
+
+    // Initialize action handler
     _actionHandler = ChatActionHandler(
       conversationId: widget.conversationId,
       context: context,
+      onReplyToMessage: _viewModel.setReplyToMessage,
     );
   }
 
   @override
   void dispose() {
     _actionHandler.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ChatAppBar(
-        conversation: widget.conversation,
-        onMenuAction: _actionHandler.handleMenuAction,
-      ),
-      body: Column(
-        children: [
-          // Message stream takes most of the space
-          Expanded(
-            child: ChatMessageStream(
-              conversationId: widget.conversationId,
-              onMessageAction: _actionHandler.handleMessageAction,
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
+      child: Consumer<ChatViewModel>(
+        builder: (context, viewModel, child) {
+          return Scaffold(
+            appBar: ChatAppBar(
+              conversation: viewModel.conversation ?? widget.conversation,
+              onMenuAction: _actionHandler.handleMenuAction,
             ),
-          ),
-          
-          // Input section at bottom
-          ChatInputSection(
-            conversationId: widget.conversationId,
-            onSendMessage: _actionHandler.handleSendMessage,
-            onAttachment: _actionHandler.handleAttachment,
-          ),
-        ],
+            body: Column(
+              children: [
+                // Message stream takes most of the space
+                Expanded(
+                  child: ChatMessageStream(
+                    conversationId: widget.conversationId,
+                    onMessageAction: _actionHandler.handleMessageAction,
+                  ),
+                ),
+
+                // Typing indicator (shows when someone is typing)
+                if (viewModel.hasTypingUsers)
+                  TypingIndicator(
+                    typingUserNames: viewModel.typingUserNames,
+                  ),
+
+                // Input section at bottom with reply banner integration
+                ChatInputSection(
+                  conversationId: widget.conversationId,
+                  onSendMessage: _actionHandler.handleSendMessage,
+                  onAttachment: _actionHandler.handleAttachment,
+                  replyToMessage: viewModel.replyToMessage,
+                  onCancelReply: viewModel.clearReplyToMessage,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/views/messaging/create_group_conversation_view.dart';
 
 /// Styled dialog for creating new conversations
 class NewConversationDialog extends StatefulWidget {
@@ -87,18 +88,62 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     }
   }
 
+  void _navigateToGroupCreation() {
+    // Close current dialog
+    Navigator.of(context).pop();
+
+    // Navigate to group creation view
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CreateGroupConversationView(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Ny konversation'),
       content: SizedBox(
         width: double.maxFinite,
-        height: 400,
+        height: 450,
         child: Column(
           children: [
+            // Quick action button for group creation
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+              child: OutlinedButton.icon(
+                onPressed: _navigateToGroupCreation,
+                icon: const Icon(Icons.group_add),
+                label: const Text('Skapa gruppkonversation'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.paddingM,
+                  ),
+                ),
+              ),
+            ),
+
+            const Divider(),
+            const SizedBox(height: AppDimensions.paddingS),
+
+            // Or select friend for direct chat
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Eller välj en vän för direktmeddelande:',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textMedium,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.paddingM),
+
             _buildSearchField(),
             const SizedBox(height: AppDimensions.paddingM),
-            
+
             Expanded(
               child: _buildFriendsList(),
             ),
@@ -112,7 +157,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         ),
         StyledButton.primary(
           text: 'Skapa',
-          onPressed: _selectedFriendIds.isEmpty || _isCreating 
+          onPressed: _selectedFriendIds.isEmpty || _isCreating
               ? null
               : _createConversation,
         ),

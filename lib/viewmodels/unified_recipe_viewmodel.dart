@@ -41,6 +41,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     _socialViewModel = SocialRecipeViewModel(
       friendsService: ServiceLocator.get(),
       recipeService: ServiceLocator.get(),
+      userService: ServiceLocator.get(),
     );
     _realtimeViewModel = RealtimeRecipeViewModel();
     _queryViewModel = RecipeQueryViewModel();

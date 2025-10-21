@@ -1,7 +1,6 @@
 // lib/views/recipe_detail/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -11,8 +10,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/user_service.dart';
 
 /// Recipe detail comments widget
 ///
@@ -41,9 +38,45 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   bool _isCommentsExpanded = false;
   String? _replyingToCommentId;
   String? _replyingToUserName;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize comments when widget mounts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeComments();
+    });
+  }
+
+  /// Initialize SocialRecipeViewModel and load comments
+  Future<void> _initializeComments() async {
+    if (!mounted || _isInitialized) return;
+
+    _isInitialized = true;
+    final socialViewModel =
+        Provider.of<SocialRecipeViewModel>(context, listen: false);
+
+    // Initialize viewmodel with current user and friends
+    await socialViewModel.initialize();
+
+    // Load comments for this recipe
+    await socialViewModel.refreshComments(widget.recipe.id);
+  }
+
+  SocialRecipeViewModel? _socialViewModel;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Save reference to ViewModel for safe disposal
+    _socialViewModel ??= Provider.of<SocialRecipeViewModel>(context, listen: false);
+  }
 
   @override
   void dispose() {
+    // Stop watching comments before disposing (use saved reference)
+    _socialViewModel?.stopWatchingComments();
     _commentController.dispose();
     super.dispose();
   }
@@ -62,6 +95,15 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   setState(() {
                     _isCommentsExpanded = !_isCommentsExpanded;
                   });
+
+                  // Start or stop real-time comment streaming based on expansion
+                  if (_isCommentsExpanded) {
+                    // Start watching for real-time updates
+                    socialViewModel.startWatchingComments(widget.recipe.id);
+                  } else {
+                    // Stop watching to save resources
+                    socialViewModel.stopWatchingComments();
+                  }
                 }
               },
               child: Container(
@@ -153,52 +195,22 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: socialViewModel.comments.length,
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.paddingS,
+              ),
+              itemCount: socialViewModel.topLevelComments.length,
               separatorBuilder: (context, index) => const Divider(
                 height: AppDimensions.borderWidthThin,
                 color: AppColors.divider,
               ),
               itemBuilder: (context, index) {
-                final comment = socialViewModel.comments[index];
-                return _buildCommentItem(
+                final comment = socialViewModel.topLevelComments[index];
+                return _buildCommentWithReplies(
                   comment,
                   socialViewModel,
-                  isReply: false,
                 );
               },
             ),
-
-          // Debug info (if enabled)
-          if (kDebugMode) ...[
-            const Divider(color: AppColors.divider),
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Debug Info',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    'Recipe ID: ${widget.recipe.id}',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  Text(
-                    'Comments: ${socialViewModel.comments.length}',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  Text(
-                    'Loading: ${socialViewModel.isLoadingComments}',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -231,7 +243,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
       child: Column(
         children: [
           // Reply indicator
@@ -282,11 +294,6 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           // Comment input
           Row(
             children: [
-              SocialComponents.avatar(
-                user: null,
-                size: ImageSize.small,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: TextField(
                   controller: _commentController,
@@ -332,13 +339,107 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
+  /// Get author display name from authorId
+  String _getAuthorDisplayName(
+    String authorId,
+    SocialRecipeViewModel socialViewModel,
+  ) {
+    // Check if current user
+    if (socialViewModel.currentUser?.uid == authorId) {
+      return socialViewModel.currentUser?.displayName ?? 'Du';
+    }
+
+    // Look up in friends list
+    try {
+      final friend = socialViewModel.friends.firstWhere(
+        (f) => f.uid == authorId,
+      );
+      return friend.displayName;
+    } catch (e) {
+      return 'Användare';
+    }
+  }
+
+  /// Get author avatar URL from authorId
+  String? _getAuthorAvatarUrl(
+    String authorId,
+    SocialRecipeViewModel socialViewModel,
+  ) {
+    // Check if current user
+    if (socialViewModel.currentUser?.uid == authorId) {
+      return socialViewModel.currentUser?.avatarUrl;
+    }
+
+    // Look up in friends list
+    try {
+      final friend = socialViewModel.friends.firstWhere(
+        (f) => f.uid == authorId,
+      );
+      return friend.avatarUrl;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Widget _buildCommentWithReplies(
+    dynamic comment,
+    SocialRecipeViewModel socialViewModel, {
+    int depth = 0,
+    int maxDepth = 3,
+  }) {
+    final replies = socialViewModel.getReplies(comment.id);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Current comment
+        _buildCommentItem(
+          comment,
+          socialViewModel,
+          depth: depth,
+        ),
+        // Replies (recursive, indented, with visual threading)
+        if (replies.isNotEmpty && depth < maxDepth)
+          Padding(
+            padding: const EdgeInsets.only(left: AppDimensions.paddingXl),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: AppColors.textMedium.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: Column(
+                children: replies.map((reply) => _buildCommentWithReplies(
+                  reply,
+                  socialViewModel,
+                  depth: depth + 1,
+                  maxDepth: maxDepth,
+                )).toList(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildCommentItem(
     dynamic comment,
     SocialRecipeViewModel socialViewModel, {
-    bool isReply = false,
+    int depth = 0,
   }) {
+    final isReply = depth > 0;
+
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: isReply
+          ? BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+            )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -346,7 +447,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           Row(
             children: [
               SocialComponents.avatar(
-                user: comment.author,
+                displayName: _getAuthorDisplayName(
+                  comment.authorId,
+                  socialViewModel,
+                ),
+                imageUrl: _getAuthorAvatarUrl(
+                  comment.authorId,
+                  socialViewModel,
+                ),
                 size: ImageSize.small,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -355,36 +463,40 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      comment.author?.displayName ?? 'Anonym',
+                      _getAuthorDisplayName(
+                        comment.authorId,
+                        socialViewModel,
+                      ),
                       style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      _formatCommentTime(comment.timestamp),
+                      _formatCommentTime(comment.createdAt),
                       style: AppTextStyles.bodySmall,
                     ),
                   ],
                 ),
               ),
-              if (!isReply) ...[
-                // Reply button
-                IconButton(
-                  onPressed: () {
-                    if (mounted) {
-                      setState(() {
-                        _replyingToCommentId = comment.id;
-                        _replyingToUserName = comment.author?.displayName ?? 'Anonym';
-                      });
-                    }
-                  },
-                  icon: const Icon(
-                    Icons.reply,
-                    color: AppColors.textMedium,
-                    size: AppDimensions.iconSizeM,
-                  ),
+              // Reply button (now enabled for all comments)
+              IconButton(
+                onPressed: () {
+                  if (mounted) {
+                    setState(() {
+                      _replyingToCommentId = comment.id;
+                      _replyingToUserName = _getAuthorDisplayName(
+                        comment.authorId,
+                        socialViewModel,
+                      );
+                    });
+                  }
+                },
+                icon: const Icon(
+                  Icons.reply,
+                  color: AppColors.textMedium,
+                  size: AppDimensions.iconSizeM,
                 ),
-              ],
+              ),
               // Like button
               IconButton(
                 onPressed: () => _toggleLike(comment, socialViewModel),
@@ -396,44 +508,27 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               ),
             ],
           ),
-          
-          const SizedBox(height: AppDimensions.spacingM),
-          
+
+          const SizedBox(height: AppDimensions.spacingS),
+
           // Comment content
           Text(
-            comment.content,
+            comment.text,
             style: AppTextStyles.bodyLarge,
           ),
-          
-          // Like count
+
+          // Like count (tappable to show who liked)
           if (comment.likeCount > 0) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            Text(
-              '${comment.likeCount} ${comment.likeCount == 1 ? 'gilla-markering' : 'gilla-markeringar'}',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
-              ),
-            ),
-          ],
-          
-          // Replies
-          if (comment.replies != null && comment.replies.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            Container(
-              margin: const EdgeInsets.only(left: AppDimensions.spacingL),
-              child: Column(
-                children: comment.replies.map<Widget>((reply) {
-                  return Column(
-                    children: [
-                      _buildCommentItem(reply, socialViewModel, isReply: true),
-                      if (reply != comment.replies.last)
-                        const Divider(
-                          height: AppDimensions.borderWidthThin,
-                          color: AppColors.divider,
-                        ),
-                    ],
-                  );
-                }).toList(),
+            const SizedBox(height: AppDimensions.spacingS),
+            GestureDetector(
+              onTap: () => _showLikesDialog(comment, socialViewModel),
+              child: Text(
+                '${comment.likeCount} ${comment.likeCount == 1 ? 'gilla-markering' : 'gilla-markeringar'}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w500,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ],
@@ -449,9 +544,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       return;
     }
 
-    final userService = ServiceLocator.get<UserService>();
     final currentUser = FirebaseAuthRepository().currentUser;
-
     if (currentUser == null) {
       _showSnackBarSafely(
         'Du måste vara inloggad för att kommentera',
@@ -461,25 +554,20 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     }
 
     try {
-      // Get user profile
-      final userProfile = await userService.getUserProfile(currentUser.uid);
-      if (userProfile == null) {
-        _showSnackBarSafely(
-          'Kunde inte hämta användardata',
-          backgroundColor: AppColors.error,
-        );
-        return;
-      }
+      // CRITICAL FIX: Transfer text from controller to viewmodel
+      socialViewModel.updateNewCommentText(commentText);
 
-      // Post comment or reply
+      // Set reply context if replying to a comment
       if (_replyingToCommentId != null) {
-        await socialViewModel.postComment(widget.recipe.id);
-      } else {
-        await socialViewModel.postComment(widget.recipe.id);
+        socialViewModel.setReplyTo(_replyingToCommentId!);
       }
 
-      // Clear form
+      // Post comment through viewmodel (now has the text!)
+      await socialViewModel.postComment(widget.recipe.id);
+
+      // Clear form and cancel reply in ViewModel
       _commentController.clear();
+      socialViewModel.cancelReply();
       if (mounted) {
         setState(() {
           _replyingToCommentId = null;
@@ -496,7 +584,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       widget.onCommentPosted?.call();
     } catch (e) {
       _showSnackBarSafely(
-        'Kunde inte posta kommentar',
+        'Kunde inte posta kommentar: $e',
         backgroundColor: AppColors.error,
       );
     }
@@ -524,6 +612,62 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         backgroundColor: AppColors.error,
       );
     }
+  }
+
+  /// Show dialog with list of users who liked a comment
+  void _showLikesDialog(dynamic comment, SocialRecipeViewModel socialViewModel) {
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+                child: Text(
+                  'Gilla-markeringar (${comment.likeCount})',
+                  style: AppTextStyles.headlineSmall,
+                ),
+              ),
+              // Divider
+              const Divider(),
+              // List of users who liked
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: comment.likedByUserIds?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final userId = comment.likedByUserIds[index];
+                    final displayName = _getAuthorDisplayName(userId, socialViewModel);
+                    final avatarUrl = _getAuthorAvatarUrl(userId, socialViewModel);
+
+                    return ListTile(
+                      leading: SocialComponents.avatar(
+                        displayName: displayName,
+                        imageUrl: avatarUrl,
+                        size: ImageSize.small,
+                      ),
+                      title: Text(
+                        displayName,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   /// Format comment time for display

@@ -195,4 +195,11 @@ abstract class MessagingRepository {
     required List<String> messageIds,
     required String userId,
   });
+
+  /// Update per-user conversation settings (pin, archive, mute)
+  Future<void> updateConversationUserSettings({
+    required String conversationId,
+    required String userId,
+    required Map<String, dynamic> settings,
+  });
 }

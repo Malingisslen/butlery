@@ -45,11 +45,13 @@ class ActionButtons {
               padding: const EdgeInsets.only(right: AppDimensions.spacingS),
               child: Icon(icon),
             ),
-          Text(
-            effectiveLabel,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+          Flexible(
+            child: Text(
+              effectiveLabel,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+            ),
           ),
         ],
       ),
@@ -270,11 +272,13 @@ class ActionButtons {
               padding: const EdgeInsets.only(right: AppDimensions.spacingS),
               child: Icon(icon),
             ),
-          Text(
-            effectiveLabel,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+          Flexible(
+            child: Text(
+              effectiveLabel,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: isExpanded ? TextAlign.center : TextAlign.start,
+            ),
           ),
         ],
       ),

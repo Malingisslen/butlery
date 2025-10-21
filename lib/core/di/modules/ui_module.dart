@@ -162,11 +162,12 @@ class UIModule implements DIModule {
         () => UnifiedRecipeViewModel(),
       );
       
-      // Social Recipe ViewModel - requires UnifiedFriendsService and UnifiedRecipeService
+      // Social Recipe ViewModel - requires UnifiedFriendsService, UnifiedRecipeService, and UserService
       container.registerFactory<SocialRecipeViewModel>(
         () => SocialRecipeViewModel(
           friendsService: container<UnifiedFriendsService>(),
           recipeService: container<UnifiedRecipeService>(),
+          userService: container<UserService>(),
         ),
       );
       

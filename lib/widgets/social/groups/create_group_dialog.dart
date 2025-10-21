@@ -64,12 +64,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   }
 
   Future<void> _createGroup() async {
-    
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
-    
+
     if (mounted) {
       setState(() {
         _isCreating = true;
@@ -79,7 +77,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      
+
       final categoryId = await friendsService.categories.createCategory(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
@@ -88,10 +86,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       );
 
       if (categoryId != null) {
-        
         // Get the created category to return it
         final createdCategory = friendsService.categories.getCategoryById(categoryId);
-        
+
         if (mounted) {
           Navigator.of(context).pop(createdCategory);
         }
@@ -121,7 +118,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
+        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
         child: Form(
           key: _formKey,
           child: Column(
@@ -134,9 +131,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 icon: Icons.group_add,
                 onClose: () => Navigator.of(context).pop(),
               ),
-              
+
               // Content - Make scrollable to handle overflow
-              Expanded(
+              // ✅ FIX: Use Flexible instead of Expanded to avoid layout conflicts
+              Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppDimensions.spacingL),
                   child: Column(
@@ -222,6 +220,11 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   }
 
   Widget _buildFriendSelectionSection() {
+    // ✅ FIX: Skip rebuilding friend list during creation to prevent freeze
+    if (_isCreating) {
+      return const SizedBox.shrink();
+    }
+
     return AnimatedBuilder(
       animation: ServiceLocator.get<UnifiedFriendsService>(),
       builder: (context, child) {

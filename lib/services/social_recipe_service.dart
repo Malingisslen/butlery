@@ -548,6 +548,26 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Share menu to friends
+  ///
+  /// **DEPRECATED**: This method writes to the `shared_content` collection which is not
+  /// queried by `GroupSharedContentService`. For proper menu sharing that appears in
+  /// group shared content, use `UnifiedMenuService.shareMenuWithFriends()` instead,
+  /// which writes to the `shared_menus` collection.
+  ///
+  /// **Migration Path**:
+  /// ```dart
+  /// // OLD (writes to shared_content - won't show in groups):
+  /// await socialRecipeService.shareMenuToFriends(menuId, friendIds);
+  ///
+  /// // NEW (writes to shared_menus - will show in groups):
+  /// await menuService.shareMenuWithFriends(
+  ///   menuTitle: 'My Menu',
+  ///   menuSnapshot: menu,
+  ///   friendIds: friendIds,
+  ///   allowCollaboration: false,
+  /// );
+  /// ```
+  @Deprecated('Use UnifiedMenuService.shareMenuWithFriends() instead')
   Future<void> shareMenuToFriends(String menuId, List<String> friendIds) async {
     try {
       if (!_permissionService.isAuthenticated) {
@@ -598,6 +618,33 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Share menu to groups
+  ///
+  /// **DEPRECATED**: This method writes to the `shared_content` collection which is not
+  /// queried by `GroupSharedContentService`. For proper menu sharing that appears in
+  /// group shared content, use `UnifiedMenuService.shareMenuWithFriends()` instead,
+  /// which writes to the `shared_menus` collection.
+  ///
+  /// **Migration Path**:
+  /// ```dart
+  /// // OLD (writes to shared_content - won't show in groups):
+  /// await socialRecipeService.shareMenuToGroups(menuId, groupIds);
+  ///
+  /// // NEW (writes to shared_menus - will show in groups):
+  /// // First resolve group members:
+  /// final allMemberIds = <String>[];
+  /// for (final groupId in groupIds) {
+  ///   final group = friendsService.getCategoryByIdInternal(groupId);
+  ///   if (group != null) allMemberIds.addAll(group.friendUserIds);
+  /// }
+  /// // Then share to all members:
+  /// await menuService.shareMenuWithFriends(
+  ///   menuTitle: 'My Menu',
+  ///   menuSnapshot: menu,
+  ///   friendIds: allMemberIds,
+  ///   allowCollaboration: false,
+  /// );
+  /// ```
+  @Deprecated('Use UnifiedMenuService.shareMenuWithFriends() instead')
   Future<void> shareMenuToGroups(String menuId, List<String> groupIds) async {
     try {
       if (!_permissionService.isAuthenticated) {
@@ -607,10 +654,10 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
       // For each group, resolve members and share to them
       for (final groupId in groupIds) {
         // This would use the UnifiedFriendsService to resolve group members
-        // For now, we'll log the action as the group member resolution 
+        // For now, we'll log the action as the group member resolution
         // would be handled by the calling service
         AppLogger.info('Sharing menu $menuId to group $groupId');
-        
+
         await shareContent(
           friendId: groupId, // Using groupId as friendId for now - this would be resolved differently
           contentType: 'menu',

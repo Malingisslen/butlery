@@ -2,7 +2,11 @@
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 
@@ -19,7 +23,7 @@ class MenuStorage {
   
   // ===== SAVE OPERATIONS =====
 
-  /// Save menu to local storage
+  /// Save menu to Firestore
   Future<String> saveMenuLocally({
     required String menuName,
     required String comment,
@@ -27,27 +31,32 @@ class MenuStorage {
     required String lastPrompt,
     required int totalRecipeCount,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
+    // Get current user
+    final permissionService = ServiceLocator.get<PermissionService>();
+    final userId = permissionService.currentUserId;
+    final userName = permissionService.currentUserDisplayName ?? 'Unknown';
 
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final menuKey = 'saved_menu_${menuName.replaceAll(' ', '_')}_$timestamp';
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
 
-    final savedMenu = SavedMenuData(
-      name: menuName.trim(),
-      savedDate: DateTime.now(),
-      recipeCount: totalRecipeCount,
-      menu: menu,
-      lastPrompt: lastPrompt,
-      comment: comment.trim(),
+    // Create SharedMenu
+    final sharedMenu = SharedMenu.create(
+      sharedByUserId: userId,
+      sharedByDisplayName: userName,
+      sharedToUserIds: [], // Not shared yet
+      shareMessage: comment.trim(),
+      menuTitle: menuName.trim(),
+      menuSnapshot: menu,
     );
 
-    final menuJson = jsonEncode(savedMenu.toJson());
-    await prefs.setString(menuKey, menuJson);
+    // Save to Firestore
+    final firestore = FirebaseFirestore.instance;
+    final docRef = await firestore.collection('menus').add(sharedMenu.toFirestore());
 
-    AppLogger.success(
-        '✅ Meny sparad lokalt: $menuName med $totalRecipeCount recept');
+    AppLogger.success('✅ Meny sparad till Firestore: $menuName med $totalRecipeCount recept');
 
-    return menuKey;
+    return docRef.id; // Return Firestore document ID instead of local key
   }
 
   /// Load menu from local storage by key
@@ -120,45 +129,49 @@ class MenuStorage {
 
   // ===== LOAD OPERATIONS =====
 
-  /// Load all local menus (owned by user)
+  /// Load all menus from Firestore (owned by user)
   Future<List<SavedMenuInfo>> loadLocalMenus() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-      final menuKeys =
-          keys.where((key) => key.startsWith('saved_menu_')).toList();
+      final permissionService = ServiceLocator.get<PermissionService>();
+      final userId = permissionService.currentUserId;
+
+      if (userId == null) {
+        AppLogger.debug('No user ID available for loading menus');
+        return [];
+      }
+
+      // Query menus from Firestore
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore
+          .collection('menus')
+          .where('sharedByUserId', isEqualTo: userId)
+          .get();
 
       final menuInfos = <SavedMenuInfo>[];
 
-      for (final key in menuKeys) {
+      for (final doc in snapshot.docs) {
         try {
-          final menuJson = prefs.getString(key);
-          if (menuJson != null) {
-            final menuData = SavedMenuData.fromJson(jsonDecode(menuJson));
-
-            // Only owned menus (not imported ones that became saved locally)
-            if (menuData.isOwned) {
-              menuInfos.add(SavedMenuInfo(
-                key: key,
-                name: menuData.name,
-                savedDate: menuData.savedDate,
-                recipeCount: menuData.recipeCount,
-                comment: menuData.comment,
-                originalAuthor: menuData.originalAuthor,
-                isModified: menuData.isModified,
-                isOwned: menuData.isOwned,
-                firebaseId: menuData.firebaseId,
-              ));
-            }
-          }
+          final menu = SharedMenu.fromFirestore(doc.data(), doc.id);
+          menuInfos.add(SavedMenuInfo(
+            key: doc.id,
+            name: menu.menuTitle,
+            savedDate: menu.sharedAt,
+            recipeCount: menu.totalRecipeCount,
+            comment: menu.shareMessage ?? '',
+            originalAuthor: null,
+            isModified: false,
+            isOwned: true,
+            firebaseId: doc.id,
+          ));
         } catch (e) {
-          AppLogger.warning('⚠️ Kunde inte läsa lokal meny $key: $e');
+          AppLogger.warning('⚠️ Could not parse menu ${doc.id}: $e');
         }
       }
 
+      AppLogger.info('Loaded ${menuInfos.length} menus from Firestore');
       return menuInfos;
     } catch (e) {
-      AppLogger.error('❌ Fel vid laddning av lokala menyer: $e');
+      AppLogger.error('❌ Failed to load menus from Firestore: $e');
       return [];
     }
   }

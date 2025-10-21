@@ -187,7 +187,8 @@ class GroupDetailActions {
             ),
           );
           GroupEventBus.groupDeleted();
-          Navigator.pop(context);
+          // Pop back to groups tab (tabIndex: 1)
+          Navigator.pop(context, {'navigateToGroups': true});
           return true;
         }
       } catch (e) {
@@ -243,7 +244,8 @@ class GroupDetailActions {
               ),
             );
             GroupEventBus.memberRemoved();
-            Navigator.pop(context);
+            // Pop back to groups tab (tabIndex: 1)
+            Navigator.pop(context, {'navigateToGroups': true});
             return true;
           } else {
           }

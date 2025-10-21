@@ -26,7 +26,8 @@ class MessageInputField extends StatelessWidget {
       maxLines: 5,
       minLines: 1,
       hint: hintText,
-      onChanged: onSubmitted != null ? (_) => onSubmitted!() : null,
+      // DO NOT call onSubmitted on onChanged - that sends on every keystroke!
+      // onSubmitted should only be called when user presses send button or Enter
     );
   }
 }

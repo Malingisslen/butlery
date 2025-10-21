@@ -94,6 +94,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         }
 
         final recipe = viewModel.recipe;
+        final bottomPadding = MediaQuery.of(context).padding.bottom;
 
         return Scaffold(
           backgroundColor: AppColors.backgroundBeige,
@@ -175,11 +176,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         ),
                 ),
                 actions: [
-                  // Share button
+                  // Internal sharing with friends and groups
+                  IconButton(
+                    icon: const Icon(Icons.people_outline),
+                    onPressed: () => _actions.showSocialShareDialog(context),
+                    tooltip: 'Dela med vänner',
+                  ),
+                  // External sharing
                   IconButton(
                     icon: const Icon(Icons.share),
                     onPressed: () => _actions.shareRecipe(context),
-                    tooltip: 'Share Recipe',
+                    tooltip: 'Dela externt',
                   ),
                   // More actions menu
                   PopupMenuButton(
@@ -283,8 +290,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       },
                     ),
 
-                    // Bottom padding for safe area
-                    const SizedBox(height: AppDimensions.spacingXl),
+                    // Bottom padding for safe area (Android gesture navigation)
+                    SizedBox(height: bottomPadding + AppDimensions.spacingXl),
                   ]),
                 ),
               ),

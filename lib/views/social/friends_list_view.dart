@@ -221,8 +221,12 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       icon: Icon(Icons.people),
                       text: 'Vänner',
                     ),
-                    const Tab(
-                      icon: Icon(Icons.groups),
+                    Tab(
+                      icon: Badge(
+                        isLabelVisible: friendsService.invitations.pendingReceivedInvitations.isNotEmpty,
+                        label: Text('${friendsService.invitations.pendingReceivedInvitations.length}'),
+                        child: const Icon(Icons.groups),
+                      ),
                       text: 'Grupper',
                     ),
                     Tab(
@@ -358,9 +362,16 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         context: context,
       );
 
+      // ✅ FIX: Dialog returns bool? - true on success, false/null on cancel
+      // The transformation happens in social_group_components.dart: .then((result) => result != null)
       if (result == true && mounted) {
         SnackBarUtils.showSuccess(context, 'Gruppen skapades! 🎉');
-        if (mounted) setState(() {}); // Uppdatera vyn
+        // ✅ FIX: Switch to groups tab (index 1) after successful creation
+        if (mounted) {
+          setState(() {
+            _currentTabIndex = 1;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {

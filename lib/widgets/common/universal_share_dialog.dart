@@ -35,7 +35,7 @@ enum ShareMode {
 
 /// Universell delningsdialog som hanterar alla content-typer
 class UniversalShareDialog extends StatefulWidget {
-  // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList  
+  // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList
   // För bulk sharing: List<dynamic> med flera items
   final dynamic content;
   final ShareContentType contentType;
@@ -44,6 +44,7 @@ class UniversalShareDialog extends StatefulWidget {
   final List<FriendCategory>? availableGroups;
   final UniversalShareDialogViewModel viewModel;
   final bool isBulkSharing; // Indikerar om detta är bulk sharing
+  final String? menuName; // Optional menu name for menu sharing
 
   const UniversalShareDialog({
     super.key,
@@ -54,6 +55,7 @@ class UniversalShareDialog extends StatefulWidget {
     this.availableFriends,
     this.availableGroups,
     this.isBulkSharing = false,
+    this.menuName,
   });
 
   /// Factory constructors för type safety
@@ -77,6 +79,7 @@ class UniversalShareDialog extends StatefulWidget {
   factory UniversalShareDialog.menu({
     required Map<String, List<Recipe>> menu,
     required UniversalShareDialogViewModel viewModel,
+    String? menuName,
     String? initialMessage,
     List<UserProfile>? availableFriends,
     List<FriendCategory>? availableGroups,
@@ -85,6 +88,7 @@ class UniversalShareDialog extends StatefulWidget {
       content: menu,
       contentType: ShareContentType.menu,
       viewModel: viewModel,
+      menuName: menuName,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
       availableGroups: availableGroups,
@@ -384,6 +388,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         case ShareContentType.menu:
           shareResult = await widget.viewModel.shareMenu(
             menu: widget.content as Map<String, List<Recipe>>,
+            menuName: widget.menuName, // Pass user-provided menu name
             friendUserIds: friendIds,
             groupIds: groupIds,
             message: message.isNotEmpty ? message : null,

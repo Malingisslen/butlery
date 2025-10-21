@@ -16,9 +16,11 @@
 /// Used in phases: Phase 5 - Service Consolidation
 
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/events/group_events.dart';
 
 /// Comprehensive friends invitations operations providing multi-channel invitation management and tracking systems.
 ///
@@ -80,7 +82,85 @@ class FriendsInvitationsOperations {
 
   // ===== INVITATION SENDING =====
 
-  /// Send invitation via email
+  /// Send group invitation to an existing user (CRITICAL: Use this for inviting friends to groups!)
+  ///
+  /// This method creates a proper Firebase-stored invitation that the recipient can see in their app.
+  /// Unlike sendEmailInvitation which sends external emails, this creates in-app invitations.
+  ///
+  /// [userId] The UID of the user to invite (NOT their email!)
+  /// [groupId] The ID of the group they're being invited to
+  /// [customMessage] Optional personal message
+  Future<bool> sendGroupInvitationToUser({
+    required String userId,
+    required String groupId,
+    String? customMessage,
+  }) async {
+    try {
+      // Validate inputs
+      if (userId.isEmpty || groupId.isEmpty) {
+        AppLogger.error('Cannot send invitation: userId and groupId are required');
+        return false;
+      }
+
+      // Get current user info
+      final currentUserId = _parent.currentUserId;
+      if (currentUserId == null) {
+        AppLogger.error('Cannot send invitation: User not authenticated');
+        return false;
+      }
+
+      // Check if already invited
+      final existingInvitation = getSentInvitations().firstWhereOrNull(
+        (inv) =>
+            inv.toUserId == userId &&
+            inv.groupId == groupId &&
+            inv.status == GroupInvitationStatus.pending,
+      );
+
+      if (existingInvitation != null) {
+        AppLogger.warning('Invitation already exists for user $userId to group $groupId');
+        return false;
+      }
+
+      // Get group information
+      final group = _parent.categories.getCategoryById(groupId);
+      if (group == null) {
+        AppLogger.error('Cannot send invitation: Group $groupId not found');
+        return false;
+      }
+
+      // Get sender name
+      final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown';
+
+      // Create proper invitation
+      final invitation = GroupInvitation(
+        id: '${currentUserId}_${userId}_${groupId}_${DateTime.now().millisecondsSinceEpoch}',
+        groupId: groupId,
+        groupName: group.name,
+        groupEmoji: group.emoji ?? '',
+        fromUserId: currentUserId,
+        fromUserName: currentUserDisplayName,
+        toUserId: userId,
+        personalMessage: customMessage,
+        sentAt: DateTime.now(),
+      );
+
+      // ✅ FIXED: Save to Firebase via repository (method exists and works)
+      await _parent.friendsRepositoryInternal.saveInvitation(invitation);
+
+      // Add to local state for immediate UI update
+      _parent.addSentInvitationInternal(invitation);
+      _parent.notifyListenersInternal();
+
+      AppLogger.success('✅ Group invitation sent to user $userId for group "${group.name}" and saved to Firebase');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to send group invitation', e);
+      return false;
+    }
+  }
+
+  /// Send invitation via email (for inviting new users to the app, NOT for group invitations!)
   Future<bool> sendEmailInvitation({
     required String email,
     String? customMessage,
@@ -443,9 +523,41 @@ class FriendsInvitationsOperations {
 
   /// Get invitation by ID
   GroupInvitation? getInvitationById(String invitationId) {
-    return _parent.getAllSentInvitationsInternal()
+    AppLogger.debug('🔍 [GET_INVITATION] Searching for invitation: $invitationId');
+
+    // Search sent invitations first
+    final allSent = _parent.getAllSentInvitationsInternal();
+    AppLogger.debug('📤 [GET_INVITATION] Searching in ${allSent.length} sent invitations');
+
+    final sentInvitation = allSent
         .where((i) => i.id == invitationId)
         .firstOrNull;
+
+    if (sentInvitation != null) {
+      AppLogger.debug('✅ [GET_INVITATION] Found in sent invitations');
+      return sentInvitation;
+    }
+
+    // Also search received invitations (needed for acceptance flow)
+    final currentUserId = _parent.currentUserId;
+    AppLogger.debug('📥 [GET_INVITATION] Searching received invitations for user: $currentUserId');
+
+    if (currentUserId != null) {
+      final allReceived = _parent.getReceivedGroupInvitationsInternal(currentUserId);
+      AppLogger.debug('📥 [GET_INVITATION] Found ${allReceived.length} received invitations');
+
+      final receivedInvitation = allReceived
+          .where((i) => i.id == invitationId)
+          .firstOrNull;
+
+      if (receivedInvitation != null) {
+        AppLogger.debug('✅ [GET_INVITATION] Found in received invitations');
+        return receivedInvitation;
+      }
+    }
+
+    AppLogger.warning('❌ [GET_INVITATION] Invitation not found');
+    return null;
   }
 
   /// Search invitations
@@ -575,22 +687,92 @@ class FriendsInvitationsOperations {
   }
   
   Future<bool> acceptGroupInvitation(String invitationId) async {
+    // 🚨 MEGA DEBUG: If you don't see this message, the method isn't being called!
+    debugPrint('═══════════════════════════════════════════════════');
+    debugPrint('🚨 [ACCEPT METHOD ENTRY] invitation ID: $invitationId');
+    debugPrint('═══════════════════════════════════════════════════');
+
     try {
+      AppLogger.info('🔄 [ACCEPT] Starting acceptance for invitation: $invitationId');
+
       final invitation = getInvitationById(invitationId);
-      if (invitation == null) return false;
-      
+      if (invitation == null) {
+        AppLogger.error('❌ [ACCEPT] Invitation not found: $invitationId');
+        return false;
+      }
+
+      AppLogger.info('📋 [ACCEPT] Found invitation - from: ${invitation.fromUserId}, to: ${invitation.toUserId}, group: ${invitation.groupId}');
+
+      // ✅ CRITICAL FIX: Fetch group from Firestore if not in cache
+      AppLogger.debug('🔍 [ACCEPT] Checking if group exists in cache...');
+      var existingGroup = _parent.categories.getCategoryById(invitation.groupId);
+
+      if (existingGroup == null) {
+        AppLogger.warning('⚠️ [ACCEPT] Group not in cache - fetching from Firestore...');
+        AppLogger.info('   Fetching from owner ${invitation.fromUserId}');
+
+        try {
+          // Fetch the group from the owner's Firestore subcollection
+          final fetchedGroup = await _parent.friendsCategoryRepositoryInternal.getCategory(
+            invitation.fromUserId,  // Owner's user ID
+            invitation.groupId,
+          );
+
+          if (fetchedGroup != null) {
+            AppLogger.success('✅ [ACCEPT] Fetched group from Firestore: ${fetchedGroup.name}');
+            // Add to local cache so we can update it
+            _parent.addCategoryInternal(fetchedGroup);
+            existingGroup = fetchedGroup;
+          } else {
+            AppLogger.error('❌ [ACCEPT] Group not found in Firestore!');
+            return false;
+          }
+        } catch (e) {
+          AppLogger.error('❌ [ACCEPT] Failed to fetch group from Firestore: $e');
+          return false;
+        }
+      } else {
+        AppLogger.success('✅ [ACCEPT] Group found in cache: ${existingGroup.name}');
+      }
+
+      // ✅ CRITICAL FIX: Actually add the user to the group!
+      // Skip friendship check since group invitations work without pre-existing friendship
+      // Skip permission check since user is joining (not editing) the group
+      AppLogger.info('➕ [ACCEPT] Adding user ${invitation.toUserId} to group ${invitation.groupId}...');
+      final addedToGroup = await _parent.categories.addFriendToCategory(
+        invitation.toUserId,
+        invitation.groupId,
+        skipFriendshipCheck: true,
+        skipPermissionCheck: true,
+      );
+
+      if (!addedToGroup) {
+        AppLogger.error('❌ [ACCEPT] Failed to add user to group after accepting invitation');
+        return false;
+      }
+
+      AppLogger.success('✅ [ACCEPT] User ${invitation.toUserId} added to group ${invitation.groupId}');
+
       final acceptedInvitation = invitation.accept();
-      
+      AppLogger.info('📝 [ACCEPT] Invitation marked as accepted');
+
       // Update local state
       _parent.updateSentInvitationInternal(invitationId, acceptedInvitation);
       _parent.notifyListenersInternal();
-      
+      AppLogger.debug('🔄 [ACCEPT] Local state updated');
+
       // Update in Firebase
       await _parent.updateInvitationStatusInternal(acceptedInvitation.id, acceptedInvitation.status);
-      
+      AppLogger.debug('☁️ [ACCEPT] Firebase updated');
+
+      // ✅ CRITICAL FIX: Emit event for UI updates
+      GroupEventBus.memberAdded();
+      AppLogger.success('✅ [ACCEPT] Group invitation accepted successfully - UI event emitted');
+
       return true;
-    } catch (e) {
-      AppLogger.error('Failed to accept invitation', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ [ACCEPT] Exception: $e');
+      AppLogger.error('❌ [ACCEPT] Stack: $stackTrace');
       return false;
     }
   }

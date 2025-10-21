@@ -11,6 +11,8 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/services/share_service.dart';
@@ -135,7 +137,19 @@ class RecipeDetailActions {
 
     final viewModel = context.read<RecipeDetailViewModel>();
     final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
-    
+    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+
+    // Fetch available friends and groups (like veckomeny does)
+    List<UserProfile> availableFriends = [];
+    try {
+      availableFriends = friendsService.friends;
+    } catch (e) {
+      debugPrint('⚠️ Could not fetch friends: $e');
+    }
+
+    // Fetch available groups
+    final availableGroups = friendsService.categoriesList;
+
     await showDialog(
       context: context,
       builder: (context) => ChangeNotifierProvider.value(
@@ -143,6 +157,8 @@ class RecipeDetailActions {
         child: UniversalShareDialog.recipe(
           recipe: viewModel.recipe,
           viewModel: shareViewModel,
+          availableFriends: availableFriends,
+          availableGroups: availableGroups,
         ),
       ),
     );

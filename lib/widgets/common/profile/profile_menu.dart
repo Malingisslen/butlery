@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
@@ -46,6 +47,7 @@ class ProfileMenu extends StatefulWidget {
 
 class _ProfileMenuState extends State<ProfileMenu> {
   int _pendingRequestsCount = 0;
+  int _pendingGroupInvitationsCount = 0;
   int _sharedItemsCount = 0;
 
   @override
@@ -60,10 +62,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
   /// Load notification counters
   Future<void> _loadNotificationCounts() async {
     if (!mounted) return;
-    
+
     try {
       final friendsViewModel = ServiceLocator.get<FriendsViewModel>();
       await friendsViewModel.refresh();
+
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final groupInvitations = friendsService.invitations.pendingReceivedInvitations.length;
 
       final socialService = ServiceLocator.get<SocialRecipeService>();
       final currentUserId = ServiceLocator.get<AuthService>().currentUser?.uid;
@@ -79,6 +84,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
       if (mounted) {
         setState(() {
           _pendingRequestsCount = friendsViewModel.pendingRequestsCount;
+          _pendingGroupInvitationsCount = groupInvitations;
           _sharedItemsCount = newSharedItems;
         });
       }
@@ -326,11 +332,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
           
           ProfileActions.buildNotificationMenuItem(
             context,
-            title: 'Vänner',
+            title: 'Vänner och grupper',
             subtitle: 'Hantera dina vänner och grupper',
             icon: Icons.people,
             onTap: widget.onViewFriends,
-            count: _pendingRequestsCount,
+            count: _pendingRequestsCount + _pendingGroupInvitationsCount,
           ),
           
           ProfileActions.buildNotificationMenuItem(
