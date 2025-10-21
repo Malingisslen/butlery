@@ -29,6 +29,15 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 
+// Account/GDPR services
+import 'package:butlery/services/account/account_deletion_service.dart';
+import 'package:butlery/services/account/data_export_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+
+// Firebase dependencies
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Core module providing foundational application services.
 ///
 /// This module is the foundation of the dependency injection system and
@@ -54,6 +63,9 @@ class CoreModule implements DIModule {
     PersistenceService,
     AnalyticsRepository,
     AnalyticsService,
+    AccountDeletionService,
+    DataExportService,
+    ConsentService,
   ];
 
   @override
@@ -99,8 +111,39 @@ class CoreModule implements DIModule {
         AnalyticsService(repository: container<AnalyticsRepository>()),
       );
 
+      // ==================== ACCOUNT/GDPR SERVICES ====================
+
+      // Account deletion service for GDPR Article 17 (Right to Erasure)
+      container.registerLazySingleton<AccountDeletionService>(
+        () => AccountDeletionService(
+          auth: FirebaseAuth.instance,
+          firestore: FirebaseFirestore.instance,
+          authService: container<AuthService>(),
+          userService: container(),  // Will be provided by content module
+          recipeService: container(),  // Will be provided by content module
+          offlineService: container(),  // Will be provided by content module
+          analyticsService: container<AnalyticsService>(),
+        ),
+      );
+
+      // Data export service for GDPR Article 20 (Right to Data Portability)
+      container.registerLazySingleton<DataExportService>(
+        () => DataExportService(
+          auth: FirebaseAuth.instance,
+          firestore: FirebaseFirestore.instance,
+        ),
+      );
+
+      // Consent service for GDPR Article 7 (Consent Management)
+      container.registerLazySingleton<ConsentService>(
+        () => ConsentService(
+          auth: FirebaseAuth.instance,
+          firestore: FirebaseFirestore.instance,
+        ),
+      );
+
       if (kDebugMode) {
-        debugPrint('✅ [CoreModule] Configured 7 core services (Auth, Storage, Analytics, Persistence)');
+        debugPrint('✅ [CoreModule] Configured 10 core services (Auth, Storage, Analytics, Persistence, GDPR)');
       }
     } catch (e) {
       throw DIModuleException(

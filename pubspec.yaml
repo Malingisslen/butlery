@@ -136,3 +136,4 @@ flutter:
     - .env.development
     - .env.staging
     - .env.production
+    - assets/legal/

@@ -34,7 +34,15 @@
       "Bash(dart:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git pull:*)",
+      "Bash(awk:*)",
+      "Bash(for dir in core features models viewmodels services repositories views widgets)",
+      "Bash(do echo \"=== $dir ===\")",
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && grep -A 15 \"\"\"\"TextEditingController\\|ScrollController\"\"\"\" {} | head -30 || true')",
+      "Bash(sort:*)",
+      "Bash(flutter --version:*)",
+      "SlashCommand(/analyze)"
     ],
     "deny": [],
     "ask": []

@@ -15,7 +15,15 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
+import 'package:butlery/services/account/data_export_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
+import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
+import 'package:butlery/views/account/data_export_view.dart';
+import 'package:butlery/views/account/consent_management_view.dart';
+import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:provider/provider.dart';
 
 /// Profile action handlers and UI components
 ///
@@ -255,6 +263,41 @@ class ProfileActions {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
+
+          // GDPR Article 13/14 - Privacy Policy & Transparency
+          _buildDataButton(
+            context: context,
+            icon: Icons.policy_rounded,
+            title: 'Integritetspolicy',
+            subtitle: 'Läs om hur vi hanterar dina personuppgifter (GDPR)',
+            onTap: () => _handlePrivacyPolicy(context),
+            color: AppColors.primary,
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+
+          // GDPR Article 7 - Consent Management
+          _buildDataButton(
+            context: context,
+            icon: Icons.privacy_tip_rounded,
+            title: 'Hantera samtycken',
+            subtitle: 'Välj hur vi får behandla dina personuppgifter (GDPR)',
+            onTap: () => _handleManageConsent(context),
+            color: AppColors.primary,
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+
+          // GDPR Article 20 - Right to Data Portability
+          _buildDataButton(
+            context: context,
+            icon: Icons.download_rounded,
+            title: 'Exportera mina data',
+            subtitle: 'Ladda ner all din data i JSON-format (GDPR)',
+            onTap: () => _handleExportData(context),
+            color: AppColors.info,
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+
+          // GDPR Article 17 - Right to Erasure
           _buildDataButton(
             context: context,
             icon: Icons.delete_forever,
@@ -476,6 +519,103 @@ class ProfileActions {
   }
 
   /// Handle delete account
+  /// Handle privacy policy - GDPR Article 13/14
+  static Future<void> _handlePrivacyPolicy(BuildContext context) async {
+    try {
+      // Close the profile menu modal first
+      Navigator.pop(context);
+
+      // Navigate to privacy policy view
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PrivacyPolicyView(),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to open privacy policy', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte öppna integritetspolicy: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handle consent management - GDPR Article 7
+  static Future<void> _handleManageConsent(BuildContext context) async {
+    try {
+      // Close the profile menu modal first
+      Navigator.pop(context);
+
+      // Get consent service
+      final consentService = ServiceLocator.get<ConsentService>();
+
+      // Create view model with the service
+      final viewModel = ConsentViewModel(consentService: consentService);
+
+      // Navigate to consent management view
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: viewModel,
+            child: const ConsentManagementView(),
+          ),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to open consent management', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte öppna samtyckeshantering: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handle data export - GDPR Article 20
+  static Future<void> _handleExportData(BuildContext context) async {
+    try {
+      // Close the profile menu modal first
+      Navigator.pop(context);
+
+      // Get data export service
+      final exportService = ServiceLocator.get<DataExportService>();
+
+      // Create view model with the service
+      final viewModel = DataExportViewModel(exportService: exportService);
+
+      // Navigate to data export view
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: viewModel,
+            child: const DataExportView(),
+          ),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to open data export', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kunde inte öppna dataexport: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handle account deletion - GDPR Article 17
   static Future<void> _handleDeleteAccount(BuildContext context) async {
     // Show initial confirmation dialog
     final shouldDelete = await _showDeleteAccountDialog(context);
