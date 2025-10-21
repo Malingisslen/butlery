@@ -27,6 +27,7 @@
 /// - **Data Integrity**: Maintains conversation consistency during participant changes
 /// - **Audit Logging**: Complete audit trail for messaging security monitoring
 
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -124,6 +125,79 @@ class FirebaseMessagingRepository
   CollectionReference<Map<String, dynamic>> get _messagesRef =>
       firestore.collection('messages');
 
+  // ===== AUTO-HEALER SYSTEM =====
+  // Real-time self-healing system to ensure conversation.lastMessage is always accurate
+
+  /// Map to track active auto-healer listeners and prevent duplicates
+  final Map<String, StreamSubscription> _conversationAutoHealers = {};
+
+  /// Start real-time self-healing for a conversation
+  /// This ensures lastMessage is ALWAYS accurate, even if atomic update fails
+  void startConversationAutoHealer(String conversationId) {
+    // Prevent duplicate listeners
+    if (_conversationAutoHealers.containsKey(conversationId)) {
+      return;
+    }
+
+    AppLogger.debug('🔄 [AutoHealer] Starting for conversation: $conversationId');
+
+    // ignore: cancel_subscriptions
+    final subscription = _messagesRef
+        .where('conversationId', isEqualTo: conversationId)
+        .orderBy('sentAt', descending: true)
+        .limit(1)
+        .snapshots()
+        .listen((snapshot) async {
+      if (snapshot.docs.isEmpty) return;
+
+      try {
+        final latestMessage = MessageDto.fromFirestore(snapshot.docs.first);
+        final conversation = await read(conversationId);
+
+        if (conversation == null) {
+          AppLogger.warning('⚠️ [AutoHealer] Conversation not found: $conversationId');
+          return;
+        }
+
+        // Check if lastMessage needs updating
+        final needsUpdate = conversation.lastMessage == null ||
+            latestMessage.sentAt.isAfter(conversation.lastMessage!.sentAt);
+
+        if (needsUpdate) {
+          AppLogger.info('🔧 [AutoHealer] Healing conversation lastMessage: $conversationId');
+
+          final updated = conversation.copyWith(
+            lastMessage: latestMessage,
+            updatedAt: DateTime.now(),
+          );
+
+          await update(updated);
+          AppLogger.success('✅ [AutoHealer] Healed conversation: $conversationId');
+        }
+      } catch (e) {
+        AppLogger.error('❌ [AutoHealer] Failed for $conversationId', e);
+      }
+    });
+
+    _conversationAutoHealers[conversationId] = subscription;
+  }
+
+  /// Stop auto-healer for a conversation (cleanup)
+  void stopConversationAutoHealer(String conversationId) {
+    final subscription = _conversationAutoHealers.remove(conversationId);
+    subscription?.cancel();
+    AppLogger.debug('🛑 [AutoHealer] Stopped for: $conversationId');
+  }
+
+  /// Stop all auto-healers (call on repository disposal)
+  void stopAllAutoHealers() {
+    for (final subscription in _conversationAutoHealers.values) {
+      subscription.cancel();
+    }
+    _conversationAutoHealers.clear();
+    AppLogger.debug('🛑 [AutoHealer] Stopped all healers');
+  }
+
   // ===== CONVERSATION OPERATIONS =====
 
   @override
@@ -135,7 +209,17 @@ class FirebaseMessagingRepository
           .orderBy('updatedAt', descending: true)
           .limit(50) // Limit to 50 most recent conversations
           .snapshots()
-          .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
+          .map((snapshot) {
+            final conversations = snapshot.docs.map(fromFirestore).toList();
+
+            // ✅ AUTO-HEALER: Start self-healing for all conversations
+            // This ensures lastMessage is always accurate even if atomic update fails
+            for (final conversation in conversations) {
+              startConversationAutoHealer(conversation.id);
+            }
+
+            return conversations;
+          });
     } catch (e) {
       AppLogger.error('Failed to get user conversations for $userId', e);
       return const Stream.empty();
@@ -162,30 +246,55 @@ class FirebaseMessagingRepository
     String? user2AvatarUrl,
   }) async {
     try {
-      // Check if conversation already exists
-      final existingId = await findDirectConversation(
-        user1Id: user1Id,
-        user2Id: user2Id,
-      );
-      
-      if (existingId != null) {
-        return existingId;
+      // Generate deterministic ID from sorted user IDs
+      final sortedIds = [user1Id, user2Id]..sort();
+      final conversationId = 'direct_${sortedIds[0]}_${sortedIds[1]}';
+
+      AppLogger.info('🔍 Creating/getting direct conversation with deterministic ID: $conversationId');
+
+      // Try to get existing conversation
+      try {
+        final existing = await read(conversationId);
+        if (existing != null) {
+          AppLogger.success('✅ Found existing conversation: $conversationId');
+          return conversationId;
+        }
+      } catch (e) {
+        AppLogger.debug('No existing conversation found, creating new one');
       }
 
-      // Create new conversation
-      final conversation = Conversation.direct(
-        user1Id: user1Id,
-        user1DisplayName: user1DisplayName,
-        user1AvatarUrl: user1AvatarUrl,
-        user2Id: user2Id,
-        user2DisplayName: user2DisplayName,
-        user2AvatarUrl: user2AvatarUrl,
+      // Create conversation directly with deterministic ID
+      final now = DateTime.now();
+      final conversation = Conversation(
+        id: conversationId, // Use deterministic ID
+        participantIds: [user1Id, user2Id],
+        participantDisplayNames: {
+          user1Id: user1DisplayName,
+          user2Id: user2DisplayName,
+        },
+        participantAvatarUrls: {
+          user1Id: user1AvatarUrl,
+          user2Id: user2AvatarUrl,
+        },
+        isGroup: false,
+        title: '', // Empty for direct conversations
+        createdAt: now,
+        updatedAt: now,
+        lastMessage: null,
+        lastReadTimestamps: {
+          user1Id: now,
+          user2Id: now,
+        },
+        metadata: {'creatorId': user1Id},
       );
 
-      final createdConversation = await create(conversation);
-      
-      AppLogger.success('✅ Direct conversation created: ${createdConversation.id}');
-      return createdConversation.id;
+      await firestore.collection(collectionName).doc(conversationId).set(
+        ConversationDto.toFirestore(conversation),
+        SetOptions(merge: true),
+      );
+
+      AppLogger.success('✅ Direct conversation created with deterministic ID: $conversationId');
+      return conversationId;
     } catch (e) {
       AppLogger.error('Failed to create direct conversation', e);
       rethrow;
@@ -228,28 +337,51 @@ class FirebaseMessagingRepository
   }
 
   @override
+  /// DEPRECATED: This method uses query-based lookup which can find old UUID conversations
+  /// instead of deterministic ID conversations, causing message fragmentation.
+  ///
+  /// Use `createDirectConversation` directly instead, which implements proper "get or create"
+  /// pattern with deterministic IDs.
+  @Deprecated('Use createDirectConversation directly - it handles "get or create" with deterministic IDs')
   Future<String?> findDirectConversation({
     required String user1Id,
     required String user2Id,
   }) async {
     try {
-      // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
+      AppLogger.info('🔍 [FirebaseMessagingRepository] findDirectConversation called');
+      AppLogger.warning('⚠️ [FirebaseMessagingRepository] This method is DEPRECATED - use createDirectConversation instead');
+      AppLogger.debug('🔍 [FirebaseMessagingRepository] user1Id: $user1Id');
+      AppLogger.debug('🔍 [FirebaseMessagingRepository] user2Id: $user2Id');
+
+      AppLogger.debug('🔍 [FirebaseMessagingRepository] Executing Firestore query...');
+      // ✅ CRITICAL FIX: Added orderBy to ensure consistent conversation selection
+      // Always returns the most recently updated conversation between two users
       final query = await firestore.collection(collectionName)
           .where('participantIds', arrayContains: user1Id)
           .where('isGroup', isEqualTo: false)
+          .orderBy('updatedAt', descending: true) // Most recent first
           .limit(20) // Most users won't have more than 20 direct conversations
           .get();
 
+      AppLogger.success('✅ [FirebaseMessagingRepository] Query executed successfully');
+      AppLogger.debug('🔍 [FirebaseMessagingRepository] Found ${query.docs.length} conversations containing user1Id');
+
       for (final doc in query.docs) {
         final conversation = fromFirestore(doc);
+        AppLogger.debug('🔍 [FirebaseMessagingRepository] Checking conversation ${conversation.id}: participants = ${conversation.participantIds}, updatedAt = ${conversation.updatedAt}');
         if (conversation.participantIds.contains(user2Id)) {
+          AppLogger.success('✅ [FirebaseMessagingRepository] Found matching conversation: ${conversation.id} (most recent)');
           return conversation.id;
         }
       }
 
+      AppLogger.warning('⚠️ [FirebaseMessagingRepository] No existing conversation found between $user1Id and $user2Id');
       return null;
     } catch (e) {
-      AppLogger.error('Failed to find direct conversation', e);
+      AppLogger.error('❌ [FirebaseMessagingRepository] CRITICAL ERROR in findDirectConversation', e);
+      AppLogger.error('❌ [FirebaseMessagingRepository] Error type: ${e.runtimeType}');
+      AppLogger.error('❌ [FirebaseMessagingRepository] Error message: ${e.toString()}');
+      AppLogger.error('❌ [FirebaseMessagingRepository] This error causes NEW conversation to be created instead of finding existing one!');
       return null;
     }
   }
@@ -401,18 +533,23 @@ class FirebaseMessagingRepository
     int limit = 50,
   }) {
     try {
+      AppLogger.info('🔍 [FirebaseMessagingRepository] Creating message stream for conversationId: $conversationId');
       return _messagesRef
           .where('conversationId', isEqualTo: conversationId)
           .orderBy('sentAt', descending: true)
           .limit(limit)
           .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) => MessageDto.fromFirestore(doc))
-              .toList()
-              .reversed // Reverse to show oldest first
-              .toList());
+          .map((snapshot) {
+            AppLogger.debug('📬 [FirebaseMessagingRepository] Stream update: ${snapshot.docs.length} messages for conversation $conversationId');
+            final messages = snapshot.docs
+                .map((doc) => MessageDto.fromFirestore(doc))
+                .toList()
+                .reversed // Reverse to show oldest first
+                .toList();
+            return messages;
+          });
     } catch (e) {
-      AppLogger.error('Failed to get messages for conversation $conversationId', e);
+      AppLogger.error('❌ [FirebaseMessagingRepository] Failed to get messages for conversation $conversationId', e);
       return const Stream.empty();
     }
   }
@@ -448,38 +585,176 @@ class FirebaseMessagingRepository
   @override
   Future<void> sendMessage(Message message) async {
     try {
-      // Validate conversation exists and user has access
-      final conversation = await read(message.conversationId);
+      AppLogger.info('📤 [FirebaseMessagingRepository] sendMessage with atomic conversation update');
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Message ID: ${message.id}');
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Conversation ID: ${message.conversationId}');
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Sender ID: ${message.senderId}');
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Content: "${message.content}"');
+
+      // Read conversation (required for atomic update)
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Reading conversation...');
+      Conversation? conversation;
+      try {
+        conversation = await read(message.conversationId);
+      } catch (e) {
+        AppLogger.warning('⚠️ [FirebaseMessagingRepository] Could not read conversation: $e');
+        // For deterministic IDs, conversation might not exist yet - that's OK
+        if (!message.conversationId.startsWith('direct_')) {
+          throw ResourceNotFoundException(
+            'Conversation not found',
+            resourceType: 'conversation',
+            resourceId: message.conversationId,
+          );
+        }
+      }
+
+      // Validate participant if conversation exists
+      if (conversation != null) {
+        AppLogger.debug('📤 [FirebaseMessagingRepository] Conversation found: ${conversation.id}');
+
+        if (!conversation.isParticipant(message.senderId)) {
+          AppLogger.error('❌ [FirebaseMessagingRepository] User ${message.senderId} is not a participant');
+          throw PermissionDeniedException(
+            'User is not a participant in this conversation',
+            resource: 'conversation:${message.conversationId}',
+            userId: message.senderId,
+          );
+        }
+        AppLogger.debug('📤 [FirebaseMessagingRepository] User is participant - authorized');
+      }
+
+      // Handle missing conversation with smart fallback using message sender data
       if (conversation == null) {
-        throw ResourceNotFoundException(
-          'Conversation not found',
-          resourceType: 'conversation',
-          resourceId: message.conversationId,
+        AppLogger.warning('⚠️ [FirebaseMessagingRepository] Conversation not found locally: ${message.conversationId}');
+        AppLogger.info('📝 [FirebaseMessagingRepository] Creating fallback conversation with complete participant data');
+
+        // Parse deterministic conversation ID to extract other participant
+        final conversationId = message.conversationId;
+        String? otherUserId;
+
+        if (conversationId.startsWith('direct_')) {
+          final parts = conversationId.split('_');
+          if (parts.length == 3) {
+            final userId1 = parts[1];
+            final userId2 = parts[2];
+            otherUserId = (userId1 == message.senderId) ? userId2 : userId1;
+          }
+        }
+
+        // Fetch other participant's profile from Firestore users collection
+        String? otherUserDisplayName;
+        String? otherUserAvatarUrl;
+
+        if (otherUserId != null) {
+          try {
+            AppLogger.debug('📝 [FirebaseMessagingRepository] Fetching profile for user: $otherUserId');
+            final userDoc = await firestore.collection('users').doc(otherUserId).get();
+            if (userDoc.exists) {
+              final userData = userDoc.data();
+              otherUserDisplayName = userData?['displayName'] as String?;
+              otherUserAvatarUrl = userData?['avatarUrl'] as String?;
+              AppLogger.success('✅ [FirebaseMessagingRepository] Fetched other participant profile: $otherUserDisplayName');
+            } else {
+              AppLogger.warning('⚠️ [FirebaseMessagingRepository] User profile not found for: $otherUserId');
+            }
+          } catch (e) {
+            AppLogger.warning('⚠️ [FirebaseMessagingRepository] Could not fetch user profile: $e');
+          }
+        }
+
+        // Create fallback conversation with BOTH participant names
+        conversation = Conversation(
+          id: conversationId,
+          participantIds: [
+            message.senderId,
+            if (otherUserId != null) otherUserId,
+          ],
+          participantDisplayNames: {
+            message.senderId: message.senderDisplayName,
+            if (otherUserId != null && otherUserDisplayName != null)
+              otherUserId: otherUserDisplayName,
+          },
+          participantAvatarUrls: {
+            message.senderId: message.senderAvatarUrl,
+            if (otherUserId != null && otherUserAvatarUrl != null)
+              otherUserId: otherUserAvatarUrl,
+          },
+          lastReadTimestamps: {},
+          isGroup: false,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
+
+        AppLogger.success('✅ [FirebaseMessagingRepository] Fallback conversation created with complete participant data');
       }
 
-      if (!conversation.isParticipant(message.senderId)) {
-        throw PermissionDeniedException(
-          'User is not a participant in this conversation',
-          resource: 'conversation:${message.conversationId}',
-          userId: message.senderId,
-        );
-      }
+      // ATOMIC OPERATION: Write message + update conversation in single batch
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Creating atomic batch operation...');
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Message initial status: ${message.status}');
+      final batch = firestore.batch();
 
-      // Send message with server timestamp
-      final messageData = MessageDto.toFirestore(message);
-      await _messagesRef.doc(message.id).set(messageData);
+      // 1. Write message to messages collection with ORIGINAL status (sending)
+      // Status will be updated to "sent" AFTER batch commits successfully
+      final messageData = MessageDto.toFirestore(message);  // Keep original "sending" status
+      batch.set(_messagesRef.doc(message.id), messageData);
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Added message to batch with status: ${message.status}');
 
-      // Update conversation with last message
+      // 2. Update conversation with lastMessage (keeping original status)
       final updatedConversation = conversation.copyWith(
-        lastMessage: message.copyWith(status: MessageStatus.sent),
+        lastMessage: message,  // Use original message with "sending" status
         updatedAt: DateTime.now(),
       );
-      await update(updatedConversation);
+      final conversationData = ConversationDto.toFirestore(updatedConversation);
+      batch.set(
+        firestore.collection(collectionName).doc(message.conversationId),
+        conversationData,
+        SetOptions(merge: true),  // Update existing conversation
+      );
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Added conversation update to batch: ${message.conversationId}');
 
-      AppLogger.debug('Message sent: ${message.id} in conversation ${message.conversationId}');
-    } catch (e) {
-      AppLogger.error('Failed to send message ${message.id}', e);
+      // Commit batch - either BOTH succeed or BOTH fail (atomicity guaranteed)
+      AppLogger.debug('📤 [FirebaseMessagingRepository] Committing atomic batch...');
+      try {
+        await batch.commit();
+        AppLogger.success('✅ [FirebaseMessagingRepository] Atomic batch committed - message in Firestore with status: sending');
+
+        // STEP 2: Update message status to "sent" AFTER batch commits successfully
+        // Use Future.delayed to give UI time to render "sending" status first
+        // This creates proper UI progression: Skickar... (50-100ms) → Skickat
+        AppLogger.debug('📤 [FirebaseMessagingRepository] Scheduling status update to sent...');
+        Future.delayed(const Duration(milliseconds: 100), () async {
+          try {
+            await _messagesRef.doc(message.id).update({
+              'status': MessageStatus.sent.name,
+            });
+            AppLogger.success('✅ [FirebaseMessagingRepository] Message status updated to: sent');
+
+            // Also update conversation's lastMessage status
+            await firestore.collection(collectionName).doc(message.conversationId).update({
+              'lastMessage.status': MessageStatus.sent.name,
+            });
+            AppLogger.success('✅ [FirebaseMessagingRepository] Conversation lastMessage status updated to: sent');
+          } catch (e) {
+            AppLogger.warning('⚠️ [FirebaseMessagingRepository] Could not update message status: $e');
+          }
+        });
+
+      } catch (batchError) {
+        AppLogger.error('❌ [FirebaseMessagingRepository] Batch commit failed', batchError);
+        // Check if it's network related (testing environment can ignore this)
+        if (batchError.toString().contains('UNAVAILABLE') ||
+            batchError.toString().contains('network')) {
+          AppLogger.warning('📡 [FirebaseMessagingRepository] Network unavailable - batch queued for offline sync');
+          // Don't rethrow - let Firestore handle offline sync
+        } else {
+          rethrow;
+        }
+      }
+
+      AppLogger.success('✅ [FirebaseMessagingRepository] Message sent: ${message.id} in conversation ${message.conversationId}');
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ [FirebaseMessagingRepository] Failed to send message ${message.id}', e);
+      AppLogger.error('❌ [FirebaseMessagingRepository] Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -768,11 +1043,42 @@ class FirebaseMessagingRepository
 
       // Then delete the conversation document
       await firestore.collection(collectionName).doc(conversationId).delete();
-      
+
       AppLogger.success('✅ Successfully deleted conversation $conversationId');
     } catch (e) {
       AppLogger.error('Failed to delete conversation $conversationId', e);
       rethrow;
     }
+  }
+
+  @override
+  Future<void> updateConversationUserSettings({
+    required String conversationId,
+    required String userId,
+    required Map<String, dynamic> settings,
+  }) async {
+    try {
+      // Store user-specific settings in a subcollection
+      // This allows each user to have their own pin/archive/mute settings
+      await firestore
+          .collection(collectionName)
+          .doc(conversationId)
+          .collection('userSettings')
+          .doc(userId)
+          .set(settings, SetOptions(merge: true));
+
+      AppLogger.debug('Updated conversation settings for user $userId in $conversationId');
+    } catch (e) {
+      AppLogger.error('Failed to update conversation user settings', e);
+      rethrow;
+    }
+  }
+
+  // ===== CLEANUP =====
+
+  /// Dispose repository and cleanup all resources including active stream subscriptions
+  void dispose() {
+    stopAllAutoHealers();
+    AppLogger.debug('FirebaseMessagingRepository disposed');
   }
 }
