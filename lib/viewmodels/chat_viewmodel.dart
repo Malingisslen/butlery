@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -13,7 +14,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
-  
+  final PresenceService? _presenceService;
+
   final String conversationId;
 
   // State
@@ -24,25 +26,30 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   String? _error;
   bool _isSending = false;
   String? _sendError;
-  final Map<String, DateTime> _typingUsers = {};
+  List<String> _typingUserIds = [];
   Message? _replyToMessage;
-  
-  List<String> get typingUserNames => _typingUsers.entries
-      .where((entry) => DateTime.now().difference(entry.value).inSeconds < 5)
-      .map((entry) => entry.key)
+
+  // Typing users mapped from IDs to display names
+  final Map<String, String> _userDisplayNames = {};
+
+  List<String> get typingUserNames => _typingUserIds
+      .map((id) => _userDisplayNames[id] ?? 'Okänd')
       .toList();
 
   StreamSubscription<List<Message>>? _messagesSubscription;
-  Timer? _typingCleanUpTimer;
+  StreamSubscription<List<String>>? _typingSubscription;
+  Timer? _typingDebounceTimer;
 
   ChatViewModel({
     required MessagingService messagingService,
     required AuthRepository authRepository,
     required this.conversationId,
     Conversation? initialConversation,
-  }) : _messagingService = messagingService,
-       _authRepository = authRepository,
-       _conversation = initialConversation {
+    PresenceService? presenceService,
+  })  : _messagingService = messagingService,
+        _authRepository = authRepository,
+        _presenceService = presenceService,
+        _conversation = initialConversation {
     _initializeChat();
   }
 
@@ -90,10 +97,11 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   void _initializeChat() {
     if (_isDisposed) return;
-    
+
+    AppLogger.info('🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId');
     _loadConversation();
     _loadMessages();
-    _startTypingCleanUp();
+    _subscribeToTypingIndicators();
   }
 
   Future<void> _loadConversation() async {
@@ -112,8 +120,9 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   void _loadMessages() {
     if (_isDisposed) return;
-    
+
     try {
+      AppLogger.info('🔍 [ChatViewModel] Starting message stream for conversationId: $conversationId');
       _messagesSubscription = _messagingService
           .getConversationMessages(
             conversationId: conversationId,
@@ -123,20 +132,29 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
             _onMessagesUpdate,
             onError: _onMessagesError,
           );
+      AppLogger.debug('🔍 [ChatViewModel] Message stream subscription created');
     } catch (e) {
-      AppLogger.error('Failed to initialize messages', e);
+      AppLogger.error('❌ [ChatViewModel] Failed to initialize messages', e);
       _setError('Kunde inte ladda meddelanden');
     }
   }
 
   void _onMessagesUpdate(List<Message> messages) {
     if (_isDisposed) return;
-    
+
+    AppLogger.info('📬 [ChatViewModel] Message stream update received');
+    AppLogger.debug('📬 [ChatViewModel] ConversationId: $conversationId');
+    AppLogger.debug('📬 [ChatViewModel] Number of messages: ${messages.length}');
+    if (messages.isNotEmpty) {
+      AppLogger.debug('📬 [ChatViewModel] First message: ${messages.first.content.substring(0, messages.first.content.length > 50 ? 50 : messages.first.content.length)}...');
+      AppLogger.debug('📬 [ChatViewModel] Last message: ${messages.last.content.substring(0, messages.last.content.length > 50 ? 50 : messages.last.content.length)}...');
+    }
+
     _messages = messages;
     _isLoading = false;
     _error = null;
     _safeNotifyListeners();
-    
+
     // Auto-mark as read when messages arrive
     if (messages.isNotEmpty) {
       _markAsRead();
@@ -244,39 +262,81 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   // Typing indicator operations
   void setTyping() {
-    if (_isDisposed) return;
-    
+    if (_isDisposed || _presenceService == null) return;
+
+    // Cancel any existing debounce timer
+    _typingDebounceTimer?.cancel();
+
     try {
-      _messagingService.setTypingIndicator(conversationId);
+      _presenceService.startTyping(conversationId);
+
+      // Set up auto-clear after 3 seconds of no typing
+      _typingDebounceTimer = Timer(const Duration(seconds: 3), () {
+        clearTyping();
+      });
     } catch (e) {
       AppLogger.error('Failed to set typing indicator', e);
     }
   }
 
   void clearTyping() {
-    if (_isDisposed) return;
-    
+    if (_isDisposed || _presenceService == null) return;
+
+    _typingDebounceTimer?.cancel();
+
     try {
-      _messagingService.clearTypingIndicator(conversationId);
+      _presenceService.stopTyping(conversationId);
     } catch (e) {
       AppLogger.error('Failed to clear typing indicator', e);
     }
   }
 
-  void updateTypingUser(String userId, String displayName) {
-    if (_isDisposed) return;
-    
-    if (userId != currentUserId) {
-      _typingUsers[displayName] = DateTime.now();
-      _safeNotifyListeners();
+  void _subscribeToTypingIndicators() {
+    if (_isDisposed || _presenceService == null) return;
+
+    // Wait for conversation to load first
+    if (_conversation == null) {
+      // Retry after a short delay
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _subscribeToTypingIndicators();
+      });
+      return;
+    }
+
+    try {
+      // Get participant IDs excluding current user
+      final participantIds = _conversation!.participantIds
+          .where((id) => id != currentUserId)
+          .toList();
+
+      if (participantIds.isEmpty) return;
+
+      // Subscribe to typing indicators from PresenceService
+      _typingSubscription = _presenceService.getTypingUsersStream(conversationId, participantIds)
+          .listen(
+            (typingUserIds) {
+              if (_isDisposed) return;
+              _typingUserIds = typingUserIds;
+              _loadUserDisplayNames(typingUserIds);
+              _safeNotifyListeners();
+            },
+            onError: (error) {
+              AppLogger.error('Typing subscription error', error);
+            },
+          );
+    } catch (e) {
+      AppLogger.error('Failed to subscribe to typing indicators', e);
     }
   }
 
-  void clearTypingUser(String userId, String displayName) {
-    if (_isDisposed) return;
-    
-    _typingUsers.remove(displayName);
-    _safeNotifyListeners();
+  Future<void> _loadUserDisplayNames(List<String> userIds) async {
+    for (final userId in userIds) {
+      if (!_userDisplayNames.containsKey(userId)) {
+        // For now, use a placeholder
+        // In production, you'd fetch the display name from FirebaseUsersRepository or conversation metadata
+        _userDisplayNames[userId] = 'Användare';
+      }
+    }
   }
 
   // Reply functionality
@@ -323,28 +383,6 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
       _safeNotifyListeners();
       return false;
     }
-  }
-
-  void _startTypingCleanUp() {
-    _typingCleanUpTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (_isDisposed) {
-        timer.cancel();
-        return;
-      }
-      
-      final now = DateTime.now();
-      final expired = _typingUsers.entries
-          .where((entry) => now.difference(entry.value).inSeconds > 5)
-          .map((entry) => entry.key)
-          .toList();
-      
-      if (expired.isNotEmpty) {
-        for (final name in expired) {
-          _typingUsers.remove(name);
-        }
-        _safeNotifyListeners();
-      }
-    });
   }
 
   // Conversation operations
@@ -418,7 +456,8 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   void dispose() {
     _isDisposed = true;
     _messagesSubscription?.cancel();
-    _typingCleanUpTimer?.cancel();
+    _typingSubscription?.cancel();
+    _typingDebounceTimer?.cancel();
     clearTyping(); // Clear typing indicator when leaving chat
     super.dispose();
   }

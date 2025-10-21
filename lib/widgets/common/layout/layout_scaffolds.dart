@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/indicators/notification_badge.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 ///
@@ -45,7 +48,7 @@ class LayoutScaffolds {
 }
 
 /// Main menu layout with bottom navigation
-class _MainMenuLayout extends StatelessWidget {
+class _MainMenuLayout extends StatefulWidget {
   final Widget body;
   final int? currentIndex;
   final String? title;
@@ -61,51 +64,104 @@ class _MainMenuLayout extends StatelessWidget {
   });
 
   @override
+  State<_MainMenuLayout> createState() => _MainMenuLayoutState();
+}
+
+class _MainMenuLayoutState extends State<_MainMenuLayout> {
+  int _unreadMessagesCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final messagingService = ServiceLocator.get<MessagingService>();
+      final count = await messagingService.getUnreadConversationsCount();
+      if (mounted) {
+        setState(() {
+          _unreadMessagesCount = count;
+        });
+      }
+    } catch (e) {
+      // Messaging service might not be available yet, that's okay
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: title != null
+      appBar: widget.title != null
           ? AppBar(
               title: Text(
-                title!,
+                widget.title!,
                 style: AppTextStyles.headlineSmall,
               ),
-              actions: actions,
+              actions: widget.actions,
               backgroundColor: Theme.of(context).colorScheme.surface,
               foregroundColor: AppColors.textDark,
               automaticallyImplyLeading: false,
             )
           : null,
-      body: body,
-      floatingActionButton: floatingActionButton,
+      body: widget.body,
+      floatingActionButton: widget.floatingActionButton,
       bottomNavigationBar: _buildBottomNavigation(context),
     );
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: currentIndex ?? 0,
+      currentIndex: widget.currentIndex ?? 0,
       onTap: (index) => _handleNavigation(context, index),
+      type: BottomNavigationBarType.fixed, // Important for 5 items
       // Remove ALL custom styling - let theme handle everything
-      items: const [
-        BottomNavigationBarItem(
+      items: [
+        const BottomNavigationBarItem(
           icon: Icon(Icons.book_outlined),
           activeIcon: Icon(Icons.book),
           label: 'Mina recept',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.add_outlined),
           activeIcon: Icon(Icons.add),
           label: 'Lägg till',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.calendar_today_outlined),
           activeIcon: Icon(Icons.calendar_today),
           label: 'Veckomeny',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.shopping_cart_outlined),
           activeIcon: Icon(Icons.shopping_cart),
           label: 'Inköpslista',
+        ),
+        BottomNavigationBarItem(
+          icon: _buildMessagesIcon(false),
+          activeIcon: _buildMessagesIcon(true),
+          label: 'Meddelanden',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMessagesIcon(bool isActive) {
+    if (_unreadMessagesCount == 0) {
+      return Icon(isActive ? Icons.message : Icons.message_outlined);
+    }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(isActive ? Icons.message : Icons.message_outlined),
+        Positioned(
+          top: -4,
+          right: -4,
+          child: NotificationBadge(
+            count: _unreadMessagesCount,
+          ),
         ),
       ],
     );
@@ -113,7 +169,7 @@ class _MainMenuLayout extends StatelessWidget {
 
   void _handleNavigation(BuildContext context, int index) {
     // Check if we're already on that page
-    if (currentIndex == index) {
+    if (widget.currentIndex == index) {
       return; // Do nothing if we're already on the page
     }
 
@@ -130,6 +186,9 @@ class _MainMenuLayout extends StatelessWidget {
         break;
       case 3:
         route = '/inkopslista';
+        break;
+      case 4:
+        route = '/messages';
         break;
       default:
         return;

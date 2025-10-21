@@ -54,9 +54,8 @@ import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/message_states.dart';
 
-// Export enums and legacy classes for backward compatibility
+// Export enums for backward compatibility
 export 'state/state_enums.dart';
-export 'state/legacy_state_widgets.dart';
 
 /// Comprehensive universal state widget implementing unified interface for all application state representations.
 ///

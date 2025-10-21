@@ -2434,7 +2434,11 @@ class MockShoppingImportModule extends ShoppingImportModule {
 }
 
 class MockShoppingSocialShareModule extends ShoppingSocialShareModule {
-  MockShoppingSocialShareModule();
+  MockShoppingSocialShareModule()
+      : super(
+          firestore: FakeFirebaseFirestore(),
+          permissionService: MockPermissionService(),
+        );
 }
 /// Mock for AccountDeletionRepository (Tier 2 - 2 errors)
 class MockAccountDeletionRepository extends Mock {

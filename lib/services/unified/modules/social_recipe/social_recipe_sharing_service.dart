@@ -1,6 +1,7 @@
 // lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart
 
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -106,10 +107,35 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         _setError('Kunde inte spara recept');
         return false;
       }
-      
+
+      // 6. ALSO write to shared_recipes collection for group content queries
+      try {
+        // Ensure owner is included in sharedWithUserIds along with shared users
+        final allUserIds = {currentUserId, ...userIds}.toList();
+
+        await FirebaseFirestore.instance
+            .collection('shared_recipes')
+            .doc(recipeId)
+            .set({
+          'sharedByUserId': currentUserId,
+          'sharedByDisplayName': _getCurrentUserDisplayName() ?? 'Unknown',
+          'sharedByAvatarUrl': null, // Can be populated later if needed
+          'sharedWithUserIds': allUserIds,
+          'sharedAt': FieldValue.serverTimestamp(),
+          'recipeId': recipeId,
+          'title': recipe.title,
+          'recipeSnapshot': updatedRecipe.toJson(),
+        }, SetOptions(merge: true));
+
+        AppLogger.debug('✅ Recipe also written to shared_recipes collection');
+      } catch (e) {
+        AppLogger.warning('Failed to write to shared_recipes collection (non-critical): $e');
+        // Don't fail the whole operation if this secondary write fails
+      }
+
       // Notify UI of changes
       _notifyListeners();
-      
+
       AppLogger.success('Recipe $recipeId shared with ${userIds.length} users');
       return true;
     } catch (e) {

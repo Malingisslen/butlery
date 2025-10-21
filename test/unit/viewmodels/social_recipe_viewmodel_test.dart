@@ -5,6 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/social/social_comment.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -91,6 +92,7 @@ void main() {
     late SocialRecipeViewModel viewModel;
     late MockUnifiedFriendsService mockFriendsService;
     late MockUnifiedRecipeService mockRecipeService;
+    late MockUserService mockUserService;
     const testRecipeId = 'test_recipe_123';
     
     setUpAll(() async {
@@ -101,11 +103,12 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks
       mockFriendsService = MockUnifiedFriendsService();
       mockRecipeService = MockUnifiedRecipeService();
-      
+      mockUserService = MockUserService();
+
       // Configure default state
       final testFriends = [
         UserProfileBuilder.build(
@@ -119,22 +122,33 @@ void main() {
           email: 'erik@example.com',
         ),
       ];
-      
+
       mockFriendsService.setFriendsState(
         friends: testFriends,
         isInitialized: true,
         isLoading: false,
         error: null,
       );
-      
+
+      // Configure user service state
+      mockUserService.setUserState(
+        currentUser: UserProfileBuilder.build(
+          uid: 'current_user_123',
+          displayName: 'Current User',
+          email: 'current@example.com',
+        ),
+      );
+
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedFriendsService>(mockFriendsService);
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
-      
+      TestServiceLocator.registerMock<UserService>(mockUserService);
+
       // Create viewModel
       viewModel = SocialRecipeViewModel(
         friendsService: mockFriendsService,
         recipeService: mockRecipeService,
+        userService: mockUserService,
       );
     });
 
@@ -774,8 +788,9 @@ void main() {
         final testViewModel = SocialRecipeViewModel(
           friendsService: mockFriendsService,
           recipeService: mockRecipeService,
+          userService: mockUserService,
         );
-        
+
         // Act & Assert
         expect(() => testViewModel.dispose(), returnsNormally);
       });
@@ -785,6 +800,7 @@ void main() {
         final testViewModel = SocialRecipeViewModel(
           friendsService: mockFriendsService,
           recipeService: mockRecipeService,
+          userService: mockUserService,
         );
         var notificationCount = 0;
         testViewModel.addListener(() => notificationCount++);

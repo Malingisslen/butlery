@@ -172,30 +172,27 @@ class _AuthViewState extends State<AuthView> {
       create: (_) => ServiceLocator.get<AuthViewModel>(),
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        body: SafeArea(
-          child: Consumer<AuthViewModel>(
-            builder: (context, viewModel, _) {
+        body: Consumer<AuthViewModel>(
+          builder: (context, viewModel, _) {
+            return Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo/Header område
+                      _buildHeader(context),
+                      const SizedBox(height: AppDimensions.spacingXxl),
 
-              return Center(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Logo/Header område
-                        _buildHeader(context),
-                        const SizedBox(height: AppDimensions.spacingXxl),
-
-                        // Auth-kort
-                        _buildAuthCard(context, viewModel),
-                      ],
-                    ),
+                      // Auth-kort
+                      _buildAuthCard(context, viewModel),
+                    ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

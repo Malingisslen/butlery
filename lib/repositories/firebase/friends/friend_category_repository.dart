@@ -109,28 +109,36 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Save a friend category for a user.
   Future<void> saveCategory(String userId, FriendCategory category) async {
-    // Validate user is saving their own category
+    // ✅ CRITICAL FIX: Allow members to update group owner's category
+    // This is needed when accepting group invitations
     final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'save friend category',
-    );
-    
+
+    // Check if user is either the owner OR a member of the category
+    final isOwner = currentUser == userId;
+    final isMember = category.friendUserIds.contains(currentUser);
+
+    if (!isOwner && !isMember) {
+      throw Exception(
+        'Permission denied: User $currentUser cannot modify category owned by $userId. '
+        'User must be owner or member of the category.'
+      );
+    }
+
     // Validate required fields
     validateRequiredFields(
       data: category.toFirestore(),
       requiredFields: ['name', 'friendUserIds'],
       resourceType: 'friend category',
     );
-    
+
     await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'friend_category',
-      operation: 'create',
+      operation: isOwner ? 'create' : 'update_as_member',
       granted: true,
+      details: 'Category: ${category.id}, Owner: $userId, IsOwner: $isOwner, IsMember: $isMember',
     );
   }
 

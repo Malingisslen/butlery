@@ -334,12 +334,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive social menu sharing dialog with friend selection and collaborative features coordination.
-  /// 
+  ///
   /// Presents social sharing dialog enabling friend selection, collaborative menu sharing,
   /// and comprehensive social functionality through UniversalShareDialog integration
   /// with validation, friend management, and user experience optimization.
-  /// 
+  ///
   /// **Social Sharing Features:**
+  /// - Menu name capture with user input dialog
   /// - Menu validation with user guidance and error prevention
   /// - Friend selection with availability management and social integration
   /// - Collaborative sharing with personalized messages and social coordination
@@ -354,7 +355,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       return;
     }
 
-    // Retrieve available friends with error handling
+    // Step 1: Capture menu name from user
+    final menuName = await _showMenuNameDialog();
+    if (!mounted) return; // Check if widget is still mounted after async gap
+    if (menuName == null || menuName.isEmpty) {
+      // User cancelled or provided empty name
+      return;
+    }
+
+    // Step 2: Retrieve available friends with error handling
     List<UserProfile> availableFriends = [];
     try {
       availableFriends = _friendsService.friends;
@@ -362,15 +371,68 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       AppLogger.warning('⚠️ Kunde inte hämta vänner: $e');
     }
 
+    // Step 3: Show share dialog with captured menu name
     showDialog(
       context: context,
       builder: (context) => UniversalShareDialog.menu(
         menu: menuViewModel.menu,
+        menuName: menuName,
         viewModel: ServiceLocator.get<UniversalShareDialogViewModel>(),
         initialMessage: 'Kolla min veckomeny!',
         availableFriends: availableFriends,
       ),
     );
+  }
+
+  /// Show dialog to capture menu name from user
+  Future<String?> _showMenuNameDialog() async {
+    final TextEditingController nameController = TextEditingController();
+
+    // Generate default name suggestion
+    final menuViewModel = Provider.of<MenuViewModel>(context, listen: false);
+    final recipeCount = menuViewModel.totalRecipeCount;
+    nameController.text = 'Veckomeny ($recipeCount recept)';
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Namnge din meny'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ge din meny ett namn innan du delar den:'),
+            const SizedBox(height: AppDimensions.spacingM),
+            StyledInput(
+              controller: nameController,
+              hint: 'T.ex. "Min veckomeny v.45"',
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+            ),
+          ],
+        ),
+        actions: [
+          ActionButtons.secondaryButton(
+            context,
+            label: 'Avbryt',
+            onPressed: () => Navigator.pop(context),
+          ),
+          ActionButtons.primaryButton(
+            context,
+            label: 'Dela',
+            icon: Icons.share,
+            onPressed: () {
+              final name = nameController.text.trim();
+              if (name.isNotEmpty) {
+                Navigator.pop(context, name);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+
+    nameController.dispose();
+    return result;
   }
 
   /// Advanced shopping list creation from menu with ingredient extraction through migrated components.

@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable selection card component
-/// 
+///
 /// Provides consistent styling for selectable cards.
 /// Used for friend selection, item selection, etc.
 class SelectionCard extends StatelessWidget {
   final Widget child;
+  final bool isSelected;
   final VoidCallback? onTap;
   final double? elevation;
   final BorderRadius? borderRadius;
@@ -16,6 +17,7 @@ class SelectionCard extends StatelessWidget {
   const SelectionCard({
     super.key,
     required this.child,
+    this.isSelected = false,
     this.onTap,
     this.elevation,
     this.borderRadius,
@@ -23,15 +25,26 @@ class SelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusM);
+
     return Card(
       elevation: elevation ?? AppDimensions.elevationLow,
       shape: RoundedRectangleBorder(
-        borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: effectiveBorderRadius,
+        side: isSelected
+            ? BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              )
+            : BorderSide.none,
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: child,
+        borderRadius: effectiveBorderRadius,
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          child: child,
+        ),
       ),
     );
   }

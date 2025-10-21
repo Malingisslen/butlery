@@ -64,8 +64,11 @@ import 'package:butlery/widgets/common/navigation_components.dart';
 import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 
 /// Comprehensive friend profile view providing detailed friend information and social interaction through advanced profile architecture.
 ///
@@ -176,14 +179,7 @@ class FriendProfileView extends StatelessWidget {
                   children: [
                     Flexible(
                       child: OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Meddelandefunktion kommer snart! 💌'),
-                              backgroundColor: AppColors.warning,
-                            ),
-                          );
-                        },
+                        onPressed: () => _startConversation(context),
                         icon: const Icon(Icons.message),
                         label: const Text('Skicka meddelande'),
                       ),
@@ -223,6 +219,47 @@ class FriendProfileView extends StatelessWidget {
       context,
       friend: friend,
     );
+  }
+
+  /// Start or navigate to existing conversation with this friend
+  Future<void> _startConversation(BuildContext context) async {
+    try {
+      // Show loading indicator
+      SnackBarUtils.showInfo(context, 'Startar konversation...');
+
+      // Get messaging service
+      final messagingService = ServiceLocator.get<MessagingService>();
+
+      AppLogger.info('🔍 [FriendProfileView] Starting conversation with friend: ${friend.uid} (${friend.displayName})');
+
+      // Start or get existing direct conversation
+      final conversationId = await messagingService.startDirectConversation(
+        otherUserId: friend.uid,
+        otherUserDisplayName: friend.displayName,
+        otherUserAvatarUrl: friend.avatarUrl,
+      );
+
+      AppLogger.success('✅ [FriendProfileView] Got conversationId: $conversationId');
+      AppLogger.debug('🔍 [FriendProfileView] Navigating to ChatViewFacade with conversationId: $conversationId');
+
+      if (!context.mounted) return;
+
+      // Navigate to chat view
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ChatViewFacade(
+            conversationId: conversationId,
+          ),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('❌ [FriendProfileView] Failed to start conversation', e);
+      if (!context.mounted) return;
+      SnackBarUtils.showError(
+        context,
+        'Kunde inte starta konversation: ${e.toString()}',
+      );
+    }
   }
 
   Future<void> _showRemoveFriendDialog(BuildContext context) async {

@@ -84,6 +84,9 @@ class UnifiedMenuService extends ChangeNotifier
   bool _isLoading = false;
   String? _error;
 
+  /// Get all menus (read-only)
+  List<SharedMenu> get menus => List.unmodifiable(_menus);
+
   UnifiedMenuService({
     FirebaseFirestore? firestore,
   })  : _firestore = firestore ?? FirebaseFirestore.instance {
@@ -168,6 +171,26 @@ class UnifiedMenuService extends ChangeNotifier
       AppLogger.error('Failed to load menus', e);
       throw Exception('Failed to load menus: $e');
     }
+  }
+
+  /// Refresh menus from Firebase (bypasses initialization guard)
+  Future<void> refresh() async {
+    await safeExecute(() async {
+      _isLoading = true;
+      notifyListeners();
+
+      try {
+        await _loadMenus();
+        AppLogger.success('✅ Menus refreshed successfully');
+      } catch (e) {
+        _error = 'Failed to refresh menus: $e';
+        AppLogger.error('Failed to refresh menus', e);
+        rethrow;
+      } finally {
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
   }
 
   // ===== PUBLIC NOTIFICATION METHOD =====
@@ -457,7 +480,6 @@ class UnifiedMenuService extends ChangeNotifier
 
   // ===== GETTERS =====
 
-  List<SharedMenu> get menus => List.unmodifiable(_menus);
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
   String? get error => _error;

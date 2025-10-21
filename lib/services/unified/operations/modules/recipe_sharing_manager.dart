@@ -2,10 +2,13 @@
 
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for recipe sharing and collaboration setup
 /// 
@@ -40,55 +43,86 @@ class RecipeSharingManager {
     try {
       AppLogger.info('🔄 Starting recipe share process for recipe: $recipeId');
 
-      // Find the personal recipe to share
-      dynamic personalRecipe;
+      // Find the recipe to share (personal OR collaborative)
+      dynamic recipeToShare;
+      bool isAlreadyCollaborative = false;
+
       try {
-        personalRecipe = _parent.recipes
+        // Try personal recipe first
+        recipeToShare = _parent.recipes
             .firstWhere((r) => r.id == recipeId && r.isPersonal);
+        AppLogger.info('📋 Found personal recipe: ${recipeToShare.title}');
       } catch (e) {
-        AppLogger.error('❌ Cannot share recipe: Recipe not found or not personal');
-        return null;
+        // If not personal, try collaborative
+        try {
+          recipeToShare = _parent.recipes
+              .firstWhere((r) => r.id == recipeId && r.isCollaborative);
+          isAlreadyCollaborative = true;
+          AppLogger.info('📋 Found collaborative recipe: ${recipeToShare.title}');
+        } catch (e2) {
+          AppLogger.error('❌ Recipe not found: $recipeId');
+          return null;
+        }
       }
 
-      AppLogger.info('📋 Found personal recipe: ${personalRecipe.title}');
+      String finalRecipeId;
 
-      // Create collaborative version with all recipe data
-      final collaborativeRecipeId = await _parent.createCollaborativeRecipe(
-        title: personalRecipe.title,
-        memberIds: memberIds,
-        description: personalRecipe.description,
-        ingredients: personalRecipe.ingredients,
-        instructions: personalRecipe.instructions,
-        imageUrls: personalRecipe.imageUrls,
-        mealType: personalRecipe.mealType,
-        portions: personalRecipe.portions,
-        timeMinutes: personalRecipe.timeMinutes,
-        rating: personalRecipe.rating,
-        tags: personalRecipe.tags,
-        sourceUrl: personalRecipe.sourceUrl,
-        descriptionCollaborative: collaborativeDescription,
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        categoryIds: categoryIds,
-      );
+      if (isAlreadyCollaborative) {
+        // For collaborative recipes, just sync to shared_recipes collection
+        AppLogger.info('🔄 Re-sharing collaborative recipe to group');
+        await _syncCollaborativeRecipeToSharedCollection(
+          recipe: recipeToShare,
+          memberIds: memberIds,
+        );
+        finalRecipeId = recipeId;
+        AppLogger.success('✅ Collaborative recipe synced to shared collection');
+      } else {
+        // Create collaborative version for personal recipes
+        finalRecipeId = await _parent.createCollaborativeRecipe(
+          title: recipeToShare.title,
+          memberIds: memberIds,
+          description: recipeToShare.description,
+          ingredients: recipeToShare.ingredients,
+          instructions: recipeToShare.instructions,
+          imageUrls: recipeToShare.imageUrls,
+          mealType: recipeToShare.mealType,
+          portions: recipeToShare.portions,
+          timeMinutes: recipeToShare.timeMinutes,
+          rating: recipeToShare.rating,
+          tags: recipeToShare.tags,
+          sourceUrl: recipeToShare.sourceUrl,
+          descriptionCollaborative: collaborativeDescription,
+          allowGuestViewing: allowGuestViewing,
+          allowMemberInvites: allowMemberInvites,
+          categoryIds: categoryIds,
+        ) ?? '';
 
-      if (collaborativeRecipeId == null) {
-        AppLogger.error('❌ Failed to create collaborative recipe');
-        return null;
+        if (finalRecipeId.isEmpty) {
+          AppLogger.error('❌ Failed to create collaborative recipe');
+          return null;
+        }
+
+        AppLogger.success('✅ Created collaborative recipe: $finalRecipeId');
+
+        // Write to shared_recipes collection for group discoverability
+        await _writeToSharedRecipesCollection(
+          recipeId: finalRecipeId,
+          recipeTitle: recipeToShare.title,
+          memberIds: memberIds,
+          recipeData: recipeToShare,
+        );
       }
-
-      AppLogger.success('✅ Created collaborative recipe: $collaborativeRecipeId');
 
       // Send sharing notifications to all members
       await _sendSharingNotifications(
-        collaborativeRecipeId: collaborativeRecipeId,
-        recipeTitle: personalRecipe.title,
+        collaborativeRecipeId: finalRecipeId,
+        recipeTitle: recipeToShare.title,
         memberIds: memberIds,
         memberDisplayNames: memberDisplayNames,
       );
 
       AppLogger.success('✅ Recipe sharing completed successfully');
-      return collaborativeRecipeId;
+      return finalRecipeId;
     } catch (e) {
       AppLogger.error('❌ Failed to share recipe', e);
       return null;
@@ -338,6 +372,33 @@ class RecipeSharingManager {
     return true;
   }
 
+  /// Sync collaborative recipe to shared_recipes collection
+  /// Used when re-sharing an already collaborative recipe
+  Future<void> _syncCollaborativeRecipeToSharedCollection({
+    required dynamic recipe,
+    required List<String> memberIds,
+  }) async {
+    try {
+      AppLogger.info('🔄 Syncing collaborative recipe to shared collection');
+
+      // Get existing members from recipe permissions
+      final existingMembers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+
+      // Write to shared_recipes collection with all members included
+      await _writeToSharedRecipesCollection(
+        recipeId: recipe.id,
+        recipeTitle: recipe.title,
+        memberIds: [...existingMembers, ...memberIds], // Combine existing + new members
+        recipeData: recipe,
+      );
+
+      AppLogger.success('✅ Collaborative recipe synced to shared collection');
+    } catch (e) {
+      AppLogger.error('❌ Failed to sync collaborative recipe', e);
+      rethrow;
+    }
+  }
+
   /// Log recipe conversion for analytics
   void _logRecipeConversion({
     required String originalId,
@@ -381,6 +442,48 @@ class RecipeSharingManager {
     } catch (e) {
       AppLogger.error('❌ Failed to get sharing stats', e);
       return {'error': 'Failed to calculate stats'};
+    }
+  }
+
+  /// Write to shared_recipes collection for group discoverability
+  /// This allows groups to query and discover shared recipes in their feed
+  Future<void> _writeToSharedRecipesCollection({
+    required String recipeId,
+    required String recipeTitle,
+    required List<String> memberIds,
+    required dynamic recipeData,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final permissionService = ServiceLocator.get<PermissionService>();
+
+      final currentUserId = permissionService.currentUserId;
+      if (currentUserId == null) {
+        AppLogger.warning('Cannot write to shared_recipes: No authenticated user');
+        return;
+      }
+
+      // Ensure owner is included in sharedWithUserIds along with members
+      final allUserIds = {currentUserId, ...memberIds}.toList();
+
+      await firestore.collection('shared_recipes').doc(recipeId).set({
+        'recipeId': recipeId,
+        'title': recipeTitle,
+        'description': recipeData.description ?? '',
+        'sharedByUserId': currentUserId,
+        'sharedByDisplayName': permissionService.currentUser?.displayName ?? 'Unknown',
+        'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
+        'sharedWithUserIds': allUserIds,
+        'sharedAt': FieldValue.serverTimestamp(),
+        'isActive': true,
+        'imageUrl': recipeData.imageUrls?.isNotEmpty == true ? recipeData.imageUrls.first : null,
+        'mealType': recipeData.mealType ?? '',
+      }, SetOptions(merge: true));
+
+      AppLogger.debug('✅ Recipe written to shared_recipes collection for group discovery');
+    } catch (e) {
+      AppLogger.warning('Failed to write to shared_recipes collection: $e');
+      // Don't fail the whole sharing operation if this fails
     }
   }
 }

@@ -9,9 +9,10 @@ import 'package:flutter/services.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/messaging_media_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
+import 'package:butlery/views/messaging/group_detail_view.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -19,12 +20,19 @@ class ChatActionHandler {
   final String conversationId;
   final BuildContext context;
   final MessagingService _messagingService;
-  final ImagePicker _imagePicker = ImagePicker();
+  final MessagingMediaService _mediaService;
+  final Function(Message)? onReplyToMessage;
 
   ChatActionHandler({
     required this.conversationId,
     required this.context,
-  }) : _messagingService = ServiceLocator.get<MessagingService>();
+    this.onReplyToMessage,
+  })  : _messagingService = ServiceLocator.get<MessagingService>(),
+        _mediaService = MessagingMediaService(
+          storageService: ServiceLocator.get(),
+          messagingService: ServiceLocator.get(),
+          authRepository: ServiceLocator.get(),
+        );
 
   /// Handle menu actions from chat app bar
   Future<void> handleMenuAction(String action) async {
@@ -66,37 +74,66 @@ class ChatActionHandler {
   /// Handle sending new messages
   Future<void> handleSendMessage(String content, {MessageType type = MessageType.text}) async {
     try {
-      if (content.trim().isEmpty) return;
-      
-      AppLogger.debug('Sending message: $content');
+      if (content.trim().isEmpty) {
+        AppLogger.warning('📤 [ChatActionHandler] Empty content, aborting send');
+        return;
+      }
+
+      AppLogger.info('📤 [ChatActionHandler] Received send request');
+      AppLogger.debug('📤 [ChatActionHandler] Content: "$content"');
+      AppLogger.debug('📤 [ChatActionHandler] Type: $type');
+      AppLogger.debug('📤 [ChatActionHandler] Conversation ID: $conversationId');
+
       // Send based on message type
       if (type == MessageType.text) {
+        AppLogger.debug('📤 [ChatActionHandler] Calling MessagingService.sendTextMessage...');
         await _messagingService.sendTextMessage(
           conversationId: conversationId,
           content: content,
         );
+        AppLogger.success('✅ [ChatActionHandler] MessagingService.sendTextMessage completed');
       } else if (type == MessageType.image) {
+        AppLogger.debug('📤 [ChatActionHandler] Sending image message...');
         // For images, content would be the path - in production this would upload first
         await _messagingService.sendTextMessage(
           conversationId: conversationId,
           content: '[Image: $content]',
         );
+        AppLogger.success('✅ [ChatActionHandler] Image message sent');
       } else {
+        AppLogger.debug('📤 [ChatActionHandler] Sending other message type...');
         // For other types, send as text with type prefix
         await _messagingService.sendTextMessage(
           conversationId: conversationId,
           content: content,
         );
+        AppLogger.success('✅ [ChatActionHandler] Other type message sent');
       }
-      AppLogger.success('Message sent successfully');
-    } catch (e) {
-      AppLogger.error('Failed to send message', e);
+      AppLogger.success('✅ [ChatActionHandler] Message send operation completed successfully');
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ [ChatActionHandler] Failed to send message', e);
+      AppLogger.error('❌ [ChatActionHandler] Stack trace: $stackTrace');
       _showErrorSnackBar('Ett fel uppstod');
+      rethrow;
     }
+  }
+
+  /// Handle swipe-to-reply action directly on a message
+  void handleSwipeToReply(Message message) {
+    AppLogger.debug('Swipe-to-reply triggered for message: ${message.id}');
+    onReplyToMessage?.call(message);
   }
 
   /// Handle attachment actions
   Future<void> handleAttachment(String attachmentType) async {
+    // Check if it's a photo attachment with source
+    if (attachmentType.startsWith('photo:')) {
+      final sourceName = attachmentType.split(':')[1];
+      final source = sourceName == 'camera' ? ImageSource.camera : ImageSource.gallery;
+      await _sharePhoto(source: source);
+      return;
+    }
+
     switch (attachmentType) {
       case 'recipe':
         await _shareRecipe();
@@ -118,36 +155,50 @@ class ChatActionHandler {
   // Private action implementations
   Future<void> _showConversationInfo() async {
     AppLogger.info('Showing conversation info');
-    
+
     try {
-      // In production, this would fetch the conversation details
-      // For now, show a simple info dialog
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
-      if (currentUserId == null) return;
-      
       if (!context.mounted) return;
-      
-      await showDialog(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Konversationsinformation'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Konversations-ID: $conversationId'),
-              const Text('Typ: Direktmeddelande'),
-              const Text('Status: Aktiv'),
+
+      // Get conversation to check if it's a group
+      final conversation = await _messagingService.getConversation(conversationId);
+
+      if (!context.mounted) return;
+
+      // For group conversations, navigate to GroupDetailView
+      if (conversation != null && conversation.isGroup) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => GroupDetailView(
+              conversationId: conversationId,
+            ),
+          ),
+        );
+      } else {
+        // For direct conversations, show simple info dialog
+        await showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Konversationsinformation'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Typ: Direktmeddelande'),
+                if (conversation != null) ...[
+                  const SizedBox(height: 8),
+                  Text('Skapad: ${conversation.createdAt.toLocal().toString().split('.')[0]}'),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Stäng'),
+              ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Stäng'),
-            ),
-          ],
-        ),
-      );
+        );
+      }
     } catch (e) {
       AppLogger.error('Failed to show conversation info', e);
     }
@@ -204,12 +255,8 @@ class ChatActionHandler {
 
   Future<void> _replyToMessage(Message message) async {
     AppLogger.info('Replying to message: ${message.id}');
-    // Reply context would be set in the parent widget
-    // This handler just notifies the parent about the reply action
-    Navigator.of(context).pop({
-      'action': 'reply',
-      'message': message,
-    });
+    // Notify viewmodel about reply action
+    onReplyToMessage?.call(message);
   }
 
   Future<void> _editMessage(Message message) async {
@@ -333,23 +380,27 @@ class ChatActionHandler {
     }
   }
 
-  Future<void> _sharePhoto() async {
-    AppLogger.info('Sharing photo');
-    
+  Future<void> _sharePhoto({ImageSource source = ImageSource.gallery}) async {
+    AppLogger.info('Sharing photo from ${source == ImageSource.camera ? "camera" : "gallery"}');
+
     try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
+      // Show loading indicator
+      _showInfoSnackBar('Laddar bild...');
+
+      // Use MediaService to pick and send image
+      final success = await _mediaService.pickAndSendImage(
+        conversationId: conversationId,
+        source: source,
+        onProgress: (progress) {
+          // Could update UI with progress here
+          AppLogger.debug('Upload progress: ${(progress * 100).toStringAsFixed(0)}%');
+        },
       );
-      
-      if (image != null) {
-        // Upload image and send as message
-        await handleSendMessage(
-          image.path,
-          type: MessageType.image,
-        );
+
+      if (success) {
+        _showSuccessSnackBar('Bild skickad!');
+      } else {
+        _showErrorSnackBar('Ingen bild vald');
       }
     } catch (e) {
       AppLogger.error('Failed to share photo', e);
@@ -379,7 +430,28 @@ class ChatActionHandler {
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 

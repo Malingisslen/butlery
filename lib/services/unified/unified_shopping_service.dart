@@ -712,7 +712,13 @@ class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<Unifi
   // Feature interfaces
   late final PersonalShoppingOperations _personalOps;
   late final CollaborativeShoppingOperations _collaborativeOps;
-  late final ShoppingShareOperations _shareOps;
+
+  // Lazy getter to avoid circular dependency during DI initialization
+  ShoppingShareOperations get _shareOps => __shareOps ??= ShoppingShareOperations(
+    firestore: _firestore,
+    permissionService: ServiceLocator.get<PermissionService>(),
+  );
+  ShoppingShareOperations? __shareOps;
   
   // Feature modules
   late final ShoppingServiceInitialization _initialization;
@@ -742,7 +748,8 @@ class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<Unifi
     // Initialize feature interfaces
     _personalOps = PersonalShoppingOperations(this);
     _collaborativeOps = CollaborativeShoppingOperations(this);
-    _shareOps = ShoppingShareOperations();
+    // Lazy initialize shareOps to avoid circular dependency during DI setup
+    // PermissionService will be retrieved when first needed
     
     // Initialize feature modules (simplified constructors)
     _initialization = ShoppingServiceInitialization(this);

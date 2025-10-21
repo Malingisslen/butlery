@@ -34,6 +34,7 @@ import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/group_shared_content_service.dart';
 
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
@@ -61,6 +62,7 @@ class SocialModule implements DIModule {
     ConnectivityMonitoringService,
     SocialSharingRepository,
     SocialMenuOperations,
+    GroupSharedContentService,
   ];
 
   @override
@@ -149,7 +151,7 @@ class SocialModule implements DIModule {
       );
 
       // ==================== SOCIAL OPERATIONS ====================
-      
+
       // Note: SocialMenuOperations depends on services that may not be available yet
       // We'll register it as lazy singleton to defer creation
       container.registerLazySingleton<SocialMenuOperations>(
@@ -159,8 +161,16 @@ class SocialModule implements DIModule {
         ),
       );
 
+      // Group shared content service for displaying shared content in groups
+      container.registerLazySingleton<GroupSharedContentService>(
+        () => GroupSharedContentService(
+          firestore: container<FirestoreRepository>().firestore,
+          permissionService: container<PermissionService>(),
+        ),
+      );
+
       if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Configured 12 services (Users, Friends, Social recipes, Comments, Ratings)');
+        debugPrint('✅ [SocialModule] Configured 13 services (Users, Friends, Social recipes, Comments, Ratings, Group content)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -225,6 +235,7 @@ class SocialModule implements DIModule {
         'ConnectivityRepository': container<ConnectivityRepository>(),
         'ConnectivityMonitoringService': container<ConnectivityMonitoringService>(),
         'SocialSharingRepository': container<SocialSharingRepository>(),
+        'GroupSharedContentService': container<GroupSharedContentService>(),
       };
 
       // Perform health checks on services that support it

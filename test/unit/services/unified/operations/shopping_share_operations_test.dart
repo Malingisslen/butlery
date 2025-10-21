@@ -1,22 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('ShoppingShareOperations', () {
     late ShoppingShareOperations operations;
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
-    
+
     setUp(() async {
       await TestServiceLocator.initialize();
-      
-      // Create operations instance (no dependencies)
-      operations = ShoppingShareOperations();
+
+      // Create operations instance with required dependencies
+      operations = ShoppingShareOperations(
+        firestore: FakeFirebaseFirestore(),
+        permissionService: MockPermissionService(),
+      );
     });
     
     tearDown(() async {

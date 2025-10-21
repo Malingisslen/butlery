@@ -69,6 +69,7 @@
 
 // lib/viewmodels/social_recipe_viewmodel.dart
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/social/social_comment.dart';
@@ -77,6 +78,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 /// Comprehensive social recipe ViewModel providing advanced social interaction management through service coordination.
 ///
@@ -86,6 +88,7 @@ import 'package:butlery/core/utils/logger.dart';
 class SocialRecipeViewModel extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
   final UnifiedRecipeService _recipeService;
+  final UserService _userService;
 
   // ===== COMMENT SYSTEM STATE MANAGEMENT =====
   
@@ -126,34 +129,49 @@ class SocialRecipeViewModel extends ChangeNotifier {
   String? _replyToCommentId;
 
   // ===== SOCIAL CONTENT STATE =====
-  
+
   /// Comments collection for display and interaction management.
-  /// 
+  ///
   /// Stores complete comment hierarchy including replies and threading
   /// for comprehensive comment system functionality.
   List<SocialComment> _comments = [];
-  
+
   /// Friends collection for social context and author identification.
-  /// 
+  ///
   /// Caches friend profiles for comment author display and social
   /// interaction context throughout comment operations.
   List<UserProfile> _friends = [];
-  
+
   /// Current user profile for comment authoring and social context.
-  /// 
+  ///
   /// Provides current user information for comment attribution
   /// and social interaction personalization.
   UserProfile? _currentUser;
 
+  // ===== REAL-TIME STREAMING STATE =====
+
+  /// Active comment stream subscription for real-time updates.
+  ///
+  /// Manages Firestore stream connection for live comment updates,
+  /// ensuring proper cleanup and lifecycle management.
+  StreamSubscription<List<RecipeComment>>? _commentStreamSubscription;
+
+  /// Currently watched recipe ID for stream management.
+  ///
+  /// Tracks which recipe's comments are being streamed to prevent
+  /// duplicate subscriptions and enable proper cleanup.
+  String? _watchedRecipeId;
+
   /// Initializes social recipe ViewModel with comprehensive service integration and social coordination.
-  /// 
+  ///
   /// [recipeService] UnifiedRecipeService instance for recipe data operations and social integration
   /// [friendsService] UnifiedFriendsService instance for friend management and social context
-  /// 
+  /// [userService] UserService instance for current user profile management
+  ///
   /// Establishes service layer integration for comprehensive social recipe functionality,
   /// enabling comment management, social engagement, and friend integration with reactive
   /// state coordination for optimal social user experience.
-  /// 
+  ///
   /// **Initialization Process:**
   /// - Service dependency injection with social integration
   /// - Social state preparation for comment and engagement systems
@@ -162,8 +180,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
   SocialRecipeViewModel({
     required UnifiedFriendsService friendsService,
     required UnifiedRecipeService recipeService,
+    required UserService userService,
   }) : _friendsService = friendsService,
-       _recipeService = recipeService;
+       _recipeService = recipeService,
+       _userService = userService;
 
   // ===== COMMENT SYSTEM STATE ACCESSORS =====
 
@@ -231,19 +251,19 @@ class SocialRecipeViewModel extends ChangeNotifier {
   // ===== COMMENT SYSTEM OPERATIONS =====
 
   /// Refreshes comments with comprehensive loading state management and error handling.
-  /// 
+  ///
   /// [recipeId] Recipe identifier for comment retrieval
-  /// 
+  ///
   /// Performs comment system refresh with loading state coordination, comprehensive error handling,
   /// and UI notification for optimal user experience. Includes Swedish localized error messages
   /// and detailed logging for comment system operations.
-  /// 
+  ///
   /// **Refresh Process:**
   /// - Loading state activation with UI notification
   /// - Comment data retrieval through service coordination
   /// - Error handling with Swedish localized feedback
   /// - State cleanup and UI synchronization
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// await socialRecipeViewModel.refreshComments('recipe_123');
@@ -267,6 +287,86 @@ class SocialRecipeViewModel extends ChangeNotifier {
     } finally {
       _isLoadingComments = false;
       notifyListeners();
+    }
+  }
+
+  /// Starts watching comments with real-time updates from Firestore.
+  ///
+  /// [recipeId] Recipe identifier for comment streaming
+  ///
+  /// Subscribes to real-time comment stream for live updates when other users post comments.
+  /// Automatically converts RecipeComment to SocialComment and updates UI.
+  /// Prevents duplicate subscriptions and manages stream lifecycle.
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// socialRecipeViewModel.startWatchingComments('recipe_123');
+  /// // Comments will auto-update when others post
+  /// ```
+  void startWatchingComments(String recipeId) {
+    // Prevent duplicate subscriptions
+    if (_watchedRecipeId == recipeId && _commentStreamSubscription != null) {
+      AppLogger.debug('Already watching comments for recipe: $recipeId');
+      return;
+    }
+
+    // Stop any existing subscription
+    stopWatchingComments();
+
+    _isLoadingComments = true;
+    _commentsError = null;
+    _watchedRecipeId = recipeId;
+    notifyListeners();
+
+    try {
+      AppLogger.info('Starting real-time comment stream for recipe: $recipeId');
+
+      // Subscribe to comment stream from service
+      _commentStreamSubscription = _recipeService.social
+          .getCommentsStream(recipeId)
+          .listen(
+        (recipeComments) {
+          // Convert to SocialComment and update state
+          _comments = recipeComments
+              .map((comment) => _convertRecipeCommentToSocialComment(comment))
+              .toList();
+          _isLoadingComments = false;
+          _commentsError = null;
+          notifyListeners();
+          AppLogger.debug(
+              'Real-time comment update received: ${_comments.length} comments');
+        },
+        onError: (error) {
+          _commentsError = 'Kunde inte lyssna på kommentarer: $error';
+          _isLoadingComments = false;
+          notifyListeners();
+          AppLogger.error('Comment stream error for recipe $recipeId: $error');
+        },
+      );
+    } catch (e) {
+      _commentsError = 'Kunde inte starta kommentarströmning: $e';
+      _isLoadingComments = false;
+      notifyListeners();
+      AppLogger.error('Failed to start comment stream for recipe $recipeId: $e');
+    }
+  }
+
+  /// Stops watching comments and cleans up stream subscription.
+  ///
+  /// Cancels active comment stream subscription and resets stream state.
+  /// Safe to call even if no stream is active.
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// socialRecipeViewModel.stopWatchingComments();
+  /// // Stream subscription cleaned up
+  /// ```
+  void stopWatchingComments() {
+    if (_commentStreamSubscription != null) {
+      AppLogger.info('Stopping comment stream for recipe: $_watchedRecipeId');
+      _commentStreamSubscription?.cancel();
+      _commentStreamSubscription = null;
+      _watchedRecipeId = null;
     }
   }
 
@@ -470,9 +570,13 @@ class SocialRecipeViewModel extends ChangeNotifier {
   // Initialization
   Future<void> initialize() async {
     try {
-      // Load current user and friends from service state
+      // Load current user from UserService
+      _currentUser = _userService.currentUserProfile;
+
+      // Load friends from FriendsService
       _friends = _friendsService.friends;
-      // _currentUser would be loaded from auth service
+
+      AppLogger.info('SocialRecipeViewModel initialized - User: ${_currentUser?.displayName ?? "Not logged in"}, Friends: ${_friends.length}');
       notifyListeners();
     } catch (e) {
       AppLogger.error('Failed to initialize SocialRecipeViewModel: $e');
@@ -585,7 +689,9 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Clean up resources if needed
+    // Cancel comment stream subscription
+    stopWatchingComments();
+    AppLogger.info('SocialRecipeViewModel disposed');
     super.dispose();
   }
 }

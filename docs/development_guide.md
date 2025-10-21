@@ -46,7 +46,7 @@ Smart app som automatiserar receptflödet - från import/skapande av recept till
 ### MVVM + Repository Pattern (✅ COMPLETE)
 
 ```
-lib/ (369 Dart files in optimized architecture)
+lib/ (669 Dart files in production architecture)
 ├── core/                    # 🔧 Modular DI, mixins, utilities
 │   ├── di/                  # Modular dependency injection
 │   │   └── modules/         # 5 domain modules (Core, Content, Social, etc.)

@@ -76,6 +76,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/offline_service.dart' as offline_service;
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 // Theme system integration
 import 'package:butlery/theme/app_colors.dart';
@@ -394,15 +395,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Returns user avatar widget with comprehensive notification system and social integration.
   Widget _buildUserAvatarWithBadge() {
     return Consumer3<UserService, FriendsViewModel, SharedContentViewModel>(
-      builder: (context, userService, friendsViewModel, sharedContentViewModel,
-          child) {
+      builder: (context, userService, friendsViewModel, sharedContentViewModel, child) {
         // ✅ SAFETY: Hantera disposed ViewModels gracefully
         int pendingFriendRequests = 0;
+        int pendingGroupInvitations = 0;
         int unreadRecipes = 0;
         int unreadMenus = 0;
 
         try {
+          final friendsService = ServiceLocator.get<UnifiedFriendsService>();
           pendingFriendRequests = friendsViewModel.pendingRequestsCount;
+          pendingGroupInvitations = friendsService.invitations.pendingReceivedInvitations.length;
           unreadRecipes = sharedContentViewModel.unreadRecipesCount;
           unreadMenus = sharedContentViewModel.unreadMenusCount;
         } catch (e) {
@@ -412,7 +415,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         }
 
         final totalNotifications =
-            pendingFriendRequests + unreadRecipes + unreadMenus;
+            pendingFriendRequests + pendingGroupInvitations + unreadRecipes + unreadMenus;
 
         return Stack(
           children: [
@@ -435,11 +438,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     Navigator.pushNamed(context, Routes.friendRequests),
               ),
             ),
-            // ✅ TOTAL NOTIFICATION BADGE
+            // ✅ TOTAL NOTIFICATION BADGE - Positioned on edge of avatar circle
             if (totalNotifications > 0)
               Positioned(
-                top: 0,
-                right: 0,
+                top: 2,
+                right: 2,
                 child: NotificationBadge(count: totalNotifications),
               ),
           ],

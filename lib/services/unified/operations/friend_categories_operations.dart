@@ -114,6 +114,7 @@ class FriendsCategoriesOperations {
     try {
       // Create category internally
       final categoryId = const Uuid().v4();
+
       final category = FriendCategory(
         id: categoryId,
         name: name.trim(),
@@ -124,30 +125,32 @@ class FriendsCategoriesOperations {
         emoji: icon,
         friendUserIds: [currentUserId], // Add owner as member
       );
-      
-      _parent.addCategoryInternal(category);
-      
-      await _parent.syncCategoryToFirebaseInternal(category);
-      
-      const success = true;
 
-      if (success) {
-        // If initial members provided, add them
-        if (initialMemberIds != null && initialMemberIds.isNotEmpty) {
-          final createdCategory = getCategoryByName(name.trim());
-          if (createdCategory != null) {
-            for (final memberId in initialMemberIds) {
-              await addFriendToCategory(memberId, createdCategory.id);
-            }
-          } else {
+      _parent.addCategoryInternal(category);
+      await _parent.syncCategoryToFirebaseInternal(category);
+
+      // ✅ FIXED: If initial members provided, send invitations instead of directly adding
+      // This prevents the "0 invites sent" issue when trying to invite initial members later
+      if (initialMemberIds != null && initialMemberIds.isNotEmpty) {
+        try {
+          int sentCount = 0;
+          for (final memberId in initialMemberIds) {
+            final sent = await _parent.invitations.sendGroupInvitationToUser(
+              userId: memberId,
+              groupId: categoryId,
+            );
+            if (sent) sentCount++;
           }
-        } else {
+          AppLogger.success('✅ Category created with $sentCount invitations sent: $name');
+        } catch (memberError) {
+          AppLogger.warning('⚠️ Category created but failed to send some invitations: $memberError');
+          // Continue anyway - category was created successfully
         }
-        
+      } else {
         AppLogger.success('✅ Category created: $name');
-        final finalCategoryId = getCategoryByName(name.trim())?.id;
-        return finalCategoryId;
       }
+
+      return categoryId;
     } catch (e) {
       AppLogger.error('Error creating category: $name', e);
       return null;
@@ -242,33 +245,58 @@ class FriendsCategoriesOperations {
   // ===== CATEGORY MEMBERSHIP OPERATIONS =====
 
   /// Add friend to category
-  Future<bool> addFriendToCategory(String friendId, String categoryId) async {
+  Future<bool> addFriendToCategory(String friendId, String categoryId, {bool skipFriendshipCheck = false, bool skipPermissionCheck = false}) async {
+    AppLogger.info('🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck');
+
     final category = getCategoryById(categoryId);
     if (category == null) {
-      AppLogger.warning('Category not found: $categoryId');
+      AppLogger.warning('❌ [ADD_TO_CATEGORY] Category not found: $categoryId');
       return false;
     }
 
-    if (!_parent.management.isFriend(friendId)) {
-      AppLogger.warning('User is not a friend: $friendId');
+    AppLogger.info('📋 [ADD_TO_CATEGORY] Found category: ${category.name}');
+
+    // ✅ FIXED: Skip friendship check when accepting invitations (users don't need to be friends first)
+    if (!skipFriendshipCheck && !_parent.management.isFriend(friendId)) {
+      AppLogger.warning('❌ [ADD_TO_CATEGORY] User is not a friend: $friendId');
       return false;
+    }
+
+    if (!skipFriendshipCheck) {
+      AppLogger.info('✅ [ADD_TO_CATEGORY] Friendship check passed');
+    } else {
+      AppLogger.info('⏭️ [ADD_TO_CATEGORY] Friendship check skipped');
     }
 
     if (isFriendInCategory(friendId, categoryId)) {
-      AppLogger.warning('Friend already in category: $friendId -> $categoryId');
+      AppLogger.warning('⚠️ [ADD_TO_CATEGORY] Friend already in category: $friendId -> $categoryId');
       return true; // Not an error, just already done
     }
 
-    if (!_canEditCategory(category)) {
-      AppLogger.warning('No permission to edit category: $categoryId');
+    // ✅ FIXED: Skip permission check when accepting invitations (user is joining, not editing)
+    if (!skipPermissionCheck && !_canEditCategory(category)) {
+      AppLogger.warning('❌ [ADD_TO_CATEGORY] No permission to edit category: $categoryId');
       return false;
     }
 
+    if (!skipPermissionCheck) {
+      AppLogger.info('✅ [ADD_TO_CATEGORY] Permission check passed');
+    } else {
+      AppLogger.info('⏭️ [ADD_TO_CATEGORY] Permission check skipped');
+    }
+
+    AppLogger.info('📝 [ADD_TO_CATEGORY] Adding friend to category locally...');
     _parent.addFriendToCategoryInternal(friendId, categoryId);
+
+    AppLogger.info('☁️ [ADD_TO_CATEGORY] Syncing to Firebase...');
     final categoryToSync = getCategoryById(categoryId);
     if (categoryToSync != null) {
       await _parent.syncCategoryToFirebaseInternal(categoryToSync);
+      AppLogger.success('✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced');
+    } else {
+      AppLogger.warning('⚠️ [ADD_TO_CATEGORY] Category not found for sync');
     }
+
     return true;
   }
 

@@ -1,6 +1,7 @@
 // lib/widgets/messaging/message_bubble.dart
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/models/messaging/message.dart';
 // MessageStatus and MessageType available through message.dart import
 import 'package:butlery/theme/app_colors.dart';
@@ -9,17 +10,19 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
 
 /// Message bubble component for displaying individual messages in chat
-/// 
+///
 /// Provides different styling for sent vs received messages with:
 /// - Message content with proper formatting
 /// - Message status indicators (sent, delivered, read)
 /// - Timestamp display and edited indicators
 /// - Recipe/menu share previews
 /// - Reply preview support
+/// - Swipe-to-reply gesture
 /// - Proper Swedish localization
-class MessageBubble extends StatelessWidget {
+class MessageBubble extends StatefulWidget {
   final Message message;
   final String currentUserId;
   final VoidCallback? onTap;
@@ -41,8 +44,42 @@ class MessageBubble extends StatelessWidget {
     this.showTimestamp = true,
   });
 
-  bool get _isFromCurrentUser => message.isFromCurrentUser(currentUserId);
-  bool get _isSystemMessage => message.isSystemMessage;
+  @override
+  State<MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<MessageBubble>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _swipeController;
+  late Animation<Offset> _swipeAnimation;
+  double _dragExtent = 0;
+  static const double _swipeThreshold = 80.0;
+  static const double _maxSwipe = 120.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _swipeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _swipeAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _swipeController,
+      curve: Curves.easeOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _swipeController.dispose();
+    super.dispose();
+  }
+
+  bool get _isFromCurrentUser => widget.message.isFromCurrentUser(widget.currentUserId);
+  bool get _isSystemMessage => widget.message.isSystemMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -50,42 +87,118 @@ class MessageBubble extends StatelessWidget {
       return _buildSystemMessage(context);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.spacingXs,
-      ),
-      child: Row(
-        mainAxisAlignment: _isFromCurrentUser 
-            ? MainAxisAlignment.end 
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!_isFromCurrentUser && showAvatar) ...[
-            _buildAvatar(context),
-            const SizedBox(width: AppDimensions.paddingS),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment: _isFromCurrentUser 
-                  ? CrossAxisAlignment.end 
-                  : CrossAxisAlignment.start,
-              children: [
-                if (!_isFromCurrentUser && !showAvatar) 
-                  _buildSenderName(context),
-                _buildMessageCard(context),
-                if (showTimestamp) 
-                  _buildTimestamp(context),
-              ],
+    return GestureDetector(
+      onHorizontalDragUpdate: widget.onReply != null ? _handleDragUpdate : null,
+      onHorizontalDragEnd: widget.onReply != null ? _handleDragEnd : null,
+      child: AnimatedBuilder(
+        animation: _swipeAnimation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: _swipeAnimation.value,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.spacingXs,
+              ),
+              child: Stack(
+                alignment: _isFromCurrentUser
+                    ? Alignment.centerLeft
+                    : Alignment.centerRight,
+                children: [
+                  // Reply icon that appears during swipe
+                  if (_dragExtent.abs() > 10)
+                    Positioned(
+                      left: _isFromCurrentUser ? 20 : null,
+                      right: !_isFromCurrentUser ? 20 : null,
+                      child: Opacity(
+                        opacity: (_dragExtent.abs() / _swipeThreshold).clamp(0.0, 1.0),
+                        child: const Icon(
+                          Icons.reply,
+                          color: AppColors.success,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  // Message content
+                  Row(
+                    mainAxisAlignment: _isFromCurrentUser
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (!_isFromCurrentUser && widget.showAvatar) ...[
+                        _buildAvatar(context),
+                        const SizedBox(width: AppDimensions.paddingS),
+                      ],
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: _isFromCurrentUser
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            if (!_isFromCurrentUser && !widget.showAvatar)
+                              _buildSenderName(context),
+                            _buildMessageCard(context),
+                            if (widget.showTimestamp) _buildTimestamp(context),
+                          ],
+                        ),
+                      ),
+                      if (_isFromCurrentUser && widget.showAvatar) ...[
+                        const SizedBox(width: AppDimensions.paddingS),
+                        _buildAvatar(context),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (_isFromCurrentUser && showAvatar) ...[
-            const SizedBox(width: AppDimensions.paddingS),
-            _buildAvatar(context),
-          ],
-        ],
+          );
+        },
       ),
     );
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (widget.onReply == null) return;
+
+    setState(() {
+      // For received messages (left side), swipe right (positive delta)
+      // For sent messages (right side), swipe left (negative delta)
+      final delta = details.primaryDelta ?? 0;
+
+      if (_isFromCurrentUser) {
+        // Sent messages: swipe left
+        _dragExtent = (delta < 0) ? delta.clamp(-_maxSwipe, 0) : 0;
+      } else {
+        // Received messages: swipe right
+        _dragExtent = (delta > 0) ? delta.clamp(0, _maxSwipe) : 0;
+      }
+    });
+
+    // Update animation
+    _swipeAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset(_dragExtent / 10, 0), // Reduced movement for better feel
+    ).animate(_swipeController);
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    if (widget.onReply == null) return;
+
+    // Trigger reply if threshold was met
+    if (_dragExtent.abs() >= _swipeThreshold) {
+      widget.onReply?.call();
+    }
+
+    // Reset animation
+    setState(() {
+      _dragExtent = 0;
+    });
+    _swipeAnimation = Tween<Offset>(
+      begin: _swipeAnimation.value,
+      end: Offset.zero,
+    ).animate(_swipeController);
+    _swipeController.forward(from: 0);
   }
 
   Widget _buildSystemMessage(BuildContext context) {
@@ -105,7 +218,7 @@ class MessageBubble extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Text(
-            message.content,
+            widget.message.content,
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.textMedium,
               fontStyle: FontStyle.italic,
@@ -125,9 +238,9 @@ class MessageBubble extends StatelessWidget {
         shape: BoxShape.circle,
         color: AppColors.accent.withValues(alpha: 0.2),
       ),
-      child: message.senderAvatarUrl != null
+      child: widget.message.senderAvatarUrl != null
           ? SimpleImageWidget(
-              imageUrl: message.senderAvatarUrl!,
+              imageUrl: widget.message.senderAvatarUrl!,
               config: ImageConfig.avatar(
                 size: ImageSize.small,
               ),
@@ -140,8 +253,8 @@ class MessageBubble extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return Center(
       child: Text(
-        message.senderDisplayName.isNotEmpty 
-            ? message.senderDisplayName[0].toUpperCase()
+        widget.message.senderDisplayName.isNotEmpty
+            ? widget.message.senderDisplayName[0].toUpperCase()
             : '?',
         style: AppTextStyles.labelMedium.copyWith(
           color: AppColors.primaryBlue,
@@ -157,7 +270,7 @@ class MessageBubble extends StatelessWidget {
         bottom: AppDimensions.spacingXs,
       ),
       child: Text(
-        message.senderDisplayName,
+        widget.message.senderDisplayName,
         style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.textMedium,
           fontWeight: FontWeight.w500,
@@ -168,11 +281,11 @@ class MessageBubble extends StatelessWidget {
 
   Widget _buildMessageCard(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: StyledCard(
-        backgroundColor: _isFromCurrentUser 
-            ? AppColors.primaryBlue 
+        backgroundColor: _isFromCurrentUser
+            ? AppColors.primaryBlue
             : AppColors.cardWhite,
         borderRadius: AppDimensions.borderRadiusM,
         padding: const EdgeInsets.symmetric(
@@ -182,7 +295,7 @@ class MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (message.isReply && replyToMessage != null)
+            if (widget.message.isReply && widget.replyToMessage != null)
               _buildReplyPreview(context),
             _buildMessageContent(context),
             if (_isFromCurrentUser)
@@ -194,6 +307,9 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(BuildContext context) {
+    final replyTo = widget.replyToMessage;
+    if (replyTo == null) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
@@ -212,18 +328,18 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            replyToMessage!.senderDisplayName,
+            replyTo.senderDisplayName,
             style: AppTextStyles.labelMedium.copyWith(
-              color: _isFromCurrentUser 
+              color: _isFromCurrentUser
                   ? AppColors.cardWhite.withValues(alpha: 0.8)
                   : AppColors.primaryBlue,
             ),
           ),
           const SizedBox(height: AppDimensions.spacing2),
           Text(
-            replyToMessage!.displayContent,
+            replyTo.displayContent,
             style: AppTextStyles.labelSmall.copyWith(
-              color: _isFromCurrentUser 
+              color: _isFromCurrentUser
                   ? AppColors.cardWhite.withValues(alpha: 0.7)
                   : AppColors.textMedium,
             ),
@@ -236,7 +352,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(BuildContext context) {
-    switch (message.type) {
+    switch (widget.message.type) {
       case MessageType.text:
         return _buildTextContent(context);
       case MessageType.recipeShare:
@@ -259,20 +375,20 @@ class MessageBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          message.content,
+          widget.message.content,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: _isFromCurrentUser 
-                ? AppColors.cardWhite 
+            color: _isFromCurrentUser
+                ? AppColors.cardWhite
                 : AppColors.textDark,
           ),
         ),
-        if (message.isEdited)
+        if (widget.message.isEdited)
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               'redigerad',
               style: AppTextStyles.labelSmall.copyWith(
-                color: _isFromCurrentUser 
+                color: _isFromCurrentUser
                     ? AppColors.cardWhite.withValues(alpha: 0.7)
                     : AppColors.textMedium,
                 fontStyle: FontStyle.italic,
@@ -284,7 +400,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildRecipeShareContent(BuildContext context) {
-    final recipeTitle = message.metadata?['recipeTitle'] ?? 'Okänt recept';
+    final recipeTitle = widget.message.metadata?['recipeTitle'] ?? 'Okänt recept';
     
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
@@ -330,9 +446,9 @@ class MessageBubble extends StatelessWidget {
                         : AppColors.textDark,
                   ),
                 ),
-                if (message.content.isNotEmpty && message.content != 'Delade ett recept: $recipeTitle')
+                if (widget.message.content.isNotEmpty && widget.message.content != 'Delade ett recept: $recipeTitle')
                   Text(
-                    message.content,
+                    widget.message.content,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: _isFromCurrentUser 
                           ? AppColors.cardWhite.withValues(alpha: 0.8)
@@ -348,7 +464,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildMenuShareContent(BuildContext context) {
-    final menuTitle = message.metadata?['menuTitle'] ?? 'Okänd meny';
+    final menuTitle = widget.message.metadata?['menuTitle'] ?? 'Okänd meny';
     
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
@@ -403,7 +519,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildShoppingListShareContent(BuildContext context) {
-    final listTitle = message.metadata?['listTitle'] ?? 'Okänd inköpslista';
+    final listTitle = widget.message.metadata?['listTitle'] ?? 'Okänd inköpslista';
     
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
@@ -458,36 +574,102 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildImageContent(BuildContext context) {
+    // For image messages, URL is stored in metadata
+    final imageUrl = widget.message.metadata?['imageUrl'] as String? ?? '';
+
+    if (imageUrl.isEmpty) {
+      // Fallback if no image URL
+      return Text(
+        'Bild kunde inte laddas',
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: _isFromCurrentUser
+              ? AppColors.cardWhite
+              : AppColors.textDark,
+          fontStyle: FontStyle.italic,
+        ),
+      );
+    }
+
     return Container(
       constraints: const BoxConstraints(
-        maxWidth: 200,
-        maxHeight: 200,
+        maxWidth: 250,
+        maxHeight: 300,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            child: Container(
-              color: AppColors.accent.withValues(alpha: 0.2),
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              child: Icon(
-                Icons.image,
-                size: AppDimensions.iconSizeXl,
-                color: _isFromCurrentUser 
-                    ? AppColors.cardWhite 
-                    : AppColors.primaryBlue,
+          // Image with tap to fullscreen
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => FullscreenImageViewer(
+                    imageUrl: imageUrl,
+                    caption: widget.message.content.isNotEmpty ? widget.message.content : null,
+                  ),
+                  fullscreenDialog: true,
+                ),
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 150,
+                  color: _isFromCurrentUser
+                      ? AppColors.cardWhite.withValues(alpha: 0.2)
+                      : AppColors.accent.withValues(alpha: 0.2),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: _isFromCurrentUser
+                          ? AppColors.cardWhite
+                          : AppColors.primaryBlue,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 150,
+                  color: _isFromCurrentUser
+                      ? AppColors.cardWhite.withValues(alpha: 0.2)
+                      : AppColors.accent.withValues(alpha: 0.2),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.broken_image,
+                        size: 48,
+                        color: _isFromCurrentUser
+                            ? AppColors.cardWhite.withValues(alpha: 0.7)
+                            : AppColors.textMedium,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingS),
+                      Text(
+                        'Kunde inte ladda bild',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: _isFromCurrentUser
+                              ? AppColors.cardWhite.withValues(alpha: 0.7)
+                              : AppColors.textMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-          if (message.content.isNotEmpty)
+
+          // Caption if available
+          if (widget.message.content.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: AppDimensions.paddingS),
               child: Text(
-                message.content,
+                widget.message.content,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: _isFromCurrentUser 
-                      ? AppColors.cardWhite 
+                  color: _isFromCurrentUser
+                      ? AppColors.cardWhite
                       : AppColors.textDark,
                 ),
               ),
@@ -565,7 +747,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   IconData _getStatusIcon() {
-    switch (message.status) {
+    switch (widget.message.status) {
       case MessageStatus.sending:
         return Icons.access_time;
       case MessageStatus.sent:
@@ -580,7 +762,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   String _getStatusText() {
-    switch (message.status) {
+    switch (widget.message.status) {
       case MessageStatus.sending:
         return 'Skickar';
       case MessageStatus.sent:
@@ -596,7 +778,7 @@ class MessageBubble extends StatelessWidget {
 
   String _getFormattedTimestamp() {
     final now = DateTime.now();
-    final messageTime = message.sentAt;
+    final messageTime = widget.message.sentAt;
     final difference = now.difference(messageTime);
 
     if (difference.inMinutes < 1) {

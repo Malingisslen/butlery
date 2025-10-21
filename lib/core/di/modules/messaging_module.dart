@@ -30,6 +30,10 @@ import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart
 
 // Messaging services
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/presence_service.dart';
+
+// Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Import dependency modules
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -56,6 +60,7 @@ class MessagingModule implements DIModule {
   List<Type> get provides => [
     MessagingRepository,
     MessagingService,
+    PresenceService,
     NotificationsRepository, // Also provides notifications repository
   ];
 
@@ -84,15 +89,21 @@ class MessagingModule implements DIModule {
       }
 
       // ==================== MESSAGING SERVICES ====================
-      
+
       // MessagingService - handles direct messaging with FCM integration
       container.registerSingleton<MessagingService>(MessagingService(
         messagingRepository: container<MessagingRepository>(),
         authRepository: container<AuthRepository>(),
       ));
 
+      // PresenceService - handles online/offline status and typing indicators
+      container.registerSingleton<PresenceService>(PresenceService(
+        firestore: FirebaseFirestore.instance,
+        authRepository: container<AuthRepository>(),
+      ));
+
       if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] Configured messaging and notifications services');
+        debugPrint('✅ [MessagingModule] Configured messaging, presence and notifications services');
       }
     } catch (e) {
       throw DIModuleException(
@@ -118,6 +129,14 @@ class MessagingModule implements DIModule {
       final messagingRepository = container<MessagingRepository>();
       messagingRepository.toString(); // Basic validation
 
+      // Initialize PresenceService for online/offline tracking
+      final presenceService = container<PresenceService>();
+      await presenceService.initialize();
+
+      if (kDebugMode) {
+        debugPrint('✅ [MessagingModule] Initialized presence tracking');
+      }
+
     } catch (e) {
       throw DIModuleException(
         name,
@@ -137,6 +156,7 @@ class MessagingModule implements DIModule {
       final services = <String, dynamic>{
         'MessagingRepository': container<MessagingRepository>(),
         'MessagingService': container<MessagingService>(),
+        'PresenceService': container<PresenceService>(),
       };
 
       // Include NotificationsRepository if it was registered by this module

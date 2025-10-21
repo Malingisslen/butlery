@@ -42,6 +42,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 // Deep link handling
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 
+// Route observers
+import 'package:butlery/core/observers/snackbar_route_observer.dart';
+
 // Performance optimization - handled by modular system
 
 // All services accessed through DI system - no direct imports needed
@@ -74,7 +77,7 @@ import 'package:butlery/core/utils/logger.dart';
 Future<void> main() async {
   // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     if (kDebugMode) {
       debugPrint('🚀 Starting Butlery with modular system');
@@ -248,6 +251,7 @@ class ButleryApp extends StatefulWidget {
 class _ButleryAppState extends State<ButleryApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   FirebaseAnalyticsObserver? _analyticsObserver;
+  final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
 
   @override
   void initState() {
@@ -337,15 +341,33 @@ class _ButleryAppState extends State<ButleryApp> {
 
   /// Build the main application UI.
   Widget _buildMainApp() {
+    // Build navigator observers list with snackbar observer and optional analytics
+    final observers = <NavigatorObserver>[
+      _snackbarObserver,
+      if (_analyticsObserver != null) _analyticsObserver!,
+    ];
+
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      navigatorObservers: _analyticsObserver != null ? [_analyticsObserver!] : [],
+      navigatorObservers: observers,
       title: 'Butlery',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       home: const InitializationWrapper(),
       onUnknownRoute: AppRouter.handleUnknownRoute,
       onGenerateRoute: AppRouter.generateRoute,
+      // Universal fix for Android nav bar overlay
+      // Wraps ALL views with SafeArea to prevent content from being hidden
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        return SafeArea(
+          top: false, // Let AppBar handle top
+          bottom: true, // Always protect bottom from system nav bar
+          left: false,
+          right: false,
+          child: child,
+        );
+      },
     );
   }
 
