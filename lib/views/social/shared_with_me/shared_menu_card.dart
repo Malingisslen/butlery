@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
@@ -17,11 +17,11 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 class SharedMenuCard {
   static Widget build(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) {
-    final isRead = viewModel.isMenuRead(sharedMenu);
-    final isImported = viewModel.isMenuImported(sharedMenu);
+    final isRead = viewModel.menuViewModel.isMenuViewed(sharedMenu);
+    final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
 
     return Material(
       elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
@@ -30,7 +30,7 @@ class SharedMenuCard {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         onTap: () {
           if (!isRead) {
-            viewModel.markMenuAsRead(sharedMenu);
+            viewModel.menuViewModel.markAsViewed(sharedMenu);
           }
           Navigator.push(
             context,
@@ -88,7 +88,7 @@ class SharedMenuCard {
 
   static Widget _buildHeader(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
     bool isRead,
   ) {
@@ -252,7 +252,7 @@ class SharedMenuCard {
 
   static Widget _buildActionButtons(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
     bool isRead,
     bool isImported,
@@ -266,7 +266,7 @@ class SharedMenuCard {
             icon: Icons.visibility,
             onPressed: () {
               if (!isRead) {
-                viewModel.markMenuAsRead(sharedMenu);
+                viewModel.menuViewModel.markAsViewed(sharedMenu);
               }
               Navigator.push(
                 context,
@@ -286,8 +286,8 @@ class SharedMenuCard {
             context,
             label: isImported ? 'Importerat' : 'Importera',
             icon: isImported ? Icons.check : Icons.download,
-            isLoading: viewModel.isImporting,
-            onPressed: isImported || viewModel.isImporting
+            isLoading: viewModel.menuViewModel.isOperating,
+            onPressed: isImported || viewModel.menuViewModel.isOperating
                 ? null
                 : () => SharedContentActions.importMenu(
                       context,

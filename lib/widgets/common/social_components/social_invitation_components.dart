@@ -10,178 +10,54 @@ import 'package:butlery/widgets/common/social_components/invitation_lists.dart';
 import 'package:butlery/widgets/common/social_components/invitation_states.dart';
 import 'package:butlery/widgets/common/social_components/invitation_actions.dart';
 
-/// Clean facade for social invitation components using focused modules
-/// 
-/// This facade provides a unified API that delegates to focused modules:
-/// - InvitationDisplays: Target cards, chips, tiles, badges
-/// - InvitationSelectors: Selection interfaces and filtering
-/// - InvitationLists: List and grid layouts
-/// - InvitationStates: Loading, error, empty, success states
-/// - InvitationActions: Quick actions and bulk operations
-/// 
-/// ❌ DOES NOT CONTAIN: Business logic, API calls, complex state management
+/// Facade for social invitation components delegating to focused modules
 class SocialInvitationComponents {
 
-  // ===== DISPLAY WIDGETS (DELEGATE TO INVITATION_DISPLAYS) =====
-
-  /// Build invitation target display
   static Widget invitationTargetDisplay({
-    required InvitationTarget target,
-    VoidCallback? onTap,
-    bool selected = false,
-    bool compact = false,
-    Widget? trailing,
-    EdgeInsets? padding,
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-  }) {
-    return InvitationDisplays.invitationTargetDisplay(
-      target: target,
-      onTap: onTap,
-      selected: selected,
-      compact: compact,
-      trailing: trailing,
-      padding: padding,
-      backgroundColor: backgroundColor,
-      borderRadius: borderRadius,
-    );
-  }
+    required InvitationTarget target, VoidCallback? onTap, bool selected = false, bool compact = false,
+    Widget? trailing, EdgeInsets? padding, Color? backgroundColor, BorderRadius? borderRadius,
+  }) => InvitationDisplays.invitationTargetDisplay(target: target, onTap: onTap, selected: selected,
+      compact: compact, trailing: trailing, padding: padding, backgroundColor: backgroundColor, borderRadius: borderRadius);
 
-  /// Build target card
   static Widget targetCard({
-    required InvitationTarget target,
-    VoidCallback? onTap,
-    bool selected = false,
-    Widget? trailing,
-    bool showType = true,
-    bool showMemberCount = true,
-    EdgeInsets? padding,
-    Color? backgroundColor,
-  }) {
-    return InvitationDisplays.targetCard(
-      target: target,
-      onTap: onTap,
-      selected: selected,
-      trailing: trailing,
-      showType: showType,
-      showMemberCount: showMemberCount,
-      padding: padding,
-      backgroundColor: backgroundColor,
-    );
-  }
+    required InvitationTarget target, VoidCallback? onTap, bool selected = false, Widget? trailing,
+    bool showType = true, bool showMemberCount = true, EdgeInsets? padding, Color? backgroundColor,
+  }) => InvitationDisplays.targetCard(target: target, onTap: onTap, selected: selected, trailing: trailing,
+      showType: showType, showMemberCount: showMemberCount, padding: padding, backgroundColor: backgroundColor);
 
-  /// Build target chip
   static Widget targetChip({
-    required InvitationTarget target,
-    VoidCallback? onTap,
-    VoidCallback? onDeleted,
-    bool selected = false,
-    Color? backgroundColor,
-    Color? selectedColor,
-    EdgeInsets? padding,
-  }) {
-    return InvitationDisplays.targetChip(
-      target: target,
-      onTap: onTap,
-      onDeleted: onDeleted,
-      selected: selected,
-      backgroundColor: backgroundColor,
-      selectedColor: selectedColor,
-      padding: padding,
-    );
-  }
+    required InvitationTarget target, VoidCallback? onTap, VoidCallback? onDeleted, bool selected = false,
+    Color? backgroundColor, Color? selectedColor, EdgeInsets? padding,
+  }) => InvitationDisplays.targetChip(target: target, onTap: onTap, onDeleted: onDeleted, selected: selected,
+      backgroundColor: backgroundColor, selectedColor: selectedColor, padding: padding);
 
-  /// Build target list tile
   static Widget targetListTile({
-    required InvitationTarget target,
-    VoidCallback? onTap,
-    bool selected = false,
-    Widget? trailing,
-    bool showSubtitle = true,
-    bool enabled = true,
-    EdgeInsets? contentPadding,
-  }) {
-    return InvitationDisplays.targetListTile(
-      target: target,
-      onTap: onTap,
-      selected: selected,
-      trailing: trailing,
-      showSubtitle: showSubtitle,
-      enabled: enabled,
-      contentPadding: contentPadding,
-    );
-  }
+    required InvitationTarget target, VoidCallback? onTap, bool selected = false, Widget? trailing,
+    bool showSubtitle = true, bool enabled = true, EdgeInsets? contentPadding,
+  }) => InvitationDisplays.targetListTile(target: target, onTap: onTap, selected: selected, trailing: trailing,
+      showSubtitle: showSubtitle, enabled: enabled, contentPadding: contentPadding);
 
-  /// Build target badge
   static Widget targetBadge({
-    required InvitationTarget target,
-    bool showCount = false,
-    Color? backgroundColor,
-    Color? textColor,
-    EdgeInsets? padding,
-    double? fontSize,
-  }) {
-    return InvitationDisplays.targetBadge(
-      target: target,
-      showCount: showCount,
-      backgroundColor: backgroundColor,
-      textColor: textColor,
-      padding: padding,
-      fontSize: fontSize,
-    );
-  }
+    required InvitationTarget target, bool showCount = false, Color? backgroundColor,
+    Color? textColor, EdgeInsets? padding, double? fontSize,
+  }) => InvitationDisplays.targetBadge(target: target, showCount: showCount, backgroundColor: backgroundColor,
+      textColor: textColor, padding: padding, fontSize: fontSize);
 
-  // ===== LIST AND GRID LAYOUTS (DELEGATE TO INVITATION_LISTS) =====
-
-  /// Build target list
   static Widget targetList({
-    required List<InvitationTarget> targets,
-    Function(InvitationTarget)? onTargetTap,
-    bool allowMultiSelect = false,
-    List<InvitationTarget>? selectedTargets,
-    Function(List<InvitationTarget>)? onSelectionChanged,
-    bool showTrailing = true,
-    ScrollPhysics? physics,
-    EdgeInsets? padding,
-  }) {
-    return InvitationLists.targetList(
-      targets: targets,
-      onTargetTap: onTargetTap,
-      allowMultiSelect: allowMultiSelect,
-      selectedTargets: selectedTargets,
-      onSelectionChanged: onSelectionChanged,
-      showTrailing: showTrailing,
-      physics: physics,
-      padding: padding,
-    );
-  }
+    required List<InvitationTarget> targets, Function(InvitationTarget)? onTargetTap, bool allowMultiSelect = false,
+    List<InvitationTarget>? selectedTargets, Function(List<InvitationTarget>)? onSelectionChanged,
+    bool showTrailing = true, ScrollPhysics? physics, EdgeInsets? padding,
+  }) => InvitationLists.targetList(targets: targets, onTargetTap: onTargetTap, allowMultiSelect: allowMultiSelect,
+      selectedTargets: selectedTargets, onSelectionChanged: onSelectionChanged, showTrailing: showTrailing,
+      physics: physics, padding: padding);
 
-  /// Build target grid
   static Widget targetGrid({
-    required List<InvitationTarget> targets,
-    Function(InvitationTarget)? onTargetTap,
-    bool allowMultiSelect = false,
-    List<InvitationTarget>? selectedTargets,
-    Function(List<InvitationTarget>)? onSelectionChanged,
-    int crossAxisCount = 2,
-    double crossAxisSpacing = 8.0,
-    double mainAxisSpacing = 8.0,
-    EdgeInsets? padding,
-  }) {
-    return InvitationLists.targetGrid(
-      targets: targets,
-      onTargetTap: onTargetTap,
-      allowMultiSelect: allowMultiSelect,
-      selectedTargets: selectedTargets,
-      onSelectionChanged: onSelectionChanged,
-      crossAxisCount: crossAxisCount,
-      crossAxisSpacing: crossAxisSpacing,
-      mainAxisSpacing: mainAxisSpacing,
-      padding: padding,
-    );
-  }
-
-  // ===== SELECTION INTERFACES (DELEGATE TO INVITATION_SELECTORS) =====
+    required List<InvitationTarget> targets, Function(InvitationTarget)? onTargetTap, bool allowMultiSelect = false,
+    List<InvitationTarget>? selectedTargets, Function(List<InvitationTarget>)? onSelectionChanged,
+    int crossAxisCount = 2, double crossAxisSpacing = 8.0, double mainAxisSpacing = 8.0, EdgeInsets? padding,
+  }) => InvitationLists.targetGrid(targets: targets, onTargetTap: onTargetTap, allowMultiSelect: allowMultiSelect,
+      selectedTargets: selectedTargets, onSelectionChanged: onSelectionChanged, crossAxisCount: crossAxisCount,
+      crossAxisSpacing: crossAxisSpacing, mainAxisSpacing: mainAxisSpacing, padding: padding);
 
   /// Build target selector
   static Widget targetSelector({

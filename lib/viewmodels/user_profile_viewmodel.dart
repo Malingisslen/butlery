@@ -1,219 +1,66 @@
-/// Comprehensive user profile ViewModel providing advanced profile management and state coordination for Flutter applications.
+/// User profile ViewModel for form management, avatar upload, privacy settings, and real-time validation (Swedish).
 ///
-/// This module implements sophisticated user profile management following Single Responsibility Principle,
-/// handling all aspects of profile presentation layer including form validation, avatar management, privacy settings,
-/// and comprehensive state synchronization. It provides complete user profile infrastructure while
-/// maintaining clean separation from UI rendering, data persistence, and business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles user profile presentation layer concerns:
-/// - **Profile Form Management**: Complete form state management with comprehensive validation and change tracking
-/// - **Avatar Management Excellence**: Advanced image upload, processing, and URL management with service coordination
-/// - **Privacy Settings Control**: Comprehensive privacy preference management with searchability and email discovery settings
-/// - **Validation Intelligence**: Sophisticated input validation with Swedish localization and real-time feedback
-/// - **Service Integration**: Seamless coordination with UserService, StorageService, and ImagePickerService
-///
-/// **What This Module Does NOT Handle:**
-/// - Actual profile data persistence (handled by UserService and Firestore)
-/// - Image processing and storage operations (handled by StorageService and cloud storage)
-/// - UI rendering and widget creation (handled by UserProfileView and profile UI components)
-/// - Authentication and user session management (handled by AuthService and authentication flow)
-///
-/// **User Profile ViewModel Features:**
-/// - **Advanced Form Management**: Complete profile form with real-time validation and change detection
-/// - **Avatar Upload Intelligence**: Comprehensive image selection, upload, and management with progress tracking
-/// - **Privacy Control Excellence**: Advanced privacy settings with searchability and email discovery preferences
-/// - **Swedish Localization**: Complete Swedish language support for validation messages and user feedback
-/// - **Real-time Validation**: Sophisticated input validation with immediate feedback and availability checking
-///
-/// **Usage Examples:**
 /// ```dart
-/// // Initialize profile ViewModel
-/// final profileViewModel = UserProfileViewModel(
-///   userService,
-///   storageService,
-///   imagePickerService,
-/// );
-///
-/// // Update profile information with validation
-/// profileViewModel.updateDisplayName('Erik Svensson');
-/// profileViewModel.updateDisplayName('Anna Andersson');
-///
-/// // Upload avatar with progress tracking
-/// final avatarUploaded = await profileViewModel.uploadAvatar();
-/// if (avatarUploaded) {
-///   // Show success message
-/// }
-///
-/// // Configure privacy settings
-/// profileViewModel.updateIsSearchable(true);
-/// profileViewModel.updateAllowEmailSearch(false);
-///
-/// // Save profile with validation
-/// final saved = await profileViewModel.saveProfile();
-/// if (saved) {
-///   // Navigate to profile view
-/// } else {
-///   // Display validation errors
-/// }
-///
-/// // Check display name availability
-/// final isAvailable = await profileViewModel.checkDisplayNameAvailability();
-///
-/// // Form state monitoring
-/// if (profileViewModel.hasUnsavedChanges) {
-///   // Show save prompt
-/// }
-/// ```
+/// final vm = UserProfileViewModel(userService, storageService, imagePickerService);
+/// vm.updateDisplayName('Erik');
+/// await vm.uploadAvatar();
+/// await vm.saveProfile();
 
 // lib/viewmodels/user_profile_viewmodel.dart
+
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
-/// Comprehensive user profile ViewModel providing advanced profile management and state coordination for Flutter applications.
-///
-/// Serves as the presentation layer coordinator for all user profile operations, providing reactive form management,
-/// comprehensive validation, avatar upload capabilities, and privacy settings control while maintaining clean MVVM architecture
-/// separation between profile business logic and UI presentation concerns.
+/// User profile ViewModel for profile form management, avatar uploads, validation, and privacy settings (MVVM).
 class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UserService _userService;
-  final StorageService _storageService;
   final ImagePickerService _imagePickerService;
+  final ImageUploadService _uploadService;
 
-  // ===== PROFILE FORM STATE MANAGEMENT =====
-
-  /// User's display name for profile identification and social features.
+  // State
   String _displayName = '';
-
-  /// User's avatar image URL for profile visual representation and social features.
   String? _avatarUrl;
-
-  /// User's searchability preference controlling profile discovery by other users.
   bool _isSearchable = true;
-
-  /// User's email search preference controlling discoverability through email lookup.
   bool _allowEmailSearch = false;
-
-  // ===== UI STATE COORDINATION =====
-
-  /// Avatar upload operation state for UI progress indication and interaction control.
   bool _isUploadingAvatar = false;
-
-  /// Form change tracking state for unsaved changes detection and user prompting.
   bool _hasUnsavedChanges = false;
-
-  // ===== VALIDATION STATE MANAGEMENT =====
-
-  /// Display name validation error for real-time user feedback and form validation.
   String? _displayNameError;
-
-  /// General operation error for upload and other operations.
   String? _operationError;
 
   UserProfileViewModel(
     this._userService,
-    this._storageService,
-    this._imagePickerService,
-  ) {
+    this._imagePickerService, {
+    ImageUploadService? uploadService,
+  }) : _uploadService = uploadService ?? ImageUploadService() {
     _loadCurrentProfile();
     _userService.addListener(_onUserServiceChanged);
   }
 
-  // ===== PROFILE FORM ACCESSORS =====
-
-  /// Current display name value for UI binding and form coordination.
-  ///
-  /// Provides real-time access to display name input for UI synchronization
-  /// and form validation during user profile editing operations.
+  // Getters
   String get displayName => _displayName;
-
-  /// Current avatar URL for image display and profile visual representation.
-  ///
-  /// Provides access to avatar image URL for profile image display and avatar management
-  /// during profile editing and visual profile customization.
   String? get avatarUrl => _avatarUrl;
-
-  /// Current searchability preference for privacy control and profile discovery.
-  ///
-  /// Controls whether user profile can be discovered by other users through search functionality
-  /// and social features, providing comprehensive privacy preference management.
   bool get isSearchable => _isSearchable;
-
-  /// Current email search preference for privacy control and discoverability management.
-  ///
-  /// Controls whether user profile can be discovered through email lookup functionality,
-  /// providing granular privacy control over email-based profile discovery.
   bool get allowEmailSearch => _allowEmailSearch;
-
-  // ===== UI STATE ACCESSORS =====
-
-  /// Loading state indicator for UI progress display and interaction control.
-  ///
-  /// Indicates active operations requiring loading indicators and user interaction disabling
-  /// during profile operations like avatar upload and profile saving.
   bool get isLoading => _isUploadingAvatar;
-
-  /// Avatar upload state for specific upload progress indication and UI coordination.
-  ///
-  /// Provides specific avatar upload progress state for targeted UI feedback
-  /// and upload operation tracking during image selection and processing.
   bool get isUploadingAvatar => _isUploadingAvatar;
-
-  /// Form change detection state for unsaved changes prompting and navigation control.
-  ///
-  /// Indicates whether profile form has unsaved changes requiring user confirmation
-  /// before navigation or form reset to prevent data loss.
   bool get hasUnsavedChanges => _hasUnsavedChanges;
-
-  // ===== VALIDATION STATE ACCESSORS =====
-
-  /// Display name validation error for UI error display and form validation feedback.
-  ///
-  /// Provides localized validation error message for display name field
-  /// enabling real-time validation feedback and user guidance.
   String? get displayNameError => _displayNameError;
-
-  /// Combined validation error for general error display and form validation status.
-  ///
-  /// Provides first available validation error for general error display
-  /// and comprehensive form validation status checking.
   String? get error => _operationError ?? _displayNameError;
-
-  /// Combined error state for form validation and UI error state management.
-  ///
-  /// Indicates presence of any validation errors for form submission control
-  /// and error state UI rendering decisions.
   bool get hasError => _operationError != null || _displayNameError != null;
-
-  // ===== PROFILE STATE ACCESSORS =====
-
-  /// Current user profile from service layer for form initialization and comparison.
-  ///
-  /// Provides access to current user profile data for form population
-  /// and change detection during profile editing operations.
-  UserProfile? get currentProfile =>
-      ServiceLocator.get<UserService>().currentUserProfile;
-
-  /// Profile existence check for UI conditional rendering and flow control.
-  ///
-  /// Indicates whether user has existing profile for UI conditional display
-  /// and profile creation versus editing flow determination.
+  UserProfile? get currentProfile => ServiceLocator.get<UserService>().currentUserProfile;
   bool get hasProfile => currentProfile != null;
 
-  // ===== FORM VALIDATION STATE =====
-
-  /// Complete form validation state for submission control and UI enabling.
-  ///
-  /// Combines all validation requirements including error state and required field completion
+  /// Form validation state for submission control
   /// for form submission enabling and comprehensive validation status.
   bool get isFormValid => _displayNameError == null && _displayName.isNotEmpty;
 
@@ -307,43 +154,20 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         throw Exception(_operationError);
       }
 
-      // For web platform, we need to handle the upload differently
-      String? uploadUrl;
-      if (imageFile.path.startsWith('blob:')) {
-        AppLogger.debug('🖼️ VIEWMODEL: Web platform detected - handling blob upload');
-        // This is a web blob URL, we need to get the XFile and read its bytes
-        final xFile = _imagePickerService.lastPickedXFile;
-        if (xFile != null) {
-          AppLogger.debug('🖼️ VIEWMODEL: Reading bytes from XFile');
-          final bytes = await xFile.readAsBytes();
-          AppLogger.debug('🖼️ VIEWMODEL: Read ${bytes.length} bytes');
+      // Upload using ImageUploadService (with automatic retry, progress tracking)
+      final result = await _uploadService.uploadImage(
+        file: File(imageFile.path),
+        userId: userId,
+        path: 'avatars/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
 
-          // Use the new uploadImageBytes method for web
-          uploadUrl = await _storageService.uploadImageBytes(
-            bytes,
-            userId,
-            xFile.name,
-          );
-          AppLogger.info('🖼️ VIEWMODEL: Web upload result: $uploadUrl');
-        } else {
-          _operationError = 'Kunde inte läsa bildfilen';
-          return false;
-        }
-      } else {
-        // Mobile platform - normal file upload
-        uploadUrl = await _storageService.uploadImageFile(
-          imageFile,
-          userId,
-        );
-      }
-
-      if (uploadUrl != null) {
-        _avatarUrl = uploadUrl;
+      if (result.success && result.url != null) {
+        _avatarUrl = result.url;
         _checkForChanges();
-        AppLogger.success('✅ Avatar uploaded');
+        AppLogger.success('✅ Avatar uploaded with automatic retry support');
         return true;
       } else {
-        _operationError = 'Kunde inte ladda upp avatar';
+        _operationError = result.error ?? 'Kunde inte ladda upp avatar';
         throw Exception(_operationError);
       }
     } catch (e, stackTrace) {

@@ -1,19 +1,4 @@
-/// Butlery application with clean modular architecture.
-///
-/// This main entry point uses a modular dependency injection system that
-/// provides excellent separation of concerns, testability, and maintainability.
-///
-/// Architecture:
-/// - 5 domain modules: Core, Content, Social, Messaging, Collaboration
-/// - Bootstrap stages for organized initialization
-/// - Health monitoring and comprehensive error handling
-/// - Clean provider-based service access
-///
-/// Bootstrap flow:
-/// ```
-/// main() -> ApplicationBootstrap.initialize() -> runApp()
-///   └─> DIContainer + 5 Modules -> 5 Bootstrap Stages -> ButleryApp
-/// ```
+/// Butlery application entry point with modular DI system (5 domain modules + bootstrap stages).
 library;
 
 import 'package:flutter/material.dart';
@@ -70,10 +55,6 @@ import 'package:butlery/firebase_options_real.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Application entry point with clean modular architecture.
-///
-/// Uses the new modular dependency injection system exclusively.
-/// Provides comprehensive error handling and graceful failure modes.
 Future<void> main() async {
   // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
   WidgetsFlutterBinding.ensureInitialized();
@@ -134,7 +115,6 @@ Future<void> main() async {
   }
 }
 
-/// Initialize the new modular dependency injection system.
 Future<void> _initializeModularSystem() async {
   if (kDebugMode) {
     debugPrint('🔧 Initializing modular DI system...');
@@ -175,9 +155,6 @@ Future<void> _initializeModularSystem() async {
   }
 }
 
-// Legacy initialization removed - modular system only
-
-/// Error app widget for when initialization fails completely.
 class _ErrorApp extends StatelessWidget {
   final String message;
   
@@ -237,10 +214,6 @@ class _ErrorApp extends StatelessWidget {
   }
 }
 
-/// Root application widget with clean modular architecture.
-///
-/// Uses the modular dependency injection system exclusively,
-/// providing clean separation of concerns and excellent testability.
 class ButleryApp extends StatefulWidget {
   const ButleryApp({super.key});
 
@@ -259,7 +232,6 @@ class _ButleryAppState extends State<ButleryApp> {
     _initializeUI();
   }
 
-  /// Initialize UI-specific components.
   Future<void> _initializeUI() async {
     try {
       // Initialize deep link handling (platform-aware)
@@ -279,7 +251,6 @@ class _ButleryAppState extends State<ButleryApp> {
     }
   }
 
-  /// Setup analytics for modular system.
   Future<void> _setupModularAnalytics() async {
     try {
       // Wait for application to be ready
@@ -312,14 +283,11 @@ class _ButleryAppState extends State<ButleryApp> {
     }
   }
 
-  // Legacy analytics removed - modular system only
-
   @override
   Widget build(BuildContext context) {
     return _buildModularApp();
   }
 
-  /// Build app with modular system.
   Widget _buildModularApp() {
     final bootstrap = ApplicationBootstrap();
     
@@ -337,9 +305,6 @@ class _ButleryAppState extends State<ButleryApp> {
     );
   }
 
-  // Legacy app builder removed - modular system only
-
-  /// Build the main application UI.
   Widget _buildMainApp() {
     // Build navigator observers list with snackbar observer and optional analytics
     final observers = <NavigatorObserver>[
@@ -371,7 +336,6 @@ class _ButleryAppState extends State<ButleryApp> {
     );
   }
 
-  /// Build loading screen.
   Widget _buildLoadingApp(String message) {
     return MaterialApp(
       title: 'Butlery',
@@ -412,7 +376,6 @@ class _ButleryAppState extends State<ButleryApp> {
     );
   }
 
-  /// Called when the application becomes ready.
   void _onApplicationReady() {
     if (kDebugMode) {
       debugPrint('✅ Application is ready for user interaction');
@@ -425,7 +388,6 @@ class _ButleryAppState extends State<ButleryApp> {
   }
 }
 
-/// Initialization wrapper that shows loading or auth based on state.
 class InitializationWrapper extends StatelessWidget {
   // CRITICAL: Use GlobalKey to prevent AuthWrapper recreation
   static final GlobalKey<_AuthWrapperState> _authWrapperKey = GlobalKey<_AuthWrapperState>();
@@ -438,7 +400,6 @@ class InitializationWrapper extends StatelessWidget {
   }
 }
 
-/// Authentication wrapper that manages auth state.
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 

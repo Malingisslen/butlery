@@ -10,13 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Category section widget för realtidsmenyer med drag-and-drop funktionalitet
-/// 
-/// Denna komponent ansvarar för:
-/// - Visa kategorisektion med recept
-/// - Drag-and-drop för att flytta recept mellan kategorier
-/// - Kategorihantering (lägg till/ta bort/redigera)
-/// - Animationer för mjuka interaktioner
+/// Category section widget för realtidsmenyer med drag-and-drop, kategorihantering och animationer.
 class CategorySection extends StatefulWidget {
   final String categoryName;
   final List<Recipe> recipes;
@@ -84,23 +78,14 @@ class _CategorySectionState extends State<CategorySection>
     final viewModel = context.watch<RealtimeMenuViewModel>();
 
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.spacingS,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingM, vertical: AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: _isDragTarget
             ? Border.all(color: AppColors.primaryBlue, width: 2)
             : Border.all(color: AppColors.divider),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: DragTarget<RecipeDragData>(
         onAcceptWithDetails: (details) => _handleRecipeDrop(context, viewModel, details.data),
@@ -132,15 +117,11 @@ class _CategorySectionState extends State<CategorySection>
     );
   }
 
-  Widget _buildCategoryHeader(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-  ) {
+  Widget _buildCategoryHeader(BuildContext context, RealtimeMenuViewModel viewModel) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       child: Row(
         children: [
-          // Expand/collapse icon
           AnimatedRotation(
             turns: _isExpanded ? 0.25 : 0,
             duration: const Duration(milliseconds: 300),
@@ -153,44 +134,20 @@ class _CategorySectionState extends State<CategorySection>
             ),
           ),
           const SizedBox(width: AppDimensions.spacingS),
-
-          // Category name
           Expanded(
-            child: Text(
-              widget.categoryName,
-              style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.sectionHeader,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text(widget.categoryName, style: AppTextStyles.titleMedium.copyWith(color: AppColors.sectionHeader, fontWeight: FontWeight.w600)),
           ),
-
-          // Recipe count badge
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
-              vertical: AppDimensions.spacingXs,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS, vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: widget.recipes.isEmpty
                   ? AppColors.textLight.withValues(alpha: 0.2)
                   : AppColors.primaryBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
-            child: Text(
-              '${widget.recipes.length}',
-              style: AppTextStyles.labelSmall.copyWith(
-                color: widget.recipes.isEmpty
-                    ? AppColors.textLight
-                    : AppColors.primaryBlue,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: Text('${widget.recipes.length}', style: AppTextStyles.labelSmall.copyWith(color: widget.recipes.isEmpty ? AppColors.textLight : AppColors.primaryBlue, fontWeight: FontWeight.w500)),
           ),
-
           const SizedBox(width: AppDimensions.spacingS),
-
-          // Category actions menu
           if (widget.canEdit) _buildCategoryActions(context),
         ],
       ),
@@ -200,11 +157,7 @@ class _CategorySectionState extends State<CategorySection>
   Widget _buildCategoryActions(BuildContext context) {
     return PopupMenuButton<String>(
       onSelected: (value) => _handleCategoryAction(context, value),
-      icon: const Icon(
-        Icons.more_vert,
-        size: AppDimensions.iconSizeM,
-        color: AppColors.textMedium,
-      ),
+      icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM, color: AppColors.textMedium),
       itemBuilder: (context) => [
         const PopupMenuItem(
           value: 'add_recipe',
@@ -243,12 +196,7 @@ class _CategorySectionState extends State<CategorySection>
               children: [
                 const Icon(Icons.delete, size: AppDimensions.iconSize18, color: AppColors.error),
                 const SizedBox(width: AppDimensions.spacingS),
-                Text(
-                  'Ta bort kategori',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.error,
-                  ),
-                ),
+                Text('Ta bort kategori', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
               ],
             ),
           ),
@@ -256,10 +204,7 @@ class _CategorySectionState extends State<CategorySection>
     );
   }
 
-  Widget _buildRecipeList(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-  ) {
+  Widget _buildRecipeList(BuildContext context, RealtimeMenuViewModel viewModel) {
     if (widget.recipes.isEmpty) {
       return _buildEmptyState(context);
     }
@@ -267,35 +212,14 @@ class _CategorySectionState extends State<CategorySection>
     return ReorderableListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppDimensions.paddingM,
-        right: AppDimensions.paddingM,
-        bottom: AppDimensions.paddingM,
-      ),
+      padding: const EdgeInsets.only(left: AppDimensions.paddingM, right: AppDimensions.paddingM, bottom: AppDimensions.paddingM),
       itemCount: widget.recipes.length,
-      onReorder: widget.canEdit
-          ? (oldIndex, newIndex) {
-              _handleReorder(context, viewModel, oldIndex, newIndex);
-            }
-          : (oldIndex, newIndex) {},  // Provide empty callback when not editable
-      itemBuilder: (context, index) {
-        final recipe = widget.recipes[index];
-        return _buildDraggableRecipeCard(
-          context,
-          viewModel,
-          recipe,
-          index,
-        );
-      },
+      onReorder: widget.canEdit ? (oldIndex, newIndex) => _handleReorder(context, viewModel, oldIndex, newIndex) : (oldIndex, newIndex) {},
+      itemBuilder: (context, index) => _buildDraggableRecipeCard(context, viewModel, widget.recipes[index], index),
     );
   }
 
-  Widget _buildDraggableRecipeCard(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-    Recipe recipe,
-    int index,
-  ) {
+  Widget _buildDraggableRecipeCard(BuildContext context, RealtimeMenuViewModel viewModel, Recipe recipe, int index) {
     final dragData = RecipeDragData(
       recipe: recipe,
       sourceCategory: widget.categoryName,
@@ -352,19 +276,9 @@ class _CategorySectionState extends State<CategorySection>
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         children: [
-          const Icon(
-            Icons.restaurant_menu,
-            size: AppDimensions.iconSizeXxl,
-            color: AppColors.textLight,
-          ),
+          const Icon(Icons.restaurant_menu, size: AppDimensions.iconSizeXxl, color: AppColors.textLight),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
-            'Inga recept i denna kategori',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMedium,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          Text('Inga recept i denna kategori', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium), textAlign: TextAlign.center),
           if (widget.canEdit) ...[
             const SizedBox(height: AppDimensions.spacingM),
             TextButton.icon(
@@ -418,11 +332,7 @@ class _CategorySectionState extends State<CategorySection>
     AppLogger.info('🔄 Recipe reordered in category ${widget.categoryName}: $oldIndex -> $newIndex');
   }
 
-  void _handleRecipeDrop(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-    RecipeDragData data,
-  ) {
+  void _handleRecipeDrop(BuildContext context, RealtimeMenuViewModel viewModel, RecipeDragData data) {
     setState(() => _isDragTarget = false);
 
     if (data.sourceCategory == widget.categoryName) {
@@ -452,16 +362,10 @@ class _CategorySectionState extends State<CategorySection>
   }
 
   void _handleRecipeTap(BuildContext context, Recipe recipe) {
-    // Navigate to recipe detail view
     Navigator.pushNamed(context, '/recipe-detail', arguments: recipe);
   }
 
-  void _showRecipeOptions(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-    Recipe recipe,
-    int index,
-  ) {
+  void _showRecipeOptions(BuildContext context, RealtimeMenuViewModel viewModel, Recipe recipe, int index) {
     showModalBottomSheet(
       context: context,
       builder: (context) => _buildRecipeOptionsSheet(
@@ -473,12 +377,7 @@ class _CategorySectionState extends State<CategorySection>
     );
   }
 
-  Widget _buildRecipeOptionsSheet(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-    Recipe recipe,
-    int index,
-  ) {
+  Widget _buildRecipeOptionsSheet(BuildContext context, RealtimeMenuViewModel viewModel, Recipe recipe, int index) {
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -515,17 +414,12 @@ class _CategorySectionState extends State<CategorySection>
     );
   }
 
-  void _showClearCategoryDialog(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-  ) {
+  void _showClearCategoryDialog(BuildContext context, RealtimeMenuViewModel viewModel) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rensa kategori'),
-        content: Text(
-          'Är du säker på att du vill ta bort alla ${widget.recipes.length} recept från kategorin "${widget.categoryName}"?',
-        ),
+        content: Text('Är du säker på att du vill ta bort alla ${widget.recipes.length} recept från kategorin "${widget.categoryName}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -544,12 +438,7 @@ class _CategorySectionState extends State<CategorySection>
     );
   }
 
-  void _showMoveToCategoryDialog(
-    BuildContext context,
-    RealtimeMenuViewModel viewModel,
-    Recipe recipe,
-    int index,
-  ) {
+  void _showMoveToCategoryDialog(BuildContext context, RealtimeMenuViewModel viewModel, Recipe recipe, int index) {
     final availableCategories = viewModel.categories
         .where((cat) => cat != widget.categoryName)
         .toList();

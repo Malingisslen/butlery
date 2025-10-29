@@ -1,88 +1,7 @@
-/// Comprehensive universal sharing dialog ViewModel providing advanced multi-content social distribution for Flutter applications.
-///
-/// This module implements sophisticated universal sharing functionality following Single Responsibility Principle,
-/// specializing in multi-content sharing, recipient management, cross-platform distribution, and share status coordination.
-/// It provides complete universal sharing infrastructure while maintaining clean separation from UI rendering,
-/// content data persistence, and complex social sharing business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles universal sharing dialog presentation layer concerns:
-/// - **Multi-Content Sharing Intelligence**: Advanced sharing of recipes, menus, and shopping lists with unified interface
-/// - **Recipient Management System**: Comprehensive friend and group selection with multi-target sharing coordination
-/// - **Cross-Platform Distribution**: Universal sharing operations with consistent API across different content types
-/// - **Share Status Coordination**: Complete sharing state management with progress tracking and comprehensive error handling
-/// - **Swedish Localization Excellence**: Complete Swedish language support for sharing operations and user feedback
-///
-/// **What This Module Does NOT Handle:**
-/// - UI rendering and widget creation (handled by universal share dialog views and presentation components)
-/// - Content data persistence and storage (handled by respective services and underlying data repositories)
-/// - Complex social relationship business logic (handled by social services and relationship infrastructure)
-/// - Share delivery infrastructure (handled by social services and communication systems)
-///
-/// **Universal Share Dialog ViewModel Features:**
-/// - **Multi-Content Support**: Unified sharing interface for recipes, menus, and shopping lists with consistent operations
-/// - **Advanced Recipient Selection**: Comprehensive friend and group targeting with multi-recipient coordination
-/// - **Cross-Service Integration**: Seamless integration with social recipe and shopping services for content distribution
-/// - **Share Status Management**: Complete sharing progress tracking with error handling and delivery confirmation
-/// - **Swedish Localization**: Complete Swedish language support for sharing operations and error messages
-///
-/// **Usage Examples:**
+/// Universal share dialog ViewModel for multi-content sharing (recipes, menus, shopping lists) with friend/group targeting.
 /// ```dart
-/// // Initialize universal share dialog ViewModel with service integration
-/// final shareDialogViewModel = UniversalShareDialogViewModel(
-///   socialRecipeService: ServiceLocator.get<SocialRecipeService>(),
-///   shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
-/// );
-/// 
-/// // Share recipe with friends and groups
-/// final recipeShared = await shareDialogViewModel.shareRecipe(
-///   recipe: recipeToShare,
-///   friendUserIds: ['friend_123', 'friend_456'],
-///   groupIds: ['group_789'],
-///   message: 'Kolla in detta fantastiska recept!',
-///   allowCollaboration: true,
-/// );
-/// 
-/// if (recipeShared) {
-///   // Navigate back or show success message
-/// } else if (shareDialogViewModel.hasError) {
-///   // Handle sharing error
-/// }
-/// 
-/// // Share menu with comprehensive coordination
-/// final menuShared = await shareDialogViewModel.shareMenu(
-///   menu: weekMenu,
-///   friendUserIds: ['friend_123'],
-///   groupIds: ['group_456'],
-///   menuId: 'menu_weekly_plan',
-///   message: 'Vår veckors matsedel - perfekt för familjen!',
-///   allowCollaboration: false,
-/// );
-/// 
-/// // Share shopping list with multi-target distribution
-/// final listShared = await shareDialogViewModel.shareShoppingList(
-///   shoppingList: groceryList,
-///   friendUserIds: ['friend_789'],
-///   groupIds: ['group_123', 'group_456'],
-///   message: 'Gemensam inköpslista för helgmiddagen!',
-/// );
-/// 
-/// // Monitor sharing progress and state
-/// if (shareDialogViewModel.isSharing) {
-///   // Show sharing progress indicator
-/// }
-/// 
-/// // Error handling and recovery
-/// if (shareDialogViewModel.hasError) {
-///   final errorMessage = shareDialogViewModel.errorMessage;
-///   // Display error message to user
-///   shareDialogViewModel.clearError(); // Clear error state
-/// }
-/// 
-/// // Access sharing state information
-/// final isSharing = shareDialogViewModel.isSharing;
-/// final hasError = shareDialogViewModel.hasError;
-/// ```
+/// final vm = UniversalShareDialogViewModel(socialRecipeService: sl.get());
+/// await vm.shareRecipe(recipe, friendUserIds: [id], message: 'Check this!');
 
 // lib/viewmodels/universal_share_dialog_viewmodel.dart
 
@@ -96,7 +15,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/utils/social_content_features.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// PHASE 2: Validation result for sharing operations

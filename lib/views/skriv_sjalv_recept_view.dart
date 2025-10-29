@@ -16,7 +16,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/layout/bottom_action_container.dart';

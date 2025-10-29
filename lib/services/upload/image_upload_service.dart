@@ -1,0 +1,434 @@
+/// Generic image upload service with retry, progress tracking, and resilience.
+///
+/// Provides reusable upload infrastructure for all image uploads in the application:
+/// recipes, avatars, messaging, profile images, etc.
+///
+/// **Architecture:** Service Layer - Facade Pattern
+/// **Responsibility:** Upload coordination, retry management, progress tracking
+/// **Used By:** RecipeImageManager, UserProfileViewModel, MessagingMediaService
+
+// lib/services/upload/image_upload_service.dart
+
+import 'dart:async';
+import 'dart:io';
+import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/services/upload/upload_queue_manager.dart';
+import 'package:butlery/services/upload/upload_retry_manager.dart';
+import 'package:butlery/services/upload/upload_progress_tracker.dart';
+import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+
+/// Result of an upload operation
+class UploadResult {
+  final bool success;
+  final String? url;
+  final String? error;
+  final ImageUploadErrorType? errorType;
+
+  const UploadResult({
+    required this.success,
+    this.url,
+    this.error,
+    this.errorType,
+  });
+
+  factory UploadResult.success(String url) =>
+      UploadResult(success: true, url: url);
+
+  factory UploadResult.failure(String error, ImageUploadErrorType errorType) =>
+      UploadResult(success: false, error: error, errorType: errorType);
+}
+
+/// Generic image upload service with automatic retry, progress tracking, and resilience.
+///
+/// Provides reusable upload infrastructure that can be used across the application
+/// for recipes, avatars, messaging, and any other image upload needs.
+///
+/// **Features:**
+/// - Automatic retry with exponential backoff
+/// - Circuit breaker to prevent cascading failures
+/// - Real-time progress tracking with speed/ETA
+/// - Upload queue management
+/// - Event stream for UI notifications
+/// - Support for single and batch uploads
+///
+/// **Usage Example:**
+/// ```dart
+/// final service = ImageUploadService();
+///
+/// // Single upload with progress tracking
+/// final result = await service.uploadImage(
+///   file: imageFile,
+///   userId: userId,
+///   path: 'users/$userId/recipes/image.jpg',
+///   onProgress: (status) {
+///     print('Progress: ${status.progressPercentage}%');
+///   },
+/// );
+///
+/// if (result.success) {
+///   print('Uploaded to: ${result.url}');
+/// }
+/// ```
+class ImageUploadService {
+  final UploadQueueManager _queueManager;
+  final UploadRetryManager _retryManager;
+  final UploadProgressTracker _progressTracker;
+  final StorageService _storageService;
+
+  /// Stream controller for upload notification events
+  final StreamController<UploadNotificationEvent> _notificationController =
+      StreamController<UploadNotificationEvent>.broadcast();
+
+  /// Stream of upload notification events for UI subscription
+  Stream<UploadNotificationEvent> get notificationStream =>
+      _notificationController.stream;
+
+  /// Cancellation tokens for active uploads
+  final Map<String, bool> _cancellationTokens = {};
+
+  ImageUploadService({
+    UploadQueueManager? queueManager,
+    UploadRetryManager? retryManager,
+    UploadProgressTracker? progressTracker,
+    StorageService? storageService,
+  })  : _queueManager = queueManager ?? UploadQueueManager(),
+        _retryManager = retryManager ?? UploadRetryManager(),
+        _progressTracker = progressTracker ?? UploadProgressTracker(),
+        _storageService = storageService ?? ServiceLocator.get<StorageService>();
+
+  // ===== PUBLIC API: SINGLE UPLOAD =====
+
+  /// Upload a single image with automatic retry and progress tracking
+  ///
+  /// [file] - Image file to upload
+  /// [userId] - User ID for storage path
+  /// [path] - Storage path for the image
+  /// [maxRetryAttempts] - Maximum retry attempts (default 3)
+  /// [onProgress] - Optional callback for progress updates
+  ///
+  /// Returns UploadResult with success status and URL or error
+  Future<UploadResult> uploadImage({
+    required File file,
+    required String userId,
+    required String path,
+    int maxRetryAttempts = 3,
+    void Function(ImageUploadStatus)? onProgress,
+  }) async {
+    final filePath = file.path;
+
+    AppLogger.info('🆙 UPLOAD_SERVICE: Starting upload for $filePath to $path');
+
+    // Add to queue
+    _queueManager.addUpload(
+      filePath: filePath,
+      file: file,
+      maxRetryAttempts: maxRetryAttempts,
+    );
+
+    // Start progress tracking
+    _progressTracker.startTracking(filePath);
+
+    // Initialize cancellation token
+    _cancellationTokens[filePath] = false;
+
+    try {
+      // Execute upload with retry logic
+      final result = await _executeUploadWithRetry(
+        file: file,
+        userId: userId,
+        path: path,
+        onProgress: onProgress,
+      );
+
+      return result;
+    } finally {
+      // Cleanup
+      _progressTracker.stopTracking(filePath);
+      _cancellationTokens.remove(filePath);
+    }
+  }
+
+  // ===== PRIVATE: UPLOAD EXECUTION =====
+
+  /// Execute upload with automatic retry on failure
+  Future<UploadResult> _executeUploadWithRetry({
+    required File file,
+    required String userId,
+    required String path,
+    void Function(ImageUploadStatus)? onProgress,
+  }) async {
+    final filePath = file.path;
+    var currentStatus = _queueManager.getStatus(filePath);
+
+    if (currentStatus == null) {
+      return UploadResult.failure(
+        'Upload not in queue',
+        ImageUploadErrorType.unknown,
+      );
+    }
+
+    // Retry loop
+    while (true) {
+      // Refetch current status at start of each iteration
+      currentStatus = _queueManager.getStatus(filePath);
+      if (currentStatus == null) {
+        return UploadResult.failure(
+          'Upload removed from queue',
+          ImageUploadErrorType.unknown,
+        );
+      }
+
+      // Check cancellation
+      if (_cancellationTokens[filePath] == true) {
+        AppLogger.info('🆙 UPLOAD_SERVICE: Upload cancelled for $filePath');
+        _updateStatus(filePath, ImageUploadState.cancelled);
+        return UploadResult.failure(
+          'Upload cancelled',
+          ImageUploadErrorType.cancelled,
+        );
+      }
+
+      // If retrying, wait for retry delay
+      if (currentStatus.state == ImageUploadState.retrying) {
+        await _retryManager.waitForRetryDelay(
+          currentStatus.retryDelay ?? Duration.zero,
+        );
+      }
+
+      // Update status to uploading
+      currentStatus = currentStatus.copyWith(
+        state: ImageUploadState.uploading,
+        uploadStartTime: DateTime.now(),
+      );
+      _queueManager.updateStatus(filePath, currentStatus);
+
+      // Attempt upload
+      try {
+        final url = await _attemptUpload(
+          file: file,
+          userId: userId,
+          path: path,
+          onProgress: (progress) {
+            final updatedStatus = _progressTracker.updateProgress(
+              currentStatus: _queueManager.getStatus(filePath)!,
+              progress: progress,
+              fileSize: file.lengthSync(),
+            );
+            _queueManager.updateStatus(filePath, updatedStatus);
+            onProgress?.call(updatedStatus);
+          },
+        );
+
+        // Success!
+        _handleUploadSuccess(filePath, url);
+        return UploadResult.success(url);
+      } catch (error) {
+        // Classify error and handle failure
+        final errorType = _retryManager.classifyError(error);
+        final shouldRetry = _handleUploadFailure(
+          filePath: filePath,
+          error: error,
+          errorType: errorType,
+        );
+
+        if (!shouldRetry) {
+          // No more retries, return failure
+          return UploadResult.failure(error.toString(), errorType);
+        }
+
+        // Prepare for retry
+        currentStatus = _queueManager.getStatus(filePath);
+        if (currentStatus == null) {
+          return UploadResult.failure(
+            'Upload removed from queue',
+            ImageUploadErrorType.unknown,
+          );
+        }
+      }
+    }
+  }
+
+  /// Attempt single upload to storage
+  Future<String> _attemptUpload({
+    required File file,
+    required String userId,
+    required String path,
+    required void Function(double) onProgress,
+  }) async {
+    final url = await _storageService.uploadImageFile(
+      file,
+      userId,
+      onProgress: onProgress,
+    );
+
+    if (url == null) {
+      throw Exception('Storage service returned null URL');
+    }
+
+    return url;
+  }
+
+  // ===== PRIVATE: STATUS MANAGEMENT =====
+
+  /// Handle successful upload
+  void _handleUploadSuccess(String filePath, String url) {
+    final status = _queueManager.getStatus(filePath);
+    if (status == null) return;
+
+    final completedStatus = status.copyWith(
+      url: url,
+      state: ImageUploadState.completed,
+      progress: 1.0,
+    );
+
+    _queueManager.updateStatus(filePath, completedStatus);
+    _retryManager.recordSuccess();
+
+    AppLogger.success('✅ UPLOAD_SERVICE: Upload completed for $filePath');
+
+    // Send notification
+    _sendNotificationEvent(UploadNotificationEvent(
+      trigger: UploadNotificationTrigger.retrySuccess,
+      title: 'Uppladdning slutförd',
+      message: 'Bilden har laddats upp framgångsrikt',
+      priority: NotificationPriority.low,
+      data: {'filePath': filePath, 'url': url},
+      timestamp: DateTime.now(),
+    ));
+  }
+
+  /// Handle upload failure and determine if retry should happen
+  ///
+  /// Returns true if should retry, false otherwise
+  bool _handleUploadFailure({
+    required String filePath,
+    required dynamic error,
+    required ImageUploadErrorType errorType,
+  }) {
+    final status = _queueManager.getStatus(filePath);
+    if (status == null) return false;
+
+    // Record failure in circuit breaker
+    _retryManager.recordFailure(errorType);
+
+    // Update status with error
+    final failedStatus = status.copyWith(
+      state: ImageUploadState.failed,
+      error: error.toString(),
+      errorType: errorType,
+      errorOccurredAt: DateTime.now(),
+    );
+    _queueManager.updateStatus(filePath, failedStatus);
+
+    AppLogger.error(
+      '❌ UPLOAD_SERVICE: Upload failed for $filePath (${errorType.name}): $error',
+    );
+
+    // Check if should retry
+    final shouldRetry = _retryManager.shouldRetry(failedStatus);
+
+    if (shouldRetry) {
+      // Prepare for retry
+      final retryStatus = _retryManager.prepareRetry(failedStatus);
+      _queueManager.updateStatus(filePath, retryStatus);
+
+      AppLogger.info(
+        '🔄 UPLOAD_SERVICE: Will retry upload for $filePath (attempt ${retryStatus.retryAttempts}/${retryStatus.maxRetryAttempts})',
+      );
+
+      return true;
+    } else {
+      AppLogger.warning(
+        '❌ UPLOAD_SERVICE: No more retries for $filePath',
+      );
+
+      // Send failure notification
+      _sendNotificationEvent(UploadNotificationEvent(
+        trigger: UploadNotificationTrigger.majorFailure,
+        title: 'Uppladdning misslyckades',
+        message: 'Kunde inte ladda upp bilden efter flera försök',
+        priority: NotificationPriority.high,
+        data: {'filePath': filePath, 'error': error.toString()},
+        timestamp: DateTime.now(),
+      ));
+
+      return false;
+    }
+  }
+
+  /// Update upload status
+  void _updateStatus(String filePath, ImageUploadState newState) {
+    final status = _queueManager.getStatus(filePath);
+    if (status != null) {
+      _queueManager.updateStatus(filePath, status.copyWith(state: newState));
+    }
+  }
+
+  // ===== PUBLIC API: QUEUE MANAGEMENT =====
+
+  /// Get upload status for a file
+  ImageUploadStatus? getUploadStatus(String filePath) =>
+      _queueManager.getStatus(filePath);
+
+  /// Get all uploads in queue
+  Map<String, ImageUploadStatus> getAllUploads() => _queueManager.allUploads;
+
+  /// Get queue summary
+  Map<String, dynamic> getQueueSummary() => _queueManager.getSummary();
+
+  /// Cancel upload
+  void cancelUpload(String filePath) {
+    _cancellationTokens[filePath] = true;
+    AppLogger.info('🆙 UPLOAD_SERVICE: Cancellation requested for $filePath');
+  }
+
+  /// Retry failed upload
+  Future<UploadResult> retryUpload({
+    required String filePath,
+    required String userId,
+    required String path,
+    void Function(ImageUploadStatus)? onProgress,
+  }) async {
+    final status = _queueManager.getStatus(filePath);
+    if (status == null || status.file == null) {
+      return UploadResult.failure(
+        'Upload not found in queue',
+        ImageUploadErrorType.unknown,
+      );
+    }
+
+    return await uploadImage(
+      file: status.file!,
+      userId: userId,
+      path: path,
+      maxRetryAttempts: status.maxRetryAttempts,
+      onProgress: onProgress,
+    );
+  }
+
+  /// Clear completed uploads from queue
+  void clearCompleted() {
+    _queueManager.removeByState(ImageUploadState.completed);
+  }
+
+  /// Clear all uploads
+  void clearAll() {
+    _queueManager.clearAll();
+    _progressTracker.clearAll();
+    _cancellationTokens.clear();
+  }
+
+  // ===== NOTIFICATIONS =====
+
+  /// Send notification event
+  void _sendNotificationEvent(UploadNotificationEvent event) {
+    _notificationController.add(event);
+  }
+
+  /// Dispose resources
+  void dispose() {
+    _notificationController.close();
+  }
+}

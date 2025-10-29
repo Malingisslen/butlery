@@ -16,37 +16,8 @@ import 'package:butlery/services/notifications/modules/notification_analytics_ma
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:get_it/get_it.dart';
 
-/// Comprehensive notification management service providing modular push notification functionality with FCM integration.
-///
-/// This service implements a sophisticated notification system using the coordinator pattern with focused modules
-/// for content management, user preferences, offline handling, batch processing, token management, and analytics.
-/// It provides comprehensive push notification functionality including recipe sharing alerts, friend interactions,
-/// cooking reminders, and social engagement notifications with Swedish localization and intelligent delivery optimization.
-///
-/// **Refactored Architecture (Single Responsibility Principle):**
-/// The service follows clean modular architecture with specialized components:
-/// - **NotificationContentManager**: Message generation, template management, and localized content creation
-/// - **NotificationPreferenceManager**: User preference management, quiet hours, and notification type controls
-/// - **NotificationOfflineManager**: Offline notification queuing, retry logic, and connection-aware delivery
-/// - **NotificationBatchManager**: Batch processing, spam prevention, and intelligent notification grouping
-/// - **FCMTokenManager**: Device token management, topic subscriptions, and cross-device synchronization
-/// - **NotificationAnalyticsManager**: Delivery tracking, engagement metrics, and performance analytics
-///
-/// **Coordinator Pattern Implementation:**
-/// This main service acts as a clean facade that delegates to focused modules while maintaining
-/// backward compatibility through unified public API. Each module has single, well-defined responsibility
-/// enabling maintainable code and flexible notification system evolution.
-///
-/// **Development and Production Ready:**
-/// All notification logic is fully functional with intentional development logging for debugging.
-/// Production deployment requires only updating FCM delivery configuration to use Cloud Functions
-/// for scalable server-side notification processing and enhanced delivery reliability.
-/// Comprehensive notification coordinator providing modular push notification functionality with FCM integration.
-///
-/// This service implements the coordinator pattern with specialized modules following Single Responsibility
-/// Principle for maintainable notification management. It provides comprehensive push notification functionality
-/// including recipe sharing, social interactions, cooking reminders, and system notifications with Swedish
-/// localization and intelligent delivery optimization.
+/// Notification coordinator using modular architecture with 6 specialized managers (Content, Preference, Offline, Batch, Token, Analytics).
+/// Implements facade pattern for FCM integration, Swedish localization, and intelligent delivery with development logging.
 class NotificationService extends BaseService {
   @override
   String get serviceName => 'NotificationService';
@@ -398,19 +369,7 @@ class NotificationService extends BaseService {
     }
   }
 
-  /// Send FCM notification to specific user
-  /// 
-  /// DEVELOPMENT IMPLEMENTATION:
-  /// This method intentionally logs notifications instead of sending them.
-  /// This approach is perfect for development because:
-  /// - All notification logic and routing works correctly
-  /// - Easy to debug and verify notification content
-  /// - No server infrastructure required
-  /// - Security-safe (no exposed FCM keys)
-  /// 
-  /// PRODUCTION TRANSITION:
-  /// When ready for production, replace the logging section with:
-  /// HTTP call to Cloud Function for server-side FCM sending
+  /// Send FCM notification (DEV: logs only. PROD: replace with Cloud Function HTTP call)
   Future<void> _sendFCMNotification(String targetUserId, NotificationTemplate template, String notificationId) async {
     try {
       // =============================================================================
@@ -437,13 +396,7 @@ class NotificationService extends BaseService {
     }
   }
 
-  /// Send silent FCM notification (data-only)
-  /// 
-  /// DEVELOPMENT IMPLEMENTATION:
-  /// Logs silent notifications for real-time collaboration events.
-  /// These are background data updates that don't show user-visible notifications.
-  /// 
-  /// PRODUCTION: Use the same Cloud Function with 'silent: true' parameter
+  /// Send silent FCM notification (DEV: logs only. PROD: Cloud Function with silent flag)
   Future<void> _sendSilentFCMNotification(String targetUserId, Map<String, dynamic> data) async {
     try {
       // =============================================================================
@@ -461,17 +414,6 @@ class NotificationService extends BaseService {
       AppLogger.warning('⚠️ Silent notification preparation failed (non-critical): $e');
     }
   }
-
-  // Notification ID generation is now handled by ContentManager
-  // Batch key generation is now handled by BatchManager
-
-  // Batch processing is now handled by BatchManager through callbacks
-
-  // Batch notification building is now handled by BatchManager
-
-  // Digest content building is now handled by ContentManager
-
-  // Offline queuing is now handled by OfflineManager
 
   /// Callback for sending queued notifications from offline manager
   Future<void> _sendQueuedNotification(PendingNotification notification) async {
@@ -530,12 +472,10 @@ class NotificationService extends BaseService {
     return _offlineManager.getQueueStatistics();
   }
   
-  /// Get batch statistics
   Map<String, dynamic> getBatchStats() {
     return _batchManager.getBatchStatistics();
   }
 
-  /// Clean up resources
   @override
   Future<void> onDispose() async {
     try {
@@ -558,5 +498,3 @@ class NotificationService extends BaseService {
     }
   }
 }
-
-// PendingNotification class is now defined in the OfflineManager module

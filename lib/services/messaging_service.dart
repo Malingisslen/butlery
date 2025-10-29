@@ -1,34 +1,10 @@
-/// Comprehensive messaging service providing real-time communication with advanced conversation management and notification integration.
+/// Real-time messaging service for direct and group conversations.
 ///
-/// This service implements sophisticated messaging functionality including direct and group conversations,
-/// real-time message delivery, typing indicators, read status tracking, and comprehensive notification
-/// integration. It provides a complete messaging system with advanced features like message editing,
-/// deletion, search functionality, and seamless integration with the application's social features.
-///
-/// **Architecture Integration:**
-/// - Extends [BaseService] for consistent service patterns and error handling
-/// - Uses [MessagingRepository] interface for flexible messaging backend implementations
-/// - Integrates with [AuthRepository] for user authentication and permission validation
-/// - Coordinates with [NotificationService] for comprehensive push notification delivery
-/// - Implements dependency injection through service locator for decoupled architecture
-///
-/// **Messaging Features:**
-/// - **Real-time Conversations**: Live conversation streams with instant message delivery
-/// - **Direct and Group Messaging**: Support for both one-on-one and multi-participant conversations
-/// - **Message Types**: Text messages, recipe sharing, and extensible message type system
-/// - **Typing Indicators**: Real-time typing status with intelligent timeout management
-/// - **Read Status Tracking**: Comprehensive read receipt system with conversation-level tracking
-/// - **Message Management**: Edit, delete, and search functionality with permission validation
-///
-/// **Advanced Communication Features:**
-/// - **Smart Notifications**: Context-aware notifications with sender attribution and conversation grouping
-/// - **Permission System**: Comprehensive message ownership validation and editing controls
-/// - **Group Management**: Dynamic participant management with role-based access control
-/// - **Message Search**: Full-text search across conversation history with performance optimization
-/// - **Unread Tracking**: Sophisticated unread message and conversation counting
+/// Provides message sending/editing/deletion, typing indicators, read status tracking,
+/// conversation management (pin/archive/mute), and notification integration.
+/// Delegates to specialized operation classes following the facade pattern.
 
 import 'dart:async';
-import 'package:uuid/uuid.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
@@ -36,58 +12,18 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/services/notifications/notification_service.dart' as notifications;
-import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/services/messaging/message_sending_operations.dart';
+import 'package:butlery/services/messaging/conversation_action_operations.dart';
+import 'package:butlery/services/messaging/message_management_operations.dart';
 
-/// Messaging service providing comprehensive real-time communication with advanced conversation management.
-///
-/// This service manages complete messaging workflows including conversation creation, message delivery,
-/// typing indicators, read status tracking, and notification integration. It implements sophisticated
-/// permission validation, message editing capabilities, and comprehensive search functionality while
-/// maintaining real-time synchronization across all connected clients.
-///
-/// **Service Architecture:**
-/// Built on BaseService foundation providing:
-/// - Consistent error handling and logging patterns
-/// - Service operation management with timeout handling
-/// - Comprehensive authentication and permission validation
-/// - Integration with repository abstraction for flexible data persistence
-///
-/// **Real-time Communication:**
-/// Implements advanced real-time features including:
-/// - Live conversation streams with automatic updates
-/// - Typing indicator management with intelligent timeout handling
-/// - Real-time message delivery with comprehensive error recovery
-/// - Dynamic participant management for group conversations
-///
-/// **Usage Examples:**
-/// ```dart
-/// final messagingService = MessagingService(
-///   messagingRepository: ServiceLocator.get<MessagingRepository>(),
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// 
-/// // Start direct conversation
-/// final conversationId = await messagingService.startDirectConversation(
-///   otherUserId: 'user123',
-///   otherUserDisplayName: 'John Doe',
-/// );
-/// 
-/// // Send text message
-/// await messagingService.sendTextMessage(
-///   conversationId: conversationId,
-///   content: 'Hello! Check out this recipe I found.',
-/// );
-/// 
-/// // Listen to messages
-/// messagingService.getConversationMessages(conversationId: conversationId)
-///   .listen((messages) => updateUI(messages));
-/// ```
+/// Messaging service implementing the facade pattern for real-time communication.
 class MessagingService extends BaseService with StreamManagementMixin {
   final MessagingRepository _messagingRepository;
   final auth_repo.AuthRepository _authRepository;
+  late final MessageSendingOperations _sendingOps;
+  late final ConversationActionOperations _actionOps;
+  late final MessageManagementOperations _managementOps;
 
   @override
   String get serviceName => 'MessagingService';
@@ -100,7 +36,20 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required MessagingRepository messagingRepository,
     required auth_repo.AuthRepository authRepository,
   }) : _messagingRepository = messagingRepository,
-       _authRepository = authRepository;
+       _authRepository = authRepository {
+    _sendingOps = MessageSendingOperations(
+      messagingRepository: _messagingRepository,
+      authRepository: _authRepository,
+    );
+    _actionOps = ConversationActionOperations(
+      messagingRepository: _messagingRepository,
+      authRepository: _authRepository,
+    );
+    _managementOps = MessageManagementOperations(
+      messagingRepository: _messagingRepository,
+      authRepository: _authRepository,
+    );
+  }
 
   // ===== CONVERSATION OPERATIONS =====
 
@@ -239,53 +188,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required String content,
     String? replyToMessageId,
   }) async {
-    try {
-      AppLogger.info('📤 [MessagingService] sendTextMessage called');
-      AppLogger.debug('📤 [MessagingService] Conversation ID: $conversationId');
-      AppLogger.debug('📤 [MessagingService] Content: "$content"');
-      AppLogger.debug('📤 [MessagingService] Reply to: $replyToMessageId');
-
-      final currentUser = _authRepository.currentUser;
-      if (currentUser == null) {
-        AppLogger.error('❌ [MessagingService] User not authenticated');
-        throw AuthenticationException('User must be authenticated');
-      }
-      AppLogger.debug('📤 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
-
-      if (content.trim().isEmpty) {
-        AppLogger.error('❌ [MessagingService] Empty content');
-        throw ValidationException('Message content cannot be empty');
-      }
-
-      AppLogger.debug('📤 [MessagingService] Creating Message object...');
-      final message = Message.text(
-        conversationId: conversationId,
-        senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
-        senderAvatarUrl: currentUser.photoURL,
-        content: content.trim(),
-        replyToMessageId: replyToMessageId,
-      );
-      AppLogger.debug('📤 [MessagingService] Message created with ID: ${message.id}');
-
-      AppLogger.debug('📤 [MessagingService] Calling repository.sendMessage...');
-      await _messagingRepository.sendMessage(message);
-      AppLogger.success('✅ [MessagingService] Repository.sendMessage completed');
-
-      // Clear typing indicator for this user
-      AppLogger.debug('📤 [MessagingService] Clearing typing indicator...');
-      await _clearTypingIndicator(conversationId, currentUser.uid);
-
-      // Send notification to other participants
-      AppLogger.debug('📤 [MessagingService] Sending notification...');
-      await _sendMessageNotification(message, conversationId);
-
-      AppLogger.success('✅ [MessagingService] Text message sent successfully: ${message.id}');
-    } catch (e, stackTrace) {
-      AppLogger.error('❌ [MessagingService] Failed to send text message', e);
-      AppLogger.error('❌ [MessagingService] Stack trace: $stackTrace');
-      rethrow;
-    }
+    return _sendingOps.sendTextMessage(
+      conversationId: conversationId,
+      content: content,
+      replyToMessageId: replyToMessageId,
+      clearTypingIndicator: _clearTypingIndicator,
+    );
   }
 
   /// Send an image message
@@ -295,48 +203,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
     String? caption,
     String? replyToMessageId,
   }) async {
-    try {
-      final currentUser = _authRepository.currentUser;
-      if (currentUser == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      if (imageUrl.trim().isEmpty) {
-        throw ValidationException('Image URL cannot be empty');
-      }
-
-      // Create image message using base constructor with metadata
-      const uuid = Uuid();
-      final message = Message(
-        id: uuid.v4(),
-        conversationId: conversationId,
-        senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
-        senderAvatarUrl: currentUser.photoURL,
-        content: caption ?? '',
-        type: MessageType.image,
-        status: MessageStatus.sent,
-        sentAt: DateTime.now(),
-        metadata: {
-          'imageUrl': imageUrl,
-          if (caption != null && caption.isNotEmpty) 'caption': caption,
-        },
-        replyToMessageId: replyToMessageId,
-      );
-
-      await _messagingRepository.sendMessage(message);
-
-      // Clear typing indicator for this user
-      await _clearTypingIndicator(conversationId, currentUser.uid);
-
-      // Send notification to other participants
-      await _sendMessageNotification(message, conversationId);
-
-      AppLogger.debug('Image message sent: ${message.id}');
-    } catch (e) {
-      AppLogger.error('Failed to send image message', e);
-      rethrow;
-    }
+    return _sendingOps.sendImageMessage(
+      conversationId: conversationId,
+      imageUrl: imageUrl,
+      caption: caption,
+      replyToMessageId: replyToMessageId,
+      clearTypingIndicator: _clearTypingIndicator,
+    );
   }
 
   /// Send a recipe share message
@@ -346,29 +219,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required String recipeTitle,
     String? message,
   }) async {
-    try {
-      final currentUser = _authRepository.currentUser;
-      if (currentUser == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      final shareMessage = Message.recipeShare(
-        conversationId: conversationId,
-        senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
-        senderAvatarUrl: currentUser.photoURL,
-        recipeId: recipeId,
-        recipeTitle: recipeTitle,
-        message: message,
-      );
-
-      await _messagingRepository.sendMessage(shareMessage);
-      
-      AppLogger.debug('Recipe share sent: ${shareMessage.id}');
-    } catch (e) {
-      AppLogger.error('Failed to send recipe share', e);
-      rethrow;
-    }
+    return _sendingOps.sendRecipeShare(
+      conversationId: conversationId,
+      recipeId: recipeId,
+      recipeTitle: recipeTitle,
+      message: message,
+    );
   }
 
   /// Send a menu share message
@@ -378,29 +234,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required String menuTitle,
     String? message,
   }) async {
-    try {
-      final currentUser = _authRepository.currentUser;
-      if (currentUser == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      final shareMessage = Message.menuShare(
-        conversationId: conversationId,
-        senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
-        senderAvatarUrl: currentUser.photoURL,
-        menuId: menuId,
-        menuTitle: menuTitle,
-        message: message,
-      );
-
-      await _messagingRepository.sendMessage(shareMessage);
-      
-      AppLogger.debug('Menu share sent: ${shareMessage.id}');
-    } catch (e) {
-      AppLogger.error('Failed to send menu share', e);
-      rethrow;
-    }
+    return _sendingOps.sendMenuShare(
+      conversationId: conversationId,
+      menuId: menuId,
+      menuTitle: menuTitle,
+      message: message,
+    );
   }
 
   /// Send a shopping list share message
@@ -410,29 +249,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required String listTitle,
     String? message,
   }) async {
-    try {
-      final currentUser = _authRepository.currentUser;
-      if (currentUser == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      final shareMessage = Message.shoppingListShare(
-        conversationId: conversationId,
-        senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
-        senderAvatarUrl: currentUser.photoURL,
-        listId: listId,
-        listTitle: listTitle,
-        message: message,
-      );
-
-      await _messagingRepository.sendMessage(shareMessage);
-      
-      AppLogger.debug('Shopping list share sent: ${shareMessage.id}');
-    } catch (e) {
-      AppLogger.error('Failed to send shopping list share', e);
-      rethrow;
-    }
+    return _sendingOps.sendShoppingListShare(
+      conversationId: conversationId,
+      listId: listId,
+      listTitle: listTitle,
+      message: message,
+    );
   }
 
   /// Mark conversation as read
@@ -458,176 +280,19 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<void> editMessage({
     required String messageId,
     required String newContent,
-  }) async {
-    try {
-      if (newContent.trim().isEmpty) {
-        throw ValidationException('Message content cannot be empty');
-      }
-
-      // Verify message ownership
-      final message = await _messagingRepository.getMessage(messageId);
-      if (message == null) {
-        throw ResourceNotFoundException(
-          'Message not found',
-          resourceType: 'message',
-          resourceId: messageId,
-        );
-      }
-
-      final currentUserId = _authRepository.currentUserId;
-      if (message.senderId != currentUserId) {
-        throw PermissionDeniedException(
-          'Can only edit own messages',
-          resource: 'message:$messageId',
-          userId: currentUserId,
-        );
-      }
-
-      await _messagingRepository.updateMessageContent(
-        messageId: messageId,
-        newContent: newContent.trim(),
-      );
-      
-      AppLogger.debug('Message edited: $messageId');
-    } catch (e) {
-      AppLogger.error('Failed to edit message $messageId', e);
-      rethrow;
-    }
-  }
+  }) async => _managementOps.editMessage(messageId: messageId, newContent: newContent);
 
   /// Delete message
-  Future<void> deleteMessage(String messageId) async {
-    try {
-      // Verify message ownership
-      final message = await _messagingRepository.getMessage(messageId);
-      if (message == null) {
-        throw ResourceNotFoundException(
-          'Message not found',
-          resourceType: 'message',
-          resourceId: messageId,
-        );
-      }
-
-      final currentUserId = _authRepository.currentUserId;
-      if (message.senderId != currentUserId) {
-        throw PermissionDeniedException(
-          'Can only delete own messages',
-          resource: 'message:$messageId',
-          userId: currentUserId,
-        );
-      }
-
-      await _messagingRepository.deleteMessage(messageId);
-      
-      AppLogger.debug('Message deleted: $messageId');
-    } catch (e) {
-      AppLogger.error('Failed to delete message $messageId', e);
-      rethrow;
-    }
-  }
+  Future<void> deleteMessage(String messageId) async =>
+      _managementOps.deleteMessage(messageId);
 
   /// Delete all messages in a conversation (chat clear functionality)
-  /// 
-  /// ✅ FIXED: Implemented conversation message clearing functionality
-  Future<void> deleteAllMessages(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw PermissionDeniedException(
-          'Must be logged in to delete messages',
-          resource: 'conversation:$conversationId',
-          userId: null,
-        );
-      }
-
-      // Get all messages in the conversation
-      final messages = await _messagingRepository.searchMessages(
-        conversationId: conversationId,
-        query: '', // Empty query to get all messages
-        limit: 1000, // High limit to get all messages
-      );
-
-      AppLogger.info('🧹 Deleting ${messages.length} messages from conversation $conversationId');
-
-      // Delete messages in batches to avoid overwhelming the system
-      const batchSize = 50;
-      for (int i = 0; i < messages.length; i += batchSize) {
-        final batch = messages.skip(i).take(batchSize);
-        
-        // Delete each message in the batch
-        final deleteFutures = batch.map((message) async {
-          try {
-            // Only delete messages sent by current user (permission check)
-            if (message.senderId == currentUserId) {
-              await _messagingRepository.deleteMessage(message.id);
-            }
-          } catch (e) {
-            AppLogger.warning('Failed to delete message ${message.id}: $e');
-          }
-        });
-        
-        await Future.wait(deleteFutures);
-        
-        // Small delay between batches to prevent overwhelming the backend
-        if (i + batchSize < messages.length) {
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-      }
-
-      AppLogger.success('✅ Successfully cleared conversation messages for user $currentUserId');
-    } catch (e) {
-      AppLogger.error('❌ Failed to delete all messages in conversation $conversationId', e);
-      rethrow;
-    }
-  }
+  Future<void> deleteAllMessages(String conversationId) async =>
+      _managementOps.deleteAllMessages(conversationId);
 
   /// Delete a conversation and all its messages
-  ///
-  /// ✅ IMPLEMENTED: Complete conversation deletion functionality
-  Future<void> deleteConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw PermissionDeniedException(
-          'Must be logged in to delete conversations',
-          resource: 'conversation:$conversationId',
-          userId: null,
-        );
-      }
-
-      // Get conversation to check permissions
-      final conversation = await getConversation(conversationId);
-      if (conversation == null) {
-        throw ResourceNotFoundException(
-          'Conversation not found',
-          resourceType: 'conversation',
-          resourceId: conversationId,
-        );
-      }
-
-      // Check if user has permission to delete (owner or participant)
-      if (!conversation.participantIds.contains(currentUserId)) {
-        throw PermissionDeniedException(
-          'Cannot delete conversation - not a participant',
-          resource: 'conversation:$conversationId',
-          userId: currentUserId,
-        );
-      }
-
-      AppLogger.info('🗑️ Deleting conversation $conversationId for user $currentUserId');
-
-      // First delete all messages in the conversation
-      await deleteAllMessages(conversationId);
-
-      // Then delete the conversation itself
-      await _messagingRepository.deleteConversation(conversationId);
-
-      AppLogger.success('✅ Successfully deleted conversation $conversationId');
-    } catch (e) {
-      AppLogger.error('❌ Failed to delete conversation $conversationId', e);
-      rethrow;
-    }
-  }
+  Future<void> deleteConversation(String conversationId) async =>
+      _managementOps.deleteConversation(conversationId, getConversation);
 
   // ===== TYPING INDICATORS =====
 
@@ -685,177 +350,32 @@ class MessagingService extends BaseService with StreamManagementMixin {
   // ===== CONVERSATION ORGANIZATION =====
 
   /// Pin a conversation to the top of the list
-  Future<void> pinConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      final conversation = await getConversation(conversationId);
-      if (conversation == null) {
-        throw ValidationException('Conversation not found');
-      }
-
-      if (!conversation.participantIds.contains(currentUserId)) {
-        throw PermissionDeniedException('User is not a participant in this conversation');
-      }
-
-      // Store pin setting in user's conversation metadata
-      await _messagingRepository.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: currentUserId,
-        settings: {
-          'isPinned': true,
-          'pinnedAt': DateTime.now().toIso8601String(),
-        },
-      );
-
-      AppLogger.info('Conversation $conversationId pinned');
-    } catch (e) {
-      AppLogger.error('Failed to pin conversation', e);
-      rethrow;
-    }
-  }
+  Future<void> pinConversation(String conversationId) async =>
+      _actionOps.pinConversation(conversationId, getConversation);
 
   /// Unpin a conversation
-  Future<void> unpinConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      await _messagingRepository.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: currentUserId,
-        settings: {
-          'isPinned': false,
-          'pinnedAt': null,
-        },
-      );
-
-      AppLogger.info('Conversation $conversationId unpinned');
-    } catch (e) {
-      AppLogger.error('Failed to unpin conversation', e);
-      rethrow;
-    }
-  }
+  Future<void> unpinConversation(String conversationId) async =>
+      _actionOps.unpinConversation(conversationId);
 
   /// Archive a conversation (hide from main list)
-  Future<void> archiveConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      await _messagingRepository.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: currentUserId,
-        settings: {
-          'isArchived': true,
-          'archivedAt': DateTime.now().toIso8601String(),
-        },
-      );
-
-      AppLogger.info('Conversation $conversationId archived');
-    } catch (e) {
-      AppLogger.error('Failed to archive conversation', e);
-      rethrow;
-    }
-  }
+  Future<void> archiveConversation(String conversationId) async =>
+      _actionOps.archiveConversation(conversationId);
 
   /// Unarchive a conversation
-  Future<void> unarchiveConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      await _messagingRepository.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: currentUserId,
-        settings: {
-          'isArchived': false,
-          'archivedAt': null,
-        },
-      );
-
-      AppLogger.info('Conversation $conversationId unarchived');
-    } catch (e) {
-      AppLogger.error('Failed to unarchive conversation', e);
-      rethrow;
-    }
-  }
+  Future<void> unarchiveConversation(String conversationId) async =>
+      _actionOps.unarchiveConversation(conversationId);
 
   /// Mute notifications for a conversation
-  Future<void> muteConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      await _messagingRepository.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: currentUserId,
-        settings: {
-          'isMuted': true,
-        },
-      );
-
-      AppLogger.info('Conversation $conversationId muted');
-    } catch (e) {
-      AppLogger.error('Failed to mute conversation', e);
-      rethrow;
-    }
-  }
+  Future<void> muteConversation(String conversationId) async =>
+      _actionOps.muteConversation(conversationId);
 
   /// Unmute notifications for a conversation
-  Future<void> unmuteConversation(String conversationId) async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      await _messagingRepository.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: currentUserId,
-        settings: {
-          'isMuted': false,
-        },
-      );
-
-      AppLogger.info('Conversation $conversationId unmuted');
-    } catch (e) {
-      AppLogger.error('Failed to unmute conversation', e);
-      rethrow;
-    }
-  }
+  Future<void> unmuteConversation(String conversationId) async =>
+      _actionOps.unmuteConversation(conversationId);
 
   /// Mark all conversations as read for current user
-  Future<void> markAllConversationsAsRead() async {
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (currentUserId == null) {
-        throw AuthenticationException('User must be authenticated');
-      }
-
-      final conversations = await getMyConversations().first;
-
-      for (final conversation in conversations) {
-        await markConversationAsRead(conversation.id);
-      }
-
-      AppLogger.info('All conversations marked as read');
-    } catch (e) {
-      AppLogger.error('Failed to mark all conversations as read', e);
-      rethrow;
-    }
-  }
+  Future<void> markAllConversationsAsRead() async =>
+      _actionOps.markAllConversationsAsRead(getMyConversations, markConversationAsRead);
 
   // ===== UTILITY OPERATIONS =====
 
@@ -911,133 +431,34 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required List<String> participantIds,
     required Map<String, String> participantDisplayNames,
     required Map<String, String?> participantAvatarUrls,
-  }) async {
-    try {
-      await _messagingRepository.addParticipants(
+  }) async => _managementOps.addParticipantsToGroup(
         conversationId: conversationId,
         participantIds: participantIds,
         participantDisplayNames: participantDisplayNames,
         participantAvatarUrls: participantAvatarUrls,
       );
-      
-      AppLogger.success('✅ Added participants to group conversation: $conversationId');
-    } catch (e) {
-      AppLogger.error('Failed to add participants to group', e);
-      rethrow;
-    }
-  }
 
   /// Remove participant from group conversation
   Future<void> removeParticipantFromGroup({
     required String conversationId,
     required String participantId,
-  }) async {
-    try {
-      await _messagingRepository.removeParticipant(
+  }) async => _managementOps.removeParticipantFromGroup(
         conversationId: conversationId,
         participantId: participantId,
       );
-      
-      AppLogger.success('✅ Removed participant from group conversation: $conversationId');
-    } catch (e) {
-      AppLogger.error('Failed to remove participant from group', e);
-      rethrow;
-    }
-  }
 
   /// Update group conversation title
   Future<void> updateGroupTitle({
     required String conversationId,
     required String newTitle,
-  }) async {
-    try {
-      if (newTitle.trim().isEmpty) {
-        throw ValidationException('Group title cannot be empty');
-      }
-
-      await _messagingRepository.updateConversation(
+  }) async => _managementOps.updateGroupTitle(
         conversationId: conversationId,
-        title: newTitle.trim(),
+        newTitle: newTitle,
       );
-      
-      AppLogger.debug('Group title updated: $conversationId');
-    } catch (e) {
-      AppLogger.error('Failed to update group title', e);
-      rethrow;
-    }
-  }
 
   // ===== NOTIFICATION METHODS =====
 
   /// Send push notification for new message
-  Future<void> _sendMessageNotification(Message message, String conversationId) async {
-    try {
-      // Don't send notifications to ourselves
-      if (message.isFromCurrentUser(_authRepository.currentUserId ?? '')) {
-        return;
-      }
-
-      // Get conversation to determine recipients
-      final conversation = await getConversation(conversationId);
-      if (conversation == null) {
-        AppLogger.warning('Cannot send notification - conversation not found: $conversationId');
-        return;
-      }
-
-      // Get notification service
-      final notificationService = ServiceLocator.get<notifications.NotificationService>();
-
-      // Determine notification title and body based on conversation type
-      String title;
-      String body;
-      
-      if (conversation.isGroup) {
-        title = conversation.title ?? 'Gruppchatt';
-        body = '${message.senderDisplayName}: ${message.displayContent}';
-      } else {
-        title = message.senderDisplayName;
-        body = message.displayContent;
-      }
-
-      // Get target user IDs (all participants except sender)
-      final targetUserIds = conversation.participantIds
-          .where((id) => id != message.senderId)
-          .toList();
-
-      if (targetUserIds.isNotEmpty) {
-        // Create notification strategy for messaging
-        const strategy = NotificationStrategy(
-          type: NotificationType.immediate,
-          priority: NotificationPriority.high,
-          category: NotificationCategory.messaging,
-        );
-
-        // Send notification
-        await notificationService.sendImmediateNotification(
-          targetUserIds: targetUserIds,
-          strategy: strategy,
-          variables: {
-            'title': title,
-            'body': body,
-            'sender_name': message.senderDisplayName,
-          },
-          additionalData: {
-            'type': 'new_message',
-            'conversationId': conversationId,
-            'messageId': message.id,
-            'senderId': message.senderId,
-            'senderName': message.senderDisplayName,
-          },
-        );
-      }
-
-      AppLogger.debug('Message notifications sent for message: ${message.id}');
-    } catch (e) {
-      AppLogger.error('Failed to send message notification', e);
-      // Don't rethrow - notification failure shouldn't break message sending
-    }
-  }
-
   // ===== SERVICE LIFECYCLE =====
 
   @override

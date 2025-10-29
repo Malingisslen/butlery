@@ -1,83 +1,11 @@
-/// Comprehensive form validation system implementing intelligent input validation patterns for Swedish cooking application forms.
+/// Form validation system with Swedish localization for all app forms.
 ///
-/// This validation system serves as the centralized form validation infrastructure throughout the Butlery application,
-/// providing standardized input validation patterns for all forms while ensuring Swedish localization, cultural
-/// appropriateness, and comprehensive field validation. It eliminates duplicate validation logic across forms while
-/// maintaining consistent user experience and error messaging throughout the Swedish cooking application's forms
-/// including authentication, recipe creation, profile management, social features, and collaborative interactions.
-///
-/// ## Core Architecture Features
-/// 
-/// **Comprehensive Validation Patterns**
-/// - Basic field validation with required field checking, length constraints, and format validation
-/// - Swedish-localized error messages with culturally appropriate tone and helpful guidance
-/// - Specialized validators for recipes, user profiles, social interactions, and collaborative features
-/// - Advanced validation patterns including password strength, URL validation, and conditional validation
-/// 
-/// **Swedish Localization Integration**
-/// - Complete Swedish error messages with proper grammar and cultural sensitivity
-/// - Context-aware field names and validation messages for different application domains
-/// - User-friendly error descriptions that guide users toward successful form completion
-/// - Culturally appropriate validation thresholds and constraints for Swedish user expectations
-/// 
-/// **Smart Validation Logic**
-/// - Conditional validation that adapts based on form context and user input state
-/// - Combinatorial validation patterns that allow multiple validation rules per field
-/// - Optional validation for non-required fields with consistent behavior patterns
-/// - Advanced validation including Unicode support for Swedish characters and international names
-/// 
-/// ## Usage Examples
-/// 
-/// **Basic Form Validation:**
+/// **Features:** Required/min/max/email/password/URL validation, conditional/combinatorial validators, Swedish errors.
 /// ```dart
-/// class RecipeFormValidation {
-///   final titleValidator = FormValidators.combine([
-///     FormValidators.required('Recepttitel'),
-///     FormValidators.minLength(3, 'Recepttitel'),
-///     FormValidators.maxLength(100, 'Recepttitel'),
-///   ]);
-///   
-///   final portionsValidator = FormValidators.portions();
-///   final cookingTimeValidator = FormValidators.cookingTime();
-/// }
-/// ```
-/// 
-/// **Authentication Form Validation:**
-/// ```dart
-/// class AuthFormValidation {
-///   final nameValidator = FormValidators.authName();
-///   final emailValidator = FormValidators.authEmail();
-///   final passwordValidator = FormValidators.authPassword(isSignUp: true);
-///   final strongPasswordValidator = FormValidators.strongPassword();
-/// }
-/// ```
-/// 
-/// **Social Feature Validation:**
-/// ```dart
-/// class SocialFormValidation {
-///   final displayNameValidator = FormValidators.requiredDisplayName();
-///   final commentValidator = FormValidators.requiredComment();
-///   final shareMessageValidator = FormValidators.shareMessage(); // Optional
-/// }
-/// ```
-/// 
-/// **Shopping List Validation:**
-/// ```dart
-/// class ShoppingFormValidation {
-///   final itemNameValidator = FormValidators.shoppingItemName();
-///   final amountValidator = FormValidators.shoppingItemAmount();
-/// }
-/// ```
-/// 
-/// **Advanced Validation Patterns:**
-/// ```dart
-/// class AdvancedValidation {
-///   // Conditional validation based on form state
-///   final conditionalValidator = FormValidators.conditional(
-///     condition: isRequired,
-///     validator: FormValidators.required('Field'),
-///   );
-///   
+/// final v = FormValidators.combine([
+///   FormValidators.required('Titel'), FormValidators.minLength(3, 'Titel')]);
+/// final email = FormValidators.authEmail();
+/// final pwd = FormValidators.authPassword(isSignUp: true);
 ///   // Optional validation for non-required fields
 ///   final optionalUrlValidator = FormValidators.optional(
 ///     FormValidators.url(),

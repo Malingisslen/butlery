@@ -14,13 +14,13 @@
 /// 5. **Navigation Integration**: Navigation to friends view from empty state and proper argument handling
 /// 6. **Resource Management**: TabController and TextEditingController lifecycle management and proper disposal
 /// 7. **Swedish Localization**: Swedish timeago configuration and comprehensive Swedish UI text elements
-/// 8. **Provider Integration**: ChangeNotifierProvider with SharedContentViewModel state synchronization
+/// 8. **Provider Integration**: ChangeNotifierProvider with SharedContentCoordinatorViewModel state synchronization
 /// 9. **Content Organization**: Tabbed content display with organized recipes and menus categorization
 /// 10. **Social Integration**: Friend-shared content display with proper attribution and interaction tracking
 ///
 /// **Production Components Tested:**
 /// - SharedWithMeView: Main shared content interface (241 lines) with sophisticated search and tab management
-/// - SharedContentViewModel: Direct ViewModel integration for shared content operations and state management
+/// - SharedContentCoordinatorViewModel: Direct ViewModel integration for shared content operations and state management
 /// - CustomScrollView: Advanced scrollable interface with multiple specialized sliver components
 /// - TabController: 2-tab management (Recipes, Menus) with synchronization and proper lifecycle handling
 /// - Navigation Integration: Navigation to friends view from empty state with proper routing
@@ -51,7 +51,7 @@ import 'package:provider/provider.dart';
 
 // Production code imports
 import 'package:butlery/views/social/shared_with_me_view.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 // Test infrastructure imports - Following Phase 1-2 Gold Standard
 import '../helpers/view_test_helpers.dart';
@@ -116,21 +116,21 @@ void main() {
     // ==================== PROVIDER ARCHITECTURE TESTS ====================
 
     group('Provider Architecture & Initialization Tests', () {
-      testWidgets('✅ SharedContentViewModel Integration and Setup', (WidgetTester tester) async {
+      testWidgets('✅ SharedContentCoordinatorViewModel Integration and Setup', (WidgetTester tester) async {
         print('🧪 TESTING: SharedWithMeView Provider Architecture');
         
         await tester.pumpWidget(testWidget);
         await tester.pump(); // Allow provider initialization
-        
-        // Verify SharedContentViewModel is accessible through provider
+
+        // Verify SharedContentCoordinatorViewModel is accessible through provider
         final context = tester.element(find.byType(SharedWithMeView));
         expect(context, isNotNull);
-        
+
         // Verify provider integration without crashes
         expect(find.byType(SharedWithMeView), findsOneWidget);
         expect(tester.takeException(), isNull);
-        
-        print('     ✅ SharedContentViewModel provider setup validated');
+
+        print('     ✅ SharedContentCoordinatorViewModel provider setup validated');
         print('🎉 PROVIDER ARCHITECTURE: Setup Complete');
       });
 
@@ -237,11 +237,11 @@ void main() {
     group('Complex State Management Tests', () {
       testWidgets('⏳ Loading State Management', (WidgetTester tester) async {
         print('🧪 TESTING: Loading State Management');
-        
+
         // Configure loading state
         final loadingWidget = ViewTestHelpers.createTestViewWidget(
-          child: ChangeNotifierProvider<SharedContentViewModel>(
-            create: (_) => MockFactory.createSharedContentViewModel(isLoading: true),
+          child: ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
+            create: (_) => MockFactory.createSharedContentCoordinatorViewModel(isLoading: true),
             child: const SharedWithMeView(),
           ),
         );
@@ -263,11 +263,11 @@ void main() {
 
       testWidgets('❌ Error State Management', (WidgetTester tester) async {
         print('🧪 TESTING: Error State Management');
-        
+
         // Configure error state
         final errorWidget = ViewTestHelpers.createTestViewWidget(
-          child: ChangeNotifierProvider<SharedContentViewModel>(
-            create: (_) => MockFactory.createSharedContentViewModel(
+          child: ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
+            create: (_) => MockFactory.createSharedContentCoordinatorViewModel(
               isLoading: false,
               error: 'Test error message',
             ),
@@ -287,11 +287,11 @@ void main() {
 
       testWidgets('📭 Empty Content State Management', (WidgetTester tester) async {
         print('🧪 TESTING: Empty Content State Management');
-        
+
         // Configure empty content state
         final emptyWidget = ViewTestHelpers.createTestViewWidget(
-          child: ChangeNotifierProvider<SharedContentViewModel>(
-            create: (_) => MockFactory.createSharedContentViewModel(
+          child: ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
+            create: (_) => MockFactory.createSharedContentCoordinatorViewModel(
               isLoading: false,
               hasSharedContent: false,
             ),
@@ -311,11 +311,11 @@ void main() {
 
       testWidgets('🔍 No Search Results State Management', (WidgetTester tester) async {
         print('🧪 TESTING: No Search Results State Management');
-        
+
         // Configure no search results state
         final noResultsWidget = ViewTestHelpers.createTestViewWidget(
-          child: ChangeNotifierProvider<SharedContentViewModel>(
-            create: (_) => MockFactory.createSharedContentViewModel(
+          child: ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
+            create: (_) => MockFactory.createSharedContentCoordinatorViewModel(
               isLoading: false,
               hasSharedContent: true,
               hasFilteredContent: false,

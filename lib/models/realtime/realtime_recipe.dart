@@ -1,27 +1,15 @@
 // lib/models/realtime/realtime_recipe.dart
 
-// ✅ Firebase DocumentSnapshot dependency abstracted to repository layer
-// Note: Use fromData() constructor - repositories handle Firebase specifics
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 
-// Focused modules
 import 'package:butlery/models/realtime/recipe_operations.dart';
 import 'package:butlery/models/realtime/recipe_serialization.dart';
 import 'package:butlery/models/realtime/realtime_participants.dart';
 
-/// Clean facade for realtime recipe using focused modules
-///
-/// This facade provides a unified API that delegates to focused modules:
-/// - RecipeOperations: Recipe content manipulation (CRUD operations)
-/// - RealtimeMetadata: Edit tracking and activity management
-/// - RecipeSerialization: Firestore conversion and data validation
-/// - RealtimeParticipants: Permission and participant management
-///
-/// ❌ DOES NOT CONTAIN: Complex business logic, direct Firestore operations, UI concerns
+/// Facade for realtime recipe delegating to focused modules
 class RealtimeRecipe extends RealtimeResource {
-  /// Det underliggande receptet som alla redigerar tillsammans
   final Recipe recipe;
 
   RealtimeRecipe({
@@ -41,7 +29,6 @@ class RealtimeRecipe extends RealtimeResource {
           type: RealtimeResourceType.recipe,
         );
 
-  /// Factory för att skapa ny realtidsrecept från befintligt recept
   factory RealtimeRecipe.fromRecipe({
     required Recipe recipe,
     required String ownerId,
@@ -69,221 +56,78 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  // ===== RECIPE CONTENT OPERATIONS (DELEGATE TO RECIPE_OPERATIONS) =====
 
-  /// Uppdatera receptets grundläggande information
-  RealtimeRecipe updateBasicInfo({
-    String? title,
-    String? description,
-    String? mealType,
-    int? portions,
-    int? timeMinutes,
-    double? rating,
-    List<String>? tags,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.updateBasicInfo(
-      recipe,
-      title: title,
-      description: description,
-      mealType: mealType,
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      tags: tags,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe updateBasicInfo({String? title, String? description, String? mealType, int? portions,
+    int? timeMinutes, double? rating, List<String>? tags, required String editedBy, required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateBasicInfo(recipe, title: title, description: description,
+      mealType: mealType, portions: portions, timeMinutes: timeMinutes, rating: rating, tags: tags,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Uppdatera ingredienser
-  RealtimeRecipe updateIngredients({
-    required List<String> ingredients,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.updateIngredients(
-      recipe,
-      ingredients: ingredients,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe updateIngredients({required List<String> ingredients, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateIngredients(recipe, ingredients: ingredients,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Lägg till en ingrediens
-  RealtimeRecipe addIngredient({
-    required String ingredient,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.addIngredient(
-      recipe,
-      ingredient: ingredient,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe addIngredient({required String ingredient, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.addIngredient(recipe, ingredient: ingredient,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Ta bort en ingrediens
-  RealtimeRecipe removeIngredient({
-    required int index,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.removeIngredient(
-      recipe,
-      index: index,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe removeIngredient({required int index, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.removeIngredient(recipe, index: index,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Uppdatera instruktioner
-  RealtimeRecipe updateInstructions({
-    required List<String> instructions,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.updateInstructions(
-      recipe,
-      instructions: instructions,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe updateInstructions({required List<String> instructions, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateInstructions(recipe, instructions: instructions,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Lägg till en instruktion
-  RealtimeRecipe addInstruction({
-    required String instruction,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.addInstruction(
-      recipe,
-      instruction: instruction,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe addInstruction({required String instruction, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.addInstruction(recipe, instruction: instruction,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Ta bort en instruktion
-  RealtimeRecipe removeInstruction({
-    required int index,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.removeInstruction(
-      recipe,
-      index: index,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe removeInstruction({required int index, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.removeInstruction(recipe, index: index,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Uppdatera bildurlar
-  RealtimeRecipe updateImageUrls({
-    required List<String> imageUrls,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.updateImageUrls(
-      recipe,
-      imageUrls: imageUrls,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe updateImageUrls({required List<String> imageUrls, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateImageUrls(recipe, imageUrls: imageUrls,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Lägg till en bild
-  RealtimeRecipe addImageUrl({
-    required String imageUrl,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.addImageUrl(
-      recipe,
-      imageUrl: imageUrl,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe addImageUrl({required String imageUrl, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.addImageUrl(recipe, imageUrl: imageUrl,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  /// Ta bort en bild
-  RealtimeRecipe removeImageUrl({
-    required int index,
-    required String editedBy,
-    required String editedByDisplayName,
-  }) {
-    final updatedRecipe = RecipeOperations.removeImageUrl(
-      recipe,
-      index: index,
-      editedBy: editedBy,
-      editedByDisplayName: editedByDisplayName,
-    );
-
-    return copyWith(
-      recipe: updatedRecipe,
-      lastEditedBy: editedBy,
-      lastEditedByDisplayName: editedByDisplayName,
-    );
+  RealtimeRecipe removeImageUrl({required int index, required String editedBy,
+    required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.removeImageUrl(recipe, index: index,
+      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
+    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
   }
 
-  // ===== BUSINESS LOGIC GETTERS (DELEGATE TO RECIPE_OPERATIONS) =====
 
   int get ingredientsCount => recipe.ingredients.length;
   int get instructionsCount => recipe.instructions.length;
@@ -302,9 +146,7 @@ class RealtimeRecipe extends RealtimeResource {
   Map<String, int> get recipeStats => RecipeOperations.getRecipeStats(recipe);
   int get complexityScore => RecipeOperations.getComplexityScore(recipe);
 
-  // ===== PARTICIPANT OPERATIONS (DELEGATE TO REALTIME_PARTICIPANTS) =====
 
-  /// Lägg till deltagare
   @override
   RealtimeRecipe addParticipant(String userId, String userDisplayName, ResourcePermission permission) {
     final updatedParticipants = RealtimeParticipants.addParticipant(
@@ -316,7 +158,6 @@ class RealtimeRecipe extends RealtimeResource {
     return copyWithMetadata(participants: updatedParticipants);
   }
 
-  /// Ta bort deltagare
   @override
   RealtimeRecipe removeParticipant(String userId) {
     final updatedParticipants = RealtimeParticipants.removeParticipant(
@@ -327,24 +168,21 @@ class RealtimeRecipe extends RealtimeResource {
     return copyWithMetadata(participants: updatedParticipants);
   }
 
-  /// Uppdatera deltagarebehörighet
   @override
-  RealtimeRecipe updateParticipantPermission(String userId, ResourcePermission permission) {
+  RealtimeRecipe updateParticipantPermission(String userId, ResourcePermission newPermission) {
     final updatedParticipants = RealtimeParticipants.updateParticipantPermission(
       participants,
       userId,
-      permission,
+      newPermission,
     );
 
     return copyWithMetadata(participants: updatedParticipants);
   }
 
-  /// Kontrollera om användare kan redigera
   bool canEdit(String userId) {
     return RealtimeParticipants.canEdit(participants, userId);
   }
 
-  /// Kontrollera om användare kan visa
   bool canView(String userId) {
     return RealtimeParticipants.canView(participants, userId);
   }
@@ -352,16 +190,13 @@ class RealtimeRecipe extends RealtimeResource {
   // isOwner is correctly implemented in the base class RealtimeResource
   // It checks the ownerId field, not the participants map
 
-  // ===== SERIALIZATION (DELEGATE TO RECIPE_SERIALIZATION) =====
 
   @override
   Map<String, dynamic> serializeContent() {
     return RecipeSerialization.serializeRealtimeContent(recipe);
   }
 
-  /// Preferred factory constructor from clean data
   /// 
-  /// Repositories should provide DateTime objects and clean Map data,
   /// eliminating Firebase-specific types from the model layer.
   factory RealtimeRecipe.fromData({
     required String id,
@@ -393,7 +228,6 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  /// Create from repository data map (removes Firebase dependency)
   /// 
   /// @deprecated Use fromData() constructor instead. This maintains backward compatibility.
   factory RealtimeRecipe.fromMap(String id, Map<String, dynamic> data) {
@@ -430,14 +264,12 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  /// Create from Firestore document (deprecated - use fromData instead)
   factory RealtimeRecipe.fromFirestore(dynamic doc) {
     final id = doc.id as String;
     final data = doc.data() as Map<String, dynamic>;
     return RealtimeRecipe.fromMap(id, data);
   }
 
-  // ===== COPY METHODS =====
 
   @override
   RealtimeRecipe copyWithMetadata({
@@ -466,7 +298,6 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  /// Skapa kopia med uppdaterat recept och metadata
   RealtimeRecipe copyWith({
     Recipe? recipe,
     Map<String, ResourcePermission>? participants,
@@ -494,9 +325,7 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  // ===== UTILITY METHODS =====
 
-  /// Skapa en personlig kopia av receptet (för "Spara kopia" funktionen)
   Recipe createPersonalCopy({required String newOwnerId}) {
     return Recipe(
       core: RecipeCore(
@@ -522,7 +351,6 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-  /// Få recept-sammanfattning för UI
   String get recipeSummary {
     final parts = <String>[];
 
@@ -544,7 +372,6 @@ class RealtimeRecipe extends RealtimeResource {
     return parts.join(' • ');
   }
 
-  /// Kontrollera om receptet matchar söktermer
   bool matchesSearchQuery(String query) {
     final lowerQuery = query.toLowerCase();
     

@@ -1,42 +1,7 @@
-/// Shared Content Search ViewModel providing unified search and filtering functionality.
+/// Unified search across shared content with filtering and relevance scoring.
 ///
-/// This cross-cutting ViewModel handles search operations across all shared content types
-/// (recipes, menus, shopping lists) with advanced filtering, query management, and
-/// search result coordination. It implements the Strategy pattern to allow different
-/// search algorithms for different content types while maintaining consistent UI.
-///
-/// **Responsibilities:**
-/// - **Unified Search**: Search across all content types with single query
-/// - **Advanced Filtering**: Filter by content type, status, date ranges
-/// - **Query Management**: Search history, suggestions, recent searches
-/// - **Result Coordination**: Aggregate and rank search results
-/// - **Performance**: Debounced search, caching, result pagination
-///
-/// **Integration Points:**
-/// - **Content ViewModels**: Delegates to specialized ViewModels for content-specific search
-/// - **Search Algorithms**: Supports different search strategies per content type
-/// - **UI Coordination**: Provides search state management for search UI components
-///
-/// **Usage Example:**
-/// ```dart
-/// final searchViewModel = SharedContentSearchViewModel(
-///   recipeViewModel: recipeViewModel,
-///   menuViewModel: menuViewModel,
-///   shoppingViewModel: shoppingViewModel,
-/// );
-/// 
-/// // Unified search
-/// searchViewModel.updateSearchQuery('pasta');
-/// final allResults = searchViewModel.allResults;
-/// 
-/// // Filtered search
-/// searchViewModel.setContentTypeFilter(ContentType.recipes);
-/// final recipeResults = searchViewModel.filteredResults;
-/// 
-/// // Advanced filtering
-/// searchViewModel.setStatusFilter(ContentStatus.unread);
-/// searchViewModel.setDateFilter(DateRange.lastWeek);
-/// ```
+/// Handles search across recipes, menus, and shopping lists with debouncing,
+/// advanced filtering (type, status, date), and relevance-based ranking.
 
 // lib/viewmodels/shared_content/shared_content_search_viewmodel.dart
 
@@ -111,14 +76,10 @@ class SearchResult {
 /// Unified search ViewModel for all shared content types
 class SharedContentSearchViewModel extends ChangeNotifier {
   
-  // ===== DEPENDENCIES =====
-  
   final SharedRecipeViewModel _recipeViewModel;
   final SharedMenuViewModel _menuViewModel;
   final SharedShoppingViewModel _shoppingViewModel;
 
-  // ===== STATE VARIABLES =====
-  
   /// Current search query
   String _searchQuery = '';
   
@@ -149,8 +110,6 @@ class SharedContentSearchViewModel extends ChangeNotifier {
   /// Search debounce duration
   static const Duration _debounceDuration = Duration(milliseconds: 300);
 
-  // ===== CONSTRUCTOR =====
-  
   SharedContentSearchViewModel({
     required SharedRecipeViewModel recipeViewModel,
     required SharedMenuViewModel menuViewModel,
@@ -167,8 +126,6 @@ class SharedContentSearchViewModel extends ChangeNotifier {
     AppLogger.info('SharedContentSearchViewModel initialized for unified search');
   }
 
-  // ===== GETTERS =====
-  
   /// Current search query
   String get searchQuery => _searchQuery;
   
@@ -292,8 +249,6 @@ class SharedContentSearchViewModel extends ChangeNotifier {
   /// Has search results
   bool get hasResults => filteredResults.isNotEmpty;
 
-  // ===== SEARCH OPERATIONS =====
-  
   /// Update search query with debouncing
   void updateSearchQuery(String query) {
     if (_searchQuery == query) return;
@@ -334,26 +289,58 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    
+
     _setSearching(true);
-    
+
     try {
-      final results = <SearchResult>[];
-      
-      // Search recipes
-      final recipeResults = await _searchRecipes(_searchQuery);
-      results.addAll(recipeResults);
-      
-      // Search menus
-      final menuResults = await _searchMenus(_searchQuery);
-      results.addAll(menuResults);
-      
-      // Search shopping lists
-      final shoppingResults = await _searchShoppingLists(_searchQuery);
-      results.addAll(shoppingResults);
-      
-      _allResults = results;
-      AppLogger.info('🔍 Search completed: ${results.length} results for "$_searchQuery"');
+      _allResults = [
+        ...await _searchContent<SharedRecipe>(_recipeViewModel, ContentType.recipes, _searchQuery,
+            (SharedRecipe r) => SearchResult(
+              id: r.id,
+              title: r.recipeSnapshot.title,
+              description: r.recipeSnapshot.description,
+              contentType: ContentType.recipes,
+              sharedAt: r.sharedAt,
+              sharedByDisplayName: r.sharedByDisplayName,
+              isUnread: !_recipeViewModel.isRecipeViewed(r),
+              isImported: _recipeViewModel.isRecipeImported(r),
+              isDismissed: _recipeViewModel.isRecipeDismissed(r),
+              isCollaborative: _recipeViewModel.isRecipeCollaborative(r),
+              content: r,
+              relevanceScore: _calculateRecipeRelevance(r, _searchQuery),
+            )),
+        ...await _searchContent<SharedMenu>(_menuViewModel, ContentType.menus, _searchQuery,
+            (SharedMenu m) => SearchResult(
+              id: m.id,
+              title: m.menuTitle,
+              description: _menuViewModel.getMenuSummary(m),
+              contentType: ContentType.menus,
+              sharedAt: m.sharedAt,
+              sharedByDisplayName: m.sharedByDisplayName,
+              isUnread: !_menuViewModel.isMenuViewed(m),
+              isImported: _menuViewModel.isMenuImported(m),
+              isDismissed: _menuViewModel.isMenuDismissed(m),
+              isCollaborative: _menuViewModel.isMenuCollaborative(m),
+              content: m,
+              relevanceScore: _calculateMenuRelevance(m, _searchQuery),
+            )),
+        ...await _searchContent<SharedShoppingList>(_shoppingViewModel, ContentType.shoppingLists, _searchQuery,
+            (SharedShoppingList l) => SearchResult(
+              id: l.id,
+              title: l.listName,
+              description: _shoppingViewModel.getShoppingListSummary(l),
+              contentType: ContentType.shoppingLists,
+              sharedAt: l.sharedAt,
+              sharedByDisplayName: l.sharedByDisplayName,
+              isUnread: !_shoppingViewModel.isShoppingListViewed(l),
+              isImported: false,
+              isDismissed: _shoppingViewModel.isShoppingListDismissed(l),
+              isCollaborative: _shoppingViewModel.isShoppingListJoined(l),
+              content: l,
+              relevanceScore: _calculateShoppingListRelevance(l, _searchQuery),
+            )),
+      ];
+      AppLogger.info('🔍 Search completed: ${_allResults.length} results for "$_searchQuery"');
     } catch (e) {
       AppLogger.error('Search failed: $e');
       _allResults.clear();
@@ -361,93 +348,26 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       _setSearching(false);
     }
   }
-  
-  /// Search recipes with relevance scoring
-  Future<List<SearchResult>> _searchRecipes(String query) async {
-    final recipes = _recipeViewModel.content;
+
+  /// Generic search helper
+  Future<List<SearchResult>> _searchContent<T>(
+    dynamic viewModel,
+    ContentType contentType,
+    String query,
+    SearchResult Function(T) resultBuilder,
+  ) async {
+    final content = viewModel.content as List<T>;
     final results = <SearchResult>[];
-    
-    for (final recipe in recipes) {
-      if (_recipeViewModel.contentMatchesSearch(recipe, query)) {
-        final relevanceScore = _calculateRecipeRelevance(recipe, query);
-        results.add(SearchResult(
-          id: recipe.id,
-          title: recipe.recipeSnapshot.title,
-          description: recipe.recipeSnapshot.description,
-          contentType: ContentType.recipes,
-          sharedAt: recipe.sharedAt,
-          sharedByDisplayName: recipe.sharedByDisplayName,
-          isUnread: _recipeViewModel.isRecipeViewed(recipe) == false,
-          isImported: _recipeViewModel.isRecipeImported(recipe),
-          isDismissed: _recipeViewModel.isRecipeDismissed(recipe),
-          isCollaborative: _recipeViewModel.isRecipeCollaborative(recipe),
-          content: recipe,
-          relevanceScore: relevanceScore,
-        ));
+
+    for (final item in content) {
+      if (viewModel.contentMatchesSearch(item, query)) {
+        results.add(resultBuilder(item));
       }
     }
-    
-    return results;
-  }
-  
-  /// Search menus with relevance scoring
-  Future<List<SearchResult>> _searchMenus(String query) async {
-    final menus = _menuViewModel.content;
-    final results = <SearchResult>[];
-    
-    for (final menu in menus) {
-      if (_menuViewModel.contentMatchesSearch(menu, query)) {
-        final relevanceScore = _calculateMenuRelevance(menu, query);
-        results.add(SearchResult(
-          id: menu.id,
-          title: menu.menuTitle,
-          description: _menuViewModel.getMenuSummary(menu),
-          contentType: ContentType.menus,
-          sharedAt: menu.sharedAt,
-          sharedByDisplayName: menu.sharedByDisplayName,
-          isUnread: _menuViewModel.isMenuViewed(menu) == false,
-          isImported: _menuViewModel.isMenuImported(menu),
-          isDismissed: _menuViewModel.isMenuDismissed(menu),
-          isCollaborative: _menuViewModel.isMenuCollaborative(menu),
-          content: menu,
-          relevanceScore: relevanceScore,
-        ));
-      }
-    }
-    
-    return results;
-  }
-  
-  /// Search shopping lists with relevance scoring  
-  Future<List<SearchResult>> _searchShoppingLists(String query) async {
-    final shoppingLists = _shoppingViewModel.content;
-    final results = <SearchResult>[];
-    
-    for (final list in shoppingLists) {
-      if (_shoppingViewModel.contentMatchesSearch(list, query)) {
-        final relevanceScore = _calculateShoppingListRelevance(list, query);
-        results.add(SearchResult(
-          id: list.id,
-          title: list.listName,
-          description: _shoppingViewModel.getShoppingListSummary(list),
-          contentType: ContentType.shoppingLists,
-          sharedAt: list.sharedAt,
-          sharedByDisplayName: list.sharedByDisplayName,
-          isUnread: _shoppingViewModel.isShoppingListViewed(list) == false,
-          isImported: false, // Shopping lists use join, not import
-          isDismissed: _shoppingViewModel.isShoppingListDismissed(list),
-          isCollaborative: _shoppingViewModel.isShoppingListJoined(list),
-          content: list,
-          relevanceScore: relevanceScore,
-        ));
-      }
-    }
-    
+
     return results;
   }
 
-  // ===== FILTER OPERATIONS =====
-  
   /// Set content type filter
   void setContentTypeFilter(ContentType filter) {
     if (_contentTypeFilter != filter) {
@@ -500,133 +420,52 @@ class SharedContentSearchViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== RELEVANCE SCORING =====
-  
+  /// Helper: Score title match with prefix bonus
+  double _scoreTitleMatch(String title, String query) {
+    final lowerTitle = title.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    if (!lowerTitle.contains(lowerQuery)) return 0.0;
+    return lowerTitle.startsWith(lowerQuery) ? 15.0 : 10.0;
+  }
+
+  /// Helper: Recency bonus for recent shares
+  double _recencyBonus(DateTime sharedAt) =>
+      DateTime.now().difference(sharedAt).inDays < 7 ? 1.0 : 0.0;
+
+  /// Helper: Shared by name match
+  double _sharedByNameScore(String sharedByName, String query) =>
+      sharedByName.toLowerCase().contains(query.toLowerCase()) ? 2.0 : 0.0;
+
   /// Calculate relevance score for recipe search results
   double _calculateRecipeRelevance(SharedRecipe recipe, String query) {
-    final lowerQuery = query.toLowerCase();
-    double score = 0.0;
-    
-    // Title match (highest weight)
-    if (recipe.recipeSnapshot.title.toLowerCase().contains(lowerQuery)) {
-      score += 10.0;
-      if (recipe.recipeSnapshot.title.toLowerCase().startsWith(lowerQuery)) {
-        score += 5.0; // Bonus for title prefix match
-      }
-    }
-    
-    // Description match
-    if (recipe.recipeSnapshot.description.toLowerCase().contains(lowerQuery)) {
-      score += 5.0;
-    }
-    
-    // Ingredient match
-    for (final ingredient in recipe.recipeSnapshot.ingredients) {
-      if (ingredient.toLowerCase().contains(lowerQuery)) {
-        score += 3.0;
-      }
-    }
-    
-    // Shared by name match
-    if (recipe.sharedByDisplayName.toLowerCase().contains(lowerQuery)) {
-      score += 2.0;
-    }
-    
-    // Recency bonus (newer content gets slight boost)
-    final daysSinceShared = DateTime.now().difference(recipe.sharedAt).inDays;
-    if (daysSinceShared < 7) {
-      score += 1.0;
-    }
-    
-    return score;
+    return _scoreTitleMatch(recipe.recipeSnapshot.title, query) +
+           (recipe.recipeSnapshot.description.toLowerCase().contains(query.toLowerCase()) ? 5.0 : 0.0) +
+           recipe.recipeSnapshot.ingredients.where((i) => i.toLowerCase().contains(query.toLowerCase())).length * 3.0 +
+           _sharedByNameScore(recipe.sharedByDisplayName, query) +
+           _recencyBonus(recipe.sharedAt);
   }
-  
+
   /// Calculate relevance score for menu search results
   double _calculateMenuRelevance(SharedMenu menu, String query) {
-    final lowerQuery = query.toLowerCase();
-    double score = 0.0;
-    
-    // Title match (highest weight)
-    if (menu.menuTitle.toLowerCase().contains(lowerQuery)) {
-      score += 10.0;
-      if (menu.menuTitle.toLowerCase().startsWith(lowerQuery)) {
-        score += 5.0;
-      }
-    }
-    
-    // Category match
-    for (final category in menu.categories) {
-      if (category.toLowerCase().contains(lowerQuery)) {
-        score += 4.0;
-      }
-    }
-    
-    // Shared by name match
-    if (menu.sharedByDisplayName.toLowerCase().contains(lowerQuery)) {
-      score += 2.0;
-    }
-    
-    // Recipe count bonus (larger menus might be more valuable)
-    score += menu.totalRecipeCount * 0.5;
-    
-    // Recency bonus
-    final daysSinceShared = DateTime.now().difference(menu.sharedAt).inDays;
-    if (daysSinceShared < 7) {
-      score += 1.0;
-    }
-    
-    return score;
+    return _scoreTitleMatch(menu.menuTitle, query) +
+           menu.categories.where((c) => c.toLowerCase().contains(query.toLowerCase())).length * 4.0 +
+           _sharedByNameScore(menu.sharedByDisplayName, query) +
+           menu.totalRecipeCount * 0.5 +
+           _recencyBonus(menu.sharedAt);
   }
-  
+
   /// Calculate relevance score for shopping list search results
   double _calculateShoppingListRelevance(SharedShoppingList list, String query) {
     final lowerQuery = query.toLowerCase();
-    double score = 0.0;
-    
-    // List name match (highest weight)
-    if (list.listName.toLowerCase().contains(lowerQuery)) {
-      score += 10.0;
-      if (list.listName.toLowerCase().startsWith(lowerQuery)) {
-        score += 5.0;
-      }
-    }
-    
-    // Item name matches
-    for (final item in list.listItems) {
-      if (item.name.toLowerCase().contains(lowerQuery)) {
-        score += 3.0;
-      }
-    }
-    
-    // Description match
-    if (list.listDescription?.toLowerCase().contains(lowerQuery) ?? false) {
-      score += 4.0;
-    }
-    
-    // Share message match
-    if (list.shareMessage?.toLowerCase().contains(lowerQuery) == true) {
-      score += 2.0;
-    }
-    
-    // Shared by name match
-    if (list.sharedByDisplayName.toLowerCase().contains(lowerQuery)) {
-      score += 2.0;
-    }
-    
-    // Item count bonus
-    score += list.listItems.length * 0.3;
-    
-    // Recency bonus
-    final daysSinceShared = DateTime.now().difference(list.sharedAt).inDays;
-    if (daysSinceShared < 7) {
-      score += 1.0;
-    }
-    
-    return score;
+    return _scoreTitleMatch(list.listName, query) +
+           list.listItems.where((i) => i.name.toLowerCase().contains(lowerQuery)).length * 3.0 +
+           (list.listDescription?.toLowerCase().contains(lowerQuery) == true ? 4.0 : 0.0) +
+           (list.shareMessage?.toLowerCase().contains(lowerQuery) == true ? 2.0 : 0.0) +
+           _sharedByNameScore(list.sharedByDisplayName, query) +
+           list.listItems.length * 0.3 +
+           _recencyBonus(list.sharedAt);
   }
 
-  // ===== STATE MANAGEMENT =====
-  
   /// Set searching state
   void _setSearching(bool searching) {
     if (_isSearching != searching) {
@@ -644,8 +483,6 @@ class SharedContentSearchViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== CLEANUP =====
-  
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();

@@ -1,5 +1,4 @@
-/// Comprehensive realtime resource infrastructure providing collaborative resource management with advanced permission systems.
-
+/// Realtime resource model for collaborative management with permission systems (recipes, menus, shopping lists).
 // lib/models/realtime/realtime_resource.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -62,37 +61,26 @@ enum RealtimeResourceType {
 abstract class RealtimeResource {
   /// Unik identifierare för resursen
   final String id;
-
   /// Typ av resurs (recipe, menu, shopping)
   final RealtimeResourceType type;
-
   /// ID för användaren som äger resursen
   final String ownerId;
-
   /// Visningsnamn för ägaren (cached för performance)
   final String ownerDisplayName;
-
   /// Mapp över alla deltagare och deras behörigheter
   final Map<String, ResourcePermission> participants;
-
   /// När resursen skapades
   final DateTime createdAt;
-
   /// När resursen senast uppdaterades
   final DateTime lastEditedAt;
-
   /// Vem som gjorde senaste ändringen
   final String lastEditedBy;
-
   /// Visningsnamn för den som gjorde senaste ändringen (cached)
   final String lastEditedByDisplayName;
-
   /// Antal gånger resursen har redigerats
   final int editCount;
-
   /// Om resursen är aktiv eller arkiverad
   final bool isActive;
-
   /// Extra metadata för framtida utbyggnad
   final Map<String, dynamic> metadata;
 
@@ -113,8 +101,6 @@ abstract class RealtimeResource {
         lastEditedAt = lastEditedAt ?? DateTime.now(),
         metadata = metadata ?? {};
 
-  // ===== PERMISSION HELPERS =====
-
   /// Kontrollera om en användare har en specifik behörighet
   bool hasPermission(String userId, ResourcePermission requiredPermission) {
     // Owner always has full permission (even if not in participants map)
@@ -122,10 +108,8 @@ abstract class RealtimeResource {
     
     final userPermission = participants[userId];
     if (userPermission == null) return false;
-
     // Ägare har alltid full behörighet
     if (userPermission == ResourcePermission.owner) return true;
-
     // Kontrollera specifik behörighet
     if (requiredPermission == ResourcePermission.viewer || requiredPermission == ResourcePermission.read) {
       return true; // Alla deltagare kan se
@@ -181,29 +165,22 @@ abstract class RealtimeResource {
 
   /// Kontrollera om användare är ägare
   bool isOwner(String userId) => ownerId == userId;
-
   /// Kontrollera om användare är deltagare
   bool isParticipant(String userId) => participants.containsKey(userId);
-
-  // ===== STATISTICS =====
-
   /// Antal deltagare
   int get participantCount => participants.length;
-
   /// Antal redigerare (inklusive ägare)
   int get editorCount {
     return participants.values
         .where((p) => ResourcePermissionHelper.canEditContent(p, ResourcePermission.editor))
         .length;
   }
-
   /// Antal betraktare
   int get viewerCount {
     return participants.values
         .where((p) => p == ResourcePermission.viewer)
         .length;
   }
-
   /// Lista över alla deltagare som kan redigera
   List<String> get editorIds {
     return participants.entries
@@ -211,7 +188,6 @@ abstract class RealtimeResource {
         .map((entry) => entry.key)
         .toList();
   }
-
   /// Lista över alla deltagare som bara kan se
   List<String> get viewerIds {
     return participants.entries
@@ -219,16 +195,12 @@ abstract class RealtimeResource {
         .map((entry) => entry.key)
         .toList();
   }
-
-  // ===== TIME HELPERS =====
-
   /// Hur länge sedan resursen redigerades
   Duration get timeSinceLastEdit => DateTime.now().difference(lastEditedAt);
 
   /// Text för "senast redigerad"
   String get lastEditedTimeAgo {
     final duration = timeSinceLastEdit;
-
     if (duration.inMinutes < 1) {
       return 'Just nu';
     } else if (duration.inHours < 1) {
@@ -244,15 +216,12 @@ abstract class RealtimeResource {
 
   /// Kontrollera om resursen har redigerats nyligen (senaste timmen)
   bool get hasRecentActivity => timeSinceLastEdit.inHours < 1;
-
   /// Kontrollera om resursen är aktiv (redigerats senaste veckan)
   bool get hasWeeklyActivity => timeSinceLastEdit.inDays < 7;
-
   /// Kontrollera om resursen har ändrats sedan specifik tidpunkt
   bool hasChangedSince(DateTime timestamp) {
     return lastEditedAt.isAfter(timestamp);
   }
-
   /// Få sammanfattning av senaste ändringar för UI
   String getChangesSummary() {
     if (editCount == 0) {
@@ -277,7 +246,6 @@ abstract class RealtimeResource {
   String? getUserPermissionText(String userId) {
     final permission = participants[userId];
     if (permission == null) return null;
-
     if (permission == ResourcePermission.owner) {
       return 'Ägare';
     } else if (permission == ResourcePermission.admin) {
@@ -295,8 +263,6 @@ abstract class RealtimeResource {
     }
   }
 
-  // ===== ABSTRACT METHODS =====
-
   /// Subclasses måste implementera sin egen copyWith
   RealtimeResource copyWithMetadata({
     Map<String, ResourcePermission>? participants,
@@ -310,9 +276,6 @@ abstract class RealtimeResource {
 
   /// Subclasses måste implementera serialization av sitt innehåll
   Map<String, dynamic> serializeContent();
-
-  // ===== COMMON SERIALIZATION =====
-
   /// Serialisera gemensam metadata till Firestore
   Map<String, dynamic> toFirestoreMetadata() {
     return {
@@ -332,7 +295,6 @@ abstract class RealtimeResource {
       'metadata': metadata,
     };
   }
-
   /// Komplett Firestore serialization (metadata + content)
   Map<String, dynamic> toFirestore() {
     final data = toFirestoreMetadata();
@@ -348,7 +310,6 @@ abstract class RealtimeResource {
     // Parse participants map
     final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
     final participants = <String, ResourcePermission>{};
-
     for (final entry in participantsData.entries) {
       try {
         participants[entry.key] = ResourcePermissionHelper.fromString(
@@ -378,8 +339,6 @@ abstract class RealtimeResource {
     };
   }
 
-  // ===== JSON SERIALIZATION =====
-
   /// JSON serialization för caching
   Map<String, dynamic> toJsonMetadata() {
     return {
@@ -400,8 +359,6 @@ abstract class RealtimeResource {
       'metadata': metadata,
     };
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Lägg till deltagare med specifik behörighet
   RealtimeResource addParticipant(

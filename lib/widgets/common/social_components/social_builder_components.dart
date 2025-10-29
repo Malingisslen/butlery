@@ -5,6 +5,7 @@ import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/social_components/social_formatters.dart';
 
 /// Social widget builders and helper components
 ///
@@ -462,49 +463,11 @@ class SocialBuilderComponents {
     );
   }
 
-  // ===== UTILITY FUNCTIONS =====
+  // ===== UTILITY FUNCTIONS (Delegated to SocialFormatters) =====
 
-  /// Format relative time for display
-  static String _formatRelativeTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inMinutes < 1) {
-      return 'just nu';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} min sedan';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours} timmar sedan';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
-    } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
-    }
-  }
-
-  /// Format number with abbreviation
-  static String formatNumberWithAbbreviation(int number) {
-    if (number < 1000) {
-      return number.toString();
-    } else if (number < 1000000) {
-      return '${(number / 1000).toStringAsFixed(number % 1000 == 0 ? 0 : 1)}k';
-    } else {
-      return '${(number / 1000000).toStringAsFixed(number % 1000000 == 0 ? 0 : 1)}M';
-    }
-  }
-
-  /// Get social color scheme
-  static Map<String, Color> getSocialColorScheme() {
-    return {
-      'primary': AppColors.primaryBlue,
-      'secondary': AppColors.primaryBlue.withValues(alpha: 0.1),
-      'success': AppColors.primaryBlue,
-      'warning': AppColors.textMedium,
-      'danger': AppColors.error,
-      'info': AppColors.primaryBlue.withValues(alpha: 0.7),
-      'muted': AppColors.textMedium,
-    };
-  }
+  static String _formatRelativeTime(DateTime dateTime) => SocialFormatters.formatRelativeTime(dateTime);
+  static String formatNumberWithAbbreviation(int number) => SocialFormatters.formatNumberWithAbbreviation(number);
+  static Map<String, Color> getSocialColorScheme() => SocialFormatters.getSocialColorScheme();
 
   /// Build responsive social layout
   ///

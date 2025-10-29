@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -52,7 +52,7 @@ class GroupContentLists {
           return Card(
             child: SharedRecipeCard.build(
               context,
-              ServiceLocator.get<SharedContentViewModel>(),
+              ServiceLocator.get<SharedContentCoordinatorViewModel>(),
               sharedRecipe,
             ),
           );
@@ -92,7 +92,7 @@ class GroupContentLists {
           return Card(
             child: SharedMenuCard.build(
               context,
-              ServiceLocator.get<SharedContentViewModel>(),
+              ServiceLocator.get<SharedContentCoordinatorViewModel>(),
               sharedMenu,
             ),
           );

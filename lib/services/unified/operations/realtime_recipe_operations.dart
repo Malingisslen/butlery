@@ -1,20 +1,3 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Realtime Recipe Operations - Feature interface for real-time collaborative editing
-/// File: lib/services/unified/operations/realtime_recipe_operations.dart
-/// Quick Guide: Handles real-time collaborative editing operations and conflict resolution
-/// Dependencies IN: UnifiedRecipeService, RealtimeSyncService, RealtimeRecipe models
-/// Dependencies OUT: Used by ViewModels for real-time collaborative editing
-/// Data flow: ViewModels -> RealtimeRecipeOperations -> RealtimeSyncService -> Firebase
-/// State management: Real-time streams with conflict resolution
-/// Purpose: Clean coordinator that delegates to focused single-responsibility modules
-/// Common issues: Conflict resolution, connection management, permission validation
-/// Test coverage: Unit tests for real-time operations and conflict resolution
-/// Performance: Real-time updates with optimistic UI updates
-/// Analytics: Collaborative editing events, conflict resolution stats
-/// Code smells: None - follows single responsibility principle
-/// Connected to: UnifiedRecipeService, RealtimeSyncService, Collaborative ViewModels
-/// Used in phases: Phase 5 - Service Consolidation, Phase 9.5 - Large File SRP Refactoring
-
 import 'dart:async';
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
@@ -28,68 +11,14 @@ import 'package:butlery/services/unified/operations/realtime_recipe/realtime_edi
 import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/presence_tracking_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_diagnostics_helper.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 
-/// Comprehensive realtime recipe operations providing advanced collaborative editing and real-time synchronization systems.
+/// Realtime recipe operations coordinator.
 ///
-/// This operations coordinator implements sophisticated real-time collaborative editing functionality following Single Responsibility Principle,
-/// orchestrating specialized modules for different aspects of real-time collaboration including live editing, presence tracking, conflict
-/// resolution, and notification management. It provides comprehensive real-time capabilities while maintaining clean modular architecture
-/// with focused single-responsibility modules.
-///
-/// **Single Responsibility Focus:**
-/// This coordinator exclusively orchestrates real-time collaborative operations:
-/// - **Real-time Stream Management**: Live recipe watching with automatic retry and multi-recipe synchronization
-/// - **Collaborative Editing**: Advanced editing operations with conflict resolution and batch processing capabilities
-/// - **Presence Tracking**: Real-time user presence monitoring with heartbeat management and activity analytics
-/// - **Collaboration Management**: Recipe collaboration lifecycle with member management and permission control
-///
-/// **What This Coordinator Does NOT Handle:**
-/// - Basic recipe CRUD operations (handled by parent UnifiedRecipeService)
-/// - Static recipe data management (handled by recipe operations)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and user management (handled by parent services)
-///
-/// **Modular Architecture:**
-/// - **RealtimeWatchingModule**: Stream management for watching recipes with connection monitoring and retry logic
-/// - **RealtimeEditingModule**: Edit operations and conflict resolution with validation and batch processing
-/// - **CollaborationManagementModule**: Enable/disable collaborative editing with member and permission management
-/// - **PresenceTrackingModule**: User presence tracking and management with automatic heartbeat and statistics
-/// - **RealtimeNotificationModule**: Collaboration notifications with event broadcasting and member communication
-///
-/// **Realtime Features:**
-/// - **Live Synchronization**: Real-time recipe updates with automatic conflict resolution and optimistic UI updates
-/// - **Multi-User Collaboration**: Advanced collaborative editing with presence awareness and activity tracking
-/// - **Connection Management**: Robust connection handling with automatic retry and offline capability detection
-/// - **Conflict Resolution**: Intelligent conflict detection and resolution with manual and automatic strategies
-/// - **Analytics Integration**: Comprehensive collaboration analytics with editing statistics and usage insights
-///
-/// **Usage Examples:**
-/// ```dart
-/// final realtimeOps = RealtimeRecipeOperations(parentService, realtimeSyncService);
-/// 
-/// // Real-time watching
-/// final recipeStream = realtimeOps.watchRecipe('recipe_123');
-/// recipeStream.listen((recipe) => updateUI(recipe));
-/// 
-/// // Collaborative editing
-/// await realtimeOps.enableCollaborativeEditing(recipeId, memberIds);
-/// await realtimeOps.startRealtimeEditing(recipeId);
-/// 
-/// // Real-time edits with conflict resolution
-/// await realtimeOps.makeRealtimeEdit(
-///   recipeId: recipeId,
-///   changes: {'title': 'Uppdaterat recept', 'servings': 4},
-///   editDescription: 'Ändrade titel och portioner',
-/// );
-/// 
-/// // Presence tracking
-/// await realtimeOps.showPresence(recipeId);
-/// final presence = await realtimeOps.getRecipePresence(recipeId);
-/// final presenceStream = realtimeOps.watchRecipePresence(recipeId);
-/// ```
+/// Orchestrates real-time collaborative editing via watching, editing, collaboration, presence, and notification modules.
 
 // Export conflict info class for backward compatibility
 export 'realtime_recipe/realtime_editing_module.dart' show ConflictInfo;
@@ -119,7 +48,25 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     AppLogger.info('RealtimeRecipeOperations initialized with modular architecture');
   }
 
-  // ===== REAL-TIME WATCHING (Delegated to RealtimeWatchingModule) =====
+  /// Execute operation with notification on success
+  Future<bool> _executeWithNotification(
+    String recipeId,
+    Future<bool> Function() operation,
+    Future<void> Function(Recipe) notification, {
+    Future<void> Function()? beforeNotification,
+  }) async {
+    final success = await operation();
+    if (success) {
+      if (beforeNotification != null) await beforeNotification();
+      try {
+        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+        await notification(recipe);
+      } catch (e) {
+        // Recipe not found, skip notification
+      }
+    }
+    return success;
+  }
 
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
@@ -206,56 +153,34 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     return _watchingModule.getWatchingCapabilities();
   }
 
-  // ===== REAL-TIME EDITING (Delegated to RealtimeEditingModule) =====
-
   /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId)) {
-      return false;
-    }
-    
+    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
+
     return await LoggingUtils.loggedOperation(
       'Start Realtime Editing',
-      () async {
-        final success = await _editingModule.startRealtimeEditing(recipeId);
-        
-        if (success) {
-          // Show presence and send notification
-          await _presenceModule.showPresence(recipeId);
-          try {
-            final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-            await _notificationModule.sendCollaborationJoinedNotification(recipe);
-          } catch (e) {
-            // Recipe not found, skip notification
-          }
-        }
-        
-        return success;
-      },
+      () => _executeWithNotification(
+        recipeId,
+        () => _editingModule.startRealtimeEditing(recipeId),
+        _notificationModule.sendCollaborationJoinedNotification,
+        beforeNotification: () => _presenceModule.showPresence(recipeId),
+      ),
       metadata: {'recipe_id': recipeId},
     ) == true;
   }
 
   /// Stop real-time editing session for recipe
   Future<bool> stopRealtimeEditing(String recipeId) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId)) {
-      return false;
-    }
-    
+    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
+
+    await _presenceModule.hidePresence(recipeId);
     return await LoggingUtils.loggedOperation(
       'Stop Realtime Editing',
-      () async {
-        // Hide presence and send notification before stopping
-        await _presenceModule.hidePresence(recipeId);
-        try {
-          final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-          await _notificationModule.sendCollaborationLeftNotification(recipe);
-        } catch (e) {
-          // Recipe not found, skip notification
-        }
-        
-        return await _editingModule.stopRealtimeEditing(recipeId);
-      },
+      () => _executeWithNotification(
+        recipeId,
+        () => _editingModule.stopRealtimeEditing(recipeId),
+        _notificationModule.sendCollaborationLeftNotification,
+      ),
       metadata: {'recipe_id': recipeId},
     ) == true;
   }
@@ -271,27 +196,15 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     required Map<String, dynamic> changes,
     String? editDescription,
   }) async {
-    final success = await _editingModule.makeRealtimeEdit(
-      recipeId: recipeId,
-      changes: changes,
-      editDescription: editDescription,
+    return _executeWithNotification(
+      recipeId,
+      () => _editingModule.makeRealtimeEdit(
+        recipeId: recipeId,
+        changes: changes,
+        editDescription: editDescription,
+      ),
+      (recipe) => _notificationModule.sendRealtimeEditNotification(recipe, changes, editDescription),
     );
-    
-    if (success) {
-      // Send notification about the edit
-      try {
-        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-        await _notificationModule.sendRealtimeEditNotification(
-          recipe,
-          changes,
-          editDescription,
-        );
-      } catch (e) {
-        // Recipe not found, skip notification
-      }
-    }
-    
-    return success;
   }
 
   /// Make batch realtime edits
@@ -300,27 +213,15 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     required List<Map<String, dynamic>> changeList,
     String? batchDescription,
   }) async {
-    final success = await _editingModule.makeBatchRealtimeEdits(
-      recipeId: recipeId,
-      changeList: changeList,
-      batchDescription: batchDescription,
+    return _executeWithNotification(
+      recipeId,
+      () => _editingModule.makeBatchRealtimeEdits(
+        recipeId: recipeId,
+        changeList: changeList,
+        batchDescription: batchDescription,
+      ),
+      (recipe) => _notificationModule.sendBatchEditNotification(recipe, changeList, batchDescription),
     );
-    
-    if (success) {
-      // Send batch notification
-      try {
-        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-        await _notificationModule.sendBatchEditNotification(
-          recipe,
-          changeList,
-          batchDescription,
-        );
-      } catch (e) {
-        // Recipe not found, skip notification
-      }
-    }
-    
-    return success;
   }
 
   /// Undo last realtime edit
@@ -335,29 +236,19 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     required Recipe remoteVersion,
     required String resolution,
   }) async {
-    final success = await _editingModule.resolveConflict(
-      recipeId: recipeId,
-      localVersion: localVersion,
-      remoteVersion: remoteVersion,
-      resolution: resolution,
-    );
-    
-    if (success) {
-      // Send conflict resolved notification
-      try {
-        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+    return _executeWithNotification(
+      recipeId,
+      () => _editingModule.resolveConflict(
+        recipeId: recipeId,
+        localVersion: localVersion,
+        remoteVersion: remoteVersion,
+        resolution: resolution,
+      ),
+      (recipe) {
         final affectedUsers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
-        await _notificationModule.sendConflictResolvedNotification(
-          recipe,
-          resolution,
-          affectedUsers,
-        );
-      } catch (e) {
-        // Recipe not found, skip notification
-      }
-    }
-    
-    return success;
+        return _notificationModule.sendConflictResolvedNotification(recipe, resolution, affectedUsers);
+      },
+    );
   }
 
   /// Auto-resolve conflict using default strategy
@@ -395,36 +286,22 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     return _editingModule.getEditingStatus(recipeId);
   }
 
-  // ===== COLLABORATION FEATURES (Delegated to CollaborationManagementModule) =====
-
   /// Enable collaborative editing for a personal recipe
   Future<bool> enableCollaborativeEditing(String recipeId, List<String> memberIds) async {
-    final success = await _collaborationModule.enableCollaborativeEditing(recipeId, memberIds);
-    
-    if (success) {
-      // Send notification to members
-      try {
-        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-        await _notificationModule.sendCollaborationEnabledNotification(recipe, memberIds);
-      } catch (e) {
-        // Recipe not found, skip notification
-      }
-    }
-    
-    return success;
+    return _executeWithNotification(
+      recipeId,
+      () => _collaborationModule.enableCollaborativeEditing(recipeId, memberIds),
+      (recipe) => _notificationModule.sendCollaborationEnabledNotification(recipe, memberIds),
+    );
   }
 
   /// Disable collaborative editing and convert back to personal recipe
   Future<bool> disableCollaborativeEditing(String recipeId) async {
-    // Send notification before disabling
-    try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-      await _notificationModule.sendCollaborationDisabledNotification(recipe);
-    } catch (e) {
-      // Recipe not found, skip notification
-    }
-    
-    return await _collaborationModule.disableCollaborativeEditing(recipeId);
+    return _executeWithNotification(
+      recipeId,
+      () => _collaborationModule.disableCollaborativeEditing(recipeId),
+      _notificationModule.sendCollaborationDisabledNotification,
+    );
   }
 
   /// Check if recipe can be made collaborative
@@ -439,32 +316,20 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Add members to collaborative recipe
   Future<bool> addCollaborators(String recipeId, List<String> memberIds) async {
-    final success = await _collaborationModule.addCollaborators(recipeId, memberIds);
-    
-    if (success) {
-      // Send notification about new members
-      try {
-        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-        await _notificationModule.sendMembersAddedNotification(recipe, memberIds);
-      } catch (e) {
-        // Recipe not found, skip notification
-      }
-    }
-    
-    return success;
+    return _executeWithNotification(
+      recipeId,
+      () => _collaborationModule.addCollaborators(recipeId, memberIds),
+      (recipe) => _notificationModule.sendMembersAddedNotification(recipe, memberIds),
+    );
   }
 
   /// Remove members from collaborative recipe
   Future<bool> removeCollaborators(String recipeId, List<String> memberIds) async {
-    // Send notification before removing
-    try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
-      await _notificationModule.sendMembersRemovedNotification(recipe, memberIds);
-    } catch (e) {
-      // Recipe not found, skip notification
-    }
-    
-    return await _collaborationModule.removeCollaborators(recipeId, memberIds);
+    return _executeWithNotification(
+      recipeId,
+      () => _collaborationModule.removeCollaborators(recipeId, memberIds),
+      (recipe) => _notificationModule.sendMembersRemovedNotification(recipe, memberIds),
+    );
   }
 
   /// Update member permissions in collaborative recipe
@@ -522,8 +387,6 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   Map<String, dynamic> getCollaborationStatus(String recipeId) {
     return _collaborationModule.getCollaborationStatus(recipeId);
   }
-
-  // ===== PRESENCE FEATURES (Delegated to PresenceTrackingModule) =====
 
   /// Show user presence in recipe (who's viewing/editing)
   Future<bool> showPresence(String recipeId) {
@@ -612,8 +475,6 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     return _presenceModule.getUserPresenceHistory(userId);
   }
 
-  // ===== LEGACY METHODS (For backward compatibility) =====
-
   /// Get active editors for recipe (legacy method)
   List<String> getActiveEditors(String recipeId) {
     try {
@@ -632,42 +493,23 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     return [];
   }
 
-  // ===== MODULE STATUS AND DIAGNOSTICS =====
-
   /// Get module status information
   Map<String, dynamic> getModuleStatus() {
-    return {
-      'watchingModule': {
-        'isAvailable': _watchingModule.isWatchingAvailable(),
-        'capabilities': _watchingModule.getWatchingCapabilities(),
-        'isConnected': _watchingModule.isConnected,
-      },
-      'editingModule': {
-        'isInitialized': true,
-      },
-      'collaborationModule': {
-        'isInitialized': true,
-      },
-      'presenceModule': {
-        'statistics': _presenceModule.getPresenceStatistics(),
-      },
-      'notificationModule': {
-        'isAvailable': _notificationModule.isNotificationAvailable,
-        'statistics': _notificationModule.getNotificationStatistics(),
-      },
-    };
+    return RealtimeDiagnosticsHelper.getModuleStatus(
+      watchingModule: _watchingModule,
+      presenceModule: _presenceModule,
+      notificationModule: _notificationModule,
+    );
   }
 
   /// Get comprehensive realtime operations status
   Map<String, dynamic> getRealtimeOperationsStatus() {
-    return {
-      'hasRealtimeService': _realtimeSyncService != null,
-      'isConnected': isConnected,
-      'moduleStatus': getModuleStatus(),
-      'currentUserId': _parent.currentUserId,
-      'architecture': 'modular',
-      'version': '2.0', // Refactored version
-    };
+    return RealtimeDiagnosticsHelper.getRealtimeOperationsStatus(
+      hasRealtimeService: _realtimeSyncService != null,
+      isConnected: _watchingModule.isConnected,
+      moduleStatus: getModuleStatus(),
+      currentUserId: _parent.currentUserId,
+    );
   }
 
   /// Dispose resources

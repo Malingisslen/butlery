@@ -1,60 +1,6 @@
-/// Comprehensive social recipe sharing service providing collaborative cooking and meal planning functionality.
+/// Social recipe sharing service for collaborative cooking and meal planning.
 ///
-/// This service implements sophisticated social features for recipe and menu sharing between friends and groups.
-/// It provides comprehensive functionality for sharing culinary content, managing shared recipe collections,
-/// and facilitating collaborative meal planning with real-time updates, permission management, and social
-/// interaction tracking throughout the cooking community.
-///
-/// **Architecture Integration:**
-/// - Extends [ChangeNotifier] for reactive UI updates with social content state changes
-/// - Integrates with [SocialRecipeRepository] for persistent social content storage and retrieval
-/// - Coordinates with [UnifiedRecipeService] for recipe creation and management integration
-/// - Uses [UserService] for user profile management and social relationship handling
-/// - Implements [PermissionService] for authentication and access control validation
-///
-/// **Social Sharing Features:**
-/// - **Recipe Sharing**: Individual recipe sharing with friends and groups with comprehensive metadata preservation
-/// - **Menu Sharing**: Complete meal plan sharing with weekly organization and collaborative planning
-/// - **Import Functionality**: One-click importing of shared content to personal collections
-/// - **Dismissal Management**: User-controlled content visibility with restore capabilities
-/// - **Participant Tracking**: Comprehensive tracking of sharing relationships and social interactions
-///
-/// **Collaborative Capabilities:**
-/// - **Multi-User Sharing**: Share content with multiple friends and groups simultaneously
-/// - **Group Integration**: Comprehensive group sharing with member resolution and notification
-/// - **Social Discovery**: Discover and explore recipes shared within your social network
-/// - **Engagement Tracking**: Track viewing, importing, and interaction with shared content
-/// - **Backward Compatibility**: Maintains compatibility with existing social features and integrations
-///
-/// **State Management:**
-/// - **Reactive Updates**: Real-time UI updates through ChangeNotifier pattern implementation
-/// - **Local Caching**: Intelligent caching of shared content for performance optimization
-/// - **Error Handling**: Comprehensive error management with user-friendly error states
-/// - **Loading States**: Detailed loading state management for optimal user experience
-///
-/// **Usage Examples:**
-/// ```dart
-/// final socialService = SocialRecipeService(
-///   repository: socialRepository,
-///   userService: userService,
-///   recipeService: recipeService,
-///   permissionService: permissionService,
-/// );
-/// 
-/// // Initialize and load shared content
-/// await socialService.initialize();
-/// 
-/// // Share recipe with friends
-/// await socialService.shareRecipeToFriends('recipe123', ['friend1', 'friend2']);
-/// 
-/// // Import shared recipe
-/// final success = await socialService.importSharedRecipe('sharedRecipe456');
-/// 
-/// // Listen to changes
-/// socialService.addListener(() {
-///   updateSharedRecipesUI(socialService.sharedRecipes);
-/// });
-/// ```
+/// Manages recipe/menu sharing, importing, dismissal, and participant tracking with reactive state management.
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -66,17 +12,16 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 
-/// Social recipe sharing service providing comprehensive collaborative cooking and meal planning functionality.
-///
-/// This service manages all aspects of social recipe and menu sharing including content distribution,
-/// import functionality, dismissal management, and participant tracking. It implements reactive state
-/// management for real-time UI updates and provides backward compatibility with existing social features.
 class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
   final PermissionService _permissionService;
+
+  // Modules
+  late final SocialParticipantResolverModule _participantResolver;
 
   // State
   List<SharedRecipe> _sharedRecipes = [];
@@ -92,7 +37,13 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   })  : _repository = repository,
         _userService = userService,
         _recipeService = recipeService,
-        _permissionService = permissionService;
+        _permissionService = permissionService {
+    _participantResolver = SocialParticipantResolverModule(
+      userService: _userService,
+      getSharedRecipes: () => _sharedRecipes,
+      getSharedMenus: () => _sharedMenus,
+    );
+  }
 
   // Getters
   List<SharedRecipe> get sharedRecipes => List.unmodifiable(_sharedRecipes);
@@ -104,26 +55,7 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   // For compatibility with old code
   List<SharedRecipe> get sharedWithMe => sharedRecipes;
 
-  /// Initializes the social recipe service with comprehensive shared content loading and error handling.
-  ///
-  /// This method performs complete service initialization including authentication validation,
-  /// shared content loading, and state management setup. It establishes the foundation for
-  /// social recipe functionality with proper error handling and reactive UI update preparation.
-  ///
-  /// **Initialization Process:**
-  /// 1. **Loading State**: Sets loading state and clears previous errors for clean initialization
-  /// 2. **Content Loading**: Loads shared recipes and menus from repository with authentication validation
-  /// 3. **State Management**: Configures reactive state management for real-time UI updates
-  /// 4. **Error Handling**: Comprehensive error management with detailed logging and user feedback
-  ///
-  /// **Post-Initialization State:**
-  /// After successful initialization, the service provides:
-  /// - Complete shared recipe and menu collections loaded from repository
-  /// - Reactive state management ready for UI integration and real-time updates
-  /// - Error handling configured for robust social content management
-  /// - Authentication integration ready for permission-based operations
-  ///
-  /// Throws [Exception] if authentication is invalid or repository access fails
+  /// Initialize the service and load shared content
   Future<void> initialize() async {
     try {
       _isLoading = true;
@@ -204,40 +136,7 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// Imports a shared recipe into the user's personal collection with comprehensive data preservation.
-  ///
-  /// This method creates a complete copy of a shared recipe in the user's personal recipe collection
-  /// while preserving all metadata, images, and recipe content. It handles the import process with
-  /// proper attribution tracking and provides detailed success feedback for user experience optimization.
-  ///
-  /// [recipeId] Unique identifier of the shared recipe to import to personal collection
-  /// Returns `true` if import completed successfully, `false` if import failed or recipe not found
-  ///
-  /// **Import Process:**
-  /// 1. **Recipe Lookup**: Locates shared recipe in local cache or repository
-  /// 2. **Data Extraction**: Extracts all recipe data including metadata and images
-  /// 3. **Personal Creation**: Creates new personal recipe with complete data preservation
-  /// 4. **Attribution Tracking**: Marks original shared recipe as imported for analytics
-  /// 5. **Success Feedback**: Provides detailed logging and user feedback for import status
-  ///
-  /// **Data Preservation:**
-  /// - Complete recipe content including title, description, and instructions
-  /// - All ingredients with quantities and preparation notes
-  /// - Image URLs and visual content preservation
-  /// - Metadata including portions, timing, tags, and ratings
-  /// - Source attribution and sharing relationship tracking
-  ///
-  /// **Usage Examples:**
-  /// ```dart
-  /// // Import shared recipe from social feed
-  /// final success = await socialService.importSharedRecipe('sharedRecipe123');
-  /// if (success) {
-  ///   showSuccessMessage('Recipe added to your collection!');
-  ///   navigateToPersonalRecipes();
-  /// } else {
-  ///   showErrorMessage('Failed to import recipe');
-  /// }
-  /// ```
+  /// Import shared recipe into user's personal collection
   Future<bool> importSharedRecipe(String recipeId) async {
     try {
       final sharedRecipe = _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
@@ -447,85 +346,16 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// Get recipe participants
-  Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
-    try {
-      final recipe = _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
-      if (recipe == null) return [];
-      
-      // Get user profiles for all participants
-      final participantIds = [recipe.sharedByUserId, ...recipe.sharedToUserIds];
-      return await _userService.getUserProfiles(participantIds);
-    } catch (e) {
-      AppLogger.error('Failed to get recipe participants', e);
-      return [];
-    }
-  }
+  Future<List<UserProfile>> getRecipeParticipants(String recipeId) =>
+      _participantResolver.getRecipeParticipants(recipeId);
 
-  /// Get menu participants
-  Future<List<UserProfile>> getMenuParticipants(String menuId) async {
-    try {
-      final menu = _sharedMenus.where((m) => m.id == menuId).firstOrNull;
-      if (menu == null) return [];
-      
-      // Get user profiles for all participants
-      final participantIds = [menu.sharedByUserId, ...menu.sharedToUserIds];
-      return await _userService.getUserProfiles(participantIds);
-    } catch (e) {
-      AppLogger.error('Failed to get menu participants', e);
-      return [];
-    }
-  }
+  Future<List<UserProfile>> getMenuParticipants(String menuId) =>
+      _participantResolver.getMenuParticipants(menuId);
 
-  /// Get shopping list participants
-  Future<List<UserProfile>> getShoppingListParticipants(String listId) async {
-    try {
-      // This would need to be implemented with proper participant tracking
-      AppLogger.info('getShoppingListParticipants called - not implemented');
-      return [];
-    } catch (e) {
-      AppLogger.error('Failed to get shopping list participants', e);
-      return [];
-    }
-  }
+  Future<List<UserProfile>> getShoppingListParticipants(String listId) =>
+      _participantResolver.getShoppingListParticipants(listId);
 
-  /// Shares a recipe with multiple friends simultaneously with comprehensive social distribution.
-  ///
-  /// This method distributes a recipe to multiple friends in a batch operation while maintaining
-  /// individual sharing relationships and providing detailed tracking for social engagement analytics.
-  /// It handles friend-to-friend recipe sharing with proper notification and relationship management.
-  ///
-  /// [recipeId] Unique identifier of the recipe to share with friends
-  /// [friendIds] List of friend user IDs to share the recipe with
-  /// Throws [Exception] if user is not authenticated or sharing operation fails
-  ///
-  /// **Sharing Process:**
-  /// 1. **Authentication Validation**: Verifies user authentication for sharing permissions
-  /// 2. **Batch Distribution**: Shares recipe to each friend individually for personalized relationships
-  /// 3. **Content Preparation**: Prepares recipe content with appropriate metadata and attribution
-  /// 4. **Notification Management**: Triggers notifications to recipients about shared content
-  /// 5. **Analytics Tracking**: Records sharing activity for social engagement metrics
-  ///
-  /// **Social Features:**
-  /// - Individual sharing relationships maintained for each friend
-  /// - Comprehensive metadata preservation including source attribution
-  /// - Notification triggering for immediate recipient awareness
-  /// - Analytics tracking for social engagement and sharing pattern analysis
-  /// - Error handling with detailed feedback for failed sharing attempts
-  ///
-  /// **Usage Examples:**
-  /// ```dart
-  /// // Share favorite recipe with cooking friends
-  /// try {
-  ///   await socialService.shareRecipeToFriends(
-  ///     'myFavoriteRecipe',
-  ///     ['cookingFriend1', 'cookingFriend2', 'familyMember1'],
-  ///   );
-  ///   showSuccessMessage('Recipe shared with your friends!');
-  /// } catch (e) {
-  ///   showErrorMessage('Failed to share recipe: $e');
-  /// }
-  /// ```
+  /// Share recipe with multiple friends
   Future<void> shareRecipeToFriends(String recipeId, List<String> friendIds) async {
     try {
       if (!_permissionService.isAuthenticated) {
@@ -547,26 +377,7 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// Share menu to friends
-  ///
-  /// **DEPRECATED**: This method writes to the `shared_content` collection which is not
-  /// queried by `GroupSharedContentService`. For proper menu sharing that appears in
-  /// group shared content, use `UnifiedMenuService.shareMenuWithFriends()` instead,
-  /// which writes to the `shared_menus` collection.
-  ///
-  /// **Migration Path**:
-  /// ```dart
-  /// // OLD (writes to shared_content - won't show in groups):
-  /// await socialRecipeService.shareMenuToFriends(menuId, friendIds);
-  ///
-  /// // NEW (writes to shared_menus - will show in groups):
-  /// await menuService.shareMenuWithFriends(
-  ///   menuTitle: 'My Menu',
-  ///   menuSnapshot: menu,
-  ///   friendIds: friendIds,
-  ///   allowCollaboration: false,
-  /// );
-  /// ```
+  /// @deprecated Use UnifiedMenuService.shareMenuWithFriends() instead
   @Deprecated('Use UnifiedMenuService.shareMenuWithFriends() instead')
   Future<void> shareMenuToFriends(String menuId, List<String> friendIds) async {
     try {
@@ -617,33 +428,7 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// Share menu to groups
-  ///
-  /// **DEPRECATED**: This method writes to the `shared_content` collection which is not
-  /// queried by `GroupSharedContentService`. For proper menu sharing that appears in
-  /// group shared content, use `UnifiedMenuService.shareMenuWithFriends()` instead,
-  /// which writes to the `shared_menus` collection.
-  ///
-  /// **Migration Path**:
-  /// ```dart
-  /// // OLD (writes to shared_content - won't show in groups):
-  /// await socialRecipeService.shareMenuToGroups(menuId, groupIds);
-  ///
-  /// // NEW (writes to shared_menus - will show in groups):
-  /// // First resolve group members:
-  /// final allMemberIds = <String>[];
-  /// for (final groupId in groupIds) {
-  ///   final group = friendsService.getCategoryByIdInternal(groupId);
-  ///   if (group != null) allMemberIds.addAll(group.friendUserIds);
-  /// }
-  /// // Then share to all members:
-  /// await menuService.shareMenuWithFriends(
-  ///   menuTitle: 'My Menu',
-  ///   menuSnapshot: menu,
-  ///   friendIds: allMemberIds,
-  ///   allowCollaboration: false,
-  /// );
-  /// ```
+  /// @deprecated Use UnifiedMenuService.shareMenuWithFriends() instead
   @Deprecated('Use UnifiedMenuService.shareMenuWithFriends() instead')
   Future<void> shareMenuToGroups(String menuId, List<String> groupIds) async {
     try {
@@ -671,59 +456,9 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
       rethrow;
     }
   }
-  // ===== BACKWARD COMPATIBILITY ALIASES =====
-  // These methods provide backward compatibility for code that uses the old method names
-  
-  /// Alias for markSharedRecipeAsViewed - marks a shared recipe as read/viewed
-  Future<bool> markRecipeAsRead(String recipeId) async {
-    final currentUserId = _permissionService.currentUserId;
-    if (currentUserId == null) return false;
-    return markSharedRecipeAsViewed(recipeId, currentUserId);
-  }
-  
-  /// Alias for markSharedMenuAsViewed - marks a shared menu as read/viewed
-  Future<bool> markMenuAsRead(String menuId) async {
-    final currentUserId = _permissionService.currentUserId;
-    if (currentUserId == null) return false;
-    return markSharedMenuAsViewed(menuId, currentUserId);
-  }
-  
-  /// Alias for importSharedRecipe - imports a shared recipe to user's collection
-  Future<bool> importRecipe(SharedRecipe sharedRecipe) async {
-    return importSharedRecipe(sharedRecipe.id);
-  }
-  
-  /// Alias for importSharedMenu - imports a shared menu to user's collection
-  Future<bool> importMenu(SharedMenu sharedMenu) async {
-    return importSharedMenu(sharedMenu.id);
-  }
-  
-  /// Alias for dismissSharedRecipe - dismisses/hides a shared recipe
-  Future<bool> dismissRecipe(String recipeId) async {
-    return dismissSharedRecipe(recipeId);
-  }
-  
-  /// Alias for dismissSharedMenu - dismisses/hides a shared menu
-  Future<bool> dismissMenu(String menuId) async {
-    return dismissSharedMenu(menuId);
-  }
-  
-  /// Alias for undismissSharedRecipe - restores a dismissed recipe
-  Future<bool> undismissRecipe(String recipeId) async {
-    return undismissSharedRecipe(recipeId);
-  }
-  
-  /// Alias for undismissSharedMenu - restores a dismissed menu
-  Future<bool> undismissMenu(String menuId) async {
-    return undismissSharedMenu(menuId);
-  }
-  
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreamResources(); // From StreamManagementMixin
+    disposeStreamResources();
     super.dispose();
   }
 }

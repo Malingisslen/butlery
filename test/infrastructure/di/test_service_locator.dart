@@ -43,7 +43,7 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 // ViewModel imports
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 
 // Service imports for Phase 4
@@ -515,9 +515,9 @@ class TestServiceLocator {
       () => MockFactory.createPhotoImportViewModel(),
     );
 
-    // Shared Content ViewModel
-    getIt.registerFactory<SharedContentViewModel>(
-      () => MockFactory.createSharedContentViewModel(),
+    // Shared Content Coordinator ViewModel
+    getIt.registerFactory<SharedContentCoordinatorViewModel>(
+      () => MockFactory.createSharedContentCoordinatorViewModel(),
     );
 
     // Group Content ViewModel

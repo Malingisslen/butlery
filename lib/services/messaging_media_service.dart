@@ -1,8 +1,8 @@
 // lib/services/messaging_media_service.dart
 
 import 'dart:io';
-import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,14 +12,13 @@ import 'package:path/path.dart' as path;
 ///
 /// Provides comprehensive media upload and messaging integration including:
 /// - Image selection from camera/gallery
-/// - Upload to Firebase Storage with progress tracking
+/// - Upload to Firebase Storage with automatic retry and progress tracking
 /// - Automatic message creation with image URLs
-/// - Thumbnail generation for performance
 /// - Error handling with user-friendly Swedish messages
 ///
 /// **Core Responsibilities:**
 /// - Pick images using ImagePicker
-/// - Upload images to Firebase Storage via StorageService
+/// - Upload images to Firebase Storage via ImageUploadService (with automatic retry)
 /// - Send image messages via MessagingService
 /// - Track upload progress for UI feedback
 /// - Handle errors gracefully
@@ -27,12 +26,11 @@ import 'package:path/path.dart' as path;
 /// **Usage Example:**
 /// ```dart
 /// final mediaService = MessagingMediaService(
-///   storageService: storageService,
 ///   messagingService: messagingService,
 ///   authRepository: authRepository,
 /// );
 ///
-/// // Pick and send image
+/// // Pick and send image (now with automatic retry on failure!)
 /// await mediaService.pickAndSendImage(
 ///   conversationId: conversationId,
 ///   source: ImageSource.gallery,
@@ -40,17 +38,17 @@ import 'package:path/path.dart' as path;
 /// );
 /// ```
 class MessagingMediaService {
-  final StorageService _storageService;
+  final ImageUploadService _uploadService;
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
   final ImagePicker _imagePicker;
 
   MessagingMediaService({
-    required StorageService storageService,
     required MessagingService messagingService,
     required AuthRepository authRepository,
+    ImageUploadService? uploadService,
     ImagePicker? imagePicker,
-  })  : _storageService = storageService,
+  })  : _uploadService = uploadService ?? ImageUploadService(),
         _messagingService = messagingService,
         _authRepository = authRepository,
         _imagePicker = imagePicker ?? ImagePicker();
@@ -128,19 +126,23 @@ class MessagingMediaService {
         return false;
       }
 
-      // Upload to Firebase Storage
-      final imageUrl = await _storageService.uploadImageFile(
-        imageFile,
-        currentUserId,
-        onProgress: onProgress,
+      // Upload to Firebase Storage with automatic retry
+      final result = await _uploadService.uploadImage(
+        file: imageFile,
+        userId: currentUserId,
+        path: 'messages/$conversationId/${DateTime.now().millisecondsSinceEpoch}_${path.basename(imagePath)}',
+        onProgress: onProgress != null
+            ? (status) => onProgress(status.progress)
+            : null,
       );
 
-      if (imageUrl == null || imageUrl.isEmpty) {
-        AppLogger.error('❌ Failed to upload image - no URL returned');
+      if (!result.success || result.url == null || result.url!.isEmpty) {
+        AppLogger.error('❌ Failed to upload image: ${result.error ?? "no URL returned"}');
         return false;
       }
 
-      AppLogger.success('✅ Image uploaded: $imageUrl');
+      final imageUrl = result.url!;
+      AppLogger.success('✅ Image uploaded with automatic retry: $imageUrl');
 
       // Get filename for display
       final fileName = path.basename(imagePath);

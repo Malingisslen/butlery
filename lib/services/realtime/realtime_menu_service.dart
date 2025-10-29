@@ -38,25 +38,17 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
   })  : _syncService = syncService,
         _authService = authService;
 
-  // ===== GETTERS =====
-
   /// Is menu operation in progress?
   bool get isProcessing => _isProcessing;
-
   /// Latest menu operation error
   MenuOperationError? get lastError => _lastError;
-
   /// Current user ID
   String? get _currentUserId => _authService.currentUserId;
-
   /// Current user display name
   String get _currentUserDisplayName =>
       ServiceLocator.get<PermissionService>().currentUser?.displayName ?? 'Okänd användare';
-
   /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];
-
-  // ===== CORE MENU OPERATIONS (DELEGATE TO MENU_OPERATIONS) =====
 
   /// Create realtime menu from existing category menu
   Future<RealtimeMenu> createRealtimeMenu({
@@ -79,10 +71,8 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
 
     _setProcessing(true);
     _clearError();
-
     try {
       AppLogger.info('📅 Skapar realtidsmeny: $menuTitle');
-
       // Create RealtimeMenu from category data
       final realtimeMenu = RealtimeMenu.fromMenuCategories(
         menuTitle: menuTitle,
@@ -96,15 +86,11 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
         originalPrompt: originalPrompt,
         createdForDate: createdForDate,
       );
-
       // Use RealtimeSyncService for saving (SRP - delegate synchronization)
       await _syncService.updateResource(realtimeMenu);
-
       // Cache the menu
       _currentMenu = realtimeMenu;
-
       AppLogger.success('✅ Realtidsmeny skapad: ${realtimeMenu.id}');
-
       return realtimeMenu;
     } catch (e) {
       _handleError(
@@ -121,7 +107,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
   /// Watch realtime menu with live updates
   Stream<RealtimeMenu> watchRealtimeMenu(String resourceId) {
     AppLogger.info('👀 Startar watching av realtidsmeny: $resourceId');
-
     try {
       return _syncService.watchResource<RealtimeMenu>(resourceId).map((menu) {
         // Cache the menu for later use
@@ -138,8 +123,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
       rethrow;
     }
   }
-
-  // ===== MENU CONTENT OPERATIONS (DELEGATE TO MENU_OPERATIONS) =====
 
   /// Update basic menu information
   Future<void> updateBasicInfo({
@@ -311,8 +294,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
     );
   }
 
-  // ===== PARTICIPANT MANAGEMENT (DELEGATE TO MENU_PARTICIPANTS) =====
-
   /// Add participant to realtime menu
   Future<void> addParticipant({
     required String resourceId,
@@ -367,8 +348,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
     );
   }
 
-  // ===== UTILITY METHODS (DELEGATE TO MODULES) =====
-
   /// Create personal copy of realtime menu
   Map<String, List<Recipe>> createPersonalCopy(RealtimeMenu realtimeMenu) {
     final userId = _currentUserId;
@@ -393,8 +372,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
     return MenuOperations.getMenuChangesSummary(menu);
   }
 
-  // ===== MENU OPERATIONS HELPER =====
-
   /// Generic method for performing menu operations with error handling
   Future<void> _performMenuOperation({
     required String resourceId,
@@ -410,17 +387,13 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
         resourceId: resourceId,
       );
     }
-
     _setProcessing(true);
     _clearError();
-
     try {
       AppLogger.info('🔄 $operationName för meny: $resourceId');
-
       // Get current menu from cache or Firebase
       final currentMenu = _currentMenu ??
           _syncService.getCachedResource<RealtimeMenu>(resourceId);
-
       if (currentMenu == null) {
         throw MenuOperationError(
           operation: operation,
@@ -428,7 +401,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
           resourceId: resourceId,
         );
       }
-
       // Check permission (from model, not business logic here)
       if (!MenuParticipants.canUserEdit(currentMenu, userId)) {
         throw MenuOperationError(
@@ -437,16 +409,12 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
           resourceId: resourceId,
         );
       }
-
       // Perform update
       final updatedMenu = updateFunction(currentMenu);
-
       // Use RealtimeSyncService for synchronization (SRP)
       await _syncService.updateResource(updatedMenu);
-
       // Update cache
       _currentMenu = updatedMenu;
-
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
     } catch (e) {
       _handleError(operation, 'Kunde inte $operationName: $e',
@@ -456,8 +424,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
       _setProcessing(false);
     }
   }
-
-  // ===== DELETE OPERATION =====
 
   /// Delete realtime menu completely
   Future<void> deleteRealtimeMenu(String resourceId) async {
@@ -469,9 +435,7 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
         resourceId: resourceId,
       );
     }
-
     AppLogger.info('🗑️ Tar bort realtidsmeny: $resourceId');
-
     try {
       // Delegate to RealtimeSyncService (SRP) - Use menu type
       await _syncService.deleteResource(resourceId, RealtimeResourceType.menu);
@@ -490,8 +454,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
       rethrow;
     }
   }
-
-  // ===== STATE MANAGEMENT =====
 
   /// Set processing state
   void _setProcessing(bool processing) {
@@ -531,9 +493,6 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
   }
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();
   }

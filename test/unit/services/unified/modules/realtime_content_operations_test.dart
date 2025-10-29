@@ -691,44 +691,44 @@ void main() {
     group('Validation Helpers', () {
       test('should validate ingredient content', () {
         // Valid ingredients
-        expect(RealtimeContentOperations.isValidIngredient('2 cups flour'), isTrue);
-        expect(RealtimeContentOperations.isValidIngredient('Salt to taste'), isTrue);
+        expect(RealtimeFieldOperations.isValidIngredient('2 cups flour'), isTrue);
+        expect(RealtimeFieldOperations.isValidIngredient('Salt to taste'), isTrue);
         
         // Invalid ingredients
-        expect(RealtimeContentOperations.isValidIngredient(''), isFalse);
-        expect(RealtimeContentOperations.isValidIngredient('  '), isFalse);
-        expect(RealtimeContentOperations.isValidIngredient('<script>alert()</script>'), isFalse);
-        expect(RealtimeContentOperations.isValidIngredient('a' * 201), isFalse); // Too long
+        expect(RealtimeFieldOperations.isValidIngredient(''), isFalse);
+        expect(RealtimeFieldOperations.isValidIngredient('  '), isFalse);
+        expect(RealtimeFieldOperations.isValidIngredient('<script>alert()</script>'), isFalse);
+        expect(RealtimeFieldOperations.isValidIngredient('a' * 201), isFalse); // Too long
       });
       
       test('should validate instruction content', () {
         // Valid instructions
-        expect(RealtimeContentOperations.isValidInstruction('Mix ingredients'), isTrue);
-        expect(RealtimeContentOperations.isValidInstruction('Bake for 30 minutes at 350°F'), isTrue);
+        expect(RealtimeFieldOperations.isValidInstruction('Mix ingredients'), isTrue);
+        expect(RealtimeFieldOperations.isValidInstruction('Bake for 30 minutes at 350°F'), isTrue);
         
         // Invalid instructions
-        expect(RealtimeContentOperations.isValidInstruction(''), isFalse);
-        expect(RealtimeContentOperations.isValidInstruction('  '), isFalse);
-        expect(RealtimeContentOperations.isValidInstruction('<div>test</div>'), isFalse);
-        expect(RealtimeContentOperations.isValidInstruction('a' * 1001), isFalse); // Too long
+        expect(RealtimeFieldOperations.isValidInstruction(''), isFalse);
+        expect(RealtimeFieldOperations.isValidInstruction('  '), isFalse);
+        expect(RealtimeFieldOperations.isValidInstruction('<div>test</div>'), isFalse);
+        expect(RealtimeFieldOperations.isValidInstruction('a' * 1001), isFalse); // Too long
       });
       
       test('should sanitize text content', () {
         // Remove HTML tags
         expect(
-          RealtimeContentOperations.sanitizeTextContent('<b>Bold</b> text'),
+          RealtimeFieldOperations.sanitizeTextContent('<b>Bold</b> text'),
           equals('Bold text'),
         );
         
         // Normalize whitespace
         expect(
-          RealtimeContentOperations.sanitizeTextContent('  Multiple   spaces  '),
+          RealtimeFieldOperations.sanitizeTextContent('  Multiple   spaces  '),
           equals('Multiple spaces'),
         );
         
         // Combined sanitization - the regex removes tags but keeps content between them
         expect(
-          RealtimeContentOperations.sanitizeTextContent('  <script>alert()</script>  Text  '),
+          RealtimeFieldOperations.sanitizeTextContent('  <script>alert()</script>  Text  '),
           equals('alert() Text'),
         );
       });
@@ -737,18 +737,18 @@ void main() {
         const listLength = 5;
         
         // Valid indices without append
-        expect(RealtimeContentOperations.isValidIndex(0, listLength), isTrue);
-        expect(RealtimeContentOperations.isValidIndex(4, listLength), isTrue);
+        expect(RealtimeFieldOperations.isValidIndex(0, listLength), isTrue);
+        expect(RealtimeFieldOperations.isValidIndex(4, listLength), isTrue);
         
         // Invalid indices without append
-        expect(RealtimeContentOperations.isValidIndex(-1, listLength), isFalse);
-        expect(RealtimeContentOperations.isValidIndex(5, listLength), isFalse);
+        expect(RealtimeFieldOperations.isValidIndex(-1, listLength), isFalse);
+        expect(RealtimeFieldOperations.isValidIndex(5, listLength), isFalse);
         
         // Valid indices with append
-        expect(RealtimeContentOperations.isValidIndex(5, listLength, allowAppend: true), isTrue);
+        expect(RealtimeFieldOperations.isValidIndex(5, listLength, allowAppend: true), isTrue);
         
         // Invalid indices with append
-        expect(RealtimeContentOperations.isValidIndex(6, listLength, allowAppend: true), isFalse);
+        expect(RealtimeFieldOperations.isValidIndex(6, listLength, allowAppend: true), isFalse);
       });
     });
   });

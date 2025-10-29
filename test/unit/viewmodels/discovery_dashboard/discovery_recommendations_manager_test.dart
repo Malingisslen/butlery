@@ -3,7 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/discovery_dashboard/discovery_recommendations_manager.dart';
-import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/services/permission_service.dart';
 
 import '../../../infrastructure/mocks/service_mocks.dart';

@@ -1,53 +1,10 @@
-/// Comprehensive recipe comment model providing advanced threaded commenting and social interaction capabilities.
+/// Recipe comment model with threaded discussions, likes, and cached author metadata.
 ///
-/// This model implements sophisticated recipe commenting functionality following Single Responsibility Principle,
-/// handling all aspects of comment management including threaded discussions, social engagement tracking,
-/// cached author metadata, and comprehensive moderation features. It provides complete commenting capabilities
-/// while maintaining clean separation from recipe data and user management concerns.
-///
-/// **Single Responsibility Focus:**
-/// This model exclusively handles recipe comment data and operations:
-/// - **Threaded Commenting**: Complete hierarchical comment system with parent-child relationships and reply management
-/// - **Social Engagement**: Comprehensive like system with user tracking and engagement analytics
-/// - **Author Metadata Caching**: Performance-optimized author information storage for enhanced UI responsiveness
-/// - **Content Moderation**: Soft deletion system with content preservation for moderation and audit trails
-///
-/// **What This Model Does NOT Handle:**
-/// - Recipe data management and business logic (handled by Recipe models and services)
-/// - User profile and authentication management (handled by user services)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Comment persistence and storage operations (handled by repositories and services)
-///
-/// **Recipe Comment Features:**
-/// - **Threaded Discussion System**: Complete hierarchical commenting with unlimited nesting and reply management
-/// - **Social Engagement Tracking**: Advanced like system with user identification and engagement analytics
-/// - **Performance Optimization**: Cached author metadata for enhanced UI responsiveness and reduced database queries
-/// - **Content Moderation**: Comprehensive soft deletion with content preservation and moderation capabilities
-/// - **Swedish Localization**: Complete Swedish language support for time formatting and user interface elements
-///
-/// **Usage Examples:**
+/// **Features:** Hierarchical threading, like tracking, soft deletion, author caching, Swedish time formatting.
 /// ```dart
-/// // Create new top-level comment
-/// final comment = RecipeComment.create(
-///   recipeId: recipeId,
-///   authorId: currentUserId,
-///   authorDisplayName: 'Anna Andersson',
-///   authorAvatarUrl: 'https://example.com/avatar.jpg',
-///   text: 'Fantastiskt recept! Hela familjen älskade det.',
-/// );
-/// 
-/// // Create reply to existing comment
-/// final reply = RecipeComment.create(
-///   recipeId: recipeId,
-///   authorId: currentUserId,
-///   authorDisplayName: 'Erik Svensson',
-///   text: 'Håller med! Gjorde det igår och det blev perfekt.',
-///   parentCommentId: comment.id,
-/// );
-/// 
-/// // Handle social engagement
-/// final likedComment = comment.addLike(userId);
-/// final unlikedComment = likedComment.removeLike(userId);
+/// final c = RecipeComment.create(recipeId: id, authorId: uid,
+///   authorDisplayName: 'Anna', text: 'Fantastiskt!', parentCommentId: parentId);
+/// final liked = c.addLike(userId).removeLike(userId);
 /// 
 /// // Edit and moderate comments
 /// final editedComment = comment.edit('Uppdaterad kommentar med mer detaljer.');

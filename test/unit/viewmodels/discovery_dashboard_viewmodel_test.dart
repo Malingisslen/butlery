@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -21,8 +22,6 @@ import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 
 // ULTRATHINK CONVERSION: Local mock classes removed - using centralized mocks
-
-// FeedbackType is imported from recommendation_service.dart
 
 void main() {
   late DiscoveryDashboardViewModel viewModel;

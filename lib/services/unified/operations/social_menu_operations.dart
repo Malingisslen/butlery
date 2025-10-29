@@ -1,20 +1,3 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Social Menu Operations - Feature interface for menu sharing and social features
-/// File: lib/services/unified/operations/social_menu_operations.dart
-/// Quick Guide: Handles all social menu operations like sharing menus with friends and groups
-/// Dependencies IN: Firebase Firestore, UnifiedFriendsService, Menu models
-/// Dependencies OUT: Used by MenuViewModel for social menu functionality
-/// Data flow: MenuViewModel -> SocialMenuOperations -> Firebase -> Friends
-/// State management: Stateless operations for menu sharing
-/// Purpose: Separate menu sharing concerns from menu service
-/// Common issues: Permission validation, friend validation, data formatting
-/// Test coverage: Unit tests for sharing operations and data validation
-/// Performance: Efficient batch operations for multiple friends
-/// Analytics: Menu sharing events, friend engagement tracking
-/// Code smells: None - focused on menu sharing operations only
-/// Connected to: MenuService, UnifiedFriendsService, Social features
-/// Used in phases: Phase 7 - COMPLETED Implementation
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -22,59 +5,12 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
-/// Comprehensive social menu operations providing advanced menu sharing and collaborative dining features.
-///
-/// This operations class implements sophisticated menu sharing functionality following Single Responsibility Principle,
-/// handling all aspects of social menu interaction including friend-based sharing, group sharing, menu import/export,
-/// and collaborative dining features. It provides comprehensive menu social capabilities while maintaining clean separation
-/// from basic menu management and recipe operations.
-///
-/// **Single Responsibility Focus:**
-/// This class exclusively handles social menu operations:
-/// - **Friend-Based Sharing**: Direct menu sharing with individual friends and family members with custom messaging
-/// - **Group Sharing**: Menu sharing with predefined friend categories and groups with bulk operation efficiency
-/// - **Import/Export System**: Menu import and export functionality with data validation and format preservation
-/// - **Activity Tracking**: Complete sharing activity monitoring with analytics and engagement statistics
-///
-/// **What This Class Does NOT Handle:**
-/// - Basic menu CRUD operations (handled by menu services)
-/// - Recipe management and operations (handled by recipe services)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and user management (handled by permission services)
-///
-/// **Social Menu Features:**
-/// - **Multi-Target Sharing**: Advanced sharing system supporting individual friends and group categories with validation
-/// - **Collaborative Dining**: Menu sharing for collaborative meal planning with family and friend groups
-/// - **Import/Export Tools**: Comprehensive menu data exchange with format preservation and validation
-/// - **Activity Analytics**: Detailed sharing statistics with engagement tracking and usage insights
-/// - **Permission Management**: Granular sharing permissions with access control and ownership validation
-///
-/// **Usage Examples:**
+/// Social menu operations for friend-based and group sharing with import/export and activity tracking.
+/// Follows SRP - handles only social menu interactions (not basic CRUD or recipe operations).
 /// ```dart
-/// final socialMenuOps = SocialMenuOperations(
-///   firestore: firestore,
-///   friendsService: friendsService,
-/// );
-/// 
-/// // Friend-based menu sharing
-/// await socialMenuOps.shareMenuWithFriends(
-///   menu: weeklyMenu,
-///   friendUserIds: [friendId1, friendId2],
-///   message: 'Veckans meny - perfekt för familjemiddag!',
-///   customTitle: 'Familjeveckans måltider',
-/// );
-/// 
-/// // Group sharing with categories
-/// await socialMenuOps.shareMenuWithGroup(
-///   menu: dinnerPartyMenu,
-///   categoryId: familyGroupId,
-///   message: 'Menyn för helgens middagsbjudning',
-/// );
-/// 
-/// // Menu import and activity tracking
-/// await socialMenuOps.importSharedMenu(sharedMenuId);
-/// final stats = await socialMenuOps.getSharingStats();
-/// final sharedMenus = await socialMenuOps.getMenusSharedWithMe();
+/// await ops.shareMenuWithFriends(menu: m, friendUserIds: [id1], message: 'Veckans meny');
+/// await ops.shareMenuWithGroup(menu: m, categoryId: groupId);
+/// await ops.importSharedMenu(sharedMenuId);
 /// ```
 class SocialMenuOperations {
   final FirebaseFirestore _firestore;

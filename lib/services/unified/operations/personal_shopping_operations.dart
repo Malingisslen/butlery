@@ -3,71 +3,14 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
-/// Comprehensive personal shopping operations interface providing individual shopping list management and advanced features.
-///
-/// This operations interface implements sophisticated personal shopping functionality following Single Responsibility Principle,
-/// handling all aspects of individual shopping list management including CRUD operations, item management, import/export
-/// capabilities, and analytics. It provides comprehensive personal shopping features while maintaining clean separation
-/// from collaborative shopping operations and social features.
-///
-/// **Single Responsibility Focus:**
-/// This interface exclusively handles personal shopping operations:
-/// - **Personal List CRUD**: Complete lifecycle management for individual shopping lists with validation
-/// - **Item Management**: Comprehensive item operations with category organization and priority handling
-/// - **Import/Export Features**: Text-based import/export with recipe integration and structured data support
-/// - **Analytics Integration**: Shopping list statistics and category analysis with completion tracking
-///
-/// **What This Interface Does NOT Handle:**
-/// - Collaborative shopping operations (handled by CollaborativeShoppingOperations)
-/// - Social sharing and member management (handled by sharing operations)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and user management (handled by parent services)
-///
-/// **Personal Shopping Features:**
-/// - **Individual Lists**: Private shopping lists with offline support and cloud synchronization
-/// - **Smart Item Management**: Intelligent item categorization with priority-based sorting and completion tracking
-/// - **Recipe Integration**: Automatic shopping list creation from recipe ingredients with serving calculations
-/// - **Import/Export Tools**: Text-based import with intelligent parsing and structured data export capabilities
-/// - **Analytics Dashboard**: Comprehensive shopping analytics with category breakdown and completion statistics
-///
-/// **Usage Examples:**
-/// ```dart
-/// final personalOps = PersonalShoppingOperations(parentService);
-///
-/// // Create and manage personal shopping lists
-/// final listId = await personalOps.createList('Veckohandling');
-/// await personalOps.setActiveList(listId);
-///
-/// // Advanced item management
-/// await personalOps.addItem(
-///   name: 'Mjölk',
-///   amount: 2.0,
-///   unit: 'l',
-///   category: 'Mejeri',
-///   priority: 1,
-///   estimatedPrice: 25.90,
-/// );
-///
-/// // Recipe integration
-/// final recipeListId = await personalOps.createListFromRecipe(
-///   recipeName: 'Köttbullar',
-///   ingredients: ['500g köttfärs', '2 dl grädde', '1 gul lök'],
-///   servingMultiplier: 2.0,
-/// );
-///
-/// // Analytics and export
-/// final stats = personalOps.getListStats(listId);
-/// final exportData = personalOps.exportListAsData(listId);
-/// final textExport = personalOps.exportListAsText(listId);
-/// ```
+/// Personal shopping operations interface providing individual shopping list management.
+/// Handles personal list CRUD, item management, recipe integration, import/export, and analytics.
+/// Delegates to UnifiedShoppingService while maintaining clean separation from collaborative features.
 class PersonalShoppingOperations {
   final UnifiedShoppingService _parent;
 
   PersonalShoppingOperations(this._parent);
 
-  // ===== PERSONAL LIST CRUD =====
-
-  /// Create a new personal shopping list
   Future<String?> createList(
     String name, {
     List<UnifiedShoppingItem>? items,
@@ -75,12 +18,10 @@ class PersonalShoppingOperations {
     return await _parent.createPersonalList(name, items: items);
   }
 
-  /// Get all personal shopping lists
   List<UnifiedShoppingList> getAllLists() {
     return _parent.personalLists;
   }
 
-  /// Get a personal shopping list by ID
   UnifiedShoppingList? getListById(String id) {
     try {
       return _parent.personalLists.firstWhere((list) => list.id == id);
@@ -89,7 +30,6 @@ class PersonalShoppingOperations {
     }
   }
 
-  /// Rename a personal shopping list
   Future<bool> renameList(String listId, String newName) async {
     final list = getListById(listId);
     if (list == null) {
@@ -100,7 +40,6 @@ class PersonalShoppingOperations {
     return await _parent.renameList(listId, newName);
   }
 
-  /// Delete a personal shopping list
   Future<bool> deleteList(String listId) async {
     final list = getListById(listId);
     if (list == null) {
@@ -117,7 +56,6 @@ class PersonalShoppingOperations {
     return await _parent.deleteList(listId);
   }
 
-  /// Set active personal list
   Future<bool> setActiveList(String listId) async {
     final list = getListById(listId);
     if (list == null) {
@@ -128,15 +66,11 @@ class PersonalShoppingOperations {
     return await _parent.setActiveList(listId);
   }
 
-  /// Get current active personal list
   UnifiedShoppingList? getActiveList() {
     final activeList = _parent.activeList;
     return activeList?.isPersonal == true ? activeList : null;
   }
 
-  // ===== ITEM MANAGEMENT =====
-
-  /// Add item to personal shopping list
   Future<bool> addItem({
     String? listId,
     required String name,
@@ -188,7 +122,6 @@ class PersonalShoppingOperations {
     );
   }
 
-  /// Update item in personal shopping list
   Future<bool> updateItem({
     required String listId,
     required String itemId,
@@ -244,7 +177,6 @@ class PersonalShoppingOperations {
     return await _parent.updateList(updatedList);
   }
 
-  /// Toggle item bought status
   Future<bool> toggleItemBought(String itemId) async {
     final activeList = getActiveList();
     if (activeList == null) {
@@ -255,7 +187,6 @@ class PersonalShoppingOperations {
     return await _parent.toggleItemBought(itemId);
   }
 
-  /// Remove item from personal shopping list
   Future<bool> removeItem(String itemId) async {
     final activeList = getActiveList();
     if (activeList == null) {
@@ -266,7 +197,6 @@ class PersonalShoppingOperations {
     return await _parent.removeItemFromActiveList(itemId);
   }
 
-  /// Clear all bought items from personal list
   Future<bool> clearBoughtItems({String? listId}) async {
     if (listId != null) {
       final list = getListById(listId);
@@ -292,7 +222,6 @@ class PersonalShoppingOperations {
     return await _parent.clearBoughtItems();
   }
 
-  /// Uncheck all items in personal list
   Future<bool> uncheckAllItems({String? listId}) async {
     if (listId != null) {
       final list = getListById(listId);
@@ -318,9 +247,6 @@ class PersonalShoppingOperations {
     return await _parent.uncheckAllItems();
   }
 
-  // ===== LIST ANALYSIS =====
-
-  /// Get shopping list statistics
   Map<String, dynamic> getListStats(String listId) {
     final list = getListById(listId);
     if (list == null) return {};
@@ -353,7 +279,6 @@ class PersonalShoppingOperations {
     };
   }
 
-  /// Get items grouped by category
   Map<String, List<UnifiedShoppingItem>> getItemsByCategory(String listId) {
     final list = getListById(listId);
     if (list == null) return {};
@@ -381,9 +306,6 @@ class PersonalShoppingOperations {
     return categoryMap;
   }
 
-  // ===== EXPORT FUNCTIONALITY =====
-
-  /// Export personal shopping list as text
   String exportListAsText(String listId) {
     final list = getListById(listId);
     if (list == null) return 'Lista hittades inte';
@@ -418,7 +340,6 @@ class PersonalShoppingOperations {
     return buffer.toString();
   }
 
-  /// Export personal shopping list as structured data
   Map<String, dynamic> exportListAsData(String listId) {
     final list = getListById(listId);
     if (list == null) return {'error': 'Lista hittades inte'};
@@ -451,9 +372,6 @@ class PersonalShoppingOperations {
     };
   }
 
-  // ===== IMPORT FUNCTIONALITY =====
-
-  /// Import items from text
   Future<bool> importItemsFromText({
     required String listId,
     required String text,
@@ -528,7 +446,6 @@ class PersonalShoppingOperations {
     }
   }
 
-  /// Create shopping list from recipe ingredients
   Future<String?> createListFromRecipe({
     required String recipeName,
     required List<String> ingredients,

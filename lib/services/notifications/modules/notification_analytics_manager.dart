@@ -5,46 +5,11 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
-/// Specialized notification analytics and tracking module providing comprehensive delivery metrics and engagement analysis.
-///
-/// This focused module implements sophisticated notification analytics following Single Responsibility Principle,
-/// handling all aspects of notification delivery tracking, user engagement metrics, and performance analysis.
-/// It provides comprehensive analytics for notification effectiveness optimization while maintaining clean separation
-/// from other notification system components for maintainable and scalable analytics infrastructure.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles analytics and tracking responsibilities:
-/// - **Delivery Tracking**: Comprehensive notification delivery confirmation and status monitoring
-/// - **Engagement Metrics**: Detailed user interaction tracking including opens, dismissals, and action clicks
-/// - **Performance Analytics**: Statistical analysis of notification effectiveness and conversion rates
-/// - **Aggregate Reporting**: Summary statistics and trend analysis for notification system optimization
-/// - **A/B Testing Support**: Experimental framework for testing notification strategies and content variations
-///
-/// **What This Module Does NOT Handle:**
-/// - FCM token management and device registration (handled by FCMTokenManager)
-/// - Content generation and message templating (handled by NotificationContentManager)
-/// - User preferences and quiet hours (handled by NotificationPreferenceManager)
-/// - Notification batching and delivery optimization (handled by NotificationBatchManager)
-///
-/// **Analytics Capabilities:**
-/// - Real-time delivery confirmation tracking with failure analysis and retry insights
-/// - Comprehensive user engagement metrics providing actionable insights for content optimization
-/// - Performance trend analysis enabling data-driven notification strategy improvements
-/// - A/B testing framework supporting experimental notification approaches and content variations
-/// - Batch processing for efficient analytics data collection reducing Firestore write operations
-///
-/// **Usage Examples:**
+/// Notification analytics with delivery tracking, engagement metrics, performance analytics, and batch processing.
+/// Follows SRP - handles only analytics (not FCM, content, preferences, or batching).
 /// ```dart
-/// final analyticsManager = NotificationAnalyticsManager(firestore, userId);
-/// 
-/// // Track notification delivery
-/// await analyticsManager.trackDelivery(notificationId, 'delivered');
-/// 
-/// // Record user engagement
-/// await analyticsManager.trackEngagement(notificationId, 'opened');
-/// 
-/// // Get performance metrics
-/// final metrics = await analyticsManager.getEngagementMetrics(dateRange);
+/// await manager.recordNotificationSent(id, category, type, userId, metadata);
+/// await manager.recordNotificationOpened(id); final metrics = await manager.getUserEngagementSummary();
 /// ```
 class NotificationAnalyticsManager {
   final FirebaseFirestore _firestore;
@@ -65,9 +30,7 @@ class NotificationAnalyticsManager {
 
   // ===== DELIVERY TRACKING =====
 
-  /// Record that a notification was sent
-  /// 
-  /// This should be called immediately after FCM send attempt
+  /// Record notification sent (call after FCM send attempt)
   Future<void> recordNotificationSent({
     required String notificationId,
     required NotificationCategory category,
@@ -97,9 +60,7 @@ class NotificationAnalyticsManager {
     }
   }
 
-  /// Record that a notification was delivered to device
-  /// 
-  /// This is called when FCM confirms delivery (usually from background handler)
+  /// Record notification delivered to device (FCM confirmation from background handler)
   Future<void> recordNotificationDelivered({
     required String notificationId,
     Map<String, dynamic>? deliveryMetadata,
@@ -145,9 +106,7 @@ class NotificationAnalyticsManager {
 
   // ===== ENGAGEMENT TRACKING =====
 
-  /// Record that a notification was opened by user
-  /// 
-  /// This should be called when user taps the notification
+  /// Record notification opened (user tapped notification)
   Future<void> recordNotificationOpened({
     required String notificationId,
     Map<String, dynamic>? context,
@@ -204,9 +163,7 @@ class NotificationAnalyticsManager {
     }
   }
 
-  /// Record that a notification action was taken
-  /// 
-  /// This is for action buttons like "Accept", "Decline", etc.
+  /// Record notification action taken (action buttons like "Accept", "Decline")
   Future<void> recordNotificationActionTaken({
     required String notificationId,
     required String actionId,
@@ -234,9 +191,7 @@ class NotificationAnalyticsManager {
 
   // ===== PERFORMANCE METRICS =====
 
-  /// Generate daily metrics for notification performance
-  /// 
-  /// This should be called by a scheduled function or background job
+  /// Generate daily metrics (scheduled function or background job)
   Future<void> generateDailyMetrics({DateTime? date}) async {
     try {
       final targetDate = date ?? DateTime.now().subtract(const Duration(days: 1));

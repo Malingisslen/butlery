@@ -1,20 +1,3 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Friend Categories Operations - Feature interface for friend categorization
-/// File: lib/services/unified/operations/friend_categories_operations.dart
-/// Quick Guide: Handles friend categorization, groups, and organization features
-/// Dependencies IN: UnifiedFriendsService, FriendCategory model
-/// Dependencies OUT: Used by category ViewModels and group management
-/// Data flow: ViewModels -> FriendCategoriesOperations -> UnifiedFriendsService -> Firebase
-/// State management: Delegates to parent UnifiedFriendsService
-/// Purpose: Separate friend organization concerns from basic friend operations
-/// Common issues: Category membership, group permissions, bulk operations
-/// Test coverage: Unit tests for category CRUD and membership operations
-/// Performance: Optimistic updates with Firebase sync
-/// Analytics: Category usage, group creation patterns, bulk operations
-/// Code smells: None - follows single responsibility principle
-/// Connected to: UnifiedFriendsService, Group management ViewModels
-/// Used in phases: Phase 5 - Service Consolidation
-
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:uuid/uuid.dart';
@@ -26,62 +9,12 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/events/group_events.dart';
 
-/// Comprehensive friend categories operations providing advanced friend organization and group management systems.
-///
-/// This operations class implements sophisticated friend categorization functionality following Single Responsibility Principle,
-/// handling all aspects of friend organization including category lifecycle management, friend assignment operations, bulk
-/// categorization features, and group-based permissions. It provides comprehensive friend organization capabilities while
-/// maintaining clean separation from basic friend management and social interaction concerns.
-///
-/// **Single Responsibility Focus:**
-/// This class exclusively handles friend categorization operations:
-/// - **Category Lifecycle Management**: Complete category CRUD operations with validation, duplicate prevention, and privacy controls
-/// - **Friend Assignment Operations**: Comprehensive friend-to-category assignment with bulk operations and relationship management
-/// - **Group Permissions**: Advanced category-based permissions with sharing controls and access management
-/// - **Organization Analytics**: Category usage statistics and organization insights with bulk operation tracking
-///
-/// **What This Class Does NOT Handle:**
-/// - Basic friend relationship management (handled by FriendsOperations)  
-/// - Social invitations and group invitations (handled by FriendsInvitationsOperations)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and user management (handled by permission services)
-///
-/// **Friend Categories Features:**
-/// - **Advanced Organization**: Comprehensive friend categorization with custom categories, privacy controls, and sharing options
-/// - **Bulk Operations**: Efficient multi-friend assignment operations with progress tracking and validation
-/// - **Permission Management**: Category-based sharing and permissions with access control and ownership validation
-/// - **Analytics Integration**: Detailed categorization analytics with usage statistics and organization insights
-/// - **Smart Organization**: Intelligent category suggestions and organization tools for efficient friend management
-///
-/// **Usage Examples:**
-/// ```dart
-/// final categoriesOps = FriendCategoriesOperations(parentService);
-/// 
-/// // Category lifecycle management
-/// final categoryId = await categoriesOps.createCategory(
-///   name: 'Arbetskamrater',
-///   description: 'Kollegor och arbetskamrater',  
-///   isPrivate: false,
-///   initialMemberIds: [colleague1, colleague2],
-/// );
-/// 
-/// // Friend assignment operations
-/// await categoriesOps.assignFriendsToCategory(categoryId, friendIds);
-/// await categoriesOps.removeFriendsFromCategory(categoryId, [friendId]);
-/// 
-/// // Category management and analytics
-/// final categories = categoriesOps.getAllCategories();
-/// final usage = categoriesOps.getCategoryUsageStats();
-/// final mostUsed = categoriesOps.getMostUsedCategories();
-/// ```
+/// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
   final UnifiedFriendsService _parent;
 
   FriendsCategoriesOperations(this._parent);
 
-  // ===== CATEGORY CRUD OPERATIONS =====
-
-  /// Create new friend category
   Future<String?> createCategory({
     required String name,
     String description = '',
@@ -157,7 +90,6 @@ class FriendsCategoriesOperations {
     }
   }
 
-  /// Update category details
   Future<bool> updateCategory({
     required String categoryId,
     String? name,
@@ -205,7 +137,6 @@ class FriendsCategoriesOperations {
     }
   }
 
-  /// Delete category
   Future<bool> deleteCategory(String categoryId) async {
     final category = getCategoryById(categoryId);
     if (category == null) {
@@ -242,9 +173,7 @@ class FriendsCategoriesOperations {
     }
   }
 
-  // ===== CATEGORY MEMBERSHIP OPERATIONS =====
 
-  /// Add friend to category
   Future<bool> addFriendToCategory(String friendId, String categoryId, {bool skipFriendshipCheck = false, bool skipPermissionCheck = false}) async {
     AppLogger.info('🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck');
 
@@ -300,7 +229,6 @@ class FriendsCategoriesOperations {
     return true;
   }
 
-  /// Remove friend from category
   Future<bool> removeFriendFromCategory(String friendId, String categoryId) async {
     
     final category = getCategoryById(categoryId);
@@ -356,7 +284,6 @@ class FriendsCategoriesOperations {
     }
   }
 
-  /// Move friend from one category to another
   Future<bool> moveFriendToCategory({
     required String friendId,
     required String fromCategoryId,
@@ -374,9 +301,7 @@ class FriendsCategoriesOperations {
     return await addFriendToCategory(friendId, toCategoryId);
   }
 
-  // ===== BULK OPERATIONS =====
 
-  /// Add multiple friends to category
   Future<Map<String, bool>> addMultipleFriendsToCategory(
     List<String> friendIds, 
     String categoryId,
@@ -390,7 +315,6 @@ class FriendsCategoriesOperations {
     return results;
   }
 
-  /// Remove multiple friends from category
   Future<Map<String, bool>> removeMultipleFriendsFromCategory(
     List<String> friendIds, 
     String categoryId,
@@ -404,7 +328,6 @@ class FriendsCategoriesOperations {
     return results;
   }
 
-  /// Create category with multiple friends
   Future<String?> createCategoryWithFriends({
     required String name,
     String description = '',
@@ -419,35 +342,29 @@ class FriendsCategoriesOperations {
     return categoryId;
   }
 
-  // ===== CATEGORY QUERIES =====
 
-  /// Get category by ID
   FriendCategory? getCategoryById(String categoryId) {
     return _parent.categoriesList
         .where((category) => category.id == categoryId)
         .firstOrNull;
   }
 
-  /// Get category by name
   FriendCategory? getCategoryByName(String name) {
     return _parent.categoriesList
         .where((category) => category.name.toLowerCase() == name.toLowerCase())
         .firstOrNull;
   }
 
-  /// Get all categories
   List<FriendCategory> getAllCategories() {
     return _parent.categoriesList;
   }
 
-  /// Get categories owned by current user
   List<FriendCategory> getOwnedCategories() {
     return _parent.categoriesList
         .where((category) => category.ownerId == _parent.currentUserId)
         .toList();
   }
 
-  /// Get categories where current user is a member
   List<FriendCategory> getMemberCategories() {
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
     
@@ -456,7 +373,6 @@ class FriendsCategoriesOperations {
         .toList();
   }
 
-  /// Get friends in specific category
   List<UserProfile> getFriendsInCategory(String categoryId) {
     final category = getCategoryById(categoryId);
     if (category == null) return [];
@@ -466,14 +382,12 @@ class FriendsCategoriesOperations {
         .toList();
   }
 
-  /// Get categories containing specific friend
   List<FriendCategory> getCategoriesForFriend(String friendId) {
     return _parent.categoriesList
         .where((category) => category.memberIds.contains(friendId))
         .toList();
   }
 
-  /// Get uncategorized friends
   List<UserProfile> getUncategorizedFriends() {
     final categorizedFriendIds = <String>{};
     
@@ -486,34 +400,27 @@ class FriendsCategoriesOperations {
         .toList();
   }
 
-  // ===== CATEGORY STATUS CHECKS =====
 
-  /// Check if friend is in category
   bool isFriendInCategory(String friendId, String categoryId) {
     final category = getCategoryById(categoryId);
     return category?.memberIds.contains(friendId) ?? false;
   }
 
-  /// Check if category name already exists
   bool _categoryNameExists(String name) {
     return _parent.categoriesList
         .any((category) => category.name.toLowerCase() == name.toLowerCase());
   }
 
-  /// Get category member count
   int getCategoryMemberCount(String categoryId) {
     final category = getCategoryById(categoryId);
     return category?.memberIds.length ?? 0;
   }
 
-  /// Check if category is empty
   bool isCategoryEmpty(String categoryId) {
     return getCategoryMemberCount(categoryId) == 0;
   }
 
-  // ===== CATEGORY STATISTICS =====
 
-  /// Get category statistics
   Map<String, dynamic> getCategoryStats() {
     final categories = getAllCategories();
     final totalCategories = categories.length;
@@ -532,7 +439,6 @@ class FriendsCategoriesOperations {
     };
   }
 
-  // ===== PRIVATE HELPER METHODS =====
 
   bool _canEditCategory(FriendCategory category) {
     final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
@@ -564,10 +470,6 @@ class FriendsCategoriesOperations {
   // - Private categories: viewable by owner and members only
   // Implementation will be added when privacy feature is developed
 
-  /// Set category privacy level (feature stub - not yet implemented)
-  /// 
-  /// FEATURE STUB: This will allow users to make friend categories
-  /// public (discoverable by others) or private (invitation-only).
   Future<void> setCategoryPrivacy(String categoryId, {required bool isPublic}) async {
     AppLogger.info('🔒 Privacy setting requested for category: $categoryId (public: $isPublic)');
     
@@ -596,12 +498,9 @@ class FriendsCategoriesOperations {
     // }
   }
   
-  // ===== VIEWMODEL COMPATIBILITY METHODS =====
   
-  /// Get categories list (for ViewModels)
   List<FriendCategory> get categoriesList => _parent.categoriesList;
   
-  /// Migrate existing groups to ensure owners are members
   Future<void> migrateOwnersAsMembers() async {
     final categories = getAllCategories();
     
@@ -619,12 +518,10 @@ class FriendsCategoriesOperations {
     }
   }
   
-  /// Assign friend to category (alternative name for addFriendToCategory)
   Future<bool> assignFriendToCategory(String friendId, String categoryId) async {
     return await addFriendToCategory(friendId, categoryId);
   }
   
-  /// Refresh categories data
   Future<void> refresh() async {
     await _parent.refresh();
   }

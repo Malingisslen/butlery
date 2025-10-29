@@ -10,7 +10,6 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -33,57 +32,15 @@ import 'package:butlery/services/unified/operations/realtime_recipe_operations.d
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
+import 'package:butlery/services/unified/helpers/social_operations_initializer.dart';
+import 'package:butlery/services/unified/helpers/recipe_content_operations.dart';
+import 'package:butlery/services/unified/helpers/recipe_auth_state_handler.dart';
+import 'package:butlery/services/unified/helpers/personal_recipe_crud.dart';
+import 'package:butlery/services/unified/helpers/recipe_utility_operations.dart';
 
-/// Comprehensive unified recipe service providing coordinated access to personal, social, and real-time recipe functionality.
-///
-/// This service implements a sophisticated recipe management system using modular architecture with focused components
-/// for personal recipe operations, social recipe sharing, real-time collaborative editing, and intelligent caching.
-/// It provides a unified API surface that coordinates between specialized modules while maintaining backward compatibility
-/// and clean separation of concerns for maintainable and scalable recipe management across all application features.
-///
-/// **Architecture Integration:**
-/// - Extends [ChangeNotifier] for reactive UI updates with recipe state changes across all modules
-/// - Uses [ErrorHandlingMixin] for comprehensive error management and graceful degradation strategies
-/// - Implements [FirebaseServiceMixin] for Firebase integration and authentication-aware operations
-/// - Coordinates specialized modules following Single Responsibility Principle for maintainable architecture
-///
-/// **Modular Coordination Architecture:**
-/// This service coordinates between focused modules with clear responsibilities:
-/// - **[PersonalRecipeModule]**: Personal recipe CRUD operations, local storage, and user-specific management
-/// - **[SocialRecipeModule]**: Social recipe sharing, community features, and friend-based recipe discovery
-/// - **[RealtimeRecipeModule]**: Real-time collaborative editing, live synchronization, and conflict resolution
-/// - **[RecipeCacheModule]**: Intelligent caching, offline support, and performance optimization strategies
-///
-/// **Unified API Benefits:**
-/// - **Single Entry Point**: Unified interface for all recipe operations reducing complexity for ViewModels
-/// - **Coordinated Operations**: Seamless integration between personal, social, and real-time recipe features
-/// - **Backward Compatibility**: Legacy operation interfaces maintained for smooth migration and existing code support
-/// - **Clean Separation**: Each module handles specific concerns without cross-module business logic contamination
-/// - **Reactive Updates**: Comprehensive state management with automatic UI updates across all recipe operations
-///
-/// **What This Service Does NOT Contain:**
-/// - Business logic implementation (delegated to specialized modules for focused responsibility)
-/// - Direct Firebase operations (handled by modules and repository layers for proper abstraction)
-/// - Caching logic implementation (managed by RecipeCacheModule for performance optimization)
-/// - Authentication management (handled by FirebaseAuthRepository and authentication mixins)
-///
-/// **Usage Examples:**
-/// ```dart
-/// final recipeService = UnifiedRecipeService(firestore, authRepository);
-/// await recipeService.initialize();
-///
-/// // Personal recipe operations
-/// final personalRecipes = await recipeService.personal.getAllRecipes();
-/// await recipeService.personal.createRecipe(title: 'Köttbullar');
-///
-/// // Social recipe sharing
-/// await recipeService.social.shareRecipeWithFriend(recipeId, friendId);
-/// final sharedRecipes = await recipeService.social.getSharedRecipes();
-///
-/// // Real-time collaborative editing
-/// final realtimeRecipe = await recipeService.realtime.startCollaborativeSession(recipeId);
-/// recipeService.realtime.watchRecipeChanges(recipeId).listen(updateUI);
-/// ```
+/// Unified recipe service coordinating personal, social, and real-time recipe operations.
+/// Delegates to specialized modules (PersonalRecipeModule, SocialRecipeModule, RealtimeRecipeModule, RecipeCacheModule)
+/// with backward-compatible legacy interfaces (personal, social, realtime operations).
 class UnifiedRecipeService extends ChangeNotifier
     with ErrorHandlingMixin, FirebaseServiceMixin
     implements NotificationParent {
@@ -105,6 +62,18 @@ class UnifiedRecipeService extends ChangeNotifier
   late final PersonalRecipeOperations personal;
   late final SocialRecipeOperations social;
   late final RealtimeRecipeOperations realtime;
+
+  // Content operations helper
+  late final RecipeContentOperations _contentOps;
+
+  // Auth state handler
+  late final RecipeAuthStateHandler _authHandler;
+
+  // Personal recipe CRUD helper
+  late final PersonalRecipeCrud _personalCrud;
+
+  // Utility operations helper
+  late final RecipeUtilityOperations _utilityOps;
 
   // Discovery service accessor
   RecipeDiscoveryService get discovery {
@@ -214,111 +183,93 @@ class UnifiedRecipeService extends ChangeNotifier
       setError: _setError,
       notifyListeners: notifyListeners,
     );
+
+    _contentOps = RecipeContentOperations(
+      personalModule: _personalModule,
+      realtimeModule: _realtimeModule,
+      isInRealtimeSession: (recipeId) => _realtimeModule.isInRealtimeEditingSession(recipeId),
+    );
+
+    _authHandler = RecipeAuthStateHandler(
+      cacheModule: _cacheModule,
+      authRepository: _authRepository,
+      recipes: _recipes,
+      setError: _setError,
+      setLoading: (loading) => _isLoading = loading,
+      notifyListeners: notifyListeners,
+    );
+
+    _personalCrud = PersonalRecipeCrud(
+      personalModule: _personalModule,
+      cacheModule: _cacheModule,
+      recipes: _recipes,
+      notifyListeners: notifyListeners,
+    );
+
+    _utilityOps = RecipeUtilityOperations(
+      cacheModule: _cacheModule,
+      authRepository: _authRepository,
+      recipes: _recipes,
+      getServiceAdapter: () => _getServiceAdapter(),
+      getRecipeById: (id) => getRecipeById(id),
+      setError: _setError,
+      setLoading: (loading) => _isLoading = loading,
+      notifyListeners: notifyListeners,
+    );
   }
 
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
-    // PersonalRecipeOperations doesn't need external dependencies
     personal = PersonalRecipeOperations(this);
-    
-    // RealtimeRecipeOperations doesn't need external dependencies  
     realtime = RealtimeRecipeOperations(this);
-    
-    // SocialRecipeOperations needs repositories, defer if not available
-    if (_ratingsRepository != null && _firestoreRepository != null) {
-      social = SocialRecipeOperations(
-        this,
-        ratingsRepository: _ratingsRepository,
-        firestoreRepository: _firestoreRepository,
-      );
+
+    // SocialRecipeOperations needs repositories - try immediate initialization or defer
+    final initializedSocial = SocialOperationsInitializer.tryInitialize(
+      this,
+      _ratingsRepository,
+      _firestoreRepository,
+    );
+
+    if (initializedSocial != null) {
+      social = initializedSocial;
     } else {
-      // Create a temporary placeholder that will be replaced when repositories are available
-      // This allows the service to be constructed even if repositories aren't ready yet
+      // Defer initialization
       Future.microtask(() => _initializeSocialOperations());
     }
   }
-  
+
   void _initializeSocialOperations() {
-    // Try to initialize social operations if not already done
+    // Check if already initialized
     try {
-      // Check if social is already initialized (using a try-catch to handle late field)
       // ignore: unnecessary_statements
       social;
-      return; // Already initialized
-    } catch (_) {
-      // Not initialized yet, proceed
-    }
-    
-    try {
-      final ratingsRepo = _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>();
-      final firestoreRepo = _firestoreRepository ?? ServiceLocator.tryGet<FirestoreRepository>();
-      
-      if (ratingsRepo != null && firestoreRepo != null) {
-        social = SocialRecipeOperations(
-          this,
-          ratingsRepository: ratingsRepo,
-          firestoreRepository: firestoreRepo,
-        );
-        AppLogger.info('✅ SocialRecipeOperations initialized with repositories from ServiceLocator');
-      } else {
-        // Create a stub/fallback social operations instance that provides basic functionality
-        // This prevents null errors while the actual repositories are being loaded
-        AppLogger.warning('⚠️ Creating fallback SocialRecipeOperations - repositories not yet available');
-        
-        // Get or create fallback repositories  
-        final fallbackRatingsRepo = ratingsRepo ?? _createFallbackRatingsRepository();
-        final fallbackFirestoreRepo = firestoreRepo ?? _createFallbackFirestoreRepository();
-        
-        social = SocialRecipeOperations(
-          this,
-          ratingsRepository: fallbackRatingsRepo,
-          firestoreRepository: fallbackFirestoreRepo,
-        );
-        
-        // Still schedule retry to get real repositories later
-        Future.delayed(const Duration(milliseconds: 500), () => _reinitializeSocialWithRealRepositories());
-      }
-    } catch (e) {
-      AppLogger.error('❌ Failed to initialize SocialRecipeOperations: $e');
-      // Create fallback to prevent crashes
-      social = SocialRecipeOperations(
+      return;
+    } catch (_) {}
+
+    // Try to initialize with available repositories
+    final initialized = SocialOperationsInitializer.tryInitialize(
+      this,
+      _ratingsRepository,
+      _firestoreRepository,
+    );
+
+    if (initialized != null) {
+      social = initialized;
+    } else {
+      // Create with fallback repositories and schedule retry
+      social = SocialOperationsInitializer.initializeWithFallback(
         this,
-        ratingsRepository: _createFallbackRatingsRepository(),
-        firestoreRepository: _createFallbackFirestoreRepository(),
+        _ratingsRepository,
+        _firestoreRepository,
+        _authRepository,
+      );
+
+      SocialOperationsInitializer.scheduleRetry(
+        this,
+        (operations) => social = operations,
+        const Duration(milliseconds: 500),
       );
     }
-  }
-  
-  void _reinitializeSocialWithRealRepositories() {
-    try {
-      final ratingsRepo = ServiceLocator.tryGet<RatingsRepository>();
-      final firestoreRepo = ServiceLocator.tryGet<FirestoreRepository>();
-      
-      if (ratingsRepo != null && firestoreRepo != null) {
-        // Reinitialize with real repositories
-        social = SocialRecipeOperations(
-          this,
-          ratingsRepository: ratingsRepo,
-          firestoreRepository: firestoreRepo,
-        );
-        AppLogger.info('✅ SocialRecipeOperations re-initialized with real repositories');
-      } else {
-        // Retry again later
-        Future.delayed(const Duration(seconds: 1), () => _reinitializeSocialWithRealRepositories());
-      }
-    } catch (e) {
-      AppLogger.error('❌ Failed to reinitialize SocialRecipeOperations: $e');
-    }
-  }
-  
-  RatingsRepository _createFallbackRatingsRepository() {
-    // Return the existing repository if available, otherwise create a stub
-    return _ratingsRepository ?? FirebaseRatingsRepository(authRepository: _authRepository);
-  }
-  
-  FirestoreRepository _createFallbackFirestoreRepository() {
-    // Return the existing repository if available, otherwise create a stub
-    return _firestoreRepository ?? FirestoreRepository();
   }
 
   // Helper to check if modules are initialized
@@ -430,7 +381,7 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
-  // ===== PERSONAL RECIPE OPERATIONS (DELEGATE TO PERSONAL MODULE) =====
+  // ===== PERSONAL RECIPE OPERATIONS (DELEGATED TO CRUD HELPER) =====
 
   Future<String?> createPersonalRecipe({
     required String title,
@@ -444,103 +395,33 @@ class UnifiedRecipeService extends ChangeNotifier
     double? rating,
     List<String>? tags,
     String? sourceUrl,
-  }) async {
-    final recipeId = await _personalModule.createPersonalRecipe(
-      title: title,
-      description: description,
-      ingredients: ingredients,
-      instructions: instructions,
-      imageUrls: imageUrls,
-      mealType: mealType,
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      tags: tags,
-      sourceUrl: sourceUrl,
-    );
+  }) async => _personalCrud.createPersonalRecipe(
+    title: title,
+    description: description,
+    ingredients: ingredients,
+    instructions: instructions,
+    imageUrls: imageUrls,
+    mealType: mealType,
+    portions: portions,
+    timeMinutes: timeMinutes,
+    rating: rating,
+    tags: tags,
+    sourceUrl: sourceUrl,
+  );
 
-    if (recipeId != null) {
-      // Add to local list
-      final recipe = await _cacheModule.loadRecipeFromCache(recipeId);
-      if (recipe != null) {
-        _recipes.add(recipe);
-        notifyListeners();
-      }
-    }
+  Future<bool> updateRecipe(Recipe updatedRecipe) async =>
+      _personalCrud.updateRecipe(updatedRecipe);
 
-    return recipeId;
-  }
+  Future<bool> deleteRecipe(String recipeId) async =>
+      _personalCrud.deleteRecipe(recipeId);
 
-  Future<bool> updateRecipe(Recipe updatedRecipe) async {
-    final success = await _personalModule.updatePersonalRecipe(updatedRecipe);
+  Future<bool> markAsCooked(String recipeId) async =>
+      _personalCrud.markAsCooked(recipeId);
 
-    if (success) {
-      // Update local list
-      final index = _recipes.indexWhere((r) => r.id == updatedRecipe.id);
-      if (index != -1) {
-        _recipes[index] = updatedRecipe;
-        notifyListeners();
-      }
-    }
+  // ===== INTERNAL SAVE METHOD FOR SOCIAL MODULE (DELEGATED) =====
 
-    return success;
-  }
-
-  Future<bool> deleteRecipe(String recipeId) async {
-    final success = await _personalModule.deletePersonalRecipe(recipeId);
-
-    if (success) {
-      // Remove from local list
-      _recipes.removeWhere((r) => r.id == recipeId);
-      notifyListeners();
-    }
-
-    return success;
-  }
-
-  Future<bool> markAsCooked(String recipeId) async {
-    return await _personalModule.markRecipeAsCooked(recipeId);
-  }
-
-  // ===== INTERNAL SAVE METHOD FOR SOCIAL MODULE =====
-
-  /// Save a recipe from the social module (handles both create and update)
-  /// This method determines whether to create a new recipe or update an existing one
-  Future<bool> _saveRecipeForSocialModule(Recipe recipe) async {
-    try {
-      final serviceAdapter = _getServiceAdapter();
-
-      // Check if this recipe already exists in our list
-      final existingRecipe = getRecipeById(recipe.id);
-
-      if (existingRecipe != null) {
-        // Update existing recipe
-        final success = await serviceAdapter.updateRecipe(recipe);
-        if (success) {
-          // Update local cache
-          final index = _recipes.indexWhere((r) => r.id == recipe.id);
-          if (index != -1) {
-            _recipes[index] = recipe;
-            notifyListeners();
-          }
-        }
-        return success;
-      } else {
-        // Create new recipe
-        final createdId = await serviceAdapter.createRecipe(recipe);
-        if (createdId != null) {
-          // Add to local cache
-          _recipes.add(recipe);
-          notifyListeners();
-          return true;
-        }
-        return false;
-      }
-    } catch (e) {
-      AppLogger.error('❌ Failed to save recipe from social module: $e');
-      return false;
-    }
-  }
+  Future<bool> _saveRecipeForSocialModule(Recipe recipe) async =>
+      _utilityOps.saveRecipeForSocialModule(recipe);
 
   // ===== COLLABORATIVE RECIPE OPERATIONS (DELEGATE TO SOCIAL MODULE) =====
 
@@ -613,7 +494,7 @@ class UnifiedRecipeService extends ChangeNotifier
     return _realtimeModule.isInRealtimeEditingSession(recipeId);
   }
 
-  // ===== CONTENT OPERATIONS =====
+  // ===== CONTENT OPERATIONS (DELEGATED) =====
 
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -628,89 +509,43 @@ class UnifiedRecipeService extends ChangeNotifier
     double? rating,
     List<String>? tags,
     String? sourceUrl,
-  }) async {
-    final recipe = getRecipeById(recipeId);
-    if (recipe == null) {
-      _setError('Recept hittades inte');
-      return false;
-    }
+  }) async => _utilityOps.updateRecipeContent(
+    recipeId: recipeId,
+    currentUserId: currentUserId,
+    currentUserDisplayName: currentUserDisplayName,
+    updateRecipe: updateRecipe,
+    title: title,
+    description: description,
+    ingredients: ingredients,
+    instructions: instructions,
+    imageUrls: imageUrls,
+    mealType: mealType,
+    portions: portions,
+    timeMinutes: timeMinutes,
+    rating: rating,
+    tags: tags,
+    sourceUrl: sourceUrl,
+  );
 
-    final updatedRecipe = recipe.copyWith(
-      title: title,
-      description: description,
-      ingredients: ingredients,
-      instructions: instructions,
-      imageUrls: imageUrls,
-      mealType: mealType,
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      tags: tags,
-      sourceUrl: sourceUrl,
-      lastEditedByUserId: currentUserId,
-      lastEditedByDisplayName: currentUserDisplayName,
-    );
+  // Ingredient operations (delegated to content helper)
+  Future<bool> addIngredient(String recipeId, String ingredient) async =>
+      _contentOps.addIngredient(recipeId, ingredient);
 
-    return await updateRecipe(updatedRecipe);
-  }
+  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async =>
+      _contentOps.updateIngredient(recipeId, index, newIngredient);
 
-  // Ingredient operations
-  Future<bool> addIngredient(String recipeId, String ingredient) async {
-    if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.addIngredientRealtime(
-          recipeId, ingredient, null);
-    } else {
-      return await _personalModule.addIngredient(recipeId, ingredient);
-    }
-  }
+  Future<bool> removeIngredient(String recipeId, int index) async =>
+      _contentOps.removeIngredient(recipeId, index);
 
-  Future<bool> updateIngredient(
-      String recipeId, int index, String newIngredient) async {
-    if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.updateIngredientRealtime(
-          recipeId, index, newIngredient);
-    } else {
-      return await _personalModule.updateIngredient(
-          recipeId, index, newIngredient);
-    }
-  }
+  // Instruction operations (delegated to content helper)
+  Future<bool> addInstruction(String recipeId, String instruction) async =>
+      _contentOps.addInstruction(recipeId, instruction);
 
-  Future<bool> removeIngredient(String recipeId, int index) async {
-    if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.removeIngredientRealtime(recipeId, index);
-    } else {
-      return await _personalModule.removeIngredient(recipeId, index);
-    }
-  }
+  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async =>
+      _contentOps.updateInstruction(recipeId, index, newInstruction);
 
-  // Instruction operations
-  Future<bool> addInstruction(String recipeId, String instruction) async {
-    if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.addInstructionRealtime(
-          recipeId, instruction, null);
-    } else {
-      return await _personalModule.addInstruction(recipeId, instruction);
-    }
-  }
-
-  Future<bool> updateInstruction(
-      String recipeId, int index, String newInstruction) async {
-    if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.updateInstructionRealtime(
-          recipeId, index, newInstruction);
-    } else {
-      return await _personalModule.updateInstruction(
-          recipeId, index, newInstruction);
-    }
-  }
-
-  Future<bool> removeInstruction(String recipeId, int index) async {
-    if (isInRealtimeEditingSession(recipeId)) {
-      return await _realtimeModule.removeInstructionRealtime(recipeId, index);
-    } else {
-      return await _personalModule.removeInstruction(recipeId, index);
-    }
-  }
+  Future<bool> removeInstruction(String recipeId, int index) async =>
+      _contentOps.removeInstruction(recipeId, index);
 
   Future<bool> markRecipeAsCooked(String recipeId) async {
     return await _personalModule.markRecipeAsCooked(recipeId);
@@ -758,33 +593,8 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
-  /// Legacy refresh method
-  Future<void> refresh() async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      // Clear local data
-      _recipes.clear();
-
-      // Reload from cache
-      final cachedRecipes = await _cacheModule.initializeCache();
-      _recipes.addAll(cachedRecipes);
-
-      // Restart Firebase sync
-      await _cacheModule.stopFirebaseSync();
-      if (_authRepository.currentUser != null) {
-        await _cacheModule.startFirebaseSync();
-      }
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _setError('Kunde inte uppdatera recept: $e');
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
+  /// Legacy refresh method (delegated to utility helper)
+  Future<void> refresh() async => _utilityOps.refresh();
 
   // ===== UTILITY METHODS =====
 
@@ -797,67 +607,10 @@ class UnifiedRecipeService extends ChangeNotifier
     notifyListeners();
   }
 
-  // ===== AUTH STATE HANDLING =====
+  // ===== AUTH STATE HANDLING (DELEGATED TO HANDLER) =====
 
   void _handleAuthStateChange(String? userId) {
-    AppLogger.info('🔍 [UnifiedRecipeService] Auth state changed - User ID: ${userId ?? 'NULL'}');
-    
-    _cacheModule.onAuthStateChanged(userId);
-    
-    if (userId == null) {
-      AppLogger.info('🔍 [UnifiedRecipeService] User logged out - clearing all recipe data');
-      _clearAll();
-    } else {
-      // ULTRATHINK FIX: Reload user-specific recipes when user logs in
-      AppLogger.info('🔍 [UnifiedRecipeService] 🚨 USER LOGGED IN - RELOADING RECIPES');
-      AppLogger.info('🔍 [UnifiedRecipeService] ✅ Triggering recipe reload for user: $userId');
-      
-      _reloadUserRecipes(userId);
-    }
-  }
-
-  /// ULTRATHINK FIX: Reload user-specific recipes when user logs in
-  Future<void> _reloadUserRecipes(String userId) async {
-    try {
-      AppLogger.info('🔍 [UnifiedRecipeService] Starting user recipe reload for: $userId');
-      
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-      
-      // Clear existing recipes to prevent showing wrong user's data
-      _recipes.clear();
-      
-      // Reload from cache first (contains user-specific data)
-      AppLogger.info('🔍 [UnifiedRecipeService] Reloading from cache...');
-      final cachedRecipes = await _cacheModule.initializeCache();
-      _recipes.addAll(cachedRecipes);
-      
-      AppLogger.info('🔍 [UnifiedRecipeService] ✅ Loaded ${cachedRecipes.length} recipes from cache');
-      
-      // Ensure Firebase sync is active for this user
-      if (_authRepository.currentUser != null) {
-        AppLogger.info('🔍 [UnifiedRecipeService] Starting Firebase sync for authenticated user');
-        await _cacheModule.startFirebaseSync();
-      }
-      
-      _isLoading = false;
-      AppLogger.success('🔍 [UnifiedRecipeService] ✅ User recipe reload complete - ${_recipes.length} recipes loaded');
-      notifyListeners();
-      
-    } catch (e) {
-      AppLogger.error('🔍 [UnifiedRecipeService] ❌ Recipe reload failed: $e');
-      _setError('Kunde inte ladda recept: $e');
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  void _clearAll() {
-    _recipes.clear();
-    _isLoading = false;
-    _error = null;
-    notifyListeners();
+    _authHandler.handleAuthStateChange(userId);
   }
 
   void _setError(String message) {

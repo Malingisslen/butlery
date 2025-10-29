@@ -30,7 +30,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 // Service type imports
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 
 // Repository type imports

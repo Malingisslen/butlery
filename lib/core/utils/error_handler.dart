@@ -1,62 +1,10 @@
-/// Comprehensive centralized error handling utility providing intelligent error categorization and user-friendly feedback.
+/// Centralized error handling with categorization, Swedish localization, and recovery suggestions.
 ///
-/// This singleton service implements sophisticated error handling functionality including automatic error categorization,
-/// user-friendly message generation, recovery suggestions, and comprehensive error analytics. It provides specialized
-/// handling for different error types including network, validation, permission, and system errors with Swedish
-/// localization and intelligent recovery strategies for optimal user experience.
-///
-/// **Architecture Integration:**
-/// - Uses [SingletonServiceMixin] for standardized singleton pattern and consistent instance management
-/// - Integrates with [ServiceOptimizer] for detailed error logging and performance monitoring
-/// - Coordinates with [AppLogger] for structured error logging with appropriate severity levels
-/// - Provides comprehensive error result objects for UI feedback and analytics tracking
-/// - Supports both synchronous and asynchronous error handling patterns throughout the application
-///
-/// **Error Handling Features:**
-/// - **Intelligent Categorization**: Automatic classification of errors into network, validation, permission, system, and unknown categories
-/// - **User-Friendly Messages**: Swedish-localized user messages with clear explanations and actionable guidance
-/// - **Recovery Suggestions**: Context-aware recovery suggestions with step-by-step user guidance
-/// - **Retry Logic**: Intelligent retry capabilities based on error type and recovery potential
-/// - **Severity Assessment**: Automatic severity level assignment for appropriate error handling and logging
-/// - **Specialized Handlers**: Dedicated handling for Firebase errors, validation errors, and field-specific issues
-///
-/// **Advanced Error Processing:**
-/// - **Async Operation Wrapping**: Comprehensive async operation error handling with fallback value support
-/// - **Stream Error Management**: Automatic stream error handling with retry logic and recovery strategies
-/// - **Context Preservation**: Detailed context tracking for debugging and error pattern analysis
-/// - **Firebase Integration**: Specialized Firebase error code detection and user-friendly message mapping
-/// - **Field Validation**: Detailed field-level validation error handling with specific user guidance
-///
-/// **Swedish Localization and User Experience:**
-/// - **Native Language Support**: Complete Swedish localization for all user-facing error messages
-/// - **Contextual Messaging**: Context-aware error messages that provide relevant information and guidance
-/// - **Recovery Guidance**: Step-by-step recovery instructions in Swedish for different error scenarios
-/// - **Consistent Experience**: Standardized error presentation ensuring consistent user experience across the application
-///
-/// **Usage Examples:**
+/// **Features:** Network/validation/permission/system error handling, Firebase integration, async wrapping, retry logic.
 /// ```dart
-/// final errorHandler = ErrorHandler();
-/// 
-/// // Handle general errors with context
-/// final result = errorHandler.handleError(
-///   error: exception,
-///   context: 'Recipe creation',
-///   userId: currentUser.id,
-/// );
-/// 
-/// // Wrap async operations with error handling
-/// final data = await errorHandler.handleAsync(
-///   operationName: 'Fetch user recipes',
-///   operation: () => recipeService.getUserRecipes(),
-///   fallbackValue: [],
-/// );
-/// 
-/// // Handle Firebase-specific errors
-/// final firebaseResult = errorHandler.handleFirebaseError(
-///   firebaseException,
-///   'User authentication',
-/// );
-/// ```
+/// final eh = ErrorHandler();
+/// final result = eh.handleError(error: e, context: 'Recipe creation');
+/// final data = await eh.handleAsync(() => service.get(), fallbackValue: []);
 
 import 'dart:async';
 import 'dart:io';
@@ -64,20 +12,9 @@ import 'package:butlery/core/utils/service_optimizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
-/// Comprehensive error categories for intelligent error classification and specialized handling.
-///
-/// This enumeration defines the primary error categories used by the error handling system to classify
-/// errors for appropriate user messaging, recovery strategies, and retry logic. Each category represents
-/// a distinct type of error condition with specific characteristics and handling requirements.
-///
-/// **Error Category Types:**
-/// - [network] Network connectivity issues, timeouts, and communication failures
-/// - [validation] Data validation errors, format issues, and input validation failures
-/// - [permission] Authorization failures, access denied errors, and authentication issues
-/// - [system] System-level errors, internal failures, and technical problems
-/// - [unknown] Unclassified errors that don't fit into specific categories
+/// Error categories for classification and specialized handling.
 enum ErrorCategory {
-  /// Network connectivity issues, timeouts, and communication failures.
+  /// Network connectivity issues, timeouts, communication failures.
   network,
   
   /// Data validation errors, format issues, and input validation failures.

@@ -1,55 +1,9 @@
-/// Comprehensive content card facade providing unified interface for multi-type content display with modular architecture delegation.
+/// Content card facade for unified multi-type display (recipes, friends, menus, shopping lists).
 ///
-/// This facade implements a sophisticated content card system that provides unified access to specialized
-/// content display widgets while maintaining backward compatibility and optimal performance through focused
-/// single-responsibility modules. It supports recipe cards, friend cards, menu cards, and shopping list cards
-/// with consistent styling and interaction patterns across the application's content display infrastructure.
-///
-/// **Architecture Integration:**
-/// - Implements Facade Pattern for unified access to specialized card modules
-/// - Delegates to focused single-responsibility card components for optimal maintainability
-/// - Provides backward compatibility layer for seamless migration from legacy implementations
-/// - Integrates with theme system for consistent visual design across all content types
-/// - Supports responsive design patterns with grid, compact, and detailed display modes
-///
-/// **Content Type Support:**
-/// - **Recipe Cards**: Complete recipe information display with images, metadata, and social features
-/// - **Friend Cards**: User profile display with avatar, status, and relationship management
-/// - **Menu Cards**: Weekly menu preview with meal planning and sharing capabilities
-/// - **Shopping List Cards**: List management with collaboration features and item preview
-/// - **Friend Request Cards**: Specialized social interaction cards with accept/decline actions
-///
-/// **Display Modes:**
-/// - **Detailed Mode**: Full information display with images, descriptions, and metadata
-/// - **Compact Mode**: Space-efficient display optimized for list views and mobile interfaces
-/// - **Grid Mode**: Optimized layout for grid-based displays and responsive design patterns
-///
-/// **Usage Examples:**
+/// **Modes:** Detailed/Compact/Grid. **Types:** Recipe/Friend/Menu/ShoppingList/FriendRequest cards.
 /// ```dart
-/// // Recipe card with detailed display
-/// ContentCard(
-///   item: recipe,
-///   type: ContentCardType.recipe,
-///   style: ContentCardStyle.detailed,
-///   onTap: () => navigator.pushRecipeDetail(recipe.id),
-/// );
-/// 
-/// // Friend request card with actions
-/// ContentCard(
-///   item: friendRequest,
-///   type: ContentCardType.friendRequest,
-///   onAccept: () => friendsService.acceptRequest(friendRequest.id),
-///   onDecline: () => friendsService.declineRequest(friendRequest.id),
-/// );
-/// 
-/// // Compact menu card for grid display
-/// ContentCard(
-///   item: menu,
-///   type: ContentCardType.menu,
-///   style: ContentCardStyle.grid,
-///   showSharingStatus: true,
-/// );
-/// ```
+/// ContentCard(item: recipe, type: ContentCardType.recipe, style: ContentCardStyle.detailed,
+///   onTap: () => navigate(recipe.id));
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';

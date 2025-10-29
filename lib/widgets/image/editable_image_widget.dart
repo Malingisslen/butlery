@@ -10,7 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/services/upload/upload_models.dart';
 
 /// Editable image widget with individual progress tracking for recipe editing
 class EditableImageWidget extends StatefulWidget {

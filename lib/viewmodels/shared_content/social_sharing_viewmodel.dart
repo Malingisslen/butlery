@@ -1,45 +1,7 @@
-/// Social Sharing ViewModel providing unified friend selection and content sharing functionality.
+/// Unified friend selection and social sharing across recipes, menus, and shopping lists.
 ///
-/// This cross-cutting ViewModel handles social sharing operations across all shared content types
-/// (recipes, menus, shopping lists) with friend management, sharing coordination, and
-/// social interaction tracking. It implements the Strategy pattern to handle different
-/// sharing behaviors per content type while maintaining consistent social UI.
-///
-/// **Responsibilities:**
-/// - **Friend Management**: Load, select, and manage friends for sharing operations
-/// - **Share Coordination**: Handle sharing across different content types with appropriate logic
-/// - **Social State**: Track sharing status, selected friends, and sharing progress
-/// - **Message Management**: Handle custom sharing messages and social context
-/// - **Notification Integration**: Coordinate sharing notifications and social alerts
-///
-/// **Integration Points:**
-/// - **UnifiedFriendsService**: For friend data loading and management
-/// - **Social Coordinators**: Delegates to content-specific coordinators for sharing
-/// - **Content ViewModels**: Coordinates with content ViewModels for sharing operations
-/// - **UI Components**: Provides social state management for sharing UI components
-///
-/// **Usage Example:**
-/// ```dart
-/// final socialViewModel = SocialSharingViewModel(
-///   friendsService: friendsService,
-///   recipeCoordinator: recipeCoordinator,
-///   menuCoordinator: menuCoordinator,
-///   shoppingCoordinator: shoppingCoordinator,
-/// );
-/// 
-/// // Load friends for sharing
-/// await socialViewModel.loadFriends();
-/// 
-/// // Friend selection
-/// socialViewModel.toggleFriendSelection('friend_123');
-/// socialViewModel.updateShareMessage('Kolla in detta recept!');
-/// 
-/// // Share content
-/// final success = await socialViewModel.shareContent(
-///   contentId: 'recipe_456',
-///   contentType: ContentType.recipe,
-/// );
-/// ```
+/// Handles friend management, sharing coordination, and social interaction tracking
+/// with content-specific delegation to Social Coordinators.
 
 // lib/viewmodels/shared_content/social_sharing_viewmodel.dart
 
@@ -85,8 +47,6 @@ class SharingResult {
 /// Social sharing ViewModel for unified friend selection and content sharing
 class SocialSharingViewModel extends ChangeNotifier {
   
-  // ===== DEPENDENCIES =====
-  
   final UnifiedFriendsService _friendsService;
   final SocialRecipeCoordinator _recipeCoordinator;
   final SocialMenuCoordinator _menuCoordinator;
@@ -94,8 +54,6 @@ class SocialSharingViewModel extends ChangeNotifier {
   final UnifiedMenuService _menuService;
   final UnifiedShoppingService _shoppingService;
 
-  // ===== STATE VARIABLES =====
-  
   /// Available friends for sharing
   List<UserProfile> _availableFriends = [];
   
@@ -117,8 +75,6 @@ class SocialSharingViewModel extends ChangeNotifier {
   /// Last sharing result
   SharingResult? _lastSharingResult;
 
-  // ===== CONSTRUCTOR =====
-  
   SocialSharingViewModel({
     required UnifiedFriendsService friendsService,
     required SocialRecipeCoordinator recipeCoordinator,
@@ -137,8 +93,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     _initialize();
   }
 
-  // ===== GETTERS =====
-  
   /// Available friends
   List<UserProfile> get availableFriends => List.unmodifiable(_availableFriends);
   
@@ -185,14 +139,10 @@ class SocialSharingViewModel extends ChangeNotifier {
   /// Friends loading or sharing in progress
   bool get isBusy => _isLoadingFriends || _isSharing;
 
-  // ===== INITIALIZATION =====
-  
   Future<void> _initialize() async {
     await loadFriends();
   }
 
-  // ===== FRIEND MANAGEMENT =====
-  
   /// Load available friends for sharing
   Future<void> loadFriends() async {
     AppLogger.info('🔄 Loading friends for social sharing...');
@@ -260,8 +210,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     return _selectedFriendIds.contains(friendId);
   }
 
-  // ===== SHARE MESSAGE MANAGEMENT =====
-  
   /// Update share message
   void updateShareMessage(String message) {
     if (_shareMessage != message) {
@@ -299,8 +247,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== SHARING OPERATIONS =====
-  
   /// Share content with selected friends
   Future<SharingResult> shareContent({
     required String contentId,
@@ -362,68 +308,61 @@ class SocialSharingViewModel extends ChangeNotifier {
   }
   
   /// Share recipe with friends
-  Future<SharingResult> _shareRecipe(String recipeId, List<String> friendIds, String message) async {
-    AppLogger.info('📖 Sharing recipe $recipeId with ${friendIds.length} friends');
-    
-    final invitationId = await _recipeCoordinator.createRecipeInvitation(
-      recipeId: recipeId,
-      inviteeUserIds: friendIds,
-      message: message.isNotEmpty ? message : null,
-      allowCollaboration: true, // Enable copy-on-write collaboration
+  Future<SharingResult> _shareRecipe(String id, List<String> friendIds, String message) async {
+    AppLogger.info('📖 Sharing recipe $id with ${friendIds.length} friends');
+    return await _shareWithCoordinator(
+      () async => await _recipeCoordinator.createRecipeInvitation(
+        recipeId: id,
+        inviteeUserIds: friendIds,
+        message: message.isNotEmpty ? message : null,
+        allowCollaboration: true,
+      ),
+      'recipe',
     );
-    
-    if (invitationId != null) {
-      return SharingResult.success(invitationId: invitationId);
-    } else {
-      return SharingResult.failure('Failed to create recipe invitation');
-    }
   }
-  
+
   /// Share menu with friends
-  Future<SharingResult> _shareMenu(String menuId, List<String> friendIds, String message) async {
-    AppLogger.info('📋 Sharing menu $menuId with ${friendIds.length} friends');
-    
-    // Get menu data for sharing
-    final menu = _menuService.getMenuById(menuId);
-    if (menu == null) {
-      return SharingResult.failure('Menu not found: $menuId');
+  Future<SharingResult> _shareMenu(String id, List<String> friendIds, String message) async {
+    AppLogger.info('📋 Sharing menu $id with ${friendIds.length} friends');
+    if (_menuService.getMenuById(id) == null) {
+      return SharingResult.failure('Menu not found: $id');
     }
-    
-    final invitationId = await _menuCoordinator.createMenuInvitation(
-      menuId: menuId,
-      inviteeUserIds: friendIds,
-      message: message.isNotEmpty ? message : null,
-      allowCollaboration: true, // Enable copy-on-write collaboration
+    return await _shareWithCoordinator(
+      () async => await _menuCoordinator.createMenuInvitation(
+        menuId: id,
+        inviteeUserIds: friendIds,
+        message: message.isNotEmpty ? message : null,
+        allowCollaboration: true,
+      ),
+      'menu',
     );
-    
-    if (invitationId != null) {
-      return SharingResult.success(invitationId: invitationId);
-    } else {
-      return SharingResult.failure('Failed to create menu invitation');
-    }
   }
-  
+
   /// Share shopping list with friends
-  Future<SharingResult> _shareShoppingList(String listId, List<String> friendIds, String message) async {
-    AppLogger.info('🛒 Sharing shopping list $listId with ${friendIds.length} friends');
-    
-    // Get shopping list for sharing
-    final shoppingList = _shoppingService.lists.where((list) => list.id == listId).firstOrNull;
-    if (shoppingList == null) {
-      return SharingResult.failure('Shopping list not found: $listId');
+  Future<SharingResult> _shareShoppingList(String id, List<String> friendIds, String message) async {
+    AppLogger.info('🛒 Sharing shopping list $id with ${friendIds.length} friends');
+    if (_shoppingService.lists.where((list) => list.id == id).firstOrNull == null) {
+      return SharingResult.failure('Shopping list not found: $id');
     }
-    
-    final invitationId = await _shoppingCoordinator.createShoppingListInvitation(
-      shoppingListId: listId,
-      inviteeUserIds: friendIds,
-      message: message.isNotEmpty ? message : null,
+    return await _shareWithCoordinator(
+      () async => await _shoppingCoordinator.createShoppingListInvitation(
+        shoppingListId: id,
+        inviteeUserIds: friendIds,
+        message: message.isNotEmpty ? message : null,
+      ),
+      'shopping list',
     );
-    
-    if (invitationId != null) {
-      return SharingResult.success(invitationId: invitationId);
-    } else {
-      return SharingResult.failure('Failed to create shopping list invitation');
-    }
+  }
+
+  /// Generic sharing helper with coordinator
+  Future<SharingResult> _shareWithCoordinator(
+    Future<String?> Function() createInvitation,
+    String contentTypeName,
+  ) async {
+    final invitationId = await createInvitation();
+    return invitationId != null
+        ? SharingResult.success(invitationId: invitationId)
+        : SharingResult.failure('Failed to create $contentTypeName invitation');
   }
   
   /// Quick share with default message
@@ -448,8 +387,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     );
   }
 
-  // ===== SHARING ANALYTICS =====
-  
   /// Get sharing statistics
   Map<String, dynamic> getSharingStats() {
     return {
@@ -481,8 +418,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     return '${_selectedFriendIds.length} vänner valda';
   }
 
-  // ===== STATE MANAGEMENT =====
-  
   /// Set loading friends state
   void _setLoadingFriends(bool loading) {
     if (_isLoadingFriends != loading) {
@@ -513,8 +448,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== UTILITY METHODS =====
-  
   /// Reset sharing state
   void resetSharingState() {
     clearFriendSelection();
@@ -550,8 +483,6 @@ class SocialSharingViewModel extends ChangeNotifier {
     AppLogger.info('🎯 Prepared for sharing $contentType${contentTitle != null ? ' "$contentTitle"' : ''}');
   }
 
-  // ===== CLEANUP =====
-  
   @override
   void dispose() {
     _selectedFriendIds.clear();

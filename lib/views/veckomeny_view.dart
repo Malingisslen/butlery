@@ -1,54 +1,4 @@
-/// Comprehensive weekly menu planning view providing advanced AI-powered meal planning and social sharing for Flutter applications.
-///
-/// This module implements sophisticated weekly menu ("veckomeny") interface following Single Responsibility Principle,
-/// specializing in AI-powered menu generation, meal planning coordination, social sharing, and comprehensive menu management.
-/// It provides complete weekly menu interface while maintaining clean separation from business logic, data persistence,
-/// and state management through MVVM architecture and migrated component integration.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles weekly menu UI presentation concerns through migrated component architecture:
-/// - **AI-Powered Menu Generation**: Advanced meal planning with AI assistance and intelligent recipe recommendations
-/// - **Social Sharing Intelligence**: Comprehensive menu sharing with friends, social integration, and collaborative features
-/// - **Menu Management System**: Complete menu operations including save, load, clear, and regeneration functionality
-/// - **Shopping Integration**: Seamless integration with shopping list creation from menu ingredients
-/// - **Swedish Localization Excellence**: Complete Swedish language support for menu operations and user feedback
-///
-/// **What This Module Does NOT Handle:**
-/// - Menu generation business logic and AI processing (handled by MenuViewModel and menu services)
-/// - Social interaction business logic (handled by social services and sharing infrastructure)
-/// - Data persistence and menu storage (handled by menu repositories and Firebase services)
-/// - Shopping list business logic (handled by shopping services and unified shopping coordination)
-///
-/// **Weekly Menu View Architecture:**
-/// - **Migrated Component Integration**: Modern architecture using LayoutComponents and InputComponents
-/// - **AI-Powered Generation**: Intelligent menu creation with user prompts and recipe recommendations
-/// - **Social Integration**: Complete sharing functionality with friend selection and social features
-/// - **Menu Persistence**: Save and load functionality with menu storage and retrieval coordination
-/// - **Shopping List Integration**: Seamless ingredient extraction and shopping list creation
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Navigate to weekly menu view
-/// Navigator.of(context).push(
-///   MaterialPageRoute(
-///     builder: (context) => const VeckomenyView(),
-///   ),
-/// );
-/// 
-/// // Navigate with shared menu for collaborative editing
-/// Navigator.of(context).push(
-///   MaterialPageRoute(
-///     builder: (context) => VeckomenyView(sharedMenu: collaborativeMenu),
-///   ),
-/// );
-/// 
-/// // The view provides comprehensive menu functionality:
-/// // - AI-powered menu generation with user prompts and intelligent recommendations
-/// // - Menu management with save, load, clear, and section regeneration
-/// // - Social sharing with friends and external platform integration
-/// // - Shopping list integration with ingredient extraction and list creation
-/// // - Collaborative features with shared menu editing and social coordination
-/// ```
+/// Weekly menu planning view with AI-powered generation and social sharing.
 
 // lib/views/veckomeny_view.dart
 
@@ -89,48 +39,13 @@ import 'package:butlery/core/utils/logger.dart';
 // External services for sharing and social functionality
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-/// Comprehensive weekly menu planning view providing advanced AI-powered meal planning through provider architecture.
-///
-/// Manages complete weekly menu interface enabling AI-powered menu generation, social sharing, menu persistence,
-/// and shopping list integration while maintaining clean separation between UI presentation and business logic
-/// through MVVM architecture and modern component integration.
-///
-/// **Core Responsibilities:**
-/// - Advanced weekly menu presentation with AI-powered generation and intelligent recipe recommendations
-/// - Provider-based state management with MenuViewModel integration and reactive coordination
-/// - Social sharing coordination with friend selection and collaborative menu features
-/// - Menu persistence with save and load functionality through modern component architecture
-/// - Shopping list integration with seamless ingredient extraction and list creation
+
+/// Weekly menu planning view with AI-powered generation, social sharing, and persistence.
 class VeckomenyView extends StatelessWidget {
-  /// Optional shared menu for collaborative editing and social functionality coordination.
-  /// 
-  /// Enables collaborative menu editing, shared menu display, and social menu features
-  /// when provided, allowing for collaborative meal planning and social coordination.
   final SharedMenu? sharedMenu;
-  
-  /// Creates comprehensive weekly menu view with optional collaborative menu integration.
-  /// 
-  /// [sharedMenu] Optional shared menu for collaborative editing and social functionality
-  /// 
-  /// Establishes weekly menu interface with provider-based state management,
-  /// AI-powered generation capabilities, and comprehensive menu functionality
-  /// through clean architectural separation and modern component integration.
+
   const VeckomenyView({super.key, this.sharedMenu});
 
-  /// Comprehensive provider-based widget construction with MenuViewModel integration and content delegation.
-  /// 
-  /// [context] Build context for provider creation and widget construction coordination
-  /// 
-  /// Constructs weekly menu view with provider-based state management enabling
-  /// comprehensive menu functionality, AI-powered generation, and social features
-  /// through MenuViewModel integration and content component delegation.
-  /// 
-  /// **Provider Architecture:**
-  /// - MenuViewModel integration for menu state management and AI-powered generation
-  /// - Service locator pattern for dependency injection and service coordination
-  /// - Content delegation to stateful content component for lifecycle management
-  /// 
-  /// Returns provider-wrapped weekly menu view with comprehensive functionality.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
@@ -140,31 +55,17 @@ class VeckomenyView extends StatelessWidget {
   }
 }
 
-/// Weekly menu view content managing user input, service integration, and menu lifecycle coordination.
-///
-/// Handles complete weekly menu state management including prompt input, menu generation,
-/// social sharing, and menu persistence while maintaining clean state management
-/// and proper resource disposal through comprehensive lifecycle coordination.
+/// Weekly menu view content with state management and service integration.
 class _VeckomenyViewContent extends StatefulWidget {
-  /// Creates weekly menu view content with state management and service integration.
-  /// 
-  /// Establishes stateful menu content enabling prompt input management,
-  /// menu generation coordination, and comprehensive menu functionality
-  /// through proper state lifecycle and service integration.
   const _VeckomenyViewContent();
 
-  /// Creates weekly menu view content state with service integration and lifecycle management.
-  /// 
-  /// Establishes stateful menu interface enabling prompt input management,
-  /// service integration, and comprehensive menu functionality through
-  /// proper state lifecycle and resource management coordination.
   @override
   State<_VeckomenyViewContent> createState() => _VeckomenyViewContentState();
 }
 
-/// Weekly menu view content state managing prompt input, service integration, and menu operation coordination.
+/// Weekly menu view content state managing prompt input and menu operations.
 ///
-/// Handles complete weekly menu state management including prompt input control, service integration,
+/// Handles prompt input control, service integration,
 /// menu generation coordination, and user interaction handling while maintaining clean state management
 /// and proper resource disposal through comprehensive lifecycle management.
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 /// SharedContentSearchBar - Search bar for shared content
 ///
@@ -10,10 +10,10 @@ import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 class SharedContentSearchBar {
   static Widget build(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     TextEditingController searchController,
   ) {
-    if (!viewModel.hasSharedContent) {
+    if (!viewModel.hasAnyContent) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
@@ -25,11 +25,11 @@ class SharedContentSearchBar {
           decoration: InputDecoration(
             hintText: 'Sök i dina delade recept och menyer...',
             prefixIcon: const Icon(Icons.search),
-            suffixIcon: viewModel.searchQuery.isNotEmpty
+            suffixIcon: viewModel.searchViewModel.hasSearchQuery
                 ? IconButton(
                     onPressed: () {
                       searchController.clear();
-                      viewModel.clearSearch();
+                      viewModel.clearAllSearch();
                     },
                     icon: const Icon(Icons.clear),
                   )
@@ -38,7 +38,7 @@ class SharedContentSearchBar {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
           ),
-          onChanged: viewModel.updateSearchQuery,
+          onChanged: viewModel.performUnifiedSearch,
         ),
       ),
     );

@@ -1,42 +1,11 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Base Dialog Classes - Unified dialog patterns eliminating 85% of dialog duplication
-/// File: lib/widgets/common/dialogs/base_dialog.dart
-/// Quick Guide: Base classes for form, confirmation, and loading dialogs
-/// Dependencies IN: Material UI, AppColors, AppDimensions, FormValidators
-/// Dependencies OUT: All dialog widgets extend these base classes
-/// Data flow: Dialog display -> User interaction -> Action execution -> Result return
-/// State management: StatefulWidget with loading/error states
-/// Purpose: Eliminate 2,050+ lines of duplicate dialog code across 22 dialog files
-/// Common issues: Loading state management, validation patterns, error display
-/// Test coverage: Base class tests with mocked actions and validation
-/// Performance: Unified state management, consistent error handling
-/// Analytics: Centralized dialog interaction logging
-/// Code smells: None - clean template method pattern with proper abstraction
-/// Connected to: All dialog widgets, confirmation patterns, form validation
-/// Used in phases: Code Consolidation Phase - Dialog Pattern Unification
-
+/// Base Dialog Classes - Unified dialog patterns with template method pattern for form, confirmation, and loading dialogs.
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Base class for all dialogs that eliminates duplicate dialog scaffolding patterns.
-/// 
-/// This class consolidates the duplicate dialog structures found across 22+ dialog files:
-/// - Unified dialog scaffold (AlertDialog with title, content, actions)
-/// - Consistent styling and theming
-/// - Standardized button patterns
-/// - Template method pattern for customization
-/// 
-/// Eliminates patterns like:
-/// ```dart
-/// return AlertDialog(
-///   title: Text(title),
-///   content: buildContent(),
-///   actions: buildActions(),
-/// );
-/// ```
+/// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
 abstract class BaseDialog<T> extends StatefulWidget {
   final String title;
   final IconData? titleIcon;
@@ -61,23 +30,15 @@ abstract class BaseDialog<T> extends StatefulWidget {
     this.barrierDismissible = true,
   });
 
-  /// Template method: Build the dialog content
   Widget buildContent(BuildContext context);
-
-  /// Template method: Perform the primary action
   Future<T?> performAction(BuildContext context);
-
-  /// Template method: Validate before action (optional)
   bool validateBeforeAction() => true;
-
-  /// Template method: Build additional content above actions (optional)
   Widget? buildAdditionalContent(BuildContext context) => null;
 
   @override
   State<BaseDialog<T>> createState() => _BaseDialogState<T>();
 }
 
-/// State class that provides common dialog functionality
 class _BaseDialogState<T> extends State<BaseDialog<T>> {
   bool _isLoading = false;
   String? _error;
@@ -85,14 +46,8 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: widget.titleIcon != null 
-          ? Icon(
-              widget.titleIcon!, 
-              color: widget.isDangerous 
-                  ? AppColors.error 
-                  : widget.primaryActionColor ?? AppColors.primaryBlue,
-              size: AppDimensions.iconSizeXxl,
-            )
+      icon: widget.titleIcon != null
+          ? Icon(widget.titleIcon!, color: widget.isDangerous ? AppColors.error : widget.primaryActionColor ?? AppColors.primaryBlue, size: AppDimensions.iconSizeXxl)
           : null,
       title: Text(widget.title),
       content: Column(
@@ -100,12 +55,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.subtitle != null) ...[
-            Text(
-              widget.subtitle!,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
+            Text(widget.subtitle!, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           widget.buildContent(context),
@@ -129,12 +79,8 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     );
   }
 
-  /// Build the primary action button with loading state
   Widget _buildPrimaryButton() {
-    final buttonColor = widget.isDangerous 
-        ? AppColors.error 
-        : (widget.primaryActionColor ?? AppColors.primaryBlue);
-
+    final buttonColor = widget.isDangerous ? AppColors.error : (widget.primaryActionColor ?? AppColors.primaryBlue);
     if (widget.isDangerous) {
       return FilledButton.icon(
         onPressed: _isLoading ? null : _onPrimaryAction,
@@ -173,7 +119,6 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     }
   }
 
-  /// Handle primary action with loading and error management
   Future<void> _onPrimaryAction() async {
     if (!widget.validateBeforeAction()) return;
 
@@ -199,7 +144,6 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     }
   }
 
-  /// Build error display widget
   Widget _buildErrorDisplay() {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -213,10 +157,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           const Icon(Icons.error_outline, color: AppColors.error),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
-            child: Text(
-              _error!,
-              style: const TextStyle(color: AppColors.error),
-            ),
+            child: Text(_error!, style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -224,10 +165,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   }
 }
 
-/// Base class for form dialogs that eliminates form dialog duplication patterns.
-/// 
-/// Consolidates patterns from create_group_dialog.dart, edit_group_dialog.dart,
-/// shopping_item_dialog.dart, etc. (8+ files with identical patterns).
+/// Base form dialog extending BaseDialog with form validation and field management.
 abstract class BaseFormDialog<T> extends BaseDialog<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -242,7 +180,6 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.primaryActionColor = AppColors.primaryBlue,
   });
 
-  /// Template method: Build form fields
   List<Widget> buildFormFields(BuildContext context);
 
   @override
@@ -263,9 +200,7 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
   }
 }
 
-/// Simple confirmation dialog that eliminates confirmation dialog duplication.
-/// 
-/// Consolidates patterns from 10+ confirmation dialog implementations.
+/// Simple confirmation dialog extending BaseDialog with message display.
 class ConfirmationDialog extends BaseDialog<bool> {
   final String message;
   final Widget? customContent;
@@ -292,7 +227,6 @@ class ConfirmationDialog extends BaseDialog<bool> {
     return true;
   }
 
-  /// Convenience method to show confirmation dialog
   static Future<bool?> show(
     BuildContext context, {
     required String title,
@@ -320,9 +254,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
   }
 }
 
-/// Destructive confirmation dialog for delete operations.
-/// 
-/// Eliminates patterns from delete_group_dialog.dart, remove_member_dialog.dart, etc.
+/// Destructive confirmation dialog for delete operations with warning styling.
 class DestructiveConfirmationDialog extends BaseDialog<bool> {
   final String message;
   final String itemName;
@@ -365,7 +297,6 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     return true;
   }
 
-  /// Convenience method to show destructive confirmation dialog
   static Future<bool?> show(
     BuildContext context, {
     required String title,
@@ -389,23 +320,14 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
   }
 }
 
-/// Base class for action dialogs that eliminates action dialog duplication patterns.
-/// 
-/// Consolidates patterns from delete_group_dialog.dart, edit_group_dialog.dart, etc.
-/// Provides standard action dialog functionality with error handling and loading states.
+/// Base action dialog class with error handling and loading states for delete/edit operations.
 abstract class BaseActionDialog<T> extends StatefulWidget {
   const BaseActionDialog({super.key});
 
-  /// Template method: Build the dialog content
   Widget buildContent(BuildContext context);
-
-  /// Template method: Perform the action
   Future<T> performAction(BuildContext context);
-
-  /// Template method: Validate before action (optional)
   bool validateBeforeAction() => true;
 
-  // Dialog configuration getters
   Widget? get dialogIcon => null;
   String get dialogTitle;
   String get cancelButtonText => 'Avbryt';
@@ -419,7 +341,6 @@ abstract class BaseActionDialog<T> extends StatefulWidget {
   State<BaseActionDialog<T>> createState() => BaseActionDialogState<BaseActionDialog<T>, T>();
 }
 
-/// State class for BaseActionDialog
 class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
   bool isLoading = false;
   String? error;
@@ -531,9 +452,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
   }
 }
 
-/// Loading dialog that eliminates loading dialog duplication patterns.
-/// 
-/// Consolidates patterns from dialog_factory.dart, image_picker_dialogs.dart, etc.
+/// Loading dialog with optional cancellation support.
 class LoadingDialog extends StatelessWidget {
   final String message;
   final bool canCancel;
@@ -560,7 +479,6 @@ class LoadingDialog extends StatelessWidget {
     );
   }
 
-  /// Convenience method to show loading dialog
   static void show(
     BuildContext context, {
     required String message,
@@ -576,7 +494,6 @@ class LoadingDialog extends StatelessWidget {
     );
   }
 
-  /// Convenience method to hide loading dialog
   static void hide(BuildContext context) {
     Navigator.of(context).pop();
   }

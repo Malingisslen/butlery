@@ -14,13 +14,8 @@ import 'package:butlery/services/realtime/modules/recipe_content_operations.dart
 import 'package:butlery/services/realtime/modules/recipe_participants.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
-/// Clean facade for realtime recipe management using focused modules
-///
-/// This facade provides a unified API that delegates to focused modules:
-/// - RecipeContentOperations: Recipe content management (ingredients, instructions, images, basic info)
-/// - RecipeParticipants: Participant management (adding, removing, permissions)
-///
-/// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
+/// Facade for realtime recipe management delegating to RecipeContentOperations (content) and RecipeParticipants (permissions).
+/// Clean API with no complex business logic or direct implementation details.
 class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
   final RealtimeSyncService _syncService;
   final PermissionService _permissionService;
@@ -35,19 +30,13 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
   })  : _syncService = syncService,
         _permissionService = permissionService;
 
-  // ===== GETTERS =====
-
   /// Is recipe operation in progress?
   bool get isProcessing => _isProcessing;
-
   /// Latest recipe operation error
   RecipeOperationError? get lastError => _lastError;
-
   /// Current user display name
   String get _currentUserDisplayName =>
       _permissionService.currentUser?.displayName ?? 'Okänd användare';
-
-  // ===== CORE RECIPE OPERATIONS =====
 
   /// Create realtime recipe from existing recipe
   Future<RealtimeRecipe> createRealtimeRecipe({
@@ -112,8 +101,6 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
       rethrow;
     }
   }
-
-  // ===== RECIPE CONTENT OPERATIONS (DELEGATE TO RECIPE_CONTENT_OPERATIONS) =====
 
   /// Update basic recipe information
   Future<void> updateBasicInfo({
@@ -307,8 +294,6 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
     );
   }
 
-  // ===== PARTICIPANT MANAGEMENT (DELEGATE TO RECIPE_PARTICIPANTS) =====
-
   /// Add participant to realtime recipe
   Future<void> addParticipant({
     required String resourceId,
@@ -363,8 +348,6 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
     );
   }
 
-  // ===== UTILITY METHODS (DELEGATE TO MODULES) =====
-
   /// Create personal copy of realtime recipe
   Recipe createPersonalCopy(RealtimeRecipe realtimeRecipe) {
     if (!_permissionService.isAuthenticated) {
@@ -386,14 +369,10 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
   bool hasRecipeChangedSince(RealtimeRecipe recipe, DateTime timestamp) {
     return RecipeContentOperations.hasRecipeChangedSince(recipe, timestamp);
   }
-
   /// Get summary of recent changes
   String getRecipeChangesSummary(RealtimeRecipe recipe) {
     return RecipeContentOperations.getRecipeChangesSummary(recipe);
   }
-
-  // ===== RECIPE OPERATIONS HELPER =====
-
   /// Generic method for performing recipe operations with error handling
   Future<void> _performRecipeOperation({
     required String resourceId,
@@ -451,8 +430,6 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  // ===== DELETE OPERATION =====
-
   /// Delete realtime recipe completely
   Future<void> deleteRealtimeRecipe(String resourceId) async {
     if (!_permissionService.isAuthenticated) {
@@ -480,8 +457,6 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
       rethrow;
     }
   }
-
-  // ===== STATE MANAGEMENT =====
 
   /// Set processing state
   void _setProcessing(bool processing) {
@@ -511,7 +486,6 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
   void _clearError() {
     _lastError = null;
   }
-
   /// Clear error status (public method)
   void clearError() {
     _clearError();
@@ -519,10 +493,7 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin {
   }
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
-    disposeStreamResources(); // From StreamManagementMixin
+    disposeStreamResources();
     super.dispose();
   }
 }

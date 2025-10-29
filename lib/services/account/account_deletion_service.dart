@@ -1,24 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/account/account_deletion/content_deletion_operations.dart';
+import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
+import 'package:butlery/services/account/account_deletion/profile_deletion_operations.dart';
+import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
-/// Comprehensive account deletion service for GDPR compliance
-/// Ensures complete removal of all user data across all collections
+/// GDPR-compliant account deletion orchestrator delegating to focused deletion modules.
 class AccountDeletionService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
-  // final AuthService _authService;
-  // final UserService _userService;
-  // final UnifiedRecipeService _recipeService;
-  final OfflineService _offlineService;
   final AnalyticsService _analyticsService;
   static const String _logTag = 'AccountDeletionService';
+
+  late final ContentDeletionOperations _contentOps;
+  late final SocialDeletionOperations _socialOps;
+  late final ProfileDeletionOperations _profileOps;
+  late final StorageDeletionOperations _storageOps;
 
   AccountDeletionService({
     required FirebaseAuth auth,
@@ -30,14 +33,13 @@ class AccountDeletionService {
     required AnalyticsService analyticsService,
   })  : _auth = auth,
         _firestore = firestore,
-        // _authService = authService,
-        // _userService = userService,
-        // _recipeService = recipeService,
-        _offlineService = offlineService,
-        _analyticsService = analyticsService;
+        _analyticsService = analyticsService {
+    _contentOps = ContentDeletionOperations(_firestore);
+    _socialOps = SocialDeletionOperations(_firestore);
+    _profileOps = ProfileDeletionOperations(_firestore);
+    _storageOps = StorageDeletionOperations(_firestore, offlineService);
+  }
 
-  /// Performs complete account deletion with GDPR compliance
-  /// Returns a detailed result map with success/failure information
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,
     bool createAuditLog = true,
@@ -58,55 +60,26 @@ class AccountDeletionService {
 
       final userId = user.uid;
       final userEmail = user.email ?? 'unknown';
-      
+
       app_logger.AppLogger.info('[$_logTag] Starting account deletion for user: $userId');
-      
-      // Track deletion progress
-      final deletionTasks = <String, Future<bool>>{};
-      
-      // 1. Delete user's recipes
-      deletionTasks['recipes'] = _deleteUserRecipes(userId);
-      
-      // 2. Delete user's menus
-      deletionTasks['menus'] = _deleteUserMenus(userId);
-      
-      // 3. Delete user's shopping lists
-      deletionTasks['shopping_lists'] = _deleteShoppingLists(userId);
-      
-      // 4. Remove from all friend connections
-      deletionTasks['friend_connections'] = _removeFriendConnections(userId);
-      
-      // 5. Delete messages and conversations
-      deletionTasks['messages'] = _deleteUserMessages(userId);
-      
-      // 6. Remove from shared content
-      deletionTasks['shared_content'] = _removeFromSharedContent(userId);
-      
-      // 7. Delete comments and ratings
-      deletionTasks['comments_ratings'] = _deleteCommentsAndRatings(userId);
-      
-      // 8. Delete user preferences and settings
-      deletionTasks['preferences'] = _deleteUserPreferences(userId);
 
-      // 9. Clear offline cache
-      deletionTasks['offline_cache'] = _clearOfflineData(userId);
+      final deletionTasks = <String, Future<bool>>{
+        'recipes': _contentOps.deleteRecipes(userId),
+        'menus': _contentOps.deleteMenus(userId),
+        'shopping_lists': _contentOps.deleteShoppingLists(userId),
+        'friend_connections': _socialOps.removeFriendConnections(userId),
+        'messages': _socialOps.deleteMessages(userId),
+        'shared_content': _socialOps.removeFromSharedContent(userId),
+        'comments_ratings': _socialOps.deleteCommentsAndRatings(userId),
+        'preferences': _profileOps.deleteUserPreferences(userId),
+        'offline_cache': _storageOps.clearOfflineData(userId),
+        'public_profile': _profileOps.deletePublicProfile(userId),
+        'realtime_recipes': _storageOps.deleteRealtimeRecipes(userId),
+        'activity_feed': _profileOps.deleteActivityFeed(userId),
+        'storage_files': _storageOps.deleteUserStorageFiles(userId),
+        'profile': _profileOps.deleteUserProfile(userId),
+      };
 
-      // 10. Delete public profile
-      deletionTasks['public_profile'] = _deletePublicProfile(userId);
-
-      // 11. Delete realtime recipes
-      deletionTasks['realtime_recipes'] = _deleteRealtimeRecipes(userId);
-
-      // 12. Delete activity feed
-      deletionTasks['activity_feed'] = _deleteActivityFeed(userId);
-
-      // 13. Delete Firebase Storage files (avatars, recipe images)
-      deletionTasks['storage_files'] = _deleteUserStorageFiles(userId);
-
-      // 14. Delete user profile (must be last before auth)
-      deletionTasks['profile'] = _deleteUserProfile(userId);
-      
-      // Execute all deletion tasks
       for (final entry in deletionTasks.entries) {
         try {
           final success = await entry.value;
@@ -121,8 +94,7 @@ class AccountDeletionService {
           app_logger.AppLogger.error('[$_logTag] Failed to delete ${entry.key}', e);
         }
       }
-      
-      // Create audit log before deleting auth
+
       if (createAuditLog) {
         result['auditLogId'] = await _createDeletionAuditLog(
           userId: userId,
@@ -132,16 +104,13 @@ class AccountDeletionService {
           failedCollections: result['failedCollections'],
         );
       }
-      
-      // Log analytics event
-      // Log analytics event
+
       await _analyticsService.logAccountDeleted({
         'reason': reason,
         'collections_deleted': result['deletedCollections'].length,
         'collections_failed': result['failedCollections'].length,
       });
-      
-      // Finally, delete Firebase Auth account
+
       if (result['failedCollections'].isEmpty) {
         await user.delete();
         result['success'] = true;
@@ -149,436 +118,17 @@ class AccountDeletionService {
       } else {
         app_logger.AppLogger.warning('[$_logTag] Account deletion incomplete - some collections failed');
       }
-      
+
       return result;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Account deletion failed', e);
       result['errors'].add('Main process: ${e.toString()}');
-      
+
       if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
         result['requiresReauth'] = true;
       }
-      
+
       return result;
-    }
-  }
-
-  Future<bool> _deleteUserRecipes(String userId) async {
-    try {
-      // Delete from personal recipes
-      final recipesSnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('recipes')
-          .get();
-      
-      final batch = _firestore.batch();
-      for (final doc in recipesSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      
-      // Delete from unified recipes
-      final unifiedSnapshot = await _firestore
-          .collection('recipes')
-          .where('userId', isEqualTo: userId)
-          .get();
-      
-      for (final doc in unifiedSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete recipes', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteUserMenus(String userId) async {
-    try {
-      final menusSnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('menus')
-          .get();
-      
-      final batch = _firestore.batch();
-      for (final doc in menusSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete menus', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteShoppingLists(String userId) async {
-    try {
-      final listsSnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('shopping_lists')
-          .get();
-      
-      final batch = _firestore.batch();
-      for (final doc in listsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete shopping lists', e);
-      return false;
-    }
-  }
-
-  Future<bool> _removeFriendConnections(String userId) async {
-    try {
-      final batch = _firestore.batch();
-
-      // Delete user's own friends subcollection: users/{userId}/friends
-      final userFriends = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('friends')
-          .get();
-
-      for (final doc in userFriends.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete user's friend categories
-      final categories = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('friendCategories')
-          .get();
-
-      for (final doc in categories.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete friend requests sent by user
-      final sentRequests = await _firestore
-          .collection('friend_requests')
-          .where('fromUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in sentRequests.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete friend requests received by user
-      final receivedRequests = await _firestore
-          .collection('friend_requests')
-          .where('toUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in receivedRequests.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete group invitations sent by user
-      final sentInvitations = await _firestore
-          .collection('group_invitations')
-          .where('fromUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in sentInvitations.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete group invitations received by user
-      final receivedInvitations = await _firestore
-          .collection('group_invitations')
-          .where('toUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in receivedInvitations.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to remove friend connections', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteUserMessages(String userId) async {
-    try {
-      // Delete conversations where user is participant
-      final conversationsSnapshot = await _firestore
-          .collection('conversations')
-          .where('participants', arrayContains: userId)
-          .get();
-      
-      final batch = _firestore.batch();
-      
-      for (final doc in conversationsSnapshot.docs) {
-        // Delete all messages in conversation
-        final messagesSnapshot = await doc.reference
-            .collection('messages')
-            .get();
-        
-        for (final msgDoc in messagesSnapshot.docs) {
-          batch.delete(msgDoc.reference);
-        }
-        
-        // Update conversation to remove user or delete if only 2 participants
-        final participants = List<String>.from(doc.data()['participants'] ?? []);
-        if (participants.length <= 2) {
-          batch.delete(doc.reference);
-        } else {
-          participants.remove(userId);
-          batch.update(doc.reference, {'participants': participants});
-        }
-      }
-      
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete messages', e);
-      return false;
-    }
-  }
-
-  Future<bool> _removeFromSharedContent(String userId) async {
-    try {
-      // Remove from shared recipes
-      final sharedRecipesSnapshot = await _firestore
-          .collection('shared_recipes')
-          .where('sharedWith', arrayContains: userId)
-          .get();
-      
-      final batch = _firestore.batch();
-      
-      for (final doc in sharedRecipesSnapshot.docs) {
-        final sharedWith = List<String>.from(doc.data()['sharedWith'] ?? []);
-        sharedWith.remove(userId);
-        
-        if (sharedWith.isEmpty) {
-          batch.delete(doc.reference);
-        } else {
-          batch.update(doc.reference, {'sharedWith': sharedWith});
-        }
-      }
-      
-      // Remove owned shared content
-      final ownedSharedSnapshot = await _firestore
-          .collection('shared_recipes')
-          .where('ownerId', isEqualTo: userId)
-          .get();
-      
-      for (final doc in ownedSharedSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to remove from shared content', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteCommentsAndRatings(String userId) async {
-    try {
-      final batch = _firestore.batch();
-
-      // Delete recipe comments
-      final commentsSnapshot = await _firestore
-          .collection('recipe_comments')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in commentsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete recipe ratings
-      final ratingsSnapshot = await _firestore
-          .collection('recipe_ratings')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in ratingsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete menu comments
-      final menuCommentsSnapshot = await _firestore
-          .collection('menu_comments')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in menuCommentsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete menu ratings
-      final menuRatingsSnapshot = await _firestore
-          .collection('menu_ratings')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in menuRatingsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete comments and ratings', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteUserPreferences(String userId) async {
-    try {
-      final prefsDoc = _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('settings')
-          .doc('preferences');
-      
-      await prefsDoc.delete();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete preferences', e);
-      return false;
-    }
-  }
-
-  Future<bool> _clearOfflineData(String userId) async {
-    try {
-      await _offlineService.clearUserData(userId);
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to clear offline data', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteUserProfile(String userId) async {
-    try {
-      await _firestore.collection('users').doc(userId).delete();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete user profile', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deletePublicProfile(String userId) async {
-    try {
-      await _firestore.collection('public_profiles').doc(userId).delete();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete public profile', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteRealtimeRecipes(String userId) async {
-    try {
-      // Delete realtime recipes where user is owner
-      final realtimeRecipes = await _firestore
-          .collection('realtime_recipes')
-          .where('ownerId', isEqualTo: userId)
-          .get();
-
-      final batch = _firestore.batch();
-      for (final doc in realtimeRecipes.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete realtime recipes', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteActivityFeed(String userId) async {
-    try {
-      // Delete activity feed items created by user
-      final activities = await _firestore
-          .collection('activity_feed')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      final batch = _firestore.batch();
-      for (final doc in activities.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete activity feed', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteUserStorageFiles(String userId) async {
-    try {
-      final storage = FirebaseStorage.instance;
-
-      // Delete all files in user's directory
-      // Path: /users/{userId}/
-      final userRef = storage.ref('users/$userId');
-
-      // List all files in user's directory
-      final ListResult result = await userRef.listAll();
-
-      // Delete all files
-      for (final fileRef in result.items) {
-        try {
-          await fileRef.delete();
-          app_logger.AppLogger.debug('[$_logTag] Deleted storage file: ${fileRef.fullPath}');
-        } catch (e) {
-          app_logger.AppLogger.warning('[$_logTag] Failed to delete storage file ${fileRef.fullPath}: $e');
-        }
-      }
-
-      // Recursively delete subdirectories
-      for (final prefix in result.prefixes) {
-        await _deleteStorageDirectory(prefix);
-      }
-
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete user storage files', e);
-      // Return true anyway - storage deletion is not critical
-      // Some users may not have any storage files
-      return true;
-    }
-  }
-
-  /// Helper method to recursively delete a storage directory
-  Future<void> _deleteStorageDirectory(Reference dirRef) async {
-    try {
-      final ListResult result = await dirRef.listAll();
-
-      // Delete all files in this directory
-      for (final fileRef in result.items) {
-        try {
-          await fileRef.delete();
-        } catch (e) {
-          app_logger.AppLogger.warning('[$_logTag] Failed to delete ${fileRef.fullPath}: $e');
-        }
-      }
-
-      // Recursively delete subdirectories
-      for (final prefix in result.prefixes) {
-        await _deleteStorageDirectory(prefix);
-      }
-    } catch (e) {
-      app_logger.AppLogger.warning('[$_logTag] Failed to delete directory ${dirRef.fullPath}: $e');
     }
   }
 
@@ -599,7 +149,7 @@ class AccountDeletionService {
         'deletionTimestamp': FieldValue.serverTimestamp(),
         'gdprCompliant': failedCollections.isEmpty,
       });
-      
+
       return auditDoc.id;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to create audit log', e);

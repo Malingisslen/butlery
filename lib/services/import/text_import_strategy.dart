@@ -1,31 +1,10 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Text Import Strategy - Strategy for importing recipes from text
-/// File: lib/services/import/text_import_strategy.dart
-/// Quick Guide: Handles text-based recipe imports (social media, manual text)
-/// Dependencies IN: ImportStrategy interface, Recipe model
-/// Dependencies OUT: Used by import ViewModels and import manager
-/// Data flow: Text input -> Parsing logic -> Recipe model
-/// State management: Stateless parsing strategy
-/// Purpose: Parse structured and unstructured text into recipe format
-/// Common issues: Text format variations, ingredient extraction, instruction parsing
-/// Test coverage: Unit tests for different text formats
-/// Performance: Efficient regex-based parsing
-/// Analytics: Text import success rates, format detection
-/// Code smells: None - follows strategy pattern
-/// Connected to: TextImportViewModel, PersonalRecipeOperations
-/// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
+/// Text Import Strategy - Parses structured/unstructured text into recipes (social media, manual input).
 
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 
-/// Strategy for importing recipes from text content
-/// 
-/// Handles various text formats:
-/// - Social media posts (Instagram, Facebook, etc.)
-/// - Manual text input
-/// - Structured recipe text
-/// - Copy-pasted recipes from websites
+/// Strategy for importing recipes from text (social media, manual input, structured/unstructured text).
 class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   static const _uuid = Uuid();
 
@@ -37,19 +16,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       'Import recipes from text content (social media posts, manual input)';
 
   @override
-  String get inputExample => '''
-Pannkakor
-Ingredienser:
-3 ägg
-5 dl mjölk
-3 dl vetemjöl
-1 tsk salt
-
-Gör så här:
-1. Vispa ihop allt till en slät smet
-2. Stek pannkakor i smörad panna
-3. Servera med sylt och grädde
-''';
+  String get inputExample => 'Pannkakor\nIngredienser: 3 ägg, 5 dl mjölk...\nGör så här: 1. Vispa ihop...';
 
   @override
   bool canHandle(String input) {
@@ -84,19 +51,9 @@ Gör så här:
       }
 
       final warnings = <String>[];
-      
-      // Validate parsed recipe
-      if (!isValidRecipeName(recipe.title)) {
-        warnings.add('Recipe name seems too short or empty');
-      }
-      
-      if (!isValidIngredients(recipe.ingredients)) {
-        warnings.add('No valid ingredients found');
-      }
-      
-      if (!isValidInstructions(recipe.instructions)) {
-        warnings.add('No valid instructions found');
-      }
+      if (!isValidRecipeName(recipe.title)) warnings.add('Recipe name seems too short or empty');
+      if (!isValidIngredients(recipe.ingredients)) warnings.add('No valid ingredients found');
+      if (!isValidInstructions(recipe.instructions)) warnings.add('No valid instructions found');
 
       return ImportResult.success(
         recipe,
@@ -114,8 +71,6 @@ Gör så här:
       );
     }
   }
-
-  // ===== PRIVATE PARSING METHODS =====
 
   bool _hasIngredientKeywords(String text) {
     final keywords = [

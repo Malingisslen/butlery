@@ -17,54 +17,9 @@ import 'package:butlery/services/unified/operations/modules/recipe_discovery_ser
 import 'package:butlery/services/unified/operations/modules/recipe_social_stats.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
 
-/// Comprehensive social recipe operations coordinator providing unified social cooking functionality through specialized modules.
-///
-/// This operations coordinator implements sophisticated social recipe management using facade pattern with specialized
-/// modules for sharing, member management, comments, discovery, and social statistics. It provides comprehensive
-/// social cooking functionality while maintaining clean architecture separation and modular design for enhanced
-/// maintainability and testability of complex social features.
-///
-/// **Phase 9.8 Refactored Architecture:**
-/// This coordinator represents a complete refactoring following Single Responsibility Principle with focused modules:
-/// - Clean coordinator pattern with full backward compatibility for existing ViewModels
-/// - Modular architecture enabling independent testing and maintenance of social features
-/// - Real-time capabilities with comment streaming and social interaction notifications
-/// - Comprehensive permission system ensuring secure social recipe access and management
-///
-/// **Specialized Modules Coordination:**
-/// This coordinator orchestrates between focused social recipe modules:
-/// - **[RecipeSharingManager]**: Recipe sharing and collaboration setup with permission management
-/// - **[RecipeMemberManager]**: Member management for collaborative recipes with invitation handling
-/// - **[RecipeCommentsManager]**: Complete comment system with real-time updates and threaded discussions
-/// - **[RecipeDiscoveryService]**: Social recipe discovery, search, and filtering with trending algorithms
-/// - **[RecipeSocialStats]**: Recipe rating, statistics, and social metrics with analytics tracking
-/// - **[RecipePermissionHelper]**: Permission checking, validation, and legacy compatibility management
-///
-/// **Social Recipe Features:**
-/// - **Recipe Sharing**: Comprehensive recipe sharing with granular permission control and collaboration setup
-/// - **Member Management**: Complete member lifecycle management with invitations and permission updates
-/// - **Social Discovery**: Advanced recipe discovery with search, filtering, and trending algorithms
-/// - **Comment System**: Real-time comment system with threading, mentions, and social interactions
-/// - **Rating System**: Comprehensive rating and review system with statistical analysis and recommendations
-///
-/// **Usage Examples:**
 /// ```dart
-/// final socialOps = SocialRecipeOperations(parentService);
-/// 
-/// // Share recipe with friends
-/// final sharedId = await socialOps.shareRecipe(
-///   recipeId: recipeId,
-///   memberIds: ['friend1', 'friend2'],
-///   memberDisplayNames: {'friend1': 'Anna', 'friend2': 'Erik'},
-/// );
-/// 
-/// // Social discovery and interaction
-/// final trending = await socialOps.getTrendingRecipes(limit: 20);
-/// await socialOps.addComment(recipeId: recipeId, content: 'Fantastiskt recept!');
-/// 
-/// // Rating and social engagement
-/// await socialOps.rateRecipe(recipeId: recipeId, rating: 5.0, review: 'Perfekt!');
-/// final stats = await socialOps.getRecipeStats(recipeId);
+/// await ops.shareRecipe(recipeId, memberIds, memberDisplayNames);
+/// await ops.addComment(recipeId, content); final stats = await ops.getRecipeStats(recipeId);
 /// ```
 class SocialRecipeOperations {
   final UnifiedRecipeService _parent;
@@ -79,14 +34,12 @@ class SocialRecipeOperations {
   late final RecipeDiscoveryService _discoveryService;
   late final RecipeSocialStats _socialStats;
   late final RecipePermissionHelper _permissionHelper;
-
   SocialRecipeOperations(
     this._parent, {
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
   }) : _ratingsRepository = ratingsRepository,
        _firestoreRepository = firestoreRepository {
-    // Initialize notification service if user is authenticated
     try {
       final currentUserId = _parent.currentUserId;
       if (currentUserId != null) {
@@ -101,8 +54,6 @@ class SocialRecipeOperations {
       AppLogger.warning('⚠️ Could not initialize notification service: $e');
       _notificationService = null;
     }
-    
-    // Initialize focused modules
     _sharingManager = RecipeSharingManager(_parent, _notificationService);
     _memberManager = RecipeMemberManager(_parent, _notificationService);
     _commentsManager = RecipeCommentsManager(_parent, _notificationService);
@@ -115,12 +66,10 @@ class SocialRecipeOperations {
 
   // ===== GETTERS =====
 
-  /// Access to the discovery service for direct usage
   RecipeDiscoveryService get discoveryService => _discoveryService;
 
   // ===== RECIPE SHARING (Delegates to RecipeSharingManager) =====
 
-  /// Share a personal recipe with other users
   Future<String?> shareRecipe({
     required String recipeId,
     required List<String> memberIds,
@@ -140,8 +89,6 @@ class SocialRecipeOperations {
       categoryIds: categoryIds,
     );
   }
-
-  /// Convert collaborative recipe back to personal
   Future<String?> makeRecipePersonal({
     required String collaborativeRecipeId,
     String? newTitle,
@@ -151,8 +98,6 @@ class SocialRecipeOperations {
       newTitle: newTitle,
     );
   }
-  
-  /// Duplicate personal recipe for sharing (creates copy before conversion)
   Future<String?> duplicateAndShareRecipe({
     required String recipeId,
     required List<String> memberIds,
@@ -174,10 +119,6 @@ class SocialRecipeOperations {
       categoryIds: categoryIds,
     );
   }
-
-  // ===== MEMBER MANAGEMENT (Delegates to RecipeMemberManager) =====
-
-  /// Add member to collaborative recipe
   Future<bool> addMember({
     required String recipeId,
     required String userId,
@@ -192,8 +133,6 @@ class SocialRecipeOperations {
       permission: permission,
     );
   }
-
-  /// Remove member from collaborative recipe
   Future<bool> removeMember({
     required String recipeId,
     required String userId,
@@ -203,8 +142,6 @@ class SocialRecipeOperations {
       memberId: userId,
     );
   }
-
-  /// Update member permission
   Future<bool> updateMemberPermission({
     required String recipeId,
     required String userId,
@@ -216,25 +153,20 @@ class SocialRecipeOperations {
       newPermission: permission,
     );
   }
-
-  /// Get all members of a collaborative recipe
   Future<List<Map<String, dynamic>>> getRecipeMembers(String recipeId) async {
     return await _memberManager.getRecipeMembers(recipeId);
   }
 
-  /// Check if user can invite members to recipe
   bool canInviteMembers(String recipeId) {
     return _memberManager.canInviteMembers(recipeId);
   }
   
-  /// Get member statistics for a recipe
   Map<String, dynamic> getMemberStatistics(String recipeId) {
     return _memberManager.getMemberStatistics(recipeId);
   }
 
   // ===== SOCIAL DISCOVERY (Delegates to RecipeDiscoveryService) =====
 
-  /// Get all collaborative recipes current user is member of
   Future<List<Recipe>> getCollaborativeRecipes({
     int limit = 50,
     String? startAfter,
@@ -249,7 +181,6 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Get recipes shared with current user
   Future<List<Recipe>> getSharedWithMe({
     int limit = 50,
     List<String>? categoryFilter,
@@ -262,7 +193,6 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Get recipes owned by current user that are shared
   Future<List<Recipe>> getSharedByMe({
     int limit = 50,
     bool includeEmpty = false,
@@ -277,7 +207,6 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Get recipes by specific user (if accessible)
   Future<List<Recipe>> getRecipesByUser({
     required String userId,
     int limit = 50,
@@ -294,7 +223,6 @@ class SocialRecipeOperations {
     );
   }
   
-  /// Get trending collaborative recipes
   Future<List<Recipe>> getTrendingRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -307,7 +235,6 @@ class SocialRecipeOperations {
     );
   }
   
-  /// Search recipes across all accessible recipes
   Future<List<Recipe>> searchRecipes({
     required String query,
     int limit = 20,
@@ -324,7 +251,6 @@ class SocialRecipeOperations {
 
   // ===== RECIPE COMMENTS (Delegates to RecipeCommentsManager) =====
 
-  /// Add comment to recipe
   Future<String?> addComment({
     required String recipeId,
     required String content,
@@ -339,7 +265,6 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Get comments for recipe
   Future<List<RecipeComment>> getComments({
     required String recipeId,
     int limit = 20,
@@ -354,7 +279,6 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Edit comment
   Future<bool> editComment({
     required String commentId,
     required String newContent,
@@ -365,29 +289,24 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Delete comment
   Future<bool> deleteComment(String commentId) async {
     return await _commentsManager.deleteComment(commentId);
   }
 
-  /// Toggle like on comment
   Future<bool> toggleCommentLike(String commentId) async {
     return await _commentsManager.toggleCommentLike(commentId);
   }
 
-  /// Stream comments for recipe (real-time)
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
     return _commentsManager.getCommentsStream(recipeId);
   }
   
-  /// Get comment statistics for a recipe
   Future<Map<String, dynamic>> getCommentStatistics(String recipeId) async {
     return await _commentsManager.getCommentStatistics(recipeId);
   }
 
   // ===== RECIPE RATING & SOCIAL STATS (Delegates to RecipeSocialStats) =====
 
-  /// Rate a recipe
   Future<bool> rateRecipe({
     required String recipeId,
     required double rating,
@@ -400,17 +319,14 @@ class SocialRecipeOperations {
     );
   }
 
-  /// Get comprehensive recipe statistics
   Future<Map<String, dynamic>> getRecipeStats(String recipeId) async {
     return await _socialStats.getRecipeStats(recipeId);
   }
   
-  /// Get user's rating for a specific recipe
   Future<Map<String, dynamic>?> getUserRating(String recipeId) async {
     return await _socialStats.getUserRating(recipeId);
   }
   
-  /// Get top-rated recipes
   Future<List<Map<String, dynamic>>> getTopRatedRecipes({
     int limit = 10,
     double minRating = 4.0,
@@ -423,14 +339,12 @@ class SocialRecipeOperations {
     );
   }
   
-  /// Get social statistics for current user
   Future<Map<String, dynamic>> getUserSocialStats() async {
     return await _socialStats.getUserSocialStats();
   }
 
   // ===== LEGACY COMPATIBILITY =====
 
-  /// Convert to legacy SharedRecipe format
   Future<List<Map<String, dynamic>>> getLegacySharedRecipes() async {
     try {
       final sharedRecipes = await getSharedWithMe();
@@ -452,7 +366,6 @@ class SocialRecipeOperations {
     }
   }
 
-  /// Mark shared recipe as viewed (legacy compatibility)
   Future<void> markSharedRecipeAsViewed(String recipeId) async {
     try {
       // This would update view tracking
@@ -462,7 +375,6 @@ class SocialRecipeOperations {
     }
   }
   
-  /// Check legacy permission compatibility
   bool checkLegacyPermission(String recipeId, String userId, String action) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -474,7 +386,6 @@ class SocialRecipeOperations {
 
   // ===== PERMISSION HELPERS (Delegates to RecipePermissionHelper) =====
 
-  /// Check if current user can view recipe
   bool canView(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -484,7 +395,6 @@ class SocialRecipeOperations {
     }
   }
 
-  /// Check if current user can edit recipe
   bool canEdit(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -494,7 +404,6 @@ class SocialRecipeOperations {
     }
   }
 
-  /// Check if current user can delete recipe
   bool canDelete(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -504,7 +413,6 @@ class SocialRecipeOperations {
     }
   }
 
-  /// Check if current user can manage members
   bool canManageMembers(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -514,7 +422,6 @@ class SocialRecipeOperations {
     }
   }
   
-  /// Check if current user can comment on recipe
   bool canComment(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -524,7 +431,6 @@ class SocialRecipeOperations {
     }
   }
   
-  /// Check if current user can rate a recipe
   bool canRate(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -534,7 +440,6 @@ class SocialRecipeOperations {
     }
   }
   
-  /// Get user's permission level for a recipe
   ResourcePermission getUserPermission(String recipeId, String userId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -544,7 +449,6 @@ class SocialRecipeOperations {
     }
   }
   
-  /// Get permission summary for debugging/admin purposes
   Map<String, dynamic> getPermissionSummary(String recipeId, String userId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -556,22 +460,18 @@ class SocialRecipeOperations {
 
   // ===== ADDITIONAL FEATURES =====
   
-  /// Get discovery statistics for current user
   Map<String, dynamic> getDiscoveryStatistics() {
     return _discoveryService.getDiscoveryStatistics();
   }
   
-  /// Get popular categories in collaborative recipes
   Future<Map<String, int>> getPopularCollaborativeCategories({int limit = 10}) async {
     return await _discoveryService.getPopularCollaborativeCategories(limit: limit);
   }
   
-  /// Get sharing statistics for current user
   Map<String, dynamic> getSharingStats() {
     return _sharingManager.getSharingStats();
   }
   
-  /// Dispose of resources (especially comment streams)
   void dispose() {
     try {
       _commentsManager.dispose();

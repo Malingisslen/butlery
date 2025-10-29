@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
@@ -20,12 +20,12 @@ class SharedContentActions {
   /// Import a shared recipe
   static Future<void> importRecipe(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) async {
-    final success = await viewModel.importSharedRecipe(sharedRecipe);
+    final recipeId = await viewModel.recipeViewModel.importSharedRecipe(sharedRecipe);
 
-    if (success && context.mounted) {
+    if (recipeId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -33,10 +33,10 @@ class SharedContentActions {
           backgroundColor: AppColors.success,
         ),
       );
-    } else if (context.mounted && viewModel.hasError) {
+    } else if (context.mounted && viewModel.recipeViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.error!),
+          content: Text(viewModel.recipeViewModel.error ?? 'Import misslyckades'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -46,22 +46,22 @@ class SharedContentActions {
   /// Import a shared menu
   static Future<void> importMenu(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) async {
-    final success = await viewModel.importSharedMenu(sharedMenu);
+    final menuId = await viewModel.menuViewModel.importSharedMenu(sharedMenu);
 
-    if (success && context.mounted) {
+    if (menuId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
           backgroundColor: AppColors.success,
         ),
       );
-    } else if (context.mounted && viewModel.hasError) {
+    } else if (context.mounted && viewModel.menuViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.error!),
+          content: Text(viewModel.menuViewModel.error ?? 'Import misslyckades'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -71,7 +71,7 @@ class SharedContentActions {
   /// Dismiss a shared recipe
   static Future<void> dismissRecipe(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) async {
     final shouldDismiss = await showDialog<bool>(
@@ -99,7 +99,7 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.dismissSharedRecipe(sharedRecipe);
+      final success = await viewModel.recipeViewModel.dismissSharedRecipe(sharedRecipe);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -109,14 +109,14 @@ class SharedContentActions {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.undismissSharedRecipe(sharedRecipe),
+              onPressed: () => viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
             ),
           ),
         );
-      } else if (context.mounted && viewModel.hasError) {
+      } else if (context.mounted && viewModel.recipeViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.error!),
+            content: Text(viewModel.recipeViewModel.error ?? 'Kunde inte dölja recept'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -127,7 +127,7 @@ class SharedContentActions {
   /// Dismiss a shared menu
   static Future<void> dismissMenu(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) async {
     final shouldDismiss = await showDialog<bool>(
@@ -155,7 +155,7 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.dismissSharedMenu(sharedMenu);
+      final success = await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,14 +164,14 @@ class SharedContentActions {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.undismissSharedMenu(sharedMenu),
+              onPressed: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
             ),
           ),
         );
-      } else if (context.mounted && viewModel.hasError) {
+      } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.error!),
+            content: Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -182,13 +182,13 @@ class SharedContentActions {
   /// Join a shared shopping list
   static Future<void> joinShoppingList(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) async {
     AppLogger.info('🚀 AUTO-NAV DEBUG: Starting SharedContentActions.joinShoppingList');
     AppLogger.info('🚀 AUTO-NAV DEBUG: Joining shared list: "${sharedShoppingList.listName}"');
-    
-    final collaborativeListId = await viewModel.joinSharedShoppingList(sharedShoppingList);
+
+    final collaborativeListId = await viewModel.shoppingViewModel.joinSharedShoppingList(sharedShoppingList);
     AppLogger.info('🔄 AUTO-NAV DEBUG: joinSharedShoppingList returned: $collaborativeListId');
 
     if (collaborativeListId != null && context.mounted) {
@@ -263,12 +263,12 @@ class SharedContentActions {
       }
     } else if (collaborativeListId == null && context.mounted) {
       AppLogger.error('❌ AUTO-NAV DEBUG: joinSharedShoppingList returned null - join failed');
-      
-      if (viewModel.hasError) {
-        AppLogger.error('❌ AUTO-NAV DEBUG: ViewModel has error: ${viewModel.error}');
+
+      if (viewModel.shoppingViewModel.hasError) {
+        AppLogger.error('❌ AUTO-NAV DEBUG: ViewModel has error: ${viewModel.shoppingViewModel.error}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.error!),
+            content: Text(viewModel.shoppingViewModel.error ?? 'Kunde inte gå med i listan'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -289,7 +289,7 @@ class SharedContentActions {
   /// Dismiss a shared shopping list
   static Future<void> dismissShoppingList(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) async {
     final shouldDismiss = await showDialog<bool>(
@@ -317,7 +317,7 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.dismissSharedShoppingList(sharedShoppingList);
+      final success = await viewModel.shoppingViewModel.dismissSharedShoppingList(sharedShoppingList);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -326,14 +326,14 @@ class SharedContentActions {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.undismissSharedShoppingList(sharedShoppingList),
+              onPressed: () => viewModel.shoppingViewModel.undismissSharedShoppingList(sharedShoppingList),
             ),
           ),
         );
-      } else if (context.mounted && viewModel.hasError) {
+      } else if (context.mounted && viewModel.shoppingViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.error!),
+            content: Text(viewModel.shoppingViewModel.error ?? 'Kunde inte dölja inköpslista'),
             backgroundColor: AppColors.error,
           ),
         );

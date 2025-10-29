@@ -1,32 +1,10 @@
-/// Shared recipe model using unified base infrastructure for consistent shared content patterns.
+/// Shared recipe model with unified base infrastructure, status tracking, and copy-on-write collaboration.
 ///
-/// This model extends BaseSharedContentModel and uses mixins for status management and
-/// copy-on-write functionality, eliminating duplicate code while maintaining recipe-specific
-/// features and collaboration capabilities.
-///
-/// **Key Features:**
-/// - **Unified Status Management**: Uses SharedContentStatusMixin for consistent view/import/dismiss tracking
-/// - **Copy-on-Write Collaboration**: Uses CopyOnWriteSupport for collaborative editing features
-/// - **Recipe-Specific Logic**: Maintains sharing scopes, import attribution, and recipe permissions
-/// - **Consistent Serialization**: Leverages base class patterns for Firestore and JSON operations
-///
-/// **Usage Examples:**
+/// **Features:** Status mixins (view/import/dismiss), collaborative editing, sharing scopes, Firestore/JSON serialization.
 /// ```dart
-/// // Create new shared recipe with collaboration
-/// final sharedRecipe = SharedRecipe.create(
-///   originalRecipeId: recipeId,
-///   sharedByUserId: currentUserId,
-///   sharedByDisplayName: 'Anna Andersson',
-///   sharedToUserIds: [friend1Id, friend2Id],
-///   shareMessage: 'Hoppas ni gillar det här familjerecept!',
-///   allowImport: true,
-///   allowCollaboration: true,
-///   recipeSnapshot: originalRecipe,
-/// );
-/// 
-/// // Status tracking (via mixins)
-/// final viewedRecipe = sharedRecipe.markViewedBy(userId);
-/// final importedRecipe = viewedRecipe.markImportedBy(userId);
+/// final sr = SharedRecipe.create(originalRecipeId: id, sharedByUserId: uid,
+///   sharedByDisplayName: 'Anna', sharedToUserIds: [f1, f2], recipeSnapshot: recipe);
+/// final viewed = sr.markViewedBy(userId).markImportedBy(userId);
 /// ```
 
 // lib/models/shared_recipe.dart

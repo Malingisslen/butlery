@@ -1,62 +1,15 @@
 // lib/services/unified/modules/cache_optimization.dart
-
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 
-/// Specialized cache optimization module providing intelligent cleanup and performance enhancement for recipe storage.
-///
-/// This module implements comprehensive cache optimization following Single Responsibility Principle,
-/// handling all aspects of cache maintenance including periodic cleanup, old data removal, corruption detection,
-/// and performance optimization strategies. It provides intelligent cache management ensuring optimal
-/// storage utilization while maintaining clean separation from basic cache operations.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles cache optimization operations:
-/// - **Periodic Cleanup**: Automated scheduled cleanup with configurable intervals and comprehensive maintenance
-/// - **Data Validation**: Corruption detection, permission validation, and integrity verification
-/// - **Performance Optimization**: LRU (Least Recently Used) and priority-based cache optimization strategies
-/// - **Health Monitoring**: Cache health assessment with actionable recommendations and optimization suggestions
-///
-/// **What This Module Does NOT Handle:**
-/// - Basic cache CRUD operations (handled by CacheOperations)
-/// - Firebase synchronization and real-time updates (handled by FirebaseSyncManager)
-/// - Debounced write operations (handled by DebouncedSyncOperations)
-/// - Authentication and user management (handled by parent services)
-///
-/// **Cache Optimization Features:**
-/// - **Intelligent Cleanup**: Permission-based, age-based, and corruption-based automatic cleanup
-/// - **Performance Strategies**: LRU and priority-based optimization for optimal cache utilization
-/// - **Health Assessment**: Comprehensive cache health monitoring with actionable recommendations
-/// - **Flexible Scheduling**: Configurable periodic cleanup with smart resource management
-/// - **Targeted Operations**: Specific cleanup operations for corrupted entries, permissions, and age
-///
-/// **Usage Examples:**
 /// ```dart
-/// // Start periodic cache cleanup
-/// final cleanupTimer = CacheOptimization.startPeriodicCleanup(
-///   cleanupInterval: Duration(hours: 24),
-///   cacheHelper: cacheHelper,
-///   getCurrentUserId: () => authService.currentUserId,
-/// );
-/// 
-/// // Targeted cleanup operations
-/// await CacheOptimization.cleanupInvalidPermissions(cacheHelper, userId);
-/// await CacheOptimization.cleanupOldRecipes(cacheHelper, Duration(days: 365), userId);
-/// 
-/// // Performance optimization
+/// final timer = CacheOptimization.startPeriodicCleanup(interval, cacheHelper, getUserId);
 /// await CacheOptimization.optimizeCacheByLRU(cacheHelper, maxSize: 1000);
-/// await CacheOptimization.optimizeCacheByPriority(cacheHelper, userId, maxSize: 1000);
-/// 
-/// // Health monitoring
-/// final health = await CacheOptimization.assessCacheHealth(cacheHelper, userId);
 /// ```
 class CacheOptimization {
 
-  // ===== CACHE CLEANUP SCHEDULING =====
-
-  /// Start periodic cache cleanup
   static Timer startPeriodicCleanup({
     required Duration cleanupInterval,
     required JsonCacheHelper cacheHelper,
@@ -70,15 +23,12 @@ class CacheOptimization {
     });
   }
 
-  /// Stop periodic cache cleanup
   static void stopPeriodicCleanup(Timer? cleanupTimer) {
     cleanupTimer?.cancel();
     AppLogger.debug('Periodic cache cleanup stopped');
   }
 
-  // ===== CACHE CLEANUP OPERATIONS =====
 
-  /// Perform comprehensive cache cleanup
   static Future<Map<String, int>> _performCacheCleanup({
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
@@ -103,14 +53,13 @@ class CacheOptimization {
           getCurrentUserId: getCurrentUserId,
         );
 
-        // Aggregate results
-        cleanupResults['null_entries_removed'] = 
+        cleanupResults['null_entries_removed'] =
             (cleanupResults['null_entries_removed'] ?? 0) + (cleanupResult['null'] ?? 0);
-        cleanupResults['corrupted_entries_removed'] = 
+        cleanupResults['corrupted_entries_removed'] =
             (cleanupResults['corrupted_entries_removed'] ?? 0) + (cleanupResult['corrupted'] ?? 0);
-        cleanupResults['permission_invalid_removed'] = 
+        cleanupResults['permission_invalid_removed'] =
             (cleanupResults['permission_invalid_removed'] ?? 0) + (cleanupResult['permission'] ?? 0);
-        cleanupResults['old_recipes_removed'] = 
+        cleanupResults['old_recipes_removed'] =
             (cleanupResults['old_recipes_removed'] ?? 0) + (cleanupResult['old'] ?? 0);
       }
 
@@ -134,7 +83,6 @@ class CacheOptimization {
     }
   }
 
-  /// Cleanup single cache entry
   static Future<Map<String, int>> _cleanupSingleCacheEntry({
     required String key,
     required JsonCacheHelper cacheHelper,
@@ -145,13 +93,11 @@ class CacheOptimization {
     try {
       final recipeData = await cacheHelper.loadJson(key);
       if (recipeData == null) {
-        // Remove null entries
         await cacheHelper.delete(key);
         result['null'] = 1;
         return result;
       }
 
-      // Check if recipe is valid and should be kept
       final recipe = Recipe.fromJson(recipeData);
       if (_shouldRemoveFromCache(recipe, getCurrentUserId())) {
         final removalReason = _getRemovalReason(recipe, getCurrentUserId());
@@ -159,7 +105,6 @@ class CacheOptimization {
         result[removalReason] = 1;
       }
     } catch (e) {
-      // Remove corrupted entries
       await cacheHelper.delete(key);
       result['corrupted'] = 1;
     }
@@ -167,18 +112,14 @@ class CacheOptimization {
     return result;
   }
 
-  // ===== CACHE VALIDATION LOGIC =====
 
-  /// Check if recipe should be removed from cache
   static bool _shouldRemoveFromCache(Recipe recipe, String? currentUserId) {
     if (currentUserId == null) return false;
 
-    // Remove recipes that don't belong to current user
     if (recipe.isPersonal && recipe.core.createdBy != currentUserId) {
       return true;
     }
 
-    // Remove collaborative recipes where user is no longer a member
     if (recipe.isCollaborative) {
       final memberPermissions = recipe.socialData?.memberPermissions ?? {};
       if (!memberPermissions.containsKey(currentUserId)) {
@@ -186,11 +127,9 @@ class CacheOptimization {
       }
     }
 
-    // Keep recipes that are recently accessed or modified
     final now = DateTime.now();
     final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
-    
-    // Remove very old personal recipes that haven't been updated
+
     if (recipe.isPersonal && daysSinceUpdate > 365) {
       return true;
     }
@@ -198,11 +137,9 @@ class CacheOptimization {
     return false;
   }
 
-  /// Get reason for cache removal
   static String _getRemovalReason(Recipe recipe, String? currentUserId) {
     if (currentUserId == null) return 'permission';
 
-    // Check permission issues
     if (recipe.isPersonal && recipe.core.createdBy != currentUserId) {
       return 'permission';
     }
@@ -214,7 +151,6 @@ class CacheOptimization {
       }
     }
 
-    // Check age
     final now = DateTime.now();
     final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
     if (recipe.isPersonal && daysSinceUpdate > 365) {
@@ -224,9 +160,7 @@ class CacheOptimization {
     return 'unknown';
   }
 
-  // ===== TARGETED CLEANUP OPERATIONS =====
 
-  /// Remove recipes that user no longer has access to
   static Future<int> cleanupInvalidPermissions({
     required JsonCacheHelper cacheHelper,
     required String currentUserId,
@@ -243,8 +177,6 @@ class CacheOptimization {
           if (recipeData == null) continue;
 
           final recipe = Recipe.fromJson(recipeData);
-
-          // Check if user should have access
           bool hasAccess = false;
 
           if (recipe.isPersonal) {
@@ -260,7 +192,6 @@ class CacheOptimization {
             AppLogger.debug('Removed recipe without access: ${recipe.title}');
           }
         } catch (e) {
-          // Remove corrupted entries
           await cacheHelper.delete(key);
           removedCount++;
         }
@@ -277,7 +208,6 @@ class CacheOptimization {
     }
   }
 
-  /// Remove old recipes that haven't been updated recently
   static Future<int> cleanupOldRecipes({
     required JsonCacheHelper cacheHelper,
     required Duration maxAge,
@@ -298,15 +228,12 @@ class CacheOptimization {
           final recipe = Recipe.fromJson(recipeData);
           final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
 
-          // Only remove personal recipes that are old
-          // Keep collaborative recipes regardless of age
           if (recipe.isPersonal && daysSinceUpdate > maxAge.inDays) {
             await cacheHelper.delete(key);
             removedCount++;
             AppLogger.debug('Removed old recipe: ${recipe.title} ($daysSinceUpdate days old)');
           }
         } catch (e) {
-          // Remove corrupted entries
           await cacheHelper.delete(key);
           removedCount++;
         }
@@ -323,7 +250,6 @@ class CacheOptimization {
     }
   }
 
-  /// Remove corrupted cache entries
   static Future<int> cleanupCorruptedEntries(JsonCacheHelper cacheHelper) async {
     try {
       AppLogger.debug('Cleaning up corrupted cache entries');
@@ -340,10 +266,8 @@ class CacheOptimization {
             continue;
           }
 
-          // Try to deserialize to check validity
           Recipe.fromJson(recipeData);
         } catch (e) {
-          // Remove corrupted entries
           await cacheHelper.delete(key);
           removedCount++;
           AppLogger.debug('Removed corrupted entry: $key');
@@ -361,9 +285,7 @@ class CacheOptimization {
     }
   }
 
-  // ===== CACHE OPTIMIZATION STRATEGIES =====
 
-  /// Optimize cache by removing least recently used recipes
   static Future<int> optimizeCacheByLRU({
     required JsonCacheHelper cacheHelper,
     required int maxCacheSize,
@@ -376,7 +298,6 @@ class CacheOptimization {
 
       final recipesByAge = <String, DateTime>{};
 
-      // Get last update time for each recipe
       for (final key in allKeys) {
         try {
           final recipeData = await cacheHelper.loadJson(key);
@@ -385,16 +306,13 @@ class CacheOptimization {
             recipesByAge[key] = recipe.core.updatedAt;
           }
         } catch (e) {
-          // Mark corrupted entries with very old date for removal
           recipesByAge[key] = DateTime(2000);
         }
       }
 
-      // Sort by age (oldest first)
       final sortedKeys = recipesByAge.keys.toList()
         ..sort((a, b) => recipesByAge[a]!.compareTo(recipesByAge[b]!));
 
-      // Remove oldest entries to reach target size
       final keysToRemove = sortedKeys.take(allKeys.length - maxCacheSize);
       int removedCount = 0;
 
@@ -411,7 +329,6 @@ class CacheOptimization {
     }
   }
 
-  /// Optimize cache by recipe type priority
   static Future<int> optimizeCacheByPriority({
     required JsonCacheHelper cacheHelper,
     required String currentUserId,
@@ -425,7 +342,6 @@ class CacheOptimization {
 
       final recipesByPriority = <String, int>{};
 
-      // Assign priority scores
       for (final key in allKeys) {
         try {
           final recipeData = await cacheHelper.loadJson(key);
@@ -434,16 +350,13 @@ class CacheOptimization {
             recipesByPriority[key] = _getRecipePriority(recipe, currentUserId);
           }
         } catch (e) {
-          // Corrupted entries get lowest priority
           recipesByPriority[key] = 0;
         }
       }
 
-      // Sort by priority (lowest first for removal)
       final sortedKeys = recipesByPriority.keys.toList()
         ..sort((a, b) => recipesByPriority[a]!.compareTo(recipesByPriority[b]!));
 
-      // Remove lowest priority entries
       final keysToRemove = sortedKeys.take(allKeys.length - maxCacheSize);
       int removedCount = 0;
 
@@ -460,21 +373,17 @@ class CacheOptimization {
     }
   }
 
-  /// Get recipe priority score for cache optimization
   static int _getRecipePriority(Recipe recipe, String currentUserId) {
     int priority = 0;
 
-    // Collaborative recipes get higher priority
     if (recipe.isCollaborative) {
       priority += 100;
     }
 
-    // Recipes owned by current user get higher priority
     if (recipe.core.createdBy == currentUserId) {
       priority += 50;
     }
 
-    // Recently updated recipes get higher priority
     final daysSinceUpdate = DateTime.now().difference(recipe.core.updatedAt).inDays;
     if (daysSinceUpdate < 7) {
       priority += 30;
@@ -484,17 +393,14 @@ class CacheOptimization {
       priority += 10;
     }
 
-    // Recipes with more content get slightly higher priority
-    final contentScore = (recipe.core.ingredients.length * 2) + 
+    final contentScore = (recipe.core.ingredients.length * 2) +
                         (recipe.core.instructions.length * 3);
     priority += (contentScore / 10).round().clamp(0, 20);
 
     return priority;
   }
 
-  // ===== CACHE HEALTH MONITORING =====
 
-  /// Check cache health and recommend optimizations
   static Future<Map<String, dynamic>> assessCacheHealth({
     required JsonCacheHelper cacheHelper,
     required String? currentUserId,
@@ -521,12 +427,10 @@ class CacheOptimization {
 
           final recipe = Recipe.fromJson(recipeData);
 
-          // Check permissions
           if (_shouldRemoveFromCache(recipe, currentUserId)) {
             assessment['permission_issues'] = (assessment['permission_issues'] as int) + 1;
           }
 
-          // Check age
           final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
           if (daysSinceUpdate > 180) {
             assessment['old_entries'] = (assessment['old_entries'] as int) + 1;
@@ -536,7 +440,6 @@ class CacheOptimization {
         }
       }
 
-      // Generate recommendations
       final recommendations = assessment['recommendations'] as List<String>;
       
       if ((assessment['corrupted_entries'] as int) > 0) {

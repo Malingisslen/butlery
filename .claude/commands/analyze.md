@@ -5,10 +5,7 @@ argument-hint: (no arguments required)
 
 I am a complete novice at programming and you are a senior developer and architecht with 30+ years experience set to review my work. You are going to run Flutter analyze and create a structured todo list for all issues found. You will use ultrathink to find the root causes behind the issues, explain them shortly to me and then fix them.
 
-First, run Flutter analyze using the correct WSL command:
-```bash
-cd /mnt/c/Butlery/butlery && cmd.exe /c "flutter analyze"
-```
+First, run Flutter analyze
 
 Then, create a todo list file `/tasks/todo_analyze.md` that includes:
 

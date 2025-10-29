@@ -1,49 +1,8 @@
-/// Shared Content Coordinator ViewModel providing unified orchestration of specialized ViewModels.
+/// Facade/Coordinator for specialized shared content ViewModels.
 ///
-/// This orchestrator ViewModel coordinates between specialized content ViewModels, search functionality,
-/// and social sharing capabilities to provide a unified interface for shared content management.
-/// It implements the Facade pattern to hide the complexity of multiple specialized ViewModels
-/// while maintaining the benefits of domain-driven decomposition.
-///
-/// **ARCHITECTURE TRANSFORMATION:**
-/// - **From**: 1,965-line God Class mega-ViewModel
-/// - **To**: Clean orchestration of 6 specialized ViewModels
-/// - **Pattern**: Facade + Coordinator pattern
-/// - **Benefits**: Single Responsibility, Testability, Maintainability
-///
-/// **Responsibilities:**
-/// - **ViewModel Orchestration**: Coordinate between specialized ViewModels
-/// - **Unified Interface**: Provide single entry point for UI components
-/// - **State Coordination**: Manage cross-cutting state across ViewModels
-/// - **Tab Management**: Handle tab switching and navigation state
-/// - **Loading Coordination**: Coordinate loading states across ViewModels
-///
-/// **Integration Points:**
-/// - **SharedRecipeViewModel**: Recipe-specific operations and state
-/// - **SharedMenuViewModel**: Menu-specific operations and state  
-/// - **SharedShoppingViewModel**: Shopping list operations and state
-/// - **SharedContentSearchViewModel**: Unified search across all content
-/// - **SocialSharingViewModel**: Friend selection and sharing operations
-/// - **UI Components**: Single ViewModel dependency for shared content UI
-///
-/// **Usage Example:**
-/// ```dart
-/// final coordinator = SharedContentCoordinatorViewModel();
-/// 
-/// // Initialize all ViewModels
-/// await coordinator.initialize();
-/// 
-/// // Access specialized functionality through unified interface
-/// final recipes = coordinator.recipeViewModel.filteredContent;
-/// final searchResults = coordinator.searchViewModel.filteredResults;
-/// 
-/// // Coordinate complex operations
-/// await coordinator.shareRecipe('recipe_123', ['friend_456']);
-/// await coordinator.performUnifiedSearch('pasta');
-/// 
-/// // Tab management
-/// coordinator.setCurrentTab(ContentTab.menus);
-/// ```
+/// Orchestrates SharedRecipeViewModel, SharedMenuViewModel, SharedShoppingViewModel,
+/// SharedContentSearchViewModel, and SocialSharingViewModel providing unified interface.
+/// Transformed from 1,965-line monolithic ViewModel to clean coordinator pattern.
 
 // lib/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart
 
@@ -385,96 +344,50 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   }
 
   // ===== HIGH-LEVEL SHARING OPERATIONS =====
-  
+
   /// Share recipe with friends
-  Future<bool> shareRecipe(String recipeId, {List<String>? friendIds, String? message}) async {
-    // Prepare social sharing ViewModel
-    _socialSharingViewModel.prepareForSharing(
-      contentType: ShareableContentType.recipe,
-      contentTitle: _getRecipeTitle(recipeId),
-      suggestedFriends: friendIds,
-    );
-    
-    if (message != null) {
-      _socialSharingViewModel.updateShareMessage(message);
-    }
-    
-    final result = await _socialSharingViewModel.shareContent(
-      contentId: recipeId,
-      contentType: ShareableContentType.recipe,
-    );
-    
-    return result.success;
-  }
-  
+  Future<bool> shareRecipe(String recipeId, {List<String>? friendIds, String? message}) async =>
+      _shareContent(recipeId, ShareableContentType.recipe, _getRecipeTitle(recipeId), friendIds, message);
+
   /// Share menu with friends
-  Future<bool> shareMenu(String menuId, {List<String>? friendIds, String? message}) async {
-    _socialSharingViewModel.prepareForSharing(
-      contentType: ShareableContentType.menu,
-      contentTitle: _getMenuTitle(menuId),
-      suggestedFriends: friendIds,
-    );
-    
-    if (message != null) {
-      _socialSharingViewModel.updateShareMessage(message);
-    }
-    
-    final result = await _socialSharingViewModel.shareContent(
-      contentId: menuId,
-      contentType: ShareableContentType.menu,
-    );
-    
-    return result.success;
-  }
-  
+  Future<bool> shareMenu(String menuId, {List<String>? friendIds, String? message}) async =>
+      _shareContent(menuId, ShareableContentType.menu, _getMenuTitle(menuId), friendIds, message);
+
   /// Share shopping list with friends
-  Future<bool> shareShoppingList(String listId, {List<String>? friendIds, String? message}) async {
+  Future<bool> shareShoppingList(String listId, {List<String>? friendIds, String? message}) async =>
+      _shareContent(listId, ShareableContentType.shoppingList, _getShoppingListTitle(listId), friendIds, message);
+
+  /// Generic content sharing helper
+  Future<bool> _shareContent(String contentId, ShareableContentType contentType, String? contentTitle, List<String>? friendIds, String? message) async {
     _socialSharingViewModel.prepareForSharing(
-      contentType: ShareableContentType.shoppingList,
-      contentTitle: _getShoppingListTitle(listId),
+      contentType: contentType,
+      contentTitle: contentTitle,
       suggestedFriends: friendIds,
     );
-    
-    if (message != null) {
-      _socialSharingViewModel.updateShareMessage(message);
-    }
-    
+
+    if (message != null) _socialSharingViewModel.updateShareMessage(message);
+
     final result = await _socialSharingViewModel.shareContent(
-      contentId: listId,
-      contentType: ShareableContentType.shoppingList,
+      contentId: contentId,
+      contentType: contentType,
     );
-    
+
     return result.success;
   }
 
   // ===== CONTENT TITLE HELPERS =====
-  
-  String? _getRecipeTitle(String recipeId) {
-    try {
-      final recipe = _recipeViewModel.content.firstWhere((r) => r.id == recipeId);
-      return recipe.recipeSnapshot.title;
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  String? _getMenuTitle(String menuId) {
-    try {
-      final menu = _menuViewModel.content.firstWhere((m) => m.id == menuId);
-      return menu.menuTitle;
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  String? _getShoppingListTitle(String listId) {
-    try {
-      final list = _shoppingViewModel.content.firstWhere((l) => l.id == listId);
-      return list.listName;
-    } catch (e) {
-      return null;
-    }
-  }
+
+  String? _getRecipeTitle(String recipeId) => _recipeViewModel.content
+      .firstWhere((r) => r.id == recipeId, orElse: () => throw Exception())
+      .recipeSnapshot.title;
+
+  String? _getMenuTitle(String menuId) => _menuViewModel.content
+      .firstWhere((m) => m.id == menuId, orElse: () => throw Exception())
+      .menuTitle;
+
+  String? _getShoppingListTitle(String listId) => _shoppingViewModel.content
+      .firstWhere((l) => l.id == listId, orElse: () => throw Exception())
+      .listName;
 
   // ===== ANALYTICS =====
   

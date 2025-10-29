@@ -1,53 +1,10 @@
-/// Comprehensive text import ViewModel providing advanced text-to-recipe conversion for Flutter applications.
+/// Text import ViewModel for converting text-based recipe content to structured Recipe objects.
 ///
-/// This module implements sophisticated text import functionality following Single Responsibility Principle,
-/// specializing in converting text-based recipe content from various sources including social media posts,
-/// OCR scanned text, copied content, and manual input into structured Recipe objects. It provides complete
-/// text import infrastructure while maintaining clean separation from UI rendering, data persistence, and other import types.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles text import presentation layer concerns:
-/// - **Text Import Specialization**: Advanced text-to-recipe parsing with validation and comprehensive error handling
-/// - **Recipe Editing Intelligence**: Complete recipe manipulation during import with real-time validation and Swedish localization
-/// - **Input Validation Excellence**: Comprehensive text validation ensuring recipe completeness and data integrity
-/// - **Text Analysis Features**: Intelligent text analysis with parsing suggestions and content quality assessment
-/// - **Import Workflow Management**: Complete text import workflow from input to saved recipe with state coordination
-///
-/// **What This Module Does NOT Handle:**
-/// - URL-based content fetching (handled by UrlImportViewModel and web scraping services)
-/// - UI rendering and widget creation (handled by text import views and presentation components)
-/// - Direct data persistence (handled by ImportManager and underlying storage services)
-/// - Complex parsing algorithm implementation (handled by ImportManager strategy pattern and text parsing services)
-///
-/// **Text Import ViewModel Features:**
-/// - **Advanced Text Parsing**: Sophisticated text-to-recipe conversion through ImportManager with comprehensive validation
-/// - **Recipe Editing Intelligence**: Complete recipe manipulation with ingredients, instructions, and metadata management
-/// - **Input Validation System**: Comprehensive text validation ensuring recipe completeness and parsing viability
-/// - **Text Analysis Tools**: Intelligent parsing suggestions and content quality assessment for optimal results
-/// - **Swedish Localization**: Complete Swedish language support for errors, suggestions, and user feedback
-///
-/// **Usage Examples:**
+/// **Features:** Text parsing, recipe editing, validation, Swedish localization. Delegates to ImportManager.
 /// ```dart
-/// // Initialize text import ViewModel with ImportManager dependency
-/// final textImportViewModel = TextImportViewModel(
-///   importManager: ServiceLocator.get<ImportManager>(),
-/// );
-/// 
-/// // Text input and parsing workflow
-/// textImportViewModel.updateInputText('''
-///   Pannkakor
-///   Ingredienser:
-///   - 2 ägg
-///   - 3 dl mjölk
-///   - 2 dl vetemjöl
-///   - 1 krm salt
-///   
-///   Instruktioner:
-///   1. Vispa ihop alla ingredienser
-///   2. Stek i smör i pannan
-/// ''');
-/// 
-/// // Validate and parse text
+/// final vm = TextImportViewModel(importManager: ServiceLocator.get<ImportManager>());
+/// vm.updateInputText('Pannkakor\nIngredienser:\n- 2 ägg...');
+/// if (vm.canParse) await vm.parseText();
 /// if (textImportViewModel.validateInput()) {
 ///   final parseSuccess = await textImportViewModel.parseText();
 ///   if (parseSuccess && textImportViewModel.hasParsedRecipe) {
