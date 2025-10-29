@@ -110,6 +110,25 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
   /// Extract entity ID for document operations
   String getId(T entity);
 
+  // ===== ABSTRACT PERMISSION VALIDATION METHODS =====
+  // Subclasses MUST implement these to enforce security
+
+  /// Validate if the current user can create this entity
+  /// Returns true if permission granted, false otherwise
+  Future<bool> validateCreatePermission(String userId, T entity);
+
+  /// Validate if the current user can read this entity
+  /// Returns true if permission granted, false otherwise
+  Future<bool> validateReadPermission(String userId, String resourceId, T? entity);
+
+  /// Validate if the current user can update this entity
+  /// Returns true if permission granted, false otherwise
+  Future<bool> validateUpdatePermission(String userId, String resourceId, T entity);
+
+  /// Validate if the current user can delete this entity
+  /// Returns true if permission granted, false otherwise
+  Future<bool> validateDeletePermission(String userId, String resourceId);
+
   // ===== UNIFIED AUTHENTICATION & COLLECTION MANAGEMENT =====
 
   /// Unified authentication check that replaces 23 duplicate patterns
@@ -149,26 +168,53 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
   // ===== UNIFIED CRUD OPERATIONS =====
 
   /// Unified create operation - eliminates 6 duplicate implementations
+  /// ✅ SECURITY: Now includes permission validation and audit logging
   @override
   Future<T> create(T entity) async {
     try {
-      requireCurrentUserId(); // Consistent auth check
-      final ref = getCollectionRef();
+      // Step 1: Authenticate user
+      final userId = requireCurrentUserId();
       final docId = getId(entity);
+
+      // Step 2: Validate create permission
+      final canCreate = await validateCreatePermission(userId, entity);
+
+      // Step 3: Log permission check
+      logPermissionCheck(
+        userId: userId,
+        resource: '${T.toString()}/$docId',
+        operation: 'create',
+        granted: canCreate,
+      );
+
+      // Step 4: Enforce permission
+      if (!canCreate) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to create ${T.toString()}',
+        );
+      }
+
+      // Step 5: Proceed with create
+      final ref = getCollectionRef();
       await ref.doc(docId).set(toFirestore(entity));
 
       AppLogger.info('${T.toString()} created: $docId');
       return entity;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to create ${T.toString()}: $e', stackTrace);
-      throw Exception('Failed to create ${T.toString()}: $e');
+      rethrow;
     }
   }
 
   /// Unified read operation - eliminates 6 duplicate implementations
+  /// 🔒 SECURITY FIX: Now includes authentication and permission validation (CVSS 9.1 vulnerability fixed)
   @override
   Future<T?> read(String id) async {
     try {
+      // Step 1: Authenticate user (CRITICAL FIX - was missing)
+      final userId = requireCurrentUserId();
+
+      // Step 2: Fetch document
       final ref = getCollectionRef();
       final doc = await ref.doc(id).get();
 
@@ -177,58 +223,147 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         return null;
       }
 
+      // Step 3: Parse entity
+      final entity = fromFirestore(doc);
 
-      return fromFirestore(doc);
+      // Step 4: Validate read permission (CRITICAL FIX - was missing)
+      final canRead = await validateReadPermission(userId, id, entity);
+
+      // Step 5: Log permission check
+      logPermissionCheck(
+        userId: userId,
+        resource: '${T.toString()}/$id',
+        operation: 'read',
+        granted: canRead,
+      );
+
+      // Step 6: Enforce permission (CRITICAL FIX - was missing)
+      if (!canRead) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to read ${T.toString()} $id',
+        );
+      }
+
+      return entity;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to read ${T.toString()} $id: $e', stackTrace);
-      throw Exception('Failed to read ${T.toString()}: $e');
+      rethrow;
     }
   }
 
   /// Unified readAll operation - eliminates 6 duplicate implementations
+  /// 🔒 SECURITY FIX: Now filters results based on read permissions (data leak vulnerability fixed)
   @override
   Future<List<T>> readAll() async {
     try {
+      // Step 1: Authenticate user (CRITICAL FIX - was missing)
+      final userId = requireCurrentUserId();
+
+      // Step 2: Fetch all documents
       final ref = getCollectionRef();
       final snapshot = await ref.get();
 
-      final entities = snapshot.docs.map(fromFirestore).toList();
-      AppLogger.info('${T.toString()} readAll: ${entities.length} items');
-      return entities;
+      // Step 3: Filter documents based on read permission (CRITICAL FIX - was missing)
+      final allowedEntities = <T>[];
+      for (final doc in snapshot.docs) {
+        final entity = fromFirestore(doc);
+        final canRead = await validateReadPermission(userId, doc.id, entity);
+
+        // Log permission check
+        logPermissionCheck(
+          userId: userId,
+          resource: '${T.toString()}/${doc.id}',
+          operation: 'readAll',
+          granted: canRead,
+        );
+
+        if (canRead) {
+          allowedEntities.add(entity);
+        }
+      }
+
+      AppLogger.info(
+        '${T.toString()} readAll: ${allowedEntities.length}/${snapshot.docs.length} items (filtered by permissions)',
+      );
+      return allowedEntities;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to read all ${T.toString()}: $e', stackTrace);
-      throw Exception('Failed to read all ${T.toString()}: $e');
+      rethrow;
     }
   }
 
   /// Unified update operation - eliminates 6 duplicate implementations
+  /// ✅ SECURITY: Now includes permission validation and audit logging
   @override
   Future<void> update(T entity) async {
     try {
-      requireCurrentUserId(); // Consistent auth check
-      final ref = getCollectionRef();
+      // Step 1: Authenticate user
+      final userId = requireCurrentUserId();
       final docId = getId(entity);
+
+      // Step 2: Validate update permission
+      final canUpdate = await validateUpdatePermission(userId, docId, entity);
+
+      // Step 3: Log permission check
+      logPermissionCheck(
+        userId: userId,
+        resource: '${T.toString()}/$docId',
+        operation: 'update',
+        granted: canUpdate,
+      );
+
+      // Step 4: Enforce permission
+      if (!canUpdate) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to update ${T.toString()} $docId',
+        );
+      }
+
+      // Step 5: Proceed with update
+      final ref = getCollectionRef();
       await ref.doc(docId).update(toFirestore(entity));
 
       AppLogger.info('${T.toString()} updated: $docId');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update ${T.toString()}: $e', stackTrace);
-      throw Exception('Failed to update ${T.toString()}: $e');
+      rethrow;
     }
   }
 
   /// Unified delete operation - eliminates 6 duplicate implementations
+  /// ✅ SECURITY: Now includes permission validation and audit logging
   @override
   Future<void> delete(String id) async {
     try {
-      requireCurrentUserId(); // Consistent auth check
+      // Step 1: Authenticate user
+      final userId = requireCurrentUserId();
+
+      // Step 2: Validate delete permission
+      final canDelete = await validateDeletePermission(userId, id);
+
+      // Step 3: Log permission check
+      logPermissionCheck(
+        userId: userId,
+        resource: '${T.toString()}/$id',
+        operation: 'delete',
+        granted: canDelete,
+      );
+
+      // Step 4: Enforce permission
+      if (!canDelete) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to delete ${T.toString()} $id',
+        );
+      }
+
+      // Step 5: Proceed with delete
       final ref = getCollectionRef();
       await ref.doc(id).delete();
 
       AppLogger.info('${T.toString()} deleted: $id');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to delete ${T.toString()} $id: $e', stackTrace);
-      throw Exception('Failed to delete ${T.toString()}: $e');
+      rethrow;
     }
   }
 
